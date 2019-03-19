@@ -1,17 +1,30 @@
-from ippai.simulate import simulate
-from ippai.simulate.tissue_properties import TissueProperties
+# FIXME: Include actual proper tests here!
 
-tp = TissueProperties(None, None)
+from ippai.simulate import Tags
+from ippai.simulate.simulation import simulate
+from ippai.simulate.tissue_properties import get_background_settings
+from ippai.simulate.structures import create_forearm_structures
+
+import matplotlib.pylab as plt
+import numpy as np
 
 settings = {
-    'run_optical_forward_model': False,
-    'run_acoustic_forward_model': False,
-    'background_properties': tp.get_background_settings(),
-    'wavelength': 800,
-    'voxel_spacing_mm': 0.3,
-    'volume_x_dim_mm': 10,
-    'volume_y_dim_mm': 10,
-    'volume_z_dim_mm': 10
+    Tags.WAVELENGTH: 800,
+    Tags.SIMULATION_PATH: "/home/janek/simulation_test/",
+    Tags.RUN_OPTICAL_MODEL: False,
+    Tags.RUN_ACOUSTIC_MODEL: False,
+    'background_properties': get_background_settings(),
+    Tags.SPACING: 0.3,
+    Tags.DIM_VOLUME_Z: 10,
+    Tags.DIM_VOLUME_X: 10,
+    Tags.DIM_VOLUME_Y: 10,
+    Tags.STRUCTURES: create_forearm_structures()
 }
 print(settings)
-simulate(settings)
+paths = simulate(settings)
+
+mua = np.load(paths[0])['mua']
+
+plt.imshow(mua[10, :, :])
+plt.show()
+plt.close()
