@@ -151,6 +151,14 @@ def get_subcutaneous_fat_settings():
     return get_settings(b_min=0.005, b_max=0.01, w_min=0.68, w_max=0.68, f_min=0.3, f_max=0.6)
 
 
+def get_blood_settings():
+    """
+
+        :return: a settings dictionary containing all min and max parameters fitting for full blood.
+        """
+    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1)
+
+
 def get_settings(b_min=0.0, b_max=0.0, w_min=0.0, w_max=0.0, f_min=0.0, f_max=0.0,
                  m_min=0.0, m_max=0.0, oxy_min=0.0, oxy_max=1.0):
     return_dict = dict()
