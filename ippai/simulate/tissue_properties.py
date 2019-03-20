@@ -47,6 +47,10 @@ class TissueProperties(object):
         self.fvf = None
         self.mvf = None
         self.oxy = None
+        self.musp500 = None
+        self.f_ray = None
+        self.b_mie = None
+        self.anisotropy = None
 
         self.KEYWORDS = [Tags.KEY_B_MIN, Tags.KEY_B_MAX, Tags.KEY_W_MAX, Tags.KEY_W_MIN, Tags.KEY_F_MAX, Tags.KEY_F_MIN,
                          Tags.KEY_M_MAX, Tags.KEY_M_MIN, Tags.KEY_OXY_MAX, Tags.KEY_OXY_MIN]
@@ -62,6 +66,10 @@ class TissueProperties(object):
             self.M_max = settings[tissue_type][Tags.KEY_M_MAX]
             self.OXY_min = settings[tissue_type][Tags.KEY_OXY_MIN]
             self.OXY_max = settings[tissue_type][Tags.KEY_OXY_MAX]
+            self.musp500 = settings[tissue_type][Tags.KEY_MUSP500]
+            self.f_ray = settings[tissue_type][Tags.KEY_F_RAY]
+            self.b_mie = settings[tissue_type][Tags.KEY_B_MIE]
+            self.anisotropy = settings[tissue_type][Tags.KEY_ANISOTROPY]
 
             self.randomize()
 
@@ -93,17 +101,20 @@ class TissueProperties(object):
                                   " are not contained in  " + str(tissue_type) + " settings")
 
     def get(self, wavelength):
-        wavelength = wavelength-700
-        if wavelength < 0 or wavelength > 251:
+        wavelength_idx = wavelength - 700
+        if wavelength_idx < 0 or wavelength_idx > 251:
             raise AssertionError("Wavelengths only supported between 700 nm and 950 nm")
 
-        absorption = self.wvf * self.absorption_data['water'][wavelength] +\
-            self.fvf * self.absorption_data['fat'][wavelength] +\
-            self.mvf * self.absorption_data['melanin'][wavelength] +\
-            self.bvf * self.oxy * self.absorption_data['hbo2'][wavelength] +\
-            self.bvf * (1-self.oxy) * self.absorption_data['hb'][wavelength]
-        scattering = 100  # FIXME: Include scattering term
-        anisotropy = 0.9  # FIXME: Include anisotropy term
+        absorption = self.wvf * self.absorption_data['water'][wavelength_idx] + \
+                     self.fvf * self.absorption_data['fat'][wavelength_idx] + \
+                     self.mvf * self.absorption_data['melanin'][wavelength_idx] + \
+                     self.bvf * self.oxy * self.absorption_data['hbo2'][wavelength_idx] + \
+                     self.bvf * (1-self.oxy) * self.absorption_data['hb'][wavelength_idx]
+        scattering_p = self.musp500 * (self.f_ray * (wavelength / 500) ** 1e-4 +
+                                       (1 - self.f_ray) * (wavelength / 500) ** -self.b_mie)
+        anisotropy = self.anisotropy
+        scattering = scattering_p / (1-anisotropy)
+
 
         return [absorption, scattering, anisotropy]
 
@@ -124,7 +135,7 @@ def get_background_settings():
 
     :return: a settings dictionary containing all min and max parameters fitting for generic background tissue.
     """
-    return get_settings(b_min=0.005, b_max=0.005, w_min=0.68, w_max=0.68)
+    return get_settings(b_min=0.005, b_max=0.005, w_min=0.68, w_max=0.68, musp500=10, f_ray=0.0, b_mie=0.0)
 
 
 def get_epidermis_settings():
@@ -132,7 +143,8 @@ def get_epidermis_settings():
 
     :return: a settings dictionary containing all min and max parameters fitting for epidermis tissue.
     """
-    return get_settings(b_min=0.01, b_max=0.01, w_min=0.68, w_max=0.68, m_max=0.5, m_min=0.1)
+    return get_settings(b_min=0.01, b_max=0.01, w_min=0.68, w_max=0.68, m_max=0.5, m_min=0.1,
+                        musp500=46.0, f_ray=0.409, b_mie=0.702)
 
 
 def get_dermis_settings():
@@ -140,7 +152,8 @@ def get_dermis_settings():
 
     :return: a settings dictionary containing all min and max parameters fitting for dermis tissue.
     """
-    return get_settings(b_min=0.005, b_max=0.02, w_min=0.68, w_max=0.68)
+    return get_settings(b_min=0.005, b_max=0.02, w_min=0.68, w_max=0.68,
+                        musp500=29.7, f_ray=0.48, b_mie=0.22)
 
 
 def get_subcutaneous_fat_settings():
@@ -148,7 +161,8 @@ def get_subcutaneous_fat_settings():
 
     :return: a settings dictionary containing all min and max parameters fitting for subcutaneous fat tissue.
     """
-    return get_settings(b_min=0.005, b_max=0.01, w_min=0.68, w_max=0.68, f_min=0.3, f_max=0.6)
+    return get_settings(b_min=0.005, b_max=0.01, w_min=0.68, w_max=0.68, f_min=0.3, f_max=0.6,
+                        musp500=18.4, f_ray=0.174, b_mie=0.45)
 
 
 def get_blood_settings():
@@ -156,11 +170,40 @@ def get_blood_settings():
 
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
-    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1)
+    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
+                        musp500=10, b_mie=1.0)
+
+
+def get_arterial_blood_settings():
+    """
+
+        :return: a settings dictionary containing all min and max parameters fitting for full blood.
+        """
+    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1, oxy_min=0.7, oxy_max=1,
+                        musp500=10, b_mie=1.0)
+
+
+def get_venous_blood_settings():
+    """
+
+        :return: a settings dictionary containing all min and max parameters fitting for full blood.
+        """
+    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1, oxy_min=0.3, oxy_max=0.8,
+                        musp500=10, b_mie=1.0)
+
+
+def get_bone_settings():
+    """
+
+        :return: a settings dictionary containing all min and max parameters fitting for full blood.
+        """
+    return get_settings(b_min=1e-4, b_max=1e-4, w_min=0.35, w_max=0.35, oxy_min=0, oxy_max=1,
+                        musp500=22.9, f_ray=0.022, b_mie=0.326)
 
 
 def get_settings(b_min=0.0, b_max=0.0, w_min=0.0, w_max=0.0, f_min=0.0, f_max=0.0,
-                 m_min=0.0, m_max=0.0, oxy_min=0.0, oxy_max=1.0):
+                 m_min=0.0, m_max=0.0, oxy_min=0.0, oxy_max=1.0,
+                 musp500=10.0, f_ray=0.0, b_mie=0.0, anisotropy=0.9):
     return_dict = dict()
     return_dict[Tags.KEY_B_MIN] = b_min
     return_dict[Tags.KEY_B_MAX] = b_max
@@ -172,4 +215,8 @@ def get_settings(b_min=0.0, b_max=0.0, w_min=0.0, w_max=0.0, f_min=0.0, f_max=0.
     return_dict[Tags.KEY_M_MAX] = m_max
     return_dict[Tags.KEY_OXY_MIN] = oxy_min
     return_dict[Tags.KEY_OXY_MAX] = oxy_max
+    return_dict[Tags.KEY_MUSP500] = musp500
+    return_dict[Tags.KEY_F_RAY] = f_ray
+    return_dict[Tags.KEY_B_MIE] = b_mie
+    return_dict[Tags.KEY_ANISOTROPY] = anisotropy
     return return_dict

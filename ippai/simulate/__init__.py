@@ -3,6 +3,7 @@ class Tags:
     # General settings
     SIMULATION_PATH = "simulation_path"
     WAVELENGTH = "wavelength"
+    RANDOM_SEED = "random_seed"
 
     # Air layer
     AIR_LAYER_HEIGHT_MM = "air_layer_height"
@@ -28,14 +29,24 @@ class Tags:
     KEY_M_MIN = "m_min"
     KEY_OXY_MAX = "oxy_max"
     KEY_OXY_MIN = "oxy_min"
+    KEY_MUSP500 = "musp500"
+    KEY_F_RAY = "f_ray"
+    KEY_B_MIE = "b_mie"
+    KEY_ANISOTROPY = "anisotropy"
 
     # Structures
     STRUCTURES = "structures"
+    CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = "structure_type"
     STRUCTURE_TISSUE_PROPERTIES = "structure_tissue_properties"
 
     STRUCTURE_DEPTH_MIN_MM = "structure_depth_min_mm"
     STRUCTURE_DEPTH_MAX_MM = "structure_depth_max_mm"
+
+    STRUCTURE_DISTORTION_MULTIPLICATIVE = "structure_distortion_multiplicative"
+    STRUCTURE_DISTORTION_WAVELENGTH_MM = "structure_distortion_frequency"
+    STRUCTURE_DISTORTION_MAX = "structure_distortion_max"
+    STRUCTURE_DISTORTION_MIN = "structure_distortion_min"
 
     STRUCTURE_LAYER = "structure_layer"
     STRUCTURE_THICKNESS_MIN_MM = "structure_thickness_min_mm"
@@ -47,16 +58,6 @@ class Tags:
     STRUCTURE_FORCE_ORTHAGONAL_TO_PLANE = "structure_force_orthagonal_to_plane"
     STRUCTURE_TUBE_START_X_MIN_MM = "structure_tube_start_x_min_mm"
     STRUCTURE_TUBE_START_X_MAX_MM = "structure_tube_start_x_max_mm"
-    STRUCTURE_TUBE_START_Y_MIN_MM = "structure_tube_start_y_min_mm"
-    STRUCTURE_TUBE_START_Y_MAX_MM = "structure_tube_start_y_max_mm"
-    STRUCTURE_TUBE_START_Z_MIN_MM = "structure_tube_start_z_min_mm"
-    STRUCTURE_TUBE_START_Z_MAX_MM = "structure_tube_start_z_max_mm"
-    STRUCTURE_TUBE_END_X_MIN_MM = "structure_tube_end_x_min_mm"
-    STRUCTURE_TUBE_END_X_MAX_MM = "structure_tube_end_x_max_mm"
-    STRUCTURE_TUBE_END_Y_MIN_MM = "structure_tube_end_y_min_mm"
-    STRUCTURE_TUBE_END_Y_MAX_MM = "structure_tube_end_y_max_mm"
-    STRUCTURE_TUBE_END_Z_MIN_MM = "structure_tube_end_z_min_mm"
-    STRUCTURE_TUBE_END_Z_MAX_MM = "structure_tube_end_z_max_mm"
 
 
 
