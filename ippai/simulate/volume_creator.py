@@ -1,8 +1,7 @@
 import numpy as np
-from scipy.ndimage import gaussian_filter
 
 from ippai.simulate.tissue_properties import TissueProperties
-from ippai.simulate import Tags
+from ippai.simulate import Tags, SegmentationClasses
 from ippai.simulate.utils import randomize
 
 
@@ -14,14 +13,15 @@ def create_simulation_volume(settings):
     volumes = add_structures(volumes, settings)
     volumes = append_air_layer(volumes, settings)
 
-    volumes[0] = np.flip(volumes[0], 1)
-    volumes[1] = np.flip(volumes[1], 1)
-    volumes[2] = np.flip(volumes[2], 1)
+    for i in range(len(volumes)):
+        volumes[i] = np.flip(volumes[i], 1)
 
     np.savez(volume_path,
              mua=volumes[0],
              mus=volumes[1],
-             g=volumes[2])
+             g=volumes[2],
+             oxy=volumes[3],
+             seg=volumes[4])
 
     return volume_path
 
@@ -32,28 +32,37 @@ def append_air_layer(volumes, global_settings):
     g = 1
     sizes = np.shape(volumes[0])
     air_layer_height = int(global_settings[Tags.AIR_LAYER_HEIGHT_MM] / global_settings[Tags.SPACING_MM])
+
     new_mua = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * mua
     new_mua[:, :, air_layer_height:] = volumes[0]
+
     new_mus = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * mus
     new_mus[:, :, air_layer_height:] = volumes[1]
+
     new_g = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * g
     new_g[:, :, air_layer_height:] = volumes[2]
-    return [new_mua, new_mus, new_g]
+
+    new_oxy = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * (-1)
+    new_oxy[:, :, air_layer_height:] = volumes[3]
+
+    new_seg = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * SegmentationClasses.AIR
+    new_seg[:, :, air_layer_height:] = volumes[4]
+
+    return [new_mua, new_mus, new_g, new_oxy, new_seg]
 
 
 def create_empty_volume(global_settings):
-    wavelength = global_settings[Tags.WAVELENGTH]
     voxel_spacing = global_settings[Tags.SPACING_MM]
     volume_y_dim = int(global_settings[Tags.DIM_VOLUME_Y_MM] / voxel_spacing)
     volume_x_dim = int(global_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing)
     volume_z_dim = int(global_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing)
     sizes = (volume_y_dim, volume_x_dim, volume_z_dim)
-    background_properties = TissueProperties(global_settings, "background_properties")
-    background_properties = background_properties.get(wavelength)
-    absorption_volume = np.ones(sizes) * background_properties[0]
-    scattering_volume = np.ones(sizes) * background_properties[1]
-    anisotropy_volume = np.ones(sizes) * background_properties[2]
-    return [absorption_volume, scattering_volume, anisotropy_volume]
+    absorption_volume = np.zeros(sizes)
+    scattering_volume = np.zeros(sizes)
+    anisotropy_volume = np.zeros(sizes)
+    oxygenation_volume = np.zeros(sizes)
+    segmentation_volume = np.zeros(sizes)
+    return [absorption_volume, scattering_volume, anisotropy_volume, oxygenation_volume, segmentation_volume]
 
 
 def add_structures(volumes, global_settings):
@@ -64,18 +73,19 @@ def add_structures(volumes, global_settings):
 
 def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=None):
 
-    if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_DISTORTION_MULTIPLICATIVE:
-        volumes = apply_distortion_map(volumes, structure_settings, global_settings[Tags.SPACING_MM])
+    structure_properties = TissueProperties(structure_settings, Tags.STRUCTURE_TISSUE_PROPERTIES,
+                                            np.shape(volumes[0]), global_settings[Tags.SPACING_MM])
+    [mua, mus, g, oxy] = structure_properties.get(global_settings[Tags.WAVELENGTH])
+
+    if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_BACKGROUND:
+        volumes = add_background(volumes, structure_settings, mua, mus, g, oxy)
         return volumes
 
-    structure_properties = TissueProperties(structure_settings, Tags.STRUCTURE_TISSUE_PROPERTIES)
-    [mua, mus, g] = structure_properties.get(global_settings[Tags.WAVELENGTH])
-
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_LAYER:
-        volumes, extent_x_z_mm = add_layer(volumes, global_settings, structure_settings, mua, mus, g, extent_x_z_mm)
+        volumes, extent_x_z_mm = add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_TUBE:
-        volumes, extent_x_z_mm = add_tube(volumes, global_settings, structure_settings, mua, mus, g, extent_x_z_mm)
+        volumes, extent_x_z_mm = add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
 
     if Tags.CHILD_STRUCTURES in structure_settings:
         for child_structure in structure_settings[Tags.CHILD_STRUCTURES]:
@@ -85,29 +95,17 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
     return volumes
 
 
-def apply_distortion_map(volumes, distortion_dict, spacing):
-    sizes = np.shape(volumes[0])
-    dist_freq = distortion_dict[Tags.STRUCTURE_DISTORTION_WAVELENGTH_MM]
-
-    if dist_freq is None:
-        dist_freq = 1
-    else:
-        dist_freq = dist_freq / spacing
-
-    dist_min = distortion_dict[Tags.STRUCTURE_DISTORTION_MIN]
-    dist_max = distortion_dict[Tags.STRUCTURE_DISTORTION_MAX]
-
-    dist_map = randomize(0.9, 1.1, distribution='normal', size=sizes)
-    dist_map = gaussian_filter(dist_map, dist_freq)
-    dist_map = ((dist_map - np.mean(dist_map)) / np.std(dist_map)) * \
-               ((dist_max - dist_min)/2) + ((dist_max + dist_min)/2)
-    print(np.mean(volumes[0]))
-    volumes[0] = volumes[0] * dist_map
-    print(np.mean(volumes[0]))
+def add_background(volumes, structure_settings, mua, mus, g, oxy):
+    print("Test")
+    volumes[0] += mua
+    volumes[1] += mus
+    volumes[2] += g
+    volumes[3] += oxy
+    volumes[4] += structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE]
     return volumes
 
 
-def add_layer(volumes, global_settings, structure_settings, mua, mus, g, extent_parent_x_z_mm):
+def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
     print("Adding layer")
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
@@ -129,7 +127,8 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, extent_
     for z_idx in z_range:
         for y_idx in range(sizes[0]):
             for x_idx in range(sizes[1]):
-                volumes = set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g)
+                volumes = set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy,
+                                    structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
         fraction -= 1
         it += 1
 
@@ -137,7 +136,8 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, extent_
         print(fraction)
         for y_idx in range(sizes[0]):
             for x_idx in range(sizes[1]):
-                merge_voxel(volumes, y_idx, x_idx, it+1, mua, mus, g, fraction)
+                merge_voxel(volumes, y_idx, x_idx, it+1, mua, mus, g, oxy,
+                            structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE], fraction)
 
     extent_parent_x_z_mm = [0, sizes[1] * global_settings[Tags.SPACING_MM],
                             depth_in_voxels * global_settings[Tags.SPACING_MM],
@@ -146,7 +146,7 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, extent_
     return volumes, extent_parent_x_z_mm
 
 
-def add_tube(volumes, global_settings, structure_settings, mua, mus, g, extent_parent_x_z_mm):
+def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
     print("adding tube")
 
     if extent_parent_x_z_mm is None:
@@ -203,7 +203,8 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, extent_p
         for y_idx in range(sizes[0]):
             for x_idx in range(idx_x_start, idx_x_end):
                 if fnc_straight_tube(x_idx, y_idx, z_idx, radius_in_voxels, start_in_voxels, end) <= 0:
-                    volumes = set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g)
+                    volumes = set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy,
+                                        structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
 
     extent_parent_x_z_mm = [start_in_mm[0] - radius_in_mm, start_in_mm[0] + radius_in_mm,
                             start_in_mm[2] - radius_in_mm, start_in_mm[2] + radius_in_mm]
@@ -228,7 +229,7 @@ def fnc_straight_tube(x, y, z, r, X1, X2):
            r**2 * ((X2[0]-X1[0])**2 + (X2[1]-X1[1])**2 + (X2[2]-X1[2])**2)
 
 
-def merge_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, fraction):
+def merge_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy, seg, fraction):
     """
     Updates a voxel position in the volumes by merging the given physical properties with the
     properties already stored in the volumes. The merging is done in a relative manner using the given fraction.
@@ -237,20 +238,56 @@ def merge_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, fraction):
     :param y_idx: integer
     :param x_idx: integer
     :param z_idx: integer
-    :param mua: scalar
-    :param mus: scalar
-    :param g: scalar
+    :param mua: scalar, the optical absorption coefficient in 1/cm
+    :param mus: scalar, the optical scattering coefficient in 1/cm
+    :param g: scalar, the anisotropy
+    :param oxy: scalar, the blood oxygenation in [0, 1]
+    :param seg: integer, the tissue segmentation type from SegmentationClasses
     :param fraction: scalar in [0, 1]
 
     :return: the volumes with the changed properties
     """
-    volumes[0][y_idx, x_idx, z_idx] = volumes[0][y_idx, x_idx, z_idx] * (1-fraction) + mua * fraction
-    volumes[1][y_idx, x_idx, z_idx] = volumes[1][y_idx, x_idx, z_idx] * (1-fraction) + mus * fraction
-    volumes[2][y_idx, x_idx, z_idx] = volumes[2][y_idx, x_idx, z_idx] * (1-fraction) + g * fraction
+    if not np.isscalar(mua):
+        if len(mua) > 1:
+            volumes[0][y_idx, x_idx, z_idx] = volumes[0][y_idx, x_idx, z_idx] * (1-fraction) + \
+                                              mua[y_idx, x_idx, z_idx] * fraction
+        else:
+            volumes[0][y_idx, x_idx, z_idx] = volumes[0][y_idx, x_idx, z_idx] * (1 - fraction) + mua * fraction
+    else:
+        volumes[0][y_idx, x_idx, z_idx] = volumes[0][y_idx, x_idx, z_idx] * (1-fraction) + mua * fraction
+
+    if not np.isscalar(mus):
+        if len(mus) > 1:
+            volumes[1][y_idx, x_idx, z_idx] = volumes[1][y_idx, x_idx, z_idx] * (1-fraction) + \
+                                              mus[y_idx, x_idx, z_idx] * fraction
+        else:
+            volumes[1][y_idx, x_idx, z_idx] = volumes[1][y_idx, x_idx, z_idx] * (1 - fraction) + mus * fraction
+    else:
+        volumes[1][y_idx, x_idx, z_idx] = volumes[1][y_idx, x_idx, z_idx] * (1-fraction) + mus * fraction
+
+    if not np.isscalar(g):
+        if len(g) > 1:
+            volumes[2][y_idx, x_idx, z_idx] = volumes[2][y_idx, x_idx, z_idx] * (1-fraction) + \
+                                              g[y_idx, x_idx, z_idx] * fraction
+        else:
+            volumes[2][y_idx, x_idx, z_idx] = volumes[2][y_idx, x_idx, z_idx] * (1 - fraction) + g * fraction
+    else:
+        volumes[2][y_idx, x_idx, z_idx] = volumes[2][y_idx, x_idx, z_idx] * (1-fraction) + g * fraction
+
+    if not np.isscalar(oxy):
+        if len(oxy) > 1:
+            volumes[3][y_idx, x_idx, z_idx] = volumes[3][y_idx, x_idx, z_idx] * (1-fraction) + \
+                                              oxy[y_idx, x_idx, z_idx] * fraction
+        else:
+            volumes[3][y_idx, x_idx, z_idx] = volumes[3][y_idx, x_idx, z_idx] * (1 - fraction) + oxy * fraction
+    else:
+        volumes[3][y_idx, x_idx, z_idx] = volumes[3][y_idx, x_idx, z_idx] * (1-fraction) + oxy * fraction
+
+    volumes[4][y_idx, x_idx, z_idx] = seg
     return volumes
 
 
-def set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g):
+def set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy, seg):
     """
     Sets a voxel position to a specific value in the volume
 
@@ -264,7 +301,38 @@ def set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g):
 
     :return: the volumes with the changed properties
     """
-    volumes[0][y_idx, x_idx, z_idx] = mua
-    volumes[1][y_idx, x_idx, z_idx] = mus
-    volumes[2][y_idx, x_idx, z_idx] = g
+    if not np.isscalar(mua):
+        if len(mua) > 1:
+            volumes[0][y_idx, x_idx, z_idx] = mua[y_idx, x_idx, z_idx]
+        else:
+            volumes[0][y_idx, x_idx, z_idx] = mua
+    else:
+        volumes[0][y_idx, x_idx, z_idx] = mua
+
+    if not np.isscalar(mus):
+        if len(mus) > 1:
+            volumes[1][y_idx, x_idx, z_idx] = mus[y_idx, x_idx, z_idx]
+        else:
+            volumes[1][y_idx, x_idx, z_idx] = mus
+    else:
+        volumes[1][y_idx, x_idx, z_idx] = mus
+
+    if not np.isscalar(g):
+        if len(g) > 1:
+            volumes[2][y_idx, x_idx, z_idx] = g[y_idx, x_idx, z_idx]
+        else:
+            volumes[2][y_idx, x_idx, z_idx] = g
+    else:
+        volumes[2][y_idx, x_idx, z_idx] = g
+
+    if not np.isscalar(oxy):
+        if len(oxy) > 1:
+            volumes[3][y_idx, x_idx, z_idx] = oxy[y_idx, x_idx, z_idx]
+        else:
+            volumes[3][y_idx, x_idx, z_idx] = oxy
+    else:
+        volumes[3][y_idx, x_idx, z_idx] = oxy
+
+    volumes[4][y_idx, x_idx, z_idx] = seg
+
     return volumes

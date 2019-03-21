@@ -19,14 +19,19 @@ class Tags:
     DIM_VOLUME_Z_MM = "volume_z_dim_mm"
 
     # Tissue Properties Settings
+    KEY_B = "B"
     KEY_B_MIN = "B_min"
     KEY_B_MAX = "B_max"
+    KEY_W = "W"
     KEY_W_MAX = "w_max"
     KEY_W_MIN = "w_min"
+    KEY_F = "F"
     KEY_F_MAX = "f_max"
     KEY_F_MIN = "f_min"
+    KEY_M = "M"
     KEY_M_MAX = "m_max"
     KEY_M_MIN = "m_min"
+    KEY_OXY = "OXY"
     KEY_OXY_MAX = "oxy_max"
     KEY_OXY_MIN = "oxy_min"
     KEY_MUSP500 = "musp500"
@@ -38,15 +43,17 @@ class Tags:
     STRUCTURES = "structures"
     CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = "structure_type"
+    STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"
     STRUCTURE_TISSUE_PROPERTIES = "structure_tissue_properties"
 
     STRUCTURE_DEPTH_MIN_MM = "structure_depth_min_mm"
     STRUCTURE_DEPTH_MAX_MM = "structure_depth_max_mm"
 
-    STRUCTURE_DISTORTION_MULTIPLICATIVE = "structure_distortion_multiplicative"
-    STRUCTURE_DISTORTION_WAVELENGTH_MM = "structure_distortion_frequency"
-    STRUCTURE_DISTORTION_MAX = "structure_distortion_max"
-    STRUCTURE_DISTORTION_MIN = "structure_distortion_min"
+    STRUCTURE_USE_DISTORTION = "structure_distortion_multiplicative"
+    STRUCTURE_DISTORTED_PARAM_LIST = "structure_distorted_param_list"
+    STRUCTURE_DISTORTION_WAVELENGTH_MM = "structure_distortion_wavelength_mm"
+
+    STRUCTURE_BACKGROUND = "structure_background"
 
     STRUCTURE_LAYER = "structure_layer"
     STRUCTURE_THICKNESS_MIN_MM = "structure_thickness_min_mm"
@@ -60,13 +67,11 @@ class Tags:
     STRUCTURE_TUBE_START_X_MAX_MM = "structure_tube_start_x_max_mm"
 
 
-
-
-
-
-
-
-
-
-
-
+class SegmentationClasses:
+    AIR = 0
+    MUSCLE = 1
+    BONE = 2
+    BLOOD = 3
+    EPIDERMIS = 4
+    DERMIS = 5
+    FAT = 6

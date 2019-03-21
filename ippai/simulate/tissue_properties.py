@@ -5,7 +5,7 @@ from ippai.simulate import Tags
 
 class TissueProperties(object):
 
-    def __init__(self, settings, tissue_type):
+    def __init__(self, settings, tissue_type, shape, spacing):
         """
 
         The TissueProperties class encapsules the generation of physical properties from tissue parameters.
@@ -32,6 +32,7 @@ class TissueProperties(object):
         :param settings: The simulation settings dictionary
         :param tissue_type: The tissue type to check in the settings file
         """
+        self.KEYS_IN_ORDER = [Tags.KEY_B, Tags.KEY_W, Tags.KEY_F, Tags.KEY_M, Tags.KEY_OXY]
         self.B_min = None
         self.B_max = None
         self.W_min = None
@@ -71,7 +72,25 @@ class TissueProperties(object):
             self.b_mie = settings[tissue_type][Tags.KEY_B_MIE]
             self.anisotropy = settings[tissue_type][Tags.KEY_ANISOTROPY]
 
-            self.randomize()
+            distributions = dict()
+            sizes = dict()
+            gauss_size = dict()
+            for key in self.KEYS_IN_ORDER:
+                distributions[key] = 'uniform'
+                sizes[key] = (1,)
+                gauss_size[key] = 0
+
+            if Tags.STRUCTURE_USE_DISTORTION in settings:
+                if settings[Tags.STRUCTURE_USE_DISTORTION]:
+                    if Tags.STRUCTURE_DISTORTED_PARAM_LIST in settings:
+                        for key in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
+                            distributions[key] = 'normal'
+                            sizes[key] = shape
+                            if (Tags.STRUCTURE_DISTORTION_WAVELENGTH_MM in settings and
+                                    settings[Tags.STRUCTURE_DISTORTION_WAVELENGTH_MM] is not None):
+                                gauss_size[key] = settings[Tags.STRUCTURE_DISTORTION_WAVELENGTH_MM] / spacing
+
+            self.randomize(distributions, sizes, gauss_size)
 
         self.absorption_data = np.load("../data/absorption.npz")
 
@@ -110,59 +129,73 @@ class TissueProperties(object):
                      self.mvf * self.absorption_data['melanin'][wavelength_idx] + \
                      self.bvf * self.oxy * self.absorption_data['hbo2'][wavelength_idx] + \
                      self.bvf * (1-self.oxy) * self.absorption_data['hb'][wavelength_idx]
+
         scattering_p = self.musp500 * (self.f_ray * (wavelength / 500) ** 1e-4 +
                                        (1 - self.f_ray) * (wavelength / 500) ** -self.b_mie)
         anisotropy = self.anisotropy
         scattering = scattering_p / (1-anisotropy)
 
+        return [absorption, scattering, anisotropy, self.oxy]
 
-        return [absorption, scattering, anisotropy]
-
-    def randomize(self):
+    def randomize(self, dist, size, gauss_size):
         """
         Randomizes the tissue parameters within the given bounds.
+
+        :param dist: TODO
+        :param size: TODO
+        :param gauss_size: TODO
         :return: None
         """
-        self.bvf = randomize(self.B_min, self.B_max)
-        self.wvf = randomize(self.W_min, self.W_max)
-        self.fvf = randomize(self.F_min, self.F_max)
-        self.mvf = randomize(self.M_min, self.M_max)
-        self.oxy = randomize(self.OXY_min, self.OXY_max)
+
+        self.bvf = randomize(self.B_min, self.B_max, distribution=dist[Tags.KEY_B], size=size[Tags.KEY_B],
+                             gauss_kernel_size=gauss_size[Tags.KEY_B])
+        self.wvf = randomize(self.W_min, self.W_max, distribution=dist[Tags.KEY_W], size=size[Tags.KEY_W],
+                             gauss_kernel_size=gauss_size[Tags.KEY_W])
+        self.fvf = randomize(self.F_min, self.F_max, distribution=dist[Tags.KEY_F], size=size[Tags.KEY_F],
+                             gauss_kernel_size=gauss_size[Tags.KEY_F])
+        self.mvf = randomize(self.M_min, self.M_max, distribution=dist[Tags.KEY_M], size=size[Tags.KEY_M],
+                             gauss_kernel_size=gauss_size[Tags.KEY_M])
+        self.oxy = randomize(self.OXY_min, self.OXY_max, distribution=dist[Tags.KEY_OXY], size=size[Tags.KEY_OXY],
+                             gauss_kernel_size=gauss_size[Tags.KEY_OXY])
 
 
-def get_background_settings():
+def get_muscle_settings(background_oxy=0.0):
     """
 
     :return: a settings dictionary containing all min and max parameters fitting for generic background tissue.
     """
-    return get_settings(b_min=0.005, b_max=0.005, w_min=0.68, w_max=0.68, musp500=10, f_ray=0.0, b_mie=0.0)
+    return get_settings(b_min=0.005, b_max=0.01, w_min=0.64, w_max=0.72, musp500=10, f_ray=0.0, b_mie=0.0,
+                        oxy_min=background_oxy-0.1, oxy_max=background_oxy+0.1)
 
 
-def get_epidermis_settings():
+def get_epidermis_settings(background_oxy=0.0):
     """
 
     :return: a settings dictionary containing all min and max parameters fitting for epidermis tissue.
     """
-    return get_settings(b_min=0.01, b_max=0.01, w_min=0.68, w_max=0.68, m_max=0.5, m_min=0.1,
-                        musp500=46.0, f_ray=0.409, b_mie=0.702)
+    return get_settings(b_min=0.001, b_max=0.001, w_min=0.64, w_max=0.72, m_max=0.5, m_min=0.2,
+                        musp500=46.0, f_ray=0.409, b_mie=0.702,
+                        oxy_min=background_oxy - 0.1, oxy_max=background_oxy + 0.1)
 
 
-def get_dermis_settings():
+def get_dermis_settings(background_oxy=0.0):
     """
 
     :return: a settings dictionary containing all min and max parameters fitting for dermis tissue.
     """
-    return get_settings(b_min=0.005, b_max=0.02, w_min=0.68, w_max=0.68,
-                        musp500=29.7, f_ray=0.48, b_mie=0.22)
+    return get_settings(b_min=0.009, b_max=0.011, w_min=0.64, w_max=0.72,
+                        musp500=29.7, f_ray=0.48, b_mie=0.22,
+                        oxy_min=background_oxy - 0.1, oxy_max=background_oxy + 0.1)
 
 
-def get_subcutaneous_fat_settings():
+def get_subcutaneous_fat_settings(background_oxy=0.0):
     """
 
     :return: a settings dictionary containing all min and max parameters fitting for subcutaneous fat tissue.
     """
-    return get_settings(b_min=0.005, b_max=0.01, w_min=0.68, w_max=0.68, f_min=0.3, f_max=0.6,
-                        musp500=18.4, f_ray=0.174, b_mie=0.45)
+    return get_settings(b_min=0.009, b_max=0.011, w_min=0.68, w_max=0.68, f_min=0.3, f_max=0.4,
+                        musp500=18.4, f_ray=0.174, b_mie=0.45,
+                        oxy_min=background_oxy - 0.1, oxy_max=background_oxy + 0.1)
 
 
 def get_blood_settings():
