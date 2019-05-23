@@ -11,6 +11,7 @@ setuptools.setup(
     long_description=long_description,
     packages=setuptools.find_packages(),
     install_requires=[
-        "numpy"
+        "numpy",
+        "pynrrd"
     ]
 )

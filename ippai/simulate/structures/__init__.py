@@ -25,7 +25,7 @@ def create_forearm_structures(relative_shift_mm=0, background_oxy=0.0):
 
     structures_dict = dict()
     structures_dict["muscle"] = create_muscle_background(background_oxy=background_oxy)
-    structures_dict["subcutaneous_fat"] = create_subcutaneous_fat_layer(background_oxy=background_oxy)
+    #structures_dict["subcutaneous_fat"] = create_subcutaneous_fat_layer(background_oxy=background_oxy)
     structures_dict["dermis"] = create_dermis_layer(background_oxy=background_oxy)
     structures_dict["epidermis"] = create_epidermis_layer(background_oxy=background_oxy)
     structures_dict["radial_artery"] = create_radial_artery(relative_shift_mm)

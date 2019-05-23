@@ -2,15 +2,32 @@ class Tags:
 
     # General settings
     SIMULATION_PATH = "simulation_path"
+    VOLUME_NAME = "volume_name"
+    WAVELENGTHS = "wavelengths"
     WAVELENGTH = "wavelength"
     RANDOM_SEED = "random_seed"
+    TISSUE_PROPERTIES_OUPUT_NAME = "properties"
+
+    # Optical model settings
+    RUN_OPTICAL_MODEL = 'run_optical_forward_model'
+    OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
+    OPTICAL_MODEL_BINARY_PATH = "optical_model_binary_path"
+    OPTICAL_MODEL_NUMBER_PHOTONS = "optical_model_number_of_photons"
+    OPTICAL_MODEL_PROBE_XML_FILE = "optical_model_probe_xml_file"
+
+    # Acoustic model settings
+    RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
+    ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
+
+    # physical property volume types
+    PROPERTY_ABSORPTION = 'mua'
+    PROPERTY_SCATTERING = 'mus'
+    PROPERTY_ANISOTROPY = 'g'
+    PROPERTY_OXYGENATION = 'sO2'
+    PROPERTY_SEGMENTATION = 'segmentation'
 
     # Air layer
     AIR_LAYER_HEIGHT_MM = "air_layer_height"
-
-    # Model settings
-    RUN_OPTICAL_MODEL = 'run_optical_forward_model'
-    RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
 
     # Volume geometry settings
     SPACING_MM = "voxel_spacing_mm"

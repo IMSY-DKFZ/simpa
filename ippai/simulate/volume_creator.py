@@ -6,9 +6,15 @@ from ippai.simulate.utils import randomize
 
 
 def create_simulation_volume(settings):
-
-    volume_path = settings[Tags.SIMULATION_PATH] + "test_properties.npz"
-
+    """
+    This method creates a in silico respresentation of a tissue as described in the settings file that is given.
+    :param settings: a dictionary containing all relevant Tags for the simulation to be able to instantiate a tissue.
+    :return: a path to a npz file containing characteristics of the simulated volume:
+            absorption, scattering, anisotropy, oxygenation, and a segmentation mask. All of these are given as 3d
+            numpy arrays.
+    """
+    volume_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" \
+                  + "properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"
     volumes = create_empty_volume(settings)
     volumes = add_structures(volumes, settings)
     volumes = append_air_layer(volumes, settings)
