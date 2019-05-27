@@ -29,6 +29,9 @@ class Tags:
     # Air layer
     AIR_LAYER_HEIGHT_MM = "air_layer_height"
 
+    # Gel Pad Layer
+    GELPAD_LAYER_HEIGHT_MM = "gelpad_layer_height_mm"
+
     # Volume geometry settings
     SPACING_MM = "voxel_spacing_mm"
     DIM_VOLUME_X_MM = "volume_x_dim_mm"
@@ -92,3 +95,9 @@ class SegmentationClasses:
     EPIDERMIS = 4
     DERMIS = 5
     FAT = 6
+    ULTRASOUND_GEL_PAD = 7
+
+class StandardProperties:
+    AIR_MUA = 1e-7
+    AIR_MUS = 1e-7
+    AIR_G = 1

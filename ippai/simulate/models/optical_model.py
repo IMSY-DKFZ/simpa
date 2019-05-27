@@ -18,6 +18,6 @@ def run_optical_forward_model(settings, optical_properties_path, model=MODEL_MCX
 
     np.savez(optical_output_path,
              fluence=volumes[0],
-             p0=volumes[1])
+             initial_pressure=volumes[1])
 
     return optical_output_path

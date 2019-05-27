@@ -1,7 +1,7 @@
 import numpy as np
 
 from ippai.simulate.tissue_properties import TissueProperties
-from ippai.simulate import Tags, SegmentationClasses
+from ippai.simulate import Tags, SegmentationClasses, StandardProperties
 from ippai.simulate.utils import randomize
 
 
@@ -17,6 +17,7 @@ def create_simulation_volume(settings):
                   + "properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"
     volumes = create_empty_volume(settings)
     volumes = add_structures(volumes, settings)
+    volumes = append_gel_pad(volumes, settings)
     volumes = append_air_layer(volumes, settings)
 
     for i in range(len(volumes)):
@@ -32,10 +33,40 @@ def create_simulation_volume(settings):
     return volume_path
 
 
+def append_gel_pad(volumes, global_settings):
+
+    if Tags.GELPAD_LAYER_HEIGHT_MM not in global_settings:
+        print("[INFO] Tag", Tags.GELPAD_LAYER_HEIGHT_MM, "not found in settings. Ignoring gel pad.")
+        return volumes
+
+    mua = StandardProperties.AIR_MUA
+    mus = StandardProperties.AIR_MUS
+    g = StandardProperties.AIR_G
+    sizes = np.shape(volumes[0])
+    gelpad_layer_height = int(global_settings[Tags.GELPAD_LAYER_HEIGHT_MM] / global_settings[Tags.SPACING_MM])
+
+    new_mua = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * mua
+    new_mua[:, :, gelpad_layer_height:] = volumes[0]
+
+    new_mus = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * mus
+    new_mus[:, :, gelpad_layer_height:] = volumes[1]
+
+    new_g = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * g
+    new_g[:, :, gelpad_layer_height:] = volumes[2]
+
+    new_oxy = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * (-1)
+    new_oxy[:, :, gelpad_layer_height:] = volumes[3]
+
+    new_seg = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * SegmentationClasses.ULTRASOUND_GEL_PAD
+    new_seg[:, :, gelpad_layer_height:] = volumes[4]
+
+    return [new_mua, new_mus, new_g, new_oxy, new_seg]
+
+
 def append_air_layer(volumes, global_settings):
-    mua = 1e-6
-    mus = 1e-6
-    g = 1
+    mua = StandardProperties.AIR_MUA
+    mus = StandardProperties.AIR_MUS
+    g = StandardProperties.AIR_G
     sizes = np.shape(volumes[0])
     air_layer_height = int(global_settings[Tags.AIR_LAYER_HEIGHT_MM] / global_settings[Tags.SPACING_MM])
 

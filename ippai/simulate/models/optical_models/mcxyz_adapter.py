@@ -10,13 +10,12 @@ def simulate(optical_properties_path, settings, optical_output_path):
     mus = optical_properties[Tags.PROPERTY_SCATTERING]
     g = optical_properties[Tags.PROPERTY_ANISOTROPY]
 
-    #musp = mus * (1-g)
-
     shape = np.shape(mus)
     mcxyz_input = np.zeros((shape[0], shape[1], shape[2], 3))
     mcxyz_input[:, :, :, 0] = mua
-    mcxyz_input[:, :, :, 1] = mus * (1-g)
+    mcxyz_input[:, :, :, 1] = mus
     mcxyz_input[:, :, :, 2] = g
+
     tmp_input_path = optical_properties_path.replace(".npz", ".nrrd")
     output_path = optical_output_path.replace(".npz", ".nrrd")
     nrrd.write(tmp_input_path, mcxyz_input, {'space dimension': 4,
@@ -47,7 +46,7 @@ def simulate(optical_properties_path, settings, optical_output_path):
     print(meta)
     p0 = fluence * mua
 
-    # os.remove(tmp_input_path)
+    #os.remove(tmp_input_path)
     #os.remove(optical_output_path)
 
     return [fluence, p0]
