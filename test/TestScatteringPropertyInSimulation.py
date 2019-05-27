@@ -1,9 +1,8 @@
 import unittest
 from ippai.simulate import Tags
 from ippai.simulate.models.optical_model import run_optical_forward_model
-import matplotlib.pylab as plt
 import numpy as np
-import os
+
 
 class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
@@ -28,7 +27,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
         self.volume_path = self.settings[Tags.SIMULATION_PATH] + self.settings[Tags.VOLUME_NAME] + "/" \
                            + self.settings[Tags.VOLUME_NAME] + "_" + str(self.settings[Tags.WAVELENGTH]) + ".npz"
-        self.xy_dim = 13
+        self.xy_dim = 27
         self.z_dim = 100
         self.volume = np.zeros((self.xy_dim, self.xy_dim, self.z_dim, 3))
 
@@ -39,37 +38,29 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
     def tearDown(self):
         print("tearDown")
 
+    def test_both(self):
+        self.perform_test(10, [0, 1], np.e, 0.5)
+
+    def test_both_double_width(self):
+        self.perform_test(20, [0, 1], np.e ** 2, 0.5)
+
     def test_isotropic_scattering(self):
         self.perform_test(10, 1, np.e, 1)
 
-    # def test_isotropic_scattering_double_width(self):
-    #     self.perform_test(20, 1, np.e ** 2, 1)
-    #
-    # def test_isotropic_scattering_triple_width(self):
-    #     self.perform_test(30, 1, np.e ** 3, 1)
+    def test_isotropic_scattering_double_width(self):
+        self.perform_test(20, 1, np.e ** 2, 1)
 
     def test_anisotropic_scattering(self):
         self.volume[:, :, :, 2] = 0.9
         self.perform_test(10, 1, np.e, 1)
 
-    # def test_anisotropic_scattering_double_width(self):
-    #     self.volume[:, :, :, 2] = 0.9
-    #     self.perform_test(20, 1, np.e ** 2, 10)
-    #
-    # def test_anisotropic_scattering_triple_width(self):
-    #     self.volume[:, :, :, 2] = 0.9
-    #     self.perform_test(30, 1, np.e ** 3, 10)
-    #
-    # def test_absorption(self):
-    #     self.perform_test(10, 0, np.e, 0)
+    def test_absorption(self):
+        self.perform_test(10, 0, np.e, 1)
 
-    # def test_absorption_double_width(self):
-    #     self.perform_test(20, 0, np.e ** 2, 0)
-    #
-    # def test_absorption_triple_width(self):
-    #     self.perform_test(30, 0, np.e ** 3, 0)
+    def test_absorption_double_width(self):
+        self.perform_test(20, 0, np.e ** 2, 1)
 
-    def perform_test(self, distance, volume_idx, decay_ratio=np.e, volume_value=1):
+    def perform_test(self, distance=10, volume_idx=0, decay_ratio=np.e, volume_value=1.0):
         self.volume[int(self.xy_dim / 2), int(self.xy_dim / 2),
                     int((self.z_dim / 2) - distance):int((self.z_dim / 2) + distance),
                     volume_idx] = volume_value
@@ -79,18 +70,19 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
                  mus=self.volume[:, :, :, 1],
                  g=self.volume[:, :, :, 2],
                  )
+
         self.assertDecayRatio(expected_decay_ratio=decay_ratio)
 
     def assertDecayRatio(self, expected_decay_ratio=np.e):
         optical_path = run_optical_forward_model(self.settings, self.volume_path)
         fluence = np.load(optical_path)['fluence']
-        decay_ratio = fluence[int(self.xy_dim / 2), int(self.xy_dim / 2), 10] / fluence[
-            int(self.xy_dim / 2), int(self.xy_dim / 2), 90]
-        print(fluence[int(self.xy_dim / 2), int(self.xy_dim / 2), 10])
-        print(fluence[int(self.xy_dim / 2), int(self.xy_dim / 2), 90])
+        half_dim = int(self.xy_dim / 2)
+        decay_ratio = np.sum(fluence[half_dim, half_dim, 10]) / np.sum(fluence[half_dim, half_dim, 90])
+        print(np.sum(fluence[half_dim, half_dim, 10]))
+        print(np.sum(fluence[half_dim, half_dim, 90]))
         print("measured:", decay_ratio, "expected:", expected_decay_ratio)
         print("ratio:", decay_ratio / expected_decay_ratio)
-        self.assertAlmostEqual(decay_ratio / expected_decay_ratio, 1, 1)
+        self.assertAlmostEqual(decay_ratio, expected_decay_ratio, 1)
 
 
 if __name__ == "__main__":

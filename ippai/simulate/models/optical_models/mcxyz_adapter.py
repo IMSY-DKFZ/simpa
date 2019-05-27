@@ -4,6 +4,7 @@ import subprocess
 from ippai.simulate import Tags
 import os
 
+
 def simulate(optical_properties_path, settings, optical_output_path):
     optical_properties = np.load(optical_properties_path)
     mua = optical_properties[Tags.PROPERTY_ABSORPTION]
@@ -46,8 +47,8 @@ def simulate(optical_properties_path, settings, optical_output_path):
     print(meta)
     p0 = fluence * mua
 
-    #os.remove(tmp_input_path)
-    #os.remove(optical_output_path)
+    os.remove(tmp_input_path)
+    os.remove(output_path)
 
     return [fluence, p0]
 

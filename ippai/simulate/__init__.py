@@ -15,6 +15,10 @@ class Tags:
     OPTICAL_MODEL_NUMBER_PHOTONS = "optical_model_number_of_photons"
     OPTICAL_MODEL_PROBE_XML_FILE = "optical_model_probe_xml_file"
 
+    # Supported optical models
+    MODEL_MCXYZ = "mcxyz"
+    MODEL_MCX = "mcx"
+
     # Acoustic model settings
     RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
