@@ -16,6 +16,7 @@ class Tags:
     OPTICAL_MODEL_PROBE_XML_FILE = "optical_model_probe_xml_file"
 
     # Supported optical models
+    OPTICAL_MODEL = "optical_model"
     MODEL_MCXYZ = "mcxyz"
     MODEL_MCX = "mcx"
 
@@ -24,8 +25,8 @@ class Tags:
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
 
     # physical property volume types
-    PROPERTY_ABSORPTION = 'mua'
-    PROPERTY_SCATTERING = 'mus'
+    PROPERTY_ABSORPTION_PER_CM = 'mua'
+    PROPERTY_SCATTERING_PER_CM = 'mus'
     PROPERTY_ANISOTROPY = 'g'
     PROPERTY_OXYGENATION = 'sO2'
     PROPERTY_SEGMENTATION = 'segmentation'

@@ -7,8 +7,8 @@ import os
 
 def simulate(optical_properties_path, settings, optical_output_path):
     optical_properties = np.load(optical_properties_path)
-    mua = optical_properties[Tags.PROPERTY_ABSORPTION]
-    mus = optical_properties[Tags.PROPERTY_SCATTERING]
+    mua = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
+    mus = optical_properties[Tags.PROPERTY_SCATTERING_PER_CM]
     g = optical_properties[Tags.PROPERTY_ANISOTROPY]
 
     shape = np.shape(mus)
