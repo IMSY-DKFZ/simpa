@@ -45,15 +45,15 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
     def tearDown(self):
         print("tearDown")
-
-    # def test_both(self):
-    #     self.perform_test(10, [0, 1], np.e, 0.5)
+    #
+    def test_both(self):
+        self.perform_test(10, [0, 1], np.e, 0.5)
     #
     # def test_both_double_width(self):
     #     self.perform_test(20, [0, 1], np.e ** 2, 0.5)
 
-    def test_isotropic_scattering(self):
-        self.perform_test(10, 1, np.e, 1)
+    # def test_isotropic_scattering(self):
+    #     self.perform_test(10, 1, np.e, 1)
     #
     # def test_isotropic_scattering_double_width(self):
     #     self.perform_test(20, 1, np.e ** 2, 1)
@@ -62,7 +62,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
     #     self.volume[:, :, :, 2] = 0.9
     #     self.perform_test(10, 1, np.e, 1)
     #
-    #def test_absorption(self):
+    # def test_absorption(self):
     #     self.perform_test(10, 0, np.e, 1)
     #
     # def test_absorption_double_width(self):
