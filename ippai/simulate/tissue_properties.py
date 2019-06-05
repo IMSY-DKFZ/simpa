@@ -1,6 +1,6 @@
 import numpy as np
 from ippai.simulate.utils import randomize
-from ippai.simulate import Tags
+from ippai.simulate import Tags, StandardProperties
 
 
 class TissueProperties(object):
@@ -86,9 +86,9 @@ class TissueProperties(object):
                         for key in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
                             distributions[key] = 'normal'
                             sizes[key] = shape
-                            if (Tags.STRUCTURE_DISTORTION_WAVELENGTH_MM in settings and
-                                    settings[Tags.STRUCTURE_DISTORTION_WAVELENGTH_MM] is not None):
-                                gauss_size[key] = settings[Tags.STRUCTURE_DISTORTION_WAVELENGTH_MM] / spacing
+                            if (Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM in settings and
+                                    settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] is not None):
+                                gauss_size[key] = settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing
 
             self.randomize(distributions, sizes, gauss_size)
 
@@ -159,43 +159,47 @@ class TissueProperties(object):
                              gauss_kernel_size=gauss_size[Tags.KEY_OXY])
 
 
-def get_muscle_settings(background_oxy=0.0):
+def get_muscle_settings(background_oxy=StandardProperties.BACKGROUND_OXYGENATION):
     """
 
     :return: a settings dictionary containing all min and max parameters fitting for generic background tissue.
     """
     return get_settings(b_min=0.005, b_max=0.01, w_min=0.64, w_max=0.72, musp500=10, f_ray=0.0, b_mie=0.0,
-                        oxy_min=background_oxy-0.1, oxy_max=background_oxy+0.1)
+                        oxy_min=background_oxy - StandardProperties.BACKGROUND_OXYGENATION_VARIATION,
+                        oxy_max=background_oxy + StandardProperties.BACKGROUND_OXYGENATION_VARIATION)
 
 
-def get_epidermis_settings(background_oxy=0.0):
+def get_epidermis_settings(background_oxy=StandardProperties.BACKGROUND_OXYGENATION):
     """
 
     :return: a settings dictionary containing all min and max parameters fitting for epidermis tissue.
     """
     return get_settings(b_min=0.001, b_max=0.001, w_min=0.64, w_max=0.72, m_max=0.5, m_min=0.2,
                         musp500=46.0, f_ray=0.409, b_mie=0.702,
-                        oxy_min=background_oxy - 0.1, oxy_max=background_oxy + 0.1)
+                        oxy_min=background_oxy - StandardProperties.BACKGROUND_OXYGENATION_VARIATION,
+                        oxy_max=background_oxy + StandardProperties.BACKGROUND_OXYGENATION_VARIATION)
 
 
-def get_dermis_settings(background_oxy=0.0):
+def get_dermis_settings(background_oxy=StandardProperties.BACKGROUND_OXYGENATION):
     """
 
     :return: a settings dictionary containing all min and max parameters fitting for dermis tissue.
     """
     return get_settings(b_min=0.009, b_max=0.011, w_min=0.64, w_max=0.72,
                         musp500=29.7, f_ray=0.48, b_mie=0.22,
-                        oxy_min=background_oxy - 0.1, oxy_max=background_oxy + 0.1)
+                        oxy_min=background_oxy - StandardProperties.BACKGROUND_OXYGENATION_VARIATION,
+                        oxy_max=background_oxy + StandardProperties.BACKGROUND_OXYGENATION_VARIATION)
 
 
-def get_subcutaneous_fat_settings(background_oxy=0.0):
+def get_subcutaneous_fat_settings(background_oxy=StandardProperties.BACKGROUND_OXYGENATION):
     """
 
     :return: a settings dictionary containing all min and max parameters fitting for subcutaneous fat tissue.
     """
     return get_settings(b_min=0.009, b_max=0.011, w_min=0.68, w_max=0.68, f_min=0.3, f_max=0.4,
                         musp500=18.4, f_ray=0.174, b_mie=0.45,
-                        oxy_min=background_oxy - 0.1, oxy_max=background_oxy + 0.1)
+                        oxy_min=background_oxy - StandardProperties.BACKGROUND_OXYGENATION_VARIATION,
+                        oxy_max=background_oxy + StandardProperties.BACKGROUND_OXYGENATION_VARIATION)
 
 
 def get_blood_settings():

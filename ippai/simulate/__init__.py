@@ -1,3 +1,5 @@
+import numpy as np
+
 class Tags:
 
     # General settings
@@ -76,7 +78,7 @@ class Tags:
 
     STRUCTURE_USE_DISTORTION = "structure_distortion_multiplicative"
     STRUCTURE_DISTORTED_PARAM_LIST = "structure_distorted_param_list"
-    STRUCTURE_DISTORTION_WAVELENGTH_MM = "structure_distortion_wavelength_mm"
+    STRUCTURE_DISTORTION_FREQUENCY_PER_MM = "structure_distortion_wavelength_mm"
 
     STRUCTURE_BACKGROUND = "structure_background"
 
@@ -93,6 +95,9 @@ class Tags:
 
 
 class SegmentationClasses:
+    """
+    The segmentation classes define which "tissue types" are modelled in the simulation volumes.
+    """
     AIR = 0
     MUSCLE = 1
     BONE = 2
@@ -102,7 +107,166 @@ class SegmentationClasses:
     FAT = 6
     ULTRASOUND_GEL_PAD = 7
 
+
 class StandardProperties:
-    AIR_MUA = 1e-7
-    AIR_MUS = 1e-7
+    """
+    This class contains a listing of default parameters and options with the aim to reduce the amount
+    """
+    AIR_MUA = 1e-10
+    AIR_MUS = 1e-10
     AIR_G = 1
+    BACKGROUND_OXYGENATION = 0.6
+    BACKGROUND_OXYGENATION_VARIATION = 0.2
+
+
+class TissueProperties:
+    """
+    This class contains a listing of tissue parameters as reported in literature.
+    Each of the fields is annotated with a literature reference or a descriptions of how the particular
+    values were derived for tissue modelling.
+    """
+    # Radial and ulnar artery diameter reference:
+    # @article{ashraf2010size,
+    #   title={Size of radial and ulnar artery in local population},
+    #   author={Ashraf, Tariq and Panhwar, Ziauddin and Habib, Sultana and Memon, Muhammad Anis and Shamsi,
+    # Fahad and Arif, Javed},
+    #   journal={JPMA-Journal of the Pakistan Medical Association},
+    #   volume={60},
+    #   number={10},
+    #   pages={817},
+    #   year={2010}
+    # }
+    RADIAL_ARTERY_DIAMETER_MEAN_MM = 2.25
+    RADIAL_ARTERY_DIAMETER_STD_MM = 0.4
+    ULNAR_ARTERY_DIAMETER_MEAN_MM = 2.35
+    ULNAR_ARTERY_DIAMETER_STD_MM = 0.35
+
+    # Accompanying veins diameter reference. They specifically only mention the ulnar accompanying vein properties.
+    # We assume a non-significant similarity for the radial accompanying vein.
+    # @incollection{yang_ulnar_2018,
+    #   title = {Ulnar {Artery} to {Superficial} {Arch} {Bypass} with a {Vein} {Graft}},
+    #   booktitle = {Operative {Techniques}: {Hand} and {Wrist} {Surgery}},
+    #   author = {Yang, Guang and Chung, Kevin C.},
+    #   year = {2018},
+    #   doi = {10.1016/B978-0-323-40191-3.00081-0},
+    #   pages = {732--737},
+    # }
+    RADIAL_VEIN_DIAMETER_MEAN_MM = 1
+    RADIAL_VEIN_DIAMETER_STD_MM = 0.2
+    ULNAR_VEIN_DIAMETER_MEAN_MM = 1
+    ULNAR_VEIN_DIAMETER_STD_MM = 0.2
+
+    # Median artery diameter reference (at the P2 point):
+    # @article{hubmer2004posterior,
+    #   title={The posterior interosseous artery in the distal part of the forearm. Is the term ‘recurrent branch of
+    # the anterior interosseous artery’justified?},
+    #   author={Hubmer, Martin G and Fasching, Thomas and Haas, Franz and Koch, Horst and Schwarzl, Franz and Weiglein,
+    # Andreas and Scharnagl, Erwin},
+    #   journal={British journal of plastic surgery},
+    #   volume={57},
+    #   number={7},
+    #   pages={638--644},
+    #   year={2004},
+    #   publisher={Elsevier}
+    # }
+    MEDIAN_ARTERY_DIAMETER_MEAN_MM = 0.6
+    MEDIAN_ARTERY_DIAMETER_STD_MM = 0.25
+
+    # TODO CITE
+    # Assumption: about half the size of the radial and ulnar accompanying veins due to size of the respective
+    # artery in comparison to the radial and ulna artery
+    MEDIAN_VEIN_DIAMETER_MEAN_MM = 0.5
+    MEDIAN_VEIN_DIAMETER_STD_MM = 0.1
+
+    # Mean and spread calculated from all ethnicities from figure 2C, averaged over both
+    # photoexposed and photoprotected samples.
+    # @article{alaluf2002ethnic,
+    #   title={Ethnic variation in melanin content and composition in photoexposed and photoprotected human skin},
+    #   author={Alaluf, Simon and Atkins, Derek and Barrett, Karen and Blount, Margaret and Carter,
+    # Nik and Heath, Alan},
+    #   journal={Pigment Cell Research},
+    #   volume={15},
+    #   number={2},
+    #   pages={112--118},
+    #   year={2002},
+    #   publisher={Wiley Online Library}
+    # }
+    EPIDERMIS_MELANIN_VOLUME_FRACTION_MEAN = 0.022
+    EPIDERMIS_MELANIN_VOLUME_FRACTION_STD = 0.01
+
+    # Thickness of the dermis and epidermis approximated with values for the hand. Averaged for
+    # @article{oltulu2018measurement,
+    #   title={Measurement of epidermis, dermis, and total skin thicknesses from six different body regions with a new ethical histometric technique},
+    #   author={Oltulu, Pembe and Ince, Bilsev and Kokbudak, Naile and Findik, Sidika and Kilinc, Fahriye and others},
+    #   journal={Turkish Journal of Plastic Surgery},
+    #   volume={26},
+    #   number={2},
+    #   pages={56},
+    #   year={2018},
+    #   publisher={Medknow Publications}
+    # }
+    DERMIS_THICKNESS_MEAN_MM = 2.3
+    DERMIS_THICKNESS_STD_MM = 1.2
+    EPIDERMIS_THICKNESS_MEAN_MM = 0.22
+    EPIDERMIS_THICKNESS_STD_MM = 0.1
+
+    # Distance of radius and ulnar at resting position, when bones are not crossed
+    # @article{christensen1968study,
+    #   title={A study of the interosseous distance between the radius and ulna during rotation of the forearm},
+    #   author={Christensen, John B and Adams, John P and Cho, KO and Miller, Lawrence},
+    #   journal={The Anatomical Record},
+    #   volume={160},
+    #   number={2},
+    #   pages={261--271},
+    #   year={1968},
+    #   publisher={Wiley Online Library}
+    # }
+    RADIUS_ULNA_BONE_SEPARATION_MEAN_MM = 32
+    RADIUS_ULNA_BONE_POSITION_STD_MM = 2
+
+    # Subcutaneous veins depth measurements are extrapolated from graphs in table 3.
+    # The diameter measurement are supposed to resemble the approximate range from figure 15.
+    # @article{goh2017subcutaneous,
+    #   title={Subcutaneous veins depth measurement using diffuse reflectance images},
+    #   author={Goh, CM and Subramaniam, R and Saad, NM and Ali, SA and Meriaudeau, F},
+    #   journal={Optics express},
+    #   volume={25},
+    #   number={21},
+    #   pages={25741--25759},
+    #   year={2017},
+    #   publisher={Optical Society of America}
+    # }
+    SUBCUTANEOUS_VEIN_DEPTH_MEAN_MM = 1.5
+    SUBCUTANEOUS_VEIN_DEPTH_STD_MM = 0.7
+    SUBCUTANEOUS_VEIN_DIAMETER_MEAN_MM = 0.8
+    SUBCUTANEOUS_VEIN_DIAMETER_STD_MM = 0.6
+
+    # The following properties were experimentally determined based on data sets provided by Janek Gröhl
+    # (Photoacoustic forearm images) and André Klein (Forearm CT images from full body CTs)
+    RADIAL_ARTERY_DEPTH_MEAN_MM = 9
+    RADIAL_ARTERY_DEPTH_STD_MM = 1
+    ULNAR_ARTERY_DEPTH_MEAN_MM = 8
+    ULNAR_ARTERY_DEPTH_STD_MM = 1
+    DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 30
+    DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM = 5
+    RADIUS_BONE_DIAMETER_MEAN_MM = 20
+    RADIUS_BONE_DIAMETER_STD_MM = 2
+    ULNA_BONE_DIAMETER_MEAN_MM = 15
+    ULNA_BONE_DIAMETER_STD_MM = 2
+    MEDIAN_ARTERY_DEPTH_MEAN_MM = 19
+    MEDIAN_ARTERY_DEPTH_STD_MM = 1
+    ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM = 1
+    ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM = 0.2
+    ACCOMPANYING_VEIN_DISTANCE_MEAN_MM = 2.5
+    ACCOMPANYING_VEIN_DISTANCE_STD_MM = 0.4
+    ACCOMPANYING_VEIN_DEPTH_STD_MM = 1.5
+    RADIUS_BONE_DEPTH_MEAN_MM = 22
+    RADIUS_BONE_DEPTH_STD_MM = 2
+    ULNA_BONE_DEPTH_MEAN_MM = 22
+    ULNA_BONE_DEPTH_STD_MM = 2
+
+    # Arbitrary position constants based on the respective coordinate systems
+    RADIAL_ARTERY_X_POSITION_MEAN_MM = 2.5
+    ULNAR_ARTERY_X_POSITION_MEAN_MM = RADIAL_ARTERY_X_POSITION_MEAN_MM + DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM
+    MEDIAN_ARTERY_X_POSITION_MEAN_MM = RADIAL_ARTERY_X_POSITION_MEAN_MM + DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM / 2
+    ARTERY_X_POSITION_UNCERTAINTY_MM = DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM / np.sqrt(2)

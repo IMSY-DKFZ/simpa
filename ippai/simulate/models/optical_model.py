@@ -11,6 +11,9 @@ def run_optical_forward_model(settings, optical_properties_path):
 
     volumes = [None]
 
+    if Tags.OPTICAL_MODEL not in settings:
+        raise AssertionError("Tags.OPTICAL_MODEL tag was not specified in the settings. Skipping optical modelling.")
+
     model = settings[Tags.OPTICAL_MODEL]
 
     if model == Tags.MODEL_MCXYZ:
