@@ -39,9 +39,9 @@ def append_gel_pad(volumes, global_settings):
         print("[INFO] Tag", Tags.GELPAD_LAYER_HEIGHT_MM, "not found in settings. Ignoring gel pad.")
         return volumes
 
-    mua = StandardProperties.AIR_MUA
-    mus = StandardProperties.AIR_MUS
-    g = StandardProperties.AIR_G
+    mua = StandardProperties.GELPAD_MUA
+    mus = StandardProperties.GELPAD_MUS
+    g = StandardProperties.GELPAD_G
     sizes = np.shape(volumes[0])
     gelpad_layer_height = int(global_settings[Tags.GELPAD_LAYER_HEIGHT_MM] / global_settings[Tags.SPACING_MM])
 
@@ -67,7 +67,13 @@ def append_air_layer(volumes, global_settings):
     mua = StandardProperties.AIR_MUA
     mus = StandardProperties.AIR_MUS
     g = StandardProperties.AIR_G
+
     sizes = np.shape(volumes[0])
+
+    if Tags.AIR_LAYER_HEIGHT_MM not in global_settings:
+        print("[INFO] Tag", Tags.AIR_LAYER_HEIGHT_MM, "not found in settings. Ignoring gel pad.")
+        return volumes
+
     air_layer_height = int(global_settings[Tags.AIR_LAYER_HEIGHT_MM] / global_settings[Tags.SPACING_MM])
 
     new_mua = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * mua
@@ -133,7 +139,6 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
 
 
 def add_background(volumes, structure_settings, mua, mus, g, oxy):
-    print("Test")
     volumes[0] += mua
     volumes[1] += mus
     volumes[2] += g
@@ -143,7 +148,6 @@ def add_background(volumes, structure_settings, mua, mus, g, oxy):
 
 
 def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
-    print("Adding layer")
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
@@ -160,7 +164,6 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     it = -1
     fraction = thickness_in_voxels
     z_range = range(int(depth_in_voxels), int(depth_in_voxels+thickness_in_voxels))
-    print(z_range)
     for z_idx in z_range:
         for y_idx in range(sizes[0]):
             for x_idx in range(sizes[1]):
@@ -170,7 +173,6 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
         it += 1
 
     if fraction > 1e-10:
-        print(fraction)
         for y_idx in range(sizes[0]):
             for x_idx in range(sizes[1]):
                 merge_voxel(volumes, y_idx, x_idx, it+1, mua, mus, g, oxy,
@@ -184,8 +186,6 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
 
 
 def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
-    print("adding tube")
-
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 

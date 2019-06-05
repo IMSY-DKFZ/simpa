@@ -1,1 +1,5 @@
 nibabel
+matplotlib
+numpy
+scipy
+pynrrd

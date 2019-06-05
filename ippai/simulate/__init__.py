@@ -115,13 +115,28 @@ class StandardProperties:
     AIR_MUA = 1e-10
     AIR_MUS = 1e-10
     AIR_G = 1
+    GELPAD_MUA = 1e-10
+    GELPAD_MUS = 1e-10
+    GELPAD_G = 1
+
+
+class OpticalTissueProperties:
+    """
+    This class contains a listing of optical tissue parameters as reported in literature.
+    The listing is not the result of a meta analysis, but rather uses the best fitting paper at
+    the time pf implementation.
+    Each of the fields is annotated with a literature reference or a descriptions of how the particular
+    values were derived for tissue modelling.
+    """
     BACKGROUND_OXYGENATION = 0.6
     BACKGROUND_OXYGENATION_VARIATION = 0.2
 
 
-class TissueProperties:
+class MorphologicalTissueProperties:
     """
-    This class contains a listing of tissue parameters as reported in literature.
+    This class contains a listing of morphological tissue parameters as reported in literature.
+    The listing is not the result of a meta analysis, but rather uses the best fitting paper at
+    the time pf implementation.
     Each of the fields is annotated with a literature reference or a descriptions of how the particular
     values were derived for tissue modelling.
     """

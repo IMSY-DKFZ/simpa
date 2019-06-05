@@ -1,4 +1,4 @@
-from ippai.simulate import Tags, SegmentationClasses, TissueProperties
+from ippai.simulate import Tags, SegmentationClasses, MorphologicalTissueProperties
 from ippai.simulate.tissue_properties import get_epidermis_settings, get_dermis_settings, \
     get_subcutaneous_fat_settings, get_blood_settings, \
     get_arterial_blood_settings, get_venous_blood_settings, get_bone_settings, get_muscle_settings
@@ -55,8 +55,8 @@ def create_epidermis_layer(background_oxy=0.0):
     epidermis_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_LAYER
     epidermis_dict[Tags.STRUCTURE_DEPTH_MIN_MM] = 0
     epidermis_dict[Tags.STRUCTURE_DEPTH_MAX_MM] = 0
-    epidermis_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = TissueProperties.EPIDERMIS_THICKNESS_MEAN_MM - TissueProperties.EPIDERMIS_THICKNESS_STD_MM
-    epidermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = TissueProperties.EPIDERMIS_THICKNESS_MEAN_MM + TissueProperties.EPIDERMIS_THICKNESS_STD_MM
+    epidermis_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = MorphologicalTissueProperties.EPIDERMIS_THICKNESS_MEAN_MM - MorphologicalTissueProperties.EPIDERMIS_THICKNESS_STD_MM
+    epidermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = MorphologicalTissueProperties.EPIDERMIS_THICKNESS_MEAN_MM + MorphologicalTissueProperties.EPIDERMIS_THICKNESS_STD_MM
     epidermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_epidermis_settings(background_oxy=background_oxy)
     epidermis_dict[Tags.STRUCTURE_USE_DISTORTION] = False
     epidermis_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_M, Tags.KEY_OXY, Tags.KEY_W]
@@ -70,8 +70,8 @@ def create_dermis_layer(background_oxy=0.0):
     dermis_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_LAYER
     dermis_dict[Tags.STRUCTURE_DEPTH_MIN_MM] = 0
     dermis_dict[Tags.STRUCTURE_DEPTH_MAX_MM] = 0
-    dermis_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = TissueProperties.DERMIS_THICKNESS_MEAN_MM - TissueProperties.DERMIS_THICKNESS_STD_MM
-    dermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = TissueProperties.DERMIS_THICKNESS_MEAN_MM + TissueProperties.DERMIS_THICKNESS_STD_MM
+    dermis_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = MorphologicalTissueProperties.DERMIS_THICKNESS_MEAN_MM - MorphologicalTissueProperties.DERMIS_THICKNESS_STD_MM
+    dermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = MorphologicalTissueProperties.DERMIS_THICKNESS_MEAN_MM + MorphologicalTissueProperties.DERMIS_THICKNESS_STD_MM
     dermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_dermis_settings(background_oxy=background_oxy)
     dermis_dict[Tags.STRUCTURE_USE_DISTORTION] = False
     dermis_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.DERMIS
@@ -102,108 +102,108 @@ def create_subcutaneous_fat_layer(background_oxy=0.0):
 
 
 def create_radial_artery(relative_shift_mm=0.0):
-    radial_dict = create_vessel_tube(x_min=relative_shift_mm + TissueProperties.RADIAL_ARTERY_X_POSITION_MEAN_MM - TissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
-                                     x_max=relative_shift_mm + TissueProperties.RADIAL_ARTERY_X_POSITION_MEAN_MM + TissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
-                                     z_min=TissueProperties.RADIAL_ARTERY_DEPTH_MEAN_MM - TissueProperties.RADIAL_ARTERY_DEPTH_STD_MM,
-                                     z_max=TissueProperties.RADIAL_ARTERY_DEPTH_MEAN_MM + TissueProperties.RADIAL_ARTERY_DEPTH_STD_MM,
-                                     r_min=TissueProperties.RADIAL_ARTERY_DIAMETER_MEAN_MM / 2 - TissueProperties.RADIAL_ARTERY_DIAMETER_STD_MM / 2,
-                                     r_max=TissueProperties.RADIAL_ARTERY_DIAMETER_MEAN_MM / 2 + TissueProperties.RADIAL_ARTERY_DIAMETER_STD_MM / 2)
+    radial_dict = create_vessel_tube(x_min=relative_shift_mm + MorphologicalTissueProperties.RADIAL_ARTERY_X_POSITION_MEAN_MM - MorphologicalTissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
+                                     x_max=relative_shift_mm + MorphologicalTissueProperties.RADIAL_ARTERY_X_POSITION_MEAN_MM + MorphologicalTissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
+                                     z_min=MorphologicalTissueProperties.RADIAL_ARTERY_DEPTH_MEAN_MM - MorphologicalTissueProperties.RADIAL_ARTERY_DEPTH_STD_MM,
+                                     z_max=MorphologicalTissueProperties.RADIAL_ARTERY_DEPTH_MEAN_MM + MorphologicalTissueProperties.RADIAL_ARTERY_DEPTH_STD_MM,
+                                     r_min=MorphologicalTissueProperties.RADIAL_ARTERY_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.RADIAL_ARTERY_DIAMETER_STD_MM / 2,
+                                     r_max=MorphologicalTissueProperties.RADIAL_ARTERY_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.RADIAL_ARTERY_DIAMETER_STD_MM / 2)
     radial_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_arterial_blood_settings()
     radial_dict[Tags.CHILD_STRUCTURES] = dict()
-    radial_dict[Tags.CHILD_STRUCTURES]["left_radial_accompanying_vein"] = create_vessel_tube(x_min=- TissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM - TissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
-                                                                                             x_max=- TissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM + TissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
-                                                                                             z_min=- TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                             z_max=TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                             r_min=TissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 - TissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2,
-                                                                                             r_max=TissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 + TissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2)
+    radial_dict[Tags.CHILD_STRUCTURES]["left_radial_accompanying_vein"] = create_vessel_tube(x_min=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM - MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
+                                                                                             x_max=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM + MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
+                                                                                             z_min=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                             z_max=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                             r_min=MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2,
+                                                                                             r_max=MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2)
     radial_dict[Tags.CHILD_STRUCTURES]["left_radial_accompanying_vein"][Tags.STRUCTURE_TISSUE_PROPERTIES] = \
         get_venous_blood_settings()
-    radial_dict[Tags.CHILD_STRUCTURES]["right_radial_accompanying_vein"] = create_vessel_tube(x_min=TissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM - TissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
-                                                                                              x_max=TissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM + TissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
-                                                                                              z_min=- TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                              z_max=TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                              r_min=TissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 - TissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2,
-                                                                                              r_max=TissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 + TissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2)
+    radial_dict[Tags.CHILD_STRUCTURES]["right_radial_accompanying_vein"] = create_vessel_tube(x_min=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM - MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
+                                                                                              x_max=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM + MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
+                                                                                              z_min=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                              z_max=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                              r_min=MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2,
+                                                                                              r_max=MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2)
     radial_dict[Tags.CHILD_STRUCTURES]["right_radial_accompanying_vein"][Tags.STRUCTURE_TISSUE_PROPERTIES] = \
         get_venous_blood_settings()
     return radial_dict
 
 
 def create_ulnar_artery(relative_shift_mm=0.0):
-    ulnar_dict = create_vessel_tube(x_min=relative_shift_mm + TissueProperties.ULNAR_ARTERY_X_POSITION_MEAN_MM - TissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
-                                    x_max=relative_shift_mm + TissueProperties.ULNAR_ARTERY_X_POSITION_MEAN_MM + TissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
-                                    z_min=TissueProperties.ULNAR_ARTERY_DEPTH_MEAN_MM - TissueProperties.ULNAR_ARTERY_DEPTH_STD_MM,
-                                    z_max=TissueProperties.ULNAR_ARTERY_DEPTH_MEAN_MM + TissueProperties.ULNAR_ARTERY_DEPTH_STD_MM,
-                                    r_min=TissueProperties.ULNAR_ARTERY_DIAMETER_MEAN_MM / 2 - TissueProperties.ULNAR_ARTERY_DIAMETER_STD_MM / 2,
-                                    r_max=TissueProperties.ULNAR_ARTERY_DIAMETER_MEAN_MM / 2 + TissueProperties.ULNAR_ARTERY_DIAMETER_STD_MM / 2)
+    ulnar_dict = create_vessel_tube(x_min=relative_shift_mm + MorphologicalTissueProperties.ULNAR_ARTERY_X_POSITION_MEAN_MM - MorphologicalTissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
+                                    x_max=relative_shift_mm + MorphologicalTissueProperties.ULNAR_ARTERY_X_POSITION_MEAN_MM + MorphologicalTissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
+                                    z_min=MorphologicalTissueProperties.ULNAR_ARTERY_DEPTH_MEAN_MM - MorphologicalTissueProperties.ULNAR_ARTERY_DEPTH_STD_MM,
+                                    z_max=MorphologicalTissueProperties.ULNAR_ARTERY_DEPTH_MEAN_MM + MorphologicalTissueProperties.ULNAR_ARTERY_DEPTH_STD_MM,
+                                    r_min=MorphologicalTissueProperties.ULNAR_ARTERY_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.ULNAR_ARTERY_DIAMETER_STD_MM / 2,
+                                    r_max=MorphologicalTissueProperties.ULNAR_ARTERY_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.ULNAR_ARTERY_DIAMETER_STD_MM / 2)
     ulnar_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_arterial_blood_settings()
     ulnar_dict[Tags.CHILD_STRUCTURES] = dict()
-    ulnar_dict[Tags.CHILD_STRUCTURES]["left_ulnar_accompanying_vein"] = create_vessel_tube(x_min=- TissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM - TissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
-                                                                                           x_max=- TissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM + TissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
-                                                                                           z_min=- TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                           z_max=TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                           r_min=TissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 - TissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2,
-                                                                                           r_max=TissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 + TissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2)
+    ulnar_dict[Tags.CHILD_STRUCTURES]["left_ulnar_accompanying_vein"] = create_vessel_tube(x_min=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM - MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
+                                                                                           x_max=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM + MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
+                                                                                           z_min=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                           z_max=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                           r_min=MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2,
+                                                                                           r_max=MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2)
     ulnar_dict[Tags.CHILD_STRUCTURES]["left_ulnar_accompanying_vein"][Tags.STRUCTURE_TISSUE_PROPERTIES] = \
         get_venous_blood_settings()
-    ulnar_dict[Tags.CHILD_STRUCTURES]["right_ulnar_accompanying_vein"] = create_vessel_tube(x_min=TissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM - TissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
-                                                                                            x_max=TissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM + TissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
-                                                                                            z_min=- TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                            z_max=TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                            r_min=TissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 - TissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2,
-                                                                                            r_max=TissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 + TissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2)
+    ulnar_dict[Tags.CHILD_STRUCTURES]["right_ulnar_accompanying_vein"] = create_vessel_tube(x_min=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM - MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
+                                                                                            x_max=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_MEAN_MM + MorphologicalTissueProperties.ACCOMPANYING_VEIN_DISTANCE_STD_MM,
+                                                                                            z_min=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                            z_max=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                            r_min=MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2,
+                                                                                            r_max=MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.RADIAL_VEIN_DIAMETER_STD_MM / 2)
     ulnar_dict[Tags.CHILD_STRUCTURES]["right_ulnar_accompanying_vein"][Tags.STRUCTURE_TISSUE_PROPERTIES] = \
         get_venous_blood_settings()
     return ulnar_dict
 
 
 def create_interosseous_artery(relative_shift_mm=0.0):
-    inter_dict = create_vessel_tube(x_min=relative_shift_mm + TissueProperties.MEDIAN_ARTERY_X_POSITION_MEAN_MM - TissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
-                                    x_max=relative_shift_mm + TissueProperties.MEDIAN_ARTERY_X_POSITION_MEAN_MM + TissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
-                                    z_min=TissueProperties.MEDIAN_ARTERY_DEPTH_MEAN_MM - TissueProperties.MEDIAN_ARTERY_DEPTH_STD_MM,
-                                    z_max=TissueProperties.MEDIAN_ARTERY_DEPTH_MEAN_MM + TissueProperties.MEDIAN_ARTERY_DEPTH_STD_MM,
-                                    r_min=TissueProperties.MEDIAN_ARTERY_DIAMETER_MEAN_MM / 2 - TissueProperties.MEDIAN_ARTERY_DIAMETER_STD_MM / 2,
-                                    r_max=TissueProperties.MEDIAN_ARTERY_DIAMETER_MEAN_MM / 2 + TissueProperties.MEDIAN_ARTERY_DIAMETER_STD_MM / 2)
+    inter_dict = create_vessel_tube(x_min=relative_shift_mm + MorphologicalTissueProperties.MEDIAN_ARTERY_X_POSITION_MEAN_MM - MorphologicalTissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
+                                    x_max=relative_shift_mm + MorphologicalTissueProperties.MEDIAN_ARTERY_X_POSITION_MEAN_MM + MorphologicalTissueProperties.ARTERY_X_POSITION_UNCERTAINTY_MM,
+                                    z_min=MorphologicalTissueProperties.MEDIAN_ARTERY_DEPTH_MEAN_MM - MorphologicalTissueProperties.MEDIAN_ARTERY_DEPTH_STD_MM,
+                                    z_max=MorphologicalTissueProperties.MEDIAN_ARTERY_DEPTH_MEAN_MM + MorphologicalTissueProperties.MEDIAN_ARTERY_DEPTH_STD_MM,
+                                    r_min=MorphologicalTissueProperties.MEDIAN_ARTERY_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.MEDIAN_ARTERY_DIAMETER_STD_MM / 2,
+                                    r_max=MorphologicalTissueProperties.MEDIAN_ARTERY_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.MEDIAN_ARTERY_DIAMETER_STD_MM / 2)
     inter_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_arterial_blood_settings()
     inter_dict[Tags.CHILD_STRUCTURES] = dict()
-    inter_dict[Tags.CHILD_STRUCTURES]["left_inter_accompanying_vein"] = create_vessel_tube(x_min=- TissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM - TissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM,
-                                                                                           x_max=- TissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM + TissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM,
-                                                                                           z_min=- TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                           z_max=TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                           r_min=TissueProperties.MEDIAN_VEIN_DIAMETER_MEAN_MM / 2 - TissueProperties.MEDIAN_VEIN_DIAMETER_STD_MM / 2,
-                                                                                           r_max=TissueProperties.MEDIAN_VEIN_DIAMETER_MEAN_MM / 2 + TissueProperties.MEDIAN_VEIN_DIAMETER_STD_MM / 2)
+    inter_dict[Tags.CHILD_STRUCTURES]["left_inter_accompanying_vein"] = create_vessel_tube(x_min=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM - MorphologicalTissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM,
+                                                                                           x_max=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM + MorphologicalTissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM,
+                                                                                           z_min=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                           z_max=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                           r_min=MorphologicalTissueProperties.MEDIAN_VEIN_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.MEDIAN_VEIN_DIAMETER_STD_MM / 2,
+                                                                                           r_max=MorphologicalTissueProperties.MEDIAN_VEIN_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.MEDIAN_VEIN_DIAMETER_STD_MM / 2)
     inter_dict[Tags.CHILD_STRUCTURES]["left_inter_accompanying_vein"][Tags.STRUCTURE_TISSUE_PROPERTIES] = \
         get_venous_blood_settings()
-    inter_dict[Tags.CHILD_STRUCTURES]["right_inter_accompanying_vein"] = create_vessel_tube(x_min=TissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM - TissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM,
-                                                                                            x_max=TissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM + TissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM,
-                                                                                            z_min=- TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                            z_max=TissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
-                                                                                            r_min=TissueProperties.MEDIAN_VEIN_DIAMETER_MEAN_MM / 2 - TissueProperties.MEDIAN_VEIN_DIAMETER_STD_MM / 2,
-                                                                                            r_max=TissueProperties.MEDIAN_VEIN_DIAMETER_MEAN_MM / 2 + TissueProperties.MEDIAN_VEIN_DIAMETER_STD_MM / 2)
+    inter_dict[Tags.CHILD_STRUCTURES]["right_inter_accompanying_vein"] = create_vessel_tube(x_min=MorphologicalTissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM - MorphologicalTissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM,
+                                                                                            x_max=MorphologicalTissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM + MorphologicalTissueProperties.ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM,
+                                                                                            z_min=- MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                            z_max=MorphologicalTissueProperties.ACCOMPANYING_VEIN_DEPTH_STD_MM / 2,
+                                                                                            r_min=MorphologicalTissueProperties.MEDIAN_VEIN_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.MEDIAN_VEIN_DIAMETER_STD_MM / 2,
+                                                                                            r_max=MorphologicalTissueProperties.MEDIAN_VEIN_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.MEDIAN_VEIN_DIAMETER_STD_MM / 2)
     inter_dict[Tags.CHILD_STRUCTURES]["right_inter_accompanying_vein"][Tags.STRUCTURE_TISSUE_PROPERTIES] = \
         get_venous_blood_settings()
     return inter_dict
 
 
 def create_radius_bone(relative_shift_mm=0.0):
-    radius_dict = create_vessel_tube(x_min=relative_shift_mm - TissueProperties.RADIUS_ULNA_BONE_POSITION_STD_MM,
-                                     x_max=relative_shift_mm + TissueProperties.RADIUS_ULNA_BONE_POSITION_STD_MM,
-                                     z_min=TissueProperties.RADIUS_BONE_DEPTH_MEAN_MM - TissueProperties.RADIUS_BONE_DEPTH_STD_MM,
-                                     z_max=TissueProperties.RADIUS_BONE_DEPTH_MEAN_MM + TissueProperties.RADIUS_BONE_DEPTH_STD_MM,
-                                     r_min=TissueProperties.RADIUS_BONE_DIAMETER_MEAN_MM / 2 - TissueProperties.RADIUS_BONE_DIAMETER_STD_MM / 2,
-                                     r_max=TissueProperties.RADIUS_BONE_DIAMETER_MEAN_MM / 2 + TissueProperties.RADIUS_BONE_DIAMETER_STD_MM / 2)
+    radius_dict = create_vessel_tube(x_min=relative_shift_mm - MorphologicalTissueProperties.RADIUS_ULNA_BONE_POSITION_STD_MM,
+                                     x_max=relative_shift_mm + MorphologicalTissueProperties.RADIUS_ULNA_BONE_POSITION_STD_MM,
+                                     z_min=MorphologicalTissueProperties.RADIUS_BONE_DEPTH_MEAN_MM - MorphologicalTissueProperties.RADIUS_BONE_DEPTH_STD_MM,
+                                     z_max=MorphologicalTissueProperties.RADIUS_BONE_DEPTH_MEAN_MM + MorphologicalTissueProperties.RADIUS_BONE_DEPTH_STD_MM,
+                                     r_min=MorphologicalTissueProperties.RADIUS_BONE_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.RADIUS_BONE_DIAMETER_STD_MM / 2,
+                                     r_max=MorphologicalTissueProperties.RADIUS_BONE_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.RADIUS_BONE_DIAMETER_STD_MM / 2)
     radius_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_bone_settings()
     radius_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BONE
     return radius_dict
 
 
 def create_ulna_bone(relative_shift_mm=0.0):
-    radius_dict = create_vessel_tube(x_min=relative_shift_mm - TissueProperties.RADIUS_ULNA_BONE_POSITION_STD_MM + TissueProperties.RADIUS_ULNA_BONE_SEPARATION_MEAN_MM,
-                                     x_max=relative_shift_mm + TissueProperties.RADIUS_ULNA_BONE_POSITION_STD_MM + TissueProperties.RADIUS_ULNA_BONE_SEPARATION_MEAN_MM,
-                                     z_min=TissueProperties.ULNA_BONE_DEPTH_MEAN_MM - TissueProperties.ULNA_BONE_DEPTH_STD_MM,
-                                     z_max=TissueProperties.ULNA_BONE_DEPTH_MEAN_MM + TissueProperties.ULNA_BONE_DEPTH_STD_MM,
-                                     r_min=TissueProperties.ULNA_BONE_DIAMETER_MEAN_MM / 2 - TissueProperties.ULNA_BONE_DIAMETER_STD_MM / 2,
-                                     r_max=TissueProperties.ULNA_BONE_DIAMETER_MEAN_MM / 2 + TissueProperties.ULNA_BONE_DIAMETER_STD_MM / 2)
+    radius_dict = create_vessel_tube(x_min=relative_shift_mm - MorphologicalTissueProperties.RADIUS_ULNA_BONE_POSITION_STD_MM + MorphologicalTissueProperties.RADIUS_ULNA_BONE_SEPARATION_MEAN_MM,
+                                     x_max=relative_shift_mm + MorphologicalTissueProperties.RADIUS_ULNA_BONE_POSITION_STD_MM + MorphologicalTissueProperties.RADIUS_ULNA_BONE_SEPARATION_MEAN_MM,
+                                     z_min=MorphologicalTissueProperties.ULNA_BONE_DEPTH_MEAN_MM - MorphologicalTissueProperties.ULNA_BONE_DEPTH_STD_MM,
+                                     z_max=MorphologicalTissueProperties.ULNA_BONE_DEPTH_MEAN_MM + MorphologicalTissueProperties.ULNA_BONE_DEPTH_STD_MM,
+                                     r_min=MorphologicalTissueProperties.ULNA_BONE_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.ULNA_BONE_DIAMETER_STD_MM / 2,
+                                     r_max=MorphologicalTissueProperties.ULNA_BONE_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.ULNA_BONE_DIAMETER_STD_MM / 2)
     radius_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_bone_settings()
     radius_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BONE
     return radius_dict
@@ -211,10 +211,10 @@ def create_ulna_bone(relative_shift_mm=0.0):
 
 def create_subcutaneous_vein(relative_shift_mm=0.0):
     interosseous_dict = create_vessel_tube(x_min=-5 + relative_shift_mm, x_max=5 + relative_shift_mm,
-                                           z_min=TissueProperties.SUBCUTANEOUS_VEIN_DEPTH_MEAN_MM - TissueProperties.SUBCUTANEOUS_VEIN_DEPTH_STD_MM,
-                                           z_max=TissueProperties.SUBCUTANEOUS_VEIN_DEPTH_MEAN_MM + TissueProperties.SUBCUTANEOUS_VEIN_DEPTH_STD_MM,
-                                           r_min=TissueProperties.SUBCUTANEOUS_VEIN_DIAMETER_MEAN_MM / 2 - TissueProperties.SUBCUTANEOUS_VEIN_DIAMETER_STD_MM / 2,
-                                           r_max=TissueProperties.SUBCUTANEOUS_VEIN_DIAMETER_MEAN_MM / 2 + TissueProperties.SUBCUTANEOUS_VEIN_DIAMETER_STD_MM / 2)
+                                           z_min=MorphologicalTissueProperties.SUBCUTANEOUS_VEIN_DEPTH_MEAN_MM - MorphologicalTissueProperties.SUBCUTANEOUS_VEIN_DEPTH_STD_MM,
+                                           z_max=MorphologicalTissueProperties.SUBCUTANEOUS_VEIN_DEPTH_MEAN_MM + MorphologicalTissueProperties.SUBCUTANEOUS_VEIN_DEPTH_STD_MM,
+                                           r_min=MorphologicalTissueProperties.SUBCUTANEOUS_VEIN_DIAMETER_MEAN_MM / 2 - MorphologicalTissueProperties.SUBCUTANEOUS_VEIN_DIAMETER_STD_MM / 2,
+                                           r_max=MorphologicalTissueProperties.SUBCUTANEOUS_VEIN_DIAMETER_MEAN_MM / 2 + MorphologicalTissueProperties.SUBCUTANEOUS_VEIN_DIAMETER_STD_MM / 2)
     interosseous_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_venous_blood_settings()
     interosseous_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
     return interosseous_dict
