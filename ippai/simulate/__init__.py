@@ -128,8 +128,126 @@ class OpticalTissueProperties:
     Each of the fields is annotated with a literature reference or a descriptions of how the particular
     values were derived for tissue modelling.
     """
-    BACKGROUND_OXYGENATION = 0.6
-    BACKGROUND_OXYGENATION_VARIATION = 0.2
+
+    # Background oxygenation assumed arbitrarily, to cover a large range of oxygenation values
+    BACKGROUND_OXYGENATION = 0.8
+    BACKGROUND_OXYGENATION_VARIATION = 0.1
+
+    # Venous blood parameters taken from the referenced literature. <60% SvO2 were reported as critical. Normal values
+    # are reported as 70%.
+    # @article{molnar2018monitoring,
+    #   title={Monitoring of tissue oxygenation: an everyday clinical challenge},
+    #   author={Molnar, Zsolt and Nemeth, Marton},
+    #   journal={Frontiers in medicine},
+    #   volume={4},
+    #   pages={247},
+    #   year={2018},
+    #   publisher={Frontiers}
+    # }
+    VENOUS_OXYGENATION = 0.7
+    VENOUS_OXYGENATION_VARIATION = 0.1
+
+    # Arterial blood parameters taken from the referenced literature.
+    # @article{merrick1976continuous,
+    #   title={Continuous, non-invasive measurements of arterial blood oxygen levels},
+    #   author={Merrick, Edwin B and Hayes, Thomas J},
+    #   journal={Hewlett-packard J},
+    #   volume={28},
+    #   number={2},
+    #   pages={2--9},
+    #   year={1976}
+    # }
+    ARTERIAL_OXYGENATION = 0.95
+    ARTERIAL_OXYGENATION_VARIATION = 0.05
+
+    # Tissue Property derived from the meta analysis by Steve Jacques in 2013:
+    # @article{jacques2013optical,
+    #   title={Optical properties of biological tissues: a review},
+    #   author={Jacques, Steven L},
+    #   journal={Physics in Medicine \& Biology},
+    #   volume={58},
+    #   number={11},
+    #   pages={R37},
+    #   year={2013},
+    #   publisher={IOP Publishing}
+    # }
+    MUSP500_BACKGROUND_TISSUE = 19.1  # Table 2: Average over all other soft tissue
+    FRAY_BACKGROUND_TISSUE = 0.153  # Table 2: Average over all other soft tissue
+    BMIE_BACKGROUND_TISSUE = 1.091  # Table 2: Average over all other soft tissue
+
+    MUSP500_EPIDERMIS = 66.7  # Table 1; Salomatina et al 2006; One value for epidermis
+    FRAY_EPIDERMIS = 0.29  # Table 1; Salomatina et al 2006; One value for epidermis
+    BMIE_EPIDERMIS = 0.689  # Table 1; Salomatina et al 2006; One value for epidermis
+    MUSP500_DERMIS = 43.6  # Table 1; Salomatina et al 2006; One value for dermis
+    FRAY_DERMIS = 0.41  # Table 1; Salomatina et al 2006; One value for dermis
+    BMIE_DERMIS = 0.69  # Table 1; Salomatina et al 2006; One value for dermis
+    MUSP500_FAT = 19.3  # Table 2 average fatty tissue
+    FRAY_FAT = 0.174  # Table 2 average fatty tissue
+    BMIE_FAT = 0.447  # Table 2 average fatty tissue
+    MUSP500_BLOOD = 22  # Table 1 Alexandrakis et al 2005
+    FRAY_BLOOD = 0.66  # Table 1 Alexandrakis et al 2005
+    BMIE_BLOOD = 0  # Table 1 Alexandrakis et al 2005
+    MUSP500_BONE = 15.3  # Table 2 Mean for bone
+    FRAY_BONE = 0.022  # Table 2 Mean for bone
+    BMIE_BONE = 0.326  # Table 2 Mean for bone
+    STANDARD_ANISOTROPY = 0.9
+
+    # Water content of bone:
+    # @article{timmins1977bone,
+    #   title={Bone water},
+    #   author={Timmins, PA and Wall, JC},
+    #   journal={Calcified tissue research},
+    #   volume={23},
+    #   number={1},
+    #   pages={1--5},
+    #   year={1977},
+    #   publisher={Springer}
+    # }
+    WATER_VOLUME_FRACTION_BONE_MEAN = 0.19
+    WATER_VOLUME_FRACTION_BONE_STD = 0.01
+
+    # Adult body composition derived values
+    # @article{forbes1953composition,
+    #   title={The composition of the adult human body as determined by chemical analysis},
+    #   author={Forbes, RM and Cooper, AR and Mitchell, HH and others},
+    #   journal={J Biol Chem},
+    #   volume={203},
+    #   number={1},
+    #   pages={359--366},
+    #   year={1953}
+    # }
+    WATER_VOLUME_FRACTION_SKIN = 0.58
+    WATER_VOLUME_FRACTION_HUMAN_BODY = 0.68
+
+    # Muscle tissue blood volume fraction:
+    # @article{vankana1998mechanical,
+    #   title={Mechanical blood-tissue interaction in contracting muscles: a model study},
+    #   author={Vankana, WJ and Huyghe, Jacques M and van Donkelaar, Corrinus C and Drost, Maarten R and Janssen,
+    # Jan D and Huson, A},
+    #   journal={Journal of Biomechanics},
+    #   volume={31},
+    #   number={5},
+    #   pages={401--409},
+    #   year={1998},
+    #   publisher={Elsevier}
+    # }
+    BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE = 0.01  # Value of arterial bvf at t0 in fig 3.
+
+    # Mean and spread calculated from all ethnicities from figure 2C, averaged over both
+    # photoexposed and photoprotected samples.
+    # @article{alaluf2002ethnic,
+    #   title={Ethnic variation in melanin content and composition in photoexposed and photoprotected human skin},
+    #   author={Alaluf, Simon and Atkins, Derek and Barrett, Karen and Blount, Margaret and Carter,
+    # Nik and Heath, Alan},
+    #   journal={Pigment Cell Research},
+    #   volume={15},
+    #   number={2},
+    #   pages={112--118},
+    #   year={2002},
+    #   publisher={Wiley Online Library}
+    # }
+    MELANIN_VOLUME_FRACTION_MEAN = 0.022
+    MELANIN_VOLUME_FRACTION_STD = 0.01
 
 
 class MorphologicalTissueProperties:
@@ -193,25 +311,10 @@ class MorphologicalTissueProperties:
     MEDIAN_VEIN_DIAMETER_MEAN_MM = 0.5
     MEDIAN_VEIN_DIAMETER_STD_MM = 0.1
 
-    # Mean and spread calculated from all ethnicities from figure 2C, averaged over both
-    # photoexposed and photoprotected samples.
-    # @article{alaluf2002ethnic,
-    #   title={Ethnic variation in melanin content and composition in photoexposed and photoprotected human skin},
-    #   author={Alaluf, Simon and Atkins, Derek and Barrett, Karen and Blount, Margaret and Carter,
-    # Nik and Heath, Alan},
-    #   journal={Pigment Cell Research},
-    #   volume={15},
-    #   number={2},
-    #   pages={112--118},
-    #   year={2002},
-    #   publisher={Wiley Online Library}
-    # }
-    EPIDERMIS_MELANIN_VOLUME_FRACTION_MEAN = 0.022
-    EPIDERMIS_MELANIN_VOLUME_FRACTION_STD = 0.01
-
     # Thickness of the dermis and epidermis approximated with values for the hand. Averaged for
     # @article{oltulu2018measurement,
-    #   title={Measurement of epidermis, dermis, and total skin thicknesses from six different body regions with a new ethical histometric technique},
+    #   title={Measurement of epidermis, dermis, and total skin thicknesses from six different body regions
+    # with a new ethical histometric technique},
     #   author={Oltulu, Pembe and Ince, Bilsev and Kokbudak, Naile and Findik, Sidika and Kilinc, Fahriye and others},
     #   journal={Turkish Journal of Plastic Surgery},
     #   volume={26},

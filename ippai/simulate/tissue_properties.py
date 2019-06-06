@@ -164,7 +164,11 @@ def get_muscle_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXYGEN
 
     :return: a settings dictionary containing all min and max parameters fitting for generic background tissue.
     """
-    return get_settings(b_min=0.005, b_max=0.01, w_min=0.64, w_max=0.72, musp500=10, f_ray=0.0, b_mie=0.0,
+    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE, b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
+                        w_min=0.64, w_max=0.72,
+                        musp500=OpticalTissueProperties.MUSP500_BACKGROUND_TISSUE,
+                        f_ray=OpticalTissueProperties.FRAY_BACKGROUND_TISSUE,
+                        b_mie=OpticalTissueProperties.BMIE_BACKGROUND_TISSUE,
                         oxy_min=background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
                         oxy_max=background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
 
@@ -174,8 +178,14 @@ def get_epidermis_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXY
 
     :return: a settings dictionary containing all min and max parameters fitting for epidermis tissue.
     """
-    return get_settings(b_min=0.001, b_max=0.001, w_min=0.64, w_max=0.72, m_max=0.5, m_min=0.2,
-                        musp500=46.0, f_ray=0.409, b_mie=0.702,
+    return get_settings(b_min=1e-4, b_max=1e-4,
+                        w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
+                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
+                        m_max=OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN + OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
+                        m_min=OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN- OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
+                        musp500=OpticalTissueProperties.MUSP500_EPIDERMIS,
+                        f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
+                        b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
                         oxy_min=background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
                         oxy_max=background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
 
@@ -185,8 +195,13 @@ def get_dermis_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXYGEN
 
     :return: a settings dictionary containing all min and max parameters fitting for dermis tissue.
     """
-    return get_settings(b_min=0.009, b_max=0.011, w_min=0.64, w_max=0.72,
-                        musp500=29.7, f_ray=0.48, b_mie=0.22,
+    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
+                        b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
+                        w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
+                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
+                        musp500=OpticalTissueProperties.MUSP500_DERMIS,
+                        f_ray=OpticalTissueProperties.FRAY_DERMIS,
+                        b_mie=OpticalTissueProperties.BMIE_DERMIS,
                         oxy_min=background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
                         oxy_max=background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
 
@@ -196,8 +211,14 @@ def get_subcutaneous_fat_settings(background_oxy=OpticalTissueProperties.BACKGRO
 
     :return: a settings dictionary containing all min and max parameters fitting for subcutaneous fat tissue.
     """
-    return get_settings(b_min=0.009, b_max=0.011, w_min=0.68, w_max=0.68, f_min=0.3, f_max=0.4,
-                        musp500=18.4, f_ray=0.174, b_mie=0.45,
+    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
+                        b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
+                        w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
+                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
+                        f_min=0.3, f_max=0.4,  #TODO: Add "correct" fat volume fraction of human adipose tissue
+                        musp500=OpticalTissueProperties.MUSP500_FAT,
+                        f_ray=OpticalTissueProperties.FRAY_FAT,
+                        b_mie=OpticalTissueProperties.BMIE_FAT,
                         oxy_min=background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
                         oxy_max=background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
 
@@ -208,7 +229,9 @@ def get_blood_settings():
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
     return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
-                        musp500=10, b_mie=1.0)
+                        musp500=OpticalTissueProperties.MUSP500_BLOOD,
+                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
+                        f_ray=OpticalTissueProperties.FRAY_BLOOD)
 
 
 def get_arterial_blood_settings():
@@ -216,8 +239,12 @@ def get_arterial_blood_settings():
 
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
-    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1, oxy_min=0.7, oxy_max=1,
-                        musp500=10, b_mie=1.0)
+    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
+                        oxy_min=OpticalTissueProperties.ARTERIAL_OXYGENATION-OpticalTissueProperties.ARTERIAL_OXYGENATION_VARIATION,
+                        oxy_max=OpticalTissueProperties.ARTERIAL_OXYGENATION+OpticalTissueProperties.ARTERIAL_OXYGENATION_VARIATION,
+                        musp500=OpticalTissueProperties.MUSP500_BLOOD,
+                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
+                        f_ray=OpticalTissueProperties.FRAY_BLOOD)
 
 
 def get_venous_blood_settings():
@@ -225,8 +252,12 @@ def get_venous_blood_settings():
 
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
-    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1, oxy_min=0.3, oxy_max=0.8,
-                        musp500=10, b_mie=1.0)
+    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
+                        oxy_min=OpticalTissueProperties.VENOUS_OXYGENATION - OpticalTissueProperties.VENOUS_OXYGENATION_VARIATION,
+                        oxy_max=OpticalTissueProperties.VENOUS_OXYGENATION + OpticalTissueProperties.VENOUS_OXYGENATION_VARIATION,
+                        musp500=OpticalTissueProperties.MUSP500_BLOOD,
+                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
+                        f_ray=OpticalTissueProperties.FRAY_BLOOD)
 
 
 def get_bone_settings():
@@ -234,13 +265,21 @@ def get_bone_settings():
 
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
-    return get_settings(b_min=1e-4, b_max=1e-4, w_min=0.35, w_max=0.35, oxy_min=0, oxy_max=1,
-                        musp500=22.9, f_ray=0.022, b_mie=0.326)
+    return get_settings(b_min=1e-4, b_max=1e-4, w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_MEAN - OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_STD,
+                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_MEAN + OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_STD,
+                        oxy_min=0, oxy_max=1,
+                        musp500=OpticalTissueProperties.MUSP500_BONE,
+                        b_mie=OpticalTissueProperties.BMIE_BONE,
+                        f_ray=OpticalTissueProperties.FRAY_BONE)
 
 
-def get_settings(b_min=0.0, b_max=0.0, w_min=0.0, w_max=0.0, f_min=0.0, f_max=0.0,
-                 m_min=0.0, m_max=0.0, oxy_min=0.0, oxy_max=1.0,
-                 musp500=10.0, f_ray=0.0, b_mie=0.0, anisotropy=0.9):
+def get_settings(b_min=0.0, b_max=0.0,
+                 w_min=0.0, w_max=0.0,
+                 f_min=0.0, f_max=0.0,
+                 m_min=0.0, m_max=0.0,
+                 oxy_min=0.0, oxy_max=1.0,
+                 musp500=10.0, f_ray=0.0, b_mie=0.0,
+                 anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY):
     return_dict = dict()
     return_dict[Tags.KEY_B_MIN] = b_min
     return_dict[Tags.KEY_B_MAX] = b_max
