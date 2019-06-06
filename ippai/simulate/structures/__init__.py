@@ -2,6 +2,7 @@ from ippai.simulate import Tags, SegmentationClasses, MorphologicalTissuePropert
 from ippai.simulate.tissue_properties import get_epidermis_settings, get_dermis_settings, \
     get_subcutaneous_fat_settings, get_blood_settings, \
     get_arterial_blood_settings, get_venous_blood_settings, get_bone_settings, get_muscle_settings
+import numpy as np
 
 
 def create_vessel_tube(x_min=None, x_max=None, z_min=None, z_max=None, r_min=0.5, r_max=3.0):
@@ -21,7 +22,7 @@ def create_vessel_tube(x_min=None, x_max=None, z_min=None, z_max=None, r_min=0.5
 # #############################################
 # FOREARM MODEL STRUCTURES
 # #############################################
-def create_forearm_structures(relative_shift_mm=0, background_oxy=0.0):
+def create_forearm_structures(relative_shift_mm=0, background_oxy=0.0, subcutaneous_vessel_spawn_probability=0.5):
 
     structures_dict = dict()
     structures_dict["muscle"] = create_muscle_background(background_oxy=background_oxy)
@@ -33,9 +34,10 @@ def create_forearm_structures(relative_shift_mm=0, background_oxy=0.0):
     structures_dict["radius"] = create_radius_bone(relative_shift_mm)
     structures_dict["ulna"] = create_ulna_bone(relative_shift_mm)
 
-    for i in range(7):
-        position = relative_shift_mm - 17.5 + i * 10
-        structures_dict["subcutaneous_vessel_"+str(i+1)] = create_subcutaneous_vein(position)
+    for i in range(14):
+        position = relative_shift_mm - 17.5 + i * 5
+        if np.random.random() < subcutaneous_vessel_spawn_probability:
+            structures_dict["subcutaneous_vessel_"+str(i+1)] = create_subcutaneous_vein(position)
     return structures_dict
 
 

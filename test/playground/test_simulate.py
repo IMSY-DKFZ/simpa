@@ -8,15 +8,14 @@ from ippai.simulate.structures import create_forearm_structures
 import matplotlib.pylab as plt
 import numpy as np
 
-random_seed = 1227
+random_seed = 12345
 np.random.seed(random_seed)
 
 relative_shift = ((np.random.random() - 0.5) * 2) * 12.5
 background_oxy = (np.random.random() * 0.6) + 0.2
-print(relative_shift)
 
 settings = {
-    Tags.WAVELENGTHS: [800], #np.arange(700, 951, 10),
+    Tags.WAVELENGTHS: np.arange(700, 951, 10),
     Tags.RANDOM_SEED: random_seed,
     Tags.VOLUME_NAME: "Forearm_"+str(random_seed).zfill(6),
     Tags.SIMULATION_PATH: "/home/janek/simulation_test/",

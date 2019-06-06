@@ -44,7 +44,6 @@ def simulate(optical_properties_path, settings, optical_output_path):
     subprocess.run(cmd)
 
     [fluence, meta] = nrrd.read(output_path)
-    print(meta)
     p0 = fluence * mua
 
     os.remove(tmp_input_path)
