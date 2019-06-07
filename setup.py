@@ -3,15 +3,15 @@ import setuptools
 with open("README.md", "r") as readme_file:
     long_description = readme_file.read()
 
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setuptools.setup(
     name="ippai",
     version="0.0.1",
-    author="Computer Assisted Medical Interventions, DKFZ",
-    description="Image Processing for Photoacoustic Imaging",
+    author="Computer Assisted Medical Interventions (CAMI), DKFZ",
+    description="Image Processing for Photoacoustic Imaging Python Library",
     long_description=long_description,
     packages=setuptools.find_packages(),
-    install_requires=[
-        "numpy",
-        "pynrrd"
-    ]
+    install_requires=requirements
 )
