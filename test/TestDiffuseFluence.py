@@ -21,7 +21,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.VOLUME_NAME: "homogeneous_cube",
             Tags.SIMULATION_PATH: "/media/kris/6TB_Hard_Drive/mcx_test/",
             Tags.RUN_OPTICAL_MODEL: True,
-            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e8,
+            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
             Tags.OPTICAL_MODEL_BINARY_PATH: "/media/kris/6TB_Hard_Drive/mcx_test/mcx",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 1,
@@ -59,10 +59,14 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         according to the diffusion approximation for the radiative transfer eq.
         right beneath the surface of a semi-finite homogeneous medium.
         :param r: radial distance between source and detector.
-        :return: fluence [mm^-2] at a point with source-detector distance r.
+        :return: fluence at a point with source-detector distance r.
         """
-        mua = 0.1 * self.mua    # convert mua from cm^-1 to mm^-1
-        mus = 0.1 * self.mus    # convert mus from cm^-1 to mm^-1
+        if self.settings[Tags.OPTICAL_MODEL] == Tags.MODEL_MCX:
+            mua = 0.1 * self.mua    # convert mua from cm^-1 to mm^-1
+            mus = 0.1 * self.mus    # convert mus from cm^-1 to mm^-1
+        else:
+            mua = self.mua
+            mus = self.mus
         mus_red = (1-self.g) * mus
         mu_tot = mus_red + mua
         mu_eff = np.sqrt(3 * mua * mu_tot)
@@ -72,10 +76,12 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         r_d = -1.44 * n ** -2 + 0.71 * n ** -1 + 0.668 + 0.0636 * n
         A = (1 + r_d) / (1 - r_d)
         zb = 2 * A * D
+
         # distance from point source inside the medium to the detector
-        r1 = np.linalg.norm(np.asarray([0, 0, z0]) - np.asarray([r, 0, 0.5]))
+        r1 = np.linalg.norm(np.asarray([0, 0, z0]) - np.asarray([r, 0, 0.5*self.settings[Tags.SPACING_MM]]))
+
         # distance from image point source above the medium to the detector
-        r2 = np.linalg.norm(np.asarray([0, 0, -z0 - 2 * zb]) - np.asarray([r, 0, 0.5]))
+        r2 = np.linalg.norm(np.asarray([0, 0, -z0 - 2 * zb]) - np.asarray([r, 0, 0.5*self.settings[Tags.SPACING_MM]]))
 
         # fluence
         phi = 1/(4*np.pi*D) *(np.exp(-mu_eff*r1)/r1 - np.exp(-mu_eff*r2)/r2)
@@ -97,21 +103,31 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
     def assertDiffusionTheory(self, distance):
         optical_path = run_optical_forward_model(self.settings, self.volume_path)
         fluence = np.load(optical_path)['fluence']
-        measurement_distances = np.arange(1, int(distance + 1), 1)
-        fluence_measurements = fluence[int(self.dim/2), int(self.dim/2) - 1 + measurement_distances, 0]
+        number_of_measurements = np.arange(1, int(distance/self.settings[Tags.SPACING_MM]) + 1, 1)
+        measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]
+        fluence_measurements = fluence[int(self.dim/2), int(self.dim/2) - 1 + number_of_measurements, 0]
         diffusion_approx = self.diff_theory_fluence(measurement_distances)
 
         # Plot the results:
 
-        # plt.scatter(measurement_distances, fluence_measurements, marker="o", c="r")
-        # plt.plot(measurement_distances, diffusion_approx)
-        # plt.yscale("log")
-        # plt.show()
+        plt.scatter(measurement_distances, fluence_measurements, marker="o", c="r", label="Simulation")
+        plt.plot(measurement_distances, diffusion_approx, label="Diffusion Approx.")
+        plt.yscale("log")
+        plt.legend()
+        plt.show()
 
         for sim, diff in zip(fluence_measurements, diffusion_approx):
-            if diff < 1e-8:
+            """
+            if the fluence is smaller than 0.00001% of the source strength,
+            we assume that the random fluctuation of the photons will cause a 
+            larger error. 
+            """
+            if diff < 1e-7:
                 continue
             else:
+                """
+                we test for 50% of the expected value from the diffusion approx.
+                """
                 self.assertAlmostEqual(sim, diff, delta=0.5*diff)
 
 
