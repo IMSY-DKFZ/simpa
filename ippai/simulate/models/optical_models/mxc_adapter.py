@@ -33,7 +33,8 @@ def simulate(optical_properties_path, settings, optical_output_path):
         "Session": {
         "ID": output_file,
         "DoAutoThread": 1,
-        "Photons": settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS]
+        "Photons": settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
+        "DoMismatch": 0
          },
 	"Forward": {
 		"T0": 0,
@@ -42,7 +43,7 @@ def simulate(optical_properties_path, settings, optical_output_path):
 	},
 	"Optode": {
 		"Source": {
-			"Pos": [int(nx/2)+1,int(ny/2)+1,0],
+			"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
 			"Dir": [0,0,1]
 		}
 	},
@@ -57,10 +58,10 @@ def simulate(optical_properties_path, settings, optical_output_path):
 				"n": 1
 			},
 			{
-				"mua": 0,
-				"mus": 0,
+				"mua": 1,
+				"mus": 1,
 				"g": 0.9,
-				"n": 1.37
+				"n": 1
 			}
 		],
 		"MediaFormat": "muamus_float",
