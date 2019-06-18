@@ -19,13 +19,14 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.WAVELENGTHS: [800], #np.arange(700, 951, 10),
             Tags.WAVELENGTH: 800,
             Tags.VOLUME_NAME: "homogeneous_cube",
-            Tags.SIMULATION_PATH: "/media/kris/6TB_Hard_Drive/mcx_test/",
+            Tags.SIMULATION_PATH: "/home/janek/simulation_test/",
             Tags.RUN_OPTICAL_MODEL: True,
-            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/media/kris/6TB_Hard_Drive/mcx_test/mcx",
+            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e8,
+            #Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/mitk-superbuild/MITK-build/bin/MitkMCxyz",
+            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/simulation_test/mcx_new",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 1,
-            Tags.OPTICAL_MODEL:Tags.MODEL_MCX,
+            Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
             Tags.PROPERTY_ANISOTROPY: 0.9
         }
 
@@ -61,30 +62,40 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         :param r: radial distance between source and detector.
         :return: fluence at a point with source-detector distance r.
         """
+        print(self.settings[Tags.OPTICAL_MODEL])
         if self.settings[Tags.OPTICAL_MODEL] == Tags.MODEL_MCX:
+            print("MCX: transfer to mm")
             mua = 0.1 * self.mua    # convert mua from cm^-1 to mm^-1
             mus = 0.1 * self.mus    # convert mus from cm^-1 to mm^-1
+            spacing = self.settings[Tags.SPACING_MM]
         else:
+            print("MCXYZ: transfer to cm")
+            r = r / 10.0
             mua = self.mua
             mus = self.mus
-        mus_red = (1-self.g) * mus
-        mu_tot = mus_red + mua
+            spacing = self.settings[Tags.SPACING_MM] / 10.0
+
+        mus_prime = (1-self.g) * mus
+        mu_tot = mus_prime + mua
         mu_eff = np.sqrt(3 * mua * mu_tot)
-        D = 1 / (3 * (mua + mus_red))
-        z0 = 1/mu_tot
+        D = 1 / (3 * (mua + mus_prime))
+        z0 = 1 / mu_tot
         n = 1
         r_d = -1.44 * n ** -2 + 0.71 * n ** -1 + 0.668 + 0.0636 * n
         A = (1 + r_d) / (1 - r_d)
         zb = 2 * A * D
 
         # distance from point source inside the medium to the detector
-        r1 = np.linalg.norm(np.asarray([0, 0, z0]) - np.asarray([r, 0, 0.5*self.settings[Tags.SPACING_MM]]))
+        r1 = np.linalg.norm(np.asarray([0, 0, z0]) - np.asarray([r, 0, 0.5*spacing]))
 
         # distance from image point source above the medium to the detector
-        r2 = np.linalg.norm(np.asarray([0, 0, -z0 - 2 * zb]) - np.asarray([r, 0, 0.5*self.settings[Tags.SPACING_MM]]))
+        r2 = np.linalg.norm(np.asarray([0, 0, -z0 - 2 * zb]) - np.asarray([r, 0, 0.5*spacing]))
 
         # fluence
-        phi = 1/(4*np.pi*D) *(np.exp(-mu_eff*r1)/r1 - np.exp(-mu_eff*r2)/r2)
+        phi = 1 / (4*np.pi*D) * (np.exp(-mu_eff*r1) / r1 - np.exp(-mu_eff*r2) / r2)
+
+        if self.settings[Tags.OPTICAL_MODEL] == Tags.MODEL_MCXYZ:
+            phi = phi / 100
 
         return phi
 
@@ -105,7 +116,11 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         fluence = np.load(optical_path)['fluence']
         number_of_measurements = np.arange(1, int(distance/self.settings[Tags.SPACING_MM]) + 1, 1)
         measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]
-        fluence_measurements = fluence[int(self.dim/2), int(self.dim/2) - 1 + number_of_measurements, 0]
+        fluence_measurements = fluence[int(self.dim/2), (int(self.dim/2) - 1 + number_of_measurements), 0]
+
+        if self.settings[Tags.OPTICAL_MODEL] == Tags.MODEL_MCXYZ:
+            fluence_measurements = fluence_measurements / 100
+
         diffusion_approx = self.diff_theory_fluence(measurement_distances)
 
         # Plot the results:
