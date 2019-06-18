@@ -21,7 +21,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.VOLUME_NAME: "homogeneous_cube",
             Tags.SIMULATION_PATH: "/home/janek/simulation_test/",
             Tags.RUN_OPTICAL_MODEL: True,
-            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e8,
+            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
             #Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/mitk-superbuild/MITK-build/bin/MitkMCxyz",
             Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/simulation_test/mcx_new",
             Tags.RUN_ACOUSTIC_MODEL: False,
