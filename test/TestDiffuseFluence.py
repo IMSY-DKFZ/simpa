@@ -19,11 +19,11 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.WAVELENGTHS: [800], #np.arange(700, 951, 10),
             Tags.WAVELENGTH: 800,
             Tags.VOLUME_NAME: "homogeneous_cube",
-            Tags.SIMULATION_PATH: "/home/janek/simulation_test/",
+            Tags.SIMULATION_PATH: "/media/kris/6TB_Hard_Drive/mcx_test",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
             #Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/mitk-superbuild/MITK-build/bin/MitkMCxyz",
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/simulation_test/mcx_new",
+            Tags.OPTICAL_MODEL_BINARY_PATH: "/media/kris/6TB_Hard_Drive/mcx_test/mcx",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 1,
             Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
@@ -51,8 +51,17 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
     def tearDown(self):
         print("tearDown")
 
-    def test_fluence(self):
-        self.perform_test(distance=self.dim/2)
+    # def test_fluence(self):
+    #     self.perform_test(distance=self.dim/2, spacing=1)
+    #
+    # def test_spacing_short(self):
+    #     self.perform_test(distance=5, spacing=0.1)
+    #
+    # def test_spacing_middle(self):
+    #     self.perform_test(distance=self.dim/4, spacing=0.5)
+
+    def test_spacing_long(self):
+        self.perform_test(distance=self.dim, spacing=2)
 
     def diff_theory_fluence(self, r):
         """
@@ -101,7 +110,9 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
 
 
-    def perform_test(self, distance):
+    def perform_test(self, distance, spacing):
+
+        self.settings[Tags.SPACING_MM] = spacing
 
         np.savez(self.volume_path,
                  mua=self.volume[:, :, :, 0],
@@ -125,25 +136,39 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
         # Plot the results:
 
-        plt.scatter(measurement_distances, fluence_measurements, marker="o", c="r", label="Simulation")
-        plt.plot(measurement_distances, diffusion_approx, label="Diffusion Approx.")
-        plt.yscale("log")
-        plt.legend()
+        fig, ax = plt.subplots()
+        ax.scatter(measurement_distances, fluence_measurements, marker="o", c="r", label="Simulation")
+        ax.plot(measurement_distances, diffusion_approx, label="Diffusion Approx.")
+        ax.fill_between(measurement_distances,
+                         diffusion_approx - 0.5*diffusion_approx,
+                         diffusion_approx + 0.5*diffusion_approx,
+                         alpha=0.2, label="Accepted Error Range")
+        handles, labels = ax.get_legend_handles_labels()
+        handles = [handles[0], handles[2], handles[1]]
+        labels = [labels[0], labels[2], labels[1]]
+        ax.set_yscale("log")
+        plt.legend(handles, labels)
         plt.show()
 
-        for sim, diff in zip(fluence_measurements, diffusion_approx):
-            """
-            if the fluence is smaller than 0.00001% of the source strength,
-            we assume that the random fluctuation of the photons will cause a 
-            larger error. 
-            """
-            if diff < 1e-7:
-                continue
-            else:
-                """
-                we test for 50% of the expected value from the diffusion approx.
-                """
-                self.assertAlmostEqual(sim, diff, delta=0.5*diff)
+        # Plot error
+        #
+        # plt.plot(measurement_distances, (diffusion_approx - fluence_measurements) / diffusion_approx)
+        # plt.grid()
+        # plt.show()
+
+        # for sim, diff in zip(fluence_measurements, diffusion_approx):
+        #     """
+        #     if the fluence is smaller than 0.00001% of the source strength,
+        #     we assume that the random fluctuation of the photons will cause a
+        #     larger error.
+        #     """
+        #     if diff < 1e-7:
+        #         continue
+        #     else:
+        #         """
+        #         we test for 50% of the expected value from the diffusion approx.
+        #         """
+        #         self.assertAlmostEqual(sim, diff, delta=0.5*diff)
 
 
 if __name__ == "__main__":
