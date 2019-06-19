@@ -96,10 +96,10 @@ def append_air_layer(volumes, global_settings):
 
 def create_empty_volume(global_settings):
     voxel_spacing = global_settings[Tags.SPACING_MM]
-    volume_y_dim = int(global_settings[Tags.DIM_VOLUME_Y_MM] / voxel_spacing)
     volume_x_dim = int(global_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing)
+    volume_y_dim = int(global_settings[Tags.DIM_VOLUME_Y_MM] / voxel_spacing)
     volume_z_dim = int(global_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing)
-    sizes = (volume_y_dim, volume_x_dim, volume_z_dim)
+    sizes = (volume_x_dim, volume_y_dim, volume_z_dim)
     absorption_volume = np.zeros(sizes)
     scattering_volume = np.zeros(sizes)
     anisotropy_volume = np.zeros(sizes)
@@ -167,7 +167,7 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     for z_idx in z_range:
         for y_idx in range(sizes[0]):
             for x_idx in range(sizes[1]):
-                volumes = set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy,
+                volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
                                     structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
         fraction -= 1
         it += 1
@@ -175,7 +175,7 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     if fraction > 1e-10:
         for y_idx in range(sizes[0]):
             for x_idx in range(sizes[1]):
-                merge_voxel(volumes, y_idx, x_idx, it+1, mua, mus, g, oxy,
+                merge_voxel(volumes, x_idx, y_idx, it+1, mua, mus, g, oxy,
                             structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE], fraction)
 
     extent_parent_x_z_mm = [0, sizes[1] * global_settings[Tags.SPACING_MM],
@@ -240,7 +240,7 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
         for y_idx in range(sizes[0]):
             for x_idx in range(idx_x_start, idx_x_end):
                 if fnc_straight_tube(x_idx, y_idx, z_idx, radius_in_voxels, start_in_voxels, end) <= 0:
-                    volumes = set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy,
+                    volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
                                         structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
 
     extent_parent_x_z_mm = [start_in_mm[0] - radius_in_mm, start_in_mm[0] + radius_in_mm,
@@ -266,14 +266,14 @@ def fnc_straight_tube(x, y, z, r, X1, X2):
            r**2 * ((X2[0]-X1[0])**2 + (X2[1]-X1[1])**2 + (X2[2]-X1[2])**2)
 
 
-def merge_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy, seg, fraction):
+def merge_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg, fraction):
     """
     Updates a voxel position in the volumes by merging the given physical properties with the
     properties already stored in the volumes. The merging is done in a relative manner using the given fraction.
 
     :param volumes: list of numpy arrays with len(volumes) >= 3
-    :param y_idx: integer
     :param x_idx: integer
+    :param y_idx: integer
     :param z_idx: integer
     :param mua: scalar, the optical absorption coefficient in 1/cm
     :param mus: scalar, the optical scattering coefficient in 1/cm
@@ -286,45 +286,45 @@ def merge_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy, seg, fraction):
     """
     if not np.isscalar(mua):
         if len(mua) > 1:
-            volumes[0][y_idx, x_idx, z_idx] = volumes[0][y_idx, x_idx, z_idx] * (1-fraction) + \
-                                              mua[y_idx, x_idx, z_idx] * fraction
+            volumes[0][x_idx, y_idx, z_idx] = volumes[0][x_idx, y_idx, z_idx] * (1-fraction) + \
+                                              mua[x_idx, y_idx, z_idx] * fraction
         else:
-            volumes[0][y_idx, x_idx, z_idx] = volumes[0][y_idx, x_idx, z_idx] * (1 - fraction) + mua * fraction
+            volumes[0][x_idx, y_idx, z_idx] = volumes[0][x_idx, y_idx, z_idx] * (1 - fraction) + mua * fraction
     else:
-        volumes[0][y_idx, x_idx, z_idx] = volumes[0][y_idx, x_idx, z_idx] * (1-fraction) + mua * fraction
+        volumes[0][x_idx, y_idx, z_idx] = volumes[0][x_idx, y_idx, z_idx] * (1-fraction) + mua * fraction
 
     if not np.isscalar(mus):
         if len(mus) > 1:
-            volumes[1][y_idx, x_idx, z_idx] = volumes[1][y_idx, x_idx, z_idx] * (1-fraction) + \
-                                              mus[y_idx, x_idx, z_idx] * fraction
+            volumes[1][x_idx, y_idx, z_idx] = volumes[1][x_idx, y_idx, z_idx] * (1-fraction) + \
+                                              mus[x_idx, y_idx, z_idx] * fraction
         else:
-            volumes[1][y_idx, x_idx, z_idx] = volumes[1][y_idx, x_idx, z_idx] * (1 - fraction) + mus * fraction
+            volumes[1][x_idx, y_idx, z_idx] = volumes[1][x_idx, y_idx, z_idx] * (1 - fraction) + mus * fraction
     else:
-        volumes[1][y_idx, x_idx, z_idx] = volumes[1][y_idx, x_idx, z_idx] * (1-fraction) + mus * fraction
+        volumes[1][x_idx, y_idx, z_idx] = volumes[1][x_idx, y_idx, z_idx] * (1-fraction) + mus * fraction
 
     if not np.isscalar(g):
         if len(g) > 1:
-            volumes[2][y_idx, x_idx, z_idx] = volumes[2][y_idx, x_idx, z_idx] * (1-fraction) + \
-                                              g[y_idx, x_idx, z_idx] * fraction
+            volumes[2][x_idx, y_idx, z_idx] = volumes[2][x_idx, y_idx, z_idx] * (1-fraction) + \
+                                              g[x_idx, y_idx, z_idx] * fraction
         else:
-            volumes[2][y_idx, x_idx, z_idx] = volumes[2][y_idx, x_idx, z_idx] * (1 - fraction) + g * fraction
+            volumes[2][x_idx, y_idx, z_idx] = volumes[2][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
     else:
-        volumes[2][y_idx, x_idx, z_idx] = volumes[2][y_idx, x_idx, z_idx] * (1-fraction) + g * fraction
+        volumes[2][x_idx, y_idx, z_idx] = volumes[2][x_idx, y_idx, z_idx] * (1-fraction) + g * fraction
 
     if not np.isscalar(oxy):
         if len(oxy) > 1:
-            volumes[3][y_idx, x_idx, z_idx] = volumes[3][y_idx, x_idx, z_idx] * (1-fraction) + \
-                                              oxy[y_idx, x_idx, z_idx] * fraction
+            volumes[3][x_idx, y_idx, z_idx] = volumes[3][x_idx, y_idx, z_idx] * (1-fraction) + \
+                                              oxy[x_idx, y_idx, z_idx] * fraction
         else:
-            volumes[3][y_idx, x_idx, z_idx] = volumes[3][y_idx, x_idx, z_idx] * (1 - fraction) + oxy * fraction
+            volumes[3][x_idx, y_idx, z_idx] = volumes[3][x_idx, y_idx, z_idx] * (1 - fraction) + oxy * fraction
     else:
-        volumes[3][y_idx, x_idx, z_idx] = volumes[3][y_idx, x_idx, z_idx] * (1-fraction) + oxy * fraction
+        volumes[3][x_idx, y_idx, z_idx] = volumes[3][x_idx, y_idx, z_idx] * (1-fraction) + oxy * fraction
 
-    volumes[4][y_idx, x_idx, z_idx] = seg
+    volumes[4][x_idx, y_idx, z_idx] = seg
     return volumes
 
 
-def set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy, seg):
+def set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg):
     """
     Sets a voxel position to a specific value in the volume
 
@@ -340,36 +340,36 @@ def set_voxel(volumes, y_idx, x_idx, z_idx, mua, mus, g, oxy, seg):
     """
     if not np.isscalar(mua):
         if len(mua) > 1:
-            volumes[0][y_idx, x_idx, z_idx] = mua[y_idx, x_idx, z_idx]
+            volumes[0][x_idx, y_idx, z_idx] = mua[x_idx, y_idx, z_idx]
         else:
-            volumes[0][y_idx, x_idx, z_idx] = mua
+            volumes[0][x_idx, y_idx, z_idx] = mua
     else:
-        volumes[0][y_idx, x_idx, z_idx] = mua
+        volumes[0][x_idx, y_idx, z_idx] = mua
 
     if not np.isscalar(mus):
         if len(mus) > 1:
-            volumes[1][y_idx, x_idx, z_idx] = mus[y_idx, x_idx, z_idx]
+            volumes[1][x_idx, y_idx, z_idx] = mus[x_idx, y_idx, z_idx]
         else:
-            volumes[1][y_idx, x_idx, z_idx] = mus
+            volumes[1][x_idx, y_idx, z_idx] = mus
     else:
-        volumes[1][y_idx, x_idx, z_idx] = mus
+        volumes[1][x_idx, y_idx, z_idx] = mus
 
     if not np.isscalar(g):
         if len(g) > 1:
-            volumes[2][y_idx, x_idx, z_idx] = g[y_idx, x_idx, z_idx]
+            volumes[2][x_idx, y_idx, z_idx] = g[x_idx, y_idx, z_idx]
         else:
-            volumes[2][y_idx, x_idx, z_idx] = g
+            volumes[2][x_idx, y_idx, z_idx] = g
     else:
-        volumes[2][y_idx, x_idx, z_idx] = g
+        volumes[2][x_idx, y_idx, z_idx] = g
 
     if not np.isscalar(oxy):
         if len(oxy) > 1:
-            volumes[3][y_idx, x_idx, z_idx] = oxy[y_idx, x_idx, z_idx]
+            volumes[3][x_idx, y_idx, z_idx] = oxy[x_idx, y_idx, z_idx]
         else:
-            volumes[3][y_idx, x_idx, z_idx] = oxy
+            volumes[3][x_idx, y_idx, z_idx] = oxy
     else:
-        volumes[3][y_idx, x_idx, z_idx] = oxy
+        volumes[3][x_idx, y_idx, z_idx] = oxy
 
-    volumes[4][y_idx, x_idx, z_idx] = seg
+    volumes[4][x_idx, y_idx, z_idx] = seg
 
     return volumes

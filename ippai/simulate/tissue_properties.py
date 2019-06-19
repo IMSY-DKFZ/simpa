@@ -92,7 +92,7 @@ class TissueProperties(object):
 
             self.randomize(distributions, sizes, gauss_size)
 
-        self.absorption_data = np.load("../data/absorption.npz")
+        self.absorption_data = np.load("../../data/absorption.npz")
 
     def ensure_valid_settings_file(self, settings, tissue_type):
         """
