@@ -1,5 +1,5 @@
 from ippai.simulate import Tags
-from ippai.simulate.models.optical_models import mcxyz_adapter, mxc_adapter
+from ippai.simulate.models.optical_models import mcxyz_adapter, mcx_adapter
 import numpy as np
 
 def run_optical_forward_model(settings, optical_properties_path):
@@ -19,7 +19,7 @@ def run_optical_forward_model(settings, optical_properties_path):
     if model == Tags.MODEL_MCXYZ:
         volumes = mcxyz_adapter.simulate(optical_properties_path, settings, optical_output_path)
     if model == Tags.MODEL_MCX:
-        volumes = mxc_adapter.simulate(optical_properties_path, settings, optical_output_path)
+        volumes = mcx_adapter.simulate(optical_properties_path, settings, optical_output_path)
 
     np.savez(optical_output_path,
              fluence=volumes[0],
