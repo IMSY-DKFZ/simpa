@@ -130,6 +130,9 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_TUBE:
         volumes, extent_x_z_mm = add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
 
+    if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_ELLIPSE:
+        volumes, extent_x_z_mm = add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
+
     if Tags.CHILD_STRUCTURES in structure_settings:
         for child_structure in structure_settings[Tags.CHILD_STRUCTURES]:
             volumes = add_structure(volumes, structure_settings[Tags.CHILD_STRUCTURES][child_structure],
@@ -247,6 +250,107 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
                             start_in_mm[2] - radius_in_mm, start_in_mm[2] + radius_in_mm]
 
     return volumes, extent_parent_x_z_mm
+
+
+def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
+    if extent_parent_x_z_mm is None:
+        extent_parent_x_z_mm = [0, 0, 0, 0]
+
+    sizes = np.shape(volumes[0])
+
+    radius_min = structure_settings[Tags.STRUCTURE_RADIUS_MIN_MM]
+    radius_max = structure_settings[Tags.STRUCTURE_RADIUS_MAX_MM]
+    radius_in_mm = randomize(radius_min, radius_max)
+
+    eccentricity_min = structure_settings[Tags.STRUCTURE_MIN_ECCENTRICITY]
+    eccentricity_max = structure_settings[Tags.STRUCTURE_MAX_ECCENTRICITY]
+
+    if eccentricity_max > radius_in_mm * 0.9:
+        eccentricity_max = radius_in_mm * 0.9
+
+    e = randomize(eccentricity_min, eccentricity_max)
+
+    radius_z_mm = (radius_in_mm**2 + e ** 2) / (2 * radius_in_mm)
+    radius_x_mm = radius_in_mm - radius_z_mm
+
+    if np.random.random() < 0.5:
+        radius_x_mm = (radius_in_mm ** 2 + e ** 2) / (2 * radius_in_mm)
+        radius_z_mm = radius_in_mm - radius_x_mm
+
+    radius_x_in_voxels = radius_x_mm / global_settings[Tags.SPACING_MM]
+    radius_z_in_voxels = radius_z_mm / global_settings[Tags.SPACING_MM]
+
+    start_x_min = structure_settings[Tags.STRUCTURE_TUBE_START_X_MIN_MM] + \
+                  (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
+    start_x_max = structure_settings[Tags.STRUCTURE_TUBE_START_X_MAX_MM] + \
+                  (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
+    start_z_min = structure_settings[Tags.STRUCTURE_DEPTH_MIN_MM] + \
+                  (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
+    start_z_max = structure_settings[Tags.STRUCTURE_DEPTH_MAX_MM] + \
+                  (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
+
+    if start_x_min is None:
+        start_x_min = radius_x_in_voxels * global_settings[Tags.SPACING_MM]
+    if start_x_max is None:
+        start_x_max = (sizes[1] - radius_x_in_voxels) * global_settings[Tags.SPACING_MM]
+    if start_z_min is None:
+        start_z_min = radius_z_in_voxels * global_settings[Tags.SPACING_MM]
+    if start_z_max is None:
+        start_z_max = (sizes[2] - radius_z_in_voxels) * global_settings[Tags.SPACING_MM]
+
+    start_in_mm = np.asarray([randomize(start_x_min, start_x_max), 0,
+                              randomize(start_z_min, start_z_max)])
+
+    start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
+
+    end = np.copy(start_in_voxels)
+    start_in_voxels[1] = 0
+    end[1] = sizes[0]
+
+    idx_z_start = int(start_in_voxels[2] - radius_z_in_voxels - 1)
+    if idx_z_start < 0:
+        idx_z_start = 0
+    idx_z_end = int(start_in_voxels[2] + radius_z_in_voxels + 1)
+    if idx_z_end > sizes[2]:
+        idx_z_end = sizes[2]
+    idx_x_start = int(start_in_voxels[0] - radius_x_in_voxels - 1)
+    if idx_x_start < 0:
+        idx_x_start = 0
+    idx_x_end = int(start_in_voxels[0] + radius_x_in_voxels + 1)
+    if idx_x_end > sizes[1]:
+        idx_x_end = sizes[1]
+
+    for z_idx in range(idx_z_start, idx_z_end):
+        for y_idx in range(sizes[0]):
+            for x_idx in range(idx_x_start, idx_x_end):
+                if fnc_straight_ellipse(x_idx, y_idx, z_idx, radius_x_in_voxels, radius_z_in_voxels,
+                                        start_in_voxels, end) <= 0:
+                    volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
+                                        structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
+
+    extent_parent_x_z_mm = [start_in_mm[0] - radius_in_mm, start_in_mm[0] + radius_in_mm,
+                            start_in_mm[2] - radius_in_mm, start_in_mm[2] + radius_in_mm]
+
+    return volumes, extent_parent_x_z_mm
+
+
+def fnc_straight_ellipse(x, y, z, r_x, r_z, X1, X2):
+    """
+    cartesian representation of a straight tube that goes from position X1 to position X2 with radius r.
+    :param x:
+    :param y:
+    :param z:
+    :param r:
+    :param X1:
+    :param X2:
+    :return:
+    """
+
+    x_axis = ((y-X1[1])*(z-X2[2])-(z-X1[2])*(y-X2[1]))**2 / r_z**2
+    y_axis = ((z-X1[2])*(x-X2[0])-(x-X1[0])*(z-X2[2]))**2
+    z_axis = ((x-X1[0])*(y-X2[1])-(y-X1[1])*(x-X2[0]))**2 / r_x**2
+    radius = ((X2[0]-X1[0])**2 + (X2[1]-X1[1])**2 + (X2[2]-X1[2])**2)
+    return x_axis + y_axis + z_axis - radius
 
 
 def fnc_straight_tube(x, y, z, r, X1, X2):

@@ -23,7 +23,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
             #Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/mitk-superbuild/MITK-build/bin/MitkMCxyz",
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/simulation_test/mcx_new",
+            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/simulation_test/mcx",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 1,
             Tags.OPTICAL_MODEL: Tags.MODEL_MCX,

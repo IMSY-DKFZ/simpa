@@ -3,6 +3,7 @@ import struct
 import subprocess
 from ippai.simulate import Tags
 import json
+import os
 
 
 def simulate(optical_properties_path, settings, optical_output_path):
@@ -25,13 +26,13 @@ def simulate(optical_properties_path, settings, optical_output_path):
     with open(tmp_input_path, "wb") as input_file:
         input_file.write(mcx_input)
 
-    output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+"_output"
+    tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+"_output"
 
     #write settings to json
 
     settings_dict = {
         "Session": {
-        "ID": output_file,
+        "ID": tmp_output_file,
         "DoAutoThread": 1,
         "Photons": settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
         "DoMismatch": 0
@@ -94,8 +95,8 @@ def simulate(optical_properties_path, settings, optical_output_path):
 		"VolumeFile": settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".bin"
 	}}
 
-    json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".json"
-    with open(json_filename, "w") as json_file:
+    tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".json"
+    with open(tmp_json_filename, "w") as json_file:
         json.dump(settings_dict, json_file)
 
     # run the simulation
@@ -103,7 +104,7 @@ def simulate(optical_properties_path, settings, optical_output_path):
     cmd = list()
     cmd.append(settings[Tags.OPTICAL_MODEL_BINARY_PATH])
     cmd.append("-f")
-    cmd.append(json_filename)
+    cmd.append(tmp_json_filename)
     cmd.append("-O")
     cmd.append("F")
 
@@ -113,12 +114,15 @@ def simulate(optical_properties_path, settings, optical_output_path):
 
     # Read output
 
-    with open(output_file+".mc2", 'rb') as f:
+    with open(tmp_output_file+".mc2", 'rb') as f:
         data = f.read()
     data = struct.unpack('%df' % (len(data) / 4), data)
     fluence = np.asarray(data).reshape([nx, ny, nz, 1], order='F')
     fluence = np.squeeze(fluence, 3)
 
+    os.remove(tmp_input_path)
+    os.remove(tmp_output_file+".mc2")
+    os.remove(tmp_json_filename)
 
     p0 = fluence * absorption
 

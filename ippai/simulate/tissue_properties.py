@@ -92,7 +92,7 @@ class TissueProperties(object):
 
             self.randomize(distributions, sizes, gauss_size)
 
-        self.absorption_data = np.load("../../data/absorption.npz")
+        self.absorption_data = np.load("../data/absorption.npz")
 
     def ensure_valid_settings_file(self, settings, tissue_type):
         """
@@ -271,6 +271,36 @@ def get_bone_settings():
                         musp500=OpticalTissueProperties.MUSP500_BONE,
                         b_mie=OpticalTissueProperties.BMIE_BONE,
                         f_ray=OpticalTissueProperties.FRAY_BONE)
+
+
+def get_random_tube_settings():
+    """
+
+        :return: a settings dictionary containing random min and max parameters.
+        """
+    random_musp = np.random.randint(8, 18)
+    return get_settings(b_min=1, b_max=1,
+                        w_min=1, w_max=1,
+                        oxy_min=0,
+                        oxy_max=1,
+                        musp500=random_musp,
+                        b_mie=0,
+                        f_ray=0)
+
+
+def get_random_background_settings():
+    """
+
+        :return: a settings dictionary containing random min and max parameters.
+        """
+    random_musp = np.random.randint(8, 18)
+    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE / 2,
+                        b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE * 2,
+                        w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
+                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
+                        musp500=random_musp,
+                        b_mie=0,
+                        f_ray=0)
 
 
 def get_settings(b_min=0.0, b_max=0.0,

@@ -1,8 +1,49 @@
 from ippai.simulate import Tags, SegmentationClasses, MorphologicalTissueProperties
-from ippai.simulate.tissue_properties import get_epidermis_settings, get_dermis_settings, \
-    get_subcutaneous_fat_settings, get_blood_settings, \
-    get_arterial_blood_settings, get_venous_blood_settings, get_bone_settings, get_muscle_settings
+from ippai.simulate.tissue_properties import *
 import numpy as np
+
+
+def create_random_ellipse(x_min_mm=2, x_max_mm=35, depth_min_mm=2, depth_max_mm=18,
+                          r_min_mm=0.5, r_max_mm=7.0,
+                          eccentricity_min=0.25, eccentricity_max=3.5):
+    rnd_tube_dict = dict()
+    rnd_tube_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_ELLIPSE
+    rnd_tube_dict[Tags.STRUCTURE_DEPTH_MIN_MM] = depth_min_mm
+    rnd_tube_dict[Tags.STRUCTURE_DEPTH_MAX_MM] = depth_max_mm
+    rnd_tube_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = r_min_mm
+    rnd_tube_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = r_max_mm
+    rnd_tube_dict[Tags.STRUCTURE_TUBE_START_X_MIN_MM] = x_min_mm
+    rnd_tube_dict[Tags.STRUCTURE_TUBE_START_X_MAX_MM] = x_max_mm
+    rnd_tube_dict[Tags.STRUCTURE_MIN_ECCENTRICITY] = eccentricity_min
+    rnd_tube_dict[Tags.STRUCTURE_MAX_ECCENTRICITY] = eccentricity_max
+    rnd_tube_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_random_tube_settings()
+    rnd_tube_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
+    return rnd_tube_dict
+
+
+def create_random_background():
+    rnd_bg_dict = dict()
+    rnd_bg_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
+    rnd_bg_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_random_background_settings()
+    rnd_bg_dict[Tags.STRUCTURE_USE_DISTORTION] = False
+    rnd_bg_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_B, Tags.KEY_OXY, Tags.KEY_W]
+    rnd_bg_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
+    rnd_bg_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
+    return rnd_bg_dict
+
+
+# #############################################
+# RANDOM STRUCTURES
+# #############################################
+def create_random_structures():
+    structures_dict = dict()
+    structures_dict['background'] = create_random_background()
+    structures_dict["dermis"] = create_dermis_layer()
+    structures_dict["epidermis"] = create_epidermis_layer()
+    num_ellipses = np.random.randint(3, 15)
+    for i in range(num_ellipses):
+            structures_dict["ellipse_" + str(i + 1)] = create_random_ellipse()
+    return structures_dict
 
 
 def create_vessel_tube(x_min=None, x_max=None, z_min=None, z_max=None, r_min=0.5, r_max=3.0):

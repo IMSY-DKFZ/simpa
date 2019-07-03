@@ -93,11 +93,15 @@ class Tags:
     STRUCTURE_TUBE_START_X_MIN_MM = "structure_tube_start_x_min_mm"
     STRUCTURE_TUBE_START_X_MAX_MM = "structure_tube_start_x_max_mm"
 
+    STRUCTURE_ELLIPSE = "structure_ellipse"
+    STRUCTURE_MIN_ECCENTRICITY = "structure_eccentricity_min"
+    STRUCTURE_MAX_ECCENTRICITY = "structure_eccentricity_max"
 
 class SegmentationClasses:
     """
     The segmentation classes define which "tissue types" are modelled in the simulation volumes.
     """
+    GENERIC = -1
     AIR = 0
     MUSCLE = 1
     BONE = 2
