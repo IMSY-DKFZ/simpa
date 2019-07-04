@@ -168,20 +168,20 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     fraction = thickness_in_voxels
     z_range = range(int(depth_in_voxels), int(depth_in_voxels+thickness_in_voxels))
     for z_idx in z_range:
-        for y_idx in range(sizes[0]):
-            for x_idx in range(sizes[1]):
+        for y_idx in range(sizes[1]):
+            for x_idx in range(sizes[0]):
                 volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
                                     structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
         fraction -= 1
         it += 1
 
     if fraction > 1e-10:
-        for y_idx in range(sizes[0]):
-            for x_idx in range(sizes[1]):
+        for y_idx in range(sizes[1]):
+            for x_idx in range(sizes[0]):
                 merge_voxel(volumes, x_idx, y_idx, it+1, mua, mus, g, oxy,
                             structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE], fraction)
 
-    extent_parent_x_z_mm = [0, sizes[1] * global_settings[Tags.SPACING_MM],
+    extent_parent_x_z_mm = [0, sizes[0] * global_settings[Tags.SPACING_MM],
                             depth_in_voxels * global_settings[Tags.SPACING_MM],
                             (depth_in_voxels + thickness_in_voxels) * global_settings[Tags.SPACING_MM]]
 
@@ -211,7 +211,7 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
     if start_x_min is None:
         start_x_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
     if start_x_max is None:
-        start_x_max = (sizes[1] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
+        start_x_max = (sizes[0] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
     if start_z_min is None:
         start_z_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
     if start_z_max is None:
@@ -224,7 +224,7 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
 
     end = np.copy(start_in_voxels)
     start_in_voxels[1] = 0
-    end[1] = sizes[0]
+    end[1] = sizes[1]
 
     idx_z_start = int(start_in_voxels[2] - radius_in_voxels - 1)
     if idx_z_start < 0:
@@ -236,11 +236,11 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
     if idx_x_start < 0:
         idx_x_start = 0
     idx_x_end = int(start_in_voxels[0] + radius_in_voxels + 1)
-    if idx_x_end > sizes[1]:
-        idx_x_end = sizes[1]
+    if idx_x_end > sizes[0]:
+        idx_x_end = sizes[0]
 
     for z_idx in range(idx_z_start, idx_z_end):
-        for y_idx in range(sizes[0]):
+        for y_idx in range(sizes[1]):
             for x_idx in range(idx_x_start, idx_x_end):
                 if fnc_straight_tube(x_idx, y_idx, z_idx, radius_in_voxels, start_in_voxels, end) <= 0:
                     volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
@@ -292,7 +292,7 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
     if start_x_min is None:
         start_x_min = radius_x_in_voxels * global_settings[Tags.SPACING_MM]
     if start_x_max is None:
-        start_x_max = (sizes[1] - radius_x_in_voxels) * global_settings[Tags.SPACING_MM]
+        start_x_max = (sizes[0] - radius_x_in_voxels) * global_settings[Tags.SPACING_MM]
     if start_z_min is None:
         start_z_min = radius_z_in_voxels * global_settings[Tags.SPACING_MM]
     if start_z_max is None:
@@ -305,7 +305,7 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
 
     end = np.copy(start_in_voxels)
     start_in_voxels[1] = 0
-    end[1] = sizes[0]
+    end[1] = sizes[1]
 
     idx_z_start = int(start_in_voxels[2] - radius_z_in_voxels - 1)
     if idx_z_start < 0:
@@ -317,11 +317,11 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
     if idx_x_start < 0:
         idx_x_start = 0
     idx_x_end = int(start_in_voxels[0] + radius_x_in_voxels + 1)
-    if idx_x_end > sizes[1]:
-        idx_x_end = sizes[1]
+    if idx_x_end > sizes[0]:
+        idx_x_end = sizes[0]
 
     for z_idx in range(idx_z_start, idx_z_end):
-        for y_idx in range(sizes[0]):
+        for y_idx in range(sizes[1]):
             for x_idx in range(idx_x_start, idx_x_end):
                 if fnc_straight_ellipse(x_idx, y_idx, z_idx, radius_x_in_voxels, radius_z_in_voxels,
                                         start_in_voxels, end) <= 0:

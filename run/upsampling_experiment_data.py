@@ -5,8 +5,8 @@ from ippai.simulate.structures import create_random_structures
 import numpy as np
 
 seed_index = 0
-while seed_index < 1:
-    random_seed = 60000 + seed_index
+while seed_index < 450:
+    random_seed = 60550 + seed_index
     seed_index += 1
     np.random.seed(random_seed)
 
@@ -24,14 +24,14 @@ while seed_index < 1:
         Tags.VOLUME_NAME: "Structure_"+str(random_seed).zfill(6),
         Tags.SIMULATION_PATH: "/home/janek/E130-Projekte/Photoacoustics/RawData/20190703_upsampling_experiment/",
         Tags.RUN_OPTICAL_MODEL: True,
-        Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+        Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e8,
         Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/simulation_test/mcx",
         Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
         Tags.RUN_ACOUSTIC_MODEL: False,
-        Tags.SPACING_MM: 0.3,
+        Tags.SPACING_MM: 0.15,
         Tags.DIM_VOLUME_Z_MM: 21,
         Tags.DIM_VOLUME_X_MM: 40,
-        Tags.DIM_VOLUME_Y_MM: 40,
+        Tags.DIM_VOLUME_Y_MM: 25,
         Tags.AIR_LAYER_HEIGHT_MM: 12,
         Tags.GELPAD_LAYER_HEIGHT_MM: 18,
         Tags.STRUCTURES: create_random_structures()
