@@ -9,6 +9,7 @@ class Tags:
     WAVELENGTH = "wavelength"
     RANDOM_SEED = "random_seed"
     TISSUE_PROPERTIES_OUPUT_NAME = "properties"
+    SIMULATION_EXTRACT_FIELD_OF_VIEW = "extract_field_of_view"
 
     # Optical model settings
     RUN_OPTICAL_MODEL = 'run_optical_forward_model'
