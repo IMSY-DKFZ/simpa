@@ -240,8 +240,8 @@ def get_arterial_blood_settings():
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
     return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
-                        oxy_min=OpticalTissueProperties.ARTERIAL_OXYGENATION-OpticalTissueProperties.ARTERIAL_OXYGENATION_VARIATION,
-                        oxy_max=OpticalTissueProperties.ARTERIAL_OXYGENATION+OpticalTissueProperties.ARTERIAL_OXYGENATION_VARIATION,
+                        oxy_min=0.8,
+                        oxy_max=1,
                         musp500=OpticalTissueProperties.MUSP500_BLOOD,
                         b_mie=OpticalTissueProperties.BMIE_BLOOD,
                         f_ray=OpticalTissueProperties.FRAY_BLOOD)
@@ -253,8 +253,8 @@ def get_venous_blood_settings():
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
     return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
-                        oxy_min=OpticalTissueProperties.VENOUS_OXYGENATION - OpticalTissueProperties.VENOUS_OXYGENATION_VARIATION,
-                        oxy_max=OpticalTissueProperties.VENOUS_OXYGENATION + OpticalTissueProperties.VENOUS_OXYGENATION_VARIATION,
+                        oxy_min=0,
+                        oxy_max=0.8,
                         musp500=OpticalTissueProperties.MUSP500_BLOOD,
                         b_mie=OpticalTissueProperties.BMIE_BLOOD,
                         f_ray=OpticalTissueProperties.FRAY_BLOOD)
@@ -275,17 +275,14 @@ def get_bone_settings():
 
 def get_random_tube_settings():
     """
-
-        :return: a settings dictionary containing random min and max parameters.
-        """
-    random_musp = np.random.randint(8, 18)
-    return get_settings(b_min=1, b_max=1,
-                        w_min=1, w_max=1,
+    :return: a settings dictionary containing random min and max parameters.
+    """
+    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
                         oxy_min=0,
                         oxy_max=1,
-                        musp500=random_musp,
-                        b_mie=0,
-                        f_ray=0)
+                        musp500=OpticalTissueProperties.MUSP500_BLOOD,
+                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
+                        f_ray=OpticalTissueProperties.FRAY_BLOOD)
 
 
 def get_random_background_settings():
