@@ -46,6 +46,12 @@ class Tags:
     DIM_VOLUME_Y_MM = "volume_y_dim_mm"
     DIM_VOLUME_Z_MM = "volume_z_dim_mm"
 
+    # Constant Tissue Properties
+    KEY_CONSTANT_PROPERTIES = "constant_properties"
+    KEY_MUA = "mua"
+    KEY_MUS = "mus"
+    KEY_G = "g"
+
     # Tissue Properties Settings
     KEY_B = "B"
     KEY_B_MIN = "B_min"
@@ -74,8 +80,8 @@ class Tags:
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"
     STRUCTURE_TISSUE_PROPERTIES = "structure_tissue_properties"
 
-    STRUCTURE_DEPTH_MIN_MM = "structure_depth_min_mm"
-    STRUCTURE_DEPTH_MAX_MM = "structure_depth_max_mm"
+    STRUCTURE_CENTER_DEPTH_MIN_MM = "structure_depth_min_mm"
+    STRUCTURE_CENTER_DEPTH_MAX_MM = "structure_depth_max_mm"
 
     STRUCTURE_USE_DISTORTION = "structure_distortion_multiplicative"
     STRUCTURE_DISTORTED_PARAM_LIST = "structure_distorted_param_list"
@@ -91,8 +97,8 @@ class Tags:
     STRUCTURE_RADIUS_MIN_MM = "structure_radius_min_mm"
     STRUCTURE_RADIUS_MAX_MM = "structure_radius_max_mm"
     STRUCTURE_FORCE_ORTHAGONAL_TO_PLANE = "structure_force_orthagonal_to_plane"
-    STRUCTURE_TUBE_START_X_MIN_MM = "structure_tube_start_x_min_mm"
-    STRUCTURE_TUBE_START_X_MAX_MM = "structure_tube_start_x_max_mm"
+    STRUCTURE_TUBE_CENTER_X_MIN_MM = "structure_tube_start_x_min_mm"
+    STRUCTURE_TUBE_CENTER_X_MAX_MM = "structure_tube_start_x_max_mm"
 
     STRUCTURE_ELLIPSE = "structure_ellipse"
     STRUCTURE_MIN_ECCENTRICITY = "structure_eccentricity_min"

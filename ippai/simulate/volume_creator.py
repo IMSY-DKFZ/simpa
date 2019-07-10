@@ -154,8 +154,8 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
-    depth_min = structure_settings[Tags.STRUCTURE_DEPTH_MIN_MM] + extent_parent_x_z_mm[3]
-    depth_max = structure_settings[Tags.STRUCTURE_DEPTH_MAX_MM] + extent_parent_x_z_mm[3]
+    depth_min = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] + extent_parent_x_z_mm[3]
+    depth_max = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] + extent_parent_x_z_mm[3]
     thickness_min = structure_settings[Tags.STRUCTURE_THICKNESS_MIN_MM]
     thickness_max = structure_settings[Tags.STRUCTURE_THICKNESS_MAX_MM]
 
@@ -199,13 +199,13 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
     radius_in_mm = randomize(radius_min, radius_max)
     radius_in_voxels = radius_in_mm / global_settings[Tags.SPACING_MM]
 
-    start_x_min = structure_settings[Tags.STRUCTURE_TUBE_START_X_MIN_MM] + \
+    start_x_min = structure_settings[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] + \
                   (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_x_max = structure_settings[Tags.STRUCTURE_TUBE_START_X_MAX_MM] + \
+    start_x_max = structure_settings[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] + \
                   (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_z_min = structure_settings[Tags.STRUCTURE_DEPTH_MIN_MM] + \
+    start_z_min = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] + \
                   (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
-    start_z_max = structure_settings[Tags.STRUCTURE_DEPTH_MAX_MM] + \
+    start_z_max = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] + \
                   (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
 
     if start_x_min is None:
@@ -280,13 +280,13 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
     radius_x_in_voxels = radius_x_mm / global_settings[Tags.SPACING_MM]
     radius_z_in_voxels = radius_z_mm / global_settings[Tags.SPACING_MM]
 
-    start_x_min = structure_settings[Tags.STRUCTURE_TUBE_START_X_MIN_MM] + \
+    start_x_min = structure_settings[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] + \
                   (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_x_max = structure_settings[Tags.STRUCTURE_TUBE_START_X_MAX_MM] + \
+    start_x_max = structure_settings[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] + \
                   (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_z_min = structure_settings[Tags.STRUCTURE_DEPTH_MIN_MM] + \
+    start_z_min = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] + \
                   (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
-    start_z_max = structure_settings[Tags.STRUCTURE_DEPTH_MAX_MM] + \
+    start_z_max = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] + \
                   (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
 
     if start_x_min is None:

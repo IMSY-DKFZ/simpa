@@ -52,10 +52,21 @@ class TissueProperties(object):
         self.f_ray = None
         self.b_mie = None
         self.anisotropy = None
+        self.constant_properties = False
+        self.constant_mua = None
+        self.constant_mus = None
+        self.constant_g = None
 
         self.KEYWORDS = [Tags.KEY_B_MIN, Tags.KEY_B_MAX, Tags.KEY_W_MAX, Tags.KEY_W_MIN, Tags.KEY_F_MAX, Tags.KEY_F_MIN,
                          Tags.KEY_M_MAX, Tags.KEY_M_MIN, Tags.KEY_OXY_MAX, Tags.KEY_OXY_MIN]
         if settings is not None:
+            if Tags.KEY_CONSTANT_PROPERTIES in settings[Tags.STRUCTURE_TISSUE_PROPERTIES]:
+                if settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_CONSTANT_PROPERTIES] is True:
+                    self.constant_properties = True
+                    self.constant_mua = settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_MUA]
+                    self.constant_mus = settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_MUS]
+                    self.constant_g = settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_G]
+                    return
             self.ensure_valid_settings_file(settings, tissue_type)
             self.B_min = settings[tissue_type][Tags.KEY_B_MIN]
             self.B_max = settings[tissue_type][Tags.KEY_B_MAX]
@@ -92,7 +103,7 @@ class TissueProperties(object):
 
             self.randomize(distributions, sizes, gauss_size)
 
-        self.absorption_data = np.load("../data/absorption.npz")
+        self.absorption_data = np.load("../data/absorption_450_1000.npz")
 
     def ensure_valid_settings_file(self, settings, tissue_type):
         """
@@ -120,15 +131,22 @@ class TissueProperties(object):
                                   " are not contained in  " + str(tissue_type) + " settings")
 
     def get(self, wavelength):
-        wavelength_idx = wavelength - 700
-        if wavelength_idx < 0 or wavelength_idx > 251:
-            raise AssertionError("Wavelengths only supported between 700 nm and 950 nm")
 
-        absorption = self.wvf * self.absorption_data['water'][wavelength_idx] + \
-                     self.fvf * self.absorption_data['fat'][wavelength_idx] + \
-                     self.mvf * self.absorption_data['melanin'][wavelength_idx] + \
-                     self.bvf * self.oxy * self.absorption_data['hbo2'][wavelength_idx] + \
-                     self.bvf * (1-self.oxy) * self.absorption_data['hb'][wavelength_idx]
+        if self.constant_properties:
+            return [self.constant_mua, self.constant_mus, self.constant_g, -1.0]
+
+        min_wavelength = self.absorption_data['min_wavelength']
+        max_wavelength = self.absorption_data['max_wavelength']
+        wavelength_idx = wavelength - min_wavelength
+        if wavelength_idx < 0 or wavelength_idx > (max_wavelength-min_wavelength+1):
+            raise AssertionError("Wavelengths only supported between " + str(min_wavelength) +
+                                 " nm and " + str(max_wavelength) + " nm")
+
+        absorption = (self.wvf * self.absorption_data['water'][wavelength_idx] +
+                      self.fvf * self.absorption_data['fat'][wavelength_idx] +
+                      self.mvf * self.absorption_data['melanin'][wavelength_idx] +
+                      self.bvf * self.oxy * self.absorption_data['hbo2'][wavelength_idx] +
+                      self.bvf * (1-self.oxy) * self.absorption_data['hb'][wavelength_idx])
 
         scattering_p = self.musp500 * (self.f_ray * (wavelength / 500) ** 1e-4 +
                                        (1 - self.f_ray) * (wavelength / 500) ** -self.b_mie)
@@ -298,6 +316,15 @@ def get_random_background_settings():
                         musp500=random_musp,
                         b_mie=0,
                         f_ray=0)
+
+
+def get_constant_settings(mua, mus, g):
+    return_dict = dict()
+    return_dict[Tags.KEY_CONSTANT_PROPERTIES] = True
+    return_dict[Tags.KEY_MUA] = mua
+    return_dict[Tags.KEY_MUS] = mus
+    return_dict[Tags.KEY_G] = g
+    return return_dict
 
 
 def get_settings(b_min=0.0, b_max=0.0,

@@ -8,12 +8,12 @@ def create_random_ellipse(x_min_mm=2, x_max_mm=35, depth_min_mm=3, depth_max_mm=
                           eccentricity_min=0.25, eccentricity_max=3.5):
     rnd_tube_dict = dict()
     rnd_tube_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_ELLIPSE
-    rnd_tube_dict[Tags.STRUCTURE_DEPTH_MIN_MM] = depth_min_mm
-    rnd_tube_dict[Tags.STRUCTURE_DEPTH_MAX_MM] = depth_max_mm
+    rnd_tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = depth_min_mm
+    rnd_tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = depth_max_mm
     rnd_tube_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = r_min_mm
     rnd_tube_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = r_max_mm
-    rnd_tube_dict[Tags.STRUCTURE_TUBE_START_X_MIN_MM] = x_min_mm
-    rnd_tube_dict[Tags.STRUCTURE_TUBE_START_X_MAX_MM] = x_max_mm
+    rnd_tube_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = x_min_mm
+    rnd_tube_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = x_max_mm
     rnd_tube_dict[Tags.STRUCTURE_MIN_ECCENTRICITY] = eccentricity_min
     rnd_tube_dict[Tags.STRUCTURE_MAX_ECCENTRICITY] = eccentricity_max
     rnd_tube_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_random_tube_settings()
@@ -49,12 +49,12 @@ def create_random_structures():
 def create_vessel_tube(x_min=None, x_max=None, z_min=None, z_max=None, r_min=0.5, r_max=3.0):
     vessel_dict = dict()
     vessel_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_TUBE
-    vessel_dict[Tags.STRUCTURE_DEPTH_MIN_MM] = z_min
-    vessel_dict[Tags.STRUCTURE_DEPTH_MAX_MM] = z_max
+    vessel_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = z_min
+    vessel_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = z_max
     vessel_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = r_min
     vessel_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = r_max
-    vessel_dict[Tags.STRUCTURE_TUBE_START_X_MIN_MM] = x_min
-    vessel_dict[Tags.STRUCTURE_TUBE_START_X_MAX_MM] = x_max
+    vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = x_min
+    vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = x_max
     vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_blood_settings()
     vessel_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
     return vessel_dict
@@ -107,6 +107,7 @@ def create_unrealistic_forearm_structures(relative_shift_mm=0, background_oxy=0.
                                                                                   eccentricity_max=0.5)
     return structures_dict
 
+
 def create_muscle_background(background_oxy=0.0):
     muscle_dict = dict()
     muscle_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
@@ -121,8 +122,8 @@ def create_muscle_background(background_oxy=0.0):
 def create_epidermis_layer(background_oxy=0.0):
     epidermis_dict = dict()
     epidermis_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_LAYER
-    epidermis_dict[Tags.STRUCTURE_DEPTH_MIN_MM] = 0
-    epidermis_dict[Tags.STRUCTURE_DEPTH_MAX_MM] = 0
+    epidermis_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = 0
+    epidermis_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = 0
     epidermis_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = MorphologicalTissueProperties.EPIDERMIS_THICKNESS_MEAN_MM - MorphologicalTissueProperties.EPIDERMIS_THICKNESS_STD_MM
     epidermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = MorphologicalTissueProperties.EPIDERMIS_THICKNESS_MEAN_MM + MorphologicalTissueProperties.EPIDERMIS_THICKNESS_STD_MM
     epidermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_epidermis_settings(background_oxy=background_oxy)
@@ -136,8 +137,8 @@ def create_epidermis_layer(background_oxy=0.0):
 def create_dermis_layer(background_oxy=0.0):
     dermis_dict = dict()
     dermis_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_LAYER
-    dermis_dict[Tags.STRUCTURE_DEPTH_MIN_MM] = 0
-    dermis_dict[Tags.STRUCTURE_DEPTH_MAX_MM] = 0
+    dermis_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = 0
+    dermis_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = 0
     dermis_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = MorphologicalTissueProperties.DERMIS_THICKNESS_MEAN_MM - MorphologicalTissueProperties.DERMIS_THICKNESS_STD_MM
     dermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = MorphologicalTissueProperties.DERMIS_THICKNESS_MEAN_MM + MorphologicalTissueProperties.DERMIS_THICKNESS_STD_MM
     dermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_dermis_settings(background_oxy=background_oxy)
@@ -157,8 +158,8 @@ def create_subcutaneous_fat_layer(background_oxy=0.0):
     """
     fat_dict = dict()
     fat_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_LAYER
-    fat_dict[Tags.STRUCTURE_DEPTH_MIN_MM] = 1.5
-    fat_dict[Tags.STRUCTURE_DEPTH_MAX_MM] = 1.5
+    fat_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = 1.5
+    fat_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = 1.5
     fat_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = 1.5
     fat_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = 1.9
     fat_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_subcutaneous_fat_settings(background_oxy=background_oxy)
