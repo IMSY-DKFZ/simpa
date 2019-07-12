@@ -7,8 +7,9 @@ import numpy as np
 
 
 seed_index = 0
-while seed_index < 181:
-    random_seed = 40819 + seed_index
+while seed_index < 41:
+    # 465 < 35
+    random_seed = 40959 + seed_index
     seed_index += 1
     np.random.seed(random_seed)
 

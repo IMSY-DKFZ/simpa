@@ -20,7 +20,7 @@ def simulate(settings):
 
     path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/"
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path)
 
     np.savez(path + "settings.npz",
              settings=settings)

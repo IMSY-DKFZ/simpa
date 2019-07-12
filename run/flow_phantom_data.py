@@ -22,7 +22,9 @@ def create_agar_phantom():
     phantom_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = 9.5
     phantom_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = 12
     phantom_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = 12
-    phantom_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_constant_settings(mua=0.05, mus=5, g=0.9)
+    phantom_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_settings(w_max=1, w_min=0.5,
+                                                                  oxy_min=-1, oxy_max=-1,
+                                                                  musp500=5)
     phantom_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
     return phantom_dict
 
@@ -32,8 +34,8 @@ def create_flow_vessel():
     vessel_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_TUBE
     vessel_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = 12
     vessel_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = 12
-    vessel_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = 0.75
-    vessel_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = 0.75
+    vessel_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = 0.5
+    vessel_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = 1.25
     vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = 12
     vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = 12
     vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_blood_settings()
@@ -51,12 +53,12 @@ def create_flow_phantom_parameters():
 
 seed_index = 0
 while seed_index < 1000:
-    random_seed = 1000 + seed_index
+    random_seed = 200000 + seed_index
     seed_index += 1
     np.random.seed(random_seed)
 
     settings = {
-        Tags.WAVELENGTHS: [700, 708, 715, 730, 735, 760, 770, 775, 779, 800, 850, 950],
+        Tags.WAVELENGTHS: [660, 664, 680, 684, 694, 700, 708, 715, 730, 735, 760, 770, 775, 779, 800, 850, 950],
         Tags.RANDOM_SEED: random_seed,
         Tags.VOLUME_NAME: "FlowPhantom_"+str(random_seed).zfill(6),
         Tags.SIMULATION_PATH: "/media/janek/Maxtor/flow_phantom_simulation/",
