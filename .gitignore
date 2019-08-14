@@ -119,3 +119,6 @@ dmypy.json
 .idea/
 .idea/*
 /*/.idea/*/
+
+# numpy files
+*npy

@@ -23,9 +23,14 @@ class Tags:
     MODEL_MCXYZ = "mcxyz"
     MODEL_MCX = "mcx"
 
+    # Supported acoustic models
+    ACOUSTIC_MODEL = "acoustic_model"
+    MODEL_K_WAVE = "k-wave"
+
     # Acoustic model settings
     RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
+    ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
 
     # physical property volume types
     PROPERTY_ABSORPTION_PER_CM = 'mua'
@@ -45,6 +50,16 @@ class Tags:
     DIM_VOLUME_X_MM = "volume_x_dim_mm"
     DIM_VOLUME_Y_MM = "volume_y_dim_mm"
     DIM_VOLUME_Z_MM = "volume_z_dim_mm"
+
+    # 2D Acoustic Medium Properties
+    MEDIUM_SPACING = "medium_spacing"
+    MEDIUM_SOUND_SPEED = "medium_sound_speed"
+    MEDIUM_ALPHA_COEFF = "medium_alpha_coeff"
+    MEDIUM_ALPHA_POWER = "medium_alpha_power"
+
+    # Acoustic Sensor Properties
+    SENSOR_CENTER_FREQUENCY = "sensor_center_frequency"
+    SENSOR_BANDWIDTH = "sensor_bandwidth"
 
     # Constant Tissue Properties
     KEY_CONSTANT_PROPERTIES = "constant_properties"

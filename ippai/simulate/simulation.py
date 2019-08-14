@@ -36,7 +36,7 @@ def simulate(settings):
         volume_path = create_simulation_volume(settings)
         volume_paths.append(volume_path)
 
-        optical_path=None
+        optical_path = None
         acoustic_path = None
 
         if settings[Tags.RUN_OPTICAL_MODEL]:

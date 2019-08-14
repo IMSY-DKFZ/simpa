@@ -1,16 +1,17 @@
 from ippai.simulate import Tags
 import numpy as np
+from ippai.simulate.models.acoustic_models import k_wave_adapter
+import os
 
 
-def run_acoustic_forward_model(simulation_folder, settings):
+def run_acoustic_forward_model(settings):
     # TODO
     acoustic_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" + \
-                    Tags.ACOUSTIC_MODEL_OUTPUT_NAME + "_" + \
-                    str(settings[Tags.WAVELENGTH]) + "nm.npz"
+                    Tags.ACOUSTIC_MODEL_OUTPUT_NAME +".npz"
 
-    volumes = [None]
+    data = k_wave_adapter.simulate(settings)
 
     np.savez(acoustic_path,
-             fluence=volumes[0])
+             sensor_data=data)
 
     return acoustic_path
