@@ -10,6 +10,7 @@ class Tags:
     RANDOM_SEED = "random_seed"
     TISSUE_PROPERTIES_OUPUT_NAME = "properties"
     SIMULATION_EXTRACT_FIELD_OF_VIEW = "extract_field_of_view"
+    GPU = "gpu"
 
     # Optical model settings
     RUN_OPTICAL_MODEL = 'run_optical_forward_model'
@@ -26,11 +27,14 @@ class Tags:
     # Supported acoustic models
     ACOUSTIC_MODEL = "acoustic_model"
     MODEL_K_WAVE = "k-wave"
+    ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
 
     # Acoustic model settings
     RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
+    RECORDMOVIE = "record_movie"
+    MOVIENAME = "movie_name"
 
     # physical property volume types
     PROPERTY_ABSORPTION_PER_CM = 'mua'
@@ -40,9 +44,11 @@ class Tags:
     PROPERTY_SEGMENTATION = 'segmentation'
 
     # Air layer
+    AIR_LAYER = "airlayer"
     AIR_LAYER_HEIGHT_MM = "air_layer_height"
 
     # Gel Pad Layer
+    GELPAD_LAYER = "gelpad"
     GELPAD_LAYER_HEIGHT_MM = "gelpad_layer_height_mm"
 
     # Volume geometry settings
@@ -52,14 +58,27 @@ class Tags:
     DIM_VOLUME_Z_MM = "volume_z_dim_mm"
 
     # 2D Acoustic Medium Properties
-    MEDIUM_SPACING = "medium_spacing"
     MEDIUM_SOUND_SPEED = "medium_sound_speed"
+    MEDIUM_DENSITY = "medium_density"
     MEDIUM_ALPHA_COEFF = "medium_alpha_coeff"
     MEDIUM_ALPHA_POWER = "medium_alpha_power"
+    MEDIUM_NONLINEARITY = "medium_nonlinearity"
+
+    # PML parameters
+
+    PMLSize = "pml_size"
+    PMLAlpha = "pml_alpha"
+    PMLInside = "pml_inside"
+    PlotPML = "plot_pml"
 
     # Acoustic Sensor Properties
+    SENSOR_MASK = "sensor_mask"
+    SENSOR_RECORD = "sensor_record"
     SENSOR_CENTER_FREQUENCY = "sensor_center_frequency"
     SENSOR_BANDWIDTH = "sensor_bandwidth"
+    SENSOR_DIRECTIVITY_ANGLE = "sensor_directivity_angle"
+    SENSOR_DIRECTIVITY_SIZE = "sensor_directivity_size"
+    SENSOR_DIRECTIVITY_PATTERN = "sensor_directivity_pattern"
 
     # Constant Tissue Properties
     KEY_CONSTANT_PROPERTIES = "constant_properties"

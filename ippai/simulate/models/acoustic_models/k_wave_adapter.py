@@ -3,7 +3,6 @@ import subprocess
 from ippai.simulate import Tags
 import json
 import os
-import matlab.engine
 
 
 def simulate(settings):
@@ -19,7 +18,7 @@ def simulate(settings):
     cmd.append("matlab")
     cmd.append("-nodisplay")
     cmd.append("-r")
-    cmd.append("test_simulate '" + tmp_json_filename + "';exit;")
+    cmd.append(settings[Tags.ACOUSTIC_MODEL_SCRIPT] + " '" + tmp_json_filename + "';exit;")
     os.chdir(settings[Tags.SIMULATION_PATH])
 
     subprocess.run(cmd)
