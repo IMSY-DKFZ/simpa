@@ -6,16 +6,12 @@ import numpy as np
 import os
 
 
-random_seed = 12345
-np.random.seed(random_seed)
-
 settings = {
     Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/k-wave/test_data",
     Tags.OPTICAL_MODEL_OUTPUT_NAME: "/home/kris/networkdrives/E130-Projekte/Photoacoustics/PreProcessedData/"
                                     "20190703_upsampling_experiment/multi_scale/training/Structure_0033014/"
                                     "spacing_0.15/optical_forward_model_output_885.npz",
     Tags.VOLUME_NAME: "test_data",
-    Tags.RANDOM_SEED: random_seed,
     Tags.RUN_ACOUSTIC_MODEL: True,
     Tags.ACOUSTIC_MODEL_SCRIPT: "simulate",
     Tags.GPU: True,
@@ -23,12 +19,14 @@ settings = {
     Tags.SPACING_MM: 0.15,
     Tags.MEDIUM_ALPHA_COEFF: 0.1,
     Tags.MEDIUM_ALPHA_POWER: 1.5,
-    Tags.MEDIUM_SOUND_SPEED: 1500,
+    Tags.MEDIUM_SOUND_SPEED: "/home/kris/hard_drive/data/k-wave/test_data/test_data/sound_speed.npy",
+    Tags.MEDIUM_DENSITY: "/home/kris/hard_drive/data/k-wave/test_data/test_data/medium_density.npy",
 
+    Tags.SENSOR_MASK: "/home/kris/hard_drive/data/k-wave/test_data/test_data/sensor_mask.npy",
     Tags.SENSOR_RECORD: "p",
     Tags.SENSOR_CENTER_FREQUENCY: 7.5e6,
     Tags.SENSOR_BANDWIDTH: 133,
-    Tags.SENSOR_DIRECTIVITY_ANGLE: 0,   # Most sensitive in x-dir (up/down)
+    Tags.SENSOR_DIRECTIVITY_ANGLE: "/home/kris/hard_drive/data/k-wave/test_data/test_data/directivity_angle.npy", #0,   # Most sensitive in x-dir (up/down)
     Tags.SENSOR_DIRECTIVITY_SIZE: 0.001,    # [m]
     Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",
 
