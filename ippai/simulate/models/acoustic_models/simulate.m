@@ -1,10 +1,10 @@
-function [] = simulate(filename)
+function [] = simulate(settings, optical_path)
 
 %% Read settings file
-settings = jsondecode(fileread(filename));  % read settings as json file
+settings = jsondecode(fileread(settings));  % read settings as json file
 
 %% Read initial pressure
-data = unzip(settings.optical_forward_model_output);    % unzip optical forward model
+data = unzip(optical_path);    % unzip optical forward model
 % from .npz file to "fluence" (data{1}) and "initial_pressure" (data{2})
 initial_pressure = rot90(readNPY(data{2}), 3);  % rotate initial pressure 270°
 source.p0 = initial_pressure;

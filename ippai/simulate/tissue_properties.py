@@ -103,7 +103,13 @@ class TissueProperties(object):
 
             self.randomize(distributions, sizes, gauss_size)
 
-        self.absorption_data = np.load("../data/absorption_450_1000.npz")
+        try:
+            self.absorption_data = np.load("../../data/absorption_450_1000.npz")
+        except FileNotFoundError:
+            try:
+                self.absorption_data = np.load("../../data/absorption_450_1000.npz")
+            except FileNotFoundError:
+                raise Exception("The absorption data could not be found in the ippai/data folder.")
 
     def ensure_valid_settings_file(self, settings, tissue_type):
         """

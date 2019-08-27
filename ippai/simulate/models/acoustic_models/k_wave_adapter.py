@@ -5,7 +5,7 @@ import json
 import os
 
 
-def simulate(settings):
+def simulate(settings, optical_path):
 
     tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "_output.npy"
     settings["output_file"] = tmp_output_file
@@ -18,7 +18,7 @@ def simulate(settings):
     cmd.append("matlab")
     cmd.append("-nodisplay")
     cmd.append("-r")
-    cmd.append(settings[Tags.ACOUSTIC_MODEL_SCRIPT] + " '" + tmp_json_filename + "';exit;")
+    cmd.append(settings[Tags.ACOUSTIC_MODEL_SCRIPT] + " ('" + tmp_json_filename + "', '" + optical_path + "');exit;")
     os.chdir(settings[Tags.SIMULATION_PATH])
 
     subprocess.run(cmd)

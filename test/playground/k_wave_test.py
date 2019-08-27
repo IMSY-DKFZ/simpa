@@ -5,12 +5,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+optical_path = "/home/kris/hard_drive/data/pipeline_test/UpsamplingPhantom_200000/optical_forward_model_output_800.npz"
 
 settings = {
     Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/k-wave/test_data",
-    Tags.OPTICAL_MODEL_OUTPUT_NAME: "/home/kris/networkdrives/E130-Projekte/Photoacoustics/PreProcessedData/"
-                                    "20190703_upsampling_experiment/multi_scale/training/Structure_0033014/"
-                                    "spacing_0.15/optical_forward_model_output_885.npz",
     Tags.VOLUME_NAME: "test_data",
     Tags.RUN_ACOUSTIC_MODEL: True,
     Tags.ACOUSTIC_MODEL_SCRIPT: "simulate",
@@ -40,10 +38,10 @@ settings = {
 
 os.makedirs(settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME], exist_ok=True)
 
-acoustic_output_path = run_acoustic_forward_model(settings)
+acoustic_output_path = run_acoustic_forward_model(settings, optical_path)
 
 plt.subplot(121)
-initital_pressure = np.load(settings[Tags.OPTICAL_MODEL_OUTPUT_NAME])["initial_pressure"]
+initital_pressure = np.load(optical_path)["initial_pressure"]
 plt.imshow(np.rot90(np.log10(initital_pressure), 3))
 plt.subplot(122)
 data = np.load(acoustic_output_path)["sensor_data"]

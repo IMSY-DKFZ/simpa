@@ -37,18 +37,18 @@ def simulate(optical_properties_path, settings, optical_output_path):
         "Photons": settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
         "DoMismatch": 0
          },
-	"Forward": {
-		"T0": 0,
-		"T1": 5e-09,
-		"Dt": 5e-09
-	},
-	# "Optode": {
-	# 	"Source": {
-	# 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
-	# 		"Dir": [0,0,1]
-	# 	}
-	# },
-    "Optode": {
+        "Forward": {
+            "T0": 0,
+            "T1": 5e-09,
+            "Dt": 5e-09
+        },
+        # "Optode": {
+        # 	"Source": {
+        # 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
+        # 		"Dir": [0,0,1]
+        # 	}
+        # },
+        "Optode": {
           "Source": {
               "Pos": [
                   int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
@@ -73,31 +73,31 @@ def simulate(optical_properties_path, settings, optical_output_path):
               ]
           }
       },
-	"Domain": {
-		"OriginType": 0,
-        "LengthUnit": settings[Tags.SPACING_MM],
-		"Media": [
-			{
-				"mua": 0,
-				"mus": 0,
-				"g": 1,
-				"n": 1
-			},
-			{
-				"mua": 1,
-				"mus": 1,
-				"g": 0.9,
-				"n": 1
-			}
-		],
-		"MediaFormat": "muamus_float",
-		"Dim": [nx, ny, nz],
-		"VolumeFile": settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".bin"
-	}}
+        "Domain": {
+            "OriginType": 0,
+            "LengthUnit": settings[Tags.SPACING_MM],
+            "Media": [
+                {
+                    "mua": 0,
+                    "mus": 0,
+                    "g": 1,
+                    "n": 1
+                },
+                {
+                    "mua": 1,
+                    "mus": 1,
+                    "g": 0.9,
+                    "n": 1
+                }
+            ],
+            "MediaFormat": "muamus_float",
+            "Dim": [nx, ny, nz],
+            "VolumeFile": settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".bin"
+        }}
 
     tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".json"
     with open(tmp_json_filename, "w") as json_file:
-        json.dump(settings_dict, json_file)
+        json.dump(settings_dict, json_file, indent="\t")
 
     # run the simulation
 
