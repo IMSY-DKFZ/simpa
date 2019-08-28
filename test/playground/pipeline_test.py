@@ -48,6 +48,12 @@ while seed_index < 1:
         Tags.GELPAD_LAYER_HEIGHT_MM: 18,
         Tags.STRUCTURES: create_upsampling_phantom_parameters(),
 
+        # Upsampling settings
+
+        Tags.UPSAMPLE: True,
+        Tags.CROP_IMAGE: True,
+        Tags.UPSAMPLING_METHOD: "deep_learning",
+
         # Acoustic forward path settings
 
         Tags.ACOUSTIC_MODEL_SCRIPT: "simulate",

@@ -2,6 +2,7 @@ from ippai.simulate import Tags
 from ippai.simulate.volume_creator import create_simulation_volume
 from ippai.simulate.models.optical_model import run_optical_forward_model
 from ippai.simulate.models.acoustic_model import run_acoustic_forward_model
+from ippai.process.sampling import upsample
 import numpy as np
 import os
 
@@ -43,13 +44,17 @@ def simulate(settings):
             optical_path = run_optical_forward_model(settings, volume_path)
             optical_paths.append(optical_path)
 
-        if settings[Tags.RUN_ACOUSTIC_MODEL]:
-            acoustic_path = run_acoustic_forward_model(settings, optical_path)
-            acoustic_paths.append(acoustic_path)
-
         if Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW in settings:
             if settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
                 extract_field_of_view(volume_path, optical_path, acoustic_path)
+
+        if settings[Tags.UPSAMPLE]:
+            optical_path = upsample(settings, optical_path)
+            optical_paths.append(optical_path)
+
+        if settings[Tags.RUN_ACOUSTIC_MODEL]:
+            acoustic_path = run_acoustic_forward_model(settings, optical_path)
+            acoustic_paths.append(acoustic_path)
 
     return [volume_paths, optical_paths, acoustic_paths]
 

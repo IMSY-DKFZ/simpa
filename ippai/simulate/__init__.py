@@ -36,6 +36,13 @@ class Tags:
     RECORDMOVIE = "record_movie"
     MOVIENAME = "movie_name"
 
+    # Upsampling settings
+
+    CROP_IMAGE = "crop_image"
+    CROP_POWER_OF_TWO = "crop_power_of_two"
+    UPSAMPLE = "upsample"
+    UPSAMPLING_METHOD = "upsampling_method"
+
     # physical property volume types
     PROPERTY_ABSORPTION_PER_CM = 'mua'
     PROPERTY_SCATTERING_PER_CM = 'mus'
