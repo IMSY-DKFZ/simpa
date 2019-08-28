@@ -35,10 +35,10 @@ while seed_index < 1:
         Tags.VOLUME_NAME: "UpsamplingPhantom_"+str(random_seed).zfill(6),
         Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/pipeline_test",
         Tags.RUN_OPTICAL_MODEL: True,
-        Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e6,
+        Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e6,
         Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/mcx_test/mcx",
         Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
-        Tags.RUN_ACOUSTIC_MODEL: False,
+        Tags.RUN_ACOUSTIC_MODEL: True,
         Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
         Tags.SPACING_MM: 0.15,
         Tags.DIM_VOLUME_Z_MM: 21,
@@ -52,6 +52,7 @@ while seed_index < 1:
 
         Tags.UPSAMPLE: True,
         Tags.CROP_IMAGE: True,
+        Tags.CROP_POWER_OF_TWO: True,
         Tags.UPSAMPLING_METHOD: "nearest_neighbor",
         Tags.UPSCALE_FACTOR: 2,
 
@@ -62,14 +63,14 @@ while seed_index < 1:
 
         Tags.MEDIUM_ALPHA_COEFF: 0.1,
         Tags.MEDIUM_ALPHA_POWER: 1.5,
-        Tags.MEDIUM_SOUND_SPEED: "/home/kris/hard_drive/data/k-wave/test_data/test_data/sound_speed.npy",
-        Tags.MEDIUM_DENSITY: "/home/kris/hard_drive/data/k-wave/test_data/test_data/medium_density.npy",
+        Tags.MEDIUM_SOUND_SPEED: 1500, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sound_speed.npy",
+        Tags.MEDIUM_DENSITY: 1, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/medium_density.npy",
 
-        Tags.SENSOR_MASK: "/home/kris/hard_drive/data/k-wave/test_data/test_data/sensor_mask.npy",
+        Tags.SENSOR_MASK: 1, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sensor_mask.npy",
         Tags.SENSOR_RECORD: "p",
         Tags.SENSOR_CENTER_FREQUENCY: 7.5e6,
         Tags.SENSOR_BANDWIDTH: 133,
-        Tags.SENSOR_DIRECTIVITY_ANGLE: "/home/kris/hard_drive/data/k-wave/test_data/test_data/directivity_angle.npy",
+        Tags.SENSOR_DIRECTIVITY_ANGLE: 0, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/directivity_angle.npy",
         # 0,   # Most sensitive in x-dir (up/down)
         Tags.SENSOR_DIRECTIVITY_SIZE: 0.001,  # [m]
         Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",

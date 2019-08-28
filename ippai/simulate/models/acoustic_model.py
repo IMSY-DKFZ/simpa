@@ -5,9 +5,10 @@ import os
 
 
 def run_acoustic_forward_model(settings, optical_path):
-    # TODO
+    print("OPTICAL FORWARD")
+
     acoustic_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" + \
-                    Tags.ACOUSTIC_MODEL_OUTPUT_NAME +".npz"
+                    Tags.ACOUSTIC_MODEL_OUTPUT_NAME + ".npz"
 
     data = k_wave_adapter.simulate(settings, optical_path)
 

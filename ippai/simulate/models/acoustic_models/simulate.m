@@ -19,7 +19,11 @@ end
 
 source.p0 = padarray(source.p0, [2 0], 0, 'pre');
 [Nx, Ny] = size(source.p0);
-dx = settings.voxel_spacing_mm/1000;    % convert from mm to m
+if settings.upsample == true
+    dx = settings.voxel_spacing_mm/(settings.upscale_factor * 1000);
+else
+    dx = settings.voxel_spacing_mm/1000;    % convert from mm to m
+end
 kgrid = kWaveGrid(Nx, dx, Ny, dx);
 
 %% Define medium

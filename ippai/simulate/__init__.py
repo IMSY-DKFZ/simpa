@@ -39,6 +39,7 @@ class Tags:
     # Upsampling settings
 
     CROP_IMAGE = "crop_image"
+    CENTER_CROP = "center_crop"
     CROP_POWER_OF_TWO = "crop_power_of_two"
     UPSAMPLE = "upsample"
     UPSAMPLING_METHOD = "upsampling_method"

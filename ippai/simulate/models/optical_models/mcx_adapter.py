@@ -72,7 +72,7 @@ def simulate(optical_properties_path, settings, optical_output_path):
                   0
               ]
           }
-      },
+        },
         "Domain": {
             "OriginType": 0,
             "LengthUnit": settings[Tags.SPACING_MM],

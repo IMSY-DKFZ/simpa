@@ -104,7 +104,7 @@ class TissueProperties(object):
             self.randomize(distributions, sizes, gauss_size)
 
         try:
-            self.absorption_data = np.load("../../data/absorption_450_1000.npz")
+            self.absorption_data = np.load("../data/absorption_450_1000.npz")
         except FileNotFoundError:
             try:
                 self.absorption_data = np.load("../../data/absorption_450_1000.npz")

@@ -41,10 +41,10 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.WAVELENGTHS: [800], #np.arange(700, 951, 10),
             Tags.WAVELENGTH: 800,
             Tags.VOLUME_NAME: "TestVolume",
-            Tags.SIMULATION_PATH: "/media/kris/6TB_Hard_Drive/mcx_test/",
+            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e8,
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/media/kris/6TB_Hard_Drive/mcx_test/mcx",
+            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/mcx_test/mcx",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 0.5,
             Tags.OPTICAL_MODEL:Tags.MODEL_MCX
