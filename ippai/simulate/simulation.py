@@ -48,9 +48,10 @@ def simulate(settings):
             if settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
                 extract_field_of_view(volume_path, optical_path, acoustic_path)
 
-        if settings[Tags.UPSAMPLE]:
-            optical_path = upsample(settings, optical_path)
-            optical_paths.append(optical_path)
+        if Tags.UPSAMPLE in settings:
+            if settings[Tags.UPSAMPLE]:
+                optical_path = upsample(settings, optical_path)
+                optical_paths.append(optical_path)
 
         if settings[Tags.RUN_ACOUSTIC_MODEL]:
             acoustic_path = run_acoustic_forward_model(settings, optical_path)

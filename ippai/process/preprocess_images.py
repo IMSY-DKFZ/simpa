@@ -22,7 +22,7 @@ def preprocess_image(settings, image_data):
             image_data = image_data[gelpad_layer:, :]
 
         if settings[Tags.CROP_POWER_OF_TWO]:
-            image_data = center_crop_power_two(settings, image_data)
+            image_data = center_crop_power_two(image_data)
 
     return image_data
 
@@ -68,7 +68,7 @@ def center_crop(image_data, output_size):
     return crop(image_data, i, j, target_height, target_width)
 
 
-def center_crop_power_two(settings, image_data):
+def center_crop_power_two(image_data):
     """
     Center crop the given image to the sizes of the largest powers of two smaller than the image height and width,
     respectively.

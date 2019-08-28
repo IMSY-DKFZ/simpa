@@ -52,7 +52,8 @@ while seed_index < 1:
 
         Tags.UPSAMPLE: True,
         Tags.CROP_IMAGE: True,
-        Tags.UPSAMPLING_METHOD: "deep_learning",
+        Tags.UPSAMPLING_METHOD: "nearest_neighbor",
+        Tags.UPSCALE_FACTOR: 2,
 
         # Acoustic forward path settings
 

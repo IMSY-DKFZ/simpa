@@ -42,6 +42,7 @@ class Tags:
     CROP_POWER_OF_TWO = "crop_power_of_two"
     UPSAMPLE = "upsample"
     UPSAMPLING_METHOD = "upsampling_method"
+    UPSCALE_FACTOR = "upscale_factor"
 
     # physical property volume types
     PROPERTY_ABSORPTION_PER_CM = 'mua'
