@@ -44,6 +44,7 @@ class Tags:
     UPSAMPLE = "upsample"
     UPSAMPLING_METHOD = "upsampling_method"
     UPSCALE_FACTOR = "upscale_factor"
+    DL_MODEL_PATH = "dl_model_path"
 
     # physical property volume types
     PROPERTY_ABSORPTION_PER_CM = 'mua'

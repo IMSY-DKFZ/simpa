@@ -5,7 +5,7 @@ import os
 
 
 def run_acoustic_forward_model(settings, optical_path):
-    print("OPTICAL FORWARD")
+    print("ACOUSTIC FORWARD")
 
     acoustic_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" + \
                     Tags.ACOUSTIC_MODEL_OUTPUT_NAME + ".npz"

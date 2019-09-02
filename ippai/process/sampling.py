@@ -1,7 +1,7 @@
 import numpy as np
 from ippai.simulate import Tags
 from ippai.process import preprocess_images
-from ippai.deep_learning import datasets
+from ippai.deep_learning import datasets, Architectures
 from scipy.ndimage import zoom
 import os
 import torch
@@ -49,26 +49,47 @@ def dl_upsample(settings, image_data):
 
     :param settings: (dict) Dictionary that describes all simulation parameters.
     :param image_data: (numpy array) Image to be upsampled.
+    :param model_path: (string) Path to the file of the deep learning model state_dict.
     :return: Upsampled image.
     """
     low_res = settings[Tags.SPACING_MM]
     high_res = settings[Tags.SPACING_MM]/settings[Tags.UPSCALE_FACTOR]
 
-    model_root = "../deep_learning/models"
+    model_path = settings[Tags.DL_MODEL_PATH]
 
-    for i, model in enumerate(os.listdir(model_root)):
-        if str(low_res) in model and str(high_res) in model:
-            model_path = os.path.join(model_root, model)
+    if model_path is None:
+        model_root = "../../data/deep_learning_models"
+        for i, model in enumerate(os.listdir(model_root)):
+            if str(low_res) in model and str(high_res) in model:
+                model_path = os.path.join(model_root, model)
+                break
+            elif i == len(os.listdir(model_root)) - 1:
+                raise FileNotFoundError("Deep Learning model with specified scales doesn't exist.")
+            else:
+                continue
+
+        for file in os.listdir(model_path):
+            model_path = os.path.join(model_path, file)
             break
-        elif i == len(os.listdir(model_root)) - 1:
-            raise FileNotFoundError("Deep Learning model with specified scales doesn't exist.")
-        else:
-            continue
 
-    dl_model = torch.load(model_path)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    dl_model = Architectures.ESPCN(upscale_factor=settings[Tags.UPSCALE_FACTOR])
+    dl_model.to(device)
+    dl_model.load_state_dict(torch.load(model_path))
     dl_model.eval()
 
-    return image_data
+    with torch.no_grad():
+        normalized_image_data, mx, mn = datasets.normalize_min_max(image_data)
+        normalized_tensor = torch.from_numpy(normalized_image_data).unsqueeze(0).unsqueeze(0).type(torch.float32)
+
+        upsampled_tensor = dl_model(normalized_tensor.to(device)).cpu()
+
+        normalized_upsampled_image = upsampled_tensor.detach().squeeze(0).squeeze(0).numpy()
+
+        upsampled_image = datasets.normalize_min_max_inverse(normalized_upsampled_image, mx=mx, mn=mn)
+
+    return upsampled_image
 
 
 def nn_upsample(settings, image_data):

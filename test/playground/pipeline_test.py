@@ -35,7 +35,7 @@ while seed_index < 1:
         Tags.VOLUME_NAME: "UpsamplingPhantom_"+str(random_seed).zfill(6),
         Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/pipeline_test",
         Tags.RUN_OPTICAL_MODEL: True,
-        Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e6,
+        Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
         Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/mcx_test/mcx",
         Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
         Tags.RUN_ACOUSTIC_MODEL: True,
@@ -53,8 +53,9 @@ while seed_index < 1:
         Tags.UPSAMPLE: True,
         Tags.CROP_IMAGE: True,
         Tags.CROP_POWER_OF_TWO: True,
-        Tags.UPSAMPLING_METHOD: "nearest_neighbor",
+        Tags.UPSAMPLING_METHOD: "deep_learning",
         Tags.UPSCALE_FACTOR: 2,
+        Tags.DL_MODEL_PATH: None,
 
         # Acoustic forward path settings
 
