@@ -1,6 +1,7 @@
 import numpy as np
 from ippai.simulate import Tags
 from ippai.process import preprocess_images
+from ippai.deep_learning import datasets
 from scipy.ndimage import zoom
 import os
 import torch
@@ -56,7 +57,7 @@ def dl_upsample(settings, image_data):
     model_root = "../deep_learning/models"
 
     for i, model in enumerate(os.listdir(model_root)):
-        if str(0.15) in model and str(0.075) in model:
+        if str(low_res) in model and str(high_res) in model:
             model_path = os.path.join(model_root, model)
             break
         elif i == len(os.listdir(model_root)) - 1:
