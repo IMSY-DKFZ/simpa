@@ -19,7 +19,7 @@ end
 
 source.p0 = padarray(source.p0, [2 0], 0, 'pre');
 [Nx, Ny] = size(source.p0);
-if settings.upsample == true
+if settings.sample == true
     dx = settings.voxel_spacing_mm/(settings.upscale_factor * 1000);
 else
     dx = settings.voxel_spacing_mm/1000;    % convert from mm to m
@@ -104,7 +104,7 @@ end
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', settings.pml_size, ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.volume_name};
+              'MovieName', settings.movie_name};
 
 sensor_data_2D = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
 if settings.gpu == true

@@ -65,9 +65,9 @@ def center_crop(image_data, output_size, settings=None):
     i = int((input_height - target_height)/2)
     j = int((input_width - target_width)/2)
 
-    if settings is not None:
-        if "epidermis" in settings[Tags.STRUCTURES]:   # If an epidermis is simulated, i=0 is set to keep the epidermis.
-            i = 0
+    # if settings is not None:
+    #     if "epidermis" in settings[Tags.STRUCTURES]:   # If an epidermis is simulated, i=0 is set to keep the epidermis.
+    #         i = 0
 
     return crop(image_data, i, j, target_height, target_width)
 

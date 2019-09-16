@@ -58,7 +58,7 @@ def dl_upsample(settings, image_data):
     model_path = settings[Tags.DL_MODEL_PATH]
 
     if model_path is None:
-        model_root = "../../data/deep_learning_models"
+        model_root = "/home/kris/hard_drive/ippai/data/deep_learning_models"
         for i, model in enumerate(os.listdir(model_root)):
             if str(low_res) in model and str(high_res) in model:
                 model_path = os.path.join(model_root, model)
