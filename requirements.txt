@@ -4,3 +4,5 @@ numpy
 scipy
 pynrrd
 scikit-image
+torch
+batchgenerators

@@ -23,9 +23,9 @@ def create_upsampling_phantom_parameters(x_min, x_max, z_min, z_max):
 
 
 upsampling_methods = ["nearest_neighbor", "bilinear", "deep_learning"]
-spacings = [0.6, 0.3, 0.15]
+spacings = [0.15]
 
-for i in range(3, 9):
+for i in range(0, 9):
     x = 10 * (i % 3 + 1)
     z = 5.25 * (i // 3 + 1)
     for u, method in enumerate(upsampling_methods):
@@ -35,7 +35,7 @@ for i in range(3, 9):
                 Tags.WAVELENGTHS: [800],
                 Tags.RANDOM_SEED: i,
                 Tags.VOLUME_NAME: "UpsamplingPhantom_"+str(i) + "/" + method + "/" + str(spacing),
-                Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/pipeline_test",
+                Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/upsampling_test",
                 Tags.RUN_OPTICAL_MODEL: True,
                 Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
                 Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/mcx_test/mcx",
@@ -57,7 +57,7 @@ for i in range(3, 9):
                 Tags.CROP_POWER_OF_TWO: True,
                 Tags.UPSAMPLING_METHOD: method,
                 Tags.UPSCALE_FACTOR: 2,
-                Tags.DL_MODEL_PATH: None,
+                Tags.DL_MODEL_PATH: "/home/kris/hard_drive/data/model.pt",
 
                 # Acoustic forward path settings
 
