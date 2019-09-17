@@ -4,6 +4,7 @@ import subprocess
 from ippai.simulate import Tags
 import json
 import os
+from ippai.simulate.models.optical_models.illumination_definition import define_illumination
 
 
 def simulate(optical_properties_path, settings, optical_output_path):
@@ -28,7 +29,7 @@ def simulate(optical_properties_path, settings, optical_output_path):
 
     tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+"_output"
 
-    #write settings to json
+    # write settings to json
 
     settings_dict = {
         "Session": {
@@ -42,36 +43,8 @@ def simulate(optical_properties_path, settings, optical_output_path):
             "T1": 5e-09,
             "Dt": 5e-09
         },
-        # "Optode": {
-        # 	"Source": {
-        # 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
-        # 		"Dir": [0,0,1]
-        # 	}
-        # },
         "Optode": {
-          "Source": {
-              "Pos": [
-                  int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
-              ],
-              "Dir": [
-                  0,
-                  0.342027,
-                  0.93969
-              ],
-              "Type": "pasetup",
-              "Param1": [
-                  24.5 / settings[Tags.SPACING_MM],
-                  0,
-                  0,
-                  22.8 / settings[Tags.SPACING_MM]
-              ],
-              "Param2": [
-                  0,
-                  0,
-                  0,
-                  0
-              ]
-          }
+          "Source": define_illumination(settings, nx, ny, nz)
         },
         "Domain": {
             "OriginType": 0,

@@ -1,43 +1,80 @@
 import numpy as np
 
+
 class Tags:
 
-    # General settings
+    """
+    General settings
+    """
+
     SIMULATION_PATH = "simulation_path"
     VOLUME_NAME = "volume_name"
+
+    # this should contain a npz file with custom defined tissue
+    # see "physical property volume types"
+    # as in create_simulation_volume()
+    CUSTOM_VOLUME_PATH = "custom_volume_path"
+
     WAVELENGTHS = "wavelengths"
     WAVELENGTH = "wavelength"
     RANDOM_SEED = "random_seed"
-    TISSUE_PROPERTIES_OUPUT_NAME = "properties"
+    TISSUE_PROPERTIES_OUTPUT_NAME = "properties"
     SIMULATION_EXTRACT_FIELD_OF_VIEW = "extract_field_of_view"
     GPU = "gpu"
 
-    # Optical model settings
+    """
+    Optical model settings
+    """
     RUN_OPTICAL_MODEL = 'run_optical_forward_model'
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
     OPTICAL_MODEL_BINARY_PATH = "optical_model_binary_path"
     OPTICAL_MODEL_NUMBER_PHOTONS = "optical_model_number_of_photons"
-    OPTICAL_MODEL_PROBE_XML_FILE = "optical_model_probe_xml_file"
+    OPTICAL_MODEL_PROBE_XML_FILE = "optical_model_probe_xml_file"   # TODO rename PROBE -> ILLUMINATION
+
+    ILLUMINATION_TYPE = "optical_model_illumination_type"
+
+    # Illumination parameters
+    ILLUMINATION_POSITION = "illumination_position"
+    ILLUMINATION_DIRECTION = "illumination_direction"
+    ILLUMINATION_PARAM1 = "illumination_param1"
+    ILLUMINATION_PARAM2 = "illumination_param2"
+
+    # Supported illumination types - implemented in mcx
+    ILLUMINATION_TYPE_PENCIL = "pencil"
+    ILLUMINATION_TYPE_DISK = "disk"
+    ILLUMINATION_TYPE_SLIT = "slit"
+    ILLUMINATION_TYPE_GAUSSIAN = "gaussian"
+    ILLUMINATION_TYPE_PATTERN = "pattern"
+    ILLUMINATION_TYPE_PATTERN_3D = "pattern3d"
+    ILLUMINATION_TYPE_FOURIER = "fourier"
+    ILLUMINATION_TYPE_FOURIER_X = "fourierx"
+    ILLUMINATION_TYPE_FOURIER_X_2D = "fourierx2d"
+
+    ILLUMINATION_TYPE_DKFZ_PAUS = "pasetup"         # TODO more explanatory rename of pasetup
+    # ILLUMINATION_TYPE_ITHERA_ACUITY = "msotacuity"  # TODO not implemented yet
 
     # Supported optical models
     OPTICAL_MODEL = "optical_model"
     MODEL_MCXYZ = "mcxyz"
     MODEL_MCX = "mcx"
 
-    # Supported acoustic models
-    ACOUSTIC_MODEL = "acoustic_model"
-    MODEL_K_WAVE = "k-wave"
-    ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
-
-    # Acoustic model settings
+    """
+    Acoustic model settings
+    """
     RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
     RECORDMOVIE = "record_movie"
     MOVIENAME = "movie_name"
 
-    # Upsampling settings
+    # Supported acoustic models
+    ACOUSTIC_MODEL = "acoustic_model"
+    MODEL_K_WAVE = "k-wave"
+    ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
 
+    """
+    Upsampling settings
+    """
     CROP_IMAGE = "crop_image"
     CENTER_CROP = "center_crop"
     CROP_POWER_OF_TWO = "crop_power_of_two"
@@ -75,7 +112,6 @@ class Tags:
     MEDIUM_NONLINEARITY = "medium_nonlinearity"
 
     # PML parameters
-
     PMLSize = "pml_size"
     PMLAlpha = "pml_alpha"
     PMLInside = "pml_inside"
@@ -147,6 +183,7 @@ class Tags:
     STRUCTURE_ELLIPSE = "structure_ellipse"
     STRUCTURE_MIN_ECCENTRICITY = "structure_eccentricity_min"
     STRUCTURE_MAX_ECCENTRICITY = "structure_eccentricity_max"
+
 
 class SegmentationClasses:
     """

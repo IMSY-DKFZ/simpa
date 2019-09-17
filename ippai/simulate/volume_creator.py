@@ -5,7 +5,7 @@ from ippai.simulate import Tags, SegmentationClasses, StandardProperties
 from ippai.simulate.utils import randomize
 
 
-def create_simulation_volume(settings):
+def create_simulation_volume(settings):     # TODO rename and dont use as default
     """
     This method creates a in silico respresentation of a tissue as described in the settings file that is given.
     :param settings: a dictionary containing all relevant Tags for the simulation to be able to instantiate a tissue.
