@@ -12,11 +12,12 @@ def simulate(settings, optical_path):
 
     tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/test_settings.json"
     with open(tmp_json_filename, "w") as json_file:
-        json.dump(settings, json_file)
+        json.dump(settings, json_file, indent="\t")
 
     cmd = list()
     cmd.append("matlab")
     cmd.append("-nodisplay")
+    cmd.append("-nosplash")
     cmd.append("-r")
     cmd.append(settings[Tags.ACOUSTIC_MODEL_SCRIPT] + " ('" + tmp_json_filename + "', '" + optical_path + "');exit;")
     os.chdir(settings[Tags.SIMULATION_PATH])

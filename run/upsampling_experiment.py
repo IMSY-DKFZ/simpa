@@ -22,14 +22,21 @@ def create_upsampling_phantom_parameters(x_min, x_max, z_min, z_max):
     return structures_dict
 
 
-upsampling_methods = ["nearest_neighbor", "bilinear", "deep_learning"]
-spacings = [0.15]
+upsampling_methods = ["validation"]
+spacings = [0.3, 0.15]
+root = "/home/kris/hard_drive/cami-experimental/PAI/experiments/Upsampling/"
+test_models = ["20191002-123826_Upscalel1_0.8_to_0.4/save/epoch_99.pt",
+               "20191002-124021_Upscalel1_0.4_to_0.2/save/epoch_99.pt",
+               "20191002-124323_Upscalel1_0.2_to_0.1/save/epoch_99.pt"
+               ]
+
 
 for i in range(0, 9):
     x = 10 * (i % 3 + 1)
     z = 5.25 * (i // 3 + 1)
     for u, method in enumerate(upsampling_methods):
-        for s, spacing in enumerate(spacings):
+        print(method)
+        for [spacing, model_path] in zip(spacings, test_models):
             settings = {
                 # Optical forward path settings
                 Tags.WAVELENGTHS: [800],
@@ -37,7 +44,7 @@ for i in range(0, 9):
                 Tags.VOLUME_NAME: "UpsamplingPhantom_"+str(i) + "/" + method + "/" + str(spacing),
                 Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/upsampling_test",
                 Tags.RUN_OPTICAL_MODEL: True,
-                Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+                Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e7,
                 Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/mcx_test/mcx",
                 Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
                 Tags.RUN_ACOUSTIC_MODEL: True,
@@ -57,7 +64,7 @@ for i in range(0, 9):
                 Tags.CROP_POWER_OF_TWO: True,
                 Tags.UPSAMPLING_METHOD: method,
                 Tags.UPSCALE_FACTOR: 2,
-                Tags.DL_MODEL_PATH: "/home/kris/hard_drive/data/model.pt",
+                Tags.DL_MODEL_PATH: root + model_path,
 
                 # Acoustic forward path settings
 
@@ -72,7 +79,7 @@ for i in range(0, 9):
                 Tags.SENSOR_MASK: 1, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sensor_mask.npy",
                 Tags.SENSOR_RECORD: "p",
                 Tags.SENSOR_CENTER_FREQUENCY: 7.5e6,
-                Tags.SENSOR_BANDWIDTH: 133,
+                Tags.SENSOR_BANDWIDTH: 80,
                 Tags.SENSOR_DIRECTIVITY_ANGLE: 0, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/directivity_angle.npy",
                 # 0,   # Most sensitive in x-dir (up/down)
                 Tags.SENSOR_DIRECTIVITY_SIZE: 0.001,  # [m]
@@ -82,7 +89,7 @@ for i in range(0, 9):
                 Tags.PMLSize: [20, 20],
                 Tags.PMLAlpha: 2,
                 Tags.PlotPML: False,
-                Tags.RECORDMOVIE: True,
+                Tags.RECORDMOVIE: False,
                 Tags.MOVIENAME: "UpsamplingPhantom_"+str(i) + "/" + method + "/" + str(spacing) + "/" + "visualization"
             }
             print("Simulating ", i)

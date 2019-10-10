@@ -4,12 +4,12 @@ from ippai.simulate.structures import create_random_structures
 
 import numpy as np
 
-spacings = [0.6, 0.3, 0.15, 0.075]
-photons = [1e7, 5e7, 1e8, 5e8]
+spacings = [0.8, 0.4, 0.2, 0.1]
+photons = [5e6, 1e7, 5e7, 1e8]
 
 seed_index = 0
-while seed_index < 1000:
-    random_seed = 33000 + seed_index
+while seed_index < 450:
+    random_seed = 78000 + seed_index
     seed_index += 1
 
     for [spacing, num_photons] in zip(spacings, photons):
@@ -23,10 +23,10 @@ while seed_index < 1000:
             Tags.WAVELENGTHS: [wavelength],
             Tags.RANDOM_SEED: random_seed,
             Tags.VOLUME_NAME: "Structure_"+str(random_seed).zfill(7)+"/spacing_"+str(spacing),
-            Tags.SIMULATION_PATH: "/media/janek/Maxtor/upsampling_data/",
+            Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/upsampling_data",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: num_photons,
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/simulation_test/mcx",
+            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/mcx_test/mcx",
             Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
