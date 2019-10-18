@@ -26,11 +26,14 @@ class Tags:
 
     # Supported acoustic models
     ACOUSTIC_MODEL = "acoustic_model"
-    MODEL_K_WAVE = "k-wave"
+    MODEL_K_WAVE = "kwave"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
+    ACOUSTIC_MODEL_SCRIPT_LOCATION = "acoustic_model_script_location"
+
 
     # Acoustic model settings
     RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
+    ACOUSTIC_MODEL_BINARY_PATH = "acoustic_model_binary_path"
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
     RECORDMOVIE = "record_movie"
@@ -41,8 +44,11 @@ class Tags:
     CROP_IMAGE = "crop_image"
     CENTER_CROP = "center_crop"
     CROP_POWER_OF_TWO = "crop_power_of_two"
-    SAMPLE = "sample"
+    PERFORM_UPSAMPLING = "sample"
     UPSAMPLING_METHOD = "upsampling_method"
+    UPSAMPLING_METHOD_DEEP_LEARNING = "deeplearning"
+    UPSAMPLING_METHOD_NEAREST_NEIGHBOUR = "nearestneighbour"
+    UPSAMPLING_METHOD_BILINEAR = "bilinear"
     UPSCALE_FACTOR = "upscale_factor"
     DL_MODEL_PATH = "dl_model_path"
 
@@ -245,7 +251,7 @@ class OpticalTissueProperties:
     MUSP500_BONE = 15.3  # Table 2 Mean for bone
     FRAY_BONE = 0.022  # Table 2 Mean for bone
     BMIE_BONE = 0.326  # Table 2 Mean for bone
-    STANDARD_ANISOTROPY = 0.9
+    STANDARD_ANISOTROPY = 0.9 # Average anisotropy of measured values presented in paper
 
     # Water content of bone:
     # @article{timmins1977bone,

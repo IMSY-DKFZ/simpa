@@ -162,7 +162,7 @@ class UNet(NamedNeuralNetwork):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        kernel_size = 3  # 3x3 conv
+        kernel_size = 3
         self.contract_1_1 = self.contract(in_channels, internal_channels, kernel_size, dropout=dropout)
         self.contract_1_2 = self.contract(internal_channels, internal_channels, kernel_size, dropout=dropout)
         self.pool_1 = nn.MaxPool2d(kernel_size=2, stride=2)
@@ -189,12 +189,12 @@ class UNet(NamedNeuralNetwork):
 
         self.center = nn.Sequential(
             nn.Conv2d(8*internal_channels, 16*internal_channels, 3, padding=1),
-            #nn.Dropout2d(p=dropout),
+            nn.Dropout2d(p=dropout),
             nn.LeakyReLU(),
             self.skip(16*internal_channels, skip_kernel_size, skip_stride, skip_padding, dropout),
             nn.LeakyReLU(),
             nn.ConvTranspose2d(16*internal_channels, 8*internal_channels, kernel_size=2, stride=2),
-            #nn.Dropout2d(p=dropout),
+            nn.Dropout2d(p=dropout),
             nn.LeakyReLU(),
         )
 
@@ -213,8 +213,6 @@ class UNet(NamedNeuralNetwork):
         self.expand_1_1 = self.expand(2*internal_channels, internal_channels, kernel_size, dropout=dropout)
         self.expand_1_2 = self.expand(internal_channels, internal_channels, kernel_size, dropout=dropout)
 
-
-
         self.final = nn.Sequential(
             nn.Conv2d(internal_channels, out_channels, kernel_size=1),
             nn.LeakyReLU()
@@ -224,14 +222,14 @@ class UNet(NamedNeuralNetwork):
     def contract(in_channels, out_channels, kernel_size, dropout):
         return nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=int(kernel_size/2)),
-                #nn.Dropout2d(p=dropout),
+                nn.Dropout2d(p=dropout),
                 nn.LeakyReLU())
 
     @staticmethod
     def expand(in_channels, out_channels, kernel_size, dropout):
         return nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=int(kernel_size/2)),
-            #nn.Dropout2d(p=dropout),
+            nn.Dropout2d(p=dropout),
             nn.LeakyReLU(),
         )
 

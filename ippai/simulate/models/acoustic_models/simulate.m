@@ -89,8 +89,8 @@ sensor.directivity_pattern = settings.sensor_directivity_pattern;
 % define the frequency response of the sensor elements, gaussian shape with
 % FWHM = bandwidth*center_freq
 
-center_freq = settings.sensor_center_frequency; %7.5e6;      % [Hz]
-bandwidth = settings.sensor_bandwidth; %80;         % [%]
+center_freq = settings.sensor_center_frequency; % [Hz]
+bandwidth = settings.sensor_bandwidth; % [%]
 sensor.frequency_response = [center_freq, bandwidth];
 
 %% Computation settings

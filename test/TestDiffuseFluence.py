@@ -19,11 +19,11 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.WAVELENGTHS: [800], #np.arange(700, 951, 10),
             Tags.WAVELENGTH: 800,
             Tags.VOLUME_NAME: "homogeneous_cube",
-            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test",
+            Tags.SIMULATION_PATH: "/home/janek/test",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
             #Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/mitk-superbuild/MITK-build/bin/MitkMCxyz",
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/mcx_test/mcx",
+            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/bin/mcx",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 1,
             Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
@@ -51,17 +51,17 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
     def tearDown(self):
         print("tearDown")
 
-    # def test_fluence(self):
-    #     self.perform_test(distance=self.dim/2, spacing=1)
-    #
-    # def test_spacing_short(self):
-    #     self.perform_test(distance=5, spacing=0.1)
-    #
-    # def test_spacing_middle(self):
-    #     self.perform_test(distance=self.dim/4, spacing=0.5)
-    #
-    # def test_spacing_long(self):
-    #     self.perform_test(distance=self.dim, spacing=2)
+    def test_fluence(self):
+        self.perform_test(distance=self.dim/2, spacing=1)
+
+    def test_spacing_short(self):
+        self.perform_test(distance=5, spacing=0.1)
+
+    def test_spacing_middle(self):
+        self.perform_test(distance=self.dim/4, spacing=0.5)
+
+    def test_spacing_long(self):
+        self.perform_test(distance=self.dim, spacing=2)
 
     def diff_theory_fluence(self, r):
         """

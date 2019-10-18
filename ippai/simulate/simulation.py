@@ -31,7 +31,7 @@ def simulate(settings):
         if settings[Tags.RANDOM_SEED] is not None:
             np.random.seed(settings[Tags.RANDOM_SEED])
         else:
-            np.random.seed()
+            np.random.seed(None)
 
         settings[Tags.WAVELENGTH] = wavelength
         volume_path = create_simulation_volume(settings)
@@ -48,8 +48,8 @@ def simulate(settings):
             if settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
                 extract_field_of_view(volume_path, optical_path, acoustic_path)
 
-        if Tags.SAMPLE in settings:
-            if settings[Tags.SAMPLE]:
+        if Tags.PERFORM_UPSAMPLING in settings:
+            if settings[Tags.PERFORM_UPSAMPLING]:
                 optical_path = upsample(settings, optical_path)
                 optical_paths.append(optical_path)
 

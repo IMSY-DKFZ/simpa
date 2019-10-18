@@ -24,7 +24,7 @@ def create_agar_phantom():
     phantom_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = 12
     phantom_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_settings(w_max=1, w_min=0.5,
                                                                   oxy_min=-1, oxy_max=-1,
-                                                                  musp500=5)
+                                                                  musp500=5, anisotropy=0.9)
     phantom_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
     return phantom_dict
 
@@ -35,7 +35,7 @@ def create_flow_vessel():
     vessel_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = 12
     vessel_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = 12
     vessel_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = 0.5
-    vessel_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = 1.25
+    vessel_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = 2.5
     vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = 12
     vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = 12
     vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_blood_settings()
@@ -52,8 +52,8 @@ def create_flow_phantom_parameters():
 
 
 seed_index = 0
-while seed_index < 1000:
-    random_seed = 200000 + seed_index
+while seed_index < 10000:
+    random_seed = 100000 + seed_index
     seed_index += 1
     np.random.seed(random_seed)
 
@@ -61,10 +61,10 @@ while seed_index < 1000:
         Tags.WAVELENGTHS: [660, 664, 680, 684, 694, 700, 708, 715, 730, 735, 760, 770, 775, 779, 800, 850, 950],
         Tags.RANDOM_SEED: random_seed,
         Tags.VOLUME_NAME: "FlowPhantom_"+str(random_seed).zfill(6),
-        Tags.SIMULATION_PATH: "/media/janek/Maxtor/flow_phantom_simulation/",
+        Tags.SIMULATION_PATH: "/media/janek/PA DATA/DS_flow/",
         Tags.RUN_OPTICAL_MODEL: True,
         Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-        Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/simulation_test/mcx",
+        Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/bin/mcx",
         Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
         Tags.RUN_ACOUSTIC_MODEL: False,
         Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,

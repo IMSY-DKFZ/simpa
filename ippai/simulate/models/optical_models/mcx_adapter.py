@@ -42,12 +42,12 @@ def simulate(optical_properties_path, settings, optical_output_path):
             "T1": 5e-09,
             "Dt": 5e-09
         },
-        # "Optode": {
+        #"Optode": {
         # 	"Source": {
         # 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
         # 		"Dir": [0,0,1]
         # 	}
-        # },
+        #},
         "Optode": {
           "Source": {
               "Pos": [

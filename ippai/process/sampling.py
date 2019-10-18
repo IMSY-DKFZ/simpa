@@ -26,15 +26,15 @@ def upsample(settings, optical_path):
     fluence = np.rot90(preprocess_images.preprocess_image(settings, np.rot90(optical_data["fluence"], 3)), 3)
     initial_pressure = np.rot90(preprocess_images.preprocess_image(settings, np.rot90(optical_data["initial_pressure"], 3)))
 
-    if settings[Tags.UPSAMPLING_METHOD] == "deep_learning":
+    if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_DEEP_LEARNING:
         fluence = dl_upsample(settings, fluence)
         initial_pressure = dl_upsample(settings, initial_pressure)
 
-    if settings[Tags.UPSAMPLING_METHOD] == "nearest_neighbor":
+    if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_NEAREST_NEIGHBOUR:
         fluence = nn_upsample(settings, fluence)
         initial_pressure = nn_upsample(settings, initial_pressure)
 
-    if settings[Tags.UPSAMPLING_METHOD] == "bilinear":
+    if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_BILINEAR:
         fluence = bl_upsample(settings, fluence)
         initial_pressure = bl_upsample(settings, initial_pressure)
 

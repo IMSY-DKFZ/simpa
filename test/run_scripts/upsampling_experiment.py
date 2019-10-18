@@ -59,7 +59,7 @@ for i in range(0, 9):
 
                 # Upsampling settings
 
-                Tags.SAMPLE: True,
+                Tags.PERFORM_UPSAMPLING: True,
                 Tags.CROP_IMAGE: True,
                 Tags.CROP_POWER_OF_TWO: True,
                 Tags.UPSAMPLING_METHOD: method,

@@ -1,10 +1,10 @@
 import setuptools
 
-with open("README.md", "r") as readme_file:
+with open('README.md', 'r') as readme_file:
     long_description = readme_file.read()
 
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+with open('requirements.txt', 'r') as requirements_file:
+    requirements = requirements_file.read().splitlines()
 
 setuptools.setup(
     name="ippai",
