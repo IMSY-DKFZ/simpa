@@ -13,6 +13,6 @@ def run_acoustic_forward_model(settings, optical_path):
     data = k_wave_adapter.simulate(settings, optical_path)
 
     np.savez(acoustic_path,
-             sensor_data=data)
+             time_series_data=data)
 
     return acoustic_path

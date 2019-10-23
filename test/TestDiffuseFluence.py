@@ -16,14 +16,13 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         """
         print("setUp")
         self.settings = {
-            Tags.WAVELENGTHS: [800], #np.arange(700, 951, 10),
+            Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
             Tags.VOLUME_NAME: "homogeneous_cube",
-            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test",
+            Tags.SIMULATION_PATH: "/home/janek/test",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-            #Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/mitk-superbuild/MITK-build/bin/MitkMCxyz",
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/mcx_test/mcx",
+            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/bin/mcx",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 1,
             Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
@@ -38,7 +37,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             os.makedirs(folder_name)
 
         self.dim = 100
-        self.volume = np.zeros((self.dim, self.dim, self.dim, 3))
+        self.volume = np.zeros((self.dim, self.dim, self.dim, 4))
 
         self.mua = 0.1
         self.mus = 100
@@ -47,6 +46,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.volume[:, :, :, 0] = self.mua
         self.volume[:, :, :, 1] = self.mus
         self.volume[:, :, :, 2] = self.g
+        self.volume[:, :, :, 3] = 1
 
     def tearDown(self):
         print("tearDown")
@@ -108,8 +108,6 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
         return phi
 
-
-
     def perform_test(self, distance, spacing):
 
         self.settings[Tags.SPACING_MM] = spacing
@@ -118,6 +116,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
                  mua=self.volume[:, :, :, 0],
                  mus=self.volume[:, :, :, 1],
                  g=self.volume[:, :, :, 2],
+                 gamma=self.volume[:, :, :, 3]
                  )
 
         self.assertDiffusionTheory(distance)
@@ -129,8 +128,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]
         fluence_measurements = fluence[int(self.dim/2), (int(self.dim/2) - 1 + number_of_measurements), 0]
 
-        if self.settings[Tags.OPTICAL_MODEL] == Tags.MODEL_MCXYZ:
-            fluence_measurements = fluence_measurements / 100
+        fluence_measurements = fluence_measurements / 100
 
         diffusion_approx = self.diff_theory_fluence(measurement_distances)
 

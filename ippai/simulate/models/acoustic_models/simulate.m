@@ -9,10 +9,6 @@ data = unzip(optical_path);    % unzip optical forward model
 initial_pressure = rot90(readNPY(data{2}), 3);  % rotate initial pressure 270°
 source.p0 = initial_pressure;
 
-if settings.record_movie == true
-    source.p0 = 1000*source.p0;     % multiply by 1000 to make the wave visible in the movie
-end
-
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
@@ -51,8 +47,10 @@ else
     medium.density = ones(Nx, Ny);
 end
 
-kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with 
-% CFL number of 0.3 (advised by manual) 
+kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6)
+kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / medium.sound_speed) / kgrid.dt)
+% kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
+% CFL number of 0.3 (advised by manual)
 % Using makeTime, dt = CFL*dx/medium.sound_speed and the total
 % time is set to the time it would take for an acoustic wave to travel 
 % across the longest grid diagonal.
@@ -89,8 +87,8 @@ sensor.directivity_pattern = settings.sensor_directivity_pattern;
 % define the frequency response of the sensor elements, gaussian shape with
 % FWHM = bandwidth*center_freq
 
-center_freq = settings.sensor_center_frequency; %7.5e6;      % [Hz]
-bandwidth = settings.sensor_bandwidth; %80;         % [%]
+center_freq = settings.sensor_center_frequency; % [Hz]
+bandwidth = settings.sensor_bandwidth; % [%]
 sensor.frequency_response = [center_freq, bandwidth];
 
 %% Computation settings
@@ -104,7 +102,7 @@ end
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', settings.pml_size, ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.movie_name};
+              'MovieName', settings.movie_name, 'PlotScale', [-10000, 10000]};
 
 sensor_data_2D = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
 if settings.gpu == true

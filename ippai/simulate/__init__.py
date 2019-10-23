@@ -11,6 +11,7 @@ class Tags:
     TISSUE_PROPERTIES_OUPUT_NAME = "properties"
     SIMULATION_EXTRACT_FIELD_OF_VIEW = "extract_field_of_view"
     GPU = "gpu"
+    MEDIUM_TEMPERATURE_CELCIUS = "medium_temperature"
 
     # Optical model settings
     RUN_OPTICAL_MODEL = 'run_optical_forward_model'
@@ -18,6 +19,7 @@ class Tags:
     OPTICAL_MODEL_BINARY_PATH = "optical_model_binary_path"
     OPTICAL_MODEL_NUMBER_PHOTONS = "optical_model_number_of_photons"
     OPTICAL_MODEL_PROBE_XML_FILE = "optical_model_probe_xml_file"
+    LASER_PULSE_ENERGY_IN_MILLIJOULE = "laser_pulse_energy_in_millijoule"
 
     # Supported optical models
     OPTICAL_MODEL = "optical_model"
@@ -26,11 +28,14 @@ class Tags:
 
     # Supported acoustic models
     ACOUSTIC_MODEL = "acoustic_model"
-    MODEL_K_WAVE = "k-wave"
+    MODEL_K_WAVE = "kwave"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
+    ACOUSTIC_MODEL_SCRIPT_LOCATION = "acoustic_model_script_location"
+
 
     # Acoustic model settings
     RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
+    ACOUSTIC_MODEL_BINARY_PATH = "acoustic_model_binary_path"
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
     RECORDMOVIE = "record_movie"
@@ -41,8 +46,11 @@ class Tags:
     CROP_IMAGE = "crop_image"
     CENTER_CROP = "center_crop"
     CROP_POWER_OF_TWO = "crop_power_of_two"
-    SAMPLE = "sample"
+    PERFORM_UPSAMPLING = "sample"
     UPSAMPLING_METHOD = "upsampling_method"
+    UPSAMPLING_METHOD_DEEP_LEARNING = "deeplearning"
+    UPSAMPLING_METHOD_NEAREST_NEIGHBOUR = "nearestneighbour"
+    UPSAMPLING_METHOD_BILINEAR = "bilinear"
     UPSCALE_FACTOR = "upscale_factor"
     DL_MODEL_PATH = "dl_model_path"
 
@@ -50,8 +58,9 @@ class Tags:
     PROPERTY_ABSORPTION_PER_CM = 'mua'
     PROPERTY_SCATTERING_PER_CM = 'mus'
     PROPERTY_ANISOTROPY = 'g'
-    PROPERTY_OXYGENATION = 'sO2'
-    PROPERTY_SEGMENTATION = 'segmentation'
+    PROPERTY_OXYGENATION = 'oxy'
+    PROPERTY_SEGMENTATION = 'seg'
+    PROPERTY_GRUNEISEN_PARAMETER = 'gamma'
 
     # Air layer
     AIR_LAYER = "airlayer"
@@ -84,11 +93,12 @@ class Tags:
     # Acoustic Sensor Properties
     SENSOR_MASK = "sensor_mask"
     SENSOR_RECORD = "sensor_record"
-    SENSOR_CENTER_FREQUENCY = "sensor_center_frequency"
-    SENSOR_BANDWIDTH = "sensor_bandwidth"
+    SENSOR_CENTER_FREQUENCY_MHZ = "sensor_center_frequency"
+    SENSOR_BANDWIDTH_PERCENT = "sensor_bandwidth"
     SENSOR_DIRECTIVITY_ANGLE = "sensor_directivity_angle"
     SENSOR_DIRECTIVITY_SIZE = "sensor_directivity_size"
     SENSOR_DIRECTIVITY_PATTERN = "sensor_directivity_pattern"
+    SENSOR_SAMPLING_RATE_MHZ = "sensor_sampling_rate_mhz"
 
     # Constant Tissue Properties
     KEY_CONSTANT_PROPERTIES = "constant_properties"
@@ -148,6 +158,9 @@ class Tags:
     STRUCTURE_MIN_ECCENTRICITY = "structure_eccentricity_min"
     STRUCTURE_MAX_ECCENTRICITY = "structure_eccentricity_max"
 
+    UNITS_ARBITRARY = "arbitrary_unity"
+    UNITS_PRESSURE = "newton_per_meters_squared"
+
 class SegmentationClasses:
     """
     The segmentation classes define which "tissue types" are modelled in the simulation volumes.
@@ -173,6 +186,14 @@ class StandardProperties:
     GELPAD_MUA = 1e-10
     GELPAD_MUS = 1e-10
     GELPAD_G = 1
+
+    # @book{marx2013rosen,
+    #   title={Rosen's Emergency Medicine-Concepts and Clinical Practice E-Book},
+    #   author={Marx, John and Walls, Ron and Hockberger, Robert},
+    #   year={2013},
+    #   publisher={Elsevier Health Sciences}
+    # }
+    BODY_TEMPERATURE_CELCIUS = 37.0
 
 
 class OpticalTissueProperties:
@@ -245,7 +266,7 @@ class OpticalTissueProperties:
     MUSP500_BONE = 15.3  # Table 2 Mean for bone
     FRAY_BONE = 0.022  # Table 2 Mean for bone
     BMIE_BONE = 0.326  # Table 2 Mean for bone
-    STANDARD_ANISOTROPY = 0.9
+    STANDARD_ANISOTROPY = 0.9 # Average anisotropy of measured values presented in paper
 
     # Water content of bone:
     # @article{timmins1977bone,

@@ -3,6 +3,7 @@ import subprocess
 from ippai.simulate import Tags
 import json
 import os
+from shutil import copy
 
 
 def simulate(settings, optical_path):
@@ -15,11 +16,13 @@ def simulate(settings, optical_path):
         json.dump(settings, json_file, indent="\t")
 
     cmd = list()
-    cmd.append("matlab")
+    cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
     cmd.append("-nodisplay")
     cmd.append("-nosplash")
     cmd.append("-r")
-    cmd.append(settings[Tags.ACOUSTIC_MODEL_SCRIPT] + " ('" + tmp_json_filename + "', '" + optical_path + "');exit;")
+    cmd.append("addpath('"+settings[Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION]+"');" +
+               settings[Tags.ACOUSTIC_MODEL_SCRIPT] + "('" + tmp_json_filename +
+               "', '" + optical_path + "');exit;")
     os.chdir(settings[Tags.SIMULATION_PATH])
 
     subprocess.run(cmd)
