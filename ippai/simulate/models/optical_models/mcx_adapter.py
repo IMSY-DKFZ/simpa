@@ -11,7 +11,9 @@ class McxAdapter(OpticalForwardAdapterBase):
 
     def forward_model(self, absorption_cm, scattering_cm, anisotropy, settings):
 
-        op_array = np.asarray([absorption_cm, scattering_cm])
+        absorption_mm = absorption_cm / 10
+        scattering_mm = scattering_cm / 10
+        op_array = np.asarray([absorption_mm, scattering_mm])
 
         [_, nx, ny, nz] = np.shape(op_array)
 

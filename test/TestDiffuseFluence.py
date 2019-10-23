@@ -128,8 +128,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]
         fluence_measurements = fluence[int(self.dim/2), (int(self.dim/2) - 1 + number_of_measurements), 0]
 
-        if self.settings[Tags.OPTICAL_MODEL] == Tags.MODEL_MCXYZ:
-            fluence_measurements = fluence_measurements / 100
+        fluence_measurements = fluence_measurements / 100
 
         diffusion_approx = self.diff_theory_fluence(measurement_distances)
 
