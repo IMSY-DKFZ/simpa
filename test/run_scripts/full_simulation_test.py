@@ -31,7 +31,7 @@ for volume_idx in range(0, 1):
         Tags.RANDOM_SEED: volume_idx,
         Tags.VOLUME_NAME: "TestData_" + str(volume_idx).zfill(6),
         Tags.SIMULATION_PATH: "/media/janek/PA DATA/tmp/",
-        Tags.SPACING_MM: 0.3,
+        Tags.SPACING_MM: 0.15,
         Tags.DIM_VOLUME_Z_MM: 21,
         Tags.DIM_VOLUME_X_MM: 40,
         Tags.DIM_VOLUME_Y_MM: 25,
@@ -65,18 +65,18 @@ for volume_idx in range(0, 1):
 
         Tags.MEDIUM_ALPHA_COEFF: 0.1,
         Tags.MEDIUM_ALPHA_POWER: 1.5,
-        Tags.MEDIUM_SOUND_SPEED: 1540, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sound_speed.npy",
-        Tags.MEDIUM_DENSITY: 1, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/medium_density.npy",
+        Tags.MEDIUM_SOUND_SPEED: 1540,  #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sound_speed.npy",
+        Tags.MEDIUM_DENSITY: 1,  #"/home/kris/hard_drive/data/k-wave/test_data/test_data/medium_density.npy",
 
-        Tags.SENSOR_MASK: 1, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sensor_mask.npy",
+        Tags.SENSOR_MASK: 1,  #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sensor_mask.npy",
         Tags.SENSOR_RECORD: "p",
         Tags.SENSOR_CENTER_FREQUENCY_MHZ: 7.5e6,
         Tags.SENSOR_BANDWIDTH_PERCENT: 80,
-        Tags.SENSOR_DIRECTIVITY_ANGLE: 0, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/directivity_angle.npy",
+        Tags.SENSOR_DIRECTIVITY_ANGLE: 0,  #"/home/kris/hard_drive/data/k-wave/test_data/test_data/directivity_angle.npy",
         # 0,   # Most sensitive in x-dir (up/down)
         Tags.SENSOR_DIRECTIVITY_SIZE: 0.001,  # [m]
         Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",
-        Tags.SENSOR_SAMPLING_RATE_MHZ: 40,
+        Tags.SENSOR_SAMPLING_RATE_MHZ: 66 + 2/3,
 
         Tags.PMLInside: False,
         Tags.PMLSize: [20, 20],
