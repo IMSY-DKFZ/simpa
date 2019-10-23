@@ -46,7 +46,6 @@ class McxAdapter(OpticalForwardAdapterBase):
         # 		"Dir": [0,0,1]
         # 	}
         # },
-            "Optode": {
         "Optode": {
           "Source": {
               "Pos": [
