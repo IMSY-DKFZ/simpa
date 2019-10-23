@@ -63,19 +63,24 @@ def simulate(settings):
 def extract_field_of_view(volume_path, optical_path, acoustic_path):
     if volume_path is not None:
         volume_data = np.load(volume_path)
-        mua = volume_data['mua']
+        mua = volume_data[Tags.PROPERTY_ABSORPTION_PER_CM]
         sizes = np.shape(mua)
         mua = mua[:, int(sizes[1]/2), :]
-        mus = volume_data['mus'][:, int(sizes[1]/2), :]
-        g = volume_data['g'][:, int(sizes[1] / 2), :]
-        oxy = volume_data['oxy'][:, int(sizes[1] / 2), :]
-        seg = volume_data['seg'][:, int(sizes[1] / 2), :]
+        mus = volume_data[Tags.PROPERTY_SCATTERING_PER_CM][:, int(sizes[1]/2), :]
+        g = volume_data[Tags.PROPERTY_ANISOTROPY][:, int(sizes[1] / 2), :]
+        oxy = volume_data[Tags.PROPERTY_OXYGENATION][:, int(sizes[1] / 2), :]
+        seg = volume_data[Tags.PROPERTY_SEGMENTATION][:, int(sizes[1] / 2), :]
+        gamma = volume_data[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+        if type(gamma) is np.ndarray:
+            gamma = gamma[:, int(sizes[1] / 2), :]
+
         np.savez(volume_path,
                  mua=mua,
                  mus=mus,
                  g=g,
                  oxy=oxy,
-                 seg=seg)
+                 seg=seg,
+                 gamma=gamma)
 
     if optical_path is not None:
         optical_data = np.load(optical_path)

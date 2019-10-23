@@ -2,7 +2,7 @@ import numpy as np
 
 from ippai.simulate.tissue_properties import TissueProperties
 from ippai.simulate import Tags, SegmentationClasses, StandardProperties
-from ippai.simulate.utils import randomize
+from ippai.simulate.utils import randomize, gruneisen_parameter_from_temperature
 
 
 def create_simulation_volume(settings):
@@ -19,6 +19,7 @@ def create_simulation_volume(settings):
     volumes = add_structures(volumes, settings)
     volumes = append_gel_pad(volumes, settings)
     volumes = append_air_layer(volumes, settings)
+    volumes = create_gruneisen_map(volumes, settings)
 
     for i in range(len(volumes)):
         volumes[i] = np.flip(volumes[i], 1)
@@ -28,9 +29,31 @@ def create_simulation_volume(settings):
              mus=volumes[1],
              g=volumes[2],
              oxy=volumes[3],
-             seg=volumes[4])
+             seg=volumes[4],
+             gamma=volumes[5])
 
     return volume_path
+
+
+def create_gruneisen_map(volumes, settings):
+    """
+    Creates a map the gruneisenparameter based on the temperature given in Tags.MEDIUM_TEMPERATURE_CELCIUS.
+    If no medium temperature is specified, then a standard body temperature of 36°C is assumed.
+
+    :param volumes: The volumes to append the gruneisen parameter to
+    :param settings: The settings to extract the temperature from
+
+    :return: the volumes with an appended map of gruneisen parameters of size volumes[0].size
+    """
+    if Tags.MEDIUM_TEMPERATURE_CELCIUS in settings:
+        temperature_celcius = settings[Tags.MEDIUM_TEMPERATURE_CELCIUS]
+    else:
+        temperature_celcius = StandardProperties.BODY_TEMPERATURE_CELCIUS
+
+    gruneisen_map = np.ones(np.shape(volumes[0])) * gruneisen_parameter_from_temperature(temperature_celcius)
+    volumes.append(gruneisen_map)
+
+    return volumes
 
 
 def append_gel_pad(volumes, global_settings):
@@ -105,7 +128,8 @@ def create_empty_volume(global_settings):
     anisotropy_volume = np.zeros(sizes)
     oxygenation_volume = np.zeros(sizes)
     segmentation_volume = np.zeros(sizes)
-    return [absorption_volume, scattering_volume, anisotropy_volume, oxygenation_volume, segmentation_volume]
+    return [absorption_volume, scattering_volume, anisotropy_volume,
+            oxygenation_volume, segmentation_volume]
 
 
 def add_structures(volumes, global_settings):

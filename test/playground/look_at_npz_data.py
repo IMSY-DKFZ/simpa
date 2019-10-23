@@ -15,14 +15,6 @@ time_series_data = np.load(PATH + "/acoustic_forward_model_output.npz")["time_se
 
 print(np.shape(time_series_data))
 
-# plt.subplot(131)
-# plt.imshow(np.log10(np.rot90(fluence[:, :], -1)))
-# plt.subplot(132)
-# plt.imshow(np.log10(np.rot90(absorption[:, :], -1)))
-# plt.subplot(133)
-# plt.imshow(np.log10(np.rot90(p0[:, :], -1)))
-# plt.show()
-
 plt.subplot(121)
 plt.imshow(np.log10(np.rot90(p0[:, :], -1)))
 plt.subplot(122)
