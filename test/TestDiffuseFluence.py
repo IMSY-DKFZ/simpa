@@ -51,17 +51,17 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
     def tearDown(self):
         print("tearDown")
 
-    # def test_fluence(self):
-    #     self.perform_test(distance=self.dim/2, spacing=1)
-    #
-    # def test_spacing_short(self):
-    #     self.perform_test(distance=5, spacing=0.1)
-    #
-    # def test_spacing_middle(self):
-    #     self.perform_test(distance=self.dim/4, spacing=0.5)
-    #
-    # def test_spacing_long(self):
-    #     self.perform_test(distance=self.dim, spacing=2)
+    def test_fluence(self):
+        self.perform_test(distance=self.dim/2, spacing=1)
+
+    def test_spacing_short(self):
+        self.perform_test(distance=5, spacing=0.1)
+
+    def test_spacing_middle(self):
+        self.perform_test(distance=self.dim/4, spacing=0.5)
+
+    def test_spacing_long(self):
+        self.perform_test(distance=self.dim, spacing=2)
 
     def diff_theory_fluence(self, r):
         """

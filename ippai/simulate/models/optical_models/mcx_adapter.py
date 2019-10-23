@@ -32,47 +32,47 @@ def simulate(optical_properties_path, settings, optical_output_path):
 
     settings_dict = {
         "Session": {
-        "ID": tmp_output_file,
-        "DoAutoThread": 1,
-        "Photons": settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
-        "DoMismatch": 0
+            "ID": tmp_output_file,
+            "DoAutoThread": 1,
+            "Photons": settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
+            "DoMismatch": 0
          },
         "Forward": {
             "T0": 0,
             "T1": 5e-09,
             "Dt": 5e-09
         },
-        # "Optode": {
-        # 	"Source": {
-        # 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
-        # 		"Dir": [0,0,1]
-        # 	}
-        # },
         "Optode": {
-          "Source": {
-              "Pos": [
-                  int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
-              ],
-              "Dir": [
-                  0,
-                  0.342027,
-                  0.93969
-              ],
-              "Type": "pasetup",
-              "Param1": [
-                  24.5 / settings[Tags.SPACING_MM],
-                  0,
-                  0,
-                  22.8 / settings[Tags.SPACING_MM]
-              ],
-              "Param2": [
-                  0,
-                  0,
-                  0,
-                  0
-              ]
-          }
+            "Source": {
+                "Pos": [int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1],
+                "Dir": [0, 0, 1]
+            }
         },
+        # "Optode": {
+        #   "Source": {
+        #       "Pos": [
+        #           int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
+        #       ],
+        #       "Dir": [
+        #           0,
+        #           0.342027,
+        #           0.93969
+        #       ],
+        #       "Type": "pasetup",
+        #       "Param1": [
+        #           24.5 / settings[Tags.SPACING_MM],
+        #           0,
+        #           0,
+        #           22.8 / settings[Tags.SPACING_MM]
+        #       ],
+        #       "Param2": [
+        #           0,
+        #           0,
+        #           0,
+        #           0
+        #       ]
+        #   }
+        # },
         "Domain": {
             "OriginType": 0,
             "LengthUnit": settings[Tags.SPACING_MM],
