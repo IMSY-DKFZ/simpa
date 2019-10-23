@@ -41,6 +41,16 @@ class Tags:
     RECORDMOVIE = "record_movie"
     MOVIENAME = "movie_name"
 
+    # Reconstruction settings
+    PERFORM_IMAGE_RECONSTRUCTION = "perform_image_reconstruction"
+    RECONSTRUCTION_OUTPUT_NAME = "reconstruction_result"
+    RECONSTRUCTION_ALGORITHM = "reconstruction_algorithm"
+    RECONSTRUCTION_ALGORITHM_DAS = "reconstruction_algorithm_das"
+    RECONSTRUCTION_ALGORITHM_DMAS = "reconstruction_algorithm_dmas"
+    RECONSTRUCTION_ALGORITHM_SDMAS = "reconstruction_algorithm_sdmas"
+    RECONSTRUCTION_MITK_BINARY_PATH = "reconstruction_mitk_binary_path"
+    RECONSTRUCTION_MITK_SETTINGS_XML = "reconstruction_mitk_settings_xml"
+
     # Upsampling settings
 
     CROP_IMAGE = "crop_image"
@@ -96,9 +106,11 @@ class Tags:
     SENSOR_CENTER_FREQUENCY_MHZ = "sensor_center_frequency"
     SENSOR_BANDWIDTH_PERCENT = "sensor_bandwidth"
     SENSOR_DIRECTIVITY_ANGLE = "sensor_directivity_angle"
-    SENSOR_DIRECTIVITY_SIZE = "sensor_directivity_size"
+    SENSOR_DIRECTIVITY_SIZE_M = "sensor_directivity_size"
     SENSOR_DIRECTIVITY_PATTERN = "sensor_directivity_pattern"
+    SENSOR_ELEMENT_PITCH_CM = "sensor_element_pitch"
     SENSOR_SAMPLING_RATE_MHZ = "sensor_sampling_rate_mhz"
+    SENSOR_NUM_ELEMENTS = "sensor_num_elements"
 
     # Constant Tissue Properties
     KEY_CONSTANT_PROPERTIES = "constant_properties"

@@ -6,3 +6,4 @@ pynrrd
 scikit-image
 torch
 batchgenerators
+xmltodict

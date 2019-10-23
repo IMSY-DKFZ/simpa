@@ -7,13 +7,15 @@ settings = jsondecode(fileread(settings));  % read settings as json file
 data = unzip(optical_path);    % unzip optical forward model
 % from .npz file to "fluence" (data{1}) and "initial_pressure" (data{2})
 initial_pressure = rot90(readNPY(data{2}), 3);  % rotate initial pressure 270°
+initial_pressure = fliplr(initial_pressure)
 source.p0 = initial_pressure;
 
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
+GEL_LAYER_HEIGHT = 2
 
-source.p0 = padarray(source.p0, [2 0], 0, 'pre');
+source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 [Nx, Ny] = size(source.p0);
 if settings.sample == true
     dx = settings.voxel_spacing_mm/(settings.upscale_factor * 1000);
@@ -29,7 +31,7 @@ kgrid = kWaveGrid(Nx, dx, Ny, dx);
 if ischar(settings.medium_sound_speed) == 1 
     medium.sound_speed = readNPY(settings.medium_sound_speed);
     % add 2 pixel "gel" to reduce Fourier artifact
-    medium.sound_speed = padarray(medium.sound_speed, [2 0], 'replicate', 'pre');
+    medium.sound_speed = padarray(medium.sound_speed, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
     medium.sound_speed = settings.medium_sound_speed;
 end
@@ -42,7 +44,7 @@ medium.alpha_power = settings.medium_alpha_power; % b for a * MHz ^ b
 if ischar(settings.medium_density) == 1 
     medium.density = readNPY(settings.medium_density);
     % add 2 pixel "gel" to reduce Fourier artifact
-    medium.density = padarray(medium.density, [2 0], 'replicate', 'pre');
+    medium.density = padarray(medium.density, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
     medium.density = ones(Nx, Ny);
 end
@@ -62,10 +64,12 @@ kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / medium.sound_speed) / kgrid.dt)
 if ischar(settings.sensor_mask) == 1 
     sensor.mask = readNPY(settings.sensor_mask);
     % add 2 pixel "gel" to reduce Fourier artifact
-    sensor.mask = padarray(sensor.mask, [2 0], 0, 'pre');
+    sensor.mask = padarray(sensor.mask, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 else
+    num_elements = settings.sensor_num_elements
+    spacing = Ny / num_elements
     sensor.mask = zeros(Nx, Ny);
-    sensor.mask(2, 1:Ny) = 1;
+    sensor.mask(2, spacing/2:spacing:Ny) = 1;
 end
 
 % if a path to a file is given which describes the sensor directivity angles in a .npy
@@ -73,7 +77,7 @@ end
 if ischar(settings.sensor_directivity_angle) == 1 
     sensor.directivity_angle = readNPY(settings.sensor_directivity_angle);
     % add 2 pixel "gel" to reduce Fourier artifact
-    sensor.directivity_angle = padarray(sensor.directivity_angle, [2 0], 0, 'pre');
+    sensor.directivity_angle = padarray(sensor.directivity_angle, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 else
     dir_angles = settings.sensor_directivity_angle;
     sensor.directivity_angle = zeros(Nx, Ny);
@@ -98,13 +102,15 @@ if settings.gpu == true
 else
     datacast = 'single';
 end
+max_pressure = max(max(initial_pressure))
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', settings.pml_size, ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.movie_name, 'PlotScale', [-10000, 10000]};
+              'MovieName', settings.movie_name, 'PlotScale', [-max_pressure/2, max_pressure/2]};
 
 sensor_data_2D = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
+
 if settings.gpu == true
     sensor_data_2D = gather(sensor_data_2D);
 end

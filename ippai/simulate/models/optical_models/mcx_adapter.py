@@ -71,31 +71,6 @@ class McxAdapter(OpticalForwardAdapterBase):
               ]
           }
             },
-        # "Optode": {
-        #   "Source": {
-        #       "Pos": [
-        #           int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
-        #       ],
-        #       "Dir": [
-        #           0,
-        #           0.342027,
-        #           0.93969
-        #       ],
-        #       "Type": "pasetup",
-        #       "Param1": [
-        #           24.5 / settings[Tags.SPACING_MM],
-        #           0,
-        #           0,
-        #           22.8 / settings[Tags.SPACING_MM]
-        #       ],
-        #       "Param2": [
-        #           0,
-        #           0,
-        #           0,
-        #           0
-        #       ]
-        #   }
-        # },
             "Domain": {
                 "OriginType": 0,
                 "LengthUnit": settings[Tags.SPACING_MM],

@@ -1,7 +1,8 @@
 from ippai.simulate import Tags
 from ippai.simulate.volume_creator import create_simulation_volume
-from ippai.simulate.models.optical_model import run_optical_forward_model
-from ippai.simulate.models.acoustic_model import run_acoustic_forward_model
+from ippai.simulate.models.optical_modelling import run_optical_forward_model
+from ippai.simulate.models.acoustic_modelling import run_acoustic_forward_model
+from ippai.simulate.models.reconstruction import perform_reconstruction
 from ippai.process.sampling import upsample
 import numpy as np
 import os
@@ -15,9 +16,10 @@ def simulate(settings):
     """
 
     wavelengths = settings[Tags.WAVELENGTHS]
-    volume_paths = []
-    optical_paths = []
-    acoustic_paths = []
+    volume_output_paths = []
+    optical_output_paths = []
+    acoustic_output_paths = []
+    reconstruction_output_paths = []
 
     path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/"
     if not os.path.exists(path):
@@ -34,30 +36,34 @@ def simulate(settings):
             np.random.seed(None)
 
         settings[Tags.WAVELENGTH] = wavelength
-        volume_path = create_simulation_volume(settings)
-        volume_paths.append(volume_path)
+        volume_output_path = create_simulation_volume(settings)
+        volume_output_paths.append(volume_output_path)
 
-        optical_path = None
-        acoustic_path = None
+        optical_output_path = None
+        acoustic_output_path = None
 
         if settings[Tags.RUN_OPTICAL_MODEL]:
-            optical_path = run_optical_forward_model(settings, volume_path)
-            optical_paths.append(optical_path)
+            optical_output_path = run_optical_forward_model(settings, volume_output_path)
+            optical_output_paths.append(optical_output_path)
 
         if Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW in settings:
             if settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
-                extract_field_of_view(volume_path, optical_path, acoustic_path)
+                extract_field_of_view(volume_output_path, optical_output_path, acoustic_output_path)
 
         if Tags.PERFORM_UPSAMPLING in settings:
             if settings[Tags.PERFORM_UPSAMPLING]:
-                optical_path = upsample(settings, optical_path)
-                optical_paths.append(optical_path)
+                optical_output_path = upsample(settings, optical_output_path)
+                optical_output_paths.append(optical_output_path)
 
         if settings[Tags.RUN_ACOUSTIC_MODEL]:
-            acoustic_path = run_acoustic_forward_model(settings, optical_path)
-            acoustic_paths.append(acoustic_path)
+            acoustic_output_path = run_acoustic_forward_model(settings, optical_output_path)
+            acoustic_output_paths.append(acoustic_output_path)
 
-    return [volume_paths, optical_paths, acoustic_paths]
+        if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+            reconstruction_output_path = perform_reconstruction(settings, acoustic_output_path)
+            reconstruction_output_paths.append(reconstruction_output_path)
+
+    return [volume_output_paths, optical_output_paths, acoustic_output_paths, reconstruction_output_paths]
 
 
 def extract_field_of_view(volume_path, optical_path, acoustic_path):

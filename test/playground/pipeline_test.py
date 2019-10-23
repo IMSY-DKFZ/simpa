@@ -73,7 +73,7 @@ while seed_index < 1:
         Tags.SENSOR_BANDWIDTH_PERCENT: 133,
         Tags.SENSOR_DIRECTIVITY_ANGLE: 0, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/directivity_angle.npy",
         # 0,   # Most sensitive in x-dir (up/down)
-        Tags.SENSOR_DIRECTIVITY_SIZE: 0.001,  # [m]
+        Tags.SENSOR_DIRECTIVITY_SIZE_M: 0.001,  # [m]
         Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",
 
         Tags.PMLInside: False,

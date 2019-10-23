@@ -1,5 +1,6 @@
 from ippai.simulate import Tags
 from ippai.simulate.simulation import simulate
+from ippai.simulate.models.reconstruction import perform_reconstruction
 from ippai.simulate.structures import *
 from ippai.simulate.tissue_properties import get_constant_settings
 import numpy as np
@@ -24,14 +25,14 @@ def create_upsampling_phantom_parameters(x_min, x_max, z_min, z_max):
     return structures_dict
 
 
-for volume_idx in range(0, 1):
+for volume_idx in range(1, 2):
     settings = {
 
         # Basic & geometry settings
-        Tags.RANDOM_SEED: volume_idx,
+        Tags.RANDOM_SEED: 4217,
         Tags.VOLUME_NAME: "TestData_" + str(volume_idx).zfill(6),
         Tags.SIMULATION_PATH: "/media/janek/PA DATA/tmp/",
-        Tags.SPACING_MM: 0.15,
+        Tags.SPACING_MM: 0.3,
         Tags.DIM_VOLUME_Z_MM: 21,
         Tags.DIM_VOLUME_X_MM: 40,
         Tags.DIM_VOLUME_Y_MM: 25,
@@ -52,8 +53,8 @@ for volume_idx in range(0, 1):
         Tags.PERFORM_UPSAMPLING: True,
         Tags.CROP_IMAGE: True,
         Tags.CROP_POWER_OF_TWO: True,
-        Tags.UPSAMPLING_METHOD: Tags.UPSAMPLING_METHOD_NEAREST_NEIGHBOUR,
-        Tags.UPSCALE_FACTOR: 4.0,
+        Tags.UPSAMPLING_METHOD: Tags.UPSAMPLING_METHOD_BILINEAR,
+        Tags.UPSCALE_FACTOR: 8.0,
         Tags.DL_MODEL_PATH: None,
 
         # Acoustic forward path settings
@@ -65,26 +66,34 @@ for volume_idx in range(0, 1):
 
         Tags.MEDIUM_ALPHA_COEFF: 0.1,
         Tags.MEDIUM_ALPHA_POWER: 1.5,
-        Tags.MEDIUM_SOUND_SPEED: 1540,  #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sound_speed.npy",
-        Tags.MEDIUM_DENSITY: 1,  #"/home/kris/hard_drive/data/k-wave/test_data/test_data/medium_density.npy",
+        Tags.MEDIUM_SOUND_SPEED: 1540,
+        Tags.MEDIUM_DENSITY: 1,
 
-        Tags.SENSOR_MASK: 1,  #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sensor_mask.npy",
+        Tags.SENSOR_MASK: 1,
         Tags.SENSOR_RECORD: "p",
         Tags.SENSOR_CENTER_FREQUENCY_MHZ: 7.5e6,
-        Tags.SENSOR_BANDWIDTH_PERCENT: 80,
-        Tags.SENSOR_DIRECTIVITY_ANGLE: 0,  #"/home/kris/hard_drive/data/k-wave/test_data/test_data/directivity_angle.npy",
-        # 0,   # Most sensitive in x-dir (up/down)
-        Tags.SENSOR_DIRECTIVITY_SIZE: 0.001,  # [m]
+        Tags.SENSOR_BANDWIDTH_PERCENT: 133,
+        Tags.SENSOR_DIRECTIVITY_ANGLE: 0,
+        Tags.SENSOR_ELEMENT_PITCH_CM: 0.3,
+        Tags.SENSOR_DIRECTIVITY_SIZE_M: 0.002,  # [m]
         Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",
         Tags.SENSOR_SAMPLING_RATE_MHZ: 66 + 2/3,
+        Tags.SENSOR_NUM_ELEMENTS: 128,
 
         Tags.PMLInside: False,
         Tags.PMLSize: [20, 20],
         Tags.PMLAlpha: 2,
         Tags.PlotPML: False,
         Tags.RECORDMOVIE: True,
-        Tags.MOVIENAME: "Movie"
+        Tags.MOVIENAME: "Movie",
+
+        # Reconstruction settings
+        Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
+        Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_DAS,
+        Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/home/janek/bin/mitk/MitkPABeamformingTool.sh",
+        Tags.RECONSTRUCTION_MITK_SETTINGS_XML: "/home/janek/bin/beamformingsettings.xml"
     }
     print("Simulating ", volume_idx)
-    [settings_path, optical_path, acoustic_path] = simulate(settings)
+    #[settings_path, optical_path, acoustic_path, reconstruction_path] = simulate(settings)
+    perform_reconstruction(settings, "/media/janek/PA DATA/tmp/TestData_000001/acoustic_forward_model_output.npz")
     print("Simulating ", volume_idx, "[Done]")
