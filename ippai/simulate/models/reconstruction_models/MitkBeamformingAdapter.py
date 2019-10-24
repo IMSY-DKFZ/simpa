@@ -18,11 +18,14 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
             Tags.MEDIUM_SOUND_SPEED]
         beamforming_dict["MITK_beamforming"]["PA"]["Beamforming"]["@pitchInMeters"] = settings[
             Tags.SENSOR_ELEMENT_PITCH_CM]
-        beamforming_dict["MITK_beamforming"]["PA"]["Beamforming"]["@reconstructionDepth"] = settings[
-                                                                                                Tags.DIM_VOLUME_Z_MM] / 1000
+        beamforming_dict["MITK_beamforming"]["PA"]\
+        ["Beamforming"]["@reconstructionDepth"] = 0.05
 
-        beamforming_dict["MITK_beamforming"]["PA"]["Resampling"]["@spacing"] = settings[Tags.SPACING_MM] / 2
-        beamforming_dict["MITK_beamforming"]["PA"]["Resampling"]["@dimX"] = settings[Tags.SENSOR_NUM_ELEMENTS] * 2
+        beamforming_dict["MITK_beamforming"]["PA"]["BMode"]["@method"] = settings[Tags.RECONSTRUCTION_BMODE_METHOD]
+
+        beamforming_dict["MITK_beamforming"]["PA"]["Resampling"]["@do"] = 1
+        beamforming_dict["MITK_beamforming"]["PA"]["Resampling"]["@spacing"] = 0.15
+        beamforming_dict["MITK_beamforming"]["PA"]["Resampling"]["@dimX"] = 256
 
         with open(save_path, "w") as xml_write_file:
             xmltodict.unparse(beamforming_dict, xml_write_file)

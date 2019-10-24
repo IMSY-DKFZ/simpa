@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Tags:
 
     # General settings
@@ -50,6 +51,9 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_SDMAS = "reconstruction_algorithm_sdmas"
     RECONSTRUCTION_MITK_BINARY_PATH = "reconstruction_mitk_binary_path"
     RECONSTRUCTION_MITK_SETTINGS_XML = "reconstruction_mitk_settings_xml"
+    RECONSTRUCTION_BMODE_METHOD = "reconstruction_bmode_method"
+    RECONSTRUCTION_BMODE_METHOD_ABS = "Abs"
+    RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM = "EnvelopeDetection"
 
     # Upsampling settings
 

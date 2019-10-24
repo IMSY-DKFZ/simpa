@@ -7,7 +7,7 @@ def perform_reconstruction(settings, acoustic_data_path):
     print("ACOUSTIC FORWARD")
 
     reconstructed_data_save_path = (settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" +
-                                    Tags.RECONSTRUCTION_OUTPUT_NAME + ".npz")
+                                    Tags.RECONSTRUCTION_OUTPUT_NAME + "_" + str(settings[Tags.WAVELENGTH]) + ".npz")
 
     reconstruction_method = None
 

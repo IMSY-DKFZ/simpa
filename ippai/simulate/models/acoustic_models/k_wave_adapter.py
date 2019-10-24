@@ -23,6 +23,7 @@ def simulate(settings, optical_path):
     cmd.append("addpath('"+settings[Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION]+"');" +
                settings[Tags.ACOUSTIC_MODEL_SCRIPT] + "('" + tmp_json_filename +
                "', '" + optical_path + "');exit;")
+    cur_dir = os.getcwd()
     os.chdir(settings[Tags.SIMULATION_PATH])
 
     subprocess.run(cmd)
@@ -31,6 +32,7 @@ def simulate(settings, optical_path):
     os.remove(os.path.join(settings[Tags.SIMULATION_PATH], "fluence.npy"))
     os.remove(os.path.join(settings[Tags.SIMULATION_PATH], "initial_pressure.npy"))
     os.remove(tmp_output_file)
+    os.chdir(cur_dir)
 
     return sensor_data
 

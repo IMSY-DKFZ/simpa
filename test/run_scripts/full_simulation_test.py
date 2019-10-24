@@ -1,49 +1,40 @@
 from ippai.simulate import Tags
 from ippai.simulate.simulation import simulate
 from ippai.simulate.models.reconstruction import perform_reconstruction
-from ippai.simulate.structures import *
-from ippai.simulate.tissue_properties import get_constant_settings
+from ippai.simulate.structures import create_unrealistic_forearm_structures
 import numpy as np
 
 
-def create_water_background():
-    water_dict = dict()
-    water_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
-    water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_constant_settings(mua=0.1, mus=100, g=0.9)
-    water_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.ULTRASOUND_GEL_PAD
-    return water_dict
+for seed_index in range(0, 500):
 
+    random_seed = 17420000 + seed_index
+    seed_index += 1
+    np.random.seed(random_seed)
 
-def create_upsampling_phantom_parameters(x_min, x_max, z_min, z_max):
-    structures_dict = dict()
-    structures_dict["background"] = create_water_background()
-    num_vessels = np.random.randint(10, 20)
-    for vessel_idx in range(num_vessels):
-        structures_dict["vessel_"+str(vessel_idx)] = create_vessel_tube(x_min=x_min, x_max=x_max,
-                                                               z_min=z_min, z_max=z_max,
-                                                               r_max=0.5, r_min=3)
-    return structures_dict
+    relative_shift = ((np.random.random() - 0.5) * 2) * 12.5
+    background_oxy = (np.random.random() * 0.2) + 0.4
 
-
-for volume_idx in range(1, 2):
     settings = {
 
         # Basic & geometry settings
-        Tags.RANDOM_SEED: 4217,
-        Tags.VOLUME_NAME: "TestData_" + str(volume_idx).zfill(6),
-        Tags.SIMULATION_PATH: "/media/janek/PA DATA/tmp/",
+        Tags.RANDOM_SEED: random_seed,
+        Tags.VOLUME_NAME: "Forearm_" + str(random_seed).zfill(6),
+        Tags.SIMULATION_PATH: "/media/janek/PA DATA/DS_Forearm/",
         Tags.SPACING_MM: 0.3,
         Tags.DIM_VOLUME_Z_MM: 21,
         Tags.DIM_VOLUME_X_MM: 40,
         Tags.DIM_VOLUME_Y_MM: 25,
         Tags.AIR_LAYER_HEIGHT_MM: 12,
         Tags.GELPAD_LAYER_HEIGHT_MM: 18,
-        Tags.STRUCTURES: create_upsampling_phantom_parameters(0, 40, 2, 21),
+        Tags.STRUCTURES: create_unrealistic_forearm_structures(relative_shift_mm=relative_shift,
+                                                               background_oxy=background_oxy,
+                                                               radius_factor=1,
+                                                               vessel_spawn_probability=0.5),
         Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
-        Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 20.5,
+        Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 
         # Optical forward path settings
-        Tags.WAVELENGTHS: [800],
+        Tags.WAVELENGTHS: [700, 750, 800, 850, 900],
         Tags.RUN_OPTICAL_MODEL: True,
         Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
         Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/bin/mcx",
@@ -53,8 +44,8 @@ for volume_idx in range(1, 2):
         Tags.PERFORM_UPSAMPLING: True,
         Tags.CROP_IMAGE: True,
         Tags.CROP_POWER_OF_TWO: True,
-        Tags.UPSAMPLING_METHOD: Tags.UPSAMPLING_METHOD_BILINEAR,
-        Tags.UPSCALE_FACTOR: 8.0,
+        Tags.UPSAMPLING_METHOD: Tags.UPSAMPLING_METHOD_NEAREST_NEIGHBOUR,
+        Tags.UPSCALE_FACTOR: 4.0,
         Tags.DL_MODEL_PATH: None,
 
         # Acoustic forward path settings
@@ -72,7 +63,7 @@ for volume_idx in range(1, 2):
         Tags.SENSOR_MASK: 1,
         Tags.SENSOR_RECORD: "p",
         Tags.SENSOR_CENTER_FREQUENCY_MHZ: 7.5e6,
-        Tags.SENSOR_BANDWIDTH_PERCENT: 133,
+        Tags.SENSOR_BANDWIDTH_PERCENT: 80,
         Tags.SENSOR_DIRECTIVITY_ANGLE: 0,
         Tags.SENSOR_ELEMENT_PITCH_CM: 0.3,
         Tags.SENSOR_DIRECTIVITY_SIZE_M: 0.002,  # [m]
@@ -91,9 +82,9 @@ for volume_idx in range(1, 2):
         Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
         Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_DAS,
         Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/home/janek/bin/mitk/MitkPABeamformingTool.sh",
-        Tags.RECONSTRUCTION_MITK_SETTINGS_XML: "/home/janek/bin/beamformingsettings.xml"
+        Tags.RECONSTRUCTION_MITK_SETTINGS_XML: "/home/janek/bin/beamformingsettings.xml",
+        Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM
     }
-    print("Simulating ", volume_idx)
-    #[settings_path, optical_path, acoustic_path, reconstruction_path] = simulate(settings)
-    perform_reconstruction(settings, "/media/janek/PA DATA/tmp/TestData_000001/acoustic_forward_model_output.npz")
-    print("Simulating ", volume_idx, "[Done]")
+    print("Simulating ", random_seed)
+    [settings_path, optical_path, acoustic_path, reconstruction_path] = simulate(settings)
+    print("Simulating ", random_seed, "[Done]")

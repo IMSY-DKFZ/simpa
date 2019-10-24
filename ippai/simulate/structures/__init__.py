@@ -101,7 +101,7 @@ def create_unrealistic_forearm_structures(relative_shift_mm=0, background_oxy=0.
         if np.random.random() < subcutaneous_vessel_spawn_probability:
             structures_dict["subcutaneous_vessel_" + str(i + 1)] = create_subcutaneous_vein(position,
                                                                                             radius_factor=radius_factor)
-    for i in range(3):
+    for i in range(5):
         if np.random.random() < vessel_spawn_probability:
             structures_dict["random_vessel" + str(i + 1)] = create_random_ellipse(eccentricity_min=0,
                                                                                   eccentricity_max=0.5)

@@ -16,9 +16,9 @@ def preprocess_image(settings, image_data):
                 air_layer_height = int(settings[Tags.AIR_LAYER_HEIGHT_MM] / settings[Tags.SPACING_MM])
                 image_data = image_data[air_layer_height:, :]
 
-            if Tags.GELPAD_LAYER_HEIGHT_MM in settings:
-                gelpad_layer_height = int(settings[Tags.GELPAD_LAYER_HEIGHT_MM] / settings[Tags.SPACING_MM])
-                image_data = image_data[gelpad_layer_height:, :]
+            # if Tags.GELPAD_LAYER_HEIGHT_MM in settings:
+            #     gelpad_layer_height = int(settings[Tags.GELPAD_LAYER_HEIGHT_MM] / settings[Tags.SPACING_MM])
+            #     image_data = image_data[gelpad_layer_height:, :]
 
             if Tags.CROP_POWER_OF_TWO in settings:
                 if settings[Tags.CROP_POWER_OF_TWO]:
