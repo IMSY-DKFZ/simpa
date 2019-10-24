@@ -11,7 +11,7 @@ absorption = data_input['mua']
 
 p0 = data_output['initial_pressure']
 
-time_series_data = np.load(PATH + "/acoustic_forward_model_output_" + wavelength + ".npz")["time_series_data"]
+time_series_data = np.load(PATH + "/noisy_acoustic_model_output_" + wavelength + ".npz")["time_series_data"]
 recon = np.load(PATH + "/reconstruction_result_" + wavelength + ".npz")["reconstruction"]
 
 print(np.shape(time_series_data))

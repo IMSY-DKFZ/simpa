@@ -16,10 +16,12 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
 
         beamforming_dict["MITK_beamforming"]["PA"]["Beamforming"]["@speedOfSound"] = settings[
             Tags.MEDIUM_SOUND_SPEED]
+        beamforming_dict["MITK_beamforming"]["PA"]["Beamforming"]["@algorithm"] = settings[
+            Tags.RECONSTRUCTION_ALGORITHM]
         beamforming_dict["MITK_beamforming"]["PA"]["Beamforming"]["@pitchInMeters"] = settings[
             Tags.SENSOR_ELEMENT_PITCH_CM]
         beamforming_dict["MITK_beamforming"]["PA"]\
-        ["Beamforming"]["@reconstructionDepth"] = 0.05
+                        ["Beamforming"]["@reconstructionDepth"] = 0.05
 
         beamforming_dict["MITK_beamforming"]["PA"]["BMode"]["@method"] = settings[Tags.RECONSTRUCTION_BMODE_METHOD]
 
@@ -44,7 +46,9 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         time_series_sensor_data = np.atleast_3d(time_series_sensor_data)
         header = dict()
         header['space dimension'] = 3
-        header['space directions'] = [[0.3, 0, 0], [0, 1/(settings[Tags.SENSOR_SAMPLING_RATE_MHZ]), 0], [0, 0, 1]]
+        header['space directions'] = [[settings[Tags.SENSOR_ELEMENT_PITCH_CM], 0, 0],
+                                      [0, 1/(settings[Tags.SENSOR_SAMPLING_RATE_MHZ]), 0],
+                                      [0, 0, 1]]
         nrrd.write(tmp_input_path, time_series_sensor_data, header)
 
         cmd = list()

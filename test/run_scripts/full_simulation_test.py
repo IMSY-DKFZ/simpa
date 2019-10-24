@@ -35,6 +35,7 @@ for seed_index in range(0, 500):
 
         # Optical forward path settings
         Tags.WAVELENGTHS: [700, 750, 800, 850, 900],
+        Tags.WAVELENGTH: 700,
         Tags.RUN_OPTICAL_MODEL: True,
         Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
         Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/bin/mcx",
@@ -80,11 +81,18 @@ for seed_index in range(0, 500):
 
         # Reconstruction settings
         Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
-        Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_DAS,
+        Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_SDMAS,
         Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/home/janek/bin/mitk/MitkPABeamformingTool.sh",
         Tags.RECONSTRUCTION_MITK_SETTINGS_XML: "/home/janek/bin/beamformingsettings.xml",
-        Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM
+        Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+
+        # Noise settings
+        Tags.APPLY_NOISE_MODEL: True,
+        Tags.NOISE_MODEL: Tags.NOISE_MODEL_GAUSSIAN,
+        Tags.NOISE_MEAN: 0,
+        Tags.NOISE_STD: 50,
     }
     print("Simulating ", random_seed)
     [settings_path, optical_path, acoustic_path, reconstruction_path] = simulate(settings)
+    #perform_reconstruction(settings, "/media/janek/PA DATA/DS_Forearm/Forearm_17420000/acoustic_forward_model_output_700.npz")
     print("Simulating ", random_seed, "[Done]")

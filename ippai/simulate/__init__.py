@@ -41,14 +41,16 @@ class Tags:
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
     RECORDMOVIE = "record_movie"
     MOVIENAME = "movie_name"
+    TIME_SERIES_DATA = "time_series_data"
+    TIME_SERIES_DATA_NOISE = "time_series_data_noise"
 
     # Reconstruction settings
     PERFORM_IMAGE_RECONSTRUCTION = "perform_image_reconstruction"
     RECONSTRUCTION_OUTPUT_NAME = "reconstruction_result"
     RECONSTRUCTION_ALGORITHM = "reconstruction_algorithm"
-    RECONSTRUCTION_ALGORITHM_DAS = "reconstruction_algorithm_das"
-    RECONSTRUCTION_ALGORITHM_DMAS = "reconstruction_algorithm_dmas"
-    RECONSTRUCTION_ALGORITHM_SDMAS = "reconstruction_algorithm_sdmas"
+    RECONSTRUCTION_ALGORITHM_DAS = "DAS"
+    RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
+    RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
     RECONSTRUCTION_MITK_BINARY_PATH = "reconstruction_mitk_binary_path"
     RECONSTRUCTION_MITK_SETTINGS_XML = "reconstruction_mitk_settings_xml"
     RECONSTRUCTION_BMODE_METHOD = "reconstruction_bmode_method"
@@ -115,6 +117,14 @@ class Tags:
     SENSOR_ELEMENT_PITCH_CM = "sensor_element_pitch"
     SENSOR_SAMPLING_RATE_MHZ = "sensor_sampling_rate_mhz"
     SENSOR_NUM_ELEMENTS = "sensor_num_elements"
+
+    # Noise properties
+    APPLY_NOISE_MODEL = "apply_noise_model"
+    NOISE_MODEL = "noise_model"
+    NOISE_MODEL_GAUSSIAN = "noise_model_gaussian"
+    NOISE_MEAN = "noise_mean"
+    NOISE_STD = "noise_std"
+    NOISE_MODEL_OUTPUT_NAME = "noisy_acoustic_model_output"
 
     # Constant Tissue Properties
     KEY_CONSTANT_PROPERTIES = "constant_properties"

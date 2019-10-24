@@ -11,7 +11,9 @@ def perform_reconstruction(settings, acoustic_data_path):
 
     reconstruction_method = None
 
-    if settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DAS:
+    if ((settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DAS) or
+        (settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DMAS) or
+            (settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_SDMAS)):
         reconstruction_method = MitkBeamformingAdapter()
 
     reconstruction = reconstruction_method.simulate(settings, acoustic_data_path)

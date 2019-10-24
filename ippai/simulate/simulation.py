@@ -2,6 +2,7 @@ from ippai.simulate import Tags
 from ippai.simulate.volume_creator import create_simulation_volume
 from ippai.simulate.models.optical_modelling import run_optical_forward_model
 from ippai.simulate.models.acoustic_modelling import run_acoustic_forward_model
+from ippai.simulate.models.noise_modelling import apply_noise_model_to_time_series_data
 from ippai.simulate.models.reconstruction import perform_reconstruction
 from ippai.process.sampling import upsample
 import numpy as np
@@ -57,6 +58,8 @@ def simulate(settings):
 
         if settings[Tags.RUN_ACOUSTIC_MODEL]:
             acoustic_output_path = run_acoustic_forward_model(settings, optical_output_path)
+            if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
+                acoustic_output_path = apply_noise_model_to_time_series_data(settings, acoustic_output_path)
             acoustic_output_paths.append(acoustic_output_path)
 
         if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
