@@ -68,6 +68,6 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
 
         os.remove(tmp_input_path)
         os.remove(tmp_output_path)
-        #os.remove(tmp_settings_xml)
+        os.remove(tmp_settings_xml)
 
         return reconstruction

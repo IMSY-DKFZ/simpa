@@ -17,9 +17,9 @@ recon = np.load(PATH + "/reconstruction_result_" + wavelength + ".npz")["reconst
 print(np.shape(time_series_data))
 
 plt.subplot(131)
-plt.imshow((np.rot90(p0[:, :], -1)))
+plt.imshow((np.rot90(absorption[:, 100:], -1)))
 plt.subplot(132)
-plt.imshow((np.rot90(time_series_data[:, :], -1)), aspect=0.08)
+plt.imshow((np.rot90(time_series_data[:, 780:], -1)), aspect=0.08)
 plt.subplot(133)
-plt.imshow((np.rot90(recon[:, :, 0], -1)))
+plt.imshow((np.rot90(recon[:, 120:, 0], -1)))
 plt.show()

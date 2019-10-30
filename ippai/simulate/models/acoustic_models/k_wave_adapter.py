@@ -8,7 +8,7 @@ from shutil import copy
 
 def simulate(settings, optical_path):
 
-    tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "_output.npy"
+    tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/tmp_output.npy"
     settings["output_file"] = tmp_output_file
 
     tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/test_settings.json"
@@ -24,13 +24,13 @@ def simulate(settings, optical_path):
                settings[Tags.ACOUSTIC_MODEL_SCRIPT] + "('" + tmp_json_filename +
                "', '" + optical_path + "');exit;")
     cur_dir = os.getcwd()
-    os.chdir(settings[Tags.SIMULATION_PATH])
+    os.chdir(settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME])
 
     subprocess.run(cmd)
 
     sensor_data = np.load(tmp_output_file)
-    os.remove(os.path.join(settings[Tags.SIMULATION_PATH], "fluence.npy"))
-    os.remove(os.path.join(settings[Tags.SIMULATION_PATH], "initial_pressure.npy"))
+    os.remove(os.path.join(settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME], "fluence.npy"))
+    os.remove(os.path.join(settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME], "initial_pressure.npy"))
     os.remove(tmp_output_file)
     os.chdir(cur_dir)
 

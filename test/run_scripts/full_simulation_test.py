@@ -1,35 +1,84 @@
-from ippai.simulate import Tags
+from ippai.simulate import Tags, SegmentationClasses
 from ippai.simulate.simulation import simulate
 from ippai.simulate.models.reconstruction import perform_reconstruction
-from ippai.simulate.structures import create_unrealistic_forearm_structures
+import numpy as np
+from ippai.simulate.structures import create_vessel_tube, get_constant_settings, create_muscle_background
 import numpy as np
 
+VESSELS_MIN = 1
+VESSELS_MAX = 1
 
-for seed_index in range(0, 500):
 
-    random_seed = 17420000 + seed_index
+def create_milk_background():
+    water_dict = dict()
+    water_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
+    water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_constant_settings(mua=0.1, mus=100, g=0.9)
+    water_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
+    return water_dict
+
+
+def create_single_vessel_phantom_parameters():
+    structures_dict = dict()
+    x_min = 18
+    x_max = 22
+    z_min = 4
+    z_max = 6
+    structures_dict["background"] = create_milk_background()
+    structures_dict["blood_tube"] = create_vessel_tube(x_min=x_min, x_max=x_max,
+                                                       z_min=z_min, z_max=z_max,
+                                                       r_max=2, r_min=3)
+    return structures_dict
+
+
+def create_multi_vessel_phantom_parameters():
+    structures_dict = dict()
+    x_min = 4
+    x_max = 36
+    z_min = 4
+    z_max = 10
+    structures_dict["background"] = create_milk_background()
+    num_vessels = np.random.randint(1, 3)
+    for i in range(num_vessels):
+        structures_dict["blood_tube_" + str(i)] = create_vessel_tube(x_min=x_min, x_max=x_max,
+                                                                     z_min=z_min, z_max=z_max,
+                                                                     r_max=1, r_min=3)
+    return structures_dict
+
+
+def create_complex_parameters():
+    structures_dict = dict()
+    x_min = 4
+    x_max = 36
+    z_min = 4
+    z_max = 10
+    structures_dict["background"] = create_muscle_background(background_oxy=0.5)
+    num_vessels = np.random.randint(VESSELS_MIN, VESSELS_MAX)
+    for i in range(num_vessels):
+        structures_dict["blood_tube_" + str(i)] = create_vessel_tube(x_min=x_min, x_max=x_max,
+                                                                     z_min=z_min, z_max=z_max,
+                                                                     r_max=2, r_min=3)
+    return structures_dict
+
+
+for seed_index in range(200, 400):
+
+    random_seed = 10000 + seed_index
     seed_index += 1
     np.random.seed(random_seed)
-
-    relative_shift = ((np.random.random() - 0.5) * 2) * 12.5
-    background_oxy = (np.random.random() * 0.2) + 0.4
 
     settings = {
 
         # Basic & geometry settings
         Tags.RANDOM_SEED: random_seed,
-        Tags.VOLUME_NAME: "Forearm_" + str(random_seed).zfill(6),
-        Tags.SIMULATION_PATH: "/media/janek/PA DATA/DS_Forearm/",
+        Tags.VOLUME_NAME: "Phantom_" + str(random_seed).zfill(6),
+        Tags.SIMULATION_PATH: "/media/janek/PA DATA/DS_Simple/",
         Tags.SPACING_MM: 0.3,
         Tags.DIM_VOLUME_Z_MM: 21,
         Tags.DIM_VOLUME_X_MM: 40,
         Tags.DIM_VOLUME_Y_MM: 25,
         Tags.AIR_LAYER_HEIGHT_MM: 12,
         Tags.GELPAD_LAYER_HEIGHT_MM: 18,
-        Tags.STRUCTURES: create_unrealistic_forearm_structures(relative_shift_mm=relative_shift,
-                                                               background_oxy=background_oxy,
-                                                               radius_factor=1,
-                                                               vessel_spawn_probability=0.5),
+        Tags.STRUCTURES: create_multi_vessel_phantom_parameters(),
         Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
         Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 
@@ -76,7 +125,7 @@ for seed_index in range(0, 500):
         Tags.PMLSize: [20, 20],
         Tags.PMLAlpha: 2,
         Tags.PlotPML: False,
-        Tags.RECORDMOVIE: True,
+        Tags.RECORDMOVIE: False,
         Tags.MOVIENAME: "Movie",
 
         # Reconstruction settings
