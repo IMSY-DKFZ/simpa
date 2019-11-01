@@ -288,77 +288,86 @@ class UNet(NamedNeuralNetwork):
 
 
 class AsymUNet(NamedNeuralNetwork):
-    def __init__(self, in_channels=1, out_channels=1, internal_channels=16):
+    def __init__(self, in_channels=1, out_channels=1, internal_channels=16, dropout=0.0, output_asym_factor=20):
         super().__init__()
 
         self.in_channels = in_channels
         self.out_channels = out_channels
 
         kernel_size = 3  # 3x3 conv
-        self.contract_1_1 = self.contract(in_channels, internal_channels, kernel_size)
-        self.contract_1_2 = self.contract(internal_channels, internal_channels, kernel_size)
+        self.contract_1_1 = self.contract(in_channels, internal_channels, kernel_size, dropout)
+        self.contract_1_2 = self.contract(internal_channels, internal_channels, kernel_size, dropout)
         self.pool_1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.skip_1 = self.skip(internal_channels)
+        self.skip_1 = self.skip(internal_channels, dropout, output_asym_factor)
 
-        self.contract_2_1 = self.contract(internal_channels, 2*internal_channels, kernel_size)
-        self.contract_2_2 = self.contract(2*internal_channels, 2*internal_channels, kernel_size)
+        self.contract_2_1 = self.contract(internal_channels, 2*internal_channels, kernel_size, dropout)
+        self.contract_2_2 = self.contract(2*internal_channels, 2*internal_channels, kernel_size, dropout)
         self.pool_2 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.skip_2 = self.skip(2*internal_channels)
+        self.skip_2 = self.skip(2*internal_channels, dropout, output_asym_factor)
 
-        self.contract_3_1 = self.contract(2*internal_channels, 4*internal_channels, kernel_size)
-        self.contract_3_2 = self.contract(4*internal_channels, 4*internal_channels, kernel_size)
+        self.contract_3_1 = self.contract(2*internal_channels, 4*internal_channels, kernel_size, dropout)
+        self.contract_3_2 = self.contract(4*internal_channels, 4*internal_channels, kernel_size, dropout)
         self.pool_3 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.skip_3 = self.skip(4*internal_channels)
+        self.skip_3 = self.skip(4*internal_channels, dropout, output_asym_factor)
 
-        self.contract_4_1 = self.contract(4*internal_channels, 8*internal_channels, kernel_size)
-        self.contract_4_2 = self.contract(8*internal_channels, 8*internal_channels, kernel_size)
+        self.contract_4_1 = self.contract(4*internal_channels, 8*internal_channels, kernel_size, dropout)
+        self.contract_4_2 = self.contract(8*internal_channels, 8*internal_channels, kernel_size, dropout)
         self.pool_4 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.skip_4 = self.skip(8*internal_channels)
+        self.skip_4 = self.skip(8*internal_channels, dropout, output_asym_factor)
 
         self.center = nn.Sequential(
             nn.Conv2d(8*internal_channels, 16*internal_channels, 3, padding=1),
             nn.ReLU(),
-            self.skip(16*internal_channels),
+            self.skip(16*internal_channels, dropout, output_asym_factor),
             nn.ReLU(),
             nn.ConvTranspose2d(16*internal_channels, 8*internal_channels, kernel_size=2, stride=2),
             nn.ReLU(),
         )
 
-        self.expand_4_1 = self.expand(16*internal_channels, 8*internal_channels, kernel_size)
-        self.expand_4_2 = self.expand(8*internal_channels, 8*internal_channels, kernel_size)
+        self.expand_4_1 = self.expand(16*internal_channels, 8*internal_channels, kernel_size, dropout)
+        self.expand_4_2 = self.expand(8*internal_channels, 8*internal_channels, kernel_size, dropout)
         self.upscale_4 = nn.ConvTranspose2d(8*internal_channels, 4*internal_channels, kernel_size=2, stride=2)
 
-        self.expand_3_1 = self.expand(8*internal_channels, 4*internal_channels, kernel_size)
-        self.expand_3_2 = self.expand(4*internal_channels, 4*internal_channels, kernel_size)
+        self.expand_3_1 = self.expand(8*internal_channels, 4*internal_channels, kernel_size, dropout)
+        self.expand_3_2 = self.expand(4*internal_channels, 4*internal_channels, kernel_size, dropout)
         self.upscale_3 = nn.ConvTranspose2d(4*internal_channels, 2*internal_channels, kernel_size=2, stride=2)
 
-        self.expand_2_1 = self.expand(4*internal_channels, 2*internal_channels, kernel_size)
-        self.expand_2_2 = self.expand(2*internal_channels, 2*internal_channels, kernel_size)
+        self.expand_2_1 = self.expand(4*internal_channels, 2*internal_channels, kernel_size, dropout)
+        self.expand_2_2 = self.expand(2*internal_channels, 2*internal_channels, kernel_size, dropout)
         self.upscale_2 = nn.ConvTranspose2d(2*internal_channels, internal_channels, kernel_size=2, stride=2)
 
-        self.expand_1_1 = self.expand(2*internal_channels, internal_channels, kernel_size)
-        self.expand_1_2 = self.expand(internal_channels, internal_channels, kernel_size)
+        self.expand_1_1 = self.expand(2*internal_channels, internal_channels, kernel_size, dropout)
+        self.expand_1_2 = self.expand(internal_channels, internal_channels, kernel_size, dropout)
         self.final = nn.Conv2d(internal_channels, out_channels, kernel_size=1)
 
     @staticmethod
-    def contract(in_channels, out_channels, kernel_size):
+    def contract(in_channels, out_channels, kernel_size, dropout=0.0):
         return nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=int(kernel_size/2)),
+                nn.Dropout2d(p=dropout),
                 nn.LeakyReLU())
 
     @staticmethod
-    def expand(in_channels, out_channels, kernel_size):
+    def expand(in_channels, out_channels, kernel_size, dropout=0.0):
         return nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=int(kernel_size/2)),
+            nn.Dropout2d(p=dropout),
             nn.LeakyReLU(),
         )
 
     @staticmethod
-    def skip(channels):
+    def skip(channels, dropout=0.0, output_asym_factor=20):
         return nn.Sequential(
             nn.Conv2d(channels, channels, kernel_size=3, padding=1),
-            nn.Conv2d(channels, channels, kernel_size=(3, 20), stride=(1, 20), padding=(1, 9)),
-            nn.Conv2d(channels, channels, kernel_size=3, padding=1)
+            nn.Dropout2d(p=dropout),
+            nn.LeakyReLU(),
+            nn.Conv2d(channels, channels, kernel_size=(output_asym_factor, 3), stride=(output_asym_factor, 1),
+                      padding=(round(output_asym_factor/2) - 1, 1)),
+            nn.Dropout2d(p=dropout),
+            nn.LeakyReLU(),
+            nn.Conv2d(channels, channels, kernel_size=3, padding=1),
+            nn.Dropout2d(p=dropout),
+            nn.LeakyReLU(),
         )
 
     def forward(self, x):
@@ -380,6 +389,17 @@ class AsymUNet(NamedNeuralNetwork):
         skip_4 = self.skip_4(contract_4_2)
 
         center = self.center(pool_4)
+
+        # print(contract_4_2.size())
+        # print("pool_1", pool_1.size())
+        # print("pool_2", pool_2.size())
+        # print("pool_3", pool_3.size())
+        # print("pool_4", pool_4.size())
+        # print("center", center.size())
+        # print("skip_4", skip_4.size())
+        # print("skip_3", skip_3.size())
+        # print("skip_2", skip_2.size())
+        # print("skip_1", skip_1.size())
 
         concatenated_skip_4 = concatenate([center, skip_4], 1)
         expand_4_1 = self.expand_4_1(concatenated_skip_4)
