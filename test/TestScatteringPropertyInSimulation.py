@@ -41,10 +41,10 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
             Tags.VOLUME_NAME: "TestVolume",
-            Tags.SIMULATION_PATH: "/media/janek/PA DATA/tmp/",
+            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test/test",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e8,
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/bin/mcx",
+            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 0.5,
             Tags.OPTICAL_MODEL: Tags.MODEL_MCX
@@ -57,7 +57,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
 
-        self.xy_dim = 26
+        self.xy_dim = 27
         self.z_dim = 100
         self.volume = np.zeros((self.xy_dim, self.xy_dim, self.z_dim, 4))
 
@@ -69,13 +69,13 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
     def tearDown(self):
         print("tearDown")
 
-    # def test_both(self):
-    #     """
-    #     Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
-    #     The spacing is 0.5, so that the slab is 20 voxels long.
-    #     We expect a decay ratio of e^1.
-    #     """
-    #     self.perform_test(10, [0, 1], np.e, 0.5)
+    def test_both(self):
+        """
+        Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
+        The spacing is 0.5, so that the slab is 20 voxels long.
+        We expect a decay ratio of e^1.
+        """
+        self.perform_test(10, [0, 1], np.e, 0.5)
 
     def test_both_double_width(self):
         """
@@ -151,12 +151,8 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         optical_path = run_optical_forward_model(self.settings, self.volume_path)
         fluence = np.load(optical_path)['fluence']
         absorption = np.load(self.volume_path)['mua']
-        half_dim = int(self.xy_dim / 2)
+        half_dim = int(self.xy_dim / 2) - 1
         decay_ratio = np.sum(fluence[half_dim, half_dim, 10]) / np.sum(fluence[half_dim, half_dim, 90])
-        plt.imshow(absorption[half_dim, :, :])
-        plt.show()
-        plt.imshow(fluence[half_dim, :, :])
-        plt.show()
         print(np.sum(fluence[half_dim, half_dim, 10]))
         print(np.sum(fluence[half_dim, half_dim, 90]))
         print("measured:", decay_ratio, "expected:", expected_decay_ratio)

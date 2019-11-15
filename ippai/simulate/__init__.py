@@ -67,6 +67,10 @@ class Tags:
     UPSAMPLING_METHOD_DEEP_LEARNING = "deeplearning"
     UPSAMPLING_METHOD_NEAREST_NEIGHBOUR = "nearestneighbour"
     UPSAMPLING_METHOD_BILINEAR = "bilinear"
+    UPSAMPLING_METHOD_LANCZOS2 = "lanczos2"
+    UPSAMPLING_METHOD_LANCZOS3 = "lanczos3"
+    UPSAMPLING_SCRIPT = "upsampling_script"
+    UPSAMPLING_SCRIPT_LOCATION = "upsampling_script_location"
     UPSCALE_FACTOR = "upscale_factor"
     DL_MODEL_PATH = "dl_model_path"
 

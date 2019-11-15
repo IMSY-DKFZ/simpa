@@ -62,9 +62,10 @@ def simulate(settings):
                 acoustic_output_path = apply_noise_model_to_time_series_data(settings, acoustic_output_path)
             acoustic_output_paths.append(acoustic_output_path)
 
-        if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-            reconstruction_output_path = perform_reconstruction(settings, acoustic_output_path)
-            reconstruction_output_paths.append(reconstruction_output_path)
+        if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings:
+            if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+                reconstruction_output_path = perform_reconstruction(settings, acoustic_output_path)
+                reconstruction_output_paths.append(reconstruction_output_path)
 
     return [volume_output_paths, optical_output_paths, acoustic_output_paths, reconstruction_output_paths]
 

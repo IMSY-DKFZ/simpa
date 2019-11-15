@@ -7,13 +7,13 @@ settings = jsondecode(fileread(settings));  % read settings as json file
 data = unzip(optical_path);    % unzip optical forward model
 % from .npz file to "fluence" (data{1}) and "initial_pressure" (data{2})
 initial_pressure = rot90(readNPY(data{2}), 3);  % rotate initial pressure 270°
-initial_pressure = fliplr(initial_pressure)
+initial_pressure = fliplr(initial_pressure);
 source.p0 = initial_pressure;
 
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
-GEL_LAYER_HEIGHT = 2
+GEL_LAYER_HEIGHT = 2;
 
 source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 [Nx, Ny] = size(source.p0);
@@ -49,8 +49,8 @@ else
     medium.density = ones(Nx, Ny);
 end
 
-kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6)
-kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / medium.sound_speed) / kgrid.dt)
+kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
+kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / medium.sound_speed) / kgrid.dt);
 % kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 % CFL number of 0.3 (advised by manual)
 % Using makeTime, dt = CFL*dx/medium.sound_speed and the total
@@ -102,7 +102,7 @@ if settings.gpu == true
 else
     datacast = 'single';
 end
-max_pressure = max(max(initial_pressure))
+max_pressure = max(max(initial_pressure));
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', settings.pml_size, ...

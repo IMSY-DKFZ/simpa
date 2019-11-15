@@ -5,6 +5,8 @@ from ippai.deep_learning import datasets, Architectures
 from scipy.ndimage import zoom
 import os
 import torch
+import subprocess
+import json
 
 
 def upsample(settings, optical_path):
@@ -37,6 +39,10 @@ def upsample(settings, optical_path):
     if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_BILINEAR:
         fluence = bl_upsample(settings, fluence)
         initial_pressure = bl_upsample(settings, initial_pressure)
+
+    if settings[Tags.UPSAMPLING_METHOD] in ["lanczos2", "lanczos3"]:
+        fluence = lanczos_upsample(settings, fluence)
+        initial_pressure = lanczos_upsample(settings, initial_pressure)
 
     np.savez(upsampled_path, fluence=fluence, initial_pressure=initial_pressure)
 
@@ -114,5 +120,41 @@ def bl_upsample(settings, image_data):
     :return: Upsampled image.
     """
     upsampled_image = zoom(image_data, settings[Tags.UPSCALE_FACTOR], order=1)
+
+    return upsampled_image
+
+
+def lanczos_upsample(settings, image_data):
+    """
+    Upsamples the given image with a given lanczos kernel.
+
+    :param settings: (dict) Dictionary that describes all simulation parameters.
+    :param image_data: (numpy array) Image to be upsampled.
+    :return: Upsampled image.
+    """
+
+    tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "_output.npy"
+    np.save(tmp_output_file, image_data)
+    settings["output_file"] = tmp_output_file
+
+    tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/test_settings.json"
+    with open(tmp_json_filename, "w") as json_file:
+        json.dump(settings, json_file, indent="\t")
+
+    cmd = list()
+    cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
+    cmd.append("-nodisplay")
+    cmd.append("-nosplash")
+    cmd.append("-r")
+    cmd.append("addpath('"+settings[Tags.UPSAMPLING_SCRIPT_LOCATION]+"');" +
+               settings[Tags.UPSAMPLING_SCRIPT] + "('" + tmp_json_filename + "');exit;")
+
+    cur_dir = os.getcwd()
+    os.chdir(settings[Tags.SIMULATION_PATH])
+
+    subprocess.run(cmd)
+    upsampled_image = np.load(tmp_output_file)
+    os.remove(tmp_output_file)
+    os.chdir(cur_dir)
 
     return upsampled_image

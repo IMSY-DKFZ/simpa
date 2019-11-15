@@ -22,8 +22,10 @@ def create_upsampling_phantom_parameters(x_min, x_max, z_min, z_max):
     return structures_dict
 
 
-upsampling_methods = ["validation"]
-spacings = [0.3, 0.15]
+upsampling_methods = [Tags.UPSAMPLING_METHOD_LANCZOS2,
+                      Tags.UPSAMPLING_METHOD_LANCZOS3]
+spacings = [0.8, 0.4, 0.2]
+
 root = "/home/kris/hard_drive/cami-experimental/PAI/experiments/Upsampling/"
 test_models = ["20191002-123826_Upscalel1_0.8_to_0.4/save/epoch_99.pt",
                "20191002-124021_Upscalel1_0.4_to_0.2/save/epoch_99.pt",
@@ -42,7 +44,7 @@ for i in range(0, 9):
                 Tags.WAVELENGTHS: [800],
                 Tags.RANDOM_SEED: i,
                 Tags.VOLUME_NAME: "UpsamplingPhantom_"+str(i) + "/" + method + "/" + str(spacing),
-                Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/upsampling_test",
+                Tags.SIMULATION_PATH: "/home/kris/hard_drive/data/upsampling_test_spacing_2",
                 Tags.RUN_OPTICAL_MODEL: True,
                 Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e7,
                 Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/mcx_test/mcx",
@@ -65,9 +67,13 @@ for i in range(0, 9):
                 Tags.UPSAMPLING_METHOD: method,
                 Tags.UPSCALE_FACTOR: 2,
                 Tags.DL_MODEL_PATH: root + model_path,
+                Tags.UPSAMPLING_SCRIPT_LOCATION: "/home/kris/hard_drive/ippai/ippai/simulate/models/acoustic_models",
+                Tags.UPSAMPLING_SCRIPT: "upsampling",
 
                 # Acoustic forward path settings
 
+                Tags.ACOUSTIC_MODEL_BINARY_PATH: "matlab",
+                Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "/home/kris/hard_drive/ippai/ippai/simulate/models/acoustic_models",
                 Tags.ACOUSTIC_MODEL_SCRIPT: "simulate",
                 Tags.GPU: True,
 
@@ -93,5 +99,5 @@ for i in range(0, 9):
                 Tags.MOVIENAME: "UpsamplingPhantom_"+str(i) + "/" + method + "/" + str(spacing) + "/" + "visualization"
             }
             print("Simulating ", i)
-            [settings_path, optical_path, acoustic_path] = simulate(settings)
+            [settings_path, optical_path, acoustic_path, reconstruction_output_path] = simulate(settings)
             print("Simulating ", i, "[Done]")
