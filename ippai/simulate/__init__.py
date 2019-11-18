@@ -3,7 +3,9 @@ import numpy as np
 
 class Tags:
 
-    # General settings
+    """
+    General settings
+    """
     SIMULATION_PATH = "simulation_path"
     VOLUME_NAME = "volume_name"
     WAVELENGTHS = "wavelengths"
@@ -14,13 +16,37 @@ class Tags:
     GPU = "gpu"
     MEDIUM_TEMPERATURE_CELCIUS = "medium_temperature"
 
-    # Optical model settings
+    """
+    Optical model settings
+    """
     RUN_OPTICAL_MODEL = 'run_optical_forward_model'
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
     OPTICAL_MODEL_BINARY_PATH = "optical_model_binary_path"
     OPTICAL_MODEL_NUMBER_PHOTONS = "optical_model_number_of_photons"
-    OPTICAL_MODEL_PROBE_XML_FILE = "optical_model_probe_xml_file"
+    OPTICAL_MODEL_PROBE_XML_FILE = "optical_model_probe_xml_file"  # TODO rename PROBE -> ILLUMINATION
     LASER_PULSE_ENERGY_IN_MILLIJOULE = "laser_pulse_energy_in_millijoule"
+
+    ILLUMINATION_TYPE = "optical_model_illumination_type"
+
+    # Illumination parameters
+    ILLUMINATION_POSITION = "illumination_position"
+    ILLUMINATION_DIRECTION = "illumination_direction"
+    ILLUMINATION_PARAM1 = "illumination_param1"
+    ILLUMINATION_PARAM2 = "illumination_param2"
+
+    # Supported illumination types - implemented in mcx
+    ILLUMINATION_TYPE_PENCIL = "pencil"
+    ILLUMINATION_TYPE_DISK = "disk"
+    ILLUMINATION_TYPE_SLIT = "slit"
+    ILLUMINATION_TYPE_GAUSSIAN = "gaussian"
+    ILLUMINATION_TYPE_PATTERN = "pattern"
+    ILLUMINATION_TYPE_PATTERN_3D = "pattern3d"
+    ILLUMINATION_TYPE_FOURIER = "fourier"
+    ILLUMINATION_TYPE_FOURIER_X = "fourierx"
+    ILLUMINATION_TYPE_FOURIER_X_2D = "fourierx2d"
+
+    ILLUMINATION_TYPE_DKFZ_PAUS = "pasetup"  # TODO more explanatory rename of pasetup
+    ILLUMINATION_TYPE_MSOT_ACUITY_ECHO = "msot_acuity_echo"
 
     # Supported optical models
     OPTICAL_MODEL = "optical_model"
@@ -33,8 +59,10 @@ class Tags:
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
     ACOUSTIC_MODEL_SCRIPT_LOCATION = "acoustic_model_script_location"
 
+    """
+    Acoustic model settings
+    """
 
-    # Acoustic model settings
     RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
     ACOUSTIC_MODEL_BINARY_PATH = "acoustic_model_binary_path"
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
@@ -57,7 +85,9 @@ class Tags:
     RECONSTRUCTION_BMODE_METHOD_ABS = "Abs"
     RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM = "EnvelopeDetection"
 
-    # Upsampling settings
+    """
+    Upsampling settings
+    """
 
     CROP_IMAGE = "crop_image"
     CENTER_CROP = "center_crop"
@@ -190,6 +220,7 @@ class Tags:
 
     UNITS_ARBITRARY = "arbitrary_unity"
     UNITS_PRESSURE = "newton_per_meters_squared"
+
 
 class SegmentationClasses:
     """

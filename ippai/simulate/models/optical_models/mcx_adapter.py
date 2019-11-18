@@ -5,6 +5,7 @@ from ippai.simulate import Tags
 from ippai.simulate.models.optical_models import OpticalForwardAdapterBase
 import json
 import os
+from ippai.simulate.models.optical_models.illumination_definition import define_illumination
 
 
 class McxAdapter(OpticalForwardAdapterBase):
@@ -26,50 +27,55 @@ class McxAdapter(OpticalForwardAdapterBase):
             input_file.write(mcx_input)
         tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+"_output"
 
-        #write settings to json
+        # write settings to json
+
+        if Tags.ILLUMINATION_TYPE in settings:
+            source = define_illumination(settings, nx, ny, nz)
+        else:
+            source = {
+                  "Pos": [
+                      int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
+                  ],
+                  "Dir": [
+                      0,
+                      0.342027,
+                      0.93969
+                  ],
+                  "Type": "pasetup",
+                  "Param1": [
+                      24.5 / settings[Tags.SPACING_MM],
+                      0,
+                      0,
+                      22.8 / settings[Tags.SPACING_MM]
+                  ],
+                  "Param2": [
+                      0,
+                      0,
+                      0,
+                      0
+                  ]
+              }
 
         settings_dict = {
             "Session": {
-            "ID": tmp_output_file,
-            "DoAutoThread": 1,
-            "Photons": settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
-            "DoMismatch": 0
+                "ID": tmp_output_file,
+                "DoAutoThread": 1,
+                "Photons": settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
+                "DoMismatch": 0
              },
             "Forward": {
                 "T0": 0,
                 "T1": 5e-09,
                 "Dt": 5e-09
             },
-        # "Optode": {
-        # 	"Source": {
-        # 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
-        # 		"Dir": [0,0,1]
-        # 	}
-        # },
-        "Optode": {
-          "Source": {
-              "Pos": [
-                  int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
-              ],
-              "Dir": [
-                  0,
-                  0.342027,
-                  0.93969
-              ],
-              "Type": "pasetup",
-              "Param1": [
-                  24.5 / settings[Tags.SPACING_MM],
-                  0,
-                  0,
-                  22.8 / settings[Tags.SPACING_MM]
-              ],
-              "Param2": [
-                  0,
-                  0,
-                  0,
-                  0
-              ]
-          }
+            # "Optode": {
+            # 	"Source": {
+            # 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
+            # 		"Dir": [0,0,1]
+            # 	}
+            # },
+            "Optode": {
+              "Source": source
             },
             "Domain": {
                 "OriginType": 0,
@@ -116,7 +122,7 @@ class McxAdapter(OpticalForwardAdapterBase):
             data = f.read()
         data = struct.unpack('%df' % (len(data) / 4), data)
         fluence = np.asarray(data).reshape([nx, ny, nz, 1], order='F')
-        fluence = np.squeeze(fluence, 3) * 100 # Convert from J/mm^2 to J/cm^2
+        fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
 
         os.remove(tmp_input_path)
         os.remove(tmp_output_file+".mc2")

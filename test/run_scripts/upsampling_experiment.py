@@ -59,6 +59,10 @@ for i in range(0, 9):
                 Tags.GELPAD_LAYER_HEIGHT_MM: 18,
                 Tags.STRUCTURES: create_upsampling_phantom_parameters(x, x, z, z),
 
+                Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_DKFZ_PAUS,
+                Tags.ILLUMINATION_DIRECTION: [0, 0.342027, 0.93969],
+                Tags.ILLUMINATION_PARAM1: [24.5 / spacing, 0, 0, 22.8 / spacing],
+
                 # Upsampling settings
 
                 Tags.PERFORM_UPSAMPLING: True,
