@@ -43,7 +43,7 @@ def randomize(lower_bound, upper_bound, distribution='uniform', size=(1,), gauss
 
 def gruneisen_parameter_from_temperature(temperature_in_celcius):
     """
-    This function returns the dimensionless gruneisen parameter based on a heuristic formular that
+    This function returns the dimensionless gruneisen parameter based on a heuristic formula that
     was determined experimentally:
 
     @book{wang2012biomedical,

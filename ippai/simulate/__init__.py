@@ -111,6 +111,7 @@ class Tags:
     PROPERTY_OXYGENATION = 'oxy'
     PROPERTY_SEGMENTATION = 'seg'
     PROPERTY_GRUNEISEN_PARAMETER = 'gamma'
+    PROPERTY_SPEED_OF_SOUND = "sos"
 
     # Air layer
     AIR_LAYER = "airlayer"
@@ -127,8 +128,11 @@ class Tags:
     DIM_VOLUME_Z_MM = "volume_z_dim_mm"
 
     # 2D Acoustic Medium Properties
+    MEDIUM_SOUND_SPEED_HOMOGENEOUS = "medium_sound_speed_homogeneous"
     MEDIUM_SOUND_SPEED = "medium_sound_speed"
+    MEDIUM_DENSITY_HOMOGENEOUS = "medium_density_homogeneous"
     MEDIUM_DENSITY = "medium_density"
+    MEDIUM_ALPHA_COEFF_HOMOGENEOUS = "medium_alpha_coeff_homogeneous"
     MEDIUM_ALPHA_COEFF = "medium_alpha_coeff"
     MEDIUM_ALPHA_POWER = "medium_alpha_power"
     MEDIUM_NONLINEARITY = "medium_nonlinearity"
@@ -145,12 +149,15 @@ class Tags:
     SENSOR_RECORD = "sensor_record"
     SENSOR_CENTER_FREQUENCY_MHZ = "sensor_center_frequency"
     SENSOR_BANDWIDTH_PERCENT = "sensor_bandwidth"
+    SENSOR_DIRECTIVITY_HOMOGENEOUS = "sensor_directivity_homogeneous"
     SENSOR_DIRECTIVITY_ANGLE = "sensor_directivity_angle"
     SENSOR_DIRECTIVITY_SIZE_M = "sensor_directivity_size"
     SENSOR_DIRECTIVITY_PATTERN = "sensor_directivity_pattern"
     SENSOR_ELEMENT_PITCH_CM = "sensor_element_pitch"
     SENSOR_SAMPLING_RATE_MHZ = "sensor_sampling_rate_mhz"
     SENSOR_NUM_ELEMENTS = "sensor_num_elements"
+    SENSOR_ARC = "sensor_arc"
+    SENSOR_RADIUS_MM = "sensor_radius_mm"
 
     # Noise properties
     APPLY_NOISE_MODEL = "apply_noise_model"
@@ -235,6 +242,7 @@ class SegmentationClasses:
     DERMIS = 5
     FAT = 6
     ULTRASOUND_GEL_PAD = 7
+    WATER = 8
 
 
 class StandardProperties:
@@ -255,6 +263,45 @@ class StandardProperties:
     #   publisher={Elsevier Health Sciences}
     # }
     BODY_TEMPERATURE_CELCIUS = 37.0
+
+    # @techreport{hasgall2018database,
+    #     title = {IT’IS Database for thermal and electromagnetic parameters of biological tissues.
+    #     Version 4.0, May 15, 2018. doi: 10.13099},
+    #     author = {Hasgall, PA and Di Gennaro, F and Baumgartner, C and Neufeld, E and Lloyd, B and Gosselin,
+    #               MC and Payne, D and Klingenb{\"o}ck, A and Kuster, N},
+    #     year = {2018},
+    #     institution = {VIP21000 - 04 - 0.Onl: www.itis.ethz.ch / database}
+    # }
+
+    DENSITY_GENERIC = 1.000 # kg/l
+    DENSITY_AIR = 0.001
+    DENSITY_MUSCLE = 1.090
+    DENSITY_BONE = 1.908
+    DENSITY_BLOOD = 1.050
+    DENSITY_SKIN = 1.109
+    DENSITY_FAT = 0.911
+    DENSITY_GEL_PAD = 0.890
+    DENSITY_WATER = 1.000
+
+    SPEED_OF_SOUND_GENERIC = 1540   # m/s
+    SPEED_OF_SOUND_AIR = 343
+    SPEED_OF_SOUND_MUSCLE = 1588.4
+    SPEED_OF_SOUND_BONE = 3500      # Cortical bone
+    SPEED_OF_SOUND_BLOOD = 1578.2
+    SPEED_OF_SOUND_SKIN = 1624.0
+    SPEED_OF_SOUND_FAT = 1440.2
+    SPEED_OF_SOUND_GEL_PAD = 1583
+    SPEED_OF_SOUND_WATER = 1482.3
+
+    ALPHA_COEFF_GENERIC = 0.02   # dB/m/MHz
+    ALPHA_COEFF_AIR = 1.3579e+05
+    ALPHA_COEFF_MUSCLE = 14.1579
+    ALPHA_COEFF_BONE = 29.7723    # Cortical bone
+    ALPHA_COEFF_BLOOD = 2.8174
+    ALPHA_COEFF_SKIN = 11.5470
+    ALPHA_COEFF_FAT = 9.1534
+    ALPHA_COEFF_GEL_PAD = 0.5
+    ALPHA_COEFF_WATER = 0.0138
 
 
 class OpticalTissueProperties:
@@ -327,7 +374,7 @@ class OpticalTissueProperties:
     MUSP500_BONE = 15.3  # Table 2 Mean for bone
     FRAY_BONE = 0.022  # Table 2 Mean for bone
     BMIE_BONE = 0.326  # Table 2 Mean for bone
-    STANDARD_ANISOTROPY = 0.9 # Average anisotropy of measured values presented in paper
+    STANDARD_ANISOTROPY = 0.9  # Average anisotropy of measured values presented in paper
 
     # Water content of bone:
     # @article{timmins1977bone,

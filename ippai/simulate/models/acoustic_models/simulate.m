@@ -4,9 +4,8 @@ function [] = simulate(settings, optical_path)
 settings = jsondecode(fileread(settings));  % read settings as json file
 
 %% Read initial pressure
-data = unzip(optical_path);    % unzip optical forward model
-% from .npz file to "fluence" (data{1}) and "initial_pressure" (data{2})
-initial_pressure = rot90(readNPY(data{2}), 3);  % rotate initial pressure 270°
+data = load(optical_path);
+initial_pressure = rot90(data.initial_pressure, 3);
 initial_pressure = fliplr(initial_pressure);
 source.p0 = initial_pressure;
 
@@ -26,31 +25,38 @@ kgrid = kWaveGrid(Nx, dx, Ny, dx);
 
 %% Define medium
 
-% if a path to a file is given which describes the sound speed in a .npy
-% file, the file is loaded and is used as medium.sound_speed
-if ischar(settings.medium_sound_speed) == 1 
-    medium.sound_speed = readNPY(settings.medium_sound_speed);
+% if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
+if isfield(data, 'sos') == true
+    medium.sound_speed = data.sos;
     % add 2 pixel "gel" to reduce Fourier artifact
     medium.sound_speed = padarray(medium.sound_speed, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
-    medium.sound_speed = settings.medium_sound_speed;
+    medium.sound_speed = 1540;
 end
 
-medium.alpha_coeff = settings.medium_alpha_coeff; % a
+% if a field of the struct "data" is given which describes the attenuation, the array is loaded and is used as medium.alpha_coeff
+if isfield(data, 'alpha_coeff') == true
+ medium.alpha_coeff = data.alpha_coeff;
+ % add 2 pixel "gel" to reduce Fourier artifact
+ medium.alpha_coeff = padarray(medium.alpha_coeff, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
+else
+ medium.alpha_coeff = 0.01;
+end
+
 medium.alpha_power = settings.medium_alpha_power; % b for a * MHz ^ b
 
-% if a path to a file is given which describes the medium density in a .npy
-% file, the file is loaded and is used as medium.medium_density
-if ischar(settings.medium_density) == 1 
-    medium.density = readNPY(settings.medium_density);
+% if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
+if isfield(data, 'density') == true
+    medium.density = data.density;
     % add 2 pixel "gel" to reduce Fourier artifact
     medium.density = padarray(medium.density, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
     medium.density = ones(Nx, Ny);
 end
 
+sound_speed_ref = min(min(medium.sound_speed));
 kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
-kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / medium.sound_speed) / kgrid.dt);
+kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / sound_speed_ref) / kgrid.dt);
 % kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 % CFL number of 0.3 (advised by manual)
 % Using makeTime, dt = CFL*dx/medium.sound_speed and the total
@@ -59,32 +65,29 @@ kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / medium.sound_speed) / kgrid.dt);
 
 %% Define sensor
 
-% if a path to a file is given which describes the sensor mask in a .npy
-% file, the file is loaded and is used as sensor.mask
-if ischar(settings.sensor_mask) == 1 
-    sensor.mask = readNPY(settings.sensor_mask);
+% if a field of the struct "data" is given which describes the sensor mask, the array is loaded and is used as sensor.mask
+if isfield(data, 'sensor_mask') == true
+    sensor.mask = data.sensor_mask;
     % add 2 pixel "gel" to reduce Fourier artifact
     sensor.mask = padarray(sensor.mask, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 else
-    num_elements = settings.sensor_num_elements
-    spacing = Ny / num_elements
+    num_elements = settings.sensor_num_elements;
+    element_spacing = Ny / num_elements;
     sensor.mask = zeros(Nx, Ny);
-    sensor.mask(2, spacing/2:spacing:Ny) = 1;
+    sensor.mask(3, round(element_spacing/2):round(element_spacing):Ny) = 1;
+    writeNPY(sensor.mask, "/home/kris/hard_drive/data/pipeline_test/Pipeline_test/sensor_mask.npy");
 end
 
-% if a path to a file is given which describes the sensor directivity angles in a .npy
-% file, the file is loaded and is used as sensor.directivity_angle
-if ischar(settings.sensor_directivity_angle) == 1 
-    sensor.directivity_angle = readNPY(settings.sensor_directivity_angle);
+% if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
+if isfield(data, 'directivity_angle') == true
+    sensor.directivity_angle = data.directivity_angle;
     % add 2 pixel "gel" to reduce Fourier artifact
     sensor.directivity_angle = padarray(sensor.directivity_angle, [GEL_LAYER_HEIGHT 0], 0, 'pre');
-else
-    dir_angles = settings.sensor_directivity_angle;
-    sensor.directivity_angle = zeros(Nx, Ny);
-    sensor.directivity_angle(sensor.mask == 1) = dir_angles;
 end
 
-sensor.directivity_size = settings.sensor_directivity_size;
+if isfield(data, 'directivity_size')
+    sensor.directivity_size = settings.sensor_directivity_size;
+end
 
 sensor.directivity_pattern = settings.sensor_directivity_pattern;
 
@@ -107,7 +110,7 @@ max_pressure = max(max(initial_pressure));
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', settings.pml_size, ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.movie_name, 'PlotScale', [-max_pressure/2, max_pressure/2]};
+              'MovieName', settings.movie_name, 'PlotScale', [-max_pressure/1, max_pressure/10]};
 
 sensor_data_2D = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
 

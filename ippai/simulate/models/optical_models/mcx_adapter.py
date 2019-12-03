@@ -129,4 +129,3 @@ class McxAdapter(OpticalForwardAdapterBase):
         os.remove(tmp_json_filename)
 
         return fluence
-

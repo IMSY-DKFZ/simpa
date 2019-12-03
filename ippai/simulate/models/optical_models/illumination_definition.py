@@ -14,10 +14,12 @@ def define_illumination_mcx(settings, nx, ny, nz):
     else:
         source_type = settings[Tags.ILLUMINATION_TYPE]
 
-    if Tags.ILLUMINATION_POSITION not in settings:
-        source_position = [int(nx/2.0) + 0.5, int(ny/2.0) + 0.5, 0]
+    if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
+        source_position = [int(nx/2.0) + 0.5, int(ny/2.0 - 17.81/settings[Tags.SPACING_MM]) + 0.5, 1]
+    elif Tags.ILLUMINATION_POSITION not in settings:
+        source_position = [int(nx / 2.0) + 0.5, int(ny / 2.0) + 0.5, 1]
     else:
-        source_position = settings[Tags.ILLUMINATION_TYPE]
+        source_position = settings[Tags.ILLUMINATION_POSITION]
 
     if Tags.ILLUMINATION_DIRECTION not in settings:
         source_direction = [0, 0, 1]

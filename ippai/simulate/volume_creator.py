@@ -1,8 +1,11 @@
 import numpy as np
+import copy
 
 from ippai.simulate.tissue_properties import TissueProperties
 from ippai.simulate import Tags, SegmentationClasses, StandardProperties
 from ippai.simulate.utils import randomize, gruneisen_parameter_from_temperature
+
+from ippai.process.preprocess_images import top_center_crop_power_two
 
 
 def create_simulation_volume(settings):
@@ -19,10 +22,19 @@ def create_simulation_volume(settings):
     volumes = add_structures(volumes, settings)
     volumes = append_gel_pad(volumes, settings)
     volumes = append_air_layer(volumes, settings)
+    if Tags.ILLUMINATION_TYPE in settings:
+        if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
+            volumes = append_msot_probe(volumes, settings)
+
     volumes = create_gruneisen_map(volumes, settings)
 
+    if Tags.RUN_ACOUSTIC_MODEL in settings:
+        if settings[Tags.RUN_ACOUSTIC_MODEL] is True:
+            volumes = create_acoustic_properties(volumes, settings)
+
     for i in range(len(volumes)):
-        volumes[i] = np.flip(volumes[i], 1)
+        if i not in (5, 6):
+            volumes[i] = np.flip(volumes[i], 1)
 
     np.savez(volume_path,
              mua=volumes[0],
@@ -30,7 +42,55 @@ def create_simulation_volume(settings):
              g=volumes[2],
              oxy=volumes[3],
              seg=volumes[4],
-             gamma=volumes[5])
+             sensor_mask=volumes[5],
+             directivity_angle=volumes[6],
+             gamma=volumes[7],
+             sos=volumes[8],
+             density=volumes[9],
+             alpha_coeff=volumes[10])
+
+    if Tags.PERFORM_UPSAMPLING in settings:
+        if settings[Tags.PERFORM_UPSAMPLING] is True:
+            upsampled_volume_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" \
+                                    + "upsampled_properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"
+
+            upsampled_settings = copy.deepcopy(settings)
+            upsampled_settings[Tags.SPACING_MM] = settings[Tags.SPACING_MM] / settings[Tags.UPSCALE_FACTOR]
+            upsampled_settings[Tags.DIM_VOLUME_Y_MM] = upsampled_settings[Tags.SPACING_MM]
+
+            volumes = create_empty_volume(upsampled_settings)
+            volumes = add_structures(volumes, upsampled_settings)
+            volumes = append_gel_pad(volumes, upsampled_settings)
+            volumes = append_air_layer(volumes, upsampled_settings)
+            if Tags.ILLUMINATION_TYPE in upsampled_settings:
+                if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
+                    volumes = append_msot_probe(volumes, upsampled_settings)
+
+            volumes = create_gruneisen_map(volumes, upsampled_settings)
+
+            if Tags.RUN_ACOUSTIC_MODEL in upsampled_settings:
+                if upsampled_settings[Tags.RUN_ACOUSTIC_MODEL] is True:
+                    volumes = create_acoustic_properties(volumes, upsampled_settings)
+
+            for i in range(len(volumes)):
+                if i not in (5, 6):
+                    volumes[i] = np.flip(volumes[i], 1)
+                if volumes[i] is not None:
+                    volumes[i] = np.squeeze(volumes[i])
+                    volumes[i] = top_center_crop_power_two(volumes[i])
+
+            np.savez(upsampled_volume_path,
+                     mua=volumes[0],
+                     mus=volumes[1],
+                     g=volumes[2],
+                     oxy=volumes[3],
+                     seg=volumes[4],
+                     sensor_mask=volumes[5],
+                     directivity_angle=volumes[6],
+                     gamma=volumes[7],
+                     sos=volumes[8],
+                     density=volumes[9],
+                     alpha_coeff=volumes[10])
 
     return volume_path
 
@@ -56,8 +116,105 @@ def create_gruneisen_map(volumes, settings):
     return volumes
 
 
-def append_gel_pad(volumes, global_settings):
+def create_acoustic_properties(volumes, settings):
+    """
+    Creates maps of density, speed of sound and acoustic attenuation based on the segmented mask in volumes.
 
+    :param volumes: The volumes to append the acoustic parameters to
+    :param settings: The settings to extract if the medium is homogeneous of if heterogeneous parameters should be set.
+    :return: The volumes with appended maps of acoustic parameters of size volumes[0].size
+    """
+
+    sizes = volumes[0].shape
+
+    # Set speed of sound of the medium
+
+    if Tags.MEDIUM_SOUND_SPEED_HOMOGENEOUS in settings:
+        if settings[Tags.MEDIUM_SOUND_SPEED_HOMOGENEOUS] is True:
+            if Tags.MEDIUM_SOUND_SPEED in settings:
+                sound_speed = np.ones(np.asarray(sizes)) * settings[Tags.MEDIUM_SOUND_SPEED]
+            else:
+                sound_speed = np.ones(np.asarray(sizes)) * StandardProperties.SPEED_OF_SOUND_GENERIC
+            volumes.append(sound_speed)
+        else:
+            sound_speed = np.ones(np.asarray(sizes))
+            tissue_sound_speeds = [StandardProperties.SPEED_OF_SOUND_AIR,
+                                   StandardProperties.SPEED_OF_SOUND_MUSCLE,
+                                   StandardProperties.SPEED_OF_SOUND_BONE,
+                                   StandardProperties.SPEED_OF_SOUND_BLOOD,
+                                   StandardProperties.SPEED_OF_SOUND_SKIN,
+                                   StandardProperties.SPEED_OF_SOUND_SKIN,
+                                   StandardProperties.SPEED_OF_SOUND_FAT,
+                                   StandardProperties.SPEED_OF_SOUND_GEL_PAD,
+                                   StandardProperties.SPEED_OF_SOUND_WATER,
+                                   StandardProperties.SPEED_OF_SOUND_GENERIC]
+            for i in range(-1, 9):
+                np.place(sound_speed, volumes[4] == i, tissue_sound_speeds[i])
+            volumes.append(sound_speed)
+    else:
+        sound_speed = np.ones(np.asarray(sizes)) * StandardProperties.SPEED_OF_SOUND_GENERIC
+        volumes.append(sound_speed)
+
+    # Set density of the medium
+
+    if Tags.MEDIUM_DENSITY_HOMOGENEOUS in settings:
+        if settings[Tags.MEDIUM_DENSITY_HOMOGENEOUS] is True:
+            if Tags.MEDIUM_DENSITY in settings:
+                density = np.ones(np.asarray(sizes)) * settings[Tags.MEDIUM_DENSITY]
+            else:
+                density = np.ones(np.asarray(sizes)) * StandardProperties.DENSITY_GENERIC
+            volumes.append(density)
+        else:
+            density = np.ones(np.asarray(sizes))
+            tissue_densities = [StandardProperties.DENSITY_AIR,
+                                StandardProperties.DENSITY_MUSCLE,
+                                StandardProperties.DENSITY_BONE,
+                                StandardProperties.DENSITY_BLOOD,
+                                StandardProperties.DENSITY_SKIN,
+                                StandardProperties.DENSITY_SKIN,
+                                StandardProperties.DENSITY_FAT,
+                                StandardProperties.DENSITY_GEL_PAD,
+                                StandardProperties.DENSITY_WATER,
+                                StandardProperties.DENSITY_GENERIC]
+            for i in range(-1, 9):
+                np.place(density, volumes[4] == i, tissue_densities[i])
+            volumes.append(density)
+    else:
+        density = np.ones(np.asarray(sizes)) * StandardProperties.DENSITY_GENERIC
+        volumes.append(density)
+
+    # Set attenuation coefficient of the medium
+
+    if Tags.MEDIUM_ALPHA_COEFF_HOMOGENEOUS in settings:
+        if settings[Tags.MEDIUM_ALPHA_COEFF_HOMOGENEOUS] is True:
+            if Tags.MEDIUM_ALPHA_COEFF in settings:
+                alpha_coeff = np.ones(np.asarray(sizes)) * settings[Tags.MEDIUM_ALPHA_COEFF]
+            else:
+                alpha_coeff = np.ones(np.asarray(sizes)) * StandardProperties.ALPHA_COEFF_GENERIC
+            volumes.append(alpha_coeff)
+        else:
+            alpha_coeff = np.ones(np.asarray(sizes))
+            tissue_densities = [StandardProperties.ALPHA_COEFF_AIR,
+                                StandardProperties.ALPHA_COEFF_MUSCLE,
+                                StandardProperties.ALPHA_COEFF_BONE,
+                                StandardProperties.ALPHA_COEFF_BLOOD,
+                                StandardProperties.ALPHA_COEFF_SKIN,
+                                StandardProperties.ALPHA_COEFF_SKIN,
+                                StandardProperties.ALPHA_COEFF_FAT,
+                                StandardProperties.ALPHA_COEFF_GEL_PAD,
+                                StandardProperties.ALPHA_COEFF_WATER,
+                                StandardProperties.ALPHA_COEFF_GENERIC]
+            for i in range(-1, 9):
+                np.place(alpha_coeff, volumes[4] == i, tissue_densities[i])
+            volumes.append(alpha_coeff)
+    else:
+        alpha_coeff = np.ones(np.asarray(sizes)) * StandardProperties.ALPHA_COEFF_GENERIC
+        volumes.append(alpha_coeff)
+
+    return volumes
+
+
+def append_gel_pad(volumes, global_settings):
     if Tags.GELPAD_LAYER_HEIGHT_MM not in global_settings:
         print("[INFO] Tag", Tags.GELPAD_LAYER_HEIGHT_MM, "not found in settings. Ignoring gel pad.")
         return volumes
@@ -94,7 +251,7 @@ def append_air_layer(volumes, global_settings):
     sizes = np.shape(volumes[0])
 
     if Tags.AIR_LAYER_HEIGHT_MM not in global_settings:
-        print("[INFO] Tag", Tags.AIR_LAYER_HEIGHT_MM, "not found in settings. Ignoring gel pad.")
+        print("[INFO] Tag", Tags.AIR_LAYER_HEIGHT_MM, "not found in settings. Ignoring air layer.")
         return volumes
 
     air_layer_height = int(global_settings[Tags.AIR_LAYER_HEIGHT_MM] / global_settings[Tags.SPACING_MM])
@@ -115,6 +272,79 @@ def append_air_layer(volumes, global_settings):
     new_seg[:, :, air_layer_height:] = volumes[4]
 
     return [new_mua, new_mus, new_g, new_oxy, new_seg]
+
+
+def append_msot_probe(volumes, global_settings):
+    mua_water = StandardProperties.AIR_MUA
+    mus_water = StandardProperties.AIR_MUS
+    g_water = StandardProperties.AIR_G
+
+    mua_mediprene_layer = -np.log(0.85) / 10
+    mus_mediprene_layer = -np.log(0.85) - -np.log(0.85) / 10
+    g_mediprene_layer = 0.9
+
+    sizes = np.shape(volumes[0])
+
+    mediprene_layer_height = int(1 / global_settings[Tags.SPACING_MM])
+    water_layer_height = int(42.2 / global_settings[Tags.SPACING_MM])
+
+    new_mua = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * mua_water
+    new_mua[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = mua_mediprene_layer
+    new_mua[:, :, water_layer_height + mediprene_layer_height:] = volumes[0]
+
+    new_mus = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * mus_water
+    new_mus[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = mus_mediprene_layer
+    new_mus[:, :, water_layer_height + mediprene_layer_height:] = volumes[1]
+
+    new_g = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * g_water
+    new_g[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = g_mediprene_layer
+    new_g[:, :, water_layer_height + mediprene_layer_height:] = volumes[2]
+
+    new_oxy = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * (-1)
+    new_oxy[:, :, water_layer_height + mediprene_layer_height:] = volumes[3]
+
+    new_seg = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * \
+              SegmentationClasses.GENERIC
+    new_seg[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = \
+        SegmentationClasses.ULTRASOUND_GEL_PAD
+    new_seg[:, :, water_layer_height + mediprene_layer_height:] = volumes[4]
+
+    sizes = new_seg.shape
+
+    detector_map = np.zeros((sizes[2], sizes[0]))
+    detector_map = top_center_crop_power_two(detector_map)
+    detector_directivity = np.zeros(detector_map.shape)
+
+    pitch_angle = global_settings[Tags.SENSOR_ELEMENT_PITCH_CM] * 10 / global_settings[Tags.SENSOR_RADIUS_MM]
+    detector_radius = global_settings[Tags.SENSOR_RADIUS_MM]/global_settings[Tags.SPACING_MM]
+
+    focus = np.asarray([int(round(detector_radius + 11.2 / global_settings[Tags.SPACING_MM])),
+                        int(round(detector_map.shape[1] / 2))])
+
+    for i in range(-int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2),
+                   int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2)):
+        angle = pitch_angle * i  # Convert Pitch to mm
+        y_det = focus[1] + np.sin(angle) * detector_radius
+        z_det = int(round(focus[0] - np.sqrt(detector_radius ** 2 -
+                                             (np.sin(angle) * detector_radius) ** 2)))
+        y_det = int(round(y_det))
+
+        detector_map[z_det, y_det] = 1
+
+        if Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS in global_settings:
+            if global_settings[Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS] is True:
+                if Tags.SENSOR_DIRECTIVITY_ANGLE in global_settings:
+                    detector_directivity[z_det, y_det] = global_settings[Tags.SENSOR_DIRECTIVITY_ANGLE]
+                else:
+                    detector_directivity = None
+            else:
+                detector_directivity[z_det, y_det] = -angle
+        else:
+            detector_directivity = None
+    if detector_directivity is not None:
+        return [new_mua, new_mus, new_g, new_oxy, new_seg, np.rot90(detector_map, 1), np.rot90(detector_directivity, 1)]
+    else:
+        return [new_mua, new_mus, new_g, new_oxy, new_seg, np.rot90(detector_map, 1), detector_directivity]
 
 
 def create_empty_volume(global_settings):
@@ -139,7 +369,6 @@ def add_structures(volumes, global_settings):
 
 
 def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=None):
-
     structure_properties = TissueProperties(structure_settings, Tags.STRUCTURE_TISSUE_PROPERTIES,
                                             np.shape(volumes[0]), global_settings[Tags.SPACING_MM])
     [mua, mus, g, oxy] = structure_properties.get(global_settings[Tags.WAVELENGTH])
@@ -149,13 +378,15 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
         return volumes
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_LAYER:
-        volumes, extent_x_z_mm = add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
+        volumes, extent_x_z_mm = add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy,
+                                           extent_x_z_mm)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_TUBE:
         volumes, extent_x_z_mm = add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_ELLIPSE:
-        volumes, extent_x_z_mm = add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
+        volumes, extent_x_z_mm = add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy,
+                                             extent_x_z_mm)
 
     if Tags.CHILD_STRUCTURES in structure_settings:
         for child_structure in structure_settings[Tags.CHILD_STRUCTURES]:
@@ -190,7 +421,7 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
 
     it = -1
     fraction = thickness_in_voxels
-    z_range = range(int(depth_in_voxels), int(depth_in_voxels+thickness_in_voxels))
+    z_range = range(int(depth_in_voxels), int(depth_in_voxels + thickness_in_voxels))
     for z_idx in z_range:
         for y_idx in range(sizes[1]):
             for x_idx in range(sizes[0]):
@@ -202,7 +433,7 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     if fraction > 1e-10:
         for y_idx in range(sizes[1]):
             for x_idx in range(sizes[0]):
-                merge_voxel(volumes, x_idx, y_idx, it+1, mua, mus, g, oxy,
+                merge_voxel(volumes, x_idx, y_idx, it + 1, mua, mus, g, oxy,
                             structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE], fraction)
 
     extent_parent_x_z_mm = [0, sizes[0] * global_settings[Tags.SPACING_MM],
@@ -294,7 +525,7 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
 
     e = randomize(eccentricity_min, eccentricity_max)
 
-    radius_z_mm = (radius_in_mm**2 + e ** 2) / (2 * radius_in_mm)
+    radius_z_mm = (radius_in_mm ** 2 + e ** 2) / (2 * radius_in_mm)
     radius_x_mm = radius_in_mm - radius_z_mm
 
     if np.random.random() < 0.5:
@@ -370,10 +601,10 @@ def fnc_straight_ellipse(x, y, z, r_x, r_z, X1, X2):
     :return:
     """
 
-    x_axis = ((y-X1[1])*(z-X2[2])-(z-X1[2])*(y-X2[1]))**2 / r_z**2
-    y_axis = ((z-X1[2])*(x-X2[0])-(x-X1[0])*(z-X2[2]))**2
-    z_axis = ((x-X1[0])*(y-X2[1])-(y-X1[1])*(x-X2[0]))**2 / r_x**2
-    radius = ((X2[0]-X1[0])**2 + (X2[1]-X1[1])**2 + (X2[2]-X1[2])**2)
+    x_axis = ((y - X1[1]) * (z - X2[2]) - (z - X1[2]) * (y - X2[1])) ** 2 / r_z ** 2
+    y_axis = ((z - X1[2]) * (x - X2[0]) - (x - X1[0]) * (z - X2[2])) ** 2
+    z_axis = ((x - X1[0]) * (y - X2[1]) - (y - X1[1]) * (x - X2[0])) ** 2 / r_x ** 2
+    radius = ((X2[0] - X1[0]) ** 2 + (X2[1] - X1[1]) ** 2 + (X2[2] - X1[2]) ** 2)
     return x_axis + y_axis + z_axis - radius
 
 
@@ -388,10 +619,10 @@ def fnc_straight_tube(x, y, z, r, X1, X2):
     :param X2:
     :return:
     """
-    return ((y-X1[1])*(z-X2[2])-(z-X1[2])*(y-X2[1]))**2 + \
-           ((z-X1[2])*(x-X2[0])-(x-X1[0])*(z-X2[2]))**2 + \
-           ((x-X1[0])*(y-X2[1])-(y-X1[1])*(x-X2[0]))**2 - \
-           r**2 * ((X2[0]-X1[0])**2 + (X2[1]-X1[1])**2 + (X2[2]-X1[2])**2)
+    return ((y - X1[1]) * (z - X2[2]) - (z - X1[2]) * (y - X2[1])) ** 2 + \
+           ((z - X1[2]) * (x - X2[0]) - (x - X1[0]) * (z - X2[2])) ** 2 + \
+           ((x - X1[0]) * (y - X2[1]) - (y - X1[1]) * (x - X2[0])) ** 2 - \
+           r ** 2 * ((X2[0] - X1[0]) ** 2 + (X2[1] - X1[1]) ** 2 + (X2[2] - X1[2]) ** 2)
 
 
 def merge_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg, fraction):
@@ -414,39 +645,39 @@ def merge_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg, fraction):
     """
     if not np.isscalar(mua):
         if len(mua) > 1:
-            volumes[0][x_idx, y_idx, z_idx] = volumes[0][x_idx, y_idx, z_idx] * (1-fraction) + \
+            volumes[0][x_idx, y_idx, z_idx] = volumes[0][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               mua[x_idx, y_idx, z_idx] * fraction
         else:
             volumes[0][x_idx, y_idx, z_idx] = volumes[0][x_idx, y_idx, z_idx] * (1 - fraction) + mua * fraction
     else:
-        volumes[0][x_idx, y_idx, z_idx] = volumes[0][x_idx, y_idx, z_idx] * (1-fraction) + mua * fraction
+        volumes[0][x_idx, y_idx, z_idx] = volumes[0][x_idx, y_idx, z_idx] * (1 - fraction) + mua * fraction
 
     if not np.isscalar(mus):
         if len(mus) > 1:
-            volumes[1][x_idx, y_idx, z_idx] = volumes[1][x_idx, y_idx, z_idx] * (1-fraction) + \
+            volumes[1][x_idx, y_idx, z_idx] = volumes[1][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               mus[x_idx, y_idx, z_idx] * fraction
         else:
             volumes[1][x_idx, y_idx, z_idx] = volumes[1][x_idx, y_idx, z_idx] * (1 - fraction) + mus * fraction
     else:
-        volumes[1][x_idx, y_idx, z_idx] = volumes[1][x_idx, y_idx, z_idx] * (1-fraction) + mus * fraction
+        volumes[1][x_idx, y_idx, z_idx] = volumes[1][x_idx, y_idx, z_idx] * (1 - fraction) + mus * fraction
 
     if not np.isscalar(g):
         if len(g) > 1:
-            volumes[2][x_idx, y_idx, z_idx] = volumes[2][x_idx, y_idx, z_idx] * (1-fraction) + \
+            volumes[2][x_idx, y_idx, z_idx] = volumes[2][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               g[x_idx, y_idx, z_idx] * fraction
         else:
             volumes[2][x_idx, y_idx, z_idx] = volumes[2][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
     else:
-        volumes[2][x_idx, y_idx, z_idx] = volumes[2][x_idx, y_idx, z_idx] * (1-fraction) + g * fraction
+        volumes[2][x_idx, y_idx, z_idx] = volumes[2][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
 
     if not np.isscalar(oxy):
         if len(oxy) > 1:
-            volumes[3][x_idx, y_idx, z_idx] = volumes[3][x_idx, y_idx, z_idx] * (1-fraction) + \
+            volumes[3][x_idx, y_idx, z_idx] = volumes[3][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               oxy[x_idx, y_idx, z_idx] * fraction
         else:
             volumes[3][x_idx, y_idx, z_idx] = volumes[3][x_idx, y_idx, z_idx] * (1 - fraction) + oxy * fraction
     else:
-        volumes[3][x_idx, y_idx, z_idx] = volumes[3][x_idx, y_idx, z_idx] * (1-fraction) + oxy * fraction
+        volumes[3][x_idx, y_idx, z_idx] = volumes[3][x_idx, y_idx, z_idx] * (1 - fraction) + oxy * fraction
 
     volumes[4][x_idx, y_idx, z_idx] = seg
     return volumes

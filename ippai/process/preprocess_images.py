@@ -73,7 +73,6 @@ def top_center_crop_power_two(image_data):
     than the image height and width, respectively.
 
     :param image_data: (numpy array) Image to be preprocessed.
-    :param settings: (dict) Dictionary that describes all simulation parameters can be passed.
     :return: Cropped image.
     """
 
