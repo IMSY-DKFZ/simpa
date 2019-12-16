@@ -26,7 +26,8 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 1,
             Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
-            Tags.PROPERTY_ANISOTROPY: 0.9
+            Tags.PROPERTY_ANISOTROPY: 0.9,
+            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL
         }
 
         self.volume_path = self.settings[Tags.SIMULATION_PATH] + "/"+ self.settings[Tags.VOLUME_NAME] + "/" \

@@ -315,7 +315,7 @@ def append_msot_probe(volumes, global_settings):
     detector_map = top_center_crop_power_two(detector_map)
     detector_directivity = np.zeros(detector_map.shape)
 
-    pitch_angle = global_settings[Tags.SENSOR_ELEMENT_PITCH_CM] * 10 / global_settings[Tags.SENSOR_RADIUS_MM]
+    pitch_angle = global_settings[Tags.SENSOR_ELEMENT_PITCH_MM] / global_settings[Tags.SENSOR_RADIUS_MM]
     detector_radius = global_settings[Tags.SENSOR_RADIUS_MM]/global_settings[Tags.SPACING_MM]
 
     focus = np.asarray([int(round(detector_radius + 11.2 / global_settings[Tags.SPACING_MM])),

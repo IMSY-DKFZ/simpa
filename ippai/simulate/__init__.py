@@ -33,6 +33,7 @@ class Tags:
     ILLUMINATION_DIRECTION = "illumination_direction"
     ILLUMINATION_PARAM1 = "illumination_param1"
     ILLUMINATION_PARAM2 = "illumination_param2"
+    TIME_STEP = "time_step"
 
     # Supported illumination types - implemented in mcx
     ILLUMINATION_TYPE_PENCIL = "pencil"
@@ -69,6 +70,8 @@ class Tags:
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
     RECORDMOVIE = "record_movie"
     MOVIENAME = "movie_name"
+    ACOUSTIC_PLOT_SCALE = "acoustic_plot_scale"
+    ACOUSTIC_LOG_SCALE = "acoustic_log_scale"
     TIME_SERIES_DATA = "time_series_data"
     TIME_SERIES_DATA_NOISE = "time_series_data_noise"
 
@@ -84,6 +87,8 @@ class Tags:
     RECONSTRUCTION_BMODE_METHOD = "reconstruction_bmode_method"
     RECONSTRUCTION_BMODE_METHOD_ABS = "Abs"
     RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM = "EnvelopeDetection"
+    RECONSTRUCTED_DATA = "reconstructed_data"
+    RECONSTRUCTED_DATA_NOISE = "reconstructed_data_noise"
 
     """
     Upsampling settings
@@ -147,13 +152,13 @@ class Tags:
     # Acoustic Sensor Properties
     SENSOR_MASK = "sensor_mask"
     SENSOR_RECORD = "sensor_record"
-    SENSOR_CENTER_FREQUENCY_MHZ = "sensor_center_frequency"
+    SENSOR_CENTER_FREQUENCY_HZ = "sensor_center_frequency"
     SENSOR_BANDWIDTH_PERCENT = "sensor_bandwidth"
     SENSOR_DIRECTIVITY_HOMOGENEOUS = "sensor_directivity_homogeneous"
     SENSOR_DIRECTIVITY_ANGLE = "sensor_directivity_angle"
     SENSOR_DIRECTIVITY_SIZE_M = "sensor_directivity_size"
     SENSOR_DIRECTIVITY_PATTERN = "sensor_directivity_pattern"
-    SENSOR_ELEMENT_PITCH_CM = "sensor_element_pitch"
+    SENSOR_ELEMENT_PITCH_MM = "sensor_element_pitch"
     SENSOR_SAMPLING_RATE_MHZ = "sensor_sampling_rate_mhz"
     SENSOR_NUM_ELEMENTS = "sensor_num_elements"
     SENSOR_ARC = "sensor_arc"
@@ -165,7 +170,8 @@ class Tags:
     NOISE_MODEL_GAUSSIAN = "noise_model_gaussian"
     NOISE_MEAN = "noise_mean"
     NOISE_STD = "noise_std"
-    NOISE_MODEL_OUTPUT_NAME = "noisy_acoustic_model_output"
+    NOISE_MODEL_OUTPUT_NAME = "noise_model_output"
+    NOISE_MODEL_PATH = "noise_model_path"
 
     # Constant Tissue Properties
     KEY_CONSTANT_PROPERTIES = "constant_properties"

@@ -8,7 +8,7 @@ import numpy as np
 def create_water_background():
     water_dict = dict()
     water_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
-    water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_constant_settings(mua=1, mus=100, g=0.9)
+    water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_constant_settings(mua=0.06, mus=100, g=0.9)
     water_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
     return water_dict
 
@@ -18,7 +18,9 @@ def create_upsampling_phantom_parameters(x_min, x_max, z_min, z_max):
     structures_dict["background"] = create_water_background()
     structures_dict["dermis"] = create_dermis_layer()
     structures_dict["epidermis"] = create_epidermis_layer()
-    structures_dict["vessel"] = create_vessel_tube(x_min=x_min, x_max=x_max, z_min=z_min, z_max=z_max, r_max=5, r_min=5)
+    structures_dict["vessel1"] = create_vessel_tube(x_min=x_min, x_max=x_max, z_min=z_min, z_max=z_max, r_max=5, r_min=5)
+    structures_dict["vessel2"] = create_vessel_tube(x_min=40, x_max=40, z_min=z_min, z_max=z_max, r_max=5, r_min=5)
+    structures_dict["vessel3"] = create_vessel_tube(x_min=60, x_max=60, z_min=z_min, z_max=z_max, r_max=5, r_min=5)
     return structures_dict
 
 
@@ -41,13 +43,13 @@ settings = {
     Tags.DIM_VOLUME_X_MM: 80,
     Tags.DIM_VOLUME_Y_MM: 40,
     Tags.STRUCTURES: create_upsampling_phantom_parameters(20, 20, 10.5, 10.5),
-
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
     # Tags.ILLUMINATION_POSITION: [50.5, 32.69, 1],
     Tags.ILLUMINATION_DIRECTION: [0, 0.381070, 0.9245460],        # direction of msot acuity
     # Tags.ILLUMINATION_DIRECTION: [0, 0.342027, 0.93969],        # direction of old pasetup
     Tags.ILLUMINATION_PARAM1: [30 / spacing, 0, 0, 0],
     # Tags.ILLUMINATION_PARAM1: [24.5 / spacing, 0, 0, 22.8 / spacing],
+    Tags.TIME_STEP: 2e-11,
 
     # Upsampling settings
 
@@ -75,7 +77,7 @@ settings = {
     # Tags.MEDIUM_DENSITY: 7, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/medium_density.npy",
 
     Tags.SENSOR_RECORD: "p",
-    Tags.SENSOR_CENTER_FREQUENCY_MHZ: 7.5e6,
+    Tags.SENSOR_CENTER_FREQUENCY_HZ: 4e6,
     Tags.SENSOR_BANDWIDTH_PERCENT: 80,
     Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS: True,
     # Tags.SENSOR_DIRECTIVITY_ANGLE: 0,
@@ -84,18 +86,37 @@ settings = {
     # Tags.SENSOR_DIRECTIVITY_SIZE_M: 0.001,  # [m]
     Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",
 
-    Tags.SENSOR_ELEMENT_PITCH_CM: 0.034,
+    Tags.SENSOR_ELEMENT_PITCH_MM: 0.34,
     # Tags.SENSOR_DIRECTIVITY_SIZE_M: 0.00000024,  # [m]
     Tags.SENSOR_SAMPLING_RATE_MHZ: 40,
     Tags.SENSOR_NUM_ELEMENTS: 256,
     Tags.SENSOR_RADIUS_MM: 40,
 
     Tags.PMLInside: False,
-    Tags.PMLSize: [20, 20],
-    Tags.PMLAlpha: 2,
+    Tags.PMLSize: [31, 32],
+    Tags.PMLAlpha: 1.5,
     Tags.PlotPML: False,
-    Tags.RECORDMOVIE: True,
-    Tags.MOVIENAME: "visualization"
+    Tags.RECORDMOVIE: False,
+    Tags.MOVIENAME: "visualization",
+    Tags.ACOUSTIC_LOG_SCALE: False,
+
+    # Reconstruction
+
+    Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
+    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_DAS,
+    Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+    Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/home/kris/hard_drive/MITK/sDMAS-2018.07-2596-g31d1c60d71-linux-x86_64/"
+                                          "MITK-experiments/sDMAS-2018.07-2596-g31d1c60d71-linux-x86_64/"
+                                          "MitkPABeamformingTool.sh",
+    Tags.RECONSTRUCTION_MITK_SETTINGS_XML: "/home/kris/hard_drive/data/pipeline_test/bf_settings.xml",
+    Tags.RECONSTRUCTION_OUTPUT_NAME: "/home/kris/hard_drive/data/pipeline_test/test.nrrd",
+
+    # Noise
+
+    Tags.APPLY_NOISE_MODEL: True,
+    Tags.NOISE_MODEL: Tags.NOISE_MODEL_GAUSSIAN,
+    Tags.NOISE_MODEL_PATH: "/home/kris/hard_drive/cami-experimental/PAI/MCX/probe_integration/noise_model_msot_acuity.csv"
+
 }
 print("Simulating ", 0)
 [settings_path, optical_path, acoustic_path, reconstruction_output_path] = simulate(settings)

@@ -14,23 +14,22 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         settings_string = "\n".join(settings_string)
         beamforming_dict = xmltodict.parse(settings_string)
 
-        beamforming_dict["MITK_beamforming"]["PA"]["Beamforming"]["@speedOfSound"] = settings[
-            Tags.MEDIUM_SOUND_SPEED]
-        beamforming_dict["MITK_beamforming"]["PA"]["Beamforming"]["@algorithm"] = settings[
-            Tags.RECONSTRUCTION_ALGORITHM]
-        beamforming_dict["MITK_beamforming"]["PA"]["Beamforming"]["@pitchInMeters"] = settings[
-            Tags.SENSOR_ELEMENT_PITCH_CM]
-        beamforming_dict["MITK_beamforming"]["PA"]\
-                        ["Beamforming"]["@reconstructionDepth"] = 0.05
+        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@speedOfSound"] = 1480
+        # settings[Tags.MEDIUM_SOUND_SPEED]
+        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@algorithm"] = settings[Tags.RECONSTRUCTION_ALGORITHM]
+        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@pitchInMeters"] = settings[
+            Tags.SENSOR_ELEMENT_PITCH_MM]
+        beamforming_dict["ProcessingPipeline"]["PA"]\
+                        ["Beamforming"]["@reconstructionDepth"] = 0.06
 
-        beamforming_dict["MITK_beamforming"]["PA"]["BMode"]["@method"] = settings[Tags.RECONSTRUCTION_BMODE_METHOD]
+        beamforming_dict["ProcessingPipeline"]["PA"]["BMode"]["@method"] = settings[Tags.RECONSTRUCTION_BMODE_METHOD]
 
-        beamforming_dict["MITK_beamforming"]["PA"]["Resampling"]["@do"] = 1
-        beamforming_dict["MITK_beamforming"]["PA"]["Resampling"]["@spacing"] = 0.15
-        beamforming_dict["MITK_beamforming"]["PA"]["Resampling"]["@dimX"] = 256
+        beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@do"] = 1
+        beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@spacing"] = 0.15
+        beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@dimX"] = 512
 
         with open(save_path, "w") as xml_write_file:
-            xmltodict.unparse(beamforming_dict, xml_write_file)
+            xmltodict.unparse(beamforming_dict, xml_write_file, pretty=True, indent="\t")
 
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
         print("Calling MITK now........")
@@ -46,7 +45,7 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         time_series_sensor_data = np.atleast_3d(time_series_sensor_data)
         header = dict()
         header['space dimension'] = 3
-        header['space directions'] = [[settings[Tags.SENSOR_ELEMENT_PITCH_CM], 0, 0],
+        header['space directions'] = [[settings[Tags.SENSOR_ELEMENT_PITCH_MM], 0, 0],
                                       [0, 1/(settings[Tags.SENSOR_SAMPLING_RATE_MHZ]), 0],
                                       [0, 0, 1]]
         nrrd.write(tmp_input_path, time_series_sensor_data, header)
@@ -68,6 +67,6 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
 
         os.remove(tmp_input_path)
         os.remove(tmp_output_path)
-        #os.remove(tmp_settings_xml)
+        os.remove(tmp_settings_xml)
 
         return reconstruction

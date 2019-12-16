@@ -19,6 +19,6 @@ def perform_reconstruction(settings, acoustic_data_path):
     reconstruction = reconstruction_method.simulate(settings, acoustic_data_path)
 
     np.savez(reconstructed_data_save_path,
-             reconstruction=reconstruction)
+             reconstructed_data=reconstruction)
 
     return reconstructed_data_save_path

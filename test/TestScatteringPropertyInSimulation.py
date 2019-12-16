@@ -47,7 +47,8 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 0.5,
-            Tags.OPTICAL_MODEL: Tags.MODEL_MCX
+            Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
+            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL
         }
 
         self.volume_path = self.settings[Tags.SIMULATION_PATH] + "/"+ self.settings[Tags.VOLUME_NAME] + "/" \
@@ -157,7 +158,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         print(np.sum(fluence[half_dim, half_dim, 90]))
         print("measured:", decay_ratio, "expected:", expected_decay_ratio)
         print("ratio:", decay_ratio / expected_decay_ratio)
-        self.assertAlmostEqual(decay_ratio, expected_decay_ratio, 1)
+        self.assertAlmostEqual(decay_ratio, expected_decay_ratio, delta=0.15)
 
 
 if __name__ == "__main__":
