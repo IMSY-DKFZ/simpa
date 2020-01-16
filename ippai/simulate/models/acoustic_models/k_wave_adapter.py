@@ -13,8 +13,16 @@ def simulate(settings, optical_path):
     for key in tmp_opt_data.keys():
         data_dict[key] = tmp_opt_data[key]
 
-    tmp_ac_data = np.load(os.path.join(settings[Tags.SIMULATION_PATH], settings[Tags.VOLUME_NAME],
-                                       "upsampled_properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"))
+    if Tags.PERFORM_UPSAMPLING in settings:
+        if settings[Tags.PERFORM_UPSAMPLING]:
+            tmp_ac_data = np.load(os.path.join(settings[Tags.SIMULATION_PATH], settings[Tags.VOLUME_NAME],
+                                               "upsampled_properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"))
+        else:
+            tmp_ac_data = np.load(os.path.join(settings[Tags.SIMULATION_PATH], settings[Tags.VOLUME_NAME],
+                                               "properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"))
+    else:
+        tmp_ac_data = np.load(os.path.join(settings[Tags.SIMULATION_PATH], settings[Tags.VOLUME_NAME],
+                                           "properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"))
 
     data_dict["sos"] = np.rot90(tmp_ac_data["sos"], 3)
     data_dict["density"] = np.rot90(tmp_ac_data["density"], 3)
@@ -23,6 +31,8 @@ def simulate(settings, optical_path):
     try:
         data_dict["directivity_angle"] = np.rot90(tmp_ac_data["directivity_angle"], 3)
     except ValueError:
+        print("No directivity_angle specified")
+    except KeyError:
         print("No directivity_angle specified")
 
     # plt.imshow(data_dict["sos"])
@@ -53,6 +63,7 @@ def simulate(settings, optical_path):
     subprocess.run(cmd)
 
     sensor_data = np.load(tmp_output_file)
+    settings["dt_acoustic_sim"] = float(sio.loadmat(tmp_output_file + ".mat", variable_names="time_step")["time_step"])
 
     os.remove(optical_path)
     os.remove(tmp_output_file)

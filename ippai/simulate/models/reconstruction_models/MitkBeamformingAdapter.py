@@ -1,4 +1,4 @@
-from ippai.simulate import Tags
+from ippai.simulate import Tags, StandardProperties
 from ippai.simulate.models.reconstruction_models import ReconstructionAdapterBase
 import numpy as np
 import subprocess
@@ -14,18 +14,25 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         settings_string = "\n".join(settings_string)
         beamforming_dict = xmltodict.parse(settings_string)
 
-        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@speedOfSound"] = 1480
-        # settings[Tags.MEDIUM_SOUND_SPEED]
-        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@algorithm"] = settings[Tags.RECONSTRUCTION_ALGORITHM]
-        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@pitchInMeters"] = settings[
+        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@speedOfSoundMeterPerSecond"] = StandardProperties\
+            .SPEED_OF_SOUND_GENERIC
+        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@algorithm"] = settings[
+            Tags.RECONSTRUCTION_ALGORITHM]
+        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@pitchMilliMeter"] = settings[
             Tags.SENSOR_ELEMENT_PITCH_MM]
         beamforming_dict["ProcessingPipeline"]["PA"]\
-                        ["Beamforming"]["@reconstructionDepth"] = 0.06
+                        ["Beamforming"]["@reconstructionDepthMeter"] = 0.08
+        # beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@timeSpacingMicroSecond"] = settings[
+        #     "dt_acoustic_sim"]*10**6
 
         beamforming_dict["ProcessingPipeline"]["PA"]["BMode"]["@method"] = settings[Tags.RECONSTRUCTION_BMODE_METHOD]
 
         beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@do"] = 1
-        beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@spacing"] = 0.15
+        upscale_factor = 1
+        if Tags.PERFORM_UPSAMPLING in settings:
+            if settings[Tags.PERFORM_UPSAMPLING]:
+                upscale_factor = settings[Tags.UPSCALE_FACTOR]
+        beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@spacing"] = settings[Tags.SPACING_MM]/upscale_factor
         beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@dimX"] = 512
 
         with open(save_path, "w") as xml_write_file:
@@ -43,10 +50,16 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
             self.convert_settings_file(file, settings, tmp_settings_xml)
 
         time_series_sensor_data = np.atleast_3d(time_series_sensor_data)
+
+        upscale_factor = 1
+        if Tags.PERFORM_UPSAMPLING in settings:
+            if settings[Tags.PERFORM_UPSAMPLING]:
+                upscale_factor = settings[Tags.UPSCALE_FACTOR]
+
         header = dict()
         header['space dimension'] = 3
-        header['space directions'] = [[settings[Tags.SENSOR_ELEMENT_PITCH_MM], 0, 0],
-                                      [0, 1/(settings[Tags.SENSOR_SAMPLING_RATE_MHZ]), 0],
+        header['space directions'] = [[settings[Tags.SPACING_MM]/upscale_factor, 0, 0],
+                                      [0, settings["dt_acoustic_sim"]*10**6, 0],
                                       [0, 0, 1]]
         nrrd.write(tmp_input_path, time_series_sensor_data, header)
 

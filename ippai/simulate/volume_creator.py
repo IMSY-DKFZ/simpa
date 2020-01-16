@@ -32,22 +32,34 @@ def create_simulation_volume(settings):
         if settings[Tags.RUN_ACOUSTIC_MODEL] is True:
             volumes = create_acoustic_properties(volumes, settings)
 
-    for i in range(len(volumes)):
-        if i not in (5, 6):
-            volumes[i] = np.flip(volumes[i], 1)
+            for i in range(len(volumes)):
+                if i not in (5, 6):
+                    volumes[i] = np.flip(volumes[i], 1)
 
-    np.savez(volume_path,
-             mua=volumes[0],
-             mus=volumes[1],
-             g=volumes[2],
-             oxy=volumes[3],
-             seg=volumes[4],
-             sensor_mask=volumes[5],
-             directivity_angle=volumes[6],
-             gamma=volumes[7],
-             sos=volumes[8],
-             density=volumes[9],
-             alpha_coeff=volumes[10])
+            np.savez(volume_path,
+                     mua=volumes[0],
+                     mus=volumes[1],
+                     g=volumes[2],
+                     oxy=volumes[3],
+                     seg=volumes[4],
+                     sensor_mask=volumes[5],
+                     directivity_angle=volumes[6],
+                     gamma=volumes[7],
+                     sos=volumes[8],
+                     density=volumes[9],
+                     alpha_coeff=volumes[10])
+
+        else:
+            for i in range(len(volumes)):
+                volumes[i] = np.flip(volumes[i], 1)
+
+            np.savez(volume_path,
+                     mua=volumes[0],
+                     mus=volumes[1],
+                     g=volumes[2],
+                     oxy=volumes[3],
+                     seg=volumes[4],
+                     gamma=volumes[5])
 
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING] is True:
@@ -285,8 +297,8 @@ def append_msot_probe(volumes, global_settings):
 
     sizes = np.shape(volumes[0])
 
-    mediprene_layer_height = int(1 / global_settings[Tags.SPACING_MM])
-    water_layer_height = int(42.2 / global_settings[Tags.SPACING_MM])
+    mediprene_layer_height = int(round(1 / global_settings[Tags.SPACING_MM]))
+    water_layer_height = int(round(42.2 / global_settings[Tags.SPACING_MM]))
 
     new_mua = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * mua_water
     new_mua[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = mua_mediprene_layer
@@ -309,42 +321,49 @@ def append_msot_probe(volumes, global_settings):
         SegmentationClasses.ULTRASOUND_GEL_PAD
     new_seg[:, :, water_layer_height + mediprene_layer_height:] = volumes[4]
 
-    sizes = new_seg.shape
+    if Tags.RUN_ACOUSTIC_MODEL in global_settings:
+        if global_settings[Tags.RUN_ACOUSTIC_MODEL]:
+            sizes = new_seg.shape
 
-    detector_map = np.zeros((sizes[2], sizes[0]))
-    detector_map = top_center_crop_power_two(detector_map)
-    detector_directivity = np.zeros(detector_map.shape)
+            detector_map = np.zeros((sizes[2], sizes[0]))
+            detector_map = top_center_crop_power_two(detector_map)
+            detector_directivity = np.zeros(detector_map.shape)
 
-    pitch_angle = global_settings[Tags.SENSOR_ELEMENT_PITCH_MM] / global_settings[Tags.SENSOR_RADIUS_MM]
-    detector_radius = global_settings[Tags.SENSOR_RADIUS_MM]/global_settings[Tags.SPACING_MM]
+            pitch_angle = global_settings[Tags.SENSOR_ELEMENT_PITCH_MM] / global_settings[Tags.SENSOR_RADIUS_MM]
+            detector_radius = global_settings[Tags.SENSOR_RADIUS_MM]/global_settings[Tags.SPACING_MM]
 
-    focus = np.asarray([int(round(detector_radius + 11.2 / global_settings[Tags.SPACING_MM])),
-                        int(round(detector_map.shape[1] / 2))])
+            focus = np.asarray([int(round(detector_radius + 11.2 / global_settings[Tags.SPACING_MM])),
+                                int(round(detector_map.shape[1] / 2))])
 
-    for i in range(-int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2),
-                   int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2)):
-        angle = pitch_angle * i  # Convert Pitch to mm
-        y_det = focus[1] + np.sin(angle) * detector_radius
-        z_det = int(round(focus[0] - np.sqrt(detector_radius ** 2 -
-                                             (np.sin(angle) * detector_radius) ** 2)))
-        y_det = int(round(y_det))
+            for i in range(-int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2),
+                           int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2)):
+                angle = pitch_angle * i  # Convert Pitch to mm
+                y_det = focus[1] + np.sin(angle) * detector_radius
+                z_det = int(round(focus[0] - np.sqrt(detector_radius ** 2 -
+                                                     (np.sin(angle) * detector_radius) ** 2)))
+                y_det = int(round(y_det))
 
-        detector_map[z_det, y_det] = 1
+                detector_map[z_det, y_det] = 1
 
-        if Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS in global_settings:
-            if global_settings[Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS] is True:
-                if Tags.SENSOR_DIRECTIVITY_ANGLE in global_settings:
-                    detector_directivity[z_det, y_det] = global_settings[Tags.SENSOR_DIRECTIVITY_ANGLE]
+                if Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS in global_settings:
+                    if global_settings[Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS] is True:
+                        if Tags.SENSOR_DIRECTIVITY_ANGLE in global_settings:
+                            detector_directivity[z_det, y_det] = global_settings[Tags.SENSOR_DIRECTIVITY_ANGLE]
+                        else:
+                            detector_directivity = None
+                    else:
+                        detector_directivity[z_det, y_det] = -angle
                 else:
                     detector_directivity = None
+            if detector_directivity is not None:
+                return [new_mua, new_mus, new_g, new_oxy, new_seg, np.rot90(detector_map, 1), np.rot90(detector_directivity, 1)]
             else:
-                detector_directivity[z_det, y_det] = -angle
+                return [new_mua, new_mus, new_g, new_oxy, new_seg, np.rot90(detector_map, 1), detector_directivity]
+
         else:
-            detector_directivity = None
-    if detector_directivity is not None:
-        return [new_mua, new_mus, new_g, new_oxy, new_seg, np.rot90(detector_map, 1), np.rot90(detector_directivity, 1)]
+            return [new_mua, new_mus, new_g, new_oxy, new_seg]
     else:
-        return [new_mua, new_mus, new_g, new_oxy, new_seg, np.rot90(detector_map, 1), detector_directivity]
+        return [new_mua, new_mus, new_g, new_oxy, new_seg]
 
 
 def create_empty_volume(global_settings):

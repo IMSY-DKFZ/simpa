@@ -49,7 +49,7 @@ def simulate(settings):
 
         if Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW in settings:
             if settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
-                extract_field_of_view(volume_output_path, optical_output_path, acoustic_output_path)
+                extract_field_of_view(settings, volume_output_path, optical_output_path, acoustic_output_path)
 
         if Tags.PERFORM_UPSAMPLING in settings:
             if settings[Tags.PERFORM_UPSAMPLING]:
@@ -71,7 +71,7 @@ def simulate(settings):
     return [volume_output_paths, optical_output_paths, acoustic_output_paths, reconstruction_output_paths]
 
 
-def extract_field_of_view(volume_path, optical_path, acoustic_path):
+def extract_field_of_view(settings, volume_path, optical_path, acoustic_path):
     if volume_path is not None:
         volume_data = np.load(volume_path)
         mua = volume_data[Tags.PROPERTY_ABSORPTION_PER_CM]
@@ -85,13 +85,42 @@ def extract_field_of_view(volume_path, optical_path, acoustic_path):
         if type(gamma) is np.ndarray:
             gamma = gamma[:, int(sizes[1] / 2), :]
 
-        np.savez(volume_path,
-                 mua=mua,
-                 mus=mus,
-                 g=g,
-                 oxy=oxy,
-                 seg=seg,
-                 gamma=gamma)
+        if Tags.RUN_ACOUSTIC_MODEL in settings:
+            if settings[Tags.RUN_ACOUSTIC_MODEL]:
+                sensor_mask = volume_data["sensor_mask"]
+                # directivity_angle = volume_data["directivity_angle"]
+                sos = volume_data["sos"][:, int(sizes[1] / 2), :]
+                density = volume_data["density"][:, int(sizes[1] / 2), :]
+                alpha_coeff = volume_data["alpha_coeff"][:, int(sizes[1] / 2), :]
+
+                np.savez(volume_path,
+                         mua=mua,
+                         mus=mus,
+                         g=g,
+                         oxy=oxy,
+                         seg=seg,
+                         sensor_mask=sensor_mask,
+                         # directivity_angle=directivity_angle,
+                         gamma=gamma,
+                         sos=sos,
+                         density=density,
+                         alpha_coeff=alpha_coeff)
+            else:
+                np.savez(volume_path,
+                         mua=mua,
+                         mus=mus,
+                         g=g,
+                         oxy=oxy,
+                         seg=seg,
+                         gamma=gamma)
+        else:
+            np.savez(volume_path,
+                     mua=mua,
+                     mus=mus,
+                     g=g,
+                     oxy=oxy,
+                     seg=seg,
+                     gamma=gamma)
 
     if optical_path is not None:
         optical_data = np.load(optical_path)

@@ -55,9 +55,9 @@ else
 end
 
 sound_speed_ref = min(min(medium.sound_speed));
-kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
-kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / sound_speed_ref) / kgrid.dt);
-% kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
+%kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
+%kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / sound_speed_ref) / kgrid.dt);
+kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.15);	% time array with
 % CFL number of 0.3 (advised by manual)
 % Using makeTime, dt = CFL*dx/medium.sound_speed and the total
 % time is set to the time it would take for an acoustic wave to travel 
@@ -105,7 +105,7 @@ if settings.gpu == true
 else
     datacast = 'single';
 end
-max_pressure = max(max(initial_pressure));
+% max_pressure = max(max(initial_pressure));
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', settings.pml_size, ...
@@ -120,5 +120,7 @@ end
 
 %% Write data to numpy array
 writeNPY(sensor_data_2D, settings.output_file);
+time_step = kgrid.dt;
+save(strcat(settings.output_file, '.mat'), 'time_step');
 
 end
