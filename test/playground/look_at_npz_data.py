@@ -1,25 +1,32 @@
 import numpy as np
 import matplotlib.pylab as plt
+import glob
 
-wavelength = "700"
-PATH = "/media/janek/PA DATA/DS_Forearm/Forearm_17420000/"
-data_input = np.load(PATH + "/properties_" + wavelength + "nm.npz")
-data_output = np.load(PATH + "/optical_forward_model_output_" + wavelength + ".npz")
+BASE_FOLDER = "/home/janek/melanie_test/RandomVolume_100000/"
+WAVELENGTHS = [700]
 
-fluence = data_output['fluence']
-absorption = data_input['mua']
+folder = BASE_FOLDER
+print("Working on " + folder + "...")
+for wavelength in WAVELENGTHS:
+    wavelength = str(wavelength)
+    print(wavelength)
 
-p0 = data_output['initial_pressure']
+    data_input = np.load(folder + "/properties_" + wavelength + "nm.npz")
+    data_output = np.load(folder + "/optical_forward_model_output_" + wavelength + ".npz")
 
-time_series_data = np.load(PATH + "/noisy_acoustic_model_output_" + wavelength + ".npz")["time_series_data"]
-recon = np.load(PATH + "/reconstruction_result_" + wavelength + ".npz")["reconstruction"]
+    fluence = data_output['fluence']
+    absorption = data_input['mua']
+    oxygenation = data_input['oxy']
 
-print(np.shape(time_series_data))
+    p0 = data_output['initial_pressure']
 
-plt.subplot(131)
-plt.imshow((np.rot90(p0[:, :], -1)))
-plt.subplot(132)
-plt.imshow((np.rot90(time_series_data[:, :], -1)), aspect=0.08)
-plt.subplot(133)
-plt.imshow((np.rot90(recon[:, :, 0], -1)))
-plt.show()
+    #time_series_data = np.load(folder + "/noisy_acoustic_model_output_" + wavelength + ".npz")["time_series_data"]
+    #recon = np.load(folder + "/reconstruction_result_" + wavelength + ".npz")["reconstruction"]
+
+    #print(np.shape(time_series_data))
+
+    plt.subplot(121)
+    plt.imshow(np.log10(np.rot90(p0[:, 17, :], -1)), cmap="gray")
+    plt.subplot(122)
+    plt.imshow((np.rot90(absorption[:, 17, :], -1)), cmap="magma")
+    plt.show()

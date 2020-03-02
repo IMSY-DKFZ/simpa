@@ -198,7 +198,8 @@ def get_muscle_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXYGEN
 
     :return: a settings dictionary containing all min and max parameters fitting for generic background tissue.
     """
-    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE, b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
+    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
+                        b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
                         w_min=0.64, w_max=0.72,
                         musp500=OpticalTissueProperties.MUSP500_BACKGROUND_TISSUE,
                         f_ray=OpticalTissueProperties.FRAY_BACKGROUND_TISSUE,
