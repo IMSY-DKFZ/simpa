@@ -214,6 +214,9 @@ class Tags:
     STRUCTURE_DISTORTED_PARAM_LIST = "structure_distorted_param_list"
     STRUCTURE_DISTORTION_FREQUENCY_PER_MM = "structure_distortion_wavelength_mm"
 
+    STRUCTURE_GAUSSIAN_FILTER = "structure_gaussian_filter"
+    STRUCTURE_GAUSSIAN_FILTER_SIGMA = "structure_gaussian_filter_sigma"
+
     STRUCTURE_BACKGROUND = "structure_background"
 
     STRUCTURE_LAYER = "structure_layer"

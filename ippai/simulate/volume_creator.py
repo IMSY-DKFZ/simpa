@@ -1,9 +1,11 @@
 import numpy as np
 import copy
+import math
 
 from ippai.simulate.tissue_properties import TissueProperties
 from ippai.simulate import Tags, SegmentationClasses, StandardProperties
 from ippai.simulate.utils import randomize, gruneisen_parameter_from_temperature
+from scipy.ndimage import gaussian_filter
 
 from ippai.process.preprocess_images import top_center_crop_power_two
 
@@ -22,6 +24,10 @@ def create_simulation_volume(settings):
     volumes = add_structures(volumes, settings)
     volumes = append_gel_pad(volumes, settings)
     volumes = append_air_layer(volumes, settings)
+
+    if Tags.STRUCTURE_GAUSSIAN_FILTER in settings:
+        volumes = apply_gaussian_filter(volumes, settings)
+
     if Tags.ILLUMINATION_TYPE in settings:
         if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
             volumes = append_msot_probe(volumes, settings)
@@ -750,4 +756,11 @@ def set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg):
 
     volumes[4][x_idx, y_idx, z_idx] = seg
 
+    return volumes
+
+
+def apply_gaussian_filter(volumes, settings):
+    if settings[Tags.ILLUMINATION_POSITION][2] > 0:
+        for vol_id in range(0, len(volumes)):
+            volumes[vol_id][:, :,math.ceil(settings[Tags.ILLUMINATION_POSITION][2]):] = gaussian_filter(volumes[vol_id][ :, :, math.ceil(settings[Tags.ILLUMINATION_POSITION][2]):], sigma=settings[Tags.STRUCTURE_GAUSSIAN_FILTER_SIGMA])
     return volumes

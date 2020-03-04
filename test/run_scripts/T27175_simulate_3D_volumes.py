@@ -1,3 +1,7 @@
+
+import sys
+
+sys.path.append("/workplace/ippai/")
 from ippai.simulate import Tags
 from ippai.simulate.simulation import simulate
 from ippai.simulate.structures import *
@@ -39,12 +43,12 @@ def create_random_structures():
     structures_dict = dict()
     structures_dict["background"] = create_background()
     for i in range(5):
-        structures_dict["tube_" + str(i).zfill(2)] = create_random_tube()
+       structures_dict["tube_" + str(i).zfill(2)] = create_random_tube()
     return structures_dict
 
 
 seed_index = 0
-while seed_index < 1:
+while seed_index < 1000:
     random_seed = 100000 + seed_index
     seed_index += 1
     np.random.seed(random_seed)
@@ -52,10 +56,10 @@ while seed_index < 1:
         Tags.WAVELENGTHS: [700, 750, 800, 850, 900, 950],
         Tags.RANDOM_SEED: random_seed,
         Tags.VOLUME_NAME: "RandomVolume_" + str(random_seed).zfill(6),
-        Tags.SIMULATION_PATH: "/home/janek/melanie_test/",
+        Tags.SIMULATION_PATH: "/home/melanie/networkdrives/E130-Projekte/Photoacoustics/RawData/20200304_optical_prop_rough",
         Tags.RUN_OPTICAL_MODEL: True,
         Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-        Tags.OPTICAL_MODEL_BINARY_PATH: "/home/janek/simulation_test/mcx",
+        Tags.OPTICAL_MODEL_BINARY_PATH: "/workplace/ippai/ippai/simulate/models/optical_models/mcx",
         Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
         Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
         Tags.RUN_ACOUSTIC_MODEL: False,
@@ -64,11 +68,14 @@ while seed_index < 1:
         Tags.DIM_VOLUME_Z_MM: 17,
         Tags.DIM_VOLUME_X_MM: 17,
         Tags.DIM_VOLUME_Y_MM: 17,
-        Tags.ILLUMINATION_POSITION: [18, 18, 0.1],
+        Tags.ILLUMINATION_POSITION: [18, 18, 1],
         Tags.ILLUMINATION_DIRECTION: [0, 0, 1],  # direction of msot acuity
         Tags.AIR_LAYER_HEIGHT_MM: 0.5,
         Tags.GELPAD_LAYER_HEIGHT_MM: 0,
+        Tags.STRUCTURE_GAUSSIAN_FILTER: True,
+        Tags.STRUCTURE_GAUSSIAN_FILTER_SIGMA: 1,
         Tags.STRUCTURES: create_random_structures()
+
     }
     print("Simulating ", random_seed)
     [settings_path, optical_path, acoustic_path, reco_path] = simulate(settings)
