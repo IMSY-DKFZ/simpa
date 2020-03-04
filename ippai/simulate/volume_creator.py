@@ -393,7 +393,7 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
     [mua, mus, g, oxy] = structure_properties.get(global_settings[Tags.WAVELENGTH])
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_BACKGROUND:
-        volumes = add_background(volumes, structure_settings, mua, mus, g, oxy)
+        volumes = set_background(volumes, structure_settings, mua, mus, g, oxy)
         return volumes
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_LAYER:
@@ -415,7 +415,7 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
     return volumes
 
 
-def add_background(volumes, structure_settings, mua, mus, g, oxy):
+def set_background(volumes, structure_settings, mua, mus, g, oxy):
     volumes[0] += mua
     volumes[1] += mus
     volumes[2] += g

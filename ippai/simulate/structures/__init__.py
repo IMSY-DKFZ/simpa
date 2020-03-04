@@ -26,7 +26,7 @@ def create_random_background():
     rnd_bg_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
     rnd_bg_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_random_background_settings()
     rnd_bg_dict[Tags.STRUCTURE_USE_DISTORTION] = False
-    rnd_bg_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_B, Tags.KEY_OXY, Tags.KEY_W]
+    rnd_bg_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_BLOOD, Tags.KEY_OXY, Tags.KEY_WATER]
     rnd_bg_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
     rnd_bg_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
     return rnd_bg_dict
@@ -113,7 +113,7 @@ def create_muscle_background(background_oxy=0.0):
     muscle_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
     muscle_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_muscle_settings(background_oxy=background_oxy)
     muscle_dict[Tags.STRUCTURE_USE_DISTORTION] = False
-    muscle_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_B, Tags.KEY_OXY, Tags.KEY_W]
+    muscle_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_BLOOD, Tags.KEY_OXY, Tags.KEY_WATER]
     muscle_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
     muscle_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.MUSCLE
     return muscle_dict
@@ -128,7 +128,7 @@ def create_epidermis_layer(background_oxy=0.0):
     epidermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = MorphologicalTissueProperties.EPIDERMIS_THICKNESS_MEAN_MM + MorphologicalTissueProperties.EPIDERMIS_THICKNESS_STD_MM
     epidermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_epidermis_settings(background_oxy=background_oxy)
     epidermis_dict[Tags.STRUCTURE_USE_DISTORTION] = False
-    epidermis_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_M, Tags.KEY_OXY, Tags.KEY_W]
+    epidermis_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_MELANIN, Tags.KEY_OXY, Tags.KEY_WATER]
     epidermis_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
     epidermis_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.EPIDERMIS
     return epidermis_dict
@@ -144,7 +144,7 @@ def create_dermis_layer(background_oxy=0.0):
     dermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_dermis_settings(background_oxy=background_oxy)
     dermis_dict[Tags.STRUCTURE_USE_DISTORTION] = False
     dermis_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.DERMIS
-    dermis_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_OXY, Tags.KEY_W]
+    dermis_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_OXY, Tags.KEY_WATER]
     dermis_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
     return dermis_dict
 
@@ -165,7 +165,7 @@ def create_subcutaneous_fat_layer(background_oxy=0.0):
     fat_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_subcutaneous_fat_settings(background_oxy=background_oxy)
     fat_dict[Tags.STRUCTURE_USE_DISTORTION] = False
     fat_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.FAT
-    fat_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_F, Tags.KEY_OXY, Tags.KEY_W]
+    fat_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_FAT, Tags.KEY_OXY, Tags.KEY_WATER]
     fat_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
     return fat_dict
 

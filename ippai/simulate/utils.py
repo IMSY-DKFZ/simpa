@@ -35,8 +35,11 @@ def randomize(lower_bound, upper_bound, distribution='uniform', size=(1,), gauss
     if gauss_kernel_size > 0:
         result = gaussian_filter(result, gauss_kernel_size)
         # After filtering, the noise needs to be rescaled to be in the correct range again (esp. wrt the spread)
-        result = ((result - np.mean(result)) / np.std(result)) * \
-                 (spread / 2) + mean
+        std = np.std(result)
+        if std == 0:
+            std = 1
+
+        result = ((result - np.mean(result)) / std) * (spread / 2) + mean
 
     return result
 

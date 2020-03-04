@@ -3,7 +3,7 @@ import matplotlib.pylab as plt
 import glob
 
 BASE_FOLDER = "/home/janek/melanie_test/RandomVolume_100000/"
-WAVELENGTHS = [700]
+WAVELENGTHS = [750]
 
 folder = BASE_FOLDER
 print("Working on " + folder + "...")
@@ -16,6 +16,8 @@ for wavelength in WAVELENGTHS:
 
     fluence = data_output['fluence']
     absorption = data_input['mua']
+    scattering = data_input['mus']
+    anisotropy = data_input['g']
     oxygenation = data_input['oxy']
 
     p0 = data_output['initial_pressure']
@@ -25,8 +27,14 @@ for wavelength in WAVELENGTHS:
 
     #print(np.shape(time_series_data))
 
-    plt.subplot(121)
-    plt.imshow(np.log10(np.rot90(p0[:, 17, :], -1)), cmap="gray")
-    plt.subplot(122)
+    plt.subplot(151)
+    plt.imshow((np.rot90(p0[:, 17, :], -1)), cmap="gray")
+    plt.subplot(152)
     plt.imshow((np.rot90(absorption[:, 17, :], -1)), cmap="magma")
+    plt.subplot(153)
+    plt.imshow((np.rot90(scattering[:, 17, :], -1)), cmap="magma")
+    plt.subplot(154)
+    plt.imshow((np.rot90(anisotropy[:, 17, :], -1)), cmap="magma")
+    plt.subplot(155)
+    plt.imshow(np.rot90(oxygenation[:, 17, :], -1), cmap="magma")
     plt.show()

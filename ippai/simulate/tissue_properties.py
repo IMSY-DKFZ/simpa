@@ -33,7 +33,7 @@ class TissueProperties(object):
         :param settings: The simulation settings dictionary
         :param tissue_type: The tissue type to check in the settings file
         """
-        self.KEYS_IN_ORDER = [Tags.KEY_B, Tags.KEY_W, Tags.KEY_F, Tags.KEY_M, Tags.KEY_OXY]
+        self.KEYS_IN_ORDER = [Tags.KEY_BLOOD, Tags.KEY_WATER, Tags.KEY_FAT, Tags.KEY_MELANIN, Tags.KEY_OXY]
         self.B_min = None
         self.B_max = None
         self.W_min = None
@@ -60,6 +60,25 @@ class TissueProperties(object):
 
         self.KEYWORDS = [Tags.KEY_B_MIN, Tags.KEY_B_MAX, Tags.KEY_W_MAX, Tags.KEY_W_MIN, Tags.KEY_F_MAX, Tags.KEY_F_MIN,
                          Tags.KEY_M_MAX, Tags.KEY_M_MIN, Tags.KEY_OXY_MAX, Tags.KEY_OXY_MIN]
+
+        distributions = dict()
+        sizes = dict()
+        gauss_size = dict()
+        for key in self.KEYS_IN_ORDER:
+            distributions[key] = 'uniform'
+            sizes[key] = (1,)
+            gauss_size[key] = 0
+
+        if Tags.STRUCTURE_USE_DISTORTION in settings:
+            if settings[Tags.STRUCTURE_USE_DISTORTION]:
+                if Tags.STRUCTURE_DISTORTED_PARAM_LIST in settings:
+                    for key in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
+                        distributions[key] = 'normal'
+                        sizes[key] = shape
+                        if (Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM in settings and
+                                settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] is not None):
+                            gauss_size[key] = settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing
+
         if settings is not None:
             if Tags.KEY_CONSTANT_PROPERTIES in settings[Tags.STRUCTURE_TISSUE_PROPERTIES]:
                 if settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_CONSTANT_PROPERTIES] is True:
@@ -67,42 +86,40 @@ class TissueProperties(object):
                     self.constant_mua = settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_MUA]
                     self.constant_mus = settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_MUS]
                     self.constant_g = settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_G]
-                    return
-            self.ensure_valid_settings_file(settings, tissue_type)
-            self.B_min = settings[tissue_type][Tags.KEY_B_MIN]
-            self.B_max = settings[tissue_type][Tags.KEY_B_MAX]
-            self.W_min = settings[tissue_type][Tags.KEY_W_MIN]
-            self.W_max = settings[tissue_type][Tags.KEY_W_MAX]
-            self.F_min = settings[tissue_type][Tags.KEY_F_MIN]
-            self.F_max = settings[tissue_type][Tags.KEY_F_MAX]
-            self.M_min = settings[tissue_type][Tags.KEY_M_MIN]
-            self.M_max = settings[tissue_type][Tags.KEY_M_MAX]
-            self.OXY_min = settings[tissue_type][Tags.KEY_OXY_MIN]
-            self.OXY_max = settings[tissue_type][Tags.KEY_OXY_MAX]
-            self.musp500 = settings[tissue_type][Tags.KEY_MUSP500]
-            self.f_ray = settings[tissue_type][Tags.KEY_F_RAY]
-            self.b_mie = settings[tissue_type][Tags.KEY_B_MIE]
-            self.anisotropy = settings[tissue_type][Tags.KEY_ANISOTROPY]
 
-            distributions = dict()
-            sizes = dict()
-            gauss_size = dict()
-            for key in self.KEYS_IN_ORDER:
-                distributions[key] = 'uniform'
-                sizes[key] = (1,)
-                gauss_size[key] = 0
+                    if Tags.STRUCTURE_USE_DISTORTION in settings:
+                        if settings[Tags.STRUCTURE_USE_DISTORTION]:
+                            if Tags.STRUCTURE_DISTORTED_PARAM_LIST in settings:
+                                if Tags.KEY_MUA in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
+                                    self.constant_mua = randomize(self.constant_mua*0.8, self.constant_mua*1.2, distribution='normal',
+                                                                  size=shape,
+                                                                  gauss_kernel_size=settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing)
+                                if Tags.KEY_MUS in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
+                                    self.constant_mus = randomize(self.constant_mus*0.8, self.constant_mus*1.2, distribution='normal',
+                                                                  size=shape,
+                                                                  gauss_kernel_size=settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing)
+                                if Tags.KEY_G in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
+                                    self.constant_g = randomize(self.constant_g*0.8, self.constant_g*1.2, distribution='normal',
+                                                                  size=shape,
+                                                                  gauss_kernel_size=settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing)
+            else:
+                self.ensure_valid_settings_file(settings, tissue_type)
+                self.B_min = settings[tissue_type][Tags.KEY_B_MIN]
+                self.B_max = settings[tissue_type][Tags.KEY_B_MAX]
+                self.W_min = settings[tissue_type][Tags.KEY_W_MIN]
+                self.W_max = settings[tissue_type][Tags.KEY_W_MAX]
+                self.F_min = settings[tissue_type][Tags.KEY_F_MIN]
+                self.F_max = settings[tissue_type][Tags.KEY_F_MAX]
+                self.M_min = settings[tissue_type][Tags.KEY_M_MIN]
+                self.M_max = settings[tissue_type][Tags.KEY_M_MAX]
+                self.OXY_min = settings[tissue_type][Tags.KEY_OXY_MIN]
+                self.OXY_max = settings[tissue_type][Tags.KEY_OXY_MAX]
+                self.musp500 = settings[tissue_type][Tags.KEY_MUSP500]
+                self.f_ray = settings[tissue_type][Tags.KEY_F_RAY]
+                self.b_mie = settings[tissue_type][Tags.KEY_B_MIE]
+                self.anisotropy = settings[tissue_type][Tags.KEY_ANISOTROPY]
 
-            if Tags.STRUCTURE_USE_DISTORTION in settings:
-                if settings[Tags.STRUCTURE_USE_DISTORTION]:
-                    if Tags.STRUCTURE_DISTORTED_PARAM_LIST in settings:
-                        for key in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
-                            distributions[key] = 'normal'
-                            sizes[key] = shape
-                            if (Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM in settings and
-                                    settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] is not None):
-                                gauss_size[key] = settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing
-
-            self.randomize(distributions, sizes, gauss_size)
+                self.randomize_properties(distributions, sizes, gauss_size)
 
         try:
             self.absorption_data = np.load("data/absorption_450_1000.npz")
@@ -171,7 +188,7 @@ class TissueProperties(object):
 
         return [absorption, scattering, anisotropy, self.oxy]
 
-    def randomize(self, dist, size, gauss_size):
+    def randomize_properties(self, dist, size, gauss_size):
         """
         Randomizes the tissue parameters within the given bounds.
 
@@ -181,14 +198,14 @@ class TissueProperties(object):
         :return: None
         """
 
-        self.bvf = randomize(self.B_min, self.B_max, distribution=dist[Tags.KEY_B], size=size[Tags.KEY_B],
-                             gauss_kernel_size=gauss_size[Tags.KEY_B])
-        self.wvf = randomize(self.W_min, self.W_max, distribution=dist[Tags.KEY_W], size=size[Tags.KEY_W],
-                             gauss_kernel_size=gauss_size[Tags.KEY_W])
-        self.fvf = randomize(self.F_min, self.F_max, distribution=dist[Tags.KEY_F], size=size[Tags.KEY_F],
-                             gauss_kernel_size=gauss_size[Tags.KEY_F])
-        self.mvf = randomize(self.M_min, self.M_max, distribution=dist[Tags.KEY_M], size=size[Tags.KEY_M],
-                             gauss_kernel_size=gauss_size[Tags.KEY_M])
+        self.bvf = randomize(self.B_min, self.B_max, distribution=dist[Tags.KEY_BLOOD], size=size[Tags.KEY_BLOOD],
+                             gauss_kernel_size=gauss_size[Tags.KEY_BLOOD])
+        self.wvf = randomize(self.W_min, self.W_max, distribution=dist[Tags.KEY_WATER], size=size[Tags.KEY_WATER],
+                             gauss_kernel_size=gauss_size[Tags.KEY_WATER])
+        self.fvf = randomize(self.F_min, self.F_max, distribution=dist[Tags.KEY_FAT], size=size[Tags.KEY_FAT],
+                             gauss_kernel_size=gauss_size[Tags.KEY_FAT])
+        self.mvf = randomize(self.M_min, self.M_max, distribution=dist[Tags.KEY_MELANIN], size=size[Tags.KEY_MELANIN],
+                             gauss_kernel_size=gauss_size[Tags.KEY_MELANIN])
         self.oxy = randomize(self.OXY_min, self.OXY_max, distribution=dist[Tags.KEY_OXY], size=size[Tags.KEY_OXY],
                              gauss_kernel_size=gauss_size[Tags.KEY_OXY])
 

@@ -9,6 +9,9 @@ def create_background():
     muscle_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
     muscle_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_muscle_settings()
     muscle_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.MUSCLE
+    muscle_dict[Tags.STRUCTURE_USE_DISTORTION] = True
+    muscle_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_BLOOD, Tags.KEY_OXY, Tags.KEY_WATER]
+    muscle_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
     return muscle_dict
 
 
@@ -19,6 +22,9 @@ def create_random_tube():
     g = np.random.random() * 0.2 + 0.8
     tube_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_TUBE
     tube_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_constant_settings(mua=mua, mus=mus, g=g)
+    tube_dict[Tags.STRUCTURE_USE_DISTORTION] = True
+    tube_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_MUA, Tags.KEY_MUS, Tags.KEY_G]
+    tube_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
     tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = 0
     tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = 17
     tube_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = 0.5
