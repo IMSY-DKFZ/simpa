@@ -67,6 +67,7 @@ def simulate(settings, optical_path):
 
     os.remove(optical_path)
     os.remove(tmp_output_file)
+    os.remove(tmp_output_file + ".mat")
     os.chdir(cur_dir)
 
     return sensor_data

@@ -72,13 +72,14 @@ def create_forearm_structures(relative_shift_mm=0, background_oxy=0.0, subcutane
     structures_dict["radial_artery"] = create_radial_artery(relative_shift_mm)
     structures_dict["ulnar_artery"] = create_ulnar_artery(relative_shift_mm)
     structures_dict["interosseous_artery"] = create_interosseous_artery(relative_shift_mm)
-    structures_dict["radius"] = create_radius_bone(relative_shift_mm)
-    structures_dict["ulna"] = create_ulna_bone(relative_shift_mm)
+    # structures_dict["radius"] = create_radius_bone(relative_shift_mm)
+    # structures_dict["ulna"] = create_ulna_bone(relative_shift_mm)
 
-    for i in range(14):
-        position = relative_shift_mm - 17.5 + i * 5
-        if np.random.random() < subcutaneous_vessel_spawn_probability:
-            structures_dict["subcutaneous_vessel_"+str(i+1)] = create_subcutaneous_vein(position)
+    # for i in range(14):
+    # for i in range(0):
+    #     position = relative_shift_mm - 17.5 + i * 5
+    #     if np.random.random() < subcutaneous_vessel_spawn_probability:
+    #         structures_dict["subcutaneous_vessel_"+str(i+1)] = create_subcutaneous_vein(position)
     return structures_dict
 
 

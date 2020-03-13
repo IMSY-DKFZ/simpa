@@ -9,8 +9,8 @@ import numpy as np
 spacings = [0.34]
 photons = [1e8]
 
-seed_index = 0
-while seed_index < 1000:
+seed_index = 46526
+while seed_index < 46527:
     # 465 < 35
     random_seed = 1000 + seed_index
     seed_index += 1
@@ -22,10 +22,10 @@ while seed_index < 1000:
 
     for [spacing, num_photons] in zip(spacings, photons):
         settings = {
-            Tags.WAVELENGTHS: [800],  # list(range(700, 951, 10)),
+            Tags.WAVELENGTHS: [800],#[660, 680, 730, 760, 800, 850, 920, 1000],  # list(range(700, 951, 10)),
             Tags.RANDOM_SEED: random_seed,
             Tags.VOLUME_NAME: "forearm_"+str(random_seed).zfill(6) + "/spacing_{}".format(spacing),
-            Tags.SIMULATION_PATH: "/media/kris/Extreme SSD/data/forearm",
+            Tags.SIMULATION_PATH: "/home/kris/hard_drive/presentation_PW2020",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: num_photons,
             Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/ippai/ippai/simulate/models/optical_models/mcx",
@@ -50,7 +50,7 @@ while seed_index < 1000:
             Tags.PERFORM_UPSAMPLING: True,
             Tags.CROP_IMAGE: True,
             Tags.CROP_POWER_OF_TWO: True,
-            Tags.UPSAMPLING_METHOD: Tags.UPSAMPLING_METHOD_DEEP_LEARNING,
+            Tags.UPSAMPLING_METHOD: Tags.UPSAMPLING_METHOD_NEAREST_NEIGHBOUR,
             Tags.UPSCALE_FACTOR: 2,
             Tags.UPSAMPLING_SCRIPT_LOCATION: "/home/kris/hard_drive/ippai/ippai/simulate/models/acoustic_models",
             Tags.UPSAMPLING_SCRIPT: "upsampling",
@@ -73,7 +73,7 @@ while seed_index < 1000:
             Tags.SENSOR_RECORD: "p",
             Tags.SENSOR_CENTER_FREQUENCY_HZ: 4e6,
             Tags.SENSOR_BANDWIDTH_PERCENT: 80,
-            Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS: True,
+            Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS: False,
             # Tags.SENSOR_DIRECTIVITY_ANGLE: 0,
             # Tags.SENSOR_DIRECTIVITY_ANGLE: "/home/kris/hard_drive/data/pipeline_test/sensor_directivity.npy",
             # 0,   # Most sensitive in x-dir (up/down)
@@ -90,9 +90,9 @@ while seed_index < 1000:
             Tags.PMLSize: [31, 32],
             Tags.PMLAlpha: 1.5,
             Tags.PlotPML: False,
-            Tags.RECORDMOVIE: True,
-            Tags.MOVIENAME: "visualization",
-            Tags.ACOUSTIC_LOG_SCALE: False,
+            Tags.RECORDMOVIE: False,
+            Tags.MOVIENAME: "visualization_log",
+            Tags.ACOUSTIC_LOG_SCALE: True,
 
             # Reconstruction
 
@@ -116,5 +116,3 @@ while seed_index < 1000:
         print("Simulating ", random_seed)
         [settings_path, optical_path, acoustic_path, reconstructed_path] = simulate(settings)
         print("Simulating ", random_seed, "[Done]")
-        break
-    break

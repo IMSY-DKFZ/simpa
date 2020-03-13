@@ -160,7 +160,7 @@ class TissueProperties(object):
 
         absorption = (self.wvf * self.absorption_data['water'][wavelength_idx] +
                       self.fvf * self.absorption_data['fat'][wavelength_idx] +
-                      self.mvf * self.absorption_data['melanin'][wavelength_idx] +
+                      self.mvf * self.absorption_data['melanin'][wavelength_idx]*0.1 +
                       self.bvf * self.oxy * self.absorption_data['hbo2'][wavelength_idx] +
                       self.bvf * (1-self.oxy) * self.absorption_data['hb'][wavelength_idx])
 

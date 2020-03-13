@@ -459,10 +459,16 @@ class MorphologicalTissueProperties:
     #   pages={817},
     #   year={2010}
     # }
-    RADIAL_ARTERY_DIAMETER_MEAN_MM = 2.25
+    # RADIAL_ARTERY_DIAMETER_MEAN_MM = 2.25
+    # RADIAL_ARTERY_DIAMETER_STD_MM = 0.4
+    # ULNAR_ARTERY_DIAMETER_MEAN_MM = 2.35
+    # ULNAR_ARTERY_DIAMETER_STD_MM = 0.35
+
+    # Kris approximation
+    RADIAL_ARTERY_DIAMETER_MEAN_MM = 2.7
     RADIAL_ARTERY_DIAMETER_STD_MM = 0.4
-    ULNAR_ARTERY_DIAMETER_MEAN_MM = 2.35
-    ULNAR_ARTERY_DIAMETER_STD_MM = 0.35
+    ULNAR_ARTERY_DIAMETER_MEAN_MM = 3
+    ULNAR_ARTERY_DIAMETER_STD_MM = 0.4
 
     # Accompanying veins diameter reference. They specifically only mention the ulnar accompanying vein properties.
     # We assume a non-significant similarity for the radial accompanying vein.
@@ -551,11 +557,20 @@ class MorphologicalTissueProperties:
 
     # The following properties were experimentally determined based on data sets provided by Janek Gröhl
     # (Photoacoustic forearm images) and André Klein (Forearm CT images from full body CTs)
-    RADIAL_ARTERY_DEPTH_MEAN_MM = 9
-    RADIAL_ARTERY_DEPTH_STD_MM = 1
-    ULNAR_ARTERY_DEPTH_MEAN_MM = 8
-    ULNAR_ARTERY_DEPTH_STD_MM = 1
-    DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 30
+    # RADIAL_ARTERY_DEPTH_MEAN_MM = 9
+    # RADIAL_ARTERY_DEPTH_STD_MM = 1
+    # ULNAR_ARTERY_DEPTH_MEAN_MM = 8
+    # ULNAR_ARTERY_DEPTH_STD_MM = 1
+    # Kris approximation for realistic forearm images:
+    RADIAL_ARTERY_DEPTH_MEAN_MM = 6
+    RADIAL_ARTERY_DEPTH_STD_MM = 0.5
+    ULNAR_ARTERY_DEPTH_MEAN_MM = 6
+    ULNAR_ARTERY_DEPTH_STD_MM = 0.5
+
+    # DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 30
+    # DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM = 5
+    # Kris approx
+    DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 15
     DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM = 5
     RADIUS_BONE_DIAMETER_MEAN_MM = 20
     RADIUS_BONE_DIAMETER_STD_MM = 2
@@ -574,7 +589,7 @@ class MorphologicalTissueProperties:
     ULNA_BONE_DEPTH_STD_MM = 2
 
     # Arbitrary position constants based on the respective coordinate systems
-    RADIAL_ARTERY_X_POSITION_MEAN_MM = 2.5
+    RADIAL_ARTERY_X_POSITION_MEAN_MM = 7.5
     ULNAR_ARTERY_X_POSITION_MEAN_MM = RADIAL_ARTERY_X_POSITION_MEAN_MM + DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM
     MEDIAN_ARTERY_X_POSITION_MEAN_MM = RADIAL_ARTERY_X_POSITION_MEAN_MM + DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM / 2
     ARTERY_X_POSITION_UNCERTAINTY_MM = DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM / np.sqrt(2)

@@ -28,6 +28,11 @@ class McxAdapter(OpticalForwardAdapterBase):
         tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+"_output"
 
         # write settings to json
+        # time = 1.16e-09
+        # dt = 8e-12
+        time = 5e-09
+        dt = 5e-09
+        frames = int(time/dt)
 
         if Tags.ILLUMINATION_TYPE in settings:
             source = define_illumination(settings, nx, ny, nz)
@@ -65,8 +70,8 @@ class McxAdapter(OpticalForwardAdapterBase):
              },
             "Forward": {
                 "T0": 0,
-                "T1": 5e-09,
-                "Dt": 5e-09
+                "T1": time,
+                "Dt": dt
             },
             # "Optode": {
             # 	"Source": {
@@ -121,11 +126,12 @@ class McxAdapter(OpticalForwardAdapterBase):
         with open(tmp_output_file+".mc2", 'rb') as f:
             data = f.read()
         data = struct.unpack('%df' % (len(data) / 4), data)
-        fluence = np.asarray(data).reshape([nx, ny, nz, 1], order='F')
+        fluence = np.asarray(data).reshape([nx, ny, nz, frames], order='F')
+
         fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
 
-        os.remove(tmp_input_path)
-        os.remove(tmp_output_file+".mc2")
-        os.remove(tmp_json_filename)
+        # os.remove(tmp_input_path)
+        # os.remove(tmp_output_file+".mc2")
+        # os.remove(tmp_json_filename)
 
         return fluence
