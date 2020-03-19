@@ -16,6 +16,8 @@ def create_simulation_volume(settings):
             absorption, scattering, anisotropy, oxygenation, and a segmentation mask. All of these are given as 3d
             numpy arrays.
     """
+    tmp_y_dim = settings[Tags.DIM_VOLUME_Y_MM]
+    settings[Tags.DIM_VOLUME_Y_MM] = settings[Tags.SPACING_MM]
     volume_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" \
                   + "properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"
     volumes = create_empty_volume(settings)
@@ -34,6 +36,7 @@ def create_simulation_volume(settings):
 
             for i in range(len(volumes)):
                 if i not in (5, 6):
+                    volumes[i] = np.repeat(volumes[i], tmp_y_dim/settings[Tags.SPACING_MM], axis=1)
                     volumes[i] = np.flip(volumes[i], 1)
 
             np.savez(volume_path,
@@ -51,6 +54,7 @@ def create_simulation_volume(settings):
 
         else:
             for i in range(len(volumes)):
+                volumes[i] = np.repeat(volumes[i], tmp_y_dim/settings[Tags.SPACING_MM], axis=1)
                 volumes[i] = np.flip(volumes[i], 1)
 
             np.savez(volume_path,
@@ -103,6 +107,7 @@ def create_simulation_volume(settings):
                      sos=volumes[8],
                      density=volumes[9],
                      alpha_coeff=volumes[10])
+    settings[Tags.DIM_VOLUME_Y_MM] = tmp_y_dim
 
     return volume_path
 

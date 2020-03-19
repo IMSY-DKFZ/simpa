@@ -2,13 +2,14 @@ from ippai.simulate import Tags
 from ippai.simulate.simulation import simulate
 from ippai.simulate.tissue_properties import get_muscle_settings
 from ippai.simulate.structures import create_forearm_structures
+import time
 
 import numpy as np
 
 
-spacings = [0.34]
+spacings = [0.17]
 photons = [1e8]
-
+start = time.time()
 seed_index = 46526
 while seed_index < 46527:
     # 465 < 35
@@ -25,7 +26,7 @@ while seed_index < 46527:
             Tags.WAVELENGTHS: [800],#[660, 680, 730, 760, 800, 850, 920, 1000],  # list(range(700, 951, 10)),
             Tags.RANDOM_SEED: random_seed,
             Tags.VOLUME_NAME: "forearm_"+str(random_seed).zfill(6) + "/spacing_{}".format(spacing),
-            Tags.SIMULATION_PATH: "/home/kris/hard_drive/presentation_PW2020",
+            Tags.SIMULATION_PATH: "/media/kris/Extreme SSD/tmp",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: num_photons,
             Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/ippai/ippai/simulate/models/optical_models/mcx",
@@ -73,7 +74,7 @@ while seed_index < 46527:
             Tags.SENSOR_RECORD: "p",
             Tags.SENSOR_CENTER_FREQUENCY_HZ: 4e6,
             Tags.SENSOR_BANDWIDTH_PERCENT: 80,
-            Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS: False,
+            Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS: True,
             # Tags.SENSOR_DIRECTIVITY_ANGLE: 0,
             # Tags.SENSOR_DIRECTIVITY_ANGLE: "/home/kris/hard_drive/data/pipeline_test/sensor_directivity.npy",
             # 0,   # Most sensitive in x-dir (up/down)
@@ -116,3 +117,4 @@ while seed_index < 46527:
         print("Simulating ", random_seed)
         [settings_path, optical_path, acoustic_path, reconstructed_path] = simulate(settings)
         print("Simulating ", random_seed, "[Done]")
+print("Simulation time: {:.2f}".format(time.time() - start))
