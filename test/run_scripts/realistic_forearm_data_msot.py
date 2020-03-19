@@ -7,7 +7,7 @@ import time
 import numpy as np
 
 
-spacings = [0.17]
+spacings = [0.34]
 photons = [1e8]
 start = time.time()
 seed_index = 46526

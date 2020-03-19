@@ -7,3 +7,4 @@ scikit-image
 torch
 batchgenerators
 xmltodict
+h5py
