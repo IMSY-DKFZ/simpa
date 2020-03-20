@@ -25,10 +25,10 @@ def save_hdf5(dictionary, filepath):
                     list_dict[str(i)] = list_item
                 data_grabber(file, path + key + "/list/", list_dict)
             else:
-                data_grabber(file, path + key + '/', item)
+                data_grabber(file, path + key + "/", item)
 
-    with h5py.File(filepath, 'w') as h5file:
-        data_grabber(h5file, '/', dictionary)
+    with h5py.File(filepath, "w") as h5file:
+        data_grabber(h5file, "/", dictionary)
 
 
 def load_hdf5(filepath):
@@ -57,10 +57,10 @@ def load_hdf5(filepath):
                             dictionary.append(item[listkey][()])
                         elif isinstance(item[listkey], h5py._hl.group.Group):
                             dictionary.append(
-                                data_grabber(file, path + key + '/' + listkey + "/"))
+                                data_grabber(file, path + key + "/" + listkey + "/"))
                 else:
-                    dictionary[key] = data_grabber(file, path + key + '/')
+                    dictionary[key] = data_grabber(file, path + key + "/")
         return dictionary
 
-    with h5py.File(filepath, 'r') as h5file:
-        return data_grabber(h5file, '/')
+    with h5py.File(filepath, "r") as h5file:
+        return data_grabber(h5file, "/")
