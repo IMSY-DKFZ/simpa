@@ -234,6 +234,16 @@ class Tags:
     UNITS_ARBITRARY = "arbitrary_unity"
     UNITS_PRESSURE = "newton_per_meters_squared"
 
+    """
+    IO settings
+    """
+
+    SETTINGS = "settings"
+    SIMULATIONS = "simulations"
+    UPSAMPLED_DATA = "upsampled_data"
+    REGULAR_DATA = "regular_data"
+
+
 
 class SegmentationClasses:
     """

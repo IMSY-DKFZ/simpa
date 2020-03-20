@@ -88,7 +88,7 @@ while seed_index < 46527:
             Tags.SENSOR_RADIUS_MM: 40,
 
             Tags.PMLInside: False,
-            Tags.PMLSize: [31, 32],
+            Tags.PMLSize: [32, 33],
             Tags.PMLAlpha: 1.5,
             Tags.PlotPML: False,
             Tags.RECORDMOVIE: False,

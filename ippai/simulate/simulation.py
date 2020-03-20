@@ -5,6 +5,7 @@ from ippai.simulate.models.acoustic_modelling import run_acoustic_forward_model
 from ippai.simulate.models.noise_modelling import apply_noise_model_to_reconstructed_data
 from ippai.simulate.models.reconstruction import perform_reconstruction
 from ippai.process.sampling import upsample
+from ippai.io_handling.io_hdf5 import save_hdf5
 import numpy as np
 import os
 
@@ -16,6 +17,7 @@ def simulate(settings):
     :return:
     """
 
+    ippai_output = dict()
     wavelengths = settings[Tags.WAVELENGTHS]
     volume_output_paths = []
     optical_output_paths = []
@@ -28,6 +30,9 @@ def simulate(settings):
 
     np.savez(path + "settings.npz",
              settings=settings)
+
+    ippai_output[Tags.SETTINGS] = settings
+    save_hdf5(ippai_output, path + "ippai_output.hdf5")
 
     for wavelength in wavelengths:
 
