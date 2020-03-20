@@ -1,11 +1,12 @@
 import h5py
 
 
-def save_hdf5(dictionary, filepath):
+def save_hdf5(dictionary, filepath, file_dictionary_path="/"):
     """
     Saves a dictionary with arbitrary content to an hdf5-file with given filepath.
     :param dictionary: Dictionary to save.
     :param filepath: Path of the file to save the dictionary in.
+    :param file_dictionary_path: Path in dictionary structure of existing hdf5 file to store the dictionary in.
     return
     """
 
@@ -27,8 +28,13 @@ def save_hdf5(dictionary, filepath):
             else:
                 data_grabber(file, path + key + "/", item)
 
-    with h5py.File(filepath, "w") as h5file:
-        data_grabber(h5file, "/", dictionary)
+    if file_dictionary_path == "/":
+        writing_mode = "w"
+    else:
+        writing_mode = "r+"
+
+    with h5py.File(filepath, writing_mode) as h5file:
+        data_grabber(h5file, file_dictionary_path, dictionary)
 
 
 def load_hdf5(filepath):
