@@ -1,8 +1,7 @@
 import numpy as np
 from ippai.simulate.utils import randomize
 from ippai.simulate import Tags, OpticalTissueProperties
-import os
-
+from utils import load_absorption_spectra_numpy_array
 
 class TissueProperties(object):
 
@@ -104,22 +103,7 @@ class TissueProperties(object):
 
             self.randomize(distributions, sizes, gauss_size)
 
-        try:
-            self.absorption_data = np.load("data/absorption_450_1000.npz")
-        except FileNotFoundError:
-            try:
-                self.absorption_data = np.load("ippai/data/absorption_450_1000.npz")
-            except FileNotFoundError:
-                try:
-                    self.absorption_data = np.load("../ippai/data/absorption_450_1000.npz")
-                except FileNotFoundError:
-                    try:
-                        self.absorption_data = np.load("../../data/absorption_450_1000.npz")
-                    except FileNotFoundError:
-                        try:
-                            self.absorption_data = np.load("../../ippai/data/absorption_450_1000.npz")
-                        except FileNotFoundError:
-                            raise Exception("The absorption data could not be found in the ippai/data folder.")
+            self.absorption_data = load_absorption_spectra_numpy_array()
 
     def ensure_valid_settings_file(self, settings, tissue_type):
         """
