@@ -5,7 +5,7 @@ from ippai.simulate.models.acoustic_modelling import run_acoustic_forward_model
 from ippai.simulate.models.noise_modelling import apply_noise_model_to_reconstructed_data
 from ippai.simulate.models.reconstruction import perform_reconstruction
 from ippai.process.sampling import upsample
-from ippai.io_handling.io_hdf5 import save_hdf5
+from ippai.io_handling.io_hdf5 import save_hdf5, load_hdf5
 import numpy as np
 import os
 
@@ -28,11 +28,11 @@ def simulate(settings):
     if not os.path.exists(path):
         os.makedirs(path)
 
-    np.savez(path + "settings.npz",
-             settings=settings)
+    ippai_output_path = path + "ippai_output.hdf5"
 
     ippai_output[Tags.SETTINGS] = settings
-    save_hdf5(ippai_output, path + "ippai_output.hdf5")
+    save_hdf5(ippai_output, ippai_output_path)
+    settings[Tags.IPPAI_OUTPUT_PATH] = ippai_output_path
 
     for wavelength in wavelengths:
 
@@ -78,64 +78,23 @@ def simulate(settings):
 
 def extract_field_of_view(settings, volume_path, optical_path, acoustic_path):
     if volume_path is not None:
-        volume_data = np.load(volume_path)
-        mua = volume_data[Tags.PROPERTY_ABSORPTION_PER_CM]
-        sizes = np.shape(mua)
-        mua = mua[:, int(sizes[1]/2), :]
-        mus = volume_data[Tags.PROPERTY_SCATTERING_PER_CM][:, int(sizes[1]/2), :]
-        g = volume_data[Tags.PROPERTY_ANISOTROPY][:, int(sizes[1] / 2), :]
-        oxy = volume_data[Tags.PROPERTY_OXYGENATION][:, int(sizes[1] / 2), :]
-        seg = volume_data[Tags.PROPERTY_SEGMENTATION][:, int(sizes[1] / 2), :]
-        gamma = volume_data[Tags.PROPERTY_GRUNEISEN_PARAMETER]
-        if type(gamma) is np.ndarray:
-            gamma = gamma[:, int(sizes[1] / 2), :]
+        volume_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], volume_path)
+        sizes = np.shape(volume_data[Tags.PROPERTY_ABSORPTION_PER_CM])
+        for key, value in volume_data.items():
+            if np.shape(value) == sizes:
+                volume_data[key] = value[:, int(sizes[1]/2), :]
 
-        if Tags.RUN_ACOUSTIC_MODEL in settings:
-            if settings[Tags.RUN_ACOUSTIC_MODEL]:
-                sensor_mask = volume_data["sensor_mask"]
-                # directivity_angle = volume_data["directivity_angle"]
-                sos = volume_data["sos"][:, int(sizes[1] / 2), :]
-                density = volume_data["density"][:, int(sizes[1] / 2), :]
-                alpha_coeff = volume_data["alpha_coeff"][:, int(sizes[1] / 2), :]
-
-                np.savez(volume_path,
-                         mua=mua,
-                         mus=mus,
-                         g=g,
-                         oxy=oxy,
-                         seg=seg,
-                         sensor_mask=sensor_mask,
-                         # directivity_angle=directivity_angle,
-                         gamma=gamma,
-                         sos=sos,
-                         density=density,
-                         alpha_coeff=alpha_coeff)
-            else:
-                np.savez(volume_path,
-                         mua=mua,
-                         mus=mus,
-                         g=g,
-                         oxy=oxy,
-                         seg=seg,
-                         gamma=gamma)
-        else:
-            np.savez(volume_path,
-                     mua=mua,
-                     mus=mus,
-                     g=g,
-                     oxy=oxy,
-                     seg=seg,
-                     gamma=gamma)
+        save_hdf5(volume_data, settings[Tags.IPPAI_OUTPUT_PATH], volume_path)
 
     if optical_path is not None:
-        optical_data = np.load(optical_path)
+        optical_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], optical_path)
         fluence = optical_data['fluence']
         sizes = np.shape(fluence)
-        fluence = fluence[:, int(sizes[1] / 2), :]
-        initial_pressure = optical_data['initial_pressure'][:, int(sizes[1] / 2), :]
-        np.savez(optical_path,
-                 fluence=fluence,
-                 initial_pressure=initial_pressure)
+        optical_data["fluence"] = fluence[:, int(sizes[1] / 2), :]
+        optical_data['initial_pressure'] = optical_data['initial_pressure'][:, int(sizes[1] / 2), :]
+
+        save_hdf5(optical_data, settings[Tags.IPPAI_OUTPUT_PATH], optical_path)
+
 
     if acoustic_path is not None:
         acoustic_data = np.load(acoustic_path)

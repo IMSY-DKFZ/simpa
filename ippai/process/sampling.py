@@ -2,6 +2,7 @@ import numpy as np
 from ippai.simulate import Tags
 from ippai.process import preprocess_images
 from ippai.deep_learning import datasets, Architectures
+from ippai.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from scipy.ndimage import zoom
 import os
 import torch
@@ -23,7 +24,8 @@ def upsample(settings, optical_path):
                      "upsampled_" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "_" + \
                      str(settings[Tags.WAVELENGTH]) + ".npz"
 
-    optical_data = np.load(optical_path)
+    #optical_data = np.load(optical_path)
+    optical_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], optical_path)
 
     fluence = np.rot90(preprocess_images.preprocess_image(settings, np.rot90(optical_data["fluence"], 3)), 3)
     initial_pressure = np.rot90(preprocess_images.preprocess_image(settings, np.rot90(optical_data["initial_pressure"], 3)))
@@ -49,9 +51,11 @@ def upsample(settings, optical_path):
         fluence = nn_upsample(settings, fluence)
         initial_pressure = nn_upsample(settings, initial_pressure)
 
-    np.savez(upsampled_path, fluence=fluence, initial_pressure=initial_pressure)
+    save_hdf5({"fluence": fluence, "initial_pressure": initial_pressure},
+              settings[Tags.IPPAI_OUTPUT_PATH],
+              "/simulations/upsampled/optical_output/")
 
-    return upsampled_path
+    return "/simulations/upsampled/optical_output/"
 
 
 def dl_upsample(settings, image_data):

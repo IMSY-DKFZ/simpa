@@ -1,4 +1,5 @@
 from ippai.simulate import Tags
+from ippai.io_handling.io_hdf5 import load_hdf5
 import numpy as np
 from abc import abstractmethod
 
@@ -25,7 +26,7 @@ class ReconstructionAdapterBase:
         """
         print("Performing reconstruction...")
 
-        time_series_sensor_data = np.load(acoustic_data_path)["time_series_data"]
+        time_series_sensor_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], acoustic_data_path)["time_series_data"]
 
         reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings)
         return reconstructed_image

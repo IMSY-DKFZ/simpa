@@ -1,5 +1,6 @@
 from ippai.simulate import Tags
 from ippai.simulate.models.reconstruction_models.MitkBeamformingAdapter import MitkBeamformingAdapter
+from ippai.io_handling.io_hdf5 import save_hdf5
 import numpy as np
 
 
@@ -18,7 +19,7 @@ def perform_reconstruction(settings, acoustic_data_path):
 
     reconstruction = reconstruction_method.simulate(settings, acoustic_data_path)
 
-    np.savez(reconstructed_data_save_path,
-             reconstructed_data=reconstruction)
+    save_hdf5({"reconstructed_data": reconstruction}, settings[Tags.IPPAI_OUTPUT_PATH],
+              "/simulations/upsampled/reconstruction/")
 
-    return reconstructed_data_save_path
+    return "/simulations/upsampled/reconstruction/"

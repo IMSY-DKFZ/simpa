@@ -238,6 +238,7 @@ class Tags:
     IO settings
     """
 
+    IPPAI_OUTPUT_PATH = "ippai_output_path"
     SETTINGS = "settings"
     SIMULATIONS = "simulations"
     UPSAMPLED_DATA = "upsampled_data"

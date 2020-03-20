@@ -1,6 +1,7 @@
 from ippai.simulate import Tags
 import numpy as np
 from ippai.simulate.models.acoustic_models import k_wave_adapter
+from ippai.io_handling.io_hdf5 import save_hdf5
 import os
 
 
@@ -12,7 +13,7 @@ def run_acoustic_forward_model(settings, optical_path):
 
     data = k_wave_adapter.simulate(settings, optical_path)
 
-    np.savez(acoustic_path,
-             time_series_data=data)
+    save_hdf5({"time_series_data": data}, settings[Tags.IPPAI_OUTPUT_PATH],
+              "/simulations/upsampled/acoustic_output/")
 
-    return acoustic_path
+    return "/simulations/upsampled/acoustic_output/"

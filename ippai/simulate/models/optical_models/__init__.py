@@ -1,4 +1,5 @@
 from ippai.simulate import Tags
+from ippai.io_handling.io_hdf5 import load_hdf5
 import numpy as np
 from abc import abstractmethod
 
@@ -37,7 +38,8 @@ class OpticalForwardAdapterBase:
         """
         print("Simulating the optical forward process...")
 
-        optical_properties = np.load(optical_properties_path)
+        #optical_properties = np.load(optical_properties_path)
+        optical_properties = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], optical_properties_path)
         absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
         scattering = optical_properties[Tags.PROPERTY_SCATTERING_PER_CM]
         anisotropy = optical_properties[Tags.PROPERTY_ANISOTROPY]

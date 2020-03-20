@@ -1,6 +1,7 @@
 import numpy as np
 import subprocess
 from ippai.simulate import Tags
+from ippai.io_handling.io_hdf5 import load_hdf5, save_hdf5
 import json
 import os
 import scipy.io as sio
@@ -8,21 +9,15 @@ import scipy.io as sio
 
 def simulate(settings, optical_path):
 
-    data_dict = dict()
-    tmp_opt_data = np.load(optical_path)
-    for key in tmp_opt_data.keys():
-        data_dict[key] = tmp_opt_data[key]
+    data_dict = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], optical_path)
 
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING]:
-            tmp_ac_data = np.load(os.path.join(settings[Tags.SIMULATION_PATH], settings[Tags.VOLUME_NAME],
-                                               "upsampled_properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"))
+            tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], "/simulations/upsampled/properties/")
         else:
-            tmp_ac_data = np.load(os.path.join(settings[Tags.SIMULATION_PATH], settings[Tags.VOLUME_NAME],
-                                               "properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"))
+            tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], "/simulations/normal/properties/")
     else:
-        tmp_ac_data = np.load(os.path.join(settings[Tags.SIMULATION_PATH], settings[Tags.VOLUME_NAME],
-                                           "properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"))
+        tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], "/simulations/normal/properties/")
 
     data_dict["sos"] = np.rot90(tmp_ac_data["sos"], 3)
     data_dict["density"] = np.rot90(tmp_ac_data["density"], 3)
@@ -38,8 +33,8 @@ def simulate(settings, optical_path):
     # plt.imshow(data_dict["sos"])
     # plt.show()
 
-    pre, ext = os.path.splitext(optical_path)
-    optical_path = pre + ".mat"
+    #pre, ext = os.path.splitext(optical_path)
+    optical_path = settings[Tags.IPPAI_OUTPUT_PATH] + ".mat"
     sio.savemat(optical_path, data_dict)
 
     tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "_output.npy"

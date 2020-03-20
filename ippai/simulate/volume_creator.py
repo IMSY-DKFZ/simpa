@@ -7,6 +7,8 @@ from ippai.simulate.utils import randomize, gruneisen_parameter_from_temperature
 
 from ippai.process.preprocess_images import top_center_crop_power_two
 
+from ippai.io_handling.io_hdf5 import save_hdf5
+
 
 def create_simulation_volume(settings):
     """
@@ -39,31 +41,14 @@ def create_simulation_volume(settings):
                     volumes[i] = np.repeat(volumes[i], tmp_y_dim/settings[Tags.SPACING_MM], axis=1)
                     volumes[i] = np.flip(volumes[i], 1)
 
-            np.savez(volume_path,
-                     mua=volumes["mua"],
-                     mus=volumes["mus"],
-                     g=volumes["g"],
-                     oxy=volumes["oxy"],
-                     seg=volumes["seg"],
-                     sensor_mask=volumes["sensor_mask"],
-                     directivity_angle=volumes["directivity_angle"],
-                     gamma=volumes["gamma"],
-                     sos=volumes["sos"],
-                     density=volumes["density"],
-                     alpha_coeff=volumes["alpha_coeff"])
+            save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path="/simulations/normal/properties/")
 
         else:
             for i in volumes.keys():
                 volumes[i] = np.repeat(volumes[i], tmp_y_dim/settings[Tags.SPACING_MM], axis=1)
                 volumes[i] = np.flip(volumes[i], 1)
 
-            np.savez(volume_path,
-                     mua=volumes["mua"],
-                     mus=volumes["mus"],
-                     g=volumes["g"],
-                     oxy=volumes["oxy"],
-                     seg=volumes["seg"],
-                     gamma=volumes["gamma"])
+            save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path="/simulations/normal/properties/")
 
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING] is True:
@@ -95,21 +80,10 @@ def create_simulation_volume(settings):
                     volumes[i] = np.squeeze(volumes[i])
                     volumes[i] = top_center_crop_power_two(volumes[i])
 
-            np.savez(upsampled_volume_path,
-                     mua=volumes["mua"],
-                     mus=volumes["mus"],
-                     g=volumes["g"],
-                     oxy=volumes["oxy"],
-                     seg=volumes["seg"],
-                     sensor_mask=volumes["sensor_mask"],
-                     directivity_angle=volumes["directivity_angle"],
-                     gamma=volumes["gamma"],
-                     sos=volumes["sos"],
-                     density=volumes["density"],
-                     alpha_coeff=volumes["alpha_coeff"])
+            save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path="/simulations/upsampled/properties/")
     settings[Tags.DIM_VOLUME_Y_MM] = tmp_y_dim
 
-    return volume_path
+    return "/simulations/normal/properties/"
 
 
 def create_gruneisen_map(volumes, settings):
