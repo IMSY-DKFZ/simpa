@@ -2,7 +2,7 @@ import numpy as np
 import copy
 
 from ippai.simulate.tissue_properties import TissueProperties
-from ippai.simulate import Tags, SegmentationClasses, StandardProperties
+from ippai.simulate import Tags, SegmentationClasses, StandardProperties, SaveFilePaths
 from ippai.simulate.utils import randomize, gruneisen_parameter_from_temperature
 
 from ippai.process.preprocess_images import top_center_crop_power_two
@@ -20,8 +20,7 @@ def create_simulation_volume(settings):
     """
     tmp_y_dim = settings[Tags.DIM_VOLUME_Y_MM]
     settings[Tags.DIM_VOLUME_Y_MM] = settings[Tags.SPACING_MM]
-    volume_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" \
-                  + "properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"
+
     volumes = create_empty_volume(settings)
     volumes = add_structures(volumes, settings)
     volumes = append_gel_pad(volumes, settings)
@@ -36,24 +35,17 @@ def create_simulation_volume(settings):
         if settings[Tags.RUN_ACOUSTIC_MODEL] is True:
             volumes = create_acoustic_properties(volumes, settings)
 
-            for i in volumes.keys():
-                if i not in ("sensor_mask", "directivity_angle"):
-                    volumes[i] = np.repeat(volumes[i], tmp_y_dim/settings[Tags.SPACING_MM], axis=1)
-                    volumes[i] = np.flip(volumes[i], 1)
-
-            save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path="/simulations/normal/properties/")
-
-        else:
-            for i in volumes.keys():
+        for i in volumes.keys():
+            if i not in (Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE):
                 volumes[i] = np.repeat(volumes[i], tmp_y_dim/settings[Tags.SPACING_MM], axis=1)
                 volumes[i] = np.flip(volumes[i], 1)
 
-            save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path="/simulations/normal/properties/")
+        volume_path = SaveFilePaths.SIMULATION_PROPERTIES\
+            .format("normal", str(settings[Tags.WAVELENGTH]))
+        save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path=volume_path)
 
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING] is True:
-            upsampled_volume_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" \
-                                    + "upsampled_properties_" + str(settings[Tags.WAVELENGTH]) + "nm.npz"
 
             upsampled_settings = copy.deepcopy(settings)
             upsampled_settings[Tags.SPACING_MM] = settings[Tags.SPACING_MM] / settings[Tags.UPSCALE_FACTOR]
@@ -74,16 +66,17 @@ def create_simulation_volume(settings):
                     volumes = create_acoustic_properties(volumes, upsampled_settings)
 
             for i in volumes.keys():
-                if i not in ("sensor_mask", "directivity_angle"):
+                if i not in (Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE):
                     volumes[i] = np.flip(volumes[i], 1)
                 if volumes[i] is not None:
                     volumes[i] = np.squeeze(volumes[i])
                     volumes[i] = top_center_crop_power_two(volumes[i])
-
-            save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path="/simulations/upsampled/properties/")
+            upsampled_volume_path = SaveFilePaths.SIMULATION_PROPERTIES\
+                .format("upsampled", settings[Tags.WAVELENGTH])
+            save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path=upsampled_volume_path)
     settings[Tags.DIM_VOLUME_Y_MM] = tmp_y_dim
 
-    return "/simulations/normal/properties/"
+    return volume_path
 
 
 def create_gruneisen_map(volumes, settings):
@@ -101,8 +94,8 @@ def create_gruneisen_map(volumes, settings):
     else:
         temperature_celcius = StandardProperties.BODY_TEMPERATURE_CELCIUS
 
-    gruneisen_map = np.ones(np.shape(volumes["mua"])) * gruneisen_parameter_from_temperature(temperature_celcius)
-    volumes["gamma"] = gruneisen_map
+    gruneisen_map = np.ones(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])) * gruneisen_parameter_from_temperature(temperature_celcius)
+    volumes[Tags.PROPERTY_GRUNEISEN_PARAMETER] = gruneisen_map
 
     return volumes
 
@@ -116,7 +109,7 @@ def create_acoustic_properties(volumes, settings):
     :return: The volumes with appended maps of acoustic parameters of size volumes[0].size
     """
 
-    sizes = volumes["mua"].shape
+    sizes = volumes[Tags.PROPERTY_ABSORPTION_PER_CM].shape
 
     # Set speed of sound of the medium
 
@@ -126,7 +119,7 @@ def create_acoustic_properties(volumes, settings):
                 sound_speed = np.ones(np.asarray(sizes)) * settings[Tags.MEDIUM_SOUND_SPEED]
             else:
                 sound_speed = np.ones(np.asarray(sizes)) * StandardProperties.SPEED_OF_SOUND_GENERIC
-            volumes["sos"] = sound_speed
+            volumes[Tags.PROPERTY_SPEED_OF_SOUND] = sound_speed
         else:
             sound_speed = np.ones(np.asarray(sizes))
             tissue_sound_speeds = [StandardProperties.SPEED_OF_SOUND_AIR,
@@ -140,11 +133,11 @@ def create_acoustic_properties(volumes, settings):
                                    StandardProperties.SPEED_OF_SOUND_WATER,
                                    StandardProperties.SPEED_OF_SOUND_GENERIC]
             for i in range(-1, 9):
-                np.place(sound_speed, volumes["seg"] == i, tissue_sound_speeds[i])
-            volumes["sos"] = sound_speed
+                np.place(sound_speed, volumes[Tags.PROPERTY_SEGMENTATION] == i, tissue_sound_speeds[i])
+            volumes[Tags.PROPERTY_SPEED_OF_SOUND] = sound_speed
     else:
         sound_speed = np.ones(np.asarray(sizes)) * StandardProperties.SPEED_OF_SOUND_GENERIC
-        volumes["sos"] = sound_speed
+        volumes[Tags.PROPERTY_SPEED_OF_SOUND] = sound_speed
 
     # Set density of the medium
 
@@ -154,7 +147,7 @@ def create_acoustic_properties(volumes, settings):
                 density = np.ones(np.asarray(sizes)) * settings[Tags.MEDIUM_DENSITY]
             else:
                 density = np.ones(np.asarray(sizes)) * StandardProperties.DENSITY_GENERIC
-            volumes["density"] = density
+            volumes[Tags.PROPERTY_DENSITY] = density
         else:
             density = np.ones(np.asarray(sizes))
             tissue_densities = [StandardProperties.DENSITY_AIR,
@@ -168,11 +161,11 @@ def create_acoustic_properties(volumes, settings):
                                 StandardProperties.DENSITY_WATER,
                                 StandardProperties.DENSITY_GENERIC]
             for i in range(-1, 9):
-                np.place(density, volumes["seg"] == i, tissue_densities[i])
-            volumes["density"] = density
+                np.place(density, volumes[Tags.PROPERTY_SEGMENTATION] == i, tissue_densities[i])
+            volumes[Tags.PROPERTY_DENSITY] = density
     else:
         density = np.ones(np.asarray(sizes)) * StandardProperties.DENSITY_GENERIC
-        volumes["density"] = density
+        volumes[Tags.PROPERTY_DENSITY] = density
 
     # Set attenuation coefficient of the medium
 
@@ -182,7 +175,7 @@ def create_acoustic_properties(volumes, settings):
                 alpha_coeff = np.ones(np.asarray(sizes)) * settings[Tags.MEDIUM_ALPHA_COEFF]
             else:
                 alpha_coeff = np.ones(np.asarray(sizes)) * StandardProperties.ALPHA_COEFF_GENERIC
-            volumes["alpha_coeff"] = alpha_coeff
+            volumes[Tags.PROPERTY_ALPHA_COEFF] = alpha_coeff
         else:
             alpha_coeff = np.ones(np.asarray(sizes))
             tissue_densities = [StandardProperties.ALPHA_COEFF_AIR,
@@ -196,11 +189,11 @@ def create_acoustic_properties(volumes, settings):
                                 StandardProperties.ALPHA_COEFF_WATER,
                                 StandardProperties.ALPHA_COEFF_GENERIC]
             for i in range(-1, 9):
-                np.place(alpha_coeff, volumes["seg"] == i, tissue_densities[i])
-            volumes["alpha_coeff"] = alpha_coeff
+                np.place(alpha_coeff, volumes[Tags.PROPERTY_SEGMENTATION] == i, tissue_densities[i])
+            volumes[Tags.PROPERTY_ALPHA_COEFF] = alpha_coeff
     else:
         alpha_coeff = np.ones(np.asarray(sizes)) * StandardProperties.ALPHA_COEFF_GENERIC
-        volumes["alpha_coeff"] = alpha_coeff
+        volumes[Tags.PROPERTY_ALPHA_COEFF] = alpha_coeff
 
     return volumes
 
@@ -213,29 +206,29 @@ def append_gel_pad(volumes, global_settings):
     mua = StandardProperties.GELPAD_MUA
     mus = StandardProperties.GELPAD_MUS
     g = StandardProperties.GELPAD_G
-    sizes = np.shape(volumes["mua"])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
     gelpad_layer_height = int(global_settings[Tags.GELPAD_LAYER_HEIGHT_MM] / global_settings[Tags.SPACING_MM])
 
     new_mua = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * mua
-    new_mua[:, :, gelpad_layer_height:] = volumes["mua"]
+    new_mua[:, :, gelpad_layer_height:] = volumes[Tags.PROPERTY_ABSORPTION_PER_CM]
 
     new_mus = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * mus
-    new_mus[:, :, gelpad_layer_height:] = volumes["mus"]
+    new_mus[:, :, gelpad_layer_height:] = volumes[Tags.PROPERTY_SCATTERING_PER_CM]
 
     new_g = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * g
-    new_g[:, :, gelpad_layer_height:] = volumes["g"]
+    new_g[:, :, gelpad_layer_height:] = volumes[Tags.PROPERTY_ANISOTROPY]
 
     new_oxy = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * (-1)
-    new_oxy[:, :, gelpad_layer_height:] = volumes["oxy"]
+    new_oxy[:, :, gelpad_layer_height:] = volumes[Tags.PROPERTY_OXYGENATION]
 
     new_seg = np.ones((sizes[0], sizes[1], sizes[2] + gelpad_layer_height)) * SegmentationClasses.ULTRASOUND_GEL_PAD
-    new_seg[:, :, gelpad_layer_height:] = volumes["seg"]
+    new_seg[:, :, gelpad_layer_height:] = volumes[Tags.PROPERTY_SEGMENTATION]
 
-    return {"mua": new_mua,
-            "mus": new_mus,
-            "g": new_g,
-            "oxy": new_oxy,
-            "seg": new_seg}
+    return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
+            Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
+            Tags.PROPERTY_ANISOTROPY: new_g,
+            Tags.PROPERTY_OXYGENATION: new_oxy,
+            Tags.PROPERTY_SEGMENTATION: new_seg}
 
 
 def append_air_layer(volumes, global_settings):
@@ -243,7 +236,7 @@ def append_air_layer(volumes, global_settings):
     mus = StandardProperties.AIR_MUS
     g = StandardProperties.AIR_G
 
-    sizes = np.shape(volumes["mua"])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     if Tags.AIR_LAYER_HEIGHT_MM not in global_settings:
         print("[INFO] Tag", Tags.AIR_LAYER_HEIGHT_MM, "not found in settings. Ignoring air layer.")
@@ -252,25 +245,25 @@ def append_air_layer(volumes, global_settings):
     air_layer_height = int(global_settings[Tags.AIR_LAYER_HEIGHT_MM] / global_settings[Tags.SPACING_MM])
 
     new_mua = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * mua
-    new_mua[:, :, air_layer_height:] = volumes["mua"]
+    new_mua[:, :, air_layer_height:] = volumes[Tags.PROPERTY_ABSORPTION_PER_CM]
 
     new_mus = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * mus
-    new_mus[:, :, air_layer_height:] = volumes["mus"]
+    new_mus[:, :, air_layer_height:] = volumes[Tags.PROPERTY_SCATTERING_PER_CM]
 
     new_g = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * g
-    new_g[:, :, air_layer_height:] = volumes["g"]
+    new_g[:, :, air_layer_height:] = volumes[Tags.PROPERTY_ANISOTROPY]
 
     new_oxy = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * (-1)
-    new_oxy[:, :, air_layer_height:] = volumes["oxy"]
+    new_oxy[:, :, air_layer_height:] = volumes[Tags.PROPERTY_OXYGENATION]
 
     new_seg = np.ones((sizes[0], sizes[1], sizes[2] + air_layer_height)) * SegmentationClasses.AIR
-    new_seg[:, :, air_layer_height:] = volumes["seg"]
+    new_seg[:, :, air_layer_height:] = volumes[Tags.PROPERTY_SEGMENTATION]
 
-    return {"mua": new_mua,
-            "mus": new_mus,
-            "g": new_g,
-            "oxy": new_oxy,
-            "seg": new_seg}
+    return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
+            Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
+            Tags.PROPERTY_ANISOTROPY: new_g,
+            Tags.PROPERTY_OXYGENATION: new_oxy,
+            Tags.PROPERTY_SEGMENTATION: new_seg}
 
 
 def append_msot_probe(volumes, global_settings):
@@ -282,31 +275,31 @@ def append_msot_probe(volumes, global_settings):
     mus_mediprene_layer = -np.log(0.85) - -np.log(0.85) / 10
     g_mediprene_layer = 0.9
 
-    sizes = np.shape(volumes["mua"])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     mediprene_layer_height = int(round(1 / global_settings[Tags.SPACING_MM]))
     water_layer_height = int(round(42.2 / global_settings[Tags.SPACING_MM]))
 
     new_mua = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * mua_water
     new_mua[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = mua_mediprene_layer
-    new_mua[:, :, water_layer_height + mediprene_layer_height:] = volumes["mua"]
+    new_mua[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_ABSORPTION_PER_CM]
 
     new_mus = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * mus_water
     new_mus[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = mus_mediprene_layer
-    new_mus[:, :, water_layer_height + mediprene_layer_height:] = volumes["mus"]
+    new_mus[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_SCATTERING_PER_CM]
 
     new_g = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * g_water
     new_g[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = g_mediprene_layer
-    new_g[:, :, water_layer_height + mediprene_layer_height:] = volumes["g"]
+    new_g[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_ANISOTROPY]
 
     new_oxy = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * (-1)
-    new_oxy[:, :, water_layer_height + mediprene_layer_height:] = volumes["oxy"]
+    new_oxy[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_OXYGENATION]
 
     new_seg = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * \
               SegmentationClasses.GENERIC
     new_seg[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = \
         SegmentationClasses.ULTRASOUND_GEL_PAD
-    new_seg[:, :, water_layer_height + mediprene_layer_height:] = volumes["seg"]
+    new_seg[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_SEGMENTATION]
 
     if Tags.RUN_ACOUSTIC_MODEL in global_settings:
         if global_settings[Tags.RUN_ACOUSTIC_MODEL]:
@@ -343,36 +336,36 @@ def append_msot_probe(volumes, global_settings):
                 else:
                     detector_directivity = None
             if detector_directivity is not None:
-                return {"mua": new_mua,
-                        "mus": new_mus,
-                        "g": new_g,
-                        "oxy": new_oxy,
-                        "seg": new_seg,
-                        "sensor_mask": np.rot90(detector_map, 1),
-                        "directivity_angle": np.rot90(detector_directivity, 1)}
+                return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
+                        Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
+                        Tags.PROPERTY_ANISOTROPY: new_g,
+                        Tags.PROPERTY_OXYGENATION: new_oxy,
+                        Tags.PROPERTY_SEGMENTATION: new_seg,
+                        Tags.PROPERTY_SENSOR_MASK: np.rot90(detector_map, 1),
+                        Tags.PROPERTY_DIRECTIVITY_ANGLE: np.rot90(detector_directivity, 1)}
             else:
-                return {"mua": new_mua,
-                        "mus": new_mus,
-                        "g": new_g,
-                        "oxy": new_oxy,
-                        "seg": new_seg,
-                        "sensor_mask": np.rot90(detector_map, 1),
-                        "directivity_angle": detector_directivity}
+                return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
+                        Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
+                        Tags.PROPERTY_ANISOTROPY: new_g,
+                        Tags.PROPERTY_OXYGENATION: new_oxy,
+                        Tags.PROPERTY_SEGMENTATION: new_seg,
+                        Tags.PROPERTY_SENSOR_MASK: np.rot90(detector_map, 1),
+                        Tags.PROPERTY_DIRECTIVITY_ANGLE: detector_directivity}
 
 
         else:
-            return {"mua": new_mua,
-                    "mus": new_mus,
-                    "g": new_g,
-                    "oxy": new_oxy,
-                    "seg": new_seg}
+            return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
+                    Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
+                    Tags.PROPERTY_ANISOTROPY: new_g,
+                    Tags.PROPERTY_OXYGENATION: new_oxy,
+                    Tags.PROPERTY_SEGMENTATION: new_seg}
 
     else:
-        return {"mua": new_mua,
-                "mus": new_mus,
-                "g": new_g,
-                "oxy": new_oxy,
-                "seg": new_seg}
+        return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
+                Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
+                Tags.PROPERTY_ANISOTROPY: new_g,
+                Tags.PROPERTY_OXYGENATION: new_oxy,
+                Tags.PROPERTY_SEGMENTATION: new_seg}
 
 
 def create_empty_volume(global_settings):
@@ -386,11 +379,11 @@ def create_empty_volume(global_settings):
     anisotropy_volume = np.zeros(sizes)
     oxygenation_volume = np.zeros(sizes)
     segmentation_volume = np.zeros(sizes)
-    return {"mua": absorption_volume,
-            "mus": scattering_volume,
-            "g": anisotropy_volume,
-            "oxy": oxygenation_volume,
-            "seg": segmentation_volume}
+    return {Tags.PROPERTY_ABSORPTION_PER_CM: absorption_volume,
+            Tags.PROPERTY_SCATTERING_PER_CM: scattering_volume,
+            Tags.PROPERTY_ANISOTROPY: anisotropy_volume,
+            Tags.PROPERTY_OXYGENATION: oxygenation_volume,
+            Tags.PROPERTY_SEGMENTATION: segmentation_volume}
 
 
 def add_structures(volumes, global_settings):
@@ -401,7 +394,7 @@ def add_structures(volumes, global_settings):
 
 def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=None):
     structure_properties = TissueProperties(structure_settings, Tags.STRUCTURE_TISSUE_PROPERTIES,
-                                            np.shape(volumes["mua"]), global_settings[Tags.SPACING_MM])
+                                            np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM]), global_settings[Tags.SPACING_MM])
     [mua, mus, g, oxy] = structure_properties.get(global_settings[Tags.WAVELENGTH])
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_BACKGROUND:
@@ -428,11 +421,11 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
 
 
 def add_background(volumes, structure_settings, mua, mus, g, oxy):
-    volumes["mua"] += mua
-    volumes["mus"] += mus
-    volumes["g"] += g
-    volumes["oxy"] += oxy
-    volumes["seg"] += structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE]
+    volumes[Tags.PROPERTY_ABSORPTION_PER_CM] += mua
+    volumes[Tags.PROPERTY_SCATTERING_PER_CM] += mus
+    volumes[Tags.PROPERTY_ANISOTROPY] += g
+    volumes[Tags.PROPERTY_OXYGENATION] += oxy
+    volumes[Tags.PROPERTY_SEGMENTATION] += structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE]
     return volumes
 
 
@@ -448,7 +441,7 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     depth_in_voxels = randomize(depth_min, depth_max) / global_settings[Tags.SPACING_MM]
     thickness_in_voxels = randomize(thickness_min, thickness_max) / global_settings[Tags.SPACING_MM]
 
-    sizes = np.shape(volumes["mua"])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     it = -1
     fraction = thickness_in_voxels
@@ -478,7 +471,7 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
-    sizes = np.shape(volumes["mua"])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     radius_min = structure_settings[Tags.STRUCTURE_RADIUS_MIN_MM]
     radius_max = structure_settings[Tags.STRUCTURE_RADIUS_MAX_MM]
@@ -676,41 +669,41 @@ def merge_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg, fraction):
     """
     if not np.isscalar(mua):
         if len(mua) > 1:
-            volumes["mua"][x_idx, y_idx, z_idx] = volumes["mua"][x_idx, y_idx, z_idx] * (1 - fraction) + \
+            volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               mua[x_idx, y_idx, z_idx] * fraction
         else:
-            volumes["mua"][x_idx, y_idx, z_idx] = volumes["mua"][x_idx, y_idx, z_idx] * (1 - fraction) + mua * fraction
+            volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] * (1 - fraction) + mua * fraction
     else:
-        volumes["mua"][x_idx, y_idx, z_idx] = volumes["mua"][x_idx, y_idx, z_idx] * (1 - fraction) + mua * fraction
+        volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] * (1 - fraction) + mua * fraction
 
     if not np.isscalar(mus):
         if len(mus) > 1:
-            volumes["mus"][x_idx, y_idx, z_idx] = volumes["mus"][x_idx, y_idx, z_idx] * (1 - fraction) + \
+            volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               mus[x_idx, y_idx, z_idx] * fraction
         else:
-            volumes["mus"][x_idx, y_idx, z_idx] = volumes["mus"][x_idx, y_idx, z_idx] * (1 - fraction) + mus * fraction
+            volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] * (1 - fraction) + mus * fraction
     else:
-        volumes["mus"][x_idx, y_idx, z_idx] = volumes["mus"][x_idx, y_idx, z_idx] * (1 - fraction) + mus * fraction
+        volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] * (1 - fraction) + mus * fraction
 
     if not np.isscalar(g):
         if len(g) > 1:
-            volumes["g"][x_idx, y_idx, z_idx] = volumes["g"][x_idx, y_idx, z_idx] * (1 - fraction) + \
+            volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               g[x_idx, y_idx, z_idx] * fraction
         else:
-            volumes["g"][x_idx, y_idx, z_idx] = volumes["g"][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
+            volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
     else:
-        volumes["g"][x_idx, y_idx, z_idx] = volumes["g"][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
+        volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
 
     if not np.isscalar(oxy):
         if len(oxy) > 1:
-            volumes["oxy"][x_idx, y_idx, z_idx] = volumes["oxy"][x_idx, y_idx, z_idx] * (1 - fraction) + \
+            volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               oxy[x_idx, y_idx, z_idx] * fraction
         else:
-            volumes["oxy"][x_idx, y_idx, z_idx] = volumes["oxy"][x_idx, y_idx, z_idx] * (1 - fraction) + oxy * fraction
+            volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] * (1 - fraction) + oxy * fraction
     else:
-        volumes["oxy"][x_idx, y_idx, z_idx] = volumes["oxy"][x_idx, y_idx, z_idx] * (1 - fraction) + oxy * fraction
+        volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] * (1 - fraction) + oxy * fraction
 
-    volumes["seg"][x_idx, y_idx, z_idx] = seg
+    volumes[Tags.PROPERTY_SEGMENTATION][x_idx, y_idx, z_idx] = seg
     return volumes
 
 
@@ -730,36 +723,36 @@ def set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg):
     """
     if not np.isscalar(mua):
         if len(mua) > 1:
-            volumes["mua"][x_idx, y_idx, z_idx] = mua[x_idx, y_idx, z_idx]
+            volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] = mua[x_idx, y_idx, z_idx]
         else:
-            volumes["mua"][x_idx, y_idx, z_idx] = mua
+            volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] = mua
     else:
-        volumes["mua"][x_idx, y_idx, z_idx] = mua
+        volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] = mua
 
     if not np.isscalar(mus):
         if len(mus) > 1:
-            volumes["mus"][x_idx, y_idx, z_idx] = mus[x_idx, y_idx, z_idx]
+            volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] = mus[x_idx, y_idx, z_idx]
         else:
-            volumes["mus"][x_idx, y_idx, z_idx] = mus
+            volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] = mus
     else:
-        volumes["mus"][x_idx, y_idx, z_idx] = mus
+        volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] = mus
 
     if not np.isscalar(g):
         if len(g) > 1:
-            volumes["g"][x_idx, y_idx, z_idx] = g[x_idx, y_idx, z_idx]
+            volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = g[x_idx, y_idx, z_idx]
         else:
-            volumes["g"][x_idx, y_idx, z_idx] = g
+            volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = g
     else:
-        volumes["g"][x_idx, y_idx, z_idx] = g
+        volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = g
 
     if not np.isscalar(oxy):
         if len(oxy) > 1:
-            volumes["oxy"][x_idx, y_idx, z_idx] = oxy[x_idx, y_idx, z_idx]
+            volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = oxy[x_idx, y_idx, z_idx]
         else:
-            volumes["oxy"][x_idx, y_idx, z_idx] = oxy
+            volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = oxy
     else:
-        volumes["oxy"][x_idx, y_idx, z_idx] = oxy
+        volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = oxy
 
-    volumes["oxy"][x_idx, y_idx, z_idx] = seg
+    volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = seg
 
     return volumes

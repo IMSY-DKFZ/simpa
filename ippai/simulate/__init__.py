@@ -117,6 +117,10 @@ class Tags:
     PROPERTY_SEGMENTATION = 'seg'
     PROPERTY_GRUNEISEN_PARAMETER = 'gamma'
     PROPERTY_SPEED_OF_SOUND = "sos"
+    PROPERTY_DENSITY = "density"
+    PROPERTY_ALPHA_COEFF = "alpha_coeff"
+    PROPERTY_SENSOR_MASK = "sensor_mask"
+    PROPERTY_DIRECTIVITY_ANGLE = "directivity_angle"
 
     # Air layer
     AIR_LAYER = "airlayer"
@@ -244,6 +248,19 @@ class Tags:
     UPSAMPLED_DATA = "upsampled_data"
     REGULAR_DATA = "regular_data"
 
+
+class SaveFilePaths:
+    """
+    The save file paths specify the path of a specific data structure in the dictionary of the ippai output hdf5
+    """
+    SIMULATION_PROPERTIES = "/simulations/{}/properties/{}/"    # .format("normal" or "upsampled", wavelength)
+    OPTICAL_OUTPUT = "/simulations/{}/optical_output/{}/"       # .format("normal" or "upsampled", wavelength)
+    ACOUSTIC_OUTPUT = "/simulations/{}/acoustic_output/{}/"  # .format("normal" or "upsampled", wavelength)
+    NOISE_ACOUSTIC_OUTPUT = \
+        "/simulations/{}/noise_acoustic_output/{}/"  # .format("normal" or "upsampled", wavelength)
+    RECONSTRCTION_OUTPUT = "/simulations/{}/reconstruction/{}/"  # .format("normal" or "upsampled", wavelength)
+    NOISE_RECONSTRCTION_OUTPUT = \
+        "/simulations/{}/noise_reconstruction/{}/"  # .format("normal" or "upsampled", wavelength)
 
 
 class SegmentationClasses:

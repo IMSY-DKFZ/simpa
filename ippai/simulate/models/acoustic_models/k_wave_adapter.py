@@ -1,6 +1,6 @@
 import numpy as np
 import subprocess
-from ippai.simulate import Tags
+from ippai.simulate import Tags, SaveFilePaths
 from ippai.io_handling.io_hdf5 import load_hdf5, save_hdf5
 import json
 import os
@@ -13,11 +13,14 @@ def simulate(settings, optical_path):
 
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING]:
-            tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], "/simulations/upsampled/properties/")
+            tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
+                                    SaveFilePaths.SIMULATION_PROPERTIES.format("upsampled", settings[Tags.WAVELENGTH]))
         else:
-            tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], "/simulations/normal/properties/")
+            tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
+                                    SaveFilePaths.SIMULATION_PROPERTIES.format("normal", settings[Tags.WAVELENGTH]))
     else:
-        tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], "/simulations/normal/properties/")
+        tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
+                                SaveFilePaths.SIMULATION_PROPERTIES.format("normal", settings[Tags.WAVELENGTH]))
 
     data_dict["sos"] = np.rot90(tmp_ac_data["sos"], 3)
     data_dict["density"] = np.rot90(tmp_ac_data["density"], 3)

@@ -1,5 +1,5 @@
 import numpy as np
-from ippai.simulate import Tags
+from ippai.simulate import Tags, SaveFilePaths
 from ippai.process import preprocess_images
 from ippai.deep_learning import datasets, Architectures
 from ippai.io_handling.io_hdf5 import load_hdf5, save_hdf5
@@ -20,11 +20,7 @@ def upsample(settings, optical_path):
     """
 
     print("UPSAMPLE IMAGE")
-    upsampled_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/" + \
-                     "upsampled_" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "_" + \
-                     str(settings[Tags.WAVELENGTH]) + ".npz"
 
-    #optical_data = np.load(optical_path)
     optical_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], optical_path)
 
     fluence = np.rot90(preprocess_images.preprocess_image(settings, np.rot90(optical_data["fluence"], 3)), 3)
@@ -51,11 +47,12 @@ def upsample(settings, optical_path):
         fluence = nn_upsample(settings, fluence)
         initial_pressure = nn_upsample(settings, initial_pressure)
 
+    upsampled_optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.format("upsampled", str(settings[Tags.WAVELENGTH]))
     save_hdf5({"fluence": fluence, "initial_pressure": initial_pressure},
               settings[Tags.IPPAI_OUTPUT_PATH],
-              "/simulations/upsampled/optical_output/")
+              upsampled_optical_output_path)
 
-    return "/simulations/upsampled/optical_output/"
+    return upsampled_optical_output_path
 
 
 def dl_upsample(settings, image_data):
