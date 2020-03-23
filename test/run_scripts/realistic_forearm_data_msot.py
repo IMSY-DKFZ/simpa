@@ -27,6 +27,7 @@ while seed_index < 46527:
             Tags.RANDOM_SEED: random_seed,
             Tags.VOLUME_NAME: "forearm_"+str(random_seed).zfill(6) + "/spacing_{}".format(spacing),
             Tags.SIMULATION_PATH: "/media/kris/Extreme SSD/tmp",
+            Tags.SETTINGS_JSON: True,
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: num_photons,
             Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/ippai/ippai/simulate/models/optical_models/mcx",

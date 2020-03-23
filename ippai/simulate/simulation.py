@@ -8,6 +8,7 @@ from ippai.process.sampling import upsample
 from ippai.io_handling.io_hdf5 import save_hdf5, load_hdf5
 import numpy as np
 import os
+import json
 
 
 def simulate(settings):
@@ -29,15 +30,20 @@ def simulate(settings):
         os.makedirs(path)
 
     if Tags.IPPAI_OUTPUT_NAME in settings:
-        ippai_output_path = path + settings[Tags.IPPAI_OUTPUT_NAME] + ".hdf5"
+        ippai_output_path = path + settings[Tags.IPPAI_OUTPUT_NAME]
     else:
-        ippai_output_path = path + "ippai_output.hdf5"
+        ippai_output_path = path + "ippai_output"
 
-    settings[Tags.IPPAI_OUTPUT_PATH] = ippai_output_path
+    if Tags.SETTINGS_JSON in settings:
+        if settings[Tags.SETTINGS_JSON]:
+            with open(ippai_output_path + ".json", "w") as json_file:
+                json.dump(settings, json_file, indent="\t")
+            settings[Tags.SETTINGS_JSON_PATH] = ippai_output_path + ".json"
+
+    settings[Tags.IPPAI_OUTPUT_PATH] = ippai_output_path + ".hdf5"
 
     ippai_output[Tags.SETTINGS] = settings
-    save_hdf5(ippai_output, ippai_output_path)
-    settings[Tags.IPPAI_OUTPUT_PATH] = ippai_output_path
+    save_hdf5(ippai_output, settings[Tags.IPPAI_OUTPUT_PATH])
 
     for wavelength in wavelengths:
 

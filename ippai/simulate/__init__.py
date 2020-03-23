@@ -247,6 +247,8 @@ class Tags:
 
     IPPAI_OUTPUT_PATH = "ippai_output_path"
     IPPAI_OUTPUT_NAME = "ippai_output.hdf5"
+    SETTINGS_JSON = "settings_json"
+    SETTINGS_JSON_PATH = "settings_json_path"
     SETTINGS = "settings"
     SIMULATION_PROPERTIES = "simulation_properties"
     SIMULATIONS = "simulations"

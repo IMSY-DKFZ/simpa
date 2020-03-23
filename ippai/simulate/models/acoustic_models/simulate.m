@@ -54,7 +54,7 @@ else
     medium.density = ones(Nx, Ny);
 end
 
-sound_speed_ref = min(min(medium.sound_speed));
+%sound_speed_ref = min(min(medium.sound_speed));
 %kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
 %kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / sound_speed_ref) / kgrid.dt);
 kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.15);	% time array with
@@ -119,8 +119,8 @@ if settings.gpu == true
 end
 
 %% Write data to numpy array
-writeNPY(sensor_data_2D, settings.output_file);
+save(strcat(optical_path, '.mat'), 'sensor_data_2D')
 time_step = kgrid.dt;
-save(strcat(settings.output_file, '.mat'), 'time_step');
+save(strcat(optical_path, 'dt.mat'), 'time_step');
 
 end
