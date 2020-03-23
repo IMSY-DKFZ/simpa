@@ -210,10 +210,6 @@ class Tags:
     STRUCTURE_CENTER_DEPTH_MIN_MM = "structure_depth_min_mm"
     STRUCTURE_CENTER_DEPTH_MAX_MM = "structure_depth_max_mm"
 
-    STRUCTURE_USE_DISTORTION = "structure_distortion_multiplicative"
-    STRUCTURE_DISTORTED_PARAM_LIST = "structure_distorted_param_list"
-    STRUCTURE_DISTORTION_FREQUENCY_PER_MM = "structure_distortion_wavelength_mm"
-
     STRUCTURE_BACKGROUND = "structure_background"
 
     STRUCTURE_LAYER = "structure_layer"
