@@ -1,7 +1,7 @@
 import numpy as np
 from ippai.simulate.utils import randomize
 from ippai.simulate import Tags, OpticalTissueProperties
-from utils import SPECTRAL_LIBRARY, AbsorptionSpectrum
+from utils import SPECTRAL_LIBRARY, AbsorptionSpectrum, randomize_uniform
 
 
 class TissueProperties(object):
@@ -12,7 +12,7 @@ class TissueProperties(object):
     class Chromophore(object):
 
         def __init__(self, spectrum: AbsorptionSpectrum,
-                     max_fraction: float, min_fraction: float,
+                     volume_fraction: float,
                      musp500: float, f_ray: float, b_mie: float,
                      anisotropy: float):
             """
@@ -24,15 +24,29 @@ class TissueProperties(object):
             :param b_mie: float
             :param anisotropy: float
             """
-
-            self.spectrum = spectrum
             if not isinstance(spectrum, AbsorptionSpectrum):
                 raise TypeError("The given spectrum was not of type AbsorptionSpectrum!")
 
-            self.fraction = (np.random.random() * (max_fraction - min_fraction)) + min_fraction
-            self.musp500 = musp500,
+            self.spectrum = spectrum
+
+            if not isinstance(volume_fraction, float):
+                raise TypeError("The given volume_fraction was not of type float!")
+            self.volume_fraction = volume_fraction
+
+            if not isinstance(musp500, float):
+                raise TypeError("The given musp500 was not of type float!")
+            self.musp500 = musp500
+
+            if not isinstance(f_ray, float):
+                raise TypeError("The given f_ray was not of type float!")
             self.f_ray = f_ray
+
+            if not isinstance(b_mie, float):
+                raise TypeError("The given b_mie was not of type float!")
             self.b_mie = b_mie
+
+            if not isinstance(anisotropy, float):
+                raise TypeError("The given anisotropy was not of type float!")
             self.anisotropy = anisotropy
 
     def __init__(self, settings):
@@ -55,9 +69,9 @@ class TissueProperties(object):
         _sum_of_fractions = 0
 
         for chromophore in self.chromophores:
-            _sum_of_fractions += chromophore.fraction
-            _mua_per_centimeter += chromophore.fraction * chromophore.spectrum.get_absorption_for_wavelength(wavelength)
-            _g += chromophore.fraction * chromophore.anisotropy
+            _sum_of_fractions += chromophore.volume_fraction
+            _mua_per_centimeter += chromophore.volume_fraction * chromophore.spectrum.get_absorption_for_wavelength(wavelength)
+            _g += chromophore.volume_fraction * chromophore.anisotropy
             _mus_per_centimeter += (chromophore.musp500 * (chromophore.f_ray *
                                     (wavelength / 500) ** 1e-4 + (1 - chromophore.f_ray) *
                                     (wavelength / 500) ** -chromophore.b_mie))
@@ -219,6 +233,17 @@ def get_constant_settings(mua, mus, g):
     return return_dict
 
 
+class TissueSettingsGenerator(object):
+    def __init__(self):
+        self.tissue_dictionary = dict()
+
+    def append(self, key: str, value: TissueProperties.Chromophore):
+        self.tissue_dictionary[key] = value
+
+    def get_settings(self):
+        return self.tissue_dictionary
+
+
 def get_settings(b_min=0.0, b_max=0.0,
                  w_min=0.0, w_max=0.0,
                  f_min=0.0, f_max=0.0,
@@ -226,19 +251,41 @@ def get_settings(b_min=0.0, b_max=0.0,
                  oxy_min=0.0, oxy_max=1.0,
                  musp500=10.0, f_ray=0.0, b_mie=0.0,
                  anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY):
-    return_dict = dict()
-    return_dict[Tags.KEY_B_MIN] = b_min
-    return_dict[Tags.KEY_B_MAX] = b_max
-    return_dict[Tags.KEY_W_MIN] = w_min
-    return_dict[Tags.KEY_W_MAX] = w_max
-    return_dict[Tags.KEY_F_MIN] = f_min
-    return_dict[Tags.KEY_F_MAX] = f_max
-    return_dict[Tags.KEY_M_MIN] = m_min
-    return_dict[Tags.KEY_M_MAX] = m_max
-    return_dict[Tags.KEY_OXY_MIN] = oxy_min
-    return_dict[Tags.KEY_OXY_MAX] = oxy_max
-    return_dict[Tags.KEY_MUSP500] = musp500
-    return_dict[Tags.KEY_F_RAY] = f_ray
-    return_dict[Tags.KEY_B_MIE] = b_mie
-    return_dict[Tags.KEY_ANISOTROPY] = anisotropy
-    return return_dict
+
+    tissue_generator = TissueSettingsGenerator()
+
+    bvf = randomize_uniform(b_min, b_max)  # Blood volume fraction (bvf)
+    wvf = randomize_uniform(w_min, w_max)  # Water volume fraction (wvf)
+    fvf = randomize_uniform(f_min, f_max)  # Fat volume fraction (fvf)
+    mvf = randomize_uniform(m_min, m_max)  # Melanin volume fraction (mvf)
+    oxy = randomize_uniform(oxy_min, oxy_max)  # Blood oxygenation (oxy)
+
+    if bvf > 0:
+        tissue_generator.append("hb", TissueProperties.Chromophore(spectrum=SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN,
+                                                                   volume_fraction=bvf * (1-oxy),
+                                                                   musp500=musp500, f_ray=f_ray,
+                                                                   b_mie=b_mie, anisotropy=anisotropy))
+        tissue_generator.append("hbO2", TissueProperties.Chromophore(spectrum=SPECTRAL_LIBRARY.OXYHEMOGLOBIN,
+                                                                     volume_fraction=bvf * oxy,
+                                                                     musp500=musp500, f_ray=f_ray,
+                                                                     b_mie=b_mie, anisotropy=anisotropy))
+
+    if wvf > 0:
+        tissue_generator.append("water", TissueProperties.Chromophore(spectrum=SPECTRAL_LIBRARY.WATER,
+                                                                      volume_fraction=wvf,
+                                                                      musp500=musp500, f_ray=f_ray,
+                                                                      b_mie=b_mie, anisotropy=anisotropy))
+
+    if fvf > 0:
+        tissue_generator.append("fat", TissueProperties.Chromophore(spectrum=SPECTRAL_LIBRARY.FAT,
+                                                                    volume_fraction=fvf,
+                                                                    musp500=musp500, f_ray=f_ray,
+                                                                    b_mie=b_mie, anisotropy=anisotropy))
+
+    if mvf > 0:
+        tissue_generator.append("melanin", TissueProperties.Chromophore(spectrum=SPECTRAL_LIBRARY.MELANIN,
+                                                                        volume_fraction=mvf,
+                                                                        musp500=musp500, f_ray=f_ray,
+                                                                        b_mie=b_mie, anisotropy=anisotropy))
+
+    return tissue_generator.get_settings()

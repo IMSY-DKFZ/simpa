@@ -20,6 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import numpy as np
 from utils.spectral_library import SPECTRAL_LIBRARY
 from utils.spectral_library import view_absorption_spectra
 from utils.spectral_library import AbsorptionSpectrum
+
+
+def randomize_uniform(min_value: float, max_value: float):
+    """
+    returns a uniformly drawn random number in [min_value, max_value[
+
+    :param min_value: minimum value
+    :param max_value: maximum value
+    :return: random number in [min_value, max_value[
+    """
+    return (np.random.random() * (max_value-min_value)) + min_value

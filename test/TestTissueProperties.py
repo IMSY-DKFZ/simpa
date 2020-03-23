@@ -1,5 +1,6 @@
 import unittest
 from ippai.simulate.tissue_properties import TissueProperties
+from ippai.simulate.tissue_properties import get_epidermis_settings as settings_generator
 from utils import SPECTRAL_LIBRARY
 
 
@@ -15,12 +16,6 @@ class TestTissueProperties(unittest.TestCase):
 
         print(type(SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN))
 
-        settings = {
-            'hb': TissueProperties.Chromophore(SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN, 0.5, 0.5,
-                                                200.0, 1.2, 0.4, 0.9),
-            'hbO2': TissueProperties.Chromophore(SPECTRAL_LIBRARY.OXYHEMOGLOBIN, 0.5, 0.5,
-                                                 200.0, 1.2, 0.4, 0.9)
-        }
-        tp = TissueProperties(settings=settings)
+        tp = TissueProperties(settings=settings_generator())
 
-        print(tp.get(700))
+        print(tp.get(798))
