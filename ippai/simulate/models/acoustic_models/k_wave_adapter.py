@@ -14,20 +14,20 @@ def simulate(settings, optical_path):
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING]:
             tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
-                                    SaveFilePaths.SIMULATION_PROPERTIES.format("upsampled", settings[Tags.WAVELENGTH]))
+                                    SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH]))
         else:
             tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
-                                    SaveFilePaths.SIMULATION_PROPERTIES.format("normal", settings[Tags.WAVELENGTH]))
+                                    SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH]))
     else:
         tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
-                                SaveFilePaths.SIMULATION_PROPERTIES.format("normal", settings[Tags.WAVELENGTH]))
+                                SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH]))
 
-    data_dict["sos"] = np.rot90(tmp_ac_data["sos"], 3)
-    data_dict["density"] = np.rot90(tmp_ac_data["density"], 3)
-    data_dict["alpha_coeff"] = np.rot90(tmp_ac_data["alpha_coeff"], 3)
-    data_dict["sensor_mask"] = np.rot90(tmp_ac_data["sensor_mask"], 3)
+    data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3)
+    data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3)
+    data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3)
+    data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3)
     try:
-        data_dict["directivity_angle"] = np.rot90(tmp_ac_data["directivity_angle"], 3)
+        data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3)
     except ValueError:
         print("No directivity_angle specified")
     except KeyError:

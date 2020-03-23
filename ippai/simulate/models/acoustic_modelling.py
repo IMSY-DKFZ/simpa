@@ -8,11 +8,15 @@ def run_acoustic_forward_model(settings, optical_path):
 
     data = k_wave_adapter.simulate(settings, optical_path)
 
-    acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.format("normal", settings[Tags.WAVELENGTH])
+    acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
+        format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING]:
-            acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.format("upsampled", settings[Tags.WAVELENGTH])
-    save_hdf5({"time_series_data": data}, settings[Tags.IPPAI_OUTPUT_PATH],
+            acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
+                format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+
+    save_hdf5({Tags.TIME_SERIES_DATA: data}, settings[Tags.IPPAI_OUTPUT_PATH],
               acoustic_output_path)
 
     return acoustic_output_path

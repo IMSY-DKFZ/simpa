@@ -25,6 +25,9 @@ class Tags:
     OPTICAL_MODEL_NUMBER_PHOTONS = "optical_model_number_of_photons"
     OPTICAL_MODEL_PROBE_XML_FILE = "optical_model_probe_xml_file"  # TODO rename PROBE -> ILLUMINATION
     LASER_PULSE_ENERGY_IN_MILLIJOULE = "laser_pulse_energy_in_millijoule"
+    OPTICAL_MODEL_FLUENCE = "fluence"
+    OPTICAL_MODEL_INITIAL_PRESSURE = "initial_pressure"
+    OPTICAL_MODEL_UNITS = "units"
 
     ILLUMINATION_TYPE = "optical_model_illumination_type"
 
@@ -243,24 +246,26 @@ class Tags:
     """
 
     IPPAI_OUTPUT_PATH = "ippai_output_path"
+    IPPAI_OUTPUT_NAME = "ippai_output.hdf5"
     SETTINGS = "settings"
+    SIMULATION_PROPERTIES = "simulation_properties"
     SIMULATIONS = "simulations"
     UPSAMPLED_DATA = "upsampled_data"
-    REGULAR_DATA = "regular_data"
+    ORIGINAL_DATA = "original_data"
 
 
 class SaveFilePaths:
     """
-    The save file paths specify the path of a specific data structure in the dictionary of the ippai output hdf5
+    The save file paths specify the path of a specific data structure in the dictionary of the ippai output hdf5.
+    All of these paths have to be used like:
+    SaveFilePaths.PATH.format(Tags.UPSAMPLED_DATA or Tags.ORIGINAL_DATA, wavelength)
     """
-    SIMULATION_PROPERTIES = "/simulations/{}/properties/{}/"    # .format("normal" or "upsampled", wavelength)
-    OPTICAL_OUTPUT = "/simulations/{}/optical_output/{}/"       # .format("normal" or "upsampled", wavelength)
-    ACOUSTIC_OUTPUT = "/simulations/{}/acoustic_output/{}/"  # .format("normal" or "upsampled", wavelength)
-    NOISE_ACOUSTIC_OUTPUT = \
-        "/simulations/{}/noise_acoustic_output/{}/"  # .format("normal" or "upsampled", wavelength)
-    RECONSTRCTION_OUTPUT = "/simulations/{}/reconstruction/{}/"  # .format("normal" or "upsampled", wavelength)
-    NOISE_RECONSTRCTION_OUTPUT = \
-        "/simulations/{}/noise_reconstruction/{}/"  # .format("normal" or "upsampled", wavelength)
+    SIMULATION_PROPERTIES = "/" + Tags.SIMULATIONS + "/{}/" + Tags.SIMULATION_PROPERTIES + "/{}/"
+    OPTICAL_OUTPUT = "/" + Tags.SIMULATIONS + "/{}/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/{}/"
+    ACOUSTIC_OUTPUT = "/" + Tags.SIMULATIONS + "/{}/" + Tags.TIME_SERIES_DATA + "/{}/"
+    NOISE_ACOUSTIC_OUTPUT = "/" + Tags.SIMULATIONS + "/{}/" + Tags.TIME_SERIES_DATA_NOISE + "/{}/"
+    RECONSTRCTION_OUTPUT = "/" + Tags.SIMULATIONS + "/{}/" + Tags.RECONSTRUCTED_DATA + "/{}/"
+    NOISE_RECONSTRCTION_OUTPUT = "/" + Tags.SIMULATIONS + "/{}/" + Tags.RECONSTRUCTED_DATA_NOISE + "/{}/"
 
 
 class SegmentationClasses:

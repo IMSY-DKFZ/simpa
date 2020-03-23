@@ -16,12 +16,14 @@ def perform_reconstruction(settings, acoustic_data_path):
 
     reconstruction = reconstruction_method.simulate(settings, acoustic_data_path)
 
-    reconstruction_output_path = SaveFilePaths.RECONSTRCTION_OUTPUT.format("normal", settings[Tags.WAVELENGTH])
+    reconstruction_output_path = SaveFilePaths.RECONSTRCTION_OUTPUT.\
+        format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
+
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING]:
             reconstruction_output_path = \
-                SaveFilePaths.RECONSTRCTION_OUTPUT.format("upsampled", settings[Tags.WAVELENGTH])
-    save_hdf5({"reconstructed_data": reconstruction}, settings[Tags.IPPAI_OUTPUT_PATH],
+                SaveFilePaths.RECONSTRCTION_OUTPUT.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+    save_hdf5({Tags.RECONSTRUCTED_DATA: reconstruction}, settings[Tags.IPPAI_OUTPUT_PATH],
               reconstruction_output_path)
 
     return reconstruction_output_path

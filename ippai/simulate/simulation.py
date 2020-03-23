@@ -28,7 +28,12 @@ def simulate(settings):
     if not os.path.exists(path):
         os.makedirs(path)
 
-    ippai_output_path = path + "ippai_output.hdf5"
+    if Tags.IPPAI_OUTPUT_NAME in settings:
+        ippai_output_path = path + settings[Tags.IPPAI_OUTPUT_NAME] + ".hdf5"
+    else:
+        ippai_output_path = path + "ippai_output.hdf5"
+
+    settings[Tags.IPPAI_OUTPUT_PATH] = ippai_output_path
 
     ippai_output[Tags.SETTINGS] = settings
     save_hdf5(ippai_output, ippai_output_path)

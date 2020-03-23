@@ -23,8 +23,8 @@ def upsample(settings, optical_path):
 
     optical_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], optical_path)
 
-    fluence = np.rot90(preprocess_images.preprocess_image(settings, np.rot90(optical_data["fluence"], 3)), 3)
-    initial_pressure = np.rot90(preprocess_images.preprocess_image(settings, np.rot90(optical_data["initial_pressure"], 3)))
+    fluence = np.rot90(preprocess_images.preprocess_image(settings, np.rot90(optical_data[Tags.OPTICAL_MODEL_FLUENCE], 3)), 3)
+    initial_pressure = np.rot90(preprocess_images.preprocess_image(settings, np.rot90(optical_data[Tags.OPTICAL_MODEL_INITIAL_PRESSURE], 3)))
 
     if Tags.UPSAMPLING_METHOD in settings:
         if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_DEEP_LEARNING:
@@ -47,8 +47,10 @@ def upsample(settings, optical_path):
         fluence = nn_upsample(settings, fluence)
         initial_pressure = nn_upsample(settings, initial_pressure)
 
-    upsampled_optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.format("upsampled", str(settings[Tags.WAVELENGTH]))
-    save_hdf5({"fluence": fluence, "initial_pressure": initial_pressure},
+    upsampled_optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.\
+        format(Tags.UPSAMPLED_DATA, str(settings[Tags.WAVELENGTH]))
+
+    save_hdf5({Tags.OPTICAL_MODEL_FLUENCE: fluence, Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure},
               settings[Tags.IPPAI_OUTPUT_PATH],
               upsampled_optical_output_path)
 

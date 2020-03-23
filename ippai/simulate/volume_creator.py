@@ -41,7 +41,7 @@ def create_simulation_volume(settings):
                 volumes[i] = np.flip(volumes[i], 1)
 
         volume_path = SaveFilePaths.SIMULATION_PROPERTIES\
-            .format("normal", str(settings[Tags.WAVELENGTH]))
+            .format(Tags.ORIGINAL_DATA, str(settings[Tags.WAVELENGTH]))
         save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path=volume_path)
 
     if Tags.PERFORM_UPSAMPLING in settings:
@@ -72,7 +72,7 @@ def create_simulation_volume(settings):
                     volumes[i] = np.squeeze(volumes[i])
                     volumes[i] = top_center_crop_power_two(volumes[i])
             upsampled_volume_path = SaveFilePaths.SIMULATION_PROPERTIES\
-                .format("upsampled", settings[Tags.WAVELENGTH])
+                .format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
             save_hdf5(volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path=upsampled_volume_path)
     settings[Tags.DIM_VOLUME_Y_MM] = tmp_y_dim
 

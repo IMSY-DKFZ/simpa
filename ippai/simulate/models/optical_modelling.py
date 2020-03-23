@@ -36,10 +36,13 @@ def run_optical_forward_model(settings, optical_properties_path):
         units = Tags.UNITS_ARBITRARY
         initial_pressure = absorption * fluence
 
-    path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/"
-    optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.format("normal", settings[Tags.WAVELENGTH])
-    save_hdf5({"fluence": fluence, "initial_pressure": initial_pressure, "units": units},
-              path + "ippai_output.hdf5",
+    optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.\
+        format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
+
+    save_hdf5({Tags.OPTICAL_MODEL_FLUENCE: fluence,
+               Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
+               Tags.OPTICAL_MODEL_UNITS: units},
+              settings[Tags.IPPAI_OUTPUT_PATH],
               optical_output_path)
 
     return optical_output_path

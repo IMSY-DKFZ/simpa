@@ -130,8 +130,8 @@ class McxAdapter(OpticalForwardAdapterBase):
 
         fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
 
-        # os.remove(tmp_input_path)
-        # os.remove(tmp_output_file+".mc2")
-        # os.remove(tmp_json_filename)
+        os.remove(tmp_input_path)
+        os.remove(tmp_output_file+".mc2")
+        os.remove(tmp_json_filename)
 
         return fluence

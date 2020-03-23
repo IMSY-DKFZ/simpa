@@ -23,12 +23,12 @@ def apply_noise_model_to_time_series_data(settings, acoustic_model_result_path):
 
     time_series_data_noise = noise_model.apply_noise_model(time_series_data, settings)
 
-    noise_output_path = SaveFilePaths.NOISE_ACOUSTIC_OUTPUT.format("normal", settings[Tags.WAVELENGTH])
+    noise_output_path = SaveFilePaths.NOISE_ACOUSTIC_OUTPUT.format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING]:
             noise_output_path = \
-                SaveFilePaths.NOISE_ACOUSTIC_OUTPUT.format("upsampled", settings[Tags.WAVELENGTH])
-    save_hdf5({"time_series_data_noise": time_series_data_noise}, settings[Tags.IPPAI_OUTPUT_PATH],
+                SaveFilePaths.NOISE_ACOUSTIC_OUTPUT.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+    save_hdf5({Tags.TIME_SERIES_DATA: time_series_data_noise}, settings[Tags.IPPAI_OUTPUT_PATH],
               noise_output_path)
 
     return noise_output_path
@@ -54,12 +54,12 @@ def apply_noise_model_to_reconstructed_data(settings, reconstructed_data_path):
 
     reconstructed_data_noise = noise_model.apply_noise_model(reconstructed_data, settings)
 
-    noise_output_path = SaveFilePaths.NOISE_RECONSTRCTION_OUTPUT.format("normal", settings[Tags.WAVELENGTH])
+    noise_output_path = SaveFilePaths.NOISE_RECONSTRCTION_OUTPUT.format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING]:
             noise_output_path = \
-                SaveFilePaths.NOISE_RECONSTRCTION_OUTPUT.format("upsampled", settings[Tags.WAVELENGTH])
-    save_hdf5({"reconstructed_data_noise": reconstructed_data_noise}, settings[Tags.IPPAI_OUTPUT_PATH],
+                SaveFilePaths.NOISE_RECONSTRCTION_OUTPUT.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+    save_hdf5({Tags.RECONSTRUCTED_DATA_NOISE: reconstructed_data_noise}, settings[Tags.IPPAI_OUTPUT_PATH],
               noise_output_path)
 
     return noise_output_path
