@@ -205,10 +205,16 @@ class Tags:
     CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = "structure_type"
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"
+    STRUCTURE_GEOMETRY_TYPE = "structure_geometry_type"
     STRUCTURE_TISSUE_PROPERTIES = "structure_tissue_properties"
+
 
     STRUCTURE_CENTER_DEPTH_MIN_MM = "structure_depth_min_mm"
     STRUCTURE_CENTER_DEPTH_MAX_MM = "structure_depth_max_mm"
+    STRUCTURE_CENTER_X_MIN_MM = "structure_start_x_min_mm"
+    STRUCTURE_CENTER_X_MAX_MM = "structure_start_x_max_mm"
+    STRUCTURE_CENTER_Y_MIN_MM = "structure_start_y_min_mm"
+    STRUCTURE_CENTER_Y_MAX_MM = "structure_start_y_max_mm"
 
     STRUCTURE_USE_DISTORTION = "structure_distortion_multiplicative"
     STRUCTURE_DISTORTED_PARAM_LIST = "structure_distorted_param_list"
@@ -222,10 +228,13 @@ class Tags:
     STRUCTURE_LAYER = "structure_layer"
     STRUCTURE_THICKNESS_MIN_MM = "structure_thickness_min_mm"
     STRUCTURE_THICKNESS_MAX_MM = "structure_thickness_max_mm"
+    STRUCTURE_THICKNESS_MM = "structure_thickness_mm"
+    STRUCTURE_CENTER_DEPTH_MM = "structure_center_depth_mm"
 
     STRUCTURE_TUBE = "structure_tube"
     STRUCTURE_RADIUS_MIN_MM = "structure_radius_min_mm"
     STRUCTURE_RADIUS_MAX_MM = "structure_radius_max_mm"
+    STRUCTURE_RADIUS_MM = "structure_radius_mm"
     STRUCTURE_FORCE_ORTHAGONAL_TO_PLANE = "structure_force_orthagonal_to_plane"
     STRUCTURE_TUBE_CENTER_X_MIN_MM = "structure_tube_start_x_min_mm"
     STRUCTURE_TUBE_CENTER_X_MAX_MM = "structure_tube_start_x_max_mm"
@@ -233,6 +242,42 @@ class Tags:
     STRUCTURE_ELLIPSE = "structure_ellipse"
     STRUCTURE_MIN_ECCENTRICITY = "structure_eccentricity_min"
     STRUCTURE_MAX_ECCENTRICITY = "structure_eccentricity_max"
+
+    STRUCTURE_SPHERE = "structure_sphere"
+    STRUCTURE_RADIUS_SPHERE_MIN_MM = "structure_radius_sphere_min_mm"
+    STRUCTURE_RADIUS_SPHERE_MAX_MM = "structure_radius_sphere_max_mm"
+    STRUCTURE_SPHERE_CENTER_X_MIN_MM = "structure_sphere_start_x_min_mm"
+    STRUCTURE_SPHERE_CENTER_X_MAX_MM = "structure_sphere_start_x_max_mm"
+    STRUCTURE_SPHERE_CENTER_Y_MIN_MM = "structure_sphere_start_y_min_mm"
+    STRUCTURE_SPHERE_CENTER_Y_MAX_MM = "structure_sphere_start_y_max_mm"
+
+    
+    STRUCTURE_CUBE = "structure_cube"
+    STRUCTURE_CUBE_CENTER_X_MIN_MM = "strucutre_cube_center_x_min_mm"
+    STRUCTURE_CUBE_CENTER_X_MAX_MM = "strucutre_cube_center_x_max_mm"
+    STRUCTURE_CUBE_CENTER_Y_MIN_MM = "strucutre_cube_center_y_min_mm"
+    STRUCTURE_CUBE_CENTER_Y_MAX_MM = "strucutre_cube_center_y_max_mm"
+    STRUCTURE_CUBE_EXTEND_X_MIN_MM = "strucutre_cube_extent_x_min_mm"
+    STRUCTURE_CUBE_EXTEND_X_MAX_MM = "strucutre_cube_extent_x_max_mm"
+    STRUCTURE_CUBE_EXTEND_Y_MIN_MM = "strucutre_cube_extent_y_min_mm"
+    STRUCTURE_CUBE_EXTEND_Y_MAX_MM = "strucutre_cube_extent_y_max_mm"
+    STRUCTURE_CUBE_EXTEND_Z_MIN_MM = "strucutre_cube_extent_z_min_mm"
+    STRUCTURE_CUBE_EXTEND_Z_MAX_MM = "strucutre_cube_extent_z_max_mm"
+
+    STRUCTURE_CUBICAL_TUBE = "structure_cubical_tube"
+    STRUCTURE_CUBICAL_TUBE_RADIUS_MIN_MM = "structure_cubical_tube_radius_min_mm"
+    STRUCTURE_CUBICAL_TUBE_RADIUS_MAX_MM = "structure_cubical_tube_radius_max_mm"
+    
+        
+    STRUCTURE_PYRAMID = "structure_pyramid"
+    STRUCTURE_PYRAMID_HEIGHT_MIN_MM = "strucutre_pyramid_height_min_mm"
+    STRUCTURE_PYRAMID_HEIGHT_MAX_MM = "strucutre_pyramid_height_max_mm"
+    STRUCTURE_PYRAMID_BASIS_EXTENT_MIN_MM = "strucutre_pyramid_basis_extent_min_mm"
+    STRUCTURE_PYRAMID_BASIC_EXTENT_MAX_MM = "strucutre_pyramid_basis_extent_max_mm"
+    STRUCTURE_PYRAMID_ORIENTATION_XY = "pyramid_angle_xy"
+    STRUCTURE_PYRAMID_ORIENTATION_XZ = "pyramid_angle_xz"
+    STRUCTURE_PYRAMID_ORIENTATION_YZ = "pyramid_angle_yz"
+    
 
     UNITS_ARBITRARY = "arbitrary_unity"
     UNITS_PRESSURE = "newton_per_meters_squared"
@@ -253,6 +298,21 @@ class SegmentationClasses:
     ULTRASOUND_GEL_PAD = 7
     WATER = 8
 
+
+class GeometryClasses:
+    """
+    The geometry classes define which "geometry types" are modelled in the simulation volumes.
+    """
+    GENERIC = -1
+    AIR = 0
+    BACKGROUND = 1
+    LAYER = 2
+    TUBE = 3
+    SPHERE = 4
+    CUBICAL_TUBE = 5
+    CUBE = 6
+    PYRAMID = 7
+  
 
 class StandardProperties:
     """
