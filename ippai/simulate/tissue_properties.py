@@ -49,7 +49,7 @@ class TissueProperties(object):
                 raise TypeError("The given anisotropy was not of type float!")
             self.anisotropy = anisotropy
 
-    def __init__(self, settings: dict, legacy_normalize_scattering: bool = False):
+    def __init__(self, settings: dict):
         """
         :param settings:
         :Param legacy_normalize_scattering:
@@ -59,7 +59,6 @@ class TissueProperties(object):
 
         self.chromophores = []
         self.constant_properties = None
-        self.legacy_normalize_scattering = legacy_normalize_scattering
 
         _keys = settings.keys()
 
@@ -134,8 +133,6 @@ class TissueProperties(object):
         # If _sum_of_fraction does not add up to one, pretend that it did
         # (we just want the weighted average for the anisotropy)
         _g = _g / _sum_of_fractions
-        if self.legacy_normalize_scattering:
-            _mus_per_centimeter = _mus_per_centimeter / _sum_of_fractions
 
         return [_mua_per_centimeter, _mus_per_centimeter, _g]
 
