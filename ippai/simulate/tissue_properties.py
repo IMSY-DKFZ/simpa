@@ -49,19 +49,73 @@ class TissueProperties(object):
                 raise TypeError("The given anisotropy was not of type float!")
             self.anisotropy = anisotropy
 
-    def __init__(self, settings):
+    def __init__(self, settings: dict, legacy_normalize_scattering: bool = False):
+        """
+        :param settings:
+        :Param legacy_normalize_scattering:
         """
 
-        """
+        self.ensure_valid_settings(settings)
 
         self.chromophores = []
+        self.constant_properties = None
+        self.legacy_normalize_scattering = legacy_normalize_scattering
 
-        for chromophore_name in settings.keys():
-            self.chromophores.append(settings[chromophore_name])
-            print(chromophore_name)
-            print(settings[chromophore_name].spectrum)
+        _keys = settings.keys()
+
+        if Tags.KEY_CONSTANT_PROPERTIES in _keys and settings[Tags.KEY_CONSTANT_PROPERTIES] == True:
+            self.constant_properties = dict()
+            self.constant_properties[Tags.KEY_MUA] = settings[Tags.KEY_MUA]
+            self.constant_properties[Tags.KEY_MUS] = settings[Tags.KEY_MUS]
+            self.constant_properties[Tags.KEY_G] = settings[Tags.KEY_G]
+        else:
+            for chromophore_name in _keys:
+                self.chromophores.append(settings[chromophore_name])
+                print(chromophore_name)
+                print(settings[chromophore_name].spectrum)
+
+    def ensure_valid_settings(self, settings: dict):
+        """
+        :param settings: a dictionary containing at least one key - value pair of a string and a
+                         corresponding TissueProperties.Chromophore instance.
+        """
+        if settings is None:
+            raise ValueError("The given settings sub-dictionary for the tissue properties must not be None.")
+
+        if not isinstance(settings, dict):
+            raise TypeError("The given settings sub-dictionary must be of type dict.")
+
+        keys = settings.keys()
+
+        if len(keys) < 1:
+            raise ValueError("The settings dictionary must at least contain one entry.")
+
+        if Tags.KEY_CONSTANT_PROPERTIES in keys and settings[Tags.KEY_CONSTANT_PROPERTIES] == True:
+            if Tags.KEY_MUA not in keys:
+                raise ValueError("Tags.KEY_MUA (" + Tags.KEY_MUA + ") was not set in the settings file.")
+            else:
+                if not isinstance(settings[Tags.KEY_MUA], float):
+                    raise TypeError("Absorption coefficient was not of type float!")
+            if Tags.KEY_MUS not in keys:
+                raise ValueError("Tags.KEY_MUS (" + Tags.KEY_MUS + ") was not set in the settings file.")
+            else:
+                if not isinstance(settings[Tags.KEY_MUS], float):
+                    raise TypeError("Scattering coefficient was not of type float!")
+            if Tags.KEY_G not in keys:
+                raise ValueError("Tags.KEY_G (" + Tags.KEY_G + ") was not set in the settings file.")
+            else:
+                if not isinstance(settings[Tags.KEY_G], float):
+                    raise TypeError("Anisotropy was not of type float!")
+        else:  # Normal case: there is a list of chromophores in the tissue.
+            for key in keys:
+                if not isinstance(settings[key], TissueProperties.Chromophore):
+                    raise TypeError("All value items in the dictionary must be of type TissueProperties.Chromophore.")
 
     def get(self, wavelength):
+
+        if self.constant_properties is not None:
+            return[self.constant_properties[Tags.KEY_MUA], self.constant_properties[Tags.KEY_MUS],
+                   self.constant_properties[Tags.KEY_G]]
 
         _mua_per_centimeter = 0
         _mus_per_centimeter = 0
@@ -70,7 +124,8 @@ class TissueProperties(object):
 
         for chromophore in self.chromophores:
             _sum_of_fractions += chromophore.volume_fraction
-            _mua_per_centimeter += chromophore.volume_fraction * chromophore.spectrum.get_absorption_for_wavelength(wavelength)
+            _mua_per_centimeter += chromophore.volume_fraction * \
+                                   chromophore.spectrum.get_absorption_for_wavelength(wavelength)
             _g += chromophore.volume_fraction * chromophore.anisotropy
             _mus_per_centimeter += (chromophore.musp500 * (chromophore.f_ray *
                                     (wavelength / 500) ** 1e-4 + (1 - chromophore.f_ray) *
@@ -79,6 +134,8 @@ class TissueProperties(object):
         # If _sum_of_fraction does not add up to one, pretend that it did
         # (we just want the weighted average for the anisotropy)
         _g = _g / _sum_of_fractions
+        if self.legacy_normalize_scattering:
+            _mus_per_centimeter = _mus_per_centimeter / _sum_of_fractions
 
         return [_mua_per_centimeter, _mus_per_centimeter, _g]
 
@@ -88,7 +145,8 @@ def get_muscle_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXYGEN
 
     :return: a settings dictionary containing all min and max parameters fitting for generic background tissue.
     """
-    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE, b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
+    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
+                        b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
                         w_min=0.64, w_max=0.72,
                         musp500=OpticalTissueProperties.MUSP500_BACKGROUND_TISSUE,
                         f_ray=OpticalTissueProperties.FRAY_BACKGROUND_TISSUE,
@@ -105,8 +163,10 @@ def get_epidermis_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXY
     return get_settings(b_min=1e-4, b_max=1e-4,
                         w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
                         w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
-                        m_max=OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN + OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
-                        m_min=OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN- OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
+                        m_max=OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN +
+                              OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
+                        m_min=OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN -
+                              OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
                         musp500=OpticalTissueProperties.MUSP500_EPIDERMIS,
                         f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
                         b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
@@ -189,8 +249,10 @@ def get_bone_settings():
 
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
-    return get_settings(b_min=1e-4, b_max=1e-4, w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_MEAN - OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_STD,
-                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_MEAN + OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_STD,
+    return get_settings(b_min=1e-4, b_max=1e-4, w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_MEAN -
+                                                      OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_STD,
+                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_MEAN +
+                              OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_STD,
                         oxy_min=0, oxy_max=1,
                         musp500=OpticalTissueProperties.MUSP500_BONE,
                         b_mie=OpticalTissueProperties.BMIE_BONE,

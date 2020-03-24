@@ -393,8 +393,8 @@ def add_structures(volumes, global_settings):
 
 
 def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=None):
-    structure_properties = TissueProperties(structure_settings, Tags.STRUCTURE_TISSUE_PROPERTIES,
-                                            np.shape(volumes[0]), global_settings[Tags.SPACING_MM])
+    # TODO check if this is actually how the call should be handeled
+    structure_properties = TissueProperties(structure_settings[Tags.STRUCTURE_TISSUE_PROPERTIES])
     [mua, mus, g, oxy] = structure_properties.get(global_settings[Tags.WAVELENGTH])
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_BACKGROUND:
