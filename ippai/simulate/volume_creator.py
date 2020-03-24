@@ -4,8 +4,8 @@ import copy
 from ippai.simulate.tissue_properties import TissueProperties
 from ippai.simulate import Tags, SegmentationClasses, StandardProperties
 from ippai.simulate.utils import randomize, gruneisen_parameter_from_temperature
-
 from ippai.process.preprocess_images import top_center_crop_power_two
+from utils import calculate_oxygenation
 
 
 def create_simulation_volume(settings):
@@ -395,10 +395,12 @@ def add_structures(volumes, global_settings):
 def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=None):
     # TODO check if this is actually how the call should be handeled
     structure_properties = TissueProperties(structure_settings[Tags.STRUCTURE_TISSUE_PROPERTIES])
-    [mua, mus, g, oxy] = structure_properties.get(global_settings[Tags.WAVELENGTH])
+    [mua, mus, g] = structure_properties.get(global_settings[Tags.WAVELENGTH])
+    oxy = calculate_oxygenation(structure_properties)
+    print(mua, mus, g, oxy)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_BACKGROUND:
-        volumes = add_background(volumes, structure_settings, mua, mus, g, oxy)
+        volumes = set_background(volumes, structure_settings, mua, mus, g, oxy)
         return volumes
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_LAYER:
@@ -420,12 +422,12 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
     return volumes
 
 
-def add_background(volumes, structure_settings, mua, mus, g, oxy):
-    volumes[0] += mua
-    volumes[1] += mus
-    volumes[2] += g
-    volumes[3] += oxy
-    volumes[4] += structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE]
+def set_background(volumes, structure_settings, mua, mus, g, oxy):
+    volumes[0][:] = mua
+    volumes[1][:] = mus
+    volumes[2][:] = g
+    volumes[3][:] = oxy
+    volumes[4][:] = structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE]
     return volumes
 
 
@@ -746,7 +748,7 @@ def set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg):
         volumes[2][x_idx, y_idx, z_idx] = g
 
     if not np.isscalar(oxy):
-        if len(oxy) > 1:
+        if oxy is not None and len(oxy) > 1:
             volumes[3][x_idx, y_idx, z_idx] = oxy[x_idx, y_idx, z_idx]
         else:
             volumes[3][x_idx, y_idx, z_idx] = oxy

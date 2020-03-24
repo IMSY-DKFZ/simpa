@@ -6,3 +6,5 @@ scikit-image
 torch
 xmltodict
 h5py
+pandas
+batchgenerators

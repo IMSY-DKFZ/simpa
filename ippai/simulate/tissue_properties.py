@@ -139,7 +139,6 @@ class TissueProperties(object):
 
         return [_mua_per_centimeter, _mus_per_centimeter, _g]
 
-
 def get_muscle_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
     """
 

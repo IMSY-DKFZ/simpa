@@ -24,6 +24,7 @@ import numpy as np
 from utils.spectral_library import SPECTRAL_LIBRARY
 from utils.spectral_library import view_absorption_spectra
 from utils.spectral_library import AbsorptionSpectrum
+from utils.calculate import calculate_oxygenation
 
 
 def randomize_uniform(min_value: float, max_value: float):
