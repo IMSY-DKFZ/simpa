@@ -753,6 +753,6 @@ def set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg):
     else:
         volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = oxy
 
-    volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = seg
+    volumes[Tags.PROPERTY_SEGMENTATION][x_idx, y_idx, z_idx] = seg
 
     return volumes
