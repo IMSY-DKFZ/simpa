@@ -57,6 +57,7 @@ def create_simulation_volume(settings):
                      alpha_coeff=volumes[10])
 
         else:
+            print("test")
             for i in range(len(volumes)):
                 volumes[i] = np.flip(volumes[i], 1)
 
@@ -410,6 +411,14 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_TUBE:
         volumes, extent_x_z_mm = add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
 
+    if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_CUBICAL_TUBE:
+        volumes, extent_x_z_mm = add_cubical_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
+        #return volumes
+    
+    if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_CUBE:
+        volumes, extent_x_z_mm = add_cube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
+        #return volumes
+
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_ELLIPSE:
         volumes, extent_x_z_mm = add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy,
                                              extent_x_z_mm)
@@ -490,26 +499,27 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
     radius_in_mm = structure_settings[Tags.STRUCTURE_RADIUS_MM]
     radius_in_voxels = radius_in_mm / global_settings[Tags.SPACING_MM]
 
-    start_x_min = structure_settings[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] + \
-                  (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_x_max = structure_settings[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] + \
-                  (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_z_min = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] + \
-                  (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
-    start_z_max = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] + \
-                  (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
+    # start_x_min = structure_settings[Tags.STRUCTURE_CENTER_X_MIN_MM] + \
+    #               (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
+    # start_x_max = structure_settings[Tags.STRUCTURE_CENTER_X_MAX_MM] + \
+    #               (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
+    # start_z_min = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] + \
+    #               (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
+    # start_z_max = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] + \
+    #               (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
 
-    if start_x_min is None:
-        start_x_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
-    if start_x_max is None:
-        start_x_max = (sizes[0] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
-    if start_z_min is None:
-        start_z_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
-    if start_z_max is None:
-        start_z_max = (sizes[2] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
+    # if start_x_min is None:
+    #     start_x_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
+    # if start_x_max is None:
+    #     start_x_max = (sizes[0] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
+    # if start_z_min is None:
+    #     start_z_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
+    # if start_z_max is None:
+    #     start_z_max = (sizes[2] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
 
-    start_in_mm = np.asarray([randomize(start_x_min, start_x_max), 0,
-                              randomize(start_z_min, start_z_max)])
+    # start_in_mm = np.asarray([randomize(start_x_min, start_x_max), 0,
+    #                           randomize(start_z_min, start_z_max)])
+    start_in_mm = np.asarray([structure_settings[Tags.STRUCTURE_CENTER_X_MM], 0, structure_settings[Tags.STRUCTURE_CENTER_Z_MM]])
 
     start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
 
@@ -539,7 +549,47 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
 
     extent_parent_x_z_mm = [start_in_mm[0] - radius_in_mm, start_in_mm[0] + radius_in_mm,
                             start_in_mm[2] - radius_in_mm, start_in_mm[2] + radius_in_mm]
+    #todo extent
+    return volumes, extent_parent_x_z_mm
 
+def add_cubical_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
+    if extent_parent_x_z_mm is None:
+        extent_parent_x_z_mm = [0, 0, 0, 0]
+
+    sizes = np.shape(volumes[0])
+
+    radius_in_mm = structure_settings[Tags.STRUCTURE_RADIUS_MM]
+    radius_in_voxels = radius_in_mm / global_settings[Tags.SPACING_MM]
+
+    start_in_mm = np.asarray([structure_settings[Tags.STRUCTURE_CENTER_X_MM], 0, structure_settings[Tags.STRUCTURE_CENTER_Z_MM]])
+    start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
+
+    end = np.copy(start_in_voxels)
+    start_in_voxels[1] = 0
+    end[1] = sizes[1]
+
+    idx_z_start = int(start_in_voxels[2] - radius_in_voxels - 1)
+    if idx_z_start < 0:
+        idx_z_start = 0
+    idx_z_end = int(start_in_voxels[2] + radius_in_voxels + 1)
+    if idx_z_end > sizes[2]:
+        idx_z_end = sizes[2]
+    idx_x_start = int(start_in_voxels[0] - radius_in_voxels - 1)
+    if idx_x_start < 0:
+        idx_x_start = 0
+    idx_x_end = int(start_in_voxels[0] + radius_in_voxels + 1)
+    if idx_x_end > sizes[0]:
+        idx_x_end = sizes[0]
+
+    for z_idx in range(idx_z_start, idx_z_end):
+        for y_idx in range(sizes[1]):
+            for x_idx in range(idx_x_start, idx_x_end):
+                    volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
+                                        structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
+
+    extent_parent_x_z_mm = [start_in_mm[0] - radius_in_mm, start_in_mm[0] + radius_in_mm,
+                            start_in_mm[2] - radius_in_mm, start_in_mm[2] + radius_in_mm]
+    #todo extent
     return volumes, extent_parent_x_z_mm
 
 
@@ -625,46 +675,99 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
     return volumes, extent_parent_x_z_mm
 
 
+def add_cube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
+    if extent_parent_x_z_mm is None:
+        extent_parent_x_z_mm = [0, 0, 0, 0]
+
+    sizes = np.shape(volumes[0])
+
+    length_x_in_mm = structure_settings[Tags.STRUCTURE_LENGTH_X_MM]
+    length_y_in_mm = structure_settings[Tags.STRUCTURE_LENGTH_Y_MM]
+    length_z_in_mm = structure_settings[Tags.STRUCTURE_LENGTH_Z_MM]
+    length_x_in_voxels = length_x_in_mm / global_settings[Tags.SPACING_MM]
+    length_y_in_voxels = length_y_in_mm / global_settings[Tags.SPACING_MM]
+    length_z_in_voxels = length_z_in_mm / global_settings[Tags.SPACING_MM]
+    print(length_x_in_voxels, length_y_in_voxels, length_z_in_voxels)
+
+
+    start_in_mm = np.asarray([structure_settings[Tags.STRUCTURE_CENTER_X_MM], structure_settings[Tags.STRUCTURE_CENTER_Y_MM],
+                              structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MM]])
+
+    start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
+    print(start_in_voxels)
+
+    idx_z_start = int(start_in_voxels[2] - length_z_in_voxels - 1)
+    if idx_z_start < 0:
+        idx_z_start = 0
+    idx_z_end = int(start_in_voxels[2] + length_z_in_voxels + 1)
+    if idx_z_end > sizes[2]:
+        idx_z_end = sizes[2]
+    idx_x_start = int(start_in_voxels[0] - length_x_in_voxels - 1)
+    if idx_x_start < 0:
+        idx_x_start = 0
+    idx_x_end = int(start_in_voxels[0] + length_x_in_voxels + 1)
+    if idx_x_end > sizes[0]:
+        idx_x_end = sizes[0]
+    idx_y_start= int(start_in_voxels[1] - length_y_in_voxels + 1)
+    if idx_y_start < 0:
+        idx_y_start = 0
+    idx_y_end = int(start_in_voxels[1] + length_y_in_voxels + 1)
+    if idx_y_end > sizes[1]:
+        idx_y_end = sizes[1]
+
+    for z_idx in range(idx_z_start, idx_z_end):
+        for y_idx in range(idx_y_start, idx_y_end):
+            for x_idx in range(idx_x_start, idx_x_end):
+                    volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
+
+    extent_parent_x_z_mm = [start_in_mm[0] - length_x_in_mm, start_in_mm[0] + length_x_in_mm, start_in_mm[2] - length_z_in_mm, start_in_mm[2] + length_y_in_mm]
+
+    return volumes, extent_parent_x_z_mm
+
+
+
+
 def add_sphere(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
     sizes = np.shape(volumes[0])
 
-    radius_min = structure_settings[Tags.STRUCTURE_RADIUS_SPHERE_MIN_MM]
-    radius_max = structure_settings[Tags.STRUCTURE_RADIUS_SPHERE_MAX_MM]
-    radius_in_mm = randomize(radius_min, radius_max)
+    # radius_min = structure_settings[Tags.STRUCTURE_RADIUS_MIN_MM]
+    # radius_max = structure_settings[Tags.STRUCTURE_RADIUS_MAX_MM]
+    radius_in_mm = structure_settings[Tags.STRUCTURE_RADIUS_MM]
+    #radius_in_mm = randomize(radius_min, radius_max)
     radius_in_voxels = radius_in_mm / global_settings[Tags.SPACING_MM]
     print(radius_in_voxels)
 
-    start_x_min = structure_settings[Tags.STRUCTURE_SPHERE_CENTER_X_MIN_MM] + \
-                  (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_x_max = structure_settings[Tags.STRUCTURE_SPHERE_CENTER_X_MAX_MM] + \
-                  (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_y_min = structure_settings[Tags.STRUCTURE_SPHERE_CENTER_Y_MIN_MM] + \
-                  (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_y_max = structure_settings[Tags.STRUCTURE_SPHERE_CENTER_Y_MAX_MM] + \
-                  (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
-    start_z_min = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] + \
-                  (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
-    start_z_max = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] + \
-                  (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
+    # start_x_min = structure_settings[Tags.STRUCTURE_CENTER_X_MIN_MM] + \
+    #               (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
+    # start_x_max = structure_settings[Tags.STRUCTURE_CENTER_X_MAX_MM] + \
+    #               (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
+    # start_y_min = structure_settings[Tags.STRUCTURE_CENTER_Y_MIN_MM] + \
+    #               (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
+    # start_y_max = structure_settings[Tags.STRUCTURE_CENTER_Y_MAX_MM] + \
+    #               (extent_parent_x_z_mm[0] + extent_parent_x_z_mm[1]) / 2
+    # start_z_min = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] + \
+    #               (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
+    # start_z_max = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] + \
+    #               (extent_parent_x_z_mm[2] + extent_parent_x_z_mm[3]) / 2
 
-    if start_x_min is None:
-        start_x_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
-    if start_x_max is None:
-        start_x_max = (sizes[0] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
-    if start_y_min is None:
-        start_y_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
-    if start_y_max is None:
-        start_y_max = (sizes[0] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
-    if start_z_min is None:
-        start_z_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
-    if start_z_max is None:
-        start_z_max = (sizes[2] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
+    # if start_x_min is None:
+    #     start_x_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
+    # if start_x_max is None:
+    #     start_x_max = (sizes[0] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
+    # if start_y_min is None:
+    #     start_y_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
+    # if start_y_max is None:
+    #     start_y_max = (sizes[0] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
+    # if start_z_min is None:
+    #     start_z_min = radius_in_voxels * global_settings[Tags.SPACING_MM]
+    # if start_z_max is None:
+    #     start_z_max = (sizes[2] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
 
-    start_in_mm = np.asarray([randomize(start_x_min, start_x_max), randomize(start_y_min, start_y_max),
-                              randomize(start_z_min, start_z_max)])
+    start_in_mm = np.asarray([structure_settings[Tags.STRUCTURE_CENTER_X_MM], structure_settings[Tags.STRUCTURE_CENTER_Y_MM],
+                              structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MM]])
 
     start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
     print(start_in_voxels)
