@@ -57,5 +57,4 @@ def gruneisen_parameter_from_temperature(temperature_in_celcius):
     :return: a floating point number, if temperature_in_celcius is a number or a
     float array, if temperature_in_celcius is an array
     """
-
     return 0.0043 + 0.0053 * temperature_in_celcius

@@ -21,8 +21,11 @@ def run_optical_forward_model(settings, optical_properties_path):
 
     if model == Tags.MODEL_MCXYZ:
         forward_model_implementation = McxyzAdapter()
-    if model == Tags.MODEL_MCX:
+    elif model == Tags.MODEL_MCX:
         forward_model_implementation = McxAdapter()
+    # elif model == Tags.MODEL_TEST_OPTICAL: TODO
+    #     forward_model_implementation =
+
 
     fluence = forward_model_implementation.simulate(optical_properties_path, settings)
 

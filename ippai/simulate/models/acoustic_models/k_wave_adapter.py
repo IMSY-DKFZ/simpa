@@ -1,6 +1,7 @@
 import numpy as np
 import subprocess
 from ippai.simulate import Tags
+from utils.serialization import IPPAISerializer
 import json
 import os
 import scipy.io as sio
@@ -47,7 +48,8 @@ def simulate(settings, optical_path):
 
     tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/test_settings.json"
     with open(tmp_json_filename, "w") as json_file:
-        json.dump(settings, json_file, indent="\t")
+        serializer = IPPAISerializer()
+        json.dump(settings, json_file, indent="\t", default=serializer.default)
 
     cmd = list()
     cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
@@ -62,7 +64,7 @@ def simulate(settings, optical_path):
 
     subprocess.run(cmd)
 
-    sensor_data = np.load(tmp_output_file)
+    raw_time_series_data = np.load(tmp_output_file)
     settings["dt_acoustic_sim"] = float(sio.loadmat(tmp_output_file + ".mat", variable_names="time_step")["time_step"])
 
     os.remove(optical_path)
@@ -70,6 +72,6 @@ def simulate(settings, optical_path):
     os.remove(tmp_output_file + ".mat")
     os.chdir(cur_dir)
 
-    return sensor_data
+    return raw_time_series_data
 
 
