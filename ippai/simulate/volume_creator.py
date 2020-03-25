@@ -696,7 +696,9 @@ def merge_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg, fraction):
     else:
         volumes[2][x_idx, y_idx, z_idx] = volumes[2][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
 
-    if not np.isscalar(oxy):
+    if oxy is None:
+        volumes[3][x_idx, y_idx, z_idx] = None
+    elif not np.isscalar(oxy):
         if len(oxy) > 1:
             volumes[3][x_idx, y_idx, z_idx] = volumes[3][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               oxy[x_idx, y_idx, z_idx] * fraction
