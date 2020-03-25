@@ -1,9 +1,9 @@
-import numpy as np
+import matplotlib.pyplot as plt
 import copy
 
 from ippai.simulate.tissue_properties import TissueProperties
 from ippai.simulate import Tags, SegmentationClasses, StandardProperties, SaveFilePaths
-from ippai.simulate.utils import randomize, gruneisen_parameter_from_temperature
+from ippai.simulate.utils import *
 
 from ippai.process.preprocess_images import top_center_crop_power_two
 
@@ -388,6 +388,7 @@ def create_empty_volume(global_settings):
 
 def add_structures(volumes, global_settings):
     for structure in global_settings[Tags.STRUCTURES]:
+        print(structure)
         volumes = add_structure(volumes, global_settings[Tags.STRUCTURES][structure], global_settings)
     return volumes
 
@@ -433,6 +434,9 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
+    plt.imshow(mua[:, 0, :])
+    plt.show()
+    plt.close()
     depth_min = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] + extent_parent_x_z_mm[3]
     depth_max = structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] + extent_parent_x_z_mm[3]
     thickness_min = structure_settings[Tags.STRUCTURE_THICKNESS_MIN_MM]
@@ -443,27 +447,56 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
 
     sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
-    it = -1
-    fraction = thickness_in_voxels
-    z_range = range(int(depth_in_voxels), int(depth_in_voxels + thickness_in_voxels))
-    for z_idx in z_range:
-        for y_idx in range(sizes[1]):
-            for x_idx in range(sizes[0]):
-                volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
-                                    structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
-        fraction -= 1
-        it += 1
+    if not global_settings["distortion"]:
 
-    if fraction > 1e-10:
-        for y_idx in range(sizes[1]):
-            for x_idx in range(sizes[0]):
-                merge_voxel(volumes, x_idx, y_idx, it + 1, mua, mus, g, oxy,
-                            structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE], fraction)
+        it = -1
+        fraction = thickness_in_voxels
+        z_range = range(int(depth_in_voxels), int(depth_in_voxels + thickness_in_voxels))
+        for z_idx in z_range:
+            for y_idx in range(sizes[1]):
+                for x_idx in range(sizes[0]):
+                    volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
+                                        structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
+            fraction -= 1
+            it += 1
 
-    extent_parent_x_z_mm = [0, sizes[0] * global_settings[Tags.SPACING_MM],
-                            depth_in_voxels * global_settings[Tags.SPACING_MM],
-                            (depth_in_voxels + thickness_in_voxels) * global_settings[Tags.SPACING_MM]]
+    else:
+        elevation = 4
+        elevation_voxel = elevation / global_settings[Tags.SPACING_MM]
+        spline = create_spline_for_range(0, sizes[0],
+                                         maximum_y_elevation_mm=elevation_voxel, spacing=1)
+        depth_in_voxels += elevation_voxel
 
+        it = -1
+        fraction = thickness_in_voxels +1 -1
+        z_range = range(int(depth_in_voxels - elevation_voxel), int(depth_in_voxels + thickness_in_voxels + elevation_voxel))
+        for z_idx in z_range:
+            for y_idx in range(sizes[1]):
+                for x_idx in range(sizes[0]):
+                    if spline_evaluator2D(x_idx, z_idx, spline, depth_in_voxels, thickness_in_voxels):
+                        volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
+                                            structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
+                        # volumes["mua"][x_idx, y_idx, z_idx] = 4
+            fraction -= 1
+            it += 1
+
+    # if fraction > 1e-10:
+    #     for y_idx in range(sizes[1]):
+    #         for x_idx in range(sizes[0]):
+    #             merge_voxel(volumes, x_idx, y_idx, it + 1, mua, mus, g, oxy,
+    #                         structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE], fraction)
+
+
+    # extent_parent_x_z_mm = [0, sizes[0] * global_settings[Tags.SPACING_MM],
+    #                         depth_in_voxels * global_settings[Tags.SPACING_MM],
+    #                         (depth_in_voxels + thickness_in_voxels) * global_settings[Tags.SPACING_MM]]
+
+    # plt.plot(range(sizes[0]), spline(range(sizes[0])))
+    # plt.show()
+    # plt.close()
+
+    plt.imshow(np.rot90(volumes["mua"][:, 0, :], -1))
+    plt.show()
     return volumes, extent_parent_x_z_mm
 
 
@@ -753,6 +786,6 @@ def set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg):
     else:
         volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = oxy
 
-    volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = seg
+    volumes[Tags.PROPERTY_SEGMENTATION][x_idx, y_idx, z_idx] = seg
 
     return volumes

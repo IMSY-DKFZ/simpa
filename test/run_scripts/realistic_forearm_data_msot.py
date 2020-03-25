@@ -41,6 +41,7 @@ while seed_index < 46527:
             Tags.DIM_VOLUME_Y_MM: 40,
 
             Tags.STRUCTURES: create_forearm_structures(relative_shift_mm=relative_shift, background_oxy=background_oxy),
+            "distortion": False,
 
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
 

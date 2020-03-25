@@ -67,8 +67,8 @@ def create_forearm_structures(relative_shift_mm=0, background_oxy=0.0, subcutane
 
     structures_dict = dict()
     structures_dict["muscle"] = create_muscle_background(background_oxy=background_oxy)
-    structures_dict["dermis"] = create_dermis_layer(background_oxy=background_oxy)
-    structures_dict["epidermis"] = create_epidermis_layer(background_oxy=background_oxy)
+    structures_dict["dermis"] = create_dermis_layer(background_oxy=background_oxy, distortion=True)
+    structures_dict["epidermis"] = create_epidermis_layer(background_oxy=background_oxy, distortion=True)
     structures_dict["radial_artery"] = create_radial_artery(relative_shift_mm)
     structures_dict["ulnar_artery"] = create_ulnar_artery(relative_shift_mm)
     structures_dict["interosseous_artery"] = create_interosseous_artery(relative_shift_mm)
@@ -120,7 +120,7 @@ def create_muscle_background(background_oxy=0.0):
     return muscle_dict
 
 
-def create_epidermis_layer(background_oxy=0.0):
+def create_epidermis_layer(background_oxy=0.0, distortion=False):
     epidermis_dict = dict()
     epidermis_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_LAYER
     epidermis_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = 0
@@ -128,14 +128,14 @@ def create_epidermis_layer(background_oxy=0.0):
     epidermis_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = MorphologicalTissueProperties.EPIDERMIS_THICKNESS_MEAN_MM - MorphologicalTissueProperties.EPIDERMIS_THICKNESS_STD_MM
     epidermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = MorphologicalTissueProperties.EPIDERMIS_THICKNESS_MEAN_MM + MorphologicalTissueProperties.EPIDERMIS_THICKNESS_STD_MM
     epidermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_epidermis_settings(background_oxy=background_oxy)
-    epidermis_dict[Tags.STRUCTURE_USE_DISTORTION] = False
+    epidermis_dict[Tags.STRUCTURE_USE_DISTORTION] = distortion
     epidermis_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_M, Tags.KEY_OXY, Tags.KEY_W]
     epidermis_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
     epidermis_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.EPIDERMIS
     return epidermis_dict
 
 
-def create_dermis_layer(background_oxy=0.0):
+def create_dermis_layer(background_oxy=0.0, distortion=False):
     dermis_dict = dict()
     dermis_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_LAYER
     dermis_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = 0
@@ -143,7 +143,7 @@ def create_dermis_layer(background_oxy=0.0):
     dermis_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = MorphologicalTissueProperties.DERMIS_THICKNESS_MEAN_MM - MorphologicalTissueProperties.DERMIS_THICKNESS_STD_MM
     dermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = MorphologicalTissueProperties.DERMIS_THICKNESS_MEAN_MM + MorphologicalTissueProperties.DERMIS_THICKNESS_STD_MM
     dermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_dermis_settings(background_oxy=background_oxy)
-    dermis_dict[Tags.STRUCTURE_USE_DISTORTION] = False
+    dermis_dict[Tags.STRUCTURE_USE_DISTORTION] = distortion
     dermis_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.DERMIS
     dermis_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_OXY, Tags.KEY_W]
     dermis_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = 2
