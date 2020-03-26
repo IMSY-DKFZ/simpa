@@ -10,8 +10,8 @@ import numpy as np
 spacings = [0.34]
 photons = [1e8]
 start = time.time()
-seed_index = 46526
-while seed_index < 46527:
+seed_index = 46890
+while seed_index < 46892:
     # 465 < 35
     random_seed = 1000 + seed_index
     seed_index += 1
@@ -41,7 +41,7 @@ while seed_index < 46527:
             Tags.DIM_VOLUME_Y_MM: 40,
 
             Tags.STRUCTURES: create_forearm_structures(relative_shift_mm=relative_shift, background_oxy=background_oxy),
-            "distortion": False,
+            "distorted_layers": True,
 
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
 

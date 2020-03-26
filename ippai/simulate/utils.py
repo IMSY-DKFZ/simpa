@@ -65,7 +65,7 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
     right_boundary = np.random.random() * maximum_y_elevation_voxels
 
     # Define the number of division knots
-    divisions = 5#np.random.randint(1, 5)
+    divisions = np.random.randint(1, 5)
     order = divisions
     if order > 3:
         order = 3
@@ -76,24 +76,30 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
 
     # Add random permutations to the y-axis of the division knots
     for i in range(0, divisions + 1):
-        scaling_value = -np.sqrt(2 - ((i - (divisions / 2)) / (divisions / 2)) ** 2)
+        scaling_value = np.sqrt(2 - ((i - (divisions / 2)) / (divisions / 2)) ** 2)
 
-        constraints[i] = -np.random.normal(scaling_value, 0.2) * constraints[i]
+        constraints[i] = np.random.normal(scaling_value, 0.2) * constraints[i]
         if constraints[i] < maximum_y_elevation_voxels:
             constraints[i] = maximum_y_elevation_voxels
         if constraints[i] > 0:
             constraints[i] = 0
 
-    constraints = constraints - np.min(constraints)
-    print(constraints)
-
-    return interp1d(locations, constraints, order)
+    constraints = constraints - np.max(constraints)
 
 
-def spline_evaluator2D(x, y, spline, offset, thickness):
-    y_value = spline(x) + offset - y
+    spline = interp1d(locations, constraints, order)
+
+    max_el = np.min(spline(np.arange(0, int(round(xmax_voxels)), 1)))
+
+    return spline, max_el
+
+
+def spline_evaluator2D(x, y, spline, offset, thickness, spacing):
+    elevation = spline(x)
+    y_value = np.around(elevation + offset)
+    # print(x, y, "\televation: ", elevation, "\toffset: ", offset, "\ty_value: ", y_value)
     # print(thickness, y_value)
-    if 0 <= y_value < thickness:
+    if y_value <= y < thickness + y_value:
         return True
     else:
         return False
