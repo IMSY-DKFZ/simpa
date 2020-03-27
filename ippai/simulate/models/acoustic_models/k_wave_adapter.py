@@ -57,7 +57,7 @@ def simulate(settings, optical_path):
 
     subprocess.run(cmd)
 
-    sensor_data = sio.loadmat(optical_path + ".mat")["sensor_data_2D"]
+    raw_time_series_data = sio.loadmat(optical_path + ".mat")["sensor_data_2D"]
     settings["dt_acoustic_sim"] = float(sio.loadmat(optical_path + "dt.mat", variable_names="time_step")["time_step"])
 
     os.remove(optical_path)
