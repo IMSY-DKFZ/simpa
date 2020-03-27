@@ -697,7 +697,7 @@ def merge_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg, fraction):
         volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
 
     if oxy is None:
-        volumes[3][x_idx, y_idx, z_idx] = None
+        volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = None
     elif not np.isscalar(oxy):
         if len(oxy) > 1:
             volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] * (1 - fraction) + \
