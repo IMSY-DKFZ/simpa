@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class Tags:
 
     """
@@ -217,10 +216,6 @@ class Tags:
     STRUCTURE_CENTER_DEPTH_MIN_MM = "structure_depth_min_mm"
     STRUCTURE_CENTER_DEPTH_MAX_MM = "structure_depth_max_mm"
 
-    STRUCTURE_USE_DISTORTION = "structure_distortion_multiplicative"
-    STRUCTURE_DISTORTED_PARAM_LIST = "structure_distorted_param_list"
-    STRUCTURE_DISTORTION_FREQUENCY_PER_MM = "structure_distortion_wavelength_mm"
-
     STRUCTURE_BACKGROUND = "structure_background"
 
     STRUCTURE_LAYER = "structure_layer"
@@ -292,10 +287,10 @@ class StandardProperties:
     """
     AIR_MUA = 1e-10
     AIR_MUS = 1e-10
-    AIR_G = 1
+    AIR_G = 1.0
     GELPAD_MUA = 1e-10
     GELPAD_MUS = 1e-10
-    GELPAD_G = 1
+    GELPAD_G = 1.0
 
     # @book{marx2013rosen,
     #   title={Rosen's Emergency Medicine-Concepts and Clinical Practice E-Book},
@@ -324,14 +319,14 @@ class StandardProperties:
     DENSITY_GEL_PAD = 0.890
     DENSITY_WATER = 1.000
 
-    SPEED_OF_SOUND_GENERIC = 1540   # m/s
-    SPEED_OF_SOUND_AIR = 343
+    SPEED_OF_SOUND_GENERIC = 1540.0   # m/s
+    SPEED_OF_SOUND_AIR = 343.0
     SPEED_OF_SOUND_MUSCLE = 1588.4
-    SPEED_OF_SOUND_BONE = 3500      # Cortical bone
+    SPEED_OF_SOUND_BONE = 3500.0      # Cortical bone
     SPEED_OF_SOUND_BLOOD = 1578.2
     SPEED_OF_SOUND_SKIN = 1624.0
     SPEED_OF_SOUND_FAT = 1440.2
-    SPEED_OF_SOUND_GEL_PAD = 1583
+    SPEED_OF_SOUND_GEL_PAD = 1583.0
     SPEED_OF_SOUND_WATER = 1482.3
 
     ALPHA_COEFF_GENERIC = 0.02   # dB/m/MHz
@@ -409,9 +404,9 @@ class OpticalTissueProperties:
     MUSP500_FAT = 19.3  # Table 2 average fatty tissue
     FRAY_FAT = 0.174  # Table 2 average fatty tissue
     BMIE_FAT = 0.447  # Table 2 average fatty tissue
-    MUSP500_BLOOD = 22  # Table 1 Alexandrakis et al 2005
+    MUSP500_BLOOD = 22.0  # Table 1 Alexandrakis et al 2005
     FRAY_BLOOD = 0.66  # Table 1 Alexandrakis et al 2005
-    BMIE_BLOOD = 0  # Table 1 Alexandrakis et al 2005
+    BMIE_BLOOD = 0.0  # Table 1 Alexandrakis et al 2005
     MUSP500_BONE = 15.3  # Table 2 Mean for bone
     FRAY_BONE = 0.022  # Table 2 Mean for bone
     BMIE_BONE = 0.326  # Table 2 Mean for bone
@@ -502,7 +497,7 @@ class MorphologicalTissueProperties:
     # Kris approximation
     RADIAL_ARTERY_DIAMETER_MEAN_MM = 2.7
     RADIAL_ARTERY_DIAMETER_STD_MM = 0.4
-    ULNAR_ARTERY_DIAMETER_MEAN_MM = 3
+    ULNAR_ARTERY_DIAMETER_MEAN_MM = 3.0
     ULNAR_ARTERY_DIAMETER_STD_MM = 0.4
 
     # Accompanying veins diameter reference. They specifically only mention the ulnar accompanying vein properties.
@@ -515,9 +510,9 @@ class MorphologicalTissueProperties:
     #   doi = {10.1016/B978-0-323-40191-3.00081-0},
     #   pages = {732--737},
     # }
-    RADIAL_VEIN_DIAMETER_MEAN_MM = 1
+    RADIAL_VEIN_DIAMETER_MEAN_MM = 1.0
     RADIAL_VEIN_DIAMETER_STD_MM = 0.2
-    ULNAR_VEIN_DIAMETER_MEAN_MM = 1
+    ULNAR_VEIN_DIAMETER_MEAN_MM = 1.0
     ULNAR_VEIN_DIAMETER_STD_MM = 0.2
 
     # Median artery diameter reference (at the P2 point):
@@ -570,8 +565,8 @@ class MorphologicalTissueProperties:
     #   year={1968},
     #   publisher={Wiley Online Library}
     # }
-    RADIUS_ULNA_BONE_SEPARATION_MEAN_MM = 32
-    RADIUS_ULNA_BONE_POSITION_STD_MM = 2
+    RADIUS_ULNA_BONE_SEPARATION_MEAN_MM = 32.0
+    RADIUS_ULNA_BONE_POSITION_STD_MM = 2.0
 
     # Subcutaneous veins depth measurements are extrapolated from graphs in table 3.
     # The diameter measurement are supposed to resemble the approximate range from figure 15.
@@ -597,31 +592,31 @@ class MorphologicalTissueProperties:
     # ULNAR_ARTERY_DEPTH_MEAN_MM = 8
     # ULNAR_ARTERY_DEPTH_STD_MM = 1
     # Kris approximation for realistic forearm images:
-    RADIAL_ARTERY_DEPTH_MEAN_MM = 6
+    RADIAL_ARTERY_DEPTH_MEAN_MM = 6.0
     RADIAL_ARTERY_DEPTH_STD_MM = 0.5
-    ULNAR_ARTERY_DEPTH_MEAN_MM = 6
+    ULNAR_ARTERY_DEPTH_MEAN_MM = 6.0
     ULNAR_ARTERY_DEPTH_STD_MM = 0.5
 
     # DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 30
     # DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM = 5
     # Kris approx
-    DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 15
-    DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM = 5
-    RADIUS_BONE_DIAMETER_MEAN_MM = 20
-    RADIUS_BONE_DIAMETER_STD_MM = 2
-    ULNA_BONE_DIAMETER_MEAN_MM = 15
-    ULNA_BONE_DIAMETER_STD_MM = 2
-    MEDIAN_ARTERY_DEPTH_MEAN_MM = 19
-    MEDIAN_ARTERY_DEPTH_STD_MM = 1
-    ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM = 1
+    DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 15.0
+    DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM = 5.0
+    RADIUS_BONE_DIAMETER_MEAN_MM = 20.0
+    RADIUS_BONE_DIAMETER_STD_MM = 2.0
+    ULNA_BONE_DIAMETER_MEAN_MM = 15.0
+    ULNA_BONE_DIAMETER_STD_MM = 2.0
+    MEDIAN_ARTERY_DEPTH_MEAN_MM = 19.0
+    MEDIAN_ARTERY_DEPTH_STD_MM = 1.0
+    ACCOMPANYING_VEIN_MEDIAN_DISTANCE_MEAN_MM = 1.0
     ACCOMPANYING_VEIN_MEDIAN_DISTANCE_STD_MM = 0.2
     ACCOMPANYING_VEIN_DISTANCE_MEAN_MM = 2.5
     ACCOMPANYING_VEIN_DISTANCE_STD_MM = 0.4
     ACCOMPANYING_VEIN_DEPTH_STD_MM = 1.5
-    RADIUS_BONE_DEPTH_MEAN_MM = 22
-    RADIUS_BONE_DEPTH_STD_MM = 2
-    ULNA_BONE_DEPTH_MEAN_MM = 22
-    ULNA_BONE_DEPTH_STD_MM = 2
+    RADIUS_BONE_DEPTH_MEAN_MM = 22.0
+    RADIUS_BONE_DEPTH_STD_MM = 2.0
+    ULNA_BONE_DEPTH_MEAN_MM = 22.0
+    ULNA_BONE_DEPTH_STD_MM = 2.0
 
     # Arbitrary position constants based on the respective coordinate systems
     RADIAL_ARTERY_X_POSITION_MEAN_MM = 7.5

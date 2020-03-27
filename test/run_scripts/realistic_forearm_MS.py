@@ -32,7 +32,6 @@ while seed_index < 46527:
             Tags.RANDOM_SEED: random_seed,
             Tags.VOLUME_NAME: "forearm_"+str(random_seed).zfill(6) + "/spacing_{}".format(spacing),
             Tags.SIMULATION_PATH: "/workplace/data/test_for_Janek",
-            Tags.SETTINGS_JSON: True,
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: num_photons,
             Tags.OPTICAL_MODEL_BINARY_PATH: "/workplace/ippai/ippai/simulate/models/optical_models/mcx",
@@ -59,13 +58,13 @@ while seed_index < 46527:
             Tags.CROP_POWER_OF_TWO: True,
             Tags.UPSAMPLING_METHOD: Tags.UPSAMPLING_METHOD_NEAREST_NEIGHBOUR,
             Tags.UPSCALE_FACTOR: 2,
-            Tags.UPSAMPLING_SCRIPT_LOCATION: "/workplace/ippai/ippai/simulate/models/acoustic_models",
+            Tags.UPSAMPLING_SCRIPT_LOCATION: "/workplace/ippai/ippai/process",
             Tags.UPSAMPLING_SCRIPT: "upsampling",
 
             # Acoustic forward path settings
 
-            Tags.ACOUSTIC_MODEL_BINARY_PATH: "matlab",
-            Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "/workplae/ippai/ippai/simulate/models/acoustic_models",
+            Tags.ACOUSTIC_MODEL_BINARY_PATH: "/usr/local/MATLAB/R2019b/bin/matlab",
+            Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "/workplace/ippai/ippai/simulate/models/acoustic_models/",
             Tags.ACOUSTIC_MODEL_SCRIPT: "simulate",
             Tags.GPU: True,
 
@@ -106,7 +105,7 @@ while seed_index < 46527:
             Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
             Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_DAS,
             Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
-            Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/workplae/mitk/mitk-superbuild/MITK-build/"
+            Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/workplace/mitk/mitk-superbuild/MITK-build/"
                                                   "sDMAS-2018.07-2596-g31d1c60d71-linux-x86_64/"
                                                   "MITK-experiments/sDMAS-2018.07-2596-g31d1c60d71-linux-x86_64/"
                                                   "MitkPABeamformingTool.sh",

@@ -4,8 +4,8 @@ import copy
 from ippai.simulate.tissue_properties import TissueProperties
 from ippai.simulate import Tags, SegmentationClasses, StandardProperties, SaveFilePaths
 from ippai.simulate.utils import randomize, gruneisen_parameter_from_temperature
-
 from ippai.process.preprocess_images import top_center_crop_power_two
+from utils import calculate_oxygenation
 
 from ippai.io_handling.io_hdf5 import save_hdf5
 
@@ -393,12 +393,14 @@ def add_structures(volumes, global_settings):
 
 
 def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=None):
-    structure_properties = TissueProperties(structure_settings, Tags.STRUCTURE_TISSUE_PROPERTIES,
-                                            np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM]), global_settings[Tags.SPACING_MM])
-    [mua, mus, g, oxy] = structure_properties.get(global_settings[Tags.WAVELENGTH])
+    # TODO check if this is actually how the call should be handeled
+    structure_properties = TissueProperties(structure_settings[Tags.STRUCTURE_TISSUE_PROPERTIES])
+    [mua, mus, g] = structure_properties.get(global_settings[Tags.WAVELENGTH])
+    oxy = calculate_oxygenation(structure_properties)
+    print(mua, mus, g, oxy)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_BACKGROUND:
-        volumes = add_background(volumes, structure_settings, mua, mus, g, oxy)
+        volumes = set_background(volumes, structure_settings, mua, mus, g, oxy)
         return volumes
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_LAYER:
@@ -420,12 +422,12 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
     return volumes
 
 
-def add_background(volumes, structure_settings, mua, mus, g, oxy):
-    volumes[Tags.PROPERTY_ABSORPTION_PER_CM] += mua
-    volumes[Tags.PROPERTY_SCATTERING_PER_CM] += mus
-    volumes[Tags.PROPERTY_ANISOTROPY] += g
-    volumes[Tags.PROPERTY_OXYGENATION] += oxy
-    volumes[Tags.PROPERTY_SEGMENTATION] += structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE]
+def set_background(volumes, structure_settings, mua, mus, g, oxy):
+    volumes[Tags.PROPERTY_ABSORPTION_PER_CM][:] = mua
+    volumes[Tags.PROPERTY_SCATTERING_PER_CM][:] = mus
+    volumes[Tags.PROPERTY_ANISOTROPY][:] = g
+    volumes[Tags.PROPERTY_OXYGENATION][:] = oxy
+    volumes[Tags.PROPERTY_SEGMENTATION][:] = structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE]
     return volumes
 
 
@@ -694,7 +696,9 @@ def merge_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg, fraction):
     else:
         volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] * (1 - fraction) + g * fraction
 
-    if not np.isscalar(oxy):
+    if oxy is None:
+        volumes[3][x_idx, y_idx, z_idx] = None
+    elif not np.isscalar(oxy):
         if len(oxy) > 1:
             volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] * (1 - fraction) + \
                                               oxy[x_idx, y_idx, z_idx] * fraction
@@ -746,7 +750,7 @@ def set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy, seg):
         volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = g
 
     if not np.isscalar(oxy):
-        if len(oxy) > 1:
+        if oxy is not None and len(oxy) > 1:
             volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = oxy[x_idx, y_idx, z_idx]
         else:
             volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = oxy

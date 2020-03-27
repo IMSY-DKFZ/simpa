@@ -1,10 +1,10 @@
-nibabel
 matplotlib
 numpy
 scipy
 pynrrd
 scikit-image
 torch
-batchgenerators
 xmltodict
 h5py
+pandas
+batchgenerators
