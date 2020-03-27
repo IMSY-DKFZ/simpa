@@ -495,12 +495,12 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     #                         depth_in_voxels * global_settings[Tags.SPACING_MM],
     #                         (depth_in_voxels + thickness_in_voxels) * global_settings[Tags.SPACING_MM]]
 
-    plt.plot(np.arange(sizes[0] * global_settings[Tags.SPACING_MM]), spline(np.arange(sizes[0] * global_settings[Tags.SPACING_MM])))
-    plt.show()
-    plt.close()
-    #
-    plt.imshow(np.rot90(volumes["mua"][:, 0, :], -1))
-    plt.show()
+    # plt.plot(np.arange(sizes[0] * global_settings[Tags.SPACING_MM]), spline(np.arange(sizes[0] * global_settings[Tags.SPACING_MM])))
+    # plt.show()
+    # plt.close()
+    # #
+    # plt.imshow(np.rot90(volumes["mua"][:, 0, :], -1))
+    # plt.show()
     return volumes, extent_parent_x_z_mm
 
 
