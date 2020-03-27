@@ -31,10 +31,13 @@ def save_hdf5(dictionary, filepath, file_dictionary_path="/"):
                 else:
                     try:
                         h5file[path + key] = item
-                    except RuntimeError as e:
-                        print("item", item, "of type", type(item), "was not serializable!")
+                    except RuntimeError:
                         del h5file[path + key]
-                        raise e
+                        try:
+                            h5file[path + key] = item
+                        except RuntimeError as e:
+                            print("item", item, "of type", type(item), "was not serializable! Full exception:", e)
+                            raise e
             elif item is None:
                 h5file[path + key] = "None"
             elif isinstance(item, list):
