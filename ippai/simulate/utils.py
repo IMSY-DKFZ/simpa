@@ -59,10 +59,11 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
     xmin_voxels = xmin_mm / spacing
     xmax_voxels = xmax_mm / spacing
     maximum_y_elevation_voxels = - maximum_y_elevation_mm / spacing
+    maximum_y_elevation_mm = -maximum_y_elevation_mm
 
     # Create initial guesses left and right position
-    left_boundary = np.random.random() * maximum_y_elevation_voxels
-    right_boundary = np.random.random() * maximum_y_elevation_voxels
+    left_boundary = np.random.random() * maximum_y_elevation_mm
+    right_boundary = np.random.random() * maximum_y_elevation_mm
 
     # Define the number of division knots
     divisions = np.random.randint(1, 5)
@@ -71,7 +72,7 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
         order = 3
 
     # Create x and y value pairs that should be fit by the spline (needs to be division knots + 2)
-    locations = np.linspace(xmin_voxels, xmax_voxels, divisions + 1)
+    locations = np.linspace(xmin_mm, xmax_mm, divisions + 1)
     constraints = np.linspace(left_boundary, right_boundary, divisions + 1)
 
     # Add random permutations to the y-axis of the division knots
@@ -79,8 +80,8 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
         scaling_value = np.sqrt(2 - ((i - (divisions / 2)) / (divisions / 2)) ** 2)
 
         constraints[i] = np.random.normal(scaling_value, 0.2) * constraints[i]
-        if constraints[i] < maximum_y_elevation_voxels:
-            constraints[i] = maximum_y_elevation_voxels
+        if constraints[i] < maximum_y_elevation_mm:
+            constraints[i] = maximum_y_elevation_mm
         if constraints[i] > 0:
             constraints[i] = 0
 
@@ -89,12 +90,16 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
 
     spline = interp1d(locations, constraints, order)
 
-    max_el = np.min(spline(np.arange(0, int(round(xmax_voxels)), 1)))
+    max_el = np.min(spline(np.arange(0, int(round(xmax_voxels)), 1) * spacing))
 
     return spline, max_el
 
 
-def spline_evaluator2D(x, y, spline, offset, thickness, spacing):
+def spline_evaluator2D(x, y, spline, offset_voxel, thickness_voxel, spacing):
+    x *= spacing
+    y *= spacing
+    offset = offset_voxel * spacing
+    thickness = thickness_voxel * spacing
     elevation = spline(x)
     y_value = np.around(elevation + offset)
     # print(x, y, "\televation: ", elevation, "\toffset: ", offset, "\ty_value: ", y_value)

@@ -22,7 +22,13 @@ def create_simulation_volume(settings):
     settings[Tags.DIM_VOLUME_Y_MM] = settings[Tags.SPACING_MM]
 
     volumes = create_empty_volume(settings)
-    volumes = add_structures(volumes, settings)
+    if settings["distorted_layers"]:
+        distortion = create_spline_for_range(0, np.shape(volumes["mua"])[0] * settings[Tags.SPACING_MM],
+                                                 maximum_y_elevation_mm=10,
+                                                 spacing=settings[Tags.SPACING_MM])
+    else:
+        distortion = None
+    volumes = add_structures(volumes, settings, distortion=distortion)
     volumes = append_gel_pad(volumes, settings)
     volumes = append_air_layer(volumes, settings)
     if Tags.ILLUMINATION_TYPE in settings:
@@ -52,7 +58,7 @@ def create_simulation_volume(settings):
             upsampled_settings[Tags.DIM_VOLUME_Y_MM] = upsampled_settings[Tags.SPACING_MM]
 
             volumes = create_empty_volume(upsampled_settings)
-            volumes = add_structures(volumes, upsampled_settings)
+            volumes = add_structures(volumes, upsampled_settings, distortion)
             volumes = append_gel_pad(volumes, upsampled_settings)
             volumes = append_air_layer(volumes, upsampled_settings)
             if Tags.ILLUMINATION_TYPE in upsampled_settings:
@@ -386,12 +392,12 @@ def create_empty_volume(global_settings):
             Tags.PROPERTY_SEGMENTATION: segmentation_volume}
 
 
-def add_structures(volumes, global_settings):
-    # if global_settings["distorted_layers"]:
-    #     spline = create_spline_for_range(0, volumes["mua"],
+def add_structures(volumes, global_settings, distortion):
+
     for structure in global_settings[Tags.STRUCTURES]:
-        print(structure)
-        volumes = add_structure(volumes, global_settings[Tags.STRUCTURES][structure], global_settings)
+        # print(structure)
+        volumes = add_structure(volumes, global_settings[Tags.STRUCTURES][structure], global_settings,
+                                distortion=distortion)
     return volumes
 
 
@@ -406,7 +412,7 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_LAYER:
         volumes, extent_x_z_mm = add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy,
-                                           extent_x_z_mm)
+                                           extent_x_z_mm, distortion=distortion)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_TUBE:
         volumes, extent_x_z_mm = add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
@@ -432,7 +438,7 @@ def add_background(volumes, structure_settings, mua, mus, g, oxy):
     return volumes
 
 
-def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
+def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm, distortion=None):
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
@@ -460,20 +466,15 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
             it += 1
 
     else:
-        elevation = 10
-        elevation_voxel = elevation / global_settings[Tags.SPACING_MM]
-        spline, max_el = create_spline_for_range(0, sizes[0] * global_settings[Tags.SPACING_MM],
-                                         maximum_y_elevation_mm=elevation, spacing=global_settings[Tags.SPACING_MM])
-        depth_in_voxels -= max_el #/ global_settings[Tags.SPACING_MM]
+        spline = distortion[0]
+        max_el = distortion[1] / global_settings[Tags.SPACING_MM]
+        depth_in_voxels -= max_el
         elevation_voxel = -copy.deepcopy(max_el)
-        print(elevation_voxel)
-        print(depth_in_voxels)
-        print(thickness_in_voxels)
 
         it = -1
         fraction = copy.deepcopy(thickness_in_voxels)
         z_range = range(int(depth_in_voxels - elevation_voxel), int(np.around(depth_in_voxels + thickness_in_voxels)))
-        print(z_range)
+        # print(z_range)
         for z_idx in z_range:
             for y_idx in range(sizes[1]):
                 for x_idx in range(sizes[0]):
@@ -494,10 +495,10 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     #                         depth_in_voxels * global_settings[Tags.SPACING_MM],
     #                         (depth_in_voxels + thickness_in_voxels) * global_settings[Tags.SPACING_MM]]
 
-    # plt.plot(range(sizes[0]), spline(range(sizes[0])))
-    # plt.show()
-    # plt.close()
-
+    plt.plot(np.arange(sizes[0] * global_settings[Tags.SPACING_MM]), spline(np.arange(sizes[0] * global_settings[Tags.SPACING_MM])))
+    plt.show()
+    plt.close()
+    #
     plt.imshow(np.rot90(volumes["mua"][:, 0, :], -1))
     plt.show()
     return volumes, extent_parent_x_z_mm

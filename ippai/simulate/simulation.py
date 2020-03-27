@@ -44,6 +44,7 @@ def simulate(settings):
 
     ippai_output[Tags.SETTINGS] = settings
     save_hdf5(ippai_output, settings[Tags.IPPAI_OUTPUT_PATH])
+    print(ippai_output_path)
 
     for wavelength in wavelengths:
 

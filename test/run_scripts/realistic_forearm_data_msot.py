@@ -11,7 +11,7 @@ spacings = [0.34]
 photons = [1e8]
 start = time.time()
 seed_index = 46890
-while seed_index < 46892:
+while seed_index < 46891:
     # 465 < 35
     random_seed = 1000 + seed_index
     seed_index += 1

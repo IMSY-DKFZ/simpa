@@ -80,3 +80,25 @@ def load_hdf5(filepath, file_dictionary_path="/"):
 
     with h5py.File(filepath, "r") as h5file:
         return data_grabber(h5file, file_dictionary_path)
+
+# import matplotlib.pyplot as plt
+# from ippai.simulate import SaveFilePaths, Tags
+# from scipy.ndimage import zoom
+# from numpy.testing import assert_array_equal
+#
+# props_orig = load_hdf5("/media/kris/Extreme SSD/tmp/forearm_047890/spacing_0.34/ippai_output.hdf5", SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, 800))
+# props_ups = load_hdf5("/media/kris/Extreme SSD/tmp/forearm_047890/spacing_0.17/ippai_output.hdf5", SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, 800))
+#
+#
+# assert props_orig.keys() == props_ups.keys()
+# print(props_orig.keys())
+# key = "sensor_mask"
+# assert_array_equal(props_orig[key], zoom(props_ups[key], 0.5, order=0))
+# plt.subplot(2, 1, 1)
+# plt.imshow(props_orig["seg"])
+# plt.subplot(2, 1, 2)
+# plt.imshow(zoom(props_ups["seg"], 0.5, order=0))
+# plt.show()
+
+
+
