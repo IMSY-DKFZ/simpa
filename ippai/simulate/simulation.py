@@ -6,6 +6,7 @@ from ippai.simulate.models.noise_modelling import apply_noise_model_to_reconstru
 from ippai.simulate.models.reconstruction import perform_reconstruction
 from ippai.process.sampling import upsample
 from ippai.io_handling.io_hdf5 import save_hdf5, load_hdf5
+from utils.serialization import IPPAIJSONSerializer
 import numpy as np
 import os
 import json
@@ -34,10 +35,12 @@ def simulate(settings):
     else:
         ippai_output_path = path + "ippai_output"
 
+    serializer = IPPAIJSONSerializer()
+
     if Tags.SETTINGS_JSON in settings:
         if settings[Tags.SETTINGS_JSON]:
             with open(ippai_output_path + ".json", "w") as json_file:
-                json.dump(settings, json_file, indent="\t")
+                json.dump(settings, json_file, indent="\t", default=serializer.default)
             settings[Tags.SETTINGS_JSON_PATH] = ippai_output_path + ".json"
 
     settings[Tags.IPPAI_OUTPUT_PATH] = ippai_output_path + ".hdf5"
