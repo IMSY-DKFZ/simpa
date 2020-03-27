@@ -1,5 +1,8 @@
 import h5py
-
+from utils.serialization import IPPAISerializer
+from ippai.simulate.tissue_properties import TissueProperties
+from utils import AbsorptionSpectrum
+import numpy as np
 
 def save_hdf5(dictionary, filepath, file_dictionary_path="/"):
     """
@@ -17,13 +20,21 @@ def save_hdf5(dictionary, filepath, file_dictionary_path="/"):
         :param path: Current group path in hdf5 file group structure.
         :param dictionary: Dictionary to save.
         """
+        serializer = IPPAISerializer()
         for key, item in dictionary.items():
             if not isinstance(item, (list, dict, type(None))):
-                try:
-                    h5file[path + key] = item
-                except RuntimeError:
-                    del h5file[path + key]
-                    h5file[path + key] = item
+
+                if isinstance(item, TissueProperties.Chromophore):
+                    data_grabber(file, path + key + "/chromophore/", serializer.serialize(item))
+                elif isinstance(item, AbsorptionSpectrum):
+                    data_grabber(file, path + key + "/absorption_spectrum/", serializer.serialize(item))
+                else:
+                    try:
+                        h5file[path + key] = item
+                    except RuntimeError as e:
+                        print("item", item, "of type", type(item), "was not serializable!")
+                        del h5file[path + key]
+                        raise e
             elif item is None:
                 h5file[path + key] = "None"
             elif isinstance(item, list):

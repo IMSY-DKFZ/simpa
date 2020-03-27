@@ -2,7 +2,7 @@ import unittest
 from ippai.simulate.tissue_properties import TissueProperties
 from ippai.simulate.tissue_properties import get_epidermis_settings as settings_generator
 from utils import SPECTRAL_LIBRARY
-from utils.serialization import IPPAISerializer
+from utils.serialization import IPPAIJSONSerializer
 import json
 import os
 
@@ -25,7 +25,7 @@ class TestTissueProperties(unittest.TestCase):
         settings = settings_generator()
         tmp_json_filename = "test_settings.json"
 
-        serializer = IPPAISerializer()
+        serializer = IPPAIJSONSerializer()
 
         with open(tmp_json_filename, "w") as json_file:
             json.dump(settings, json_file, indent="\t", default=serializer.default)
