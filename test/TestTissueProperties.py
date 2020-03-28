@@ -1,6 +1,6 @@
 import unittest
-from ippai.simulate.tissue_properties import TissueProperties
-from ippai.simulate.tissue_properties import get_epidermis_settings as settings_generator
+from simulate.tissue_properties import TissueProperties
+from simulate.tissue_properties import get_epidermis_settings as settings_generator
 from utils import SPECTRAL_LIBRARY
 from utils.serialization import IPPAIJSONSerializer
 import json

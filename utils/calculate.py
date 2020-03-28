@@ -1,6 +1,4 @@
 from utils import SPECTRAL_LIBRARY
-import numpy as np
-
 
 def calculate_oxygenation(tissue_properties):
     """

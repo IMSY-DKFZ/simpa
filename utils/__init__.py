@@ -21,9 +21,12 @@
 # SOFTWARE.
 
 import numpy as np
-from utils.spectral_library import SPECTRAL_LIBRARY
-from utils.spectral_library import view_absorption_spectra
-from utils.spectral_library import AbsorptionSpectrum
+from utils.libraries.spectra_library import SPECTRAL_LIBRARY
+from utils.libraries.spectra_library import view_absorption_spectra
+from utils.libraries.spectra_library import AbsorptionSpectrum
+
+from utils.libraries.chromophore_library import Chromophore
+
 from utils.calculate import calculate_oxygenation
 
 

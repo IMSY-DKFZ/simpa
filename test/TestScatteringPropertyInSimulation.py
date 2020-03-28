@@ -1,7 +1,6 @@
 import unittest
-import matplotlib.pyplot as plt
-from ippai.simulate import Tags
-from ippai.simulate.models.optical_modelling import run_optical_forward_model
+from simulate import Tags
+from simulate.models.optical_modelling import run_optical_forward_model
 import numpy as np
 import os
 

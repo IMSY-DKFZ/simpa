@@ -1,13 +1,18 @@
 from json import JSONEncoder
-from ippai.simulate.tissue_properties import TissueProperties
-from utils import AbsorptionSpectrum
+from utils import AbsorptionSpectrum, Chromophore
 import numpy as np
 
 
 class IPPAISerializer(object):
+    """
+    TODO
+    """
 
     def serialize(self, _object: object):
-        if isinstance(_object, TissueProperties.Chromophore):
+        """
+
+        """
+        if isinstance(_object, Chromophore):
             return _object.__dict__
 
         if isinstance(_object, AbsorptionSpectrum):
@@ -17,13 +22,21 @@ class IPPAISerializer(object):
 
 
 class IPPAIJSONSerializer(JSONEncoder):
+    """
+    TODO
+    """
 
     def __init__(self):
+        """
+        TODO
+        """
         super().__init__()
         self._serializer = IPPAISerializer()
 
-
     def default(self, _object: object):
+        """
+        TODO
+        """
 
         serialized_object = self._serializer.serialize(_object)
 

@@ -1,8 +1,8 @@
 import unittest
-from ippai.simulate import Tags, SegmentationClasses
-from ippai.simulate.simulation import simulate
-from ippai.simulate.tissue_properties import get_constant_settings, get_settings
-import os
+from simulate import Tags, SegmentationClasses
+from simulate.simulation import simulate
+from simulate.tissue_properties import get_constant_settings, get_settings
+
 
 class TestTissueProperties(unittest.TestCase):
 
