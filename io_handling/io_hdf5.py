@@ -1,25 +1,48 @@
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import h5py
 from utils.serialization import IPPAISerializer
 from utils import AbsorptionSpectrum, Chromophore
 
-def save_hdf5(dictionary, filepath, file_dictionary_path="/"):
+
+def save_hdf5(dictionary, file_path, file_dictionary_path="/"):
     """
     Saves a dictionary with arbitrary content to an hdf5-file with given filepath.
     :param dictionary: Dictionary to save.
-    :param filepath: Path of the file to save the dictionary in.
+    :param file_path: Path of the file to save the dictionary in.
     :param file_dictionary_path: Path in dictionary structure of existing hdf5 file to store the dictionary in.
     return
     """
 
-    def data_grabber(file, path, dictionary):
+    def data_grabber(file, path, data_dictionary):
         """
         Helper function which recursively grabs data from dictionaries in order to store them into hdf5 groups.
         :param file: hdf5 file instance to store the data in.
         :param path: Current group path in hdf5 file group structure.
-        :param dictionary: Dictionary to save.
+        :param data_dictionary: Dictionary to save.
         """
         serializer = IPPAISerializer()
-        for key, item in dictionary.items():
+        for key, item in data_dictionary.items():
             if not isinstance(item, (list, dict, type(None))):
 
                 if isinstance(item, Chromophore):
@@ -51,14 +74,14 @@ def save_hdf5(dictionary, filepath, file_dictionary_path="/"):
     else:
         writing_mode = "r+"
 
-    with h5py.File(filepath, writing_mode) as h5file:
+    with h5py.File(file_path, writing_mode) as h5file:
         data_grabber(h5file, file_dictionary_path, dictionary)
 
 
-def load_hdf5(filepath, file_dictionary_path="/"):
+def load_hdf5(file_path, file_dictionary_path="/"):
     """
     Loads a dictionary from an hdf5 file.
-    :param filepath: Path of the file to load the dictionary from.
+    :param file_path: Path of the file to load the dictionary from.
     :param file_dictionary_path: Path in dictionary structure of hdf5 file to lo the dictionary in.
     :return: Dictionary
     """
@@ -90,5 +113,5 @@ def load_hdf5(filepath, file_dictionary_path="/"):
                     dictionary[key] = data_grabber(file, path + key + "/")
         return dictionary
 
-    with h5py.File(filepath, "r") as h5file:
+    with h5py.File(file_path, "r") as h5file:
         return data_grabber(h5file, file_dictionary_path)
