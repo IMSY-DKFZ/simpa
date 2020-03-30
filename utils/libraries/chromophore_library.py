@@ -60,3 +60,4 @@ class Chromophore(object):
         if not isinstance(anisotropy, float):
             raise TypeError("The given anisotropy was not of type float!")
         self.anisotropy = anisotropy
+

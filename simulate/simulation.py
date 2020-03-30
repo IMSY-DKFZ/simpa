@@ -22,10 +22,10 @@
 
 from simulate import Tags
 from simulate.volume_creator import create_simulation_volume
-from simulate.models.optical_modelling import run_optical_forward_model
-from simulate.models.acoustic_modelling import run_acoustic_forward_model
-from simulate.models.noise_modelling import apply_noise_model_to_reconstructed_data
-from simulate.models.reconstruction import perform_reconstruction
+from simulate.models.optical_models.optical_modelling import run_optical_forward_model
+from simulate.models.acoustic_models.acoustic_modelling import run_acoustic_forward_model
+from simulate.models.noise_models.noise_modelling import apply_noise_model_to_reconstructed_data
+from simulate.models.reconstruction_models.reconstruction_modelling import perform_reconstruction
 from process.sampling import upsample
 from io_handling.io_hdf5 import save_hdf5, load_hdf5
 from utils.serialization import IPPAIJSONSerializer

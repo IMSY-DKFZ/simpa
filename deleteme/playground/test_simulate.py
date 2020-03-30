@@ -2,7 +2,7 @@
 
 from simulate import Tags
 from simulate.simulation import simulate
-from simulate.tissue_properties import get_muscle_settings
+from utils import TISSUE_LIBRARY
 from simulate.structures import create_forearm_structures
 
 import matplotlib.pylab as plt
@@ -25,7 +25,7 @@ settings = {
     #Tags.OPTICAL_MODEL_PROBE_XML_FILE: "/home/janek/CAMI_PAT_SETUP_V2.xml",
     Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
     Tags.RUN_ACOUSTIC_MODEL: False,
-    'background_properties': get_muscle_settings(),
+    'background_properties': TISSUE_LIBRARY.get_muscle_settings(),
     Tags.SPACING_MM: 0.3,
     Tags.DIM_VOLUME_Z_MM: 30,
     Tags.DIM_VOLUME_X_MM: 40,

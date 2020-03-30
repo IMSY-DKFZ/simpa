@@ -1,6 +1,6 @@
 import unittest
 from simulate.tissue_properties import TissueProperties
-from simulate.tissue_properties import get_epidermis_settings as settings_generator
+from utils import TISSUE_LIBRARY
 from utils import SPECTRAL_LIBRARY
 from utils.serialization import IPPAIJSONSerializer
 import json
@@ -18,11 +18,11 @@ class TestTissueProperties(unittest.TestCase):
     def test_find_absorption_spectra(self):
 
         print(type(SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN))
-        tp = TissueProperties(settings=settings_generator())
+        tp = TissueProperties(settings=TISSUE_LIBRARY.get_arterial_blood_settings())
         print(tp.get(798))
 
     def test_dictionary_serialization(self):
-        settings = settings_generator()
+        settings = TISSUE_LIBRARY.get_arterial_blood_settings()
         tmp_json_filename = "test_settings.json"
 
         serializer = IPPAIJSONSerializer()

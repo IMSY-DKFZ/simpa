@@ -86,7 +86,7 @@ for i in range(0, 9):
 
                 Tags.SENSOR_MASK: 1, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/sensor_mask.npy",
                 Tags.SENSOR_RECORD: "p",
-                Tags.SENSOR_CENTER_FREQUENCY_MHZ: 7.5e6,
+                Tags.SENSOR_CENTER_FREQUENCY_HZ: 7.5e6,
                 Tags.SENSOR_BANDWIDTH_PERCENT: 80,
                 Tags.SENSOR_DIRECTIVITY_ANGLE: 0, #"/home/kris/hard_drive/data/k-wave/test_data/test_data/directivity_angle.npy",
                 # 0,   # Most sensitive in x-dir (up/down)

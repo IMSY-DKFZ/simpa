@@ -20,25 +20,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import numpy as np
-from utils.libraries.spectra_library import SPECTRAL_LIBRARY
-from utils.libraries.spectra_library import view_absorption_spectra
-from utils.libraries.spectra_library import AbsorptionSpectrum
+# First load everything without internal dependencies
+from utils.tags import Tags
+from utils.libraries.literature_values import MorphologicalTissueProperties
+from utils.libraries.literature_values import StandardProperties
+from utils.libraries.literature_values import OpticalTissueProperties
 
+# Then load classes and methods with an <b>increasing</b> amount of internal dependencies.
+# If there are import errors in the tests, it is probably due to an incorrect
+# initialization order
+from utils.libraries.spectra_library import AbsorptionSpectrum
 from utils.libraries.chromophore_library import Chromophore
+from utils.libraries.spectra_library import view_absorption_spectra
+from utils.libraries.spectra_library import SPECTRAL_LIBRARY
+from utils.libraries.tissue_library import TISSUE_LIBRARY
 
 from utils.calculate import calculate_oxygenation
-
-
-def randomize_uniform(min_value: float, max_value: float):
-    """
-    returns a uniformly drawn random number in [min_value, max_value[
-
-    :param min_value: minimum value
-    :param max_value: maximum value
-    :return: random number in [min_value, max_value[
-    """
-    return (np.random.random() * (max_value-min_value)) + min_value
+from utils.calculate import randomize, randomize_uniform
+from utils.calculate import calculate_gruneisen_parameter_from_temperature
 
 
 if __name__ == "__main__":

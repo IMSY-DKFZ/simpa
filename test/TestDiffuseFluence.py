@@ -1,6 +1,6 @@
 import unittest
 from simulate import Tags
-from simulate.models.optical_modelling import run_optical_forward_model
+from simulate.models.optical_models.optical_modelling import run_optical_forward_model
 import numpy as np
 import os
 import matplotlib.pyplot as plt

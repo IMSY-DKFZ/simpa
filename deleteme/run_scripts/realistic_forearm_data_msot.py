@@ -5,7 +5,7 @@ sys.path.append("/workplace/ippai/")
 
 from simulate import Tags
 from simulate.simulation import simulate
-from simulate.tissue_properties import get_muscle_settings
+from utils import TISSUE_LIBRARY
 from simulate.structures import create_forearm_structures
 import time
 
@@ -38,7 +38,7 @@ while seed_index < 46527:
             Tags.OPTICAL_MODEL_BINARY_PATH: "/workplace/ippai/ippai/simulate/models/optical_models/mcx",
             Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
             Tags.RUN_ACOUSTIC_MODEL: True,
-            'background_properties': get_muscle_settings(),
+            'background_properties': TISSUE_LIBRARY.get_muscle_settings(),
             Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
             Tags.SPACING_MM: spacing,
             Tags.DIM_VOLUME_Z_MM: 45,

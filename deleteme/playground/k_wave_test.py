@@ -1,5 +1,5 @@
 from simulate import Tags
-from simulate.models.acoustic_modelling import run_acoustic_forward_model
+from simulate.models.acoustic_models.acoustic_modelling import run_acoustic_forward_model
 import matplotlib.pyplot as plt
 import numpy as np
 import os

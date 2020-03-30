@@ -24,8 +24,9 @@ import numpy as np
 import copy
 
 from simulate.tissue_properties import TissueProperties
-from simulate import Tags, SegmentationClasses, StandardProperties, SaveFilePaths
-from simulate.utils import randomize, gruneisen_parameter_from_temperature
+from simulate import Tags, SegmentationClasses, SaveFilePaths
+from utils import StandardProperties
+from utils import randomize, calculate_gruneisen_parameter_from_temperature
 from process.preprocess_images import top_center_crop_power_two
 from utils import calculate_oxygenation
 
@@ -116,7 +117,7 @@ def create_gruneisen_map(volumes, settings):
     else:
         temperature_celcius = StandardProperties.BODY_TEMPERATURE_CELCIUS
 
-    gruneisen_map = np.ones(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])) * gruneisen_parameter_from_temperature(temperature_celcius)
+    gruneisen_map = np.ones(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])) * calculate_gruneisen_parameter_from_temperature(temperature_celcius)
     volumes[Tags.PROPERTY_GRUNEISEN_PARAMETER] = gruneisen_map
 
     return volumes

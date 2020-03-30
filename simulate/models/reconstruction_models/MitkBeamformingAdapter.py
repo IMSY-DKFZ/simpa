@@ -20,7 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simulate import Tags, StandardProperties
+from simulate import Tags
+from utils import StandardProperties
 from simulate.models.reconstruction_models import ReconstructionAdapterBase
 import numpy as np
 import subprocess

@@ -20,7 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simulate import Tags, StandardProperties
+from simulate import Tags
+from utils import StandardProperties
 from abc import abstractmethod
 import numpy as np
 import pandas as pd
@@ -40,7 +41,7 @@ class NoiseModelAdapterBase:
         pass
 
 
-class GaussianNoise(NoiseModelAdapterBase):
+class GaussianNoiseModel(NoiseModelAdapterBase):
     """
     This class is reponsible to apply an additive gaussian noise to the input data.
     """

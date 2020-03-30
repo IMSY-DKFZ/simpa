@@ -59,9 +59,9 @@ class McxyzAdapter(OpticalForwardAdapterBase):
         if Tags.OPTICAL_MODEL_NUMBER_PHOTONS in settings:
             cmd.append("-n")
             cmd.append(str(settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS]))
-        if Tags.OPTICAL_MODEL_PROBE_XML_FILE in settings:
+        if Tags.OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE in settings:
             cmd.append("-p")
-            cmd.append(str(settings[Tags.OPTICAL_MODEL_PROBE_XML_FILE]))
+            cmd.append(str(settings[Tags.OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE]))
 
         subprocess.run(cmd)
 

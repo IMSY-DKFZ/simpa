@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simulate import Tags, SaveFilePaths
-from simulate.models.noise_models import GaussianNoise
+from simulate.models.noise_models import GaussianNoiseModel
 from io_handling.io_hdf5 import save_hdf5, load_hdf5
 
 
@@ -41,7 +41,7 @@ def apply_noise_model_to_time_series_data(settings, acoustic_model_result_path):
     time_series_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], acoustic_model_result_path)[Tags.TIME_SERIES_DATA]
 
     if settings[Tags.NOISE_MODEL] == Tags.NOISE_MODEL_GAUSSIAN:
-        noise_model = GaussianNoise()
+        noise_model = GaussianNoiseModel()
 
     time_series_data_noise = noise_model.apply_noise_model(time_series_data, settings)
 
@@ -72,7 +72,7 @@ def apply_noise_model_to_reconstructed_data(settings, reconstructed_data_path):
     reconstructed_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], reconstructed_data_path)[Tags.RECONSTRUCTED_DATA]
 
     if settings[Tags.NOISE_MODEL] == Tags.NOISE_MODEL_GAUSSIAN:
-        noise_model = GaussianNoise()
+        noise_model = GaussianNoiseModel()
 
     reconstructed_data_noise = noise_model.apply_noise_model(reconstructed_data, settings)
 

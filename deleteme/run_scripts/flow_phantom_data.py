@@ -1,13 +1,13 @@
 from simulate.simulation import simulate
 from simulate import Tags, SegmentationClasses
-from simulate.tissue_properties import get_constant_settings, get_settings, get_blood_settings
+from utils import TISSUE_LIBRARY
 import numpy as np
 
 
 def create_water_background():
     water_dict = dict()
     water_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
-    water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_constant_settings(mua=1e-5, mus=1e-5, g=1.0)
+    water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_constant_settings(mua=1e-5, mus=1e-5, g=1.0)
     water_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.ULTRASOUND_GEL_PAD
     return water_dict
 
@@ -21,9 +21,9 @@ def create_agar_phantom():
     phantom_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = 9.5
     phantom_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = 12
     phantom_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = 12
-    phantom_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_settings(w_max=1, w_min=0.5,
-                                                                  oxy_min=-1, oxy_max=-1,
-                                                                  musp500=5.0, anisotropy=0.9)
+    phantom_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_settings(w_max=1, w_min=0.5,
+                                                                                 oxy_min=-1, oxy_max=-1,
+                                                                                 musp500=5.0, anisotropy=0.9)
     phantom_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
     return phantom_dict
 
@@ -37,7 +37,7 @@ def create_flow_vessel():
     vessel_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = 2.5
     vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = 12
     vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = 12
-    vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = get_blood_settings()
+    vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_blood_settings()
     vessel_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
     return vessel_dict
 
