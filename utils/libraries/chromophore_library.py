@@ -21,7 +21,8 @@
 # SOFTWARE.
 
 from utils import AbsorptionSpectrum
-
+from utils import SPECTRAL_LIBRARY
+from utils import OpticalTissueProperties
 
 class Chromophore(object):
 
@@ -61,3 +62,95 @@ class Chromophore(object):
             raise TypeError("The given anisotropy was not of type float!")
         self.anisotropy = anisotropy
 
+
+class ChromophoreLibrary(object):
+
+    # Main absorbers
+    def water(self, volume_fraction: float = 1.0):
+        return Chromophore(spectrum=SPECTRAL_LIBRARY.WATER,
+                           volume_fraction=volume_fraction, musp500=0.0,
+                           b_mie=0.0, f_ray=0.0, anisotropy=1.0)
+
+    def oxyhemoglobin(self, volume_fraction: float = 1.0):
+        return Chromophore(
+            spectrum=SPECTRAL_LIBRARY.OXYHEMOGLOBIN,
+            volume_fraction=volume_fraction,
+            musp500=OpticalTissueProperties.MUSP500_BLOOD,
+            b_mie=OpticalTissueProperties.BMIE_BLOOD,
+            f_ray=OpticalTissueProperties.FRAY_BLOOD,
+            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
+        )
+
+    def deoxyhemoglobin(self, volume_fraction: float = 1.0):
+        return Chromophore(
+            spectrum=SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN,
+            volume_fraction=volume_fraction,
+            musp500=OpticalTissueProperties.MUSP500_BLOOD,
+            b_mie=OpticalTissueProperties.BMIE_BLOOD,
+            f_ray=OpticalTissueProperties.FRAY_BLOOD,
+            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
+        )
+
+    def melanin(self, volume_fraction: float = 1.0):
+        return Chromophore(
+            spectrum=SPECTRAL_LIBRARY.MELANIN,
+            volume_fraction=volume_fraction,
+            musp500=OpticalTissueProperties.MUSP500_EPIDERMIS,
+            b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
+            f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
+            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
+        )
+
+    def fat(self, volume_fraction: float = 1.0):
+        return Chromophore(
+            spectrum=SPECTRAL_LIBRARY.FAT,
+            volume_fraction=volume_fraction,
+            musp500=OpticalTissueProperties.MUSP500_FAT,
+            b_mie=OpticalTissueProperties.BMIE_FAT,
+            f_ray=OpticalTissueProperties.FRAY_FAT,
+            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
+        )
+
+    # Scatterers
+    def constant_scatterer(self, scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
+                           volume_fraction: float = 1.0):
+        return Chromophore(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                           volume_fraction=volume_fraction, musp500=scattering_coefficient,
+                           b_mie=0.0, f_ray=0.0, anisotropy=anisotropy)
+
+    def soft_tissue_scatterer(self, volume_fraction: float = 1.0):
+        return Chromophore(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                           volume_fraction=volume_fraction,
+                           musp500=OpticalTissueProperties.MUSP500_BACKGROUND_TISSUE,
+                           b_mie=OpticalTissueProperties.BMIE_BACKGROUND_TISSUE,
+                           f_ray=OpticalTissueProperties.FRAY_BACKGROUND_TISSUE,
+                           anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
+
+    def epidermal_scatterer(self, volume_fraction: float = 1.0):
+        return Chromophore(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                           volume_fraction=volume_fraction,
+                           musp500=OpticalTissueProperties.MUSP500_EPIDERMIS,
+                           b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
+                           f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
+                           anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
+
+    def dermal_scatterer(self, volume_fraction: float = 1.0):
+        return Chromophore(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                           volume_fraction=volume_fraction,
+                           musp500=OpticalTissueProperties.MUSP500_DERMIS,
+                           b_mie=OpticalTissueProperties.BMIE_DERMIS,
+                           f_ray=OpticalTissueProperties.FRAY_DERMIS,
+                           anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
+
+    def bone_scatterer(self, volume_fraction: float = 1.0):
+        return Chromophore(
+            spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+            volume_fraction=volume_fraction,
+            musp500=OpticalTissueProperties.MUSP500_BONE,
+            b_mie=OpticalTissueProperties.BMIE_BONE,
+            f_ray=OpticalTissueProperties.FRAY_BONE,
+            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
+        )
+
+
+CHROMOPHORE_LIBRARY = ChromophoreLibrary()

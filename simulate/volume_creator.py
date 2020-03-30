@@ -420,7 +420,6 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
     structure_properties = TissueProperties(structure_settings[Tags.STRUCTURE_TISSUE_PROPERTIES])
     [mua, mus, g] = structure_properties.get(global_settings[Tags.WAVELENGTH])
     oxy = calculate_oxygenation(structure_properties)
-    print(mua, mus, g, oxy)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_BACKGROUND:
         volumes = set_background(volumes, structure_settings, mua, mus, g, oxy)

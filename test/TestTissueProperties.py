@@ -2,6 +2,7 @@ import unittest
 from simulate.tissue_properties import TissueProperties
 from utils import TISSUE_LIBRARY
 from utils import SPECTRAL_LIBRARY
+from utils import calculate_oxygenation
 from utils.serialization import IPPAIJSONSerializer
 import json
 import os
@@ -11,15 +12,20 @@ import numpy as np
 class TestTissueProperties(unittest.TestCase):
 
     def setUp(self):
-        print("setUp")
+        print("\n[SetUp]")
 
     def tearDown(self):
-        print("tearDown")
+        print("\n[TearDown]")
 
     def test_find_absorption_spectra(self):
-        tp = TissueProperties(settings=TISSUE_LIBRARY.get_arterial_blood_settings())
-        data = tp.get(798)
-        print(data)
+        settings = TISSUE_LIBRARY.blood_arterial()
+        assert isinstance(settings, dict)
+        tp = TissueProperties(settings=settings)
+        assert tp is not None and isinstance(tp, TissueProperties)
+        [mua, mus, g] = tp.get(798)
+        assert mua is not None and isinstance(mua, float)
+        assert mus is not None and isinstance(mus, float)
+        assert g is not None and isinstance(g, float)
 
     def test_absorption_spectra_interpolation(self):
         for absorption_spectrum in SPECTRAL_LIBRARY:
@@ -36,8 +42,36 @@ class TestTissueProperties(unittest.TestCase):
                 else:
                     raise ValueError("Ranges undefined!")
 
+    def test_oxygenation_calculation(self):
+        for i in range(100):
+            tp = TissueProperties(settings=TISSUE_LIBRARY.blood_generic())
+            oxy = calculate_oxygenation(tp)
+            assert ((oxy >= 0) and (oxy <= 1))
+
+            tp = TissueProperties(settings=TISSUE_LIBRARY.blood_arterial())
+            oxy = calculate_oxygenation(tp)
+            assert ((oxy >= 0) and (oxy <= 1))
+
+            tp = TissueProperties(settings=TISSUE_LIBRARY.blood_venous())
+            oxy = calculate_oxygenation(tp)
+            assert ((oxy >= 0) and (oxy <= 1))
+
+    def test_get_constant_settings(self):
+        for i in range(100):
+            mua = np.random.random() * 10
+            mus = np.random.random() * 100
+            g = np.random.random()
+
+            settings = TISSUE_LIBRARY.constant(mua=mua, mus=mus, g=g)
+            tp = TissueProperties(settings=settings)
+            for wl in range(700, 900, 5):
+                [_mua, _mus, _g] = tp.get(wl)
+                assert np.abs(mua - _mua) < 1e-5
+                assert np.abs(mus - _mus) < 1e-5
+                assert np.abs(g - _g) < 1e-5
+
     def test_dictionary_serialization(self):
-        settings = TISSUE_LIBRARY.get_arterial_blood_settings()
+        settings = TISSUE_LIBRARY.blood_arterial()
         tmp_json_filename = "test_settings.json"
 
         serializer = IPPAIJSONSerializer()

@@ -90,8 +90,8 @@ class OpticalTissueProperties:
     """
 
     # Background oxygenation assumed arbitrarily, to cover a large range of oxygenation values
-    BACKGROUND_OXYGENATION = 0.8
-    BACKGROUND_OXYGENATION_VARIATION = 0.1
+    BACKGROUND_OXYGENATION = 0.5
+    BACKGROUND_OXYGENATION_VARIATION = 0.5
 
     # Venous blood parameters taken from the referenced literature. <60% SvO2 were reported as critical. Normal values
     # are reported as 70%.

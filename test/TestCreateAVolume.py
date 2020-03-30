@@ -9,7 +9,7 @@ class TestTissueProperties(unittest.TestCase):
     def create_background(self):
         water_dict = dict()
         water_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
-        water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_constant_settings(mua=1e-5, mus=1e-5, g=1.0)
+        water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.constant(mua=1e-5, mus=1e-5, g=1.0)
         water_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.ULTRASOUND_GEL_PAD
         return water_dict
 
@@ -23,9 +23,9 @@ class TestTissueProperties(unittest.TestCase):
         vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = 12
         vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = 12
         vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_settings(b_min=1, b_max=1,
-                                                                     w_max=0, w_min=0,
-                                                                     oxy_min=0, oxy_max=11,
-                                                                     musp500=5.0, anisotropy=0.9)
+                                                                                    w_max=0, w_min=0,
+                                                                                    oxy_min=0, oxy_max=1,
+                                                                                    musp500=5.0, anisotropy=0.9)
         vessel_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
         return vessel_dict
 

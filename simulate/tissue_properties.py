@@ -20,9 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simulate import Tags
-from utils import Chromophore
-
 
 class TissueProperties(object):
     """
@@ -38,20 +35,9 @@ class TissueProperties(object):
         self.ensure_valid_settings(settings)
 
         self.chromophores = []
-        self.constant_properties = None
-
         _keys = settings.keys()
-
-        if Tags.KEY_CONSTANT_PROPERTIES in _keys and settings[Tags.KEY_CONSTANT_PROPERTIES] == True:
-            self.constant_properties = dict()
-            self.constant_properties[Tags.KEY_MUA] = settings[Tags.KEY_MUA]
-            self.constant_properties[Tags.KEY_MUS] = settings[Tags.KEY_MUS]
-            self.constant_properties[Tags.KEY_G] = settings[Tags.KEY_G]
-        else:
-            for chromophore_name in _keys:
-                self.chromophores.append(settings[chromophore_name])
-                print(chromophore_name)
-                print(settings[chromophore_name].spectrum)
+        for chromophore_name in _keys:
+            self.chromophores.append(settings[chromophore_name])
 
     def ensure_valid_settings(self, settings: dict):
         """
@@ -65,41 +51,13 @@ class TissueProperties(object):
         if not isinstance(settings, dict):
             raise TypeError("The given settings sub-dictionary must be of type dict.")
 
-        keys = settings.keys()
-
-        if len(keys) < 1:
+        if len(settings.keys()) < 1:
             raise ValueError("The settings dictionary must at least contain one entry.")
-
-        if Tags.KEY_CONSTANT_PROPERTIES in keys and settings[Tags.KEY_CONSTANT_PROPERTIES] == True:
-            if Tags.KEY_MUA not in keys:
-                raise ValueError("Tags.KEY_MUA (" + Tags.KEY_MUA + ") was not set in the settings file.")
-            else:
-                if not isinstance(settings[Tags.KEY_MUA], float):
-                    raise TypeError("Absorption coefficient was not of type float!")
-            if Tags.KEY_MUS not in keys:
-                raise ValueError("Tags.KEY_MUS (" + Tags.KEY_MUS + ") was not set in the settings file.")
-            else:
-                if not isinstance(settings[Tags.KEY_MUS], float):
-                    raise TypeError("Scattering coefficient was not of type float!")
-            if Tags.KEY_G not in keys:
-                raise ValueError("Tags.KEY_G (" + Tags.KEY_G + ") was not set in the settings file.")
-            else:
-                if not isinstance(settings[Tags.KEY_G], float):
-                    raise TypeError("Anisotropy was not of type float!")
-        else:
-            for key in keys:
-                if not isinstance(settings[key], Chromophore):
-                    raise TypeError("All value items in the dictionary must be of type Chromophore.")
 
     def get(self, wavelength):
         """
         TODO
         """
-
-        if self.constant_properties is not None:
-            return[self.constant_properties[Tags.KEY_MUA], self.constant_properties[Tags.KEY_MUS],
-                   self.constant_properties[Tags.KEY_G]]
-
         _mua_per_centimeter = 0
         _mus_per_centimeter = 0
         _g = 0
@@ -107,8 +65,8 @@ class TissueProperties(object):
 
         for chromophore in self.chromophores:
             _sum_of_fractions += chromophore.volume_fraction
-            _mua_per_centimeter += chromophore.volume_fraction * \
-                                   chromophore.spectrum.get_absorption_for_wavelength(wavelength)
+            _mua_per_centimeter += (chromophore.volume_fraction *
+                                    chromophore.spectrum.get_absorption_for_wavelength(wavelength))
             _g += chromophore.volume_fraction * chromophore.anisotropy
             _mus_per_centimeter += (chromophore.musp500 * (chromophore.f_ray *
                                     (wavelength / 500) ** 1e-4 + (1 - chromophore.f_ray) *

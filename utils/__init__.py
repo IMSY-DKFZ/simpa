@@ -30,9 +30,12 @@ from utils.libraries.literature_values import OpticalTissueProperties
 # If there are import errors in the tests, it is probably due to an incorrect
 # initialization order
 from utils.libraries.spectra_library import AbsorptionSpectrum
-from utils.libraries.chromophore_library import Chromophore
 from utils.libraries.spectra_library import view_absorption_spectra
 from utils.libraries.spectra_library import SPECTRAL_LIBRARY
+
+from utils.libraries.chromophore_library import Chromophore
+from utils.libraries.chromophore_library import CHROMOPHORE_LIBRARY
+
 from utils.libraries.tissue_library import TISSUE_LIBRARY
 
 from utils.calculate import calculate_oxygenation

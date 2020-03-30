@@ -7,7 +7,7 @@ import numpy as np
 def create_water_background():
     water_dict = dict()
     water_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
-    water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_constant_settings(mua=1e-5, mus=1e-5, g=1.0)
+    water_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.constant(mua=1e-5, mus=1e-5, g=1.0)
     water_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.ULTRASOUND_GEL_PAD
     return water_dict
 
@@ -37,7 +37,7 @@ def create_flow_vessel():
     vessel_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = 2.5
     vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = 12
     vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = 12
-    vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_blood_settings()
+    vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.blood_generic()
     vessel_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
     return vessel_dict
 
