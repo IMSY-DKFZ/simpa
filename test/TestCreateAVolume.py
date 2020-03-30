@@ -2,7 +2,7 @@ import unittest
 from simulate import Tags, SegmentationClasses
 from simulate.simulation import simulate
 from utils import TISSUE_LIBRARY
-
+import os
 
 class TestTissueProperties(unittest.TestCase):
 
@@ -48,7 +48,7 @@ class TestTissueProperties(unittest.TestCase):
             Tags.WAVELENGTHS: [800, 801],
             Tags.RANDOM_SEED: random_seed,
             Tags.VOLUME_NAME: "FlowPhantom_" + str(random_seed).zfill(6),
-            Tags.SIMULATION_PATH: "./",
+            Tags.SIMULATION_PATH: ".",
             Tags.RUN_OPTICAL_MODEL: False,
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
@@ -62,6 +62,16 @@ class TestTissueProperties(unittest.TestCase):
         }
         print("Simulating ", random_seed)
         output = simulate(settings)
+
+        if (os.path.exists(settings[Tags.IPPAI_OUTPUT_PATH]) and
+           os.path.isfile(settings[Tags.IPPAI_OUTPUT_PATH])):
+            # Delete the created file
+            os.remove(settings[Tags.IPPAI_OUTPUT_PATH])
+            path = ""
+            for subpath in settings[Tags.IPPAI_OUTPUT_PATH].split("/")[:-1]:
+                path += subpath + "/"
+            # Delete the file's parent directory
+            os.rmdir(path)
 
         for item in output:
             print(item)

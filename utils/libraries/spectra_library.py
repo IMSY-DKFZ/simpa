@@ -31,9 +31,9 @@ class AbsorptionSpectrum(object):
 
     def __init__(self, spectrum_name: str, wavelengths: np.ndarray, absorption_per_centimeter: np.ndarray):
         """
-        @param spectrum_name:
-        @param wavelengths:
-        @param absorption_per_centimeter:
+        :param spectrum_name:
+        :param wavelengths:
+        :param absorption_per_centimeter:
         """
         self.spectrum_name = spectrum_name
         self.wavelengths = wavelengths
@@ -48,8 +48,8 @@ class AbsorptionSpectrum(object):
 
     def get_absorption_for_wavelength(self, wavelength: float) -> float:
         """
-        @param wavelength: the wavelength to retrieve a optical absorption value for [cm^{-1}].
-        @return: the best matching linearly interpolated absorption value for the given wavelength.
+        :param wavelength: the wavelength to retrieve a optical absorption value for [cm^{-1}].
+        :return: the best matching linearly interpolated absorption value for the given wavelength.
         """
         # TODO: behavior outside of the available wavelength range?
         if wavelength > max(self.wavelengths):
@@ -115,7 +115,7 @@ def view_absorption_spectra(save_path=None):
     """
     Opens a matplotlib plot and visualizes the available absorption spectra.
 
-    @param save_path: If not None, then the figure will be saved as a png file to the destination.
+    :param save_path: If not None, then the figure will be saved as a png file to the destination.
     """
     plt.figure(figsize=(11, 8))
     for spectrum in SPECTRAL_LIBRARY:
@@ -128,8 +128,9 @@ def view_absorption_spectra(save_path=None):
     ax.set_ylabel("Optical absorption [cm$^{-1}$] @ 100% volume fraction")
     ax.set_xlabel("Wavelength [nm]")
     ax.set_title("Absorption spectra for all absorbers present in the library")
-    ax.hlines([0.001, 0.01, 0.1, 1, 10, 100, 1000], 450, 1000, linestyles="dashed", colors=["#EEEEEE88"])
+    ax.hlines([1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3], 450, 1000, linestyles="dashed", colors=["#EEEEEE88"])
     ax.legend(loc='best', bbox_to_anchor=(1, 0.5))
+    plt.ylim(1e-5, 1e4)
     if save_path is not None:
         plt.savefig(save_path + "absorption_spectra.png")
     plt.show()
