@@ -109,6 +109,10 @@ def simulate(settings):
                     reconstruction_output_path = apply_noise_model_to_reconstructed_data(settings, reconstruction_output_path)
                 reconstruction_output_paths.append(reconstruction_output_path)
 
+    # Quick and dirty fix:
+    all_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH])
+    save_hdf5(all_data, settings[Tags.IPPAI_OUTPUT_PATH])
+
     return [volume_output_paths, optical_output_paths, acoustic_output_paths, reconstruction_output_paths]
 
 

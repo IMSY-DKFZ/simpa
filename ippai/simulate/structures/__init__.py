@@ -40,7 +40,7 @@ def create_random_ellipse(x_min_mm=2, x_max_mm=35, depth_min_mm=3, depth_max_mm=
     rnd_tube_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = x_max_mm
     rnd_tube_dict[Tags.STRUCTURE_MIN_ECCENTRICITY] = eccentricity_min
     rnd_tube_dict[Tags.STRUCTURE_MAX_ECCENTRICITY] = eccentricity_max
-    rnd_tube_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_random_tube_settings()
+    rnd_tube_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.blood_generic()
     rnd_tube_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
     return rnd_tube_dict
 
@@ -48,7 +48,7 @@ def create_random_ellipse(x_min_mm=2, x_max_mm=35, depth_min_mm=3, depth_max_mm=
 def create_random_background():
     rnd_bg_dict = dict()
     rnd_bg_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
-    rnd_bg_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_random_background_settings()
+    rnd_bg_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.muscle()
     rnd_bg_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
     return rnd_bg_dict
 
@@ -130,22 +130,22 @@ def create_unrealistic_forearm_structures(relative_shift_mm=0, background_oxy=0.
     return structures_dict
 
 
-def create_muscle_background(background_oxy=0.0):
+def create_muscle_background():
     muscle_dict = dict()
     muscle_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
-    muscle_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_muscle_settings(background_oxy=background_oxy)
+    muscle_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.muscle()
     muscle_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.MUSCLE
     return muscle_dict
 
 
-def create_epidermis_layer(background_oxy=0.0):
+def create_epidermis_layer():
     epidermis_dict = dict()
     epidermis_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_LAYER
     epidermis_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = 0
     epidermis_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = 0
     epidermis_dict[Tags.STRUCTURE_THICKNESS_MIN_MM] = MorphologicalTissueProperties.EPIDERMIS_THICKNESS_MEAN_MM - MorphologicalTissueProperties.EPIDERMIS_THICKNESS_STD_MM
     epidermis_dict[Tags.STRUCTURE_THICKNESS_MAX_MM] = MorphologicalTissueProperties.EPIDERMIS_THICKNESS_MEAN_MM + MorphologicalTissueProperties.EPIDERMIS_THICKNESS_STD_MM
-    epidermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_epidermis_settings(background_oxy=background_oxy)
+    epidermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.epidermis()
     epidermis_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.EPIDERMIS
     return epidermis_dict
 
