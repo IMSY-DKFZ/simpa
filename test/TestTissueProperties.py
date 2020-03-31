@@ -1,9 +1,9 @@
 import unittest
-from simulate.tissue_properties import TissueProperties
-from utils import TISSUE_LIBRARY
-from utils import SPECTRAL_LIBRARY
-from utils import calculate_oxygenation
-from utils.serialization import IPPAIJSONSerializer
+from ippai.simulate import TissueProperties
+from ippai.utils import TISSUE_LIBRARY
+from ippai.utils import SPECTRAL_LIBRARY
+from ippai.utils import calculate_oxygenation
+from ippai.utils.serialization import IPPAIJSONSerializer
 import json
 import os
 import numpy as np

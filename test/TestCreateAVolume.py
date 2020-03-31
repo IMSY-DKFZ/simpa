@@ -1,7 +1,8 @@
 import unittest
-from simulate import Tags, SegmentationClasses
-from simulate.simulation import simulate
-from utils import TISSUE_LIBRARY
+from ippai.utils import Tags
+from ippai.simulate.simulation import simulate
+from ippai.simulate import SegmentationClasses
+from ippai.utils import TISSUE_LIBRARY
 import os
 
 class TestTissueProperties(unittest.TestCase):
@@ -22,10 +23,7 @@ class TestTissueProperties(unittest.TestCase):
         vessel_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = 9.5
         vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] = 12
         vessel_dict[Tags.STRUCTURE_TUBE_CENTER_X_MAX_MM] = 12
-        vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.get_settings(b_min=1, b_max=1,
-                                                                                    w_max=0, w_min=0,
-                                                                                    oxy_min=0, oxy_max=1,
-                                                                                    musp500=5.0, anisotropy=0.9)
+        vessel_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.blood_generic()
         vessel_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
         return vessel_dict
 
