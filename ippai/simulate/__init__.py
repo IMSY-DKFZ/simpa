@@ -252,6 +252,13 @@ class Tags:
     STRUCTURE_LENGTH_Z_MAX_MM = "strucutre_length_z_max_mm"
     STRUCTURE_LENGTH_Z_MM = "strucutre_length_z_mm"
 
+    STRUCTURE_HEIGHT_MIN_MM = "strucutre_height_min_mm"
+    STRUCTURE_HEIGHT_MAX_MM = "strucutre_height_max_mm"
+    STRUCTURE_HEIGHT_MM = "strucutre_height_mm"
+    STRUCTURE_BASIS_EXTENT_MIN_MM = "strucutre_basis_extent_min_mm"
+    STRUCTURE_BASIS_EXTENT_MAX_MM = "strucutre_extent_max_mm"
+    STRUCTURE_BASIS_EXTENT_MM = "strucutre_basis_extent_mm"
+
     #structures
     STRUCTURE_BACKGROUND = "structure_background"
 
@@ -271,13 +278,10 @@ class Tags:
 
         
     STRUCTURE_PYRAMID = "structure_pyramid"
-    STRUCTURE_PYRAMID_HEIGHT_MIN_MM = "strucutre_pyramid_height_min_mm"
-    STRUCTURE_PYRAMID_HEIGHT_MAX_MM = "strucutre_pyramid_height_max_mm"
-    STRUCTURE_PYRAMID_BASIS_EXTENT_MIN_MM = "strucutre_pyramid_basis_extent_min_mm"
-    STRUCTURE_PYRAMID_BASIC_EXTENT_MAX_MM = "strucutre_pyramid_basis_extent_max_mm"
     STRUCTURE_PYRAMID_ORIENTATION_XY = "pyramid_angle_xy"
     STRUCTURE_PYRAMID_ORIENTATION_XZ = "pyramid_angle_xz"
     STRUCTURE_PYRAMID_ORIENTATION_YZ = "pyramid_angle_yz"
+    STRUCTURE_PYRAMID_ORIENTATION = "pyramid_90_degree_shift"
     
 
     UNITS_ARBITRARY = "arbitrary_unity"

@@ -413,11 +413,9 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_CUBICAL_TUBE:
         volumes, extent_x_z_mm = add_cubical_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
-        #return volumes
     
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_CUBE:
         volumes, extent_x_z_mm = add_cube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
-        #return volumes
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_ELLIPSE:
         volumes, extent_x_z_mm = add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy,
@@ -425,6 +423,10 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_SPHERE:
         volumes, extent_x_z_mm = add_sphere(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
+
+    if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_PYRAMID:
+        volumes, extent_x_z_mm = add_pyramid(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
+
 
     if Tags.CHILD_STRUCTURES in structure_settings:
         for child_structure in structure_settings[Tags.CHILD_STRUCTURES]:
@@ -474,7 +476,7 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
         it += 1
 
     if fraction > 1e-10:
-        if mua.ndim == 1:
+        if np.isscalar(mua) == 1:
             for y_idx in range(sizes[1]):
                 for x_idx in range(sizes[0]):
                     set_voxel(volumes, x_idx, y_idx, it + 1, mua, mus, g, oxy,
@@ -724,6 +726,78 @@ def add_cube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
 
     return volumes, extent_parent_x_z_mm
 
+def add_pyramid(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
+    if extent_parent_x_z_mm is None:
+        extent_parent_x_z_mm = [0, 0, 0, 0]
+
+    sizes = np.shape(volumes[0])
+
+    basic_extent_in_mm = structure_settings[Tags.STRUCTURE_BASIS_EXTENT_MM]
+    height_in_mm = structure_settings[Tags.STRUCTURE_HEIGHT_MM]
+    basic_extent_in_voxels = basic_extent_in_mm / global_settings[Tags.SPACING_MM]
+    height_in_voxels = height_in_mm / global_settings[Tags.SPACING_MM]
+    print(height_in_voxels, basic_extent_in_voxels)
+
+
+    start_in_mm = np.asarray([structure_settings[Tags.STRUCTURE_CENTER_X_MM], structure_settings[Tags.STRUCTURE_CENTER_Y_MM],
+                              structure_settings[Tags.STRUCTURE_CENTER_DEPTH_MM]])
+
+    start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
+    print(start_in_voxels)
+
+    if structure_settings[Tags.STRUCTURE_PYRAMID_ORIENTATION]==0:
+        print("orientation 0 ")
+        height_dim = 2
+        basic_1 = 0
+        basic_2 = 1
+    elif structure_settings[Tags.STRUCTURE_PYRAMID_ORIENTATION]==1:
+        print("orientation 1 ")
+        height_dim = 0
+        basic_1 = 1
+        basic_2 = 2
+    elif structure_settings[Tags.STRUCTURE_PYRAMID_ORIENTATION]==2:
+        print("orientation 2 ")
+        height_dim = 1
+        basic_1 = 0
+        basic_2 = 2
+    else: 
+        print("error - please set an orientation")
+
+
+    idx_height_start = int(start_in_voxels[height_dim] )
+    if idx_height_start < 0:
+        idx_height_start = 0
+    idx_height_end = int(start_in_voxels[height_dim] + height_in_voxels + 1)
+    if idx_height_end > sizes[height_dim]:
+        idx_height_end = sizes[height_dim]
+    idx_basic_1_start = int(start_in_voxels[basic_1] - basic_extent_in_voxels - 1)
+    if idx_basic_1_start < 0:
+        idx_basic_1_start = 0
+    idx_basic_1_end = int(start_in_voxels[basic_1] + basic_extent_in_voxels + 1)
+    if idx_basic_1_end > sizes[basic_1]:
+        idx_basic_1_end = sizes[basic_1]
+    idx_basic_2_start= int(start_in_voxels[basic_2] - basic_extent_in_voxels - 1)
+    if idx_basic_2_start < 0:
+        idx_basic_2_start = 0
+    idx_basic_2_end = int(start_in_voxels[basic_2] + basic_extent_in_voxels + 1)
+    if idx_basic_2_end > sizes[basic_2]:
+        idx_basic_2_end = sizes[basic_2]
+
+    for height_idx in range(idx_height_start, idx_height_end):
+        for extent_idx_1 in range(idx_basic_1_start, idx_basic_1_end):
+            for extent_idx_2 in range(idx_basic_2_start, idx_basic_2_end):
+                if fnc_pyramid(extent_idx_1, extent_idx_2, height_idx, height_in_voxels, idx_height_start, start_in_voxels[basic_1], start_in_voxels[basic_2], basic_extent_in_voxels) <= 0:
+                    if structure_settings[Tags.STRUCTURE_PYRAMID_ORIENTATION]==0: 
+                       volumes = set_voxel(volumes, extent_idx_1, extent_idx_2, height_idx, mua, mus, g, oxy, structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
+                    elif structure_settings[Tags.STRUCTURE_PYRAMID_ORIENTATION]==1: 
+                        volumes = set_voxel(volumes, height_idx, extent_idx_1, extent_idx_2, mua, mus, g, oxy, structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
+                    elif structure_settings[Tags.STRUCTURE_PYRAMID_ORIENTATION]==2: 
+                        volumes = set_voxel(volumes, extent_idx_1, height_idx, extent_idx_2, mua, mus, g, oxy, structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
+                        
+    #extent_parent_x_z_mm = [start_in_mm[0] - length_x_in_mm, start_in_mm[0] + length_x_in_mm, start_in_mm[2] - length_z_in_mm, start_in_mm[2] + length_y_in_mm]
+
+    return volumes, extent_parent_x_z_mm
+
 
 
 
@@ -800,6 +874,24 @@ def add_sphere(volumes, global_settings, structure_settings, mua, mus, g, oxy, e
     extent_parent_x_z_mm = [start_in_mm[0] - radius_in_mm, start_in_mm[0] + radius_in_mm, start_in_mm[2] - radius_in_mm, start_in_mm[2] + radius_in_mm]
 
     return volumes, extent_parent_x_z_mm
+
+
+def fnc_pyramid(extent_idx_1, extent_idx_2, height_idx, height_in_voxels, idx_height_start, start_in_voxels_1, start_in_voxels_2,  basic_extent_in_voxels):
+    """"
+    cartesian representation of a pyramid that is oriented such that the edge is in positive x, y, or z direction. 
+    :param extent_idx_1:
+    :param extent_idx_2:
+    :param height_idx: 
+    :param height_in_voxels:
+    :param basic_extent_in_voxels: 
+    """
+    h1 = height_idx - idx_height_start
+    middle_length = basic_extent_in_voxels / height_in_voxels * (height_in_voxels - h1)
+    if ((abs(extent_idx_1 - start_in_voxels_1) - (middle_length)) <= 0) & ((abs(extent_idx_2 - start_in_voxels_2) - (middle_length))<=0):
+        return 0
+    else:
+        return 1
+
 
 
 def fnc_sphere(x, y, z, r, X):
