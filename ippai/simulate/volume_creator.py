@@ -122,7 +122,7 @@ def create_gruneisen_map(volumes, settings):
     :param volumes: The volumes to append the gruneisen parameter to
     :param settings: The settings to extract the temperature from
 
-    :return: the volumes with an appended map of gruneisen parameters of size volumes[0].size
+    :return: the volumes with an appended map of gruneisen parameters of size volumes[Tags.PROPERTY_ABSORPTION_PER_CM].size
     """
     if Tags.MEDIUM_TEMPERATURE_CELCIUS in settings:
         temperature_celcius = settings[Tags.MEDIUM_TEMPERATURE_CELCIUS]
@@ -141,7 +141,7 @@ def create_acoustic_properties(volumes, settings):
 
     :param volumes: The volumes to append the acoustic parameters to
     :param settings: The settings to extract if the medium is homogeneous of if heterogeneous parameters should be set.
-    :return: The volumes with appended maps of acoustic parameters of size volumes[0].size
+    :return: The volumes with appended maps of acoustic parameters of size volumes[Tags.PROPERTY_ABSORPTION_PER_CM].size
     """
 
     sizes = volumes[Tags.PROPERTY_ABSORPTION_PER_CM].shape
@@ -591,7 +591,7 @@ def add_cubical_tube(volumes, global_settings, structure_settings, mua, mus, g, 
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
-    sizes = np.shape(volumes[0])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     radius_in_mm = structure_settings[Tags.STRUCTURE_RADIUS_MM]
     radius_in_voxels = radius_in_mm / global_settings[Tags.SPACING_MM]
@@ -632,7 +632,7 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
-    sizes = np.shape(volumes[0])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     radius_min = structure_settings[Tags.STRUCTURE_RADIUS_MIN_MM]
     radius_max = structure_settings[Tags.STRUCTURE_RADIUS_MAX_MM]
@@ -714,7 +714,7 @@ def add_cube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
-    sizes = np.shape(volumes[0])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     length_x_in_mm = structure_settings[Tags.STRUCTURE_LENGTH_X_MM]
     length_y_in_mm = structure_settings[Tags.STRUCTURE_LENGTH_Y_MM]
@@ -763,7 +763,7 @@ def add_pyramid(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
-    sizes = np.shape(volumes[0])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     basic_extent_in_mm = structure_settings[Tags.STRUCTURE_BASIS_EXTENT_MM]
     height_in_mm = structure_settings[Tags.STRUCTURE_HEIGHT_MM]
@@ -838,7 +838,7 @@ def add_sphere(volumes, global_settings, structure_settings, mua, mus, g, oxy, e
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
-    sizes = np.shape(volumes[0])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     # radius_min = structure_settings[Tags.STRUCTURE_RADIUS_MIN_MM]
     # radius_max = structure_settings[Tags.STRUCTURE_RADIUS_MAX_MM]

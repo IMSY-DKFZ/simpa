@@ -38,6 +38,7 @@ class Tags:
     SIMULATION_EXTRACT_FIELD_OF_VIEW = "extract_field_of_view"
     GPU = "gpu"
     MEDIUM_TEMPERATURE_CELCIUS = "medium_temperature"
+    VOLUME_INFO_PATH = "volume_info_path"
 
     """
     Optical model settings
@@ -235,27 +236,83 @@ class Tags:
     CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = "structure_type"
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"
+    STRUCTURE_GEOMETRY_TYPE = "structure_geometry_type"
     STRUCTURE_TISSUE_PROPERTIES = "structure_tissue_properties"
 
+    #position -> general for all structures
     STRUCTURE_CENTER_DEPTH_MIN_MM = "structure_depth_min_mm"
     STRUCTURE_CENTER_DEPTH_MAX_MM = "structure_depth_max_mm"
+    STRUCTURE_CENTER_DEPTH_MM = "structure_center_depth_mm"
+    STRUCTURE_CENTER_Z_MM = "structure_start_z_mm"
 
+    STRUCTURE_CENTER_X_MIN_MM = "structure_start_x_min_mm"
+    STRUCTURE_CENTER_X_MAX_MM = "structure_start_x_max_mm"
+    STRUCTURE_CENTER_X_MM = "structure_start_x_mm"
+    STRUCTURE_CENTER_Y_MIN_MM = "structure_start_y_min_mm"
+    STRUCTURE_CENTER_Y_MAX_MM = "structure_start_y_max_mm"
+    STRUCTURE_CENTER_Y_MM = "structure_start_y_mm"
+    
+
+    #distortion
+    STRUCTURE_USE_DISTORTION = "structure_distortion_multiplicative"
+    STRUCTURE_DISTORTED_PARAM_LIST = "structure_distorted_param_list"
+    STRUCTURE_DISTORTION_FREQUENCY_PER_MM = "structure_distortion_wavelength_mm"
+
+    #filtering
+    STRUCTURE_GAUSSIAN_FILTER = "structure_gaussian_filter"
+    STRUCTURE_GAUSSIAN_FILTER_SIGMA = "structure_gaussian_filter_sigma"
+
+    #sizes and extends -> general for all structures
+    STRUCTURE_THICKNESS_MIN_MM = "structure_thickness_min_mm"
+    STRUCTURE_THICKNESS_MAX_MM = "structure_thickness_max_mm"
+    STRUCTURE_THICKNESS_MM = "structure_thickness_mm"
+
+    STRUCTURE_RADIUS_MIN_MM = "structure_radius_min_mm"
+    STRUCTURE_RADIUS_MAX_MM = "structure_radius_max_mm"
+    STRUCTURE_RADIUS_MM = "structure_radius_mm"
+    STRUCTURE_FORCE_ORTHAGONAL_TO_PLANE = "structure_force_orthagonal_to_plane"
+
+    STRUCTURE_LENGTH_X_MIN_MM = "strucutre_length_x_min_mm"
+    STRUCTURE_LENGTH_X_MAX_MM = "strucutre_length_x_max_mm"
+    STRUCTURE_LENGTH_X_MM = "strucutre_length_x_mm"
+    STRUCTURE_LENGTH_Y_MIN_MM = "strucutre_length_y_min_mm"
+    STRUCTURE_LENGTH_Y_MAX_MM = "strucutre_length_y_max_mm"
+    STRUCTURE_LENGTH_Y_MM = "strucutre_length_y_mm"
+    STRUCTURE_LENGTH_Z_MIN_MM = "strucutre_length_z_min_mm"
+    STRUCTURE_LENGTH_Z_MAX_MM = "strucutre_length_z_max_mm"
+    STRUCTURE_LENGTH_Z_MM = "strucutre_length_z_mm"
+
+    STRUCTURE_HEIGHT_MIN_MM = "strucutre_height_min_mm"
+    STRUCTURE_HEIGHT_MAX_MM = "strucutre_height_max_mm"
+    STRUCTURE_HEIGHT_MM = "strucutre_height_mm"
+    STRUCTURE_BASIS_EXTENT_MIN_MM = "strucutre_basis_extent_min_mm"
+    STRUCTURE_BASIS_EXTENT_MAX_MM = "strucutre_extent_max_mm"
+    STRUCTURE_BASIS_EXTENT_MM = "strucutre_basis_extent_mm"
+
+    #structures
     STRUCTURE_BACKGROUND = "structure_background"
 
     STRUCTURE_LAYER = "structure_layer"
-    STRUCTURE_THICKNESS_MIN_MM = "structure_thickness_min_mm"
-    STRUCTURE_THICKNESS_MAX_MM = "structure_thickness_max_mm"
-
-    STRUCTURE_TUBE = "structure_tube"
-    STRUCTURE_RADIUS_MIN_MM = "structure_radius_min_mm"
-    STRUCTURE_RADIUS_MAX_MM = "structure_radius_max_mm"
-    STRUCTURE_FORCE_ORTHAGONAL_TO_PLANE = "structure_force_orthagonal_to_plane"
-    STRUCTURE_TUBE_CENTER_X_MIN_MM = "structure_tube_start_x_min_mm"
-    STRUCTURE_TUBE_CENTER_X_MAX_MM = "structure_tube_start_x_max_mm"
 
     STRUCTURE_ELLIPSE = "structure_ellipse"
     STRUCTURE_MIN_ECCENTRICITY = "structure_eccentricity_min"
     STRUCTURE_MAX_ECCENTRICITY = "structure_eccentricity_max"
+
+    STRUCTURE_TUBE = "structure_tube"    
+
+    STRUCTURE_SPHERE = "structure_sphere"
+
+    STRUCTURE_CUBE = "structure_cube"
+
+    STRUCTURE_CUBICAL_TUBE = "structure_cubical_tube"
+
+        
+    STRUCTURE_PYRAMID = "structure_pyramid"
+    STRUCTURE_PYRAMID_ORIENTATION_XY = "pyramid_angle_xy"
+    STRUCTURE_PYRAMID_ORIENTATION_XZ = "pyramid_angle_xz"
+    STRUCTURE_PYRAMID_ORIENTATION_YZ = "pyramid_angle_yz"
+    STRUCTURE_PYRAMID_ORIENTATION = "pyramid_90_degree_shift"
+    
 
     UNITS_ARBITRARY = "arbitrary_unity"
     UNITS_PRESSURE = "newton_per_meters_squared"

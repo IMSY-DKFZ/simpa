@@ -28,3 +28,17 @@ class SegmentationClasses:
     FAT = 6
     ULTRASOUND_GEL_PAD = 7
     WATER = 8
+
+class GeometryClasses:
+    """
+    The geometry classes define which "geometry types" are modelled in the simulation volumes.
+    """
+    GENERIC = -1
+    AIR = 0
+    BACKGROUND = 1
+    LAYER = 2
+    TUBE = 3
+    SPHERE = 4
+    CUBICAL_TUBE = 5
+    CUBE = 6
+    PYRAMID = 7

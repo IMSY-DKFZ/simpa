@@ -20,10 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ippai.simulate import SegmentationClasses
+from ippai.simulate.constants import SegmentationClasses, GeometryClasses
 from ippai.utils import Tags
 from ippai.utils import MorphologicalTissueProperties
 from ippai.utils import TISSUE_LIBRARY
+from ippai.utils.calculate import randomize
+
 
 import numpy as np
 
@@ -141,6 +143,27 @@ def create_muscle_background():
     muscle_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.MUSCLE
     return muscle_dict
 
+def create_background(settings_dict):
+    background_dict = dict() 
+    if settings_dict["randomness"] == True:
+        mua = np.random.random() * (settings_dict["background_mua"][1] - settings_dict["background_mua"][0])  + settings_dict["background_mua"][0]
+        mus = np.random.random()* (settings_dict["background_mus"][1] - settings_dict["background_mus"][0]) +  settings_dict["background_mus"][0] 
+        g = np.random.random() * (settings_dict["background_g"][1] - settings_dict["background_mus"][0]) + settings_dict["background_mus"][0]
+        background_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        background_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = np.random.random() * (settings_dict["distortion_frequency"][1] - settings_dict["distortion_frequency"][0])+ settings_dict["distortion_frequency"][0]
+    else:
+        mua = settings_dict["background_mua"][0] 
+        mus = settings_dict["background_mus"][0]
+        g = settings_dict["background_g"][0] 
+        background_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        background_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] =  settings_dict["distortion_frequency"][0]
+    background_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_BACKGROUND
+    background_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.constant(mua=mua, mus=mus, g=g)
+    background_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.MUSCLE
+    background_dict[Tags.STRUCTURE_GEOMETRY_TYPE] = GeometryClasses.BACKGROUND
+    background_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_MUA, Tags.KEY_MUS, Tags.KEY_G]
+    return background_dict
+
 
 def create_epidermis_layer():
     epidermis_dict = dict()
@@ -152,6 +175,9 @@ def create_epidermis_layer():
     epidermis_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.epidermis()
     epidermis_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.EPIDERMIS
     return epidermis_dict
+
+
+
 
 
 def create_dermis_layer(background_oxy=0.0):
@@ -301,3 +327,237 @@ def create_subcutaneous_vein(relative_shift_mm=0.0, radius_factor=1.0):
     interosseous_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.blood_venous()
     interosseous_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
     return interosseous_dict
+
+
+
+def create_tube(settings_dict):
+    tube_dict = dict()
+    if settings_dict["randomness"]  == True: 
+        mua = np.random.random() * (settings_dict["tube_mua"][1] - settings_dict["tube_mua"][0]) + settings_dict["tube_mua"][0]
+        mus = np.random.random()  * (settings_dict["tube_mus"][1] - settings_dict["tube_mus"][0]) + settings_dict["tube_mus"][0]
+        g = np.random.random()  * (settings_dict["tube_g"][1] - settings_dict["tube_g"][0]) + settings_dict["tube_g"][0]
+        tube_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        tube_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = np.random.random() * (settings_dict["distortion_frequency"][1] - settings_dict["distortion_frequency"][0]) + settings_dict["distortion_frequency"][0]
+        tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = settings_dict["tube_center_depth"][0]
+        tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = settings_dict["tube_center_depth"][1]
+        tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = np.random.random() * (tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] - tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM]) + tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM]
+        tube_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = settings_dict["tube_radius"][0]
+        tube_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = settings_dict["tube_radius"][1]
+        tube_dict[Tags.STRUCTURE_RADIUS_MM] = randomize(tube_dict[Tags.STRUCTURE_RADIUS_MIN_MM], tube_dict[Tags.STRUCTURE_RADIUS_MAX_MM])
+        tube_dict[Tags.STRUCTURE_CENTER_X_MIN_MM] = settings_dict["tube_center_x"][0]
+        tube_dict[Tags.STRUCTURE_CENTER_X_MAX_MM] = settings_dict["tube_center_x"][1]
+        tube_dict[Tags.STRUCTURE_CENTER_X_MM] = randomize(tube_dict[Tags.STRUCTURE_CENTER_X_MIN_MM], tube_dict[Tags.STRUCTURE_CENTER_X_MAX_MM])
+        tube_dict[Tags.STRUCTURE_CENTER_Z_MM] = tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MM]
+    else:
+        mua = settings_dict["tube_mua"][0] 
+        mus = settings_dict["tube_mus"][0]
+        g = settings_dict["tube_g"][0]
+        tube_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        tube_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = settings_dict["distortion_frequency"][0]
+        tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = settings_dict["tube_center_depth"][0]
+        tube_dict[Tags.STRUCTURE_RADIUS_MM] = settings_dict["tube_radius"][0]  
+        tube_dict[Tags.STRUCTURE_CENTER_X_MM] = settings_dict["tube_center_x"][0] 
+        tube_dict[Tags.STRUCTURE_CENTER_Z_MM] = tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MM]
+    
+    tube_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.constant(mua=mua, mus=mus, g=g)
+    tube_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_MUA, Tags.KEY_MUS, Tags.KEY_G]
+    tube_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
+    tube_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_TUBE
+    tube_dict[Tags.STRUCTURE_GEOMETRY_TYPE] = GeometryClasses.TUBE
+    return tube_dict
+
+
+def create_sphere(settings_dict):
+    sphere_dict = dict()
+    if settings_dict["randomness"]  == True: 
+        mua = np.random.random() * (settings_dict["sphere_mua"][1] - settings_dict["sphere_mua"][0]) + settings_dict["sphere_mua"][0]
+        mus = np.random.random() * (settings_dict["sphere_mus"][1] - settings_dict["sphere_mus"][0]) + settings_dict["sphere_mus"][0]
+        g = np.random.random() * (settings_dict["sphere_g"][1] - settings_dict["sphere_g"][0]) + settings_dict["sphere_g"][0]
+        sphere_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        sphere_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = np.random.random() * (settings_dict["distortion_frequency"][1] - settings_dict["distortion_frequency"][0]) + settings_dict["distortion_frequency"][0]
+        sphere_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = settings_dict["sphere_center_depth"][0]
+        sphere_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = settings_dict["sphere_center_depth"][1]
+        sphere_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = np.random.random() * (sphere_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] - sphere_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM]) + sphere_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM]
+        sphere_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = settings_dict["sphere_radius"][0]
+        sphere_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = settings_dict["sphere_radius"][1]
+        sphere_dict[Tags.STRUCTURE_RADIUS_MM] = randomize(sphere_dict[Tags.STRUCTURE_RADIUS_MIN_MM], sphere_dict[Tags.STRUCTURE_RADIUS_MAX_MM])
+        sphere_dict[Tags.STRUCTURE_CENTER_X_MIN_MM] = settings_dict["sphere_center_x"][0]
+        sphere_dict[Tags.STRUCTURE_CENTER_X_MAX_MM] = settings_dict["sphere_center_x"][1]
+        sphere_dict[Tags.STRUCTURE_CENTER_X_MM] = randomize(sphere_dict[Tags.STRUCTURE_CENTER_X_MIN_MM], sphere_dict[Tags.STRUCTURE_CENTER_X_MAX_MM])
+        sphere_dict[Tags.STRUCTURE_CENTER_Y_MIN_MM] = settings_dict["sphere_center_y"][0]
+        sphere_dict[Tags.STRUCTURE_CENTER_Y_MAX_MM] =settings_dict["sphere_center_y"][1]
+        sphere_dict[Tags.STRUCTURE_CENTER_Y_MM] = randomize(sphere_dict[Tags.STRUCTURE_CENTER_Y_MIN_MM], sphere_dict[Tags.STRUCTURE_CENTER_Y_MAX_MM])
+    else:
+        mua = settings_dict["sphere_mua"][0] 
+        mus = settings_dict["sphere_mus"][0] 
+        g = settings_dict["sphere_g"][0] 
+        sphere_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        sphere_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = settings_dict["distortion_frequency"][0]
+        sphere_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = settings_dict["sphere_center_depth"][0] 
+        sphere_dict[Tags.STRUCTURE_RADIUS_MM] = settings_dict["sphere_radius"][0] 
+        sphere_dict[Tags.STRUCTURE_CENTER_X_MM] = settings_dict["sphere_center_x"][0]
+        sphere_dict[Tags.STRUCTURE_CENTER_Y_MM] = settings_dict["sphere_center_y"][0]
+    sphere_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.constant(mua=mua, mus=mus, g=g)
+    sphere_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_MUA, Tags.KEY_MUS, Tags.KEY_G]
+    sphere_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_SPHERE
+    sphere_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
+    sphere_dict[Tags.STRUCTURE_GEOMETRY_TYPE] = GeometryClasses.SPHERE
+    return sphere_dict
+
+
+def create_layer(settings_dict):
+    layer_dict = dict()
+    if settings_dict["randomness"] == True:
+        mua = np.random.random() * (settings_dict["layer_mua"][1] - settings_dict["layer_mua"][0]) + settings_dict["layer_mua"][0]
+        mus = np.random.random() * (settings_dict["layer_mus"][1] - settings_dict["layer_mus"][0]) + settings_dict["layer_mus"][0]
+        g = np.random.random() * (settings_dict["layer_g"][1] - settings_dict["layer_g"][0]) + settings_dict["layer_g"][0]
+        layer_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        layer_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = np.random.random() * (settings_dict["distortion_frequency"][1] - settings_dict["distortion_frequency"][0])+ settings_dict["distortion_frequency"][0]
+        layer_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = settings_dict["layer_center_depth"][0]
+        layer_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = settings_dict["layer_center_depth"][1]
+        layer_dict[Tags.STRUCTURE_THICKNESS_MM] = np.random.random() * (settings_dict["layer_thickness"][1] - settings_dict["layer_thickness"][0]) + settings_dict["layer_thickness"][0]
+        layer_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = randomize(layer_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM], layer_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM])
+    else:
+        mua = settings_dict["layer_mua"][0]
+        mus = settings_dict["layer_mus"][0]
+        g = settings_dict["layer_g"][0]
+        layer_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        layer_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = settings_dict["distortion_frequency"][0]
+        layer_dict[Tags.STRUCTURE_THICKNESS_MM] = settings_dict["layer_thickness"][0] 
+        layer_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = settings_dict["layer_center_depth"][0]
+    layer_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.constant(mua=mua, mus=mus, g=g)
+    layer_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_MUA, Tags.KEY_MUS, Tags.KEY_G]
+    layer_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_LAYER
+    layer_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.DERMIS
+    layer_dict[Tags.STRUCTURE_GEOMETRY_TYPE] = GeometryClasses.LAYER
+    return layer_dict
+
+
+def create_pyramid(settings_dict):
+    pyramid_dict = dict()
+    if settings_dict["randomness"] == True:
+        mua =  np.random.random() * (settings_dict["pyramid_mua"][1] - settings_dict["pyramid_mua"][0]) + settings_dict["pyramid_mua"][0]
+        mus =  np.random.random() * (settings_dict["pyramid_mus"][1] - settings_dict["pyramid_mus"][0]) + settings_dict["pyramid_mus"][0]
+        g =  np.random.random() * (settings_dict["pyramid_g"][1] - settings_dict["pyramid_g"][0]) + settings_dict["pyramid_g"][0]
+        pyramid_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        pyramid_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = settings_dict["randomness"]* (settings_dict["distortion_frequency"][1] - settings_dict["distortion_frequency"][0]) + settings_dict["distortion_frequency"][0]
+        pyramid_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = settings_dict["pyramid_center_depth"][0]
+        pyramid_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = settings_dict["pyramid_center_depth"][1]
+        pyramid_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = randomize(pyramid_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM], pyramid_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM])
+        pyramid_dict[Tags.STRUCTURE_CENTER_X_MIN_MM] = settings_dict["pyramid_center_x"][0]
+        pyramid_dict[Tags.STRUCTURE_CENTER_X_MAX_MM] = settings_dict["pyramid_center_x"][1]
+        pyramid_dict[Tags.STRUCTURE_CENTER_X_MM] = randomize(pyramid_dict[Tags.STRUCTURE_CENTER_X_MIN_MM], pyramid_dict[Tags.STRUCTURE_CENTER_X_MAX_MM])
+        pyramid_dict[Tags.STRUCTURE_CENTER_Y_MIN_MM] = settings_dict["pyramid_center_y"][0]
+        pyramid_dict[Tags.STRUCTURE_CENTER_Y_MAX_MM] = settings_dict["pyramid_center_y"][1]
+        pyramid_dict[Tags.STRUCTURE_CENTER_Y_MM] = randomize(pyramid_dict[Tags.STRUCTURE_CENTER_Y_MIN_MM], pyramid_dict[Tags.STRUCTURE_CENTER_Y_MAX_MM])
+      
+        pyramid_dict[Tags.STRUCTURE_HEIGHT_MIN_MM] = settings_dict["pyramid_height"][0]
+        pyramid_dict[Tags.STRUCTURE_HEIGHT_MAX_MM] = settings_dict["pyramid_height"][1]
+        pyramid_dict[Tags.STRUCTURE_HEIGHT_MM] = randomize(pyramid_dict[Tags.STRUCTURE_HEIGHT_MIN_MM], pyramid_dict[Tags.STRUCTURE_HEIGHT_MAX_MM])
+        pyramid_dict[Tags.STRUCTURE_BASIS_EXTENT_MIN_MM] = settings_dict["pyramid_basis_extent"][0]
+        pyramid_dict[Tags.STRUCTURE_BASIS_EXTENT_MAX_MM] = settings_dict["pyramid_basis_extent"][1]
+        pyramid_dict[Tags.STRUCTURE_BASIS_EXTENT_MM] = randomize(pyramid_dict[Tags.STRUCTURE_BASIS_EXTENT_MIN_MM], pyramid_dict[Tags.STRUCTURE_BASIS_EXTENT_MAX_MM])
+     
+        #pyramid_dict[Tags.STRUCTURE_PYRAMID_ORIENTATION_XY] = settings_dict["randomness"] * (settings_dict["pyramid_orientation_xy"][0] - settings_dict["pyramid_orientation_xy"][1]) + settings_dict["pyramid_orientation_xy"][0]
+        #pyramid_dict[Tags.STRUCTURE_PYRAMID_ORIENTATION_XZ] = settings_dict["randomness"] * (settings_dict["pyramid_orientation_xz"][0] - settings_dict["pyramid_orientation_xz"][1]) + settings_dict["pyramid_orientation_xz"][0]
+        #pyramid_dict[Tags.STRUCTURE_PYRAMID_ORIENTATION_YZ] = settings_dict["randomness"] * (settings_dict["pyramid_orientation_yz"][0] - settings_dict["pyramid_orientation_yz"][1]) + settings_dict["pyramid_orientation_yz"][0]
+        
+        pyramid_dict[Tags.STRUCTURE_PYRAMID_ORIENTATION] = settings_dict["pyramid_orientation"][0]
+    else:
+        mua = settings_dict["pyramid_mua"][0]
+        mus = settings_dict["pyramid_mus"][1] 
+        g = settings_dict["pyramid_g"][0]
+        pyramid_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        pyramid_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = settings_dict["distortion_frequency"][0]
+        pyramid_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = settings_dict["pyramid_center_depth"][0]
+        pyramid_dict[Tags.STRUCTURE_CENTER_X_MM] = settings_dict["pyramid_center_x"][0]
+        pyramid_dict[Tags.STRUCTURE_CENTER_Y_MM] = settings_dict["pyramid_center_y"][0]
+        pyramid_dict[Tags.STRUCTURE_HEIGHT_MM] = settings_dict["pyramid_height"][0]
+        pyramid_dict[Tags.STRUCTURE_BASIS_EXTENT_MM] = settings_dict["pyramid_basis_extent"][0] 
+        pyramid_dict[Tags.STRUCTURE_PYRAMID_ORIENTATION] = settings_dict["pyramid_orientation"][0]
+    pyramid_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.constant(mua=mua, mus=mus, g=g)
+    pyramid_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_MUA, Tags.KEY_MUS, Tags.KEY_G]
+    pyramid_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_PYRAMID
+    pyramid_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
+    pyramid_dict[Tags.STRUCTURE_GEOMETRY_TYPE] = GeometryClasses.PYRAMID
+    return pyramid_dict
+
+def create_cube(settings_dict):
+    cube_dict = dict()
+    if settings_dict["randomness"] == True: 
+        mua = np.random.random() * (settings_dict["cube_mua"][1] - settings_dict["cube_mua"][0]) + settings_dict["cube_mua"][0]
+        mus = np.random.random() * (settings_dict["cube_mus"][1] - settings_dict["cube_mus"][0]) + settings_dict["cube_mus"][0]
+        g = np.random.random() * (settings_dict["cube_g"][1] - settings_dict["cube_g"][0]) + settings_dict["cube_g"][0]
+        cube_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        cube_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = np.random.random()  * (settings_dict["distortion_frequency"][1] - settings_dict["distortion_frequency"][0]) + settings_dict["distortion_frequency"][0]
+        cube_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = settings_dict["cube_center_depth"][0]
+        cube_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = settings_dict["cube_center_depth"][1]
+        cube_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = randomize(cube_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM], cube_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM])
+        cube_dict[Tags.STRUCTURE_CENTER_X_MIN_MM] = settings_dict["cube_center_x"][0]
+        cube_dict[Tags.STRUCTURE_CENTER_X_MAX_MM] = settings_dict["cube_center_x"][1]
+        cube_dict[Tags.STRUCTURE_CENTER_X_MM] = randomize(cube_dict[Tags.STRUCTURE_CENTER_X_MIN_MM], cube_dict[Tags.STRUCTURE_CENTER_X_MAX_MM])
+        cube_dict[Tags.STRUCTURE_CENTER_Y_MIN_MM] = settings_dict["cube_center_y"][0]
+        cube_dict[Tags.STRUCTURE_CENTER_Y_MAX_MM] = settings_dict["cube_center_y"][1]
+        cube_dict[Tags.STRUCTURE_CENTER_Y_MM] = randomize(cube_dict[Tags.STRUCTURE_CENTER_Y_MIN_MM], cube_dict[Tags.STRUCTURE_CENTER_Y_MAX_MM])
+       
+        cube_dict[Tags.STRUCTURE_LENGTH_X_MIN_MM] = settings_dict["cube_length_x"][0]
+        cube_dict[Tags.STRUCTURE_LENGTH_X_MAX_MM] = settings_dict["cube_length_x"][1]
+        cube_dict[Tags.STRUCTURE_LENGTH_X_MM] = randomize(cube_dict[Tags.STRUCTURE_LENGTH_X_MIN_MM], cube_dict[Tags.STRUCTURE_LENGTH_X_MAX_MM])
+        cube_dict[Tags.STRUCTURE_LENGTH_Y_MIN_MM] = settings_dict["cube_length_y"][0]
+        cube_dict[Tags.STRUCTURE_LENGTH_Y_MAX_MM] = settings_dict["cube_length_y"][1]
+        cube_dict[Tags.STRUCTURE_LENGTH_Y_MM] = randomize(cube_dict[Tags.STRUCTURE_LENGTH_Y_MIN_MM], cube_dict[Tags.STRUCTURE_LENGTH_Y_MAX_MM])
+        cube_dict[Tags.STRUCTURE_LENGTH_Z_MIN_MM] = settings_dict["cube_length_z"][0]
+        cube_dict[Tags.STRUCTURE_LENGTH_Z_MAX_MM] = settings_dict["cube_length_z"][1]
+        cube_dict[Tags.STRUCTURE_LENGTH_Z_MM] = randomize(cube_dict[Tags.STRUCTURE_LENGTH_Z_MIN_MM], cube_dict[Tags.STRUCTURE_LENGTH_Z_MAX_MM])
+    else:
+        mua = settings_dict["cube_mua"][0]
+        mus = settings_dict["cube_mus"][0]
+        g = settings_dict["cube_g"][0]
+        cube_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        cube_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = settings_dict["distortion_frequency"][0]
+        cube_dict[Tags.STRUCTURE_CENTER_DEPTH_MM] = settings_dict["cube_center_depth"][0]
+        cube_dict[Tags.STRUCTURE_CENTER_X_MM] = settings_dict["cube_center_x"][0]
+        cube_dict[Tags.STRUCTURE_CENTER_Y_MM] = settings_dict["cube_center_y"][0]
+        
+        cube_dict[Tags.STRUCTURE_LENGTH_X_MM] = settings_dict["cube_length_x"][0]
+        cube_dict[Tags.STRUCTURE_LENGTH_Y_MM] = settings_dict["cube_length_y"][0]
+        cube_dict[Tags.STRUCTURE_LENGTH_Z_MM] = settings_dict["cube_length_z"][0]
+    cube_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.constant(mua=mua, mus=mus, g=g)
+    cube_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_MUA, Tags.KEY_MUS, Tags.KEY_G]
+    cube_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_CUBE
+    cube_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
+    cube_dict[Tags.STRUCTURE_GEOMETRY_TYPE] = GeometryClasses.CUBE
+    return cube_dict
+
+def create_cubical_tube(settings_dict):
+    cubical_tube_dict = dict()
+    if settings_dict["randomness"] == True:
+        mua = np.random.random()  * (settings_dict["cubical_tube_mua"][1] - settings_dict["cubical_tube_mua"][0]) + settings_dict["cubical_tube_mua"][0]
+        mus = np.random.random()   * (settings_dict["cubical_tube_mus"][1] - settings_dict["cubical_tube_mus"][0]) + settings_dict["cubical_tube_mus"][0]
+        g = np.random.random()   * (settings_dict["cubical_tube_g"][1] - settings_dict["cubical_tube_g"][0]) + settings_dict["cubical_tube_g"][0]
+        cubical_tube_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        cubical_tube_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = np.random.random()  * (settings_dict["distortion_frequency"][1] - settings_dict["distortion_frequency"][0]) + settings_dict["distortion_frequency"][0]
+        cubical_tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM] = settings_dict["cubical_tube_center_depth"][0]
+        cubical_tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] = settings_dict["cubical_tube_center_depth"][1]
+        cubical_tube_dict[Tags.STRUCTURE_CENTER_Z_MM] = randomize(cubical_tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MIN_MM], cubical_tube_dict[Tags.STRUCTURE_CENTER_DEPTH_MAX_MM] )
+        cubical_tube_dict[Tags.STRUCTURE_RADIUS_MIN_MM] = settings_dict["cubical_tube_radius"][0]
+        cubical_tube_dict[Tags.STRUCTURE_RADIUS_MAX_MM] = settings_dict["cubical_tube_radius"][1]
+        cubical_tube_dict[Tags.STRUCTURE_RADIUS_MM] = randomize(cubical_tube_dict[Tags.STRUCTURE_RADIUS_MIN_MM], cubical_tube_dict[Tags.STRUCTURE_RADIUS_MAX_MM] )
+        cubical_tube_dict[Tags.STRUCTURE_CENTER_X_MIN_MM] = settings_dict["cubical_tube_center_x"][0] 
+        cubical_tube_dict[Tags.STRUCTURE_CENTER_X_MAX_MM] = settings_dict["cubical_tube_center_x"][1]
+        cubical_tube_dict[Tags.STRUCTURE_CENTER_X_MM] = randomize(cubical_tube_dict[Tags.STRUCTURE_CENTER_X_MIN_MM], cubical_tube_dict[Tags.STRUCTURE_CENTER_X_MAX_MM])
+    else:
+        mua = settings_dict["cubical_tube_mua"][0]
+        mus = settings_dict["cubical_tube_mus"][0]
+        g = settings_dict["cubical_tube_g"][0]
+        cubical_tube_dict[Tags.STRUCTURE_USE_DISTORTION] = settings_dict["distortion"][0]
+        cubical_tube_dict[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] = settings_dict["distortion_frequency"][0]
+        cubical_tube_dict[Tags.STRUCTURE_CENTER_Z_MM] = settings_dict["cubical_tube_center_depth"][0] 
+        cubical_tube_dict[Tags.STRUCTURE_RADIUS_MM] = settings_dict["cubical_tube_radius"][0]
+        cubical_tube_dict[Tags.STRUCTURE_CENTER_X_MM] = settings_dict["cubical_tube_center_x"][0] 
+    cubical_tube_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.constant(mua=mua, mus=mus, g=g)
+    cubical_tube_dict[Tags.STRUCTURE_DISTORTED_PARAM_LIST] = [Tags.KEY_MUA, Tags.KEY_MUS, Tags.KEY_G]
+    cubical_tube_dict[Tags.STRUCTURE_TYPE] = Tags.STRUCTURE_CUBICAL_TUBE
+    cubical_tube_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.GENERIC
+    cubical_tube_dict[Tags.STRUCTURE_GEOMETRY_TYPE] = GeometryClasses.CUBICAL_TUBE
+    return cubical_tube_dict
