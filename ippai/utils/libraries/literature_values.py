@@ -220,17 +220,16 @@ class MorphologicalTissueProperties:
     values were derived for tissue modelling.
     """
 
-    #: Radial and ulnar artery diameter reference:
-    #: @article{ashraf2010size,
-    #:     title={Size of radial and ulnar artery in local population},
-    #:     author={Ashraf, Tariq and Panhwar, Ziauddin and Habib, Sultana and Memon, Muhammad Anis and Shamsi,
-    #:             Fahad and Arif, Javed},
-    #:     journal={JPMA-Journal of the Pakistan Medical Association},
-    #:     volume={60},
-    #:     number={10},
-    #:     pages={817},
-    #:     year={2010}
-    #: }
+    # @article{ashraf2010size,
+    #     title={Size of radial and ulnar artery in local population},
+    #     author={Ashraf, Tariq and Panhwar, Ziauddin and Habib, Sultana and Memon, Muhammad Anis and Shamsi,
+    #             Fahad and Arif, Javed},
+    #     journal={JPMA-Journal of the Pakistan Medical Association},
+    #     volume={60},
+    #     number={10},
+    #     pages={817},
+    #     year={2010}
+    # }
     RADIAL_ARTERY_DIAMETER_MEAN_MM = 2.25
     RADIAL_ARTERY_DIAMETER_STD_MM = 0.4
     ULNAR_ARTERY_DIAMETER_MEAN_MM = 2.35

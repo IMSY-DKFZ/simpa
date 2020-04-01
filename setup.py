@@ -8,7 +8,7 @@ with open('requirements.txt', 'r') as requirements_file:
 
 setuptools.setup(
     name="ippai",
-    version="0.1.0b",
+    version="0.1.0",
     author="Computer Assisted Medical Interventions (CAMI), DKFZ",
     description="Image Processing for Photoacoustic Imaging",
     long_description=long_description,

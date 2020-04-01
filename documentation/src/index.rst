@@ -44,22 +44,74 @@ The file can be found in samples/create_custom_tissues.py:
 Class references
 ================
 
+Module: utils
+-------------
+
 .. automodule:: ippai.utils
-.. autoclass:: ippai.utils.MorphologicalTissueProperties
-.. autoclass:: ippai.utils.OpticalTissueProperties
-.. autoclass:: ippai.utils.StandardProperties
+    :members:
 
-.. autoclass:: ippai.utils.AbsorptionSpectrum
+.. automodule:: ippai.utils.libraries
     :members:
-.. autoclass:: ippai.utils.AbsorptionSpectrumLibrary
+.. automodule:: ippai.utils.libraries.chromophore_library
     :members:
-.. autofunction:: ippai.utils.view_absorption_spectra
+.. automodule:: ippai.utils.libraries.literature_values
+    :members:
+.. automodule:: ippai.utils.libraries.spectra_library
+    :members:
+.. automodule:: ippai.utils.libraries.tissue_library
+    :members:
 
-.. autoclass::  Chromophore
+Module: io_handling
+-------------------
+
+.. automodule:: ippai.io_handling
     :members:
-.. autoclass::  ChromophoreLibrary
+
+.. automodule:: ippai.io_handling.io_hdf5
     :members:
-.. autoclass::  TissueLibrary
+
+Module: simulate
+-------------------
+
+.. automodule:: ippai.simulate
     :members:
-.. autoclass::  TissueSettingsGenerator
+
+.. automodule:: ippai.simulate.simulation
     :members:
+
+.. automodule:: ippai.simulate.tissue_properties
+    :members:
+
+.. automodule:: ippai.simulate.volume_creator
+    :members:
+
+Conventions
+^^^^^^^^^^^^^^^
+
+.. automodule:: ippai.simulate.constants
+    :members:
+
+Structures
+^^^^^^^^^^^^^^^
+
+.. automodule:: ippai.simulate.structures
+    :members:
+
+Forward models
+^^^^^^^^^^^^^^^
+
+.. automodule:: ippai.simulate.models
+    :members:
+
+.. automodule:: ippai.simulate.models.optical_models
+    :members:
+
+.. automodule:: ippai.simulate.models.acoustic_models
+    :members:
+
+.. automodule:: ippai.simulate.models.reconstruction_models
+    :members:
+
+.. automodule:: ippai.simulate.models.noise_models
+    :members:
+

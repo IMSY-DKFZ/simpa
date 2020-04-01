@@ -22,7 +22,7 @@ copyright = '2020, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelb
 author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0b'
+release = '0.1.0'
 version = release
 
 
