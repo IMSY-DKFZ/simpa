@@ -51,7 +51,7 @@ def create_simulation_volume(settings):
             upsampled_volume_path = SaveFilePaths.SIMULATION_PROPERTIES\
                 .format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
             save_hdf5(upsampled_volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path=upsampled_volume_path)
-
+    np.random.seed(seed + 14)
     return volume_path
 
 
@@ -77,7 +77,6 @@ def create_volumes(settings, seed, distortion=None):
             if i not in (Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE):
                 volumes[i] = np.repeat(volumes[i], tmp_y_dim / settings[Tags.SPACING_MM], axis=1)
                 volumes[i] = np.flip(volumes[i], 1)
-                print(volumes[i].shape)
     settings[Tags.DIM_VOLUME_Y_MM] = tmp_y_dim
 
     return volumes
@@ -424,11 +423,12 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
                                            extent_x_z_mm, distortion=distortion)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_TUBE:
-        volumes, extent_x_z_mm = add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_x_z_mm)
+        volumes, extent_x_z_mm = add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy,
+                                          extent_x_z_mm, distortion=distortion)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_ELLIPSE:
         volumes, extent_x_z_mm = add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy,
-                                             extent_x_z_mm)
+                                             extent_x_z_mm, distortion=distortion)
 
     if Tags.CHILD_STRUCTURES in structure_settings:
         for child_structure in structure_settings[Tags.CHILD_STRUCTURES]:
@@ -505,7 +505,7 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
     return volumes, extent_parent_x_z_mm
 
 
-def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
+def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm, distortion=None):
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
@@ -536,6 +536,9 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
 
     start_in_mm = np.asarray([randomize(start_x_min, start_x_max), 0,
                               randomize(start_z_min, start_z_max)])
+
+    if distortion is not None:
+        start_in_mm[2] -= distortion[0](start_in_mm[0])
 
     start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
 
@@ -569,7 +572,7 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
     return volumes, extent_parent_x_z_mm
 
 
-def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm):
+def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm, distortion=None):
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
@@ -617,6 +620,9 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
 
     start_in_mm = np.asarray([randomize(start_x_min, start_x_max), 0,
                               randomize(start_z_min, start_z_max)])
+
+    if distortion is not None:
+        start_in_mm[2] -= distortion[0](start_in_mm[0])
 
     start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
 
