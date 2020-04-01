@@ -284,32 +284,56 @@ def append_msot_probe(volumes, global_settings, distortion=None):
     water_layer_height = int(round(42.2 / global_settings[Tags.SPACING_MM]))
 
     new_mua = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * mua_water
-    new_mua[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = mua_mediprene_layer
     new_mua[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_ABSORPTION_PER_CM]
+    volumes[Tags.PROPERTY_ABSORPTION_PER_CM] = new_mua
 
     new_mus = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * mus_water
-    new_mus[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = mus_mediprene_layer
     new_mus[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_SCATTERING_PER_CM]
+    volumes[Tags.PROPERTY_SCATTERING_PER_CM] = new_mus
 
     new_g = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * g_water
-    new_g[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = g_mediprene_layer
     new_g[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_ANISOTROPY]
+    volumes[Tags.PROPERTY_ANISOTROPY] = new_g
 
     new_oxy = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * (-1)
     new_oxy[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_OXYGENATION]
+    volumes[Tags.PROPERTY_OXYGENATION] = new_oxy
 
     new_seg = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * \
               SegmentationClasses.GENERIC
-    # new_seg[:, :, water_layer_height:water_layer_height + mediprene_layer_height] = \
-    #     SegmentationClasses.ULTRASOUND_GEL_PAD
     new_seg[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_SEGMENTATION]
+    volumes[Tags.PROPERTY_SEGMENTATION] = new_seg
+
+    if distortion is not None:
+        mediprene_layer_settings = {
+            Tags.STRUCTURE_CENTER_DEPTH_MAX_MM: 42.2,
+            Tags.STRUCTURE_CENTER_DEPTH_MIN_MM: 42.2,
+            Tags.STRUCTURE_SEGMENTATION_TYPE: SegmentationClasses.ULTRASOUND_GEL_PAD,
+            Tags.STRUCTURE_THICKNESS_MIN_MM: 1,
+            Tags.STRUCTURE_THICKNESS_MAX_MM: 1
+        }
+        volumes, _ = add_layer(volumes, global_settings, mediprene_layer_settings, mua=mua_mediprene_layer,
+                               mus=mus_mediprene_layer, g=g_mediprene_layer, oxy=-1,
+                               extent_parent_x_z_mm=None, distortion=distortion)
+
+        z_range = range(int(np.round(42.2 / global_settings[Tags.SPACING_MM])),
+                        int(np.round((42.2 + 1 - distortion[1]) / global_settings[Tags.SPACING_MM])))
+        for x_idx in range(sizes[0]):
+            for z_idx in z_range:
+                if volumes[Tags.PROPERTY_SEGMENTATION][x_idx, 0, z_idx] == SegmentationClasses.ULTRASOUND_GEL_PAD:
+                    break
+                else:
+                    volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, 0, z_idx] = mua_water
+                    volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, 0, z_idx] = mus_water
+                    volumes[Tags.PROPERTY_ANISOTROPY][x_idx, 0, z_idx] = g_water
+                    volumes[Tags.PROPERTY_OXYGENATION][x_idx, 0, z_idx] = -1
+                    volumes[Tags.PROPERTY_SEGMENTATION][x_idx, 0, z_idx] = SegmentationClasses.GENERIC
 
     if Tags.RUN_ACOUSTIC_MODEL in global_settings:
         if global_settings[Tags.RUN_ACOUSTIC_MODEL]:
             sizes = new_seg.shape
 
             detector_map = np.zeros((sizes[2], sizes[0]))
-            # detector_map = top_center_crop_power_two(detector_map)
             detector_directivity = np.zeros(detector_map.shape)
 
             pitch_angle = global_settings[Tags.SENSOR_ELEMENT_PITCH_MM] / global_settings[Tags.SENSOR_RADIUS_MM]
@@ -341,49 +365,15 @@ def append_msot_probe(volumes, global_settings, distortion=None):
                         detector_directivity[z_det, y_det] = -angle
                 else:
                     detector_directivity = None
+
+            volumes[Tags.PROPERTY_SENSOR_MASK] = np.rot90(detector_map, 1)
+
             if detector_directivity is not None:
-                return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
-                        Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
-                        Tags.PROPERTY_ANISOTROPY: new_g,
-                        Tags.PROPERTY_OXYGENATION: new_oxy,
-                        Tags.PROPERTY_SEGMENTATION: new_seg,
-                        Tags.PROPERTY_SENSOR_MASK: np.rot90(detector_map, 1),
-                        Tags.PROPERTY_DIRECTIVITY_ANGLE: np.rot90(detector_directivity, 1)}
+                volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(detector_directivity, 1)
             else:
-                volumes = {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
-                        Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
-                        Tags.PROPERTY_ANISOTROPY: new_g,
-                        Tags.PROPERTY_OXYGENATION: new_oxy,
-                        Tags.PROPERTY_SEGMENTATION: new_seg,
-                        Tags.PROPERTY_SENSOR_MASK: np.rot90(detector_map, 1),
-                        Tags.PROPERTY_DIRECTIVITY_ANGLE: detector_directivity}
-                if distortion is not None:
-                    mediprene_layer_settings = {
-                        Tags.STRUCTURE_CENTER_DEPTH_MAX_MM: 42.2,
-                        Tags.STRUCTURE_CENTER_DEPTH_MIN_MM: 42.2,
-                        Tags.STRUCTURE_SEGMENTATION_TYPE: SegmentationClasses.ULTRASOUND_GEL_PAD,
-                        Tags.STRUCTURE_THICKNESS_MIN_MM: 1,
-                        Tags.STRUCTURE_THICKNESS_MAX_MM: 1
-                    }
-                    volumes, _ = add_layer(volumes, global_settings, mediprene_layer_settings, mua=mua_mediprene_layer,
-                                        mus=mus_mediprene_layer, g=g_mediprene_layer, oxy=-1,
-                                        extent_parent_x_z_mm=None, distortion=distortion)
-                return volumes
+                volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = detector_directivity
 
-
-        else:
-            return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
-                    Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
-                    Tags.PROPERTY_ANISOTROPY: new_g,
-                    Tags.PROPERTY_OXYGENATION: new_oxy,
-                    Tags.PROPERTY_SEGMENTATION: new_seg}
-
-    else:
-        return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
-                Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
-                Tags.PROPERTY_ANISOTROPY: new_g,
-                Tags.PROPERTY_OXYGENATION: new_oxy,
-                Tags.PROPERTY_SEGMENTATION: new_seg}
+    return volumes
 
 
 def create_empty_volume(global_settings):

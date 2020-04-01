@@ -28,14 +28,7 @@ def simulate(settings, optical_path):
     data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3)
     data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
     data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE])
-    import matplotlib.pyplot as plt
-    for i, (key, value) in enumerate(data_dict.items()):
-        print(key, value.shape)
-        plt.subplot(2, 3, i + 1)
-        plt.imshow(value)
-        plt.title(key)
 
-    plt.show()
     try:
         data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3)
     except ValueError:
