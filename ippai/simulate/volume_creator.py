@@ -318,6 +318,9 @@ def append_msot_probe(volumes, global_settings, distortion=None):
             focus = np.asarray([int(round(detector_radius + 11.2 / global_settings[Tags.SPACING_MM])),
                                 int(round(detector_map.shape[1] / 2))])
 
+            if distortion is not None:
+                focus[0] -= np.round(distortion[1] / (2 * global_settings[Tags.SPACING_MM]))
+
             for i in range(-int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2),
                            int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2)):
                 angle = pitch_angle * i  # Convert Pitch to mm
