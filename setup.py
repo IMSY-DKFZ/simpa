@@ -10,7 +10,7 @@ setuptools.setup(
     name="ippai",
     version="0.0.1",
     author="Computer Assisted Medical Interventions (CAMI), DKFZ",
-    description="Image Processing for Photoacoustic Imaging Python Library",
+    description="Image Processing for Photoacoustic Imaging",
     long_description=long_description,
     packages=setuptools.find_packages(),
     install_requires=requirements

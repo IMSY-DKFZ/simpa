@@ -1,386 +1,79 @@
-import numpy as np
-from ippai.simulate.utils import randomize
-from ippai.simulate import Tags, OpticalTissueProperties
-import os
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 
 class TissueProperties(object):
+    """
+    
+    """
 
-    def __init__(self, settings, tissue_type, shape, spacing):
+    def __init__(self, settings: dict):
+        """
+        :param settings:
+        :Param legacy_normalize_scattering:
         """
 
-        The TissueProperties class encapsules the generation of physical properties from tissue parameters.
-        The tissue parameters that are of relevance are blood volume fraction (B), water volume fraction (W),
-        fat volume fraction (F), melanin volume fraction (M), and blood oxygenation (OXY).
+        self.ensure_valid_settings(settings)
 
-        From these parameters, depending on the chosen wavelength l, the parameters will be calculated:
+        self.chromophores = []
+        _keys = settings.keys()
+        for chromophore_name in _keys:
+            self.chromophores.append(settings[chromophore_name])
 
-            [mu_a, mu_s, g] = f(B, W, F, M, OXY, l)
-
-        To enable randomized instantiation, the input settings contain a upper and lower limit of the parameters,
-        between which the parameter p will be drawn from a uniform distribution:
-
-            p = U(p_min, p_max)
-
-        Usage example:
-
-            s = get_settings()
-            tissue_type = "MyTissueType"
-            wavelength = 800
-            my_tissue_type_properties = TissueProperties(s, tissue_type)
-            [mua, mus, g] = my_tissue_type_properties.get(wavelength)
-
-        :param settings: The simulation settings dictionary
-        :param tissue_type: The tissue type to check in the settings file
+    def ensure_valid_settings(self, settings: dict):
         """
-        self.KEYS_IN_ORDER = [Tags.KEY_BLOOD, Tags.KEY_WATER, Tags.KEY_FAT, Tags.KEY_MELANIN, Tags.KEY_OXY]
-        self.B_min = None
-        self.B_max = None
-        self.W_min = None
-        self.W_max = None
-        self.F_min = None
-        self.F_max = None
-        self.M_min = None
-        self.M_max = None
-        self.OXY_min = None
-        self.OXY_max = None
-        self.bvf = None
-        self.wvf = None
-        self.fvf = None
-        self.mvf = None
-        self.oxy = None
-        self.musp500 = None
-        self.f_ray = None
-        self.b_mie = None
-        self.anisotropy = None
-        self.constant_properties = False
-        self.constant_mua = None
-        self.constant_mus = None
-        self.constant_g = None
-
-        self.KEYWORDS = [Tags.KEY_B_MIN, Tags.KEY_B_MAX, Tags.KEY_W_MAX, Tags.KEY_W_MIN, Tags.KEY_F_MAX, Tags.KEY_F_MIN,
-                         Tags.KEY_M_MAX, Tags.KEY_M_MIN, Tags.KEY_OXY_MAX, Tags.KEY_OXY_MIN]
-
-        distributions = dict()
-        sizes = dict()
-        gauss_size = dict()
-        for key in self.KEYS_IN_ORDER:
-            distributions[key] = 'uniform'
-            sizes[key] = (1,)
-            gauss_size[key] = 0
-
-        if Tags.STRUCTURE_USE_DISTORTION in settings:
-            if settings[Tags.STRUCTURE_USE_DISTORTION]:
-                if Tags.STRUCTURE_DISTORTED_PARAM_LIST in settings:
-                    for key in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
-                        distributions[key] = 'normal'
-                        sizes[key] = shape
-                        if (Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM in settings and
-                                settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] is not None):
-                            gauss_size[key] = settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing
-
-        if settings is not None:
-            if Tags.KEY_CONSTANT_PROPERTIES in settings[Tags.STRUCTURE_TISSUE_PROPERTIES]:
-                if settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_CONSTANT_PROPERTIES] is True:
-                    self.constant_properties = True
-                    self.constant_mua = settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_MUA]
-                    self.constant_mus = settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_MUS]
-                    self.constant_g = settings[Tags.STRUCTURE_TISSUE_PROPERTIES][Tags.KEY_G]
-
-                    if Tags.STRUCTURE_USE_DISTORTION in settings:
-                        if settings[Tags.STRUCTURE_USE_DISTORTION]:
-                            if Tags.STRUCTURE_DISTORTED_PARAM_LIST in settings:
-                                if Tags.KEY_MUA in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
-                                    self.constant_mua = randomize(self.constant_mua*0.8, self.constant_mua*1.2, distribution='normal',
-                                                                  size=shape,
-                                                                  gauss_kernel_size=settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing)
-                                if Tags.KEY_MUS in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
-                                    self.constant_mus = randomize(self.constant_mus*0.8, self.constant_mus*1.2, distribution='normal',
-                                                                  size=shape,
-                                                                  gauss_kernel_size=settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing)
-                                if Tags.KEY_G in settings[Tags.STRUCTURE_DISTORTED_PARAM_LIST]:
-                                    self.constant_g = randomize(self.constant_g*0.8, self.constant_g*1.2, distribution='normal',
-                                                                  size=shape,
-                                                                  gauss_kernel_size=settings[Tags.STRUCTURE_DISTORTION_FREQUENCY_PER_MM] / spacing)
-            else:
-                self.ensure_valid_settings_file(settings, tissue_type)
-                self.B_min = settings[tissue_type][Tags.KEY_B_MIN]
-                self.B_max = settings[tissue_type][Tags.KEY_B_MAX]
-                self.W_min = settings[tissue_type][Tags.KEY_W_MIN]
-                self.W_max = settings[tissue_type][Tags.KEY_W_MAX]
-                self.F_min = settings[tissue_type][Tags.KEY_F_MIN]
-                self.F_max = settings[tissue_type][Tags.KEY_F_MAX]
-                self.M_min = settings[tissue_type][Tags.KEY_M_MIN]
-                self.M_max = settings[tissue_type][Tags.KEY_M_MAX]
-                self.OXY_min = settings[tissue_type][Tags.KEY_OXY_MIN]
-                self.OXY_max = settings[tissue_type][Tags.KEY_OXY_MAX]
-                self.musp500 = settings[tissue_type][Tags.KEY_MUSP500]
-                self.f_ray = settings[tissue_type][Tags.KEY_F_RAY]
-                self.b_mie = settings[tissue_type][Tags.KEY_B_MIE]
-                self.anisotropy = settings[tissue_type][Tags.KEY_ANISOTROPY]
-
-                self.randomize_properties(distributions, sizes, gauss_size)
-
-        try:
-            self.absorption_data = np.load("data/absorption_450_1000.npz")
-        except FileNotFoundError:
-            try:
-                self.absorption_data = np.load("ippai/data/absorption_450_1000.npz")
-            except FileNotFoundError:
-                try:
-                    self.absorption_data = np.load("../ippai/data/absorption_450_1000.npz")
-                except FileNotFoundError:
-                    try:
-                        self.absorption_data = np.load("../../data/absorption_450_1000.npz")
-                    except FileNotFoundError:
-                        try:
-                            self.absorption_data = np.load("../../ippai/data/absorption_450_1000.npz")
-                        except FileNotFoundError:
-                            raise Exception("The absorption data could not be found in the ippai/data folder.")
-
-    def ensure_valid_settings_file(self, settings, tissue_type):
-        """
-        Method to ensure that all necessary parameter limits (min & max) are set for the tissue
-        parameters B, W, F, M, and OXY.
-
-        :param settings: The simulation settings dictionary
-        :param tissue_type: The tissue type to check in the settings file
-
-        :raises FileNotFoundError: if the settings are None
-        :raises LookupError: if the tissue type settings are not given or any of the min max tags is missing
-
-        :return: None
+        :param settings: a dictionary containing at least one key - value pair of a string and a
+                         corresponding Chromophore instance.
         """
 
         if settings is None:
-            raise FileNotFoundError("settings file not given")
+            raise ValueError("The given settings sub-dictionary for the tissue properties must not be None.")
 
-        if settings[tissue_type] is None:
-            raise LookupError("Tissue settings for " + str(tissue_type) + " are not contained in settings file")
+        if not isinstance(settings, dict):
+            raise TypeError("The given settings sub-dictionary must be of type dict.")
 
-        for _keyword in self.KEYWORDS:
-            if settings[tissue_type][_keyword] is None:
-                raise LookupError("Tissue settings for " + str(_keyword) +
-                                  " are not contained in  " + str(tissue_type) + " settings")
+        if len(settings.keys()) < 1:
+            raise ValueError("The settings dictionary must at least contain one entry.")
 
     def get(self, wavelength):
-
-        if self.constant_properties:
-            return [self.constant_mua, self.constant_mus, self.constant_g, -1.0]
-
-        min_wavelength = self.absorption_data['min_wavelength']
-        max_wavelength = self.absorption_data['max_wavelength']
-        wavelength_idx = wavelength - min_wavelength
-        if wavelength_idx < 0 or wavelength_idx > (max_wavelength-min_wavelength+1):
-            raise AssertionError("Wavelengths only supported between " + str(min_wavelength) +
-                                 " nm and " + str(max_wavelength) + " nm")
-
-        absorption = (self.wvf * self.absorption_data['water'][wavelength_idx] +
-                      self.fvf * self.absorption_data['fat'][wavelength_idx] +
-                      self.mvf * self.absorption_data['melanin'][wavelength_idx] +
-                      self.bvf * self.oxy * self.absorption_data['hbo2'][wavelength_idx] +
-                      self.bvf * (1-self.oxy) * self.absorption_data['hb'][wavelength_idx])
-
-        scattering_p = self.musp500 * (self.f_ray * (wavelength / 500) ** 1e-4 +
-                                       (1 - self.f_ray) * (wavelength / 500) ** -self.b_mie)
-        anisotropy = self.anisotropy
-        scattering = scattering_p / (1-anisotropy)
-
-        return [absorption, scattering, anisotropy, self.oxy]
-
-    def randomize_properties(self, dist, size, gauss_size):
         """
-        Randomizes the tissue parameters within the given bounds.
-
-        :param dist: TODO
-        :param size: TODO
-        :param gauss_size: TODO
-        :return: None
+        TODO
         """
+        _mua_per_centimeter = 0
+        _mus_per_centimeter = 0
+        _g = 0
+        _sum_of_fractions = 0
 
-        self.bvf = randomize(self.B_min, self.B_max, distribution=dist[Tags.KEY_BLOOD], size=size[Tags.KEY_BLOOD],
-                             gauss_kernel_size=gauss_size[Tags.KEY_BLOOD])
-        self.wvf = randomize(self.W_min, self.W_max, distribution=dist[Tags.KEY_WATER], size=size[Tags.KEY_WATER],
-                             gauss_kernel_size=gauss_size[Tags.KEY_WATER])
-        self.fvf = randomize(self.F_min, self.F_max, distribution=dist[Tags.KEY_FAT], size=size[Tags.KEY_FAT],
-                             gauss_kernel_size=gauss_size[Tags.KEY_FAT])
-        self.mvf = randomize(self.M_min, self.M_max, distribution=dist[Tags.KEY_MELANIN], size=size[Tags.KEY_MELANIN],
-                             gauss_kernel_size=gauss_size[Tags.KEY_MELANIN])
-        self.oxy = randomize(self.OXY_min, self.OXY_max, distribution=dist[Tags.KEY_OXY], size=size[Tags.KEY_OXY],
-                             gauss_kernel_size=gauss_size[Tags.KEY_OXY])
+        for chromophore in self.chromophores:
+            _sum_of_fractions += chromophore.volume_fraction
+            _mua_per_centimeter += (chromophore.volume_fraction *
+                                    chromophore.spectrum.get_absorption_for_wavelength(wavelength))
+            _g += chromophore.volume_fraction * chromophore.anisotropy
+            _mus_per_centimeter += (chromophore.musp500 * (chromophore.f_ray *
+                                    (wavelength / 500) ** 1e-4 + (1 - chromophore.f_ray) *
+                                    (wavelength / 500) ** -chromophore.b_mie))
 
+        # If _sum_of_fraction does not add up to one, pretend that it did
+        # (we just want the weighted average for the anisotropy)
+        _g = _g / _sum_of_fractions
 
-def get_muscle_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
-    """
-
-    :return: a settings dictionary containing all min and max parameters fitting for generic background tissue.
-    """
-    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
-                        b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
-                        w_min=0.64, w_max=0.72,
-                        musp500=OpticalTissueProperties.MUSP500_BACKGROUND_TISSUE,
-                        f_ray=OpticalTissueProperties.FRAY_BACKGROUND_TISSUE,
-                        b_mie=OpticalTissueProperties.BMIE_BACKGROUND_TISSUE,
-                        oxy_min=background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
-                        oxy_max=background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
-
-
-def get_epidermis_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
-    """
-
-    :return: a settings dictionary containing all min and max parameters fitting for epidermis tissue.
-    """
-    return get_settings(b_min=1e-4, b_max=1e-4,
-                        w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
-                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
-                        m_max=OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN + OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
-                        m_min=OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN- OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
-                        musp500=OpticalTissueProperties.MUSP500_EPIDERMIS,
-                        f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
-                        b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
-                        oxy_min=background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
-                        oxy_max=background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
-
-
-def get_dermis_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
-    """
-
-    :return: a settings dictionary containing all min and max parameters fitting for dermis tissue.
-    """
-    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
-                        b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
-                        w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
-                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
-                        musp500=OpticalTissueProperties.MUSP500_DERMIS,
-                        f_ray=OpticalTissueProperties.FRAY_DERMIS,
-                        b_mie=OpticalTissueProperties.BMIE_DERMIS,
-                        oxy_min=background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
-                        oxy_max=background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
-
-
-def get_subcutaneous_fat_settings(background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
-    """
-
-    :return: a settings dictionary containing all min and max parameters fitting for subcutaneous fat tissue.
-    """
-    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
-                        b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE,
-                        w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
-                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
-                        f_min=0.3, f_max=0.4,  #TODO: Add "correct" fat volume fraction of human adipose tissue
-                        musp500=OpticalTissueProperties.MUSP500_FAT,
-                        f_ray=OpticalTissueProperties.FRAY_FAT,
-                        b_mie=OpticalTissueProperties.BMIE_FAT,
-                        oxy_min=background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
-                        oxy_max=background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
-
-
-def get_blood_settings():
-    """
-
-        :return: a settings dictionary containing all min and max parameters fitting for full blood.
-        """
-    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
-                        musp500=OpticalTissueProperties.MUSP500_BLOOD,
-                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
-                        f_ray=OpticalTissueProperties.FRAY_BLOOD)
-
-
-def get_arterial_blood_settings():
-    """
-
-        :return: a settings dictionary containing all min and max parameters fitting for full blood.
-        """
-    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
-                        oxy_min=0.8,
-                        oxy_max=1,
-                        musp500=OpticalTissueProperties.MUSP500_BLOOD,
-                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
-                        f_ray=OpticalTissueProperties.FRAY_BLOOD)
-
-
-def get_venous_blood_settings():
-    """
-
-        :return: a settings dictionary containing all min and max parameters fitting for full blood.
-        """
-    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
-                        oxy_min=0,
-                        oxy_max=0.8,
-                        musp500=OpticalTissueProperties.MUSP500_BLOOD,
-                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
-                        f_ray=OpticalTissueProperties.FRAY_BLOOD)
-
-
-def get_bone_settings():
-    """
-
-        :return: a settings dictionary containing all min and max parameters fitting for full blood.
-        """
-    return get_settings(b_min=1e-4, b_max=1e-4, w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_MEAN - OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_STD,
-                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_MEAN + OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_STD,
-                        oxy_min=0, oxy_max=1,
-                        musp500=OpticalTissueProperties.MUSP500_BONE,
-                        b_mie=OpticalTissueProperties.BMIE_BONE,
-                        f_ray=OpticalTissueProperties.FRAY_BONE)
-
-
-def get_random_tube_settings():
-    """
-    :return: a settings dictionary containing random min and max parameters.
-    """
-    return get_settings(b_min=1, b_max=1, w_min=1, w_max=1,
-                        oxy_min=0,
-                        oxy_max=1,
-                        musp500=OpticalTissueProperties.MUSP500_BLOOD,
-                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
-                        f_ray=OpticalTissueProperties.FRAY_BLOOD)
-
-
-def get_random_background_settings():
-    """
-
-        :return: a settings dictionary containing random min and max parameters.
-        """
-    random_musp = np.random.randint(8, 18)
-    return get_settings(b_min=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE / 2,
-                        b_max=OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE * 2,
-                        w_min=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
-                        w_max=OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY,
-                        musp500=random_musp,
-                        b_mie=0,
-                        f_ray=0)
-
-
-def get_constant_settings(mua, mus, g):
-    return_dict = dict()
-    return_dict[Tags.KEY_CONSTANT_PROPERTIES] = True
-    return_dict[Tags.KEY_MUA] = mua
-    return_dict[Tags.KEY_MUS] = mus
-    return_dict[Tags.KEY_G] = g
-    return return_dict
-
-
-def get_settings(b_min=0.0, b_max=0.0,
-                 w_min=0.0, w_max=0.0,
-                 f_min=0.0, f_max=0.0,
-                 m_min=0.0, m_max=0.0,
-                 oxy_min=0.0, oxy_max=1.0,
-                 musp500=10.0, f_ray=0.0, b_mie=0.0,
-                 anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY):
-    return_dict = dict()
-    return_dict[Tags.KEY_B_MIN] = b_min
-    return_dict[Tags.KEY_B_MAX] = b_max
-    return_dict[Tags.KEY_W_MIN] = w_min
-    return_dict[Tags.KEY_W_MAX] = w_max
-    return_dict[Tags.KEY_F_MIN] = f_min
-    return_dict[Tags.KEY_F_MAX] = f_max
-    return_dict[Tags.KEY_M_MIN] = m_min
-    return_dict[Tags.KEY_M_MAX] = m_max
-    return_dict[Tags.KEY_OXY_MIN] = oxy_min
-    return_dict[Tags.KEY_OXY_MAX] = oxy_max
-    return_dict[Tags.KEY_MUSP500] = musp500
-    return_dict[Tags.KEY_F_RAY] = f_ray
-    return_dict[Tags.KEY_B_MIE] = b_mie
-    return_dict[Tags.KEY_ANISOTROPY] = anisotropy
-    return return_dict
+        return [_mua_per_centimeter, _mus_per_centimeter, _g]

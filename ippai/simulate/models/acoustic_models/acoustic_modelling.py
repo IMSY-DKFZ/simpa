@@ -19,3 +19,27 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+from ippai.utils import Tags
+from ippai.simulate import SaveFilePaths
+from ippai.simulate.models.acoustic_models import k_wave_adapter
+from ippai.io_handling.io_hdf5 import save_hdf5
+
+
+def run_acoustic_forward_model(settings, optical_path):
+    print("ACOUSTIC FORWARD")
+
+    data = k_wave_adapter.simulate(settings, optical_path)
+
+    acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
+        format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+
+    if Tags.PERFORM_UPSAMPLING in settings:
+        if settings[Tags.PERFORM_UPSAMPLING]:
+            acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
+                format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+
+    save_hdf5({Tags.TIME_SERIES_DATA: data}, settings[Tags.IPPAI_OUTPUT_PATH],
+              acoustic_output_path)
+
+    return acoustic_output_path

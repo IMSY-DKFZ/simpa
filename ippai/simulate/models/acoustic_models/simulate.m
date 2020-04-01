@@ -1,3 +1,25 @@
+%% The MIT License (MIT)
+%%
+%% Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+%%
+%% Permission is hereby granted, free of charge, to any person obtaining a copy
+%% of this software and associated documentation files (the "Software"), to deal
+%% in the Software without restriction, including without limitation the rights
+%% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+%% copies of the Software, and to permit persons to whom the Software is
+%% furnished to do so, subject to the following conditions:
+%%
+%% The above copyright notice and this permission notice shall be included in all
+%% copies or substantial portions of the Software.
+%%
+%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+%% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+%% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+%% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+%% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+%% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+%% SOFTWARE.
+
 function [] = simulate(settings, optical_path)
 
 %% Read settings file
@@ -54,7 +76,7 @@ else
     medium.density = ones(Nx, Ny);
 end
 
-sound_speed_ref = min(min(medium.sound_speed));
+%sound_speed_ref = min(min(medium.sound_speed));
 %kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
 %kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / sound_speed_ref) / kgrid.dt);
 kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.15);	% time array with
@@ -119,8 +141,8 @@ if settings.gpu == true
 end
 
 %% Write data to numpy array
-writeNPY(sensor_data_2D, settings.output_file);
+save(strcat(optical_path, '.mat'), 'sensor_data_2D')
 time_step = kgrid.dt;
-save(strcat(settings.output_file, '.mat'), 'time_step');
+save(strcat(optical_path, 'dt.mat'), 'time_step');
 
 end

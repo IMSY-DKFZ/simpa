@@ -1,7 +1,29 @@
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import numpy as np
 import struct
 import subprocess
-from ippai.simulate import Tags
+from ippai.utils import Tags
 from ippai.simulate.models.optical_models import OpticalForwardAdapterBase
 import json
 import os
@@ -28,6 +50,11 @@ class McxAdapter(OpticalForwardAdapterBase):
         tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+"_output"
 
         # write settings to json
+        # time = 1.16e-09
+        # dt = 8e-12
+        time = 5e-09
+        dt = 5e-09
+        frames = int(time/dt)
 
         if Tags.ILLUMINATION_TYPE in settings:
             source = define_illumination(settings, nx, ny, nz)
@@ -65,8 +92,8 @@ class McxAdapter(OpticalForwardAdapterBase):
              },
             "Forward": {
                 "T0": 0,
-                "T1": 5e-09,
-                "Dt": 5e-09
+                "T1": time,
+                "Dt": dt
             },
             # "Optode": {
             # 	"Source": {
@@ -121,7 +148,8 @@ class McxAdapter(OpticalForwardAdapterBase):
         with open(tmp_output_file+".mc2", 'rb') as f:
             data = f.read()
         data = struct.unpack('%df' % (len(data) / 4), data)
-        fluence = np.asarray(data).reshape([nx, ny, nz, 1], order='F')
+        fluence = np.asarray(data).reshape([nx, ny, nz, frames], order='F')
+
         fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
 
         os.remove(tmp_input_path)

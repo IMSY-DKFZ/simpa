@@ -20,35 +20,58 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ippai.utils import Tags
-from ippai.io_handling.io_hdf5 import load_hdf5
-from abc import abstractmethod
+from json import JSONEncoder
+from ippai.utils import AbsorptionSpectrum, Chromophore
+import numpy as np
 
 
-class ReconstructionAdapterBase:
+class IPPAISerializer(object):
+    """
+    TODO
+    """
 
-    @abstractmethod
-    def reconstruction_algorithm(self, time_series_sensor_data, settings):
-        """
-        A deriving class needs to implement this method according to its model.
-
-        :param time_series_sensor_data: the time series sensor data
-        :param settings: Setting dictionary
-        :return: a reconstructed photoacoustic image
-        """
-        pass
-
-    def simulate(self, settings, acoustic_data_path):
+    def serialize(self, _object: object):
         """
 
-        :param settings:
-        :param acoustic_data_path:
-        :return:
         """
-        print("Performing reconstruction...")
+        if isinstance(_object, Chromophore):
+            return _object.__dict__
 
-        time_series_sensor_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], acoustic_data_path)[Tags.TIME_SERIES_DATA]
+        if isinstance(_object, AbsorptionSpectrum):
+            return _object.__dict__
 
-        reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings)
-        print("Performing reconstruction...Done]")
-        return reconstructed_image
+        return None
+
+
+class IPPAIJSONSerializer(JSONEncoder):
+    """
+    TODO
+    """
+
+    def __init__(self):
+        """
+        TODO
+        """
+        super().__init__()
+        self._serializer = IPPAISerializer()
+
+    def default(self, _object: object):
+        """
+        TODO
+        """
+
+        serialized_object = self._serializer.serialize(_object)
+
+        if serialized_object is not None:
+            return serialized_object
+
+        if isinstance(_object, np.ndarray):
+            return list(_object)
+
+        if isinstance(_object, (np.int, np.int16, np.int32, np.int64)):
+            return int(_object)
+
+        if isinstance(_object, (np.float, np.float16, np.float32, np.float64)):
+            return float(_object)
+
+        return super().default(_object)

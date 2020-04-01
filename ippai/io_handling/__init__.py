@@ -19,3 +19,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+from ippai.io_handling.io_hdf5 import load_hdf5
+from ippai.io_handling.io_hdf5 import save_hdf5
