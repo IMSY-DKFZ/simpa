@@ -1,4 +1,4 @@
-#IPPAI
+#README
 
 The Image Processing for Photoacoustic Imaging (IPPAI) toolkit.
 
@@ -22,9 +22,21 @@ virtual environment activated
 
 If no error messages arise, you are now setup to use ippai in your project.
 
+## Building the documentation
+
+When the installation went fine and you want to make sure that you have the latest documentation
+you should do the following steps in a command line:
+
+1. Navigate to the `ippai` source directory (same level where the setup.py is in)
+2. Execute the command `sphinx-build -b pdf -a documentation/src documentation`
+3. Find the `PDF` file in `documentation/ippai_documantation.pdf`
+
 ## Overview
 
 The main use case for the ippai framework is the simulation of photoacoustic images.
 However, it can also be used for image processing.
 
 ### Simulating photoacoustic images
+
+A basic example on how to use ippai in you project to run an optical forward simulation is given in the 
+samples/minimal_optical_simulation.py file.

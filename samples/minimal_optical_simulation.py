@@ -23,7 +23,9 @@
 from ippai.utils import Tags
 
 from ippai.simulate.simulation import simulate
-from ippai.simulate.structures import create_epidermis_layer, create_muscle_background, create_vessel_tube
+from ippai.simulate.structures import create_epidermis_layer
+from ippai.simulate.structures import create_muscle_background
+from ippai.simulate.structures import create_vessel_tube
 
 import numpy as np
 
@@ -40,7 +42,8 @@ RANDOM_SEED = 4711
 def create_example_tissue():
     """
     This is a very simple example script of how to create a tissue definition.
-    It contains a muscular background, an epidermis layer on top of the muscles and a blood vessel.
+    It contains a muscular background, an epidermis layer on top of the muscles
+    and a blood vessel.
     """
     tissue_dict = dict()
     tissue_dict["background"] = create_muscle_background()
@@ -50,7 +53,8 @@ def create_example_tissue():
                                                r_min=1, r_max=3)
     return tissue_dict
 
-# Seed the numpy random configuration prior to creating the settings file in order to ensure that the same volume
+# Seed the numpy random configuration prior to creating the settings file in
+# order to ensure that the same volume
 # is generated with the same random seed every time.
 
 np.random.seed(RANDOM_SEED)
@@ -76,7 +80,8 @@ settings = {
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 
-    # The following parameters tell the script that we do not want any extra modelling steps
+    # The following parameters tell the script that we do not want any extra
+    # modelling steps
     Tags.RUN_ACOUSTIC_MODEL: False,
     Tags.APPLY_NOISE_MODEL: False,
     Tags.PERFORM_IMAGE_RECONSTRUCTION: False,

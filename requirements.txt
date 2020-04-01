@@ -10,3 +10,4 @@ pandas
 batchgenerators
 sphinx
 rst2pdf
+m2r

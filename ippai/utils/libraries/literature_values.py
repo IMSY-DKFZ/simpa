@@ -23,7 +23,9 @@
 
 class StandardProperties:
     """
-    This class contains a listing of default parameters and options with the aim to reduce the amount
+    This class contains a listing of default parameters that can be used.
+    These values are sensible default values but are generally not backed up by proper scientific references,
+    or are rather specific for internal use cases.
     """
     AIR_MUA = 1e-10
     AIR_MUS = 1e-10
@@ -48,7 +50,6 @@ class StandardProperties:
     #     year = {2018},
     #     institution = {VIP21000 - 04 - 0.Onl: www.itis.ethz.ch / database}
     # }
-
     DENSITY_GENERIC = 1.000 # kg/l
     DENSITY_AIR = 0.001
     DENSITY_MUSCLE = 1.090
@@ -218,27 +219,22 @@ class MorphologicalTissueProperties:
     Each of the fields is annotated with a literature reference or a descriptions of how the particular
     values were derived for tissue modelling.
     """
-    # Radial and ulnar artery diameter reference:
-    # @article{ashraf2010size,
-    #   title={Size of radial and ulnar artery in local population},
-    #   author={Ashraf, Tariq and Panhwar, Ziauddin and Habib, Sultana and Memon, Muhammad Anis and Shamsi,
-    # Fahad and Arif, Javed},
-    #   journal={JPMA-Journal of the Pakistan Medical Association},
-    #   volume={60},
-    #   number={10},
-    #   pages={817},
-    #   year={2010}
-    # }
-    # RADIAL_ARTERY_DIAMETER_MEAN_MM = 2.25
-    # RADIAL_ARTERY_DIAMETER_STD_MM = 0.4
-    # ULNAR_ARTERY_DIAMETER_MEAN_MM = 2.35
-    # ULNAR_ARTERY_DIAMETER_STD_MM = 0.35
 
-    # Kris approximation
-    RADIAL_ARTERY_DIAMETER_MEAN_MM = 2.7
+    #: Radial and ulnar artery diameter reference:
+    #: @article{ashraf2010size,
+    #:     title={Size of radial and ulnar artery in local population},
+    #:     author={Ashraf, Tariq and Panhwar, Ziauddin and Habib, Sultana and Memon, Muhammad Anis and Shamsi,
+    #:             Fahad and Arif, Javed},
+    #:     journal={JPMA-Journal of the Pakistan Medical Association},
+    #:     volume={60},
+    #:     number={10},
+    #:     pages={817},
+    #:     year={2010}
+    #: }
+    RADIAL_ARTERY_DIAMETER_MEAN_MM = 2.25
     RADIAL_ARTERY_DIAMETER_STD_MM = 0.4
-    ULNAR_ARTERY_DIAMETER_MEAN_MM = 3.0
-    ULNAR_ARTERY_DIAMETER_STD_MM = 0.4
+    ULNAR_ARTERY_DIAMETER_MEAN_MM = 2.35
+    ULNAR_ARTERY_DIAMETER_STD_MM = 0.35
 
     # Accompanying veins diameter reference. They specifically only mention the ulnar accompanying vein properties.
     # We assume a non-significant similarity for the radial accompanying vein.

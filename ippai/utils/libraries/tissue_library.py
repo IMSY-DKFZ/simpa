@@ -28,6 +28,9 @@ from ippai.utils.calculate import randomize_uniform
 
 
 class TissueSettingsGenerator(object):
+    """
+    TODO
+    """
     def __init__(self):
         self.tissue_dictionary = dict()
 
@@ -40,14 +43,20 @@ class TissueSettingsGenerator(object):
 
 
 class TissueLibrary(object):
-
-    def __init__(self):
-        print("INIT")
+    """
+    TODO
+    """
 
     def get_blood_volume_fractions(self, total_blood_volume_fraction, oxygenation):
+        """
+        TODO
+        """
         return [total_blood_volume_fraction*oxygenation, total_blood_volume_fraction*(1-oxygenation)]
 
     def constant(self, mua, mus, g):
+        """
+        TODO
+        """
         return (TissueSettingsGenerator().append(key="constant_chromophore",
                                                  value=Chromophore(SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ONE,
                                                                    volume_fraction=mua,

@@ -29,13 +29,16 @@ from ippai.utils.libraries.literature_values import OpticalTissueProperties
 # Then load classes and methods with an <b>increasing</b> amount of internal dependencies.
 # If there are import errors in the tests, it is probably due to an incorrect
 # initialization order
+from ippai.utils.libraries.spectra_library import AbsorptionSpectrumLibrary
 from ippai.utils.libraries.spectra_library import AbsorptionSpectrum
 from ippai.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 from ippai.utils.libraries.spectra_library import view_absorption_spectra
 
 from ippai.utils.libraries.chromophore_library import Chromophore
+from ippai.utils.libraries.chromophore_library import ChromophoreLibrary
 from ippai.utils.libraries.chromophore_library import CHROMOPHORE_LIBRARY
 
+from ippai.utils.libraries.tissue_library import TissueLibrary
 from ippai.utils.libraries.tissue_library import TISSUE_LIBRARY
 from ippai.utils.libraries.tissue_library import TissueSettingsGenerator
 

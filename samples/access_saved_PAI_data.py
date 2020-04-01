@@ -32,9 +32,13 @@ file = load_hdf5(PATH)
 
 print(file['simulations'].keys())
 
-fluence = file['simulations']['original_data']['optical_forward_model_output'][str(WAVELENGTH)]['fluence']
-initial_pressure = file['simulations']['original_data']['optical_forward_model_output'][str(WAVELENGTH)]['initial_pressure']
-absorption = file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]['mua']
+fluence = (file['simulations']['original_data']['optical_forward_model_output']
+           [str(WAVELENGTH)]['fluence'])
+initial_pressure = (file['simulations']['original_data']
+                    ['optical_forward_model_output']
+                    [str(WAVELENGTH)]['initial_pressure'])
+absorption = (file['simulations']['original_data']['simulation_properties']
+              [str(WAVELENGTH)]['mua'])
 
 shape = np.shape(fluence)
 

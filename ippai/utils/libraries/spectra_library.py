@@ -44,6 +44,9 @@ class AbsorptionSpectrum(object):
                              str(np.shape(wavelengths)) + " vs " + str(np.shape(absorption_per_centimeter)))
 
     def get_absorption_over_wavelength(self):
+        """
+        :return: numpy array with the available wavelengths and the corresponding absorption properties
+        """
         return np.asarray([self.wavelengths, self.absorption_per_centimeter])
 
     def get_absorption_for_wavelength(self, wavelength: float) -> float:

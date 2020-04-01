@@ -23,10 +23,7 @@
 from ippai.utils import TissueSettingsGenerator
 from ippai.utils import CHROMOPHORE_LIBRARY
 from ippai.utils import Chromophore
-from ippai.utils import SPECTRAL_LIBRARY
 from ippai.utils import AbsorptionSpectrum
-from ippai.utils import TISSUE_LIBRARY
-
 import numpy as np
 
 
@@ -34,7 +31,8 @@ def create_custom_absorber():
     wavelengths = np.linspace(200, 1500, 100)
     absorber = AbsorptionSpectrum(spectrum_name="random absorber",
                                   wavelengths=wavelengths,
-                                  absorption_per_centimeter=np.random.random(np.shape(wavelengths)))
+                                  absorption_per_centimeter=np.random.random(
+                                      np.shape(wavelengths)))
     return absorber
 
 
@@ -60,9 +58,13 @@ def create_custom_tissue_type():
     oxy = 0.4
 
     # Then append chromophores that you want
-    tissue_settings_generator.append(key="oxyhemoglobin", value=CHROMOPHORE_LIBRARY.oxyhemoglobin(oxy*bvf))
-    tissue_settings_generator.append(key="deoxyhemoglobin", value=CHROMOPHORE_LIBRARY.deoxyhemoglobin(oxy * bvf))
-    tissue_settings_generator.append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction))
-    tissue_settings_generator.append(key="custom", value=create_custom_chromophore(0.1))
+    tissue_settings_generator.append(key="oxyhemoglobin", value=
+                            CHROMOPHORE_LIBRARY.oxyhemoglobin(oxy*bvf))
+    tissue_settings_generator.append(key="deoxyhemoglobin", value=
+                            CHROMOPHORE_LIBRARY.deoxyhemoglobin(oxy * bvf))
+    tissue_settings_generator.append(key="water", value=
+                            CHROMOPHORE_LIBRARY.water(water_volume_fraction))
+    tissue_settings_generator.append(key="custom", value=
+                            create_custom_chromophore(0.1))
 
     return tissue_settings_generator.get_settings()
