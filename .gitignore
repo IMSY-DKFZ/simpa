@@ -1,3 +1,7 @@
+# documentation build artifacts
+documentation/.doctrees
+documentation/.doctrees/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

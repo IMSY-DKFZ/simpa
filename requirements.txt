@@ -8,3 +8,5 @@ xmltodict
 h5py
 pandas
 batchgenerators
+sphinx
+rst2pdf
