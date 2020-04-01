@@ -51,8 +51,6 @@ while seed_index < 46891:
             # Upsampling settings
 
             Tags.PERFORM_UPSAMPLING: True,
-            Tags.CROP_IMAGE: True,
-            Tags.CROP_POWER_OF_TWO: True,
             Tags.UPSAMPLING_METHOD: Tags.UPSAMPLING_METHOD_NEAREST_NEIGHBOUR,
             Tags.UPSCALE_FACTOR: 2,
             Tags.UPSAMPLING_SCRIPT_LOCATION: "/home/kris/hard_drive/ippai/ippai/simulate/models/acoustic_models",

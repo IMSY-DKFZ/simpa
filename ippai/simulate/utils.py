@@ -99,15 +99,27 @@ def spline_evaluator2D(x, y, spline, offset_voxel, thickness_voxel, spacing):
     x *= spacing
     y *= spacing
     offset = offset_voxel * spacing
-    thickness = thickness_voxel * spacing
+    thickness = np.round(thickness_voxel) * spacing
     elevation = spline(x)
-    y_value = np.around(elevation + offset)
-    # print(x, y, "\televation: ", elevation, "\toffset: ", offset, "\ty_value: ", y_value)
-    # print(thickness, y_value)
+    y_value = elevation + offset
+
     if y_value <= y < thickness + y_value:
+        return True
+    elif thickness <= spacing:
+        if y_value + thickness <= y + spacing and y <= y_value:
+            return True
+    else:
+        return False
+
+
+def spline_evaluator2d_voxel(x, y, spline, offset_voxel, thickness_voxel):
+    elevation = spline[x]
+    y_value = np.round(elevation + offset_voxel)
+    if y_value <= y < thickness_voxel + y_value:
         return True
     else:
         return False
+
 
 
 def gruneisen_parameter_from_temperature(temperature_in_celcius):
