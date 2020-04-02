@@ -1,11 +1,8 @@
-import matplotlib.pyplot as plt
 import copy
 
 from ippai.simulate.tissue_properties import TissueProperties
 from ippai.simulate import Tags, SegmentationClasses, StandardProperties, SaveFilePaths
 from ippai.simulate.utils import *
-
-from ippai.process.preprocess_images import top_center_crop_power_two
 
 from ippai.io_handling.io_hdf5 import save_hdf5
 
@@ -19,12 +16,15 @@ def create_simulation_volume(settings):
             numpy arrays.
     """
 
-    if settings["distorted_layers"]:
+    distortion = None
+    if Tags.STRUCTURE_DISTORTED_LAYERS in settings and settings[Tags.STRUCTURE_DISTORTED_LAYERS]:
+        if Tags.STRUCTURE_DISTORTED_LAYERS_ELEVATION in settings:
+            max_elevation = settings[Tags.STRUCTURE_DISTORTED_LAYERS_ELEVATION]
+        else:
+            max_elevation = 10
         distortion = create_spline_for_range(0, settings[Tags.DIM_VOLUME_X_MM],
-                                             maximum_y_elevation_mm=10,
+                                             maximum_y_elevation_mm=max_elevation,
                                              spacing=settings[Tags.SPACING_MM])
-    else:
-        distortion = None
 
     seed = settings[Tags.RANDOM_SEED] + 10
     volumes = create_volumes(settings, seed, distortion=distortion)
@@ -454,22 +454,10 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
 
     sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
-    if not global_settings["distorted_layers"]:
-
-        it = -1
-        fraction = thickness_in_voxels
-        z_range = range(int(depth_in_voxels), int(depth_in_voxels + thickness_in_voxels))
-        for z_idx in z_range:
-            for y_idx in range(sizes[1]):
-                for x_idx in range(sizes[0]):
-                    volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
-                                        structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
-            fraction -= 1
-            it += 1
-
-    else:
+    if Tags.STRUCTURE_DISTORTED_LAYERS in global_settings and global_settings[Tags.STRUCTURE_DISTORTED_LAYERS]:
         spline = distortion[0]
-        spline_voxel = spline(np.arange(sizes[0] * global_settings[Tags.SPACING_MM], step=global_settings[Tags.SPACING_MM]))
+        spline_voxel = spline(
+            np.arange(sizes[0] * global_settings[Tags.SPACING_MM], step=global_settings[Tags.SPACING_MM]))
         spline_voxel = np.round(spline_voxel / global_settings[Tags.SPACING_MM])
         max_el = np.round(distortion[1] / global_settings[Tags.SPACING_MM])
         depth_in_voxels -= max_el
@@ -482,10 +470,21 @@ def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, ex
         for z_idx in z_range:
             for y_idx in range(sizes[1]):
                 for x_idx in range(sizes[0]):
-                    # if spline_evaluator2D(x_idx, z_idx, spline, depth_in_voxels, thickness_in_voxels, global_settings[Tags.SPACING_MM]):
                     if spline_evaluator2d_voxel(x_idx, z_idx, spline_voxel, depth_in_voxels, thickness_in_voxels):
                         volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
                                             structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
+            fraction -= 1
+            it += 1
+
+    else:
+        it = -1
+        fraction = thickness_in_voxels
+        z_range = range(int(depth_in_voxels), int(depth_in_voxels + thickness_in_voxels))
+        for z_idx in z_range:
+            for y_idx in range(sizes[1]):
+                for x_idx in range(sizes[0]):
+                    volumes = set_voxel(volumes, x_idx, y_idx, z_idx, mua, mus, g, oxy,
+                                        structure_settings[Tags.STRUCTURE_SEGMENTATION_TYPE])
             fraction -= 1
             it += 1
 

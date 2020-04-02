@@ -56,9 +56,7 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
 
     """
     # Convert units from mm spacing to voxel spacing.
-    xmin_voxels = xmin_mm / spacing
     xmax_voxels = xmax_mm / spacing
-    maximum_y_elevation_voxels = - maximum_y_elevation_mm / spacing
     maximum_y_elevation_mm = -maximum_y_elevation_mm
 
     # Create initial guesses left and right position
@@ -87,29 +85,11 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
 
     constraints = constraints - np.max(constraints)
 
-
     spline = interp1d(locations, constraints, order)
 
     max_el = np.min(spline(np.arange(0, int(round(xmax_voxels)), 1) * spacing))
 
     return spline, max_el
-
-
-def spline_evaluator2D(x, y, spline, offset_voxel, thickness_voxel, spacing):
-    x *= spacing
-    y *= spacing
-    offset = offset_voxel * spacing
-    thickness = np.round(thickness_voxel) * spacing
-    elevation = spline(x)
-    y_value = elevation + offset
-
-    if y_value <= y < thickness + y_value:
-        return True
-    elif thickness <= spacing:
-        if y_value + thickness <= y + spacing and y <= y_value:
-            return True
-    else:
-        return False
 
 
 def spline_evaluator2d_voxel(x, y, spline, offset_voxel, thickness_voxel):
@@ -119,7 +99,6 @@ def spline_evaluator2d_voxel(x, y, spline, offset_voxel, thickness_voxel):
         return True
     else:
         return False
-
 
 
 def gruneisen_parameter_from_temperature(temperature_in_celcius):

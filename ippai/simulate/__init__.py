@@ -220,6 +220,8 @@ class Tags:
     STRUCTURE_USE_DISTORTION = "structure_distortion_multiplicative"
     STRUCTURE_DISTORTED_PARAM_LIST = "structure_distorted_param_list"
     STRUCTURE_DISTORTION_FREQUENCY_PER_MM = "structure_distortion_wavelength_mm"
+    STRUCTURE_DISTORTED_LAYERS = "distorted_layers"
+    STRUCTURE_DISTORTED_LAYERS_ELEVATION = "distorted_layers_elevation"
 
     STRUCTURE_BACKGROUND = "structure_background"
 
