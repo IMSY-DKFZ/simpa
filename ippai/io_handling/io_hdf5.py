@@ -25,18 +25,20 @@ from ippai.utils.serialization import IPPAISerializer
 from ippai.utils import AbsorptionSpectrum, Chromophore
 
 
-def save_hdf5(dictionary, file_path, file_dictionary_path="/"):
+def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/"):
     """
     Saves a dictionary with arbitrary content to an hdf5-file with given filepath.
+
     :param dictionary: Dictionary to save.
     :param file_path: Path of the file to save the dictionary in.
     :param file_dictionary_path: Path in dictionary structure of existing hdf5 file to store the dictionary in.
-    return
+    :returns: :mod:`Null`
     """
 
     def data_grabber(file, path, data_dictionary):
         """
         Helper function which recursively grabs data from dictionaries in order to store them into hdf5 groups.
+
         :param file: hdf5 file instance to store the data in.
         :param path: Current group path in hdf5 file group structure.
         :param data_dictionary: Dictionary to save.
@@ -81,17 +83,19 @@ def save_hdf5(dictionary, file_path, file_dictionary_path="/"):
 def load_hdf5(file_path, file_dictionary_path="/"):
     """
     Loads a dictionary from an hdf5 file.
+
     :param file_path: Path of the file to load the dictionary from.
     :param file_dictionary_path: Path in dictionary structure of hdf5 file to lo the dictionary in.
-    :return: Dictionary
+    :returns: Dictionary
     """
 
     def data_grabber(file, path):
         """
         Helper function which recursively loads data from the hdf5 group structure to a dictionary.
+
         :param file: hdf5 file instance to load the data from.
         :param path: Current group path in hdf5 file group structure.
-        :return: Dictionary
+        :returns: Dictionary
         """
         dictionary = {}
         for key, item in h5file[path].items():
