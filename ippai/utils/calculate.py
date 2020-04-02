@@ -23,6 +23,8 @@
 from ippai.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 import numpy as np
 from scipy.ndimage import gaussian_filter
+from scipy.interpolate import interp1d
+
 
 def calculate_oxygenation(tissue_properties):
     """
@@ -89,6 +91,65 @@ def randomize(lower_bound, upper_bound, distribution='uniform', size=(1,), gauss
                  (spread / 2) + mean
 
     return result
+
+
+def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spacing=0.1):
+    """
+    Creates a functional that simulates distortion along the y position
+    between the minimum and maximum x positions. The elevation can never be
+    smaller than 0 or bigger than maximum_y_elevation_mm.
+
+    @param xmin_mm: the minimum x axis value the return functional is defined in
+    @param xmax_mm: the maximum x axis value the return functional is defined in
+    @param maximum_y_elevation_mm: the maximum y axis value the return functional will yield
+
+    @return: a functional that describes a distortion field along the y axis
+
+    """
+    # Convert units from mm spacing to voxel spacing.
+    xmax_voxels = xmax_mm / spacing
+    maximum_y_elevation_mm = -maximum_y_elevation_mm
+
+    # Create initial guesses left and right position
+    left_boundary = np.random.random() * maximum_y_elevation_mm
+    right_boundary = np.random.random() * maximum_y_elevation_mm
+
+    # Define the number of division knots
+    divisions = np.random.randint(1, 5)
+    order = divisions
+    if order > 3:
+        order = 3
+
+    # Create x and y value pairs that should be fit by the spline (needs to be division knots + 2)
+    locations = np.linspace(xmin_mm, xmax_mm, divisions + 1)
+    constraints = np.linspace(left_boundary, right_boundary, divisions + 1)
+
+    # Add random permutations to the y-axis of the division knots
+    for i in range(0, divisions + 1):
+        scaling_value = np.sqrt(2 - ((i - (divisions / 2)) / (divisions / 2)) ** 2)
+
+        constraints[i] = np.random.normal(scaling_value, 0.2) * constraints[i]
+        if constraints[i] < maximum_y_elevation_mm:
+            constraints[i] = maximum_y_elevation_mm
+        if constraints[i] > 0:
+            constraints[i] = 0
+
+    constraints = constraints - np.max(constraints)
+
+    spline = interp1d(locations, constraints, order)
+
+    max_el = np.min(spline(np.arange(0, int(round(xmax_voxels)), 1) * spacing))
+
+    return spline, max_el
+
+
+def spline_evaluator2d_voxel(x, y, spline, offset_voxel, thickness_voxel):
+    elevation = spline[x]
+    y_value = np.round(elevation + offset_voxel)
+    if y_value <= y < thickness_voxel + y_value:
+        return True
+    else:
+        return False
 
 
 def calculate_gruneisen_parameter_from_temperature(temperature_in_celcius):

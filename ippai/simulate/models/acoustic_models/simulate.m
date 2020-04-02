@@ -27,9 +27,7 @@ settings = jsondecode(fileread(settings));  % read settings as json file
 
 %% Read initial pressure
 data = load(optical_path);
-initial_pressure = rot90(data.initial_pressure, 3);
-initial_pressure = fliplr(initial_pressure);
-source.p0 = initial_pressure;
+source.p0 = data.initial_pressure;
 
 %% Define kWaveGrid
 

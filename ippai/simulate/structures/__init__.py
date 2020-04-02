@@ -27,6 +27,7 @@ from ippai.utils import TISSUE_LIBRARY
 
 import numpy as np
 
+
 def create_random_ellipse(x_min_mm=2, x_max_mm=35, depth_min_mm=3, depth_max_mm=18,
                           r_min_mm=0.5, r_max_mm=5.0,
                           eccentricity_min=0.25, eccentricity_max=3.5):
@@ -84,12 +85,14 @@ def create_vessel_tube(x_min=None, x_max=None, z_min=None, z_max=None, r_min=0.5
 # #############################################
 # FOREARM MODEL STRUCTURES
 # #############################################
-def create_forearm_structures(relative_shift_mm=0, background_oxy=0.0, subcutaneous_vessel_spawn_probability=0.5):
+def create_forearm_structures(relative_shift_mm=0, background_oxy=0.0,
+                              subcutaneous_vessel_spawn_probability=0.5,
+                              distortion=False):
 
     structures_dict = dict()
     structures_dict["muscle"] = create_muscle_background(background_oxy=background_oxy)
-    structures_dict["dermis"] = create_dermis_layer(background_oxy=background_oxy)
-    structures_dict["epidermis"] = create_epidermis_layer(background_oxy=background_oxy)
+    structures_dict["dermis"] = create_dermis_layer(background_oxy=background_oxy, distortion=distortion)
+    structures_dict["epidermis"] = create_epidermis_layer(background_oxy=background_oxy, distortion=distortion)
     structures_dict["radial_artery"] = create_radial_artery(relative_shift_mm)
     structures_dict["ulnar_artery"] = create_ulnar_artery(relative_shift_mm)
     structures_dict["interosseous_artery"] = create_interosseous_artery(relative_shift_mm)

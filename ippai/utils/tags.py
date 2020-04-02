@@ -257,6 +257,9 @@ class Tags:
     STRUCTURE_MIN_ECCENTRICITY = "structure_eccentricity_min"
     STRUCTURE_MAX_ECCENTRICITY = "structure_eccentricity_max"
 
+    STRUCTURE_DISTORTED_LAYERS = "distorted_layers"
+    STRUCTURE_DISTORTED_LAYERS_ELEVATION = "distorted_layers_elevation"
+
     UNITS_ARBITRARY = "arbitrary_unity"
     UNITS_PRESSURE = "newton_per_meters_squared"
 

@@ -50,6 +50,9 @@ def simulate(settings, optical_path):
     data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3)
     data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3)
     data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3)
+    data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
+    data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE])
+
     try:
         data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3)
     except ValueError:
