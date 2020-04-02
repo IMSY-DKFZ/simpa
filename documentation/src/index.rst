@@ -11,6 +11,8 @@ Welcome to IPPAI's documentation!
 
 .. mdinclude::  ../../README.md
 
+.. mdinclude::  developer_guide.md
+
 Examples
 ================
 
