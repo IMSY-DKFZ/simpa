@@ -559,7 +559,7 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
                               randomize(start_z_min, start_z_max)])
 
     if distortion is not None:
-        start_in_mm[2] -= distortion[0](start_in_mm[0])
+        start_in_mm[2] -= (distortion[1] - distortion[0](start_in_mm[0]))
 
     start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
 
@@ -643,7 +643,7 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
                               randomize(start_z_min, start_z_max)])
 
     if distortion is not None:
-        start_in_mm[2] -= distortion[0](start_in_mm[0])
+        start_in_mm[2] -= (distortion[1] - distortion[0](start_in_mm[0]))
 
     start_in_voxels = start_in_mm / global_settings[Tags.SPACING_MM]
 

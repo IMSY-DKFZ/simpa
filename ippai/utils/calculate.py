@@ -35,9 +35,9 @@ def calculate_oxygenation(tissue_properties):
     hbO2 = None
 
     for chromophore in tissue_properties.chromophores:
-        if chromophore.spectrum == SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN:
+        if chromophore.spectrum.spectrum_name == SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN.spectrum_name:
             hb = chromophore.volume_fraction
-        if chromophore.spectrum == SPECTRAL_LIBRARY.OXYHEMOGLOBIN:
+        if chromophore.spectrum.spectrum_name == SPECTRAL_LIBRARY.OXYHEMOGLOBIN.spectrum_name:
             hbO2 = chromophore.volume_fraction
 
     if hb is None and hbO2 is None:
