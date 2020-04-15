@@ -62,19 +62,35 @@ def create_simulation_volume(settings):
 
             upsampled_settings = copy.deepcopy(settings)
             upsampled_settings[Tags.SPACING_MM] = settings[Tags.SPACING_MM] / settings[Tags.UPSCALE_FACTOR]
-            upsampled_settings[Tags.DIM_VOLUME_Y_MM] = upsampled_settings[Tags.SPACING_MM]
+            if Tags.SIMULATION_3D not in settings:
+                upsampled_settings[Tags.DIM_VOLUME_Y_MM] = upsampled_settings[Tags.SPACING_MM]
+            else:
+                upsampled_settings[Tags.DIM_VOLUME_Y_MM] = 2 * int(settings[Tags.DIM_VOLUME_Y_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]# upsampled_settings[Tags.SPACING_MM]
             upsampled_settings[Tags.DIM_VOLUME_X_MM] = 2 * int(settings[Tags.DIM_VOLUME_X_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]
             upsampled_settings[Tags.DIM_VOLUME_Z_MM] = 2 * int(settings[Tags.DIM_VOLUME_Z_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]
 
             upsampled_volumes = create_volumes(upsampled_settings, seed, distortion=distortion)
 
-            for i in upsampled_volumes.keys():
-                if upsampled_volumes[i] is not None:
-                    upsampled_volumes[i] = np.squeeze(upsampled_volumes[i])
+            if Tags.SIMULATION_3D not in settings:
+                for i in upsampled_volumes.keys():
+                    if upsampled_volumes[i] is not None:
+                        upsampled_volumes[i] = np.squeeze(upsampled_volumes[i])
 
             upsampled_volume_path = SaveFilePaths.SIMULATION_PROPERTIES\
                 .format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
             save_hdf5(upsampled_volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path=upsampled_volume_path)
+    # import matplotlib.pyplot as plt
+    # mid_slice = int(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])[1] / 2)
+    # plt.subplot(2, 2, 1)
+    # plt.imshow(volumes[Tags.SENSOR_MASK][:, mid_slice, :])
+    # plt.subplot(2, 2, 2)
+    # plt.imshow(volumes[Tags.SENSOR_MASK][:, mid_slice + 1, :])
+    # mid_slice = int(np.shape(upsampled_volumes[Tags.PROPERTY_ABSORPTION_PER_CM])[1] / 2)
+    # plt.subplot(2, 2, 3)
+    # plt.imshow(upsampled_volumes[Tags.SENSOR_MASK][:, mid_slice, :])
+    # plt.subplot(2, 2, 4)
+    # plt.imshow(upsampled_volumes[Tags.SENSOR_MASK][:, mid_slice + 1, :])
+    # plt.show()
     np.random.seed(seed + 14)
     return volume_path
 
@@ -101,6 +117,10 @@ def create_volumes(settings, seed, distortion=None):
             if i not in (Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE):
                 volumes[i] = np.repeat(volumes[i], tmp_y_dim / settings[Tags.SPACING_MM], axis=1)
                 volumes[i] = np.flip(volumes[i], 1)
+            elif volumes[i] is not None:
+                tmp_vol = np.zeros(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM]))
+                tmp_vol[:, int(tmp_y_dim / (2 * settings[Tags.SPACING_MM]))] = volumes[i][:, 0, :]
+                volumes[i] = tmp_vol
     settings[Tags.DIM_VOLUME_Y_MM] = tmp_y_dim
 
     return volumes
@@ -342,29 +362,32 @@ def append_msot_probe(volumes, global_settings, distortion=None):
 
         z_range = range(int(np.round(42.2 / global_settings[Tags.SPACING_MM])),
                         int(np.round((42.2 + 1 - distortion[1]) / global_settings[Tags.SPACING_MM])))
-        for x_idx in range(sizes[0]):
-            for z_idx in z_range:
-                if volumes[Tags.PROPERTY_SEGMENTATION][x_idx, 0, z_idx] == SegmentationClasses.ULTRASOUND_GEL_PAD:
-                    break
-                else:
-                    volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, 0, z_idx] = mua_water
-                    volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, 0, z_idx] = mus_water
-                    volumes[Tags.PROPERTY_ANISOTROPY][x_idx, 0, z_idx] = g_water
-                    volumes[Tags.PROPERTY_OXYGENATION][x_idx, 0, z_idx] = -1
-                    volumes[Tags.PROPERTY_SEGMENTATION][x_idx, 0, z_idx] = SegmentationClasses.GENERIC
+        for y_idx in range(sizes[1]):
+            for x_idx in range(sizes[0]):
+                for z_idx in z_range:
+                    if volumes[Tags.PROPERTY_SEGMENTATION][x_idx, y_idx, z_idx] == SegmentationClasses.ULTRASOUND_GEL_PAD:
+                        break
+                    else:
+                        volumes[Tags.PROPERTY_ABSORPTION_PER_CM][x_idx, y_idx, z_idx] = mua_water
+                        volumes[Tags.PROPERTY_SCATTERING_PER_CM][x_idx, y_idx, z_idx] = mus_water
+                        volumes[Tags.PROPERTY_ANISOTROPY][x_idx, y_idx, z_idx] = g_water
+                        volumes[Tags.PROPERTY_OXYGENATION][x_idx, y_idx, z_idx] = -1
+                        volumes[Tags.PROPERTY_SEGMENTATION][x_idx, y_idx, z_idx] = SegmentationClasses.GENERIC
 
     if Tags.RUN_ACOUSTIC_MODEL in global_settings:
         if global_settings[Tags.RUN_ACOUSTIC_MODEL]:
             sizes = new_seg.shape
 
-            detector_map = np.zeros((sizes[2], sizes[0]))
+            detector_map = np.zeros((sizes[2], sizes[1], sizes[0]))
             detector_directivity = np.zeros(detector_map.shape)
+
+            field_of_view_slice = int(sizes[1] / 2)
 
             pitch_angle = global_settings[Tags.SENSOR_ELEMENT_PITCH_MM] / global_settings[Tags.SENSOR_RADIUS_MM]
             detector_radius = global_settings[Tags.SENSOR_RADIUS_MM]/global_settings[Tags.SPACING_MM]
 
             focus = np.asarray([int(round(detector_radius + 11.2 / global_settings[Tags.SPACING_MM])),
-                                int(round(detector_map.shape[1] / 2))])
+                                int(round(detector_map.shape[2] / 2))])
 
             if distortion is not None:
                 focus[0] -= np.round(distortion[1] / (2 * global_settings[Tags.SPACING_MM]))
@@ -377,23 +400,23 @@ def append_msot_probe(volumes, global_settings, distortion=None):
                                                      (np.sin(angle) * detector_radius) ** 2)))
                 y_det = int(round(y_det))
 
-                detector_map[z_det, y_det] = 1
+                detector_map[z_det, field_of_view_slice, y_det] = 1
 
                 if Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS in global_settings:
                     if global_settings[Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS] is True:
                         if Tags.SENSOR_DIRECTIVITY_ANGLE in global_settings:
-                            detector_directivity[z_det, y_det] = global_settings[Tags.SENSOR_DIRECTIVITY_ANGLE]
+                            detector_directivity[z_det, field_of_view_slice, y_det] = global_settings[Tags.SENSOR_DIRECTIVITY_ANGLE]
                         else:
                             detector_directivity = None
                     else:
-                        detector_directivity[z_det, y_det] = -angle
+                        detector_directivity[z_det, field_of_view_slice, y_det] = -angle
                 else:
                     detector_directivity = None
 
-            volumes[Tags.PROPERTY_SENSOR_MASK] = np.rot90(detector_map, 1)
+            volumes[Tags.PROPERTY_SENSOR_MASK] = np.rot90(detector_map, 1, axes=(0, 2))
 
             if detector_directivity is not None:
-                volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(detector_directivity, 1)
+                volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(detector_directivity, 1, axes=(0, 2))
             else:
                 volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = detector_directivity
 

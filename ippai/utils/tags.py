@@ -37,6 +37,7 @@ class Tags:
     TISSUE_PROPERTIES_OUPUT_NAME = "properties"
     SIMULATION_EXTRACT_FIELD_OF_VIEW = "extract_field_of_view"
     GPU = "gpu"
+    SIMULATION_3D = "3D"
     MEDIUM_TEMPERATURE_CELCIUS = "medium_temperature"
 
     """
