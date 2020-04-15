@@ -46,31 +46,23 @@ def simulate(settings, optical_path):
         tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
                                 SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH]))
 
-    data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3, axes=(0, 2))
-    data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3, axes=(0, 2))
-    data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=(0, 2))
-    data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3, axes=(0, 2))
-    data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE], axes=(0, 2)))
-    data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE], axes=(0, 2))
+    if Tags.SIMULATION_3D not in settings or not settings[Tags.SIMULATION_3D]:
+        axes = (0, 1)
+    else:
+        axes = (0, 2)
+    data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3, axes=axes)
+    data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3, axes=axes)
+    data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
+    data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3, axes=axes)
+    data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE], axes=axes))
+    data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE], axes=axes)
 
     try:
-        data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3, axes=(0, 2))
+        data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3, axes=axes)
     except ValueError:
         print("No directivity_angle specified")
     except KeyError:
         print("No directivity_angle specified")
-
-    # import matplotlib.pyplot as plt
-    # mid_slice = int(np.shape(data_dict[Tags.PROPERTY_SPEED_OF_SOUND])[1] / 2)
-    # plt.subplot(2, 2, 1)
-    # plt.imshow(data_dict[Tags.SENSOR_MASK][:, mid_slice, :])
-    # plt.subplot(2, 2, 2)
-    # plt.imshow(data_dict[Tags.SENSOR_MASK][:, mid_slice + 1, :])
-    # plt.subplot(2, 2, 3)
-    # plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][:, mid_slice, :])
-    # plt.subplot(2, 2, 4)
-    # plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][:, mid_slice + 60, :])
-    # plt.show()
 
     optical_path = settings[Tags.IPPAI_OUTPUT_PATH] + ".mat"
     sio.savemat(optical_path, data_dict)

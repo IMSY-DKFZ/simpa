@@ -132,10 +132,11 @@ input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
               'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale};
 
-sensor_data_2D = kspaceFirstOrder3DG(kgrid, medium, source, sensor, input_args{:});
-
 if settings.gpu == true
-    sensor_data_2D = gather(sensor_data_2D);
+    sensor_data_3D = kspaceFirstOrder3DG(kgrid, medium, source, sensor, input_args{:});
+    sensor_data_3D = gather(sensor_data_3D);
+else
+    sensor_data_3D = kspaceFirstOrder3D(kgrid, medium, source, sensor, input_args{:});
 end
 
 %% Write data to numpy array

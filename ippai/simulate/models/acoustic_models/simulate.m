@@ -128,14 +128,15 @@ end
 % max_pressure = max(max(initial_pressure));
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
-              'PMLAlpha', settings.pml_alpha, 'PMLSize', settings.pml_size, ...
+              'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
               'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale};
 
-sensor_data_2D = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
-
 if settings.gpu == true
+    sensor_data_2D = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
     sensor_data_2D = gather(sensor_data_2D);
+else
+    sensor_data_2D = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
 end
 
 %% Write data to numpy array

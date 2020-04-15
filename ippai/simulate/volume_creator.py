@@ -62,16 +62,16 @@ def create_simulation_volume(settings):
 
             upsampled_settings = copy.deepcopy(settings)
             upsampled_settings[Tags.SPACING_MM] = settings[Tags.SPACING_MM] / settings[Tags.UPSCALE_FACTOR]
-            if Tags.SIMULATION_3D not in settings:
+            if Tags.SIMULATION_3D not in settings or not settings[Tags.SIMULATION_3D]:
                 upsampled_settings[Tags.DIM_VOLUME_Y_MM] = upsampled_settings[Tags.SPACING_MM]
             else:
-                upsampled_settings[Tags.DIM_VOLUME_Y_MM] = 2 * int(settings[Tags.DIM_VOLUME_Y_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]# upsampled_settings[Tags.SPACING_MM]
+                upsampled_settings[Tags.DIM_VOLUME_Y_MM] = 2 * int(settings[Tags.DIM_VOLUME_Y_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]
             upsampled_settings[Tags.DIM_VOLUME_X_MM] = 2 * int(settings[Tags.DIM_VOLUME_X_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]
             upsampled_settings[Tags.DIM_VOLUME_Z_MM] = 2 * int(settings[Tags.DIM_VOLUME_Z_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]
 
             upsampled_volumes = create_volumes(upsampled_settings, seed, distortion=distortion)
 
-            if Tags.SIMULATION_3D not in settings:
+            if Tags.SIMULATION_3D not in settings or not settings[Tags.SIMULATION_3D]:
                 for i in upsampled_volumes.keys():
                     if upsampled_volumes[i] is not None:
                         upsampled_volumes[i] = np.squeeze(upsampled_volumes[i])
@@ -79,18 +79,6 @@ def create_simulation_volume(settings):
             upsampled_volume_path = SaveFilePaths.SIMULATION_PROPERTIES\
                 .format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
             save_hdf5(upsampled_volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path=upsampled_volume_path)
-    # import matplotlib.pyplot as plt
-    # mid_slice = int(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])[1] / 2)
-    # plt.subplot(2, 2, 1)
-    # plt.imshow(volumes[Tags.SENSOR_MASK][:, mid_slice, :])
-    # plt.subplot(2, 2, 2)
-    # plt.imshow(volumes[Tags.SENSOR_MASK][:, mid_slice + 1, :])
-    # mid_slice = int(np.shape(upsampled_volumes[Tags.PROPERTY_ABSORPTION_PER_CM])[1] / 2)
-    # plt.subplot(2, 2, 3)
-    # plt.imshow(upsampled_volumes[Tags.SENSOR_MASK][:, mid_slice, :])
-    # plt.subplot(2, 2, 4)
-    # plt.imshow(upsampled_volumes[Tags.SENSOR_MASK][:, mid_slice + 1, :])
-    # plt.show()
     np.random.seed(seed + 14)
     return volume_path
 
