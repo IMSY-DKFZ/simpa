@@ -46,7 +46,7 @@ def simulate(settings, optical_path):
         tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
                                 SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH]))
 
-    if Tags.SIMULATION_3D not in settings or not settings[Tags.SIMULATION_3D]:
+    if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
         axes = (0, 1)
     else:
         axes = (0, 2)
@@ -74,20 +74,27 @@ def simulate(settings, optical_path):
             serializer = IPPAIJSONSerializer()
             json.dump(settings, json_file, indent="\t", default=serializer.default)
 
+    if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
+        simulation_script_path = "simulate_3D"
+        sensor_data = "sensor_data_3D"
+    else:
+        simulation_script_path = "simulate"
+        sensor_data = "sensor_data_2D"
+
     cmd = list()
     cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
     cmd.append("-nodisplay")
     cmd.append("-nosplash")
     cmd.append("-r")
     cmd.append("addpath('"+settings[Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION]+"');" +
-               settings[Tags.ACOUSTIC_MODEL_SCRIPT] + "('" + tmp_json_filename +
+               simulation_script_path + "('" + tmp_json_filename +
                "', '" + optical_path + "');exit;")
     cur_dir = os.getcwd()
     os.chdir(settings[Tags.SIMULATION_PATH])
 
     subprocess.run(cmd)
 
-    raw_time_series_data = sio.loadmat(optical_path + ".mat")["sensor_data_2D"]
+    raw_time_series_data = sio.loadmat(optical_path + ".mat")[sensor_data]
     settings["dt_acoustic_sim"] = float(sio.loadmat(optical_path + "dt.mat", variable_names="time_step")["time_step"])
 
     os.remove(optical_path)

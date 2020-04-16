@@ -139,7 +139,7 @@ else
     sensor_data_2D = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
 end
 
-%% Write data to numpy array
+%% Write data to mat array
 save(strcat(optical_path, '.mat'), 'sensor_data_2D')
 time_step = kgrid.dt;
 save(strcat(optical_path, 'dt.mat'), 'time_step');

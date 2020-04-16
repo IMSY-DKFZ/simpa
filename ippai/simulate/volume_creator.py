@@ -62,7 +62,7 @@ def create_simulation_volume(settings):
 
             upsampled_settings = copy.deepcopy(settings)
             upsampled_settings[Tags.SPACING_MM] = settings[Tags.SPACING_MM] / settings[Tags.UPSCALE_FACTOR]
-            if Tags.SIMULATION_3D not in settings or not settings[Tags.SIMULATION_3D]:
+            if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
                 upsampled_settings[Tags.DIM_VOLUME_Y_MM] = upsampled_settings[Tags.SPACING_MM]
             else:
                 upsampled_settings[Tags.DIM_VOLUME_Y_MM] = 2 * int(settings[Tags.DIM_VOLUME_Y_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]
@@ -71,7 +71,7 @@ def create_simulation_volume(settings):
 
             upsampled_volumes = create_volumes(upsampled_settings, seed, distortion=distortion)
 
-            if Tags.SIMULATION_3D not in settings or not settings[Tags.SIMULATION_3D]:
+            if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
                 for i in upsampled_volumes.keys():
                     if upsampled_volumes[i] is not None:
                         upsampled_volumes[i] = np.squeeze(upsampled_volumes[i])

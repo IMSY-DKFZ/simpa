@@ -88,8 +88,8 @@ def simulate(settings):
             optical_output_path = run_optical_forward_model(settings, volume_output_path)
             optical_output_paths.append(optical_output_path)
 
-        if Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW in settings:
-            if settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
+        if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
+            if Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW not in settings or settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
                 extract_field_of_view(settings, volume_output_path, optical_output_path, acoustic_output_path)
 
         if Tags.PERFORM_UPSAMPLING in settings:

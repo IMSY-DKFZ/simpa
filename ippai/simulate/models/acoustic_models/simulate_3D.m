@@ -139,8 +139,8 @@ else
     sensor_data_3D = kspaceFirstOrder3D(kgrid, medium, source, sensor, input_args{:});
 end
 
-%% Write data to numpy array
-save(strcat(optical_path, '.mat'), 'sensor_data_2D')
+%% Write data to mat array
+save(strcat(optical_path, '.mat'), 'sensor_data_3D')
 time_step = kgrid.dt;
 save(strcat(optical_path, 'dt.mat'), 'time_step');
 
