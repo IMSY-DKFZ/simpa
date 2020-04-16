@@ -107,7 +107,15 @@ def create_volumes(settings, seed, distortion=None):
                 volumes[i] = np.flip(volumes[i], 1)
             elif volumes[i] is not None:
                 tmp_vol = np.zeros(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM]))
-                tmp_vol[:, int(tmp_y_dim / (2 * settings[Tags.SPACING_MM]))] = volumes[i][:, 0, :]
+
+                if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+                    for sl in range(
+                            int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])) - int(13/2 / settings[Tags.SPACING_MM]),
+                            int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])) + int(13/2 / settings[Tags.SPACING_MM])+1):
+                        tmp_vol[:, sl, :] = volumes[i][:, 0, :]
+                else:
+                    tmp_vol[:, int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])), :] = volumes[i][:, 0, :]
+
                 volumes[i] = tmp_vol
     settings[Tags.DIM_VOLUME_Y_MM] = tmp_y_dim
 

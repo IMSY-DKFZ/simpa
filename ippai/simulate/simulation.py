@@ -84,7 +84,7 @@ def simulate(settings):
         optical_output_path = None
         acoustic_output_path = None
 
-        if settings[Tags.RUN_OPTICAL_MODEL]:
+        if Tags.RUN_OPTICAL_MODEL in settings and settings[Tags.RUN_OPTICAL_MODEL]:
             optical_output_path = run_optical_forward_model(settings, volume_output_path)
             optical_output_paths.append(optical_output_path)
 

@@ -95,6 +95,12 @@ def simulate(settings, optical_path):
     subprocess.run(cmd)
 
     raw_time_series_data = sio.loadmat(optical_path + ".mat")[sensor_data]
+    if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+        num_time_steps = np.shape(raw_time_series_data)[1]
+        num_orthogonal_sensors = int(13 / settings[Tags.SPACING_MM] * settings[Tags.UPSCALE_FACTOR]) + 1
+        raw_time_series_data = np.reshape(raw_time_series_data,
+                                          [settings[Tags.SENSOR_NUM_ELEMENTS], num_orthogonal_sensors, num_time_steps])
+        raw_time_series_data = np.sum(raw_time_series_data, axis=1) / num_orthogonal_sensors
     settings["dt_acoustic_sim"] = float(sio.loadmat(optical_path + "dt.mat", variable_names="time_step")["time_step"])
 
     os.remove(optical_path)
