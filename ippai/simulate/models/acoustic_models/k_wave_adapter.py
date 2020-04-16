@@ -78,7 +78,7 @@ def simulate(settings, optical_path):
         simulation_script_path = "simulate_3D"
         sensor_data = "sensor_data_3D"
     else:
-        simulation_script_path = "simulate"
+        simulation_script_path = "simulate_2D"
         sensor_data = "sensor_data_2D"
 
     cmd = list()
