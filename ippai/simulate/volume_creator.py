@@ -46,7 +46,7 @@ def create_simulation_volume(settings):
             max_elevation = settings[Tags.STRUCTURE_DISTORTED_LAYERS_ELEVATION]
         else:
             max_elevation = 10
-        distortion = create_spline_for_range(0, settings[Tags.DIM_VOLUME_X_MM],
+        distortion = create_spline_for_range(0, settings[Tags.DIM_VOLUME_X_MM] + settings[Tags.SPACING_MM],
                                              maximum_y_elevation_mm=max_elevation,
                                              spacing=settings[Tags.SPACING_MM])
 
@@ -65,9 +65,9 @@ def create_simulation_volume(settings):
             if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
                 upsampled_settings[Tags.DIM_VOLUME_Y_MM] = upsampled_settings[Tags.SPACING_MM]
             else:
-                upsampled_settings[Tags.DIM_VOLUME_Y_MM] = 2 * int(settings[Tags.DIM_VOLUME_Y_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]
-            upsampled_settings[Tags.DIM_VOLUME_X_MM] = 2 * int(settings[Tags.DIM_VOLUME_X_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]
-            upsampled_settings[Tags.DIM_VOLUME_Z_MM] = 2 * int(settings[Tags.DIM_VOLUME_Z_MM] / settings[Tags.SPACING_MM]) * upsampled_settings[Tags.SPACING_MM]
+                upsampled_settings[Tags.DIM_VOLUME_Y_MM] = settings[Tags.UPSCALE_FACTOR] * int(round(settings[Tags.DIM_VOLUME_Y_MM] / settings[Tags.SPACING_MM])) * upsampled_settings[Tags.SPACING_MM]
+            upsampled_settings[Tags.DIM_VOLUME_X_MM] = settings[Tags.UPSCALE_FACTOR] * int(round(settings[Tags.DIM_VOLUME_X_MM] / settings[Tags.SPACING_MM])) * upsampled_settings[Tags.SPACING_MM]
+            upsampled_settings[Tags.DIM_VOLUME_Z_MM] = settings[Tags.UPSCALE_FACTOR] * int(round(settings[Tags.DIM_VOLUME_Z_MM] / settings[Tags.SPACING_MM])) * upsampled_settings[Tags.SPACING_MM]
 
             upsampled_volumes = create_volumes(upsampled_settings, seed, distortion=distortion)
 
@@ -421,9 +421,9 @@ def append_msot_probe(volumes, global_settings, distortion=None):
 
 def create_empty_volume(global_settings):
     voxel_spacing = global_settings[Tags.SPACING_MM]
-    volume_x_dim = int(global_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing)
-    volume_y_dim = int(global_settings[Tags.DIM_VOLUME_Y_MM] / voxel_spacing)
-    volume_z_dim = int(global_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing)
+    volume_x_dim = int(round(global_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing))
+    volume_y_dim = int(round(global_settings[Tags.DIM_VOLUME_Y_MM] / voxel_spacing))
+    volume_z_dim = int(round(global_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing))
     sizes = (volume_x_dim, volume_y_dim, volume_z_dim)
     absorption_volume = np.zeros(sizes)
     scattering_volume = np.zeros(sizes)
