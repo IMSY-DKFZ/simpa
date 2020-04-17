@@ -61,6 +61,7 @@ def create_simulation_volume(settings):
         if settings[Tags.PERFORM_UPSAMPLING] is True:
 
             upsampled_settings = copy.deepcopy(settings)
+            upsampled_settings[Tags.UPSAMPLING_RUN] = True
             upsampled_settings[Tags.SPACING_MM] = settings[Tags.SPACING_MM] / settings[Tags.UPSCALE_FACTOR]
             if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
                 upsampled_settings[Tags.DIM_VOLUME_Y_MM] = upsampled_settings[Tags.SPACING_MM]
@@ -320,8 +321,14 @@ def append_msot_probe(volumes, global_settings, distortion=None):
 
     sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
+    if Tags.UPSAMPLING_RUN in global_settings and global_settings[Tags.UPSAMPLING_RUN]:
+        probe_size = int(round((1 + 42.2) / (global_settings[Tags.SPACING_MM] * global_settings[Tags.UPSCALE_FACTOR])))
+        probe_size = int(round(probe_size * global_settings[Tags.UPSCALE_FACTOR]))
+    else:
+        probe_size = int(round((1 + 42.2) / global_settings[Tags.SPACING_MM]))
+
     mediprene_layer_height = int(round(1 / global_settings[Tags.SPACING_MM]))
-    water_layer_height = int(round(42.2 / global_settings[Tags.SPACING_MM]))
+    water_layer_height = probe_size - mediprene_layer_height
 
     new_mua = np.ones((sizes[0], sizes[1], sizes[2] + mediprene_layer_height + water_layer_height)) * mua_water
     new_mua[:, :, water_layer_height + mediprene_layer_height:] = volumes[Tags.PROPERTY_ABSORPTION_PER_CM]

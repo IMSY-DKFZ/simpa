@@ -134,6 +134,7 @@ class Tags:
     UPSAMPLING_SCRIPT = "upsampling_script"
     UPSAMPLING_SCRIPT_LOCATION = "upsampling_script_location"
     UPSCALE_FACTOR = "upscale_factor"
+    UPSAMPLING_RUN = "upsampling_run"
     DL_MODEL_PATH = "dl_model_path"
 
     # physical property volume types
