@@ -71,6 +71,7 @@ def create_simulation_volume(settings):
             upsampled_settings[Tags.DIM_VOLUME_Z_MM] = settings[Tags.UPSCALE_FACTOR] * int(round(settings[Tags.DIM_VOLUME_Z_MM] / settings[Tags.SPACING_MM])) * upsampled_settings[Tags.SPACING_MM]
 
             upsampled_volumes = create_volumes(upsampled_settings, seed, distortion=distortion)
+            del upsampled_settings[Tags.UPSAMPLING_RUN]
 
             if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
                 for i in upsampled_volumes.keys():
@@ -104,7 +105,13 @@ def create_volumes(settings, seed, distortion=None):
 
         for i in volumes.keys():
             if i not in (Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE):
-                volumes[i] = np.repeat(volumes[i], tmp_y_dim / settings[Tags.SPACING_MM], axis=1)
+                y_slices = int(round(tmp_y_dim / settings[Tags.SPACING_MM]))
+                if Tags.UPSAMPLING_RUN in settings and settings[Tags.UPSAMPLING_RUN]:
+                    if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
+                        y_slices = 1
+                    else:
+                        y_slices = int(round(int(round(tmp_y_dim / (settings[Tags.SPACING_MM] * settings[Tags.UPSCALE_FACTOR]))) * settings[Tags.UPSCALE_FACTOR]))
+                volumes[i] = np.repeat(volumes[i], y_slices, axis=1)
                 volumes[i] = np.flip(volumes[i], 1)
             elif volumes[i] is not None:
                 tmp_vol = np.zeros(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM]))
@@ -322,8 +329,9 @@ def append_msot_probe(volumes, global_settings, distortion=None):
     sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     if Tags.UPSAMPLING_RUN in global_settings and global_settings[Tags.UPSAMPLING_RUN]:
-        probe_size = int(round((1 + 42.2) / (global_settings[Tags.SPACING_MM] * global_settings[Tags.UPSCALE_FACTOR])))
-        probe_size = int(round(probe_size * global_settings[Tags.UPSCALE_FACTOR]))
+        orig_probe_size = int(round((1 + 42.2) / (global_settings[Tags.SPACING_MM] * global_settings[Tags.UPSCALE_FACTOR])))
+        orig_z_dim = int(round(global_settings[Tags.DIM_VOLUME_Z_MM] / (global_settings[Tags.SPACING_MM] * global_settings[Tags.UPSCALE_FACTOR])))
+        probe_size = int(round((orig_probe_size + orig_z_dim) * global_settings[Tags.UPSCALE_FACTOR])) - sizes[2]
     else:
         probe_size = int(round((1 + 42.2) / global_settings[Tags.SPACING_MM]))
 

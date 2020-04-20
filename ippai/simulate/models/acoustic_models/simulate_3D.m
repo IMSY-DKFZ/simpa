@@ -23,12 +23,12 @@
 function [] = simulate_3D(settings, optical_path)
 
 %% Read settings file
-settings = jsondecode(fileread(settings));  % read settings as json file
+%settings = jsondecode(fileread(settings));  % read settings as json file
 
 %% Read initial pressure
 data = load(optical_path);
 source.p0 = data.initial_pressure;
-
+settings = data.settings;
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
@@ -37,9 +37,9 @@ GEL_LAYER_HEIGHT = 0;
 %source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 [Nx, Ny, Nz] = size(source.p0);
 if settings.sample == true
-    dx = settings.voxel_spacing_mm/(settings.upscale_factor * 1000);
+    dx = double(settings.voxel_spacing_mm)/(double(settings.upscale_factor) * 1000);
 else
-    dx = settings.voxel_spacing_mm/1000;    % convert from mm to m
+    dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m
 end
 kgrid = kWaveGrid(Nx, dx, Ny, dx, Nz, dx);
 
@@ -63,7 +63,7 @@ else
  medium.alpha_coeff = 0.01;
 end
 
-medium.alpha_power = settings.medium_alpha_power; % b for a * MHz ^ b
+medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
@@ -106,7 +106,7 @@ if isfield(data, 'directivity_angle') == true
 end
 
 if isfield(data, 'directivity_size')
-    sensor.directivity_size = settings.sensor_directivity_size;
+    sensor.directivity_size = double(settings.sensor_directivity_size);
 end
 
 %sensor.directivity_pattern = settings.sensor_directivity_pattern;
@@ -114,8 +114,8 @@ end
 % define the frequency response of the sensor elements, gaussian shape with
 % FWHM = bandwidth*center_freq
 
-center_freq = settings.sensor_center_frequency; % [Hz]
-bandwidth = settings.sensor_bandwidth; % [%]
+center_freq = double(settings.sensor_center_frequency); % [Hz]
+bandwidth = double(settings.sensor_bandwidth); % [%]
 sensor.frequency_response = [center_freq, bandwidth];
 
 %% Computation settings
@@ -128,7 +128,7 @@ end
 % max_pressure = max(max(initial_pressure));
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
-              'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
+              'PMLAlpha', double(settings.pml_alpha), 'PMLSize', 'auto', ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
               'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale};
 

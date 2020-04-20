@@ -20,36 +20,40 @@
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 %% SOFTWARE.
 
-function [] = simulate_2D(settings, optical_path)
+function [] = time_reversal(acoustic_path)
 
 %% Read settings file
 %settings = jsondecode(fileread(settings));  % read settings as json file
 
 %% Read initial pressure
-data = load(optical_path);
-source.p0 = data.initial_pressure;
+data = load(acoustic_path);
+
 settings = data.settings;
+
+%% Read time_series_data
+if isfield(settings, 'acoustic_simulation_3d') == true
+    if settings.acoustic_simulation_3d == true
+        time_series_data = data.sensor_data_3D;
+    end
+else
+    time_series_data = data.time_series_data;
+end
 %% Define kWaveGrid
 
-% add 2 pixel "gel" to reduce Fourier artifact
-GEL_LAYER_HEIGHT = 2;
-
-source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
-[Nx, Ny] = size(source.p0);
+[Nx, Ny] = size(data.sensor_mask);
 if settings.sample == true
     dx = double(settings.voxel_spacing_mm)/(double(settings.upscale_factor) * 1000);
 else
     dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m
 end
 kgrid = kWaveGrid(Nx, dx, Ny, dx);
+source.p0 = 0;
 
 %% Define medium
 
 % if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
 if isfield(data, 'sos') == true
     medium.sound_speed = data.sos;
-    % add 2 pixel "gel" to reduce Fourier artifact
-    medium.sound_speed = padarray(medium.sound_speed, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
     medium.sound_speed = 1540;
 end
@@ -57,8 +61,6 @@ end
 % if a field of the struct "data" is given which describes the attenuation, the array is loaded and is used as medium.alpha_coeff
 if isfield(data, 'alpha_coeff') == true
  medium.alpha_coeff = data.alpha_coeff;
- % add 2 pixel "gel" to reduce Fourier artifact
- medium.alpha_coeff = padarray(medium.alpha_coeff, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
  medium.alpha_coeff = 0.01;
 end
@@ -68,8 +70,6 @@ medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
     medium.density = data.density;
-    % add 2 pixel "gel" to reduce Fourier artifact
-    medium.density = padarray(medium.density, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
     medium.density = ones(Nx, Ny);
 end
@@ -80,34 +80,22 @@ end
 kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.15);	% time array with
 % CFL number of 0.3 (advised by manual)
 % Using makeTime, dt = CFL*dx/medium.sound_speed and the total
-% time is set to the time it would take for an acoustic wave to travel 
+% time is set to the time it would take for an acoustic wave to travel
 % across the longest grid diagonal.
 
 %% Define sensor
 
-% if a field of the struct "data" is given which describes the sensor mask, the array is loaded and is used as sensor.mask
-if isfield(data, 'sensor_mask') == true
-    sensor.mask = data.sensor_mask;
-    % add 2 pixel "gel" to reduce Fourier artifact
-    sensor.mask = padarray(sensor.mask, [GEL_LAYER_HEIGHT 0], 0, 'pre');
-else
-    num_elements = double(settings.sensor_num_elements);
-    element_spacing = Ny / num_elements;
-    sensor.mask = zeros(Nx, Ny);
-    sensor.mask(3, round(element_spacing/2):round(element_spacing):Ny) = 1;
-    writeNPY(sensor.mask, "/home/kris/hard_drive/data/pipeline_test/Pipeline_test/sensor_mask.npy");
-end
+sensor.mask = data.sensor_mask;
+
 
 % if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
-if isfield(data, 'directivity_angle') == true
-    sensor.directivity_angle = data.directivity_angle;
-    % add 2 pixel "gel" to reduce Fourier artifact
-    sensor.directivity_angle = padarray(sensor.directivity_angle, [GEL_LAYER_HEIGHT 0], 0, 'pre');
-end
-
-if isfield(data, 'directivity_size')
-    sensor.directivity_size = settings.sensor_directivity_size;
-end
+%if isfield(data, 'directivity_angle') == true
+%    sensor.directivity_angle = data.directivity_angle;
+%end
+%
+%if isfield(data, 'directivity_size')
+%    sensor.directivity_size = settings.sensor_directivity_size;
+%end
 
 sensor.directivity_pattern = settings.sensor_directivity_pattern;
 
@@ -118,6 +106,8 @@ center_freq = double(settings.sensor_center_frequency); % [Hz]
 bandwidth = double(settings.sensor_bandwidth); % [%]
 sensor.frequency_response = [center_freq, bandwidth];
 
+sensor.time_reversal_boundary_data = time_series_data;
+
 %% Computation settings
 
 if settings.gpu == true
@@ -125,23 +115,22 @@ if settings.gpu == true
 else
     datacast = 'single';
 end
-% max_pressure = max(max(initial_pressure));
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
-              'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale};
+              'PlotPML', settings.plot_pml, 'RecordMovie', true, ...
+              'MovieName', settings.movie_name, 'PlotScale', [0, 1], 'LogScale', settings.acoustic_log_scale};
 
 if settings.gpu == true
-    sensor_data_2D = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
-    sensor_data_2D = gather(sensor_data_2D);
+    reconstructed_data = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
+    reconstructed_data = gather(reconstructed_data);
 else
-    sensor_data_2D = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
+    reconstructed_data = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
 end
 
 %% Write data to mat array
-save(strcat(optical_path, '.mat'), 'sensor_data_2D')
-time_step = kgrid.dt;
-save(strcat(optical_path, 'dt.mat'), 'time_step');
+save(strcat(acoustic_path, 'tr.mat'), 'reconstructed_data')
+%time_step = kgrid.dt;
+%save(strcat(optical_path, 'dt.mat'), 'time_step');
 
 end

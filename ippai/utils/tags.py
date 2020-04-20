@@ -109,6 +109,7 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
     RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
+    RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     RECONSTRUCTION_MITK_BINARY_PATH = "reconstruction_mitk_binary_path"
     RECONSTRUCTION_MITK_SETTINGS_XML = "reconstruction_mitk_settings_xml"
     RECONSTRUCTION_BMODE_METHOD = "reconstruction_bmode_method"

@@ -23,6 +23,7 @@
 from ippai.utils import Tags
 from ippai.simulate import SaveFilePaths
 from ippai.simulate.models.reconstruction_models.MitkBeamformingAdapter import MitkBeamformingAdapter
+from ippai.simulate.models.reconstruction_models.TimeReversalAdapter import TimeReversalAdapter
 from ippai.io_handling.io_hdf5 import save_hdf5
 
 
@@ -35,6 +36,8 @@ def perform_reconstruction(settings, acoustic_data_path):
         (settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DMAS) or
             (settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_SDMAS)):
         reconstruction_method = MitkBeamformingAdapter()
+    elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL:
+        reconstruction_method = TimeReversalAdapter()
 
     reconstruction = reconstruction_method.simulate(settings, acoustic_data_path)
 

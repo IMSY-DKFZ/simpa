@@ -65,7 +65,8 @@ def simulate(settings, optical_path):
         print("No directivity_angle specified")
 
     optical_path = settings[Tags.IPPAI_OUTPUT_PATH] + ".mat"
-    sio.savemat(optical_path, data_dict)
+    data_dict["settings"] = settings
+    sio.savemat(optical_path, data_dict, long_field_names=True)
 
     json_path, ext = os.path.splitext(settings[Tags.IPPAI_OUTPUT_PATH])
     tmp_json_filename = json_path + ".json"
@@ -103,11 +104,11 @@ def simulate(settings, optical_path):
         raw_time_series_data = np.sum(raw_time_series_data, axis=1) / num_orthogonal_sensors
     settings["dt_acoustic_sim"] = float(sio.loadmat(optical_path + "dt.mat", variable_names="time_step")["time_step"])
 
-    os.remove(optical_path)
-    os.remove(optical_path + ".mat")
+    # os.remove(optical_path)
+    # os.remove(optical_path + ".mat")
     os.remove(optical_path + "dt.mat")
-    if Tags.SETTINGS_JSON_PATH not in settings:
-        os.remove(tmp_json_filename)
+    # if Tags.SETTINGS_JSON_PATH not in settings:
+    #     os.remove(tmp_json_filename)
     os.chdir(cur_dir)
 
     return raw_time_series_data
