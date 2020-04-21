@@ -23,9 +23,6 @@
 function [] = time_reversal(acoustic_path)
 
 %% Read settings file
-%settings = jsondecode(fileread(settings));  % read settings as json file
-
-%% Read initial pressure
 data = load(acoustic_path);
 
 settings = data.settings;
@@ -127,7 +124,5 @@ end
 
 %% Write data to mat array
 save(strcat(acoustic_path, 'tr.mat'), 'reconstructed_data')
-%time_step = kgrid.dt;
-%save(strcat(optical_path, 'dt.mat'), 'time_step');
 
 end

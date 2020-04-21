@@ -23,9 +23,7 @@
 function [] = time_reversal(acoustic_path)
 
 %% Read settings file
-%settings = jsondecode(fileread(settings));  % read settings as json file
-
-%% Read initial pressure
+%% Read settings file
 data = load(acoustic_path);
 
 settings = data.settings;

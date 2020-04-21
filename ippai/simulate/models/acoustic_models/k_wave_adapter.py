@@ -77,10 +77,8 @@ def simulate(settings, optical_path):
 
     if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
         simulation_script_path = "simulate_3D"
-        sensor_data = "sensor_data_3D"
     else:
         simulation_script_path = "simulate_2D"
-        sensor_data = "sensor_data_2D"
 
     cmd = list()
     cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
@@ -94,7 +92,8 @@ def simulate(settings, optical_path):
 
     subprocess.run(cmd)
 
-    raw_time_series_data = sio.loadmat(optical_path + ".mat")[sensor_data]
+    raw_time_series_data = sio.loadmat(optical_path + ".mat")[Tags.TIME_SERIES_DATA]
+
     if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
         num_time_steps = np.shape(raw_time_series_data)[1]
         if Tags.PERFORM_UPSAMPLING in settings and settings[Tags.PERFORM_UPSAMPLING]:

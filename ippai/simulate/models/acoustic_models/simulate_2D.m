@@ -23,12 +23,14 @@
 function [] = simulate_2D(optical_path)
 
 %% Read settings file
-%settings = jsondecode(fileread(settings));  % read settings as json file
+
+data = load(optical_path);
+settings = data.settings;
 
 %% Read initial pressure
-data = load(optical_path);
+
 source.p0 = data.initial_pressure;
-settings = data.settings;
+
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
@@ -135,14 +137,14 @@ input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale};
 
 if settings.gpu == true
-    sensor_data_2D = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
-    sensor_data_2D = gather(sensor_data_2D);
+    time_series_data = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
+    time_series_data = gather(time_series_data);
 else
-    sensor_data_2D = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
+    time_series_data = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
 end
 
 %% Write data to mat array
-save(strcat(optical_path, '.mat'), 'sensor_data_2D')
+save(strcat(optical_path, '.mat'), 'time_series_data')
 time_step = kgrid.dt;
 number_time_steps = kgrid.Nt;
 save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');
