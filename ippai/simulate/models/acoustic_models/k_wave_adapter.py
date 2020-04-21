@@ -88,8 +88,7 @@ def simulate(settings, optical_path):
     cmd.append("-nosplash")
     cmd.append("-r")
     cmd.append("addpath('"+settings[Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION]+"');" +
-               simulation_script_path + "('" + tmp_json_filename +
-               "', '" + optical_path + "');exit;")
+               simulation_script_path + "('" + optical_path + "');exit;")
     cur_dir = os.getcwd()
     os.chdir(settings[Tags.SIMULATION_PATH])
 
@@ -98,17 +97,30 @@ def simulate(settings, optical_path):
     raw_time_series_data = sio.loadmat(optical_path + ".mat")[sensor_data]
     if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
         num_time_steps = np.shape(raw_time_series_data)[1]
-        num_orthogonal_sensors = int(13 / settings[Tags.SPACING_MM] * settings[Tags.UPSCALE_FACTOR]) + 1
-        raw_time_series_data = np.reshape(raw_time_series_data,
-                                          [settings[Tags.SENSOR_NUM_ELEMENTS], num_orthogonal_sensors, num_time_steps])
-        raw_time_series_data = np.sum(raw_time_series_data, axis=1) / num_orthogonal_sensors
-    settings["dt_acoustic_sim"] = float(sio.loadmat(optical_path + "dt.mat", variable_names="time_step")["time_step"])
+        if Tags.PERFORM_UPSAMPLING in settings and settings[Tags.PERFORM_UPSAMPLING]:
+            upscale_factor = settings[Tags.UPSCALE_FACTOR]
+        else:
+            upscale_factor = 1
+        num_orthogonal_sensors = int(13 / settings[Tags.SPACING_MM] * upscale_factor) + 1
 
-    # os.remove(optical_path)
-    # os.remove(optical_path + ".mat")
+        if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+            if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_DAS,
+                                                           Tags.RECONSTRUCTION_ALGORITHM_DMAS,
+                                                           Tags.RECONSTRUCTION_ALGORITHM_SDMAS]:
+                raw_time_series_data = np.reshape(raw_time_series_data, [settings[Tags.SENSOR_NUM_USED_ELEMENTS],
+                                                                         num_orthogonal_sensors, num_time_steps])
+                raw_time_series_data = np.sum(raw_time_series_data, axis=1) / num_orthogonal_sensors
+        else:
+            raw_time_series_data = np.reshape(raw_time_series_data, [settings[Tags.SENSOR_NUM_USED_ELEMENTS],
+                                                                     num_orthogonal_sensors, num_time_steps])
+
+    time_grid = sio.loadmat(optical_path + "dt.mat")
+    settings["dt_acoustic_sim"] = float(time_grid["time_step"])
+    settings["Nt_acoustic_sim"] = float(time_grid["number_time_steps"])
+
+    os.remove(optical_path)
+    os.remove(optical_path + ".mat")
     os.remove(optical_path + "dt.mat")
-    # if Tags.SETTINGS_JSON_PATH not in settings:
-    #     os.remove(tmp_json_filename)
     os.chdir(cur_dir)
 
     return raw_time_series_data

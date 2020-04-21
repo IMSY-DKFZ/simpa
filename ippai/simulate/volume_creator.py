@@ -425,6 +425,8 @@ def append_msot_probe(volumes, global_settings, distortion=None):
                     detector_directivity = None
 
             volumes[Tags.PROPERTY_SENSOR_MASK] = np.rot90(detector_map, 1, axes=(0, 2))
+            sensor_elements = np.shape(np.argwhere(detector_map[:, field_of_view_slice, :]))[0]
+            global_settings[Tags.SENSOR_NUM_USED_ELEMENTS] = sensor_elements
 
             if detector_directivity is not None:
                 volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(detector_directivity, 1, axes=(0, 2))

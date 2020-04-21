@@ -20,7 +20,7 @@
 %% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 %% SOFTWARE.
 
-function [] = simulate_3D(settings, optical_path)
+function [] = simulate_3D(optical_path)
 
 %% Read settings file
 %settings = jsondecode(fileread(settings));  % read settings as json file
@@ -36,8 +36,10 @@ GEL_LAYER_HEIGHT = 0;
 
 %source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 [Nx, Ny, Nz] = size(source.p0);
-if settings.sample == true
-    dx = double(settings.voxel_spacing_mm)/(double(settings.upscale_factor) * 1000);
+if isfield(settings, 'sample') == true
+    if settings.sample == true
+        dx = double(settings.voxel_spacing_mm)/(double(settings.upscale_factor) * 1000);
+    end
 else
     dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m
 end
@@ -142,6 +144,7 @@ end
 %% Write data to mat array
 save(strcat(optical_path, '.mat'), 'sensor_data_3D')
 time_step = kgrid.dt;
-save(strcat(optical_path, 'dt.mat'), 'time_step');
+number_time_steps = kgrid.Nt;
+save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');
 
 end

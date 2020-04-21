@@ -31,18 +31,15 @@ data = load(acoustic_path);
 settings = data.settings;
 
 %% Read time_series_data
-if isfield(settings, 'acoustic_simulation_3d') == true
-    if settings.acoustic_simulation_3d == true
-        time_series_data = data.sensor_data_3D;
-    end
-else
-    time_series_data = data.time_series_data;
-end
+time_series_data = data.time_series_data;
+
 %% Define kWaveGrid
 
 [Nx, Ny] = size(data.sensor_mask);
-if settings.sample == true
-    dx = double(settings.voxel_spacing_mm)/(double(settings.upscale_factor) * 1000);
+if isfield(settings, 'sample') == true
+    if settings.sample == true
+        dx = double(settings.voxel_spacing_mm)/(double(settings.upscale_factor) * 1000);
+    end
 else
     dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m
 end
