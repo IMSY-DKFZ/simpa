@@ -76,7 +76,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
             time_reversal_script = "time_reversal_3D"
         else:
-            time_reversal_script = "time_reversal"
+            time_reversal_script = "time_reversal_2D"
 
         cmd = list()
         cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
@@ -91,7 +91,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         subprocess.run(cmd)
 
-        reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")["reconstructed_data"]
+        reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.RECONSTRUCTED_DATA]
 
         os.chdir(cur_dir)
         os.remove(acoustic_path + "tr.mat")
