@@ -38,13 +38,16 @@ def simulate(settings, optical_path):
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING]:
             tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
-                                    SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH]))
+                                    SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA,
+                                                                               settings[Tags.WAVELENGTH]))
         else:
             tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
-                                    SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH]))
+                                    SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA,
+                                                                               settings[Tags.WAVELENGTH]))
     else:
         tmp_ac_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
-                                SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH]))
+                                SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA,
+                                                                           settings[Tags.WAVELENGTH]))
 
     if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
         axes = (0, 1)
@@ -54,11 +57,13 @@ def simulate(settings, optical_path):
     data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3, axes=axes)
     data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
     data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3, axes=axes)
-    data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE], axes=axes))
+    data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE],
+                                                                      axes=axes))
     data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE], axes=axes)
 
     try:
-        data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3, axes=axes)
+        data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
+                                                              axes=axes)
     except ValueError:
         print("No directivity_angle specified")
     except KeyError:
@@ -95,22 +100,22 @@ def simulate(settings, optical_path):
     raw_time_series_data = sio.loadmat(optical_path + ".mat")[Tags.TIME_SERIES_DATA]
 
     if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+
         num_time_steps = np.shape(raw_time_series_data)[1]
-        if Tags.PERFORM_UPSAMPLING in settings and settings[Tags.PERFORM_UPSAMPLING]:
-            upscale_factor = settings[Tags.UPSCALE_FACTOR]
-        else:
-            upscale_factor = 1
-        num_orthogonal_sensors = int(13 / settings[Tags.SPACING_MM] * upscale_factor) + 1
+        num_imaging_plane_sensors = np.shape(np.argwhere(
+            data_dict[Tags.PROPERTY_SENSOR_MASK][:, int(np.shape(data_dict[Tags.PROPERTY_SENSOR_MASK])[1] / 2), :]))[0]
+        num_orthogonal_sensors = np.shape(np.argwhere(
+            data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, int(np.shape(data_dict[Tags.PROPERTY_SENSOR_MASK])[2] / 2)]))[0]
 
         if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
             if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_DAS,
                                                            Tags.RECONSTRUCTION_ALGORITHM_DMAS,
                                                            Tags.RECONSTRUCTION_ALGORITHM_SDMAS]:
-                raw_time_series_data = np.reshape(raw_time_series_data, [settings[Tags.SENSOR_NUM_USED_ELEMENTS],
+                raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors,
                                                                          num_orthogonal_sensors, num_time_steps])
                 raw_time_series_data = np.sum(raw_time_series_data, axis=1) / num_orthogonal_sensors
         else:
-            raw_time_series_data = np.reshape(raw_time_series_data, [settings[Tags.SENSOR_NUM_USED_ELEMENTS],
+            raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors,
                                                                      num_orthogonal_sensors, num_time_steps])
 
     time_grid = sio.loadmat(optical_path + "dt.mat")
@@ -123,5 +128,3 @@ def simulate(settings, optical_path):
     os.chdir(cur_dir)
 
     return raw_time_series_data
-
-
