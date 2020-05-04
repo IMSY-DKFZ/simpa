@@ -195,8 +195,9 @@ class Tags:
     SENSOR_SAMPLING_RATE_MHZ = "sensor_sampling_rate_mhz"
     SENSOR_NUM_ELEMENTS = "sensor_num_elements"
     SENSOR_NUM_USED_ELEMENTS = "sensor_num_used_elements"
-    SENSOR_ARC = "sensor_arc"
+    SENSOR_CURVED = "sensor_curved"
     SENSOR_RADIUS_MM = "sensor_radius_mm"
+    SENSOR_LINEAR = "sensor_linear"
 
     # Noise properties
     APPLY_NOISE_MODEL = "apply_noise_model"

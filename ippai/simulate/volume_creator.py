@@ -403,26 +403,36 @@ def append_msot_probe(volumes, global_settings, distortion=None):
             if distortion is not None:
                 focus[0] -= np.round(distortion[1] / (2 * global_settings[Tags.SPACING_MM]))
 
-            for i in range(-int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2),
-                           int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2)):
-                angle = pitch_angle * i  # Convert Pitch to mm
-                y_det = focus[1] + np.sin(angle) * detector_radius
-                z_det = int(round(focus[0] - np.sqrt(detector_radius ** 2 -
-                                                     (np.sin(angle) * detector_radius) ** 2)))
-                y_det = int(round(y_det))
+            if Tags.SENSOR_LINEAR in global_settings and global_settings[Tags.SENSOR_LINEAR]:
+                height = int(focus[0] - detector_radius/1.5)
+                start = int(round(focus[1] - (int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2) * global_settings[
+                    Tags.SENSOR_ELEMENT_PITCH_MM] / global_settings[Tags.SPACING_MM])))
+                end = int(round(focus[1] + (int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2) * global_settings[
+                    Tags.SENSOR_ELEMENT_PITCH_MM] / global_settings[Tags.SPACING_MM])))
+                for i in range(start, end + 1):
+                    detector_map[height, field_of_view_slice, i] = 1
+            else:
 
-                detector_map[z_det, field_of_view_slice, y_det] = 1
+                for i in range(-int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2),
+                               int(global_settings[Tags.SENSOR_NUM_ELEMENTS] / 2)):
+                    angle = pitch_angle * i  # Convert Pitch to mm
+                    y_det = focus[1] + np.sin(angle) * detector_radius
+                    z_det = int(round(focus[0] - np.sqrt(detector_radius ** 2 -
+                                                         (np.sin(angle) * detector_radius) ** 2)))
+                    y_det = int(round(y_det))
 
-                if Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS in global_settings:
-                    if global_settings[Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS] is True:
-                        if Tags.SENSOR_DIRECTIVITY_ANGLE in global_settings:
-                            detector_directivity[z_det, field_of_view_slice, y_det] = global_settings[Tags.SENSOR_DIRECTIVITY_ANGLE]
+                    detector_map[z_det, field_of_view_slice, y_det] = 1
+
+                    if Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS in global_settings:
+                        if global_settings[Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS] is True:
+                            if Tags.SENSOR_DIRECTIVITY_ANGLE in global_settings:
+                                detector_directivity[z_det, field_of_view_slice, y_det] = global_settings[Tags.SENSOR_DIRECTIVITY_ANGLE]
+                            else:
+                                detector_directivity = None
                         else:
-                            detector_directivity = None
+                            detector_directivity[z_det, field_of_view_slice, y_det] = -angle
                     else:
-                        detector_directivity[z_det, field_of_view_slice, y_det] = -angle
-                else:
-                    detector_directivity = None
+                        detector_directivity = None
 
             volumes[Tags.PROPERTY_SENSOR_MASK] = np.rot90(detector_map, 1, axes=(0, 2))
 

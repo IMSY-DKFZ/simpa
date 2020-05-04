@@ -75,7 +75,7 @@ if isfield(data, 'density') == true
     % add 2 pixel "gel" to reduce Fourier artifact
     medium.density = padarray(medium.density, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
-    medium.density = ones(Nx, Ny);
+    medium.density = 1000*ones(Nx, Ny);
 end
 
 %sound_speed_ref = min(min(medium.sound_speed));
