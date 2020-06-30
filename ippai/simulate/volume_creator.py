@@ -282,6 +282,46 @@ def append_gel_pad(volumes, global_settings):
             Tags.PROPERTY_SEGMENTATION: new_seg}
 
 
+def append_zero_layer(volumes, global_settings):
+    """
+    MCX allows to record diffuse reflectance at the surface of the 3D volume. For this it is required to append an extra
+    layer of zeros at the top of the volume. This method appends a layer with one voxel thickness to the top of the
+    volume. The zero layer is appended in the last dimension, if not 3D then exception is thrown.
+    :param volumes: dict, contains the volumes to which the zero layer has to be appended, each volume has to be
+    previously initialized. Expects 3D volumes.
+    :param global_settings: dict, contains all the settings used for the simulations, if key defined by
+    :code:`Tags.ZERO_LAYER_HEIGHT_VOXELS` not in dictionary, default value '1' is used.
+    :return: dict, new volumes dictionary with zero layer appended to each volume
+    """
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
+    if Tags.ZERO_LAYER_HEIGHT_VOXELS not in global_settings:
+        print("[INFO] Tag", Tags.ZERO_LAYER_HEIGHT_VOXELS, "not found in settings. Falling to default: 1 voxel.")
+        zero_layer_height = 1
+    else:
+        zero_layer_height = global_settings[Tags.AIR_LAYER_HEIGHT_MM]
+
+    new_mua = np.zeros((sizes[0], sizes[1], sizes[2] + zero_layer_height))
+    new_mua[:, :, zero_layer_height:] = volumes[Tags.PROPERTY_ABSORPTION_PER_CM]
+
+    new_mus = np.zeros((sizes[0], sizes[1], sizes[2] + zero_layer_height))
+    new_mus[:, :, zero_layer_height:] = volumes[Tags.PROPERTY_SCATTERING_PER_CM]
+
+    new_g = np.zeros((sizes[0], sizes[1], sizes[2] + zero_layer_height))
+    new_g[:, :, zero_layer_height:] = volumes[Tags.PROPERTY_ANISOTROPY]
+
+    new_oxy = np.ones((sizes[0], sizes[1], sizes[2] + zero_layer_height)) * (-1)
+    new_oxy[:, :, zero_layer_height:] = volumes[Tags.PROPERTY_OXYGENATION]
+
+    new_seg = np.zeros((sizes[0], sizes[1], sizes[2] + zero_layer_height))
+    new_seg[:, :, zero_layer_height:] = volumes[Tags.PROPERTY_SEGMENTATION]
+
+    return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
+            Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
+            Tags.PROPERTY_ANISOTROPY: new_g,
+            Tags.PROPERTY_OXYGENATION: new_oxy,
+            Tags.PROPERTY_SEGMENTATION: new_seg}
+
+
 def append_air_layer(volumes, global_settings):
     mua = StandardProperties.AIR_MUA
     mus = StandardProperties.AIR_MUS

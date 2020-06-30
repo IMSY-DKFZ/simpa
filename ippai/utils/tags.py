@@ -154,6 +154,7 @@ class Tags:
     # Air layer
     AIR_LAYER = "airlayer"
     AIR_LAYER_HEIGHT_MM = "air_layer_height"
+    ZERO_LAYER_HEIGHT_VOXELS = "zero_layer_height_voxels"
 
     # Gel Pad Layer
     GELPAD_LAYER = "gelpad"
