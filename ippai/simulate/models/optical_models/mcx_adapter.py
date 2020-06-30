@@ -25,6 +25,8 @@ import struct
 import subprocess
 from ippai.utils import Tags
 from ippai.simulate.models.optical_models import OpticalForwardAdapterBase
+from ippai.simulate.constants import SaveFilePaths
+from ippai.io_handling.io_hdf5 import load_hdf5
 import json
 import os
 from ippai.simulate.models.optical_models.illumination_definition import define_illumination
@@ -138,6 +140,20 @@ class McxAdapter(OpticalForwardAdapterBase):
         cmd.append(tmp_json_filename)
         cmd.append("-O")
         cmd.append("F")
+        if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
+            volume_path = SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, str(settings[Tags.WAVELENGTH]))
+            volumes = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], volume_path)
+            zero_layer_present = True
+            no_zero_layer_volumes = []
+            for key in volumes:
+                if volumes[key][:, :, 0].sum() != 0:
+                    zero_layer_present = False
+                    no_zero_layer_volumes.append(key)
+            if no_zero_layer_volumes:
+                raise ValueError("Saving diffuse reflectance was specified but zero layer was not appended to "
+                                 f" volumes with keys: {no_zero_layer_volumes}")
+            if zero_layer_present:
+                cmd.append("-X 1")
 
         res = subprocess.run(cmd)
 

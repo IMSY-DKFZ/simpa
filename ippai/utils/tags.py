@@ -44,6 +44,7 @@ class Tags:
     Optical model settings
     """
     RUN_OPTICAL_MODEL = 'run_optical_forward_model'
+    SAVE_DIFFUSE_REFLECTANCE = 'save_diffuse_reflectance'
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
     OPTICAL_MODEL_BINARY_PATH = "optical_model_binary_path"
     OPTICAL_MODEL_NUMBER_PHOTONS = "optical_model_number_of_photons"

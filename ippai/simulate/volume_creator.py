@@ -99,6 +99,9 @@ def create_volumes(settings, seed, distortion=None):
 
     volumes = create_gruneisen_map(volumes, settings)
 
+    if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
+        volumes = append_zero_layer(volumes, settings)
+
     if Tags.RUN_ACOUSTIC_MODEL in settings:
         if settings[Tags.RUN_ACOUSTIC_MODEL] is True:
             volumes = create_acoustic_properties(volumes, settings)
@@ -309,17 +312,21 @@ def append_zero_layer(volumes, global_settings):
     new_g = np.zeros((sizes[0], sizes[1], sizes[2] + zero_layer_height))
     new_g[:, :, zero_layer_height:] = volumes[Tags.PROPERTY_ANISOTROPY]
 
-    new_oxy = np.ones((sizes[0], sizes[1], sizes[2] + zero_layer_height)) * (-1)
+    new_oxy = np.zeros((sizes[0], sizes[1], sizes[2] + zero_layer_height))
     new_oxy[:, :, zero_layer_height:] = volumes[Tags.PROPERTY_OXYGENATION]
 
     new_seg = np.zeros((sizes[0], sizes[1], sizes[2] + zero_layer_height))
     new_seg[:, :, zero_layer_height:] = volumes[Tags.PROPERTY_SEGMENTATION]
 
+    new_gruneisen = np.zeros((sizes[0], sizes[1], sizes[2] + zero_layer_height))
+    new_gruneisen[:, :, zero_layer_height:] = volumes[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+
     return {Tags.PROPERTY_ABSORPTION_PER_CM: new_mua,
             Tags.PROPERTY_SCATTERING_PER_CM: new_mus,
             Tags.PROPERTY_ANISOTROPY: new_g,
             Tags.PROPERTY_OXYGENATION: new_oxy,
-            Tags.PROPERTY_SEGMENTATION: new_seg}
+            Tags.PROPERTY_SEGMENTATION: new_seg,
+            Tags.PROPERTY_GRUNEISEN_PARAMETER: new_gruneisen}
 
 
 def append_air_layer(volumes, global_settings):

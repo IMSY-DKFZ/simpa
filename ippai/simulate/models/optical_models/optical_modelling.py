@@ -44,7 +44,6 @@ def run_optical_forward_model(settings, optical_properties_path):
     # elif model == Tags.MODEL_TEST_OPTICAL: TODO
     #     forward_model_implementation =
 
-
     fluence = forward_model_implementation.simulate(optical_properties_path, settings)
 
     optical_properties = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], optical_properties_path)
