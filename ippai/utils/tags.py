@@ -267,6 +267,9 @@ class Tags:
     STRUCTURE_DISTORTED_LAYERS = "distorted_layers"
     STRUCTURE_DISTORTED_LAYERS_ELEVATION = "distorted_layers_elevation"
 
+    CREATE_AXIS_SYMMETRICAL_VOLUME = "duplicate_2d_map_along_axis"
+    VOLUME_SYMMETRY_AXIS = "duplicate_2d_map_axis"
+
     UNITS_ARBITRARY = "arbitrary_unity"
     UNITS_PRESSURE = "newton_per_meters_squared"
 

@@ -22,6 +22,7 @@
 
 import numpy as np
 import copy
+from typing import Dict
 
 from ippai.simulate.tissue_properties import TissueProperties
 from ippai.utils import Tags, StandardProperties
@@ -86,8 +87,16 @@ def create_simulation_volume(settings):
 
 
 def create_volumes(settings, seed, distortion=None):
-    tmp_y_dim = settings[Tags.DIM_VOLUME_Y_MM]
-    settings[Tags.DIM_VOLUME_Y_MM] = settings[Tags.SPACING_MM]
+    tmp_dim = None
+    if Tags.CREATE_AXIS_SYMMETRICAL_VOLUME in settings and settings[Tags.CREATE_AXIS_SYMMETRICAL_VOLUME]:
+        if Tags.VOLUME_SYMMETRY_AXIS in settings and isinstance(settings[Tags.VOLUME_SYMMETRY_AXIS], int):
+            axis_dims_dict = [Tags.DIM_VOLUME_X_MM, Tags.DIM_VOLUME_Y_MM, Tags.DIM_VOLUME_Z_MM]
+            axis = settings[Tags.VOLUME_SYMMETRY_AXIS]
+            tmp_dim = settings[axis_dims_dict[axis]]
+            settings[axis_dims_dict[axis]] = settings[Tags.SPACING_MM]
+        else:
+            raise ValueError("2D map duplication map tag was defined but the 'axis' was not defined correctly, "
+                             f"the tag should exist and be an integer: {Tags.VOLUME_SYMMETRY_AXIS}")
     np.random.seed(seed)
     volumes = create_empty_volume(settings)
     volumes = add_structures(volumes, settings, distortion=distortion)
@@ -99,36 +108,19 @@ def create_volumes(settings, seed, distortion=None):
 
     volumes = create_gruneisen_map(volumes, settings)
 
-    if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
-        volumes = append_zero_layer(volumes, settings)
-
     if Tags.RUN_ACOUSTIC_MODEL in settings:
         if settings[Tags.RUN_ACOUSTIC_MODEL] is True:
             volumes = create_acoustic_properties(volumes, settings)
 
-        for i in volumes.keys():
-            if i not in (Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE):
-                y_slices = int(round(tmp_y_dim / settings[Tags.SPACING_MM]))
-                if Tags.UPSAMPLING_RUN in settings and settings[Tags.UPSAMPLING_RUN]:
-                    if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
-                        y_slices = 1
-                    else:
-                        y_slices = int(round(int(round(tmp_y_dim / (settings[Tags.SPACING_MM] * settings[Tags.UPSCALE_FACTOR]))) * settings[Tags.UPSCALE_FACTOR]))
-                volumes[i] = np.repeat(volumes[i], y_slices, axis=1)
-                volumes[i] = np.flip(volumes[i], 1)
-            elif volumes[i] is not None:
-                tmp_vol = np.zeros(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM]))
+    if Tags.CREATE_AXIS_SYMMETRICAL_VOLUME in settings and settings[Tags.CREATE_AXIS_SYMMETRICAL_VOLUME]:
+        volumes = duplicate_layer_along_axis(volumes=volumes, target_dim=tmp_dim, settings=settings)
+    if tmp_dim is not None:
+        axis_dims_dict = [Tags.DIM_VOLUME_X_MM, Tags.DIM_VOLUME_Y_MM, Tags.DIM_VOLUME_Z_MM]
+        axis = settings[Tags.VOLUME_SYMMETRY_AXIS]
+        settings[axis_dims_dict[axis]] = tmp_dim
 
-                if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
-                    for sl in range(
-                            int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])) - int(13/2 / settings[Tags.SPACING_MM]),
-                            int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])) + int(13/2 / settings[Tags.SPACING_MM])+1):
-                        tmp_vol[:, sl, :] = volumes[i][:, 0, :]
-                else:
-                    tmp_vol[:, int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])), :] = volumes[i][:, 0, :]
-
-                volumes[i] = tmp_vol
-    settings[Tags.DIM_VOLUME_Y_MM] = tmp_y_dim
+    if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
+        volumes = append_zero_layer(volumes, settings)
 
     return volumes
 
@@ -285,7 +277,7 @@ def append_gel_pad(volumes, global_settings):
             Tags.PROPERTY_SEGMENTATION: new_seg}
 
 
-def append_zero_layer(volumes, global_settings):
+def append_zero_layer(volumes: Dict[str, np.ndarray], global_settings: dict) -> Dict[str, np.ndarray]:
     """
     MCX allows to record diffuse reflectance at the surface of the 3D volume. For this it is required to append an extra
     layer of zeros at the top of the volume. This method appends a layer with one voxel thickness to the top of the
@@ -556,6 +548,50 @@ def set_background(volumes, structure_settings, mua, mus, g, oxy):
     return volumes
 
 
+def duplicate_layer_along_axis(volumes: Dict[str, np.ndarray], target_dim: int, settings: dict) -> Dict[str, np.ndarray]:
+    """
+    duplicates a 2D map along a specified axis. It check for each volume if the length is '1' before the duplication.
+    Also, for :code: `Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE` the duplication is not done along the
+    whole volume but only along the extent of the US probe (13 mm).
+    :param volumes: dict, contains the previously initialized volumes, requires that the dimension along duplication
+    axis to be '1', raises ValuError otherwise
+    :param target_dim: int, indicates the target dimension size that is desired along duplication axis
+    :param settings: dict, general experiment settings, should contain the tags relevant to the volume dimensions,
+    spacing and duplication axis. For a complete list of tags see :code:`ippai.utils.tags.Tags`
+    :return: dict, contains the new volumes after 2D map has been duplicated along the specified axis
+
+    """
+    for i in volumes.keys():
+        if i not in (Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE):
+            n_slices = int(round(target_dim / settings[Tags.SPACING_MM]))
+            if Tags.UPSAMPLING_RUN in settings and settings[Tags.UPSAMPLING_RUN]:
+                if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
+                    n_slices = 1
+                else:
+                    n_slices = int(round(
+                        int(round(target_dim / (settings[Tags.SPACING_MM] * settings[Tags.UPSCALE_FACTOR]))) * settings[
+                            Tags.UPSCALE_FACTOR]))
+            if volumes[i].shape[settings[Tags.VOLUME_SYMMETRY_AXIS]] != 1:
+                raise ValueError(f"Dimension of volume along axis: {settings[Tags.VOLUME_SYMMETRY_AXIS]} should be"
+                                 f"'1' but found: {volumes[i].shape[settings[Tags.VOLUME_SYMMETRY_AXIS]]}")
+            volumes[i] = np.repeat(volumes[i], n_slices, axis=settings[Tags.VOLUME_SYMMETRY_AXIS])
+            volumes[i] = np.flip(volumes[i], settings[Tags.VOLUME_SYMMETRY_AXIS])
+        elif volumes[i] is not None:
+            # FIXME: this part is hard coded for and will probably break when an axis different than 'y' is used
+            tmp_vol = np.zeros(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM]))
+
+            if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+                for sl in range(
+                        int(target_dim / (2 * settings[Tags.SPACING_MM])) - int(13 / 2 / settings[Tags.SPACING_MM]),
+                        int(target_dim / (2 * settings[Tags.SPACING_MM])) + int(13 / 2 / settings[Tags.SPACING_MM]) + 1):
+                    tmp_vol[:, sl, :] = volumes[i][:, 0, :]
+            else:
+                tmp_vol[:, int(target_dim / (2 * settings[Tags.SPACING_MM])), :] = volumes[i][:, 0, :]
+
+            volumes[i] = tmp_vol
+    return volumes
+
+
 def add_layer(volumes, global_settings, structure_settings, mua, mus, g, oxy, extent_parent_x_z_mm, distortion=None):
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
@@ -646,8 +682,8 @@ def add_tube(volumes, global_settings, structure_settings, mua, mus, g, oxy, ext
     if start_z_max is None:
         start_z_max = (sizes[2] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
 
-    start_in_mm = np.asarray([randomize(start_x_min, start_x_max), 0,
-                              randomize(start_z_min, start_z_max)])
+    start_in_mm = np.asarray([float(randomize(start_x_min, start_x_max)), 0,
+                              float(randomize(start_z_min, start_z_max))])
 
     if distortion is not None:
         start_in_mm[2] -= (distortion[1] - distortion[0](start_in_mm[0]))
