@@ -60,7 +60,7 @@ class TissueLibrary(object):
         return (TissueSettingsGenerator().append(key="constant_chromophore",
                                                  value=Chromophore(SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ONE,
                                                                    volume_fraction=mua,
-                                                                   musp500=mus, b_mie=0.0, f_ray=0.0,
+                                                                   mus500=mus, b_mie=0.0, f_ray=0.0,
                                                                    anisotropy=g)).get_settings())
 
     def muscle(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
@@ -84,7 +84,8 @@ class TissueLibrary(object):
         return (TissueSettingsGenerator()
                 .append(key="Oxyhemoglobin", value=CHROMOPHORE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(key="Deoxyhemoglobin", value=CHROMOPHORE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(key="background_scatterers", value=CHROMOPHORE_LIBRARY.soft_tissue_scatterer())
+                .append(key="background_scatterers", value=CHROMOPHORE_LIBRARY.soft_tissue_scatterer(
+                        volume_fraction=1-OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE))
                 .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
 
     def epidermis(self):
@@ -157,6 +158,8 @@ class TissueLibrary(object):
                 .append(key="Oxyhemoglobin", value=CHROMOPHORE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(key="Deoxyhemoglobin", value=CHROMOPHORE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
                 .append(key="fat", value=CHROMOPHORE_LIBRARY.fat(fat_volume_fraction))
+                .append(key="scatterer", value=CHROMOPHORE_LIBRARY.soft_tissue_scatterer(
+                        1 - (OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE + fat_volume_fraction)))
                 .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
 
     def blood_generic(self):
