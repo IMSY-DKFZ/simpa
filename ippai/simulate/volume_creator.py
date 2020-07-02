@@ -108,8 +108,7 @@ def create_volumes(settings, seed, distortion=None):
 
     volumes = create_gruneisen_map(volumes, settings)
 
-    if Tags.RUN_ACOUSTIC_MODEL in settings:
-        if settings[Tags.RUN_ACOUSTIC_MODEL] is True:
+    if Tags.RUN_ACOUSTIC_MODEL in settings and settings[Tags.RUN_ACOUSTIC_MODEL] is True:
             volumes = create_acoustic_properties(volumes, settings)
 
     if Tags.CREATE_AXIS_SYMMETRICAL_VOLUME in settings and settings[Tags.CREATE_AXIS_SYMMETRICAL_VOLUME]:

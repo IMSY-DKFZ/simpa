@@ -90,9 +90,9 @@ def create_forearm_structures(relative_shift_mm=0, background_oxy=0.0,
                               distortion=False):
 
     structures_dict = dict()
-    structures_dict["muscle"] = create_muscle_background(background_oxy=background_oxy)
-    structures_dict["dermis"] = create_dermis_layer(background_oxy=background_oxy, distortion=distortion)
-    structures_dict["epidermis"] = create_epidermis_layer(background_oxy=background_oxy, distortion=distortion)
+    structures_dict["muscle"] = create_muscle_background()
+    structures_dict["dermis"] = create_dermis_layer(background_oxy=background_oxy)
+    structures_dict["epidermis"] = create_epidermis_layer()
     structures_dict["radial_artery"] = create_radial_artery(relative_shift_mm)
     structures_dict["ulnar_artery"] = create_ulnar_artery(relative_shift_mm)
     structures_dict["interosseous_artery"] = create_interosseous_artery(relative_shift_mm)
@@ -112,9 +112,9 @@ def create_unrealistic_forearm_structures(relative_shift_mm=0, background_oxy=0.
                                           vessel_spawn_probability=0.1,
                                           radius_factor=1.5):
     structures_dict = dict()
-    structures_dict["muscle"] = create_muscle_background(background_oxy=background_oxy)
+    structures_dict["muscle"] = create_muscle_background()
     structures_dict["dermis"] = create_dermis_layer(background_oxy=background_oxy)
-    structures_dict["epidermis"] = create_epidermis_layer(background_oxy=background_oxy)
+    structures_dict["epidermis"] = create_epidermis_layer()
     structures_dict["radial_artery"] = create_radial_artery(relative_shift_mm, radius_factor=radius_factor)
     structures_dict["ulnar_artery"] = create_ulnar_artery(relative_shift_mm, radius_factor=radius_factor)
     structures_dict["interosseous_artery"] = create_interosseous_artery(relative_shift_mm, radius_factor=radius_factor)
