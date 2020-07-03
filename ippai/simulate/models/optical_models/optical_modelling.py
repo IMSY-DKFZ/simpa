@@ -50,6 +50,14 @@ def run_optical_forward_model(settings, optical_properties_path):
     absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
     gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
 
+    if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
+        diffuse_reflectance = fluence[:, :, 0]
+        fluence = fluence[:, :, 1:]
+        absorption = absorption[:, :, 1:]
+        gruneisen_parameter = gruneisen_parameter[:, :, 1:]
+    else:
+        diffuse_reflectance = None
+
     if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
         units = Tags.UNITS_PRESSURE
         # Initial pressure should be given in units of Pascale
@@ -66,6 +74,7 @@ def run_optical_forward_model(settings, optical_properties_path):
 
     save_hdf5({Tags.OPTICAL_MODEL_FLUENCE: fluence,
                Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
+               Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE: diffuse_reflectance,
                Tags.OPTICAL_MODEL_UNITS: units},
               settings[Tags.IPPAI_OUTPUT_PATH],
               optical_output_path)
