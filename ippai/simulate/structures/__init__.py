@@ -26,6 +26,7 @@ from ippai.utils import MorphologicalTissueProperties
 from ippai.utils import TISSUE_LIBRARY
 
 import numpy as np
+from typing import Dict
 
 
 def create_random_ellipse(x_min_mm=2, x_max_mm=35, depth_min_mm=3, depth_max_mm=18,
@@ -44,6 +45,21 @@ def create_random_ellipse(x_min_mm=2, x_max_mm=35, depth_min_mm=3, depth_max_mm=
     rnd_tube_dict[Tags.STRUCTURE_TISSUE_PROPERTIES] = TISSUE_LIBRARY.blood_generic()
     rnd_tube_dict[Tags.STRUCTURE_SEGMENTATION_TYPE] = SegmentationClasses.BLOOD
     return rnd_tube_dict
+
+
+def create_custom_2d_map(map_2d_path: str, tag: str) -> Dict:
+    """
+    creates a custom path to
+    :param map_2d_path: str, path to :code:`numpy.ndarray` object saved in disc. Should be readable with
+    :code:`numpy.load`
+    :param tag: str, tag of the parameter that the 2d map represents, for example: 'mua', 'g', 'mus', 'oxy', etc.
+    :return: dict, dictionary accepted by :code:`ippai.simulate_volume_creator.set_custom_2d_map` to create the 2d map
+    """
+    custom_2d_map = dict()
+    custom_2d_map[Tags.CUSTOM_2D_MAP] = map_2d_path
+    custom_2d_map[Tags.CUSTOM_2D_MAP_PARAM_TAG] = tag
+    custom_2d_map[Tags.STRUCTURE_TYPE] = Tags.CUSTOM_2D_MAP
+    return custom_2d_map
 
 
 def create_random_background():

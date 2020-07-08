@@ -152,6 +152,10 @@ class Tags:
     PROPERTY_SENSOR_MASK = "sensor_mask"
     PROPERTY_DIRECTIVITY_ANGLE = "directivity_angle"
 
+    # custom 2d property map
+    CUSTOM_2D_MAP = "custom_2d_map"
+    CUSTOM_2D_MAP_PARAM_TAG = "custom_2d_map_tag"
+
     # Air layer
     AIR_LAYER = "airlayer"
     AIR_LAYER_HEIGHT_MM = "air_layer_height"

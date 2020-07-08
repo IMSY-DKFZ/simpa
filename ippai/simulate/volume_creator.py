@@ -19,17 +19,18 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-import numpy as np
 import copy
+import os
 from typing import Dict
-
-from ippai.simulate.tissue_properties import TissueProperties
-from ippai.utils import Tags, StandardProperties
-from ippai.simulate.constants import SegmentationClasses, SaveFilePaths
-from ippai.utils.calculate import *
+from warnings import warn
+import numpy as np
+from scipy.ndimage import zoom
 
 from ippai.io_handling.io_hdf5 import save_hdf5
+from ippai.simulate.constants import SegmentationClasses, SaveFilePaths
+from ippai.simulate.tissue_properties import TissueProperties
+from ippai.utils import Tags, StandardProperties
+from ippai.utils.calculate import *
 
 
 def create_simulation_volume(settings):
@@ -501,18 +502,24 @@ def create_empty_volume(global_settings):
 
 
 def add_structures(volumes, global_settings, distortion):
-
-    for structure in global_settings[Tags.STRUCTURES]:
-        volumes = add_structure(volumes, global_settings[Tags.STRUCTURES][structure], global_settings,
-                                distortion=distortion)
+    if isinstance(global_settings[Tags.STRUCTURES], dict):
+        structures = [global_settings[Tags.STRUCTURES][s] for s in global_settings[Tags.STRUCTURES]]
+    elif isinstance(global_settings[Tags.STRUCTURES], list):
+        structures = copy.copy(global_settings[Tags.STRUCTURES])
+    else:
+        raise ValueError(f"Structures should be list or dictionary, got {type(global_settings[Tags.STRUCTURES])}")
+    for structure in structures:
+        volumes = add_structure(volumes, structure, global_settings, distortion=distortion)
     return volumes
 
 
 def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=None, distortion=None):
-    # TODO check if this is actually how the call should be handeled
-    structure_properties = TissueProperties(structure_settings[Tags.STRUCTURE_TISSUE_PROPERTIES])
-    [mua, mus, g] = structure_properties.get(global_settings[Tags.WAVELENGTH])
-    oxy = calculate_oxygenation(structure_properties)
+    # TODO check if this is actually how the call should be handled
+    # custom 2D maps do not need to specify tissue properties since they are fed directly with a numpy array
+    if Tags.STRUCTURE_TISSUE_PROPERTIES in structure_settings:
+        structure_properties = TissueProperties(structure_settings[Tags.STRUCTURE_TISSUE_PROPERTIES])
+        [mua, mus, g] = structure_properties.get(global_settings[Tags.WAVELENGTH])
+        oxy = calculate_oxygenation(structure_properties)
 
     if structure_settings[Tags.STRUCTURE_TYPE] == Tags.STRUCTURE_BACKGROUND:
         volumes = set_background(volumes, structure_settings, mua, mus, g, oxy)
@@ -530,10 +537,81 @@ def add_structure(volumes, structure_settings, global_settings, extent_x_z_mm=No
         volumes, extent_x_z_mm = add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy,
                                              extent_x_z_mm, distortion=distortion)
 
+    if structure_settings[Tags.STRUCTURE_TYPE] == Tags.CUSTOM_2D_MAP:
+        volumes = set_custom_parameter_map(volumes, structure_settings, global_settings)
+
     if Tags.CHILD_STRUCTURES in structure_settings:
         for child_structure in structure_settings[Tags.CHILD_STRUCTURES]:
             volumes = add_structure(volumes, structure_settings[Tags.CHILD_STRUCTURES][child_structure],
                                     global_settings, extent_x_z_mm)
+
+    return volumes
+
+
+def set_custom_parameter_map(volumes: Dict, structure_settings: Dict, global_settings: Dict) -> Dict:
+    """
+    Reads a 2d numpy array and uses it as a 2d map for a parameter in the simulations, this can be for example: 'mua',
+    'mus', 'g', 'oxy', etc. Note that the 2d map created here would overwrite the values of the parameter specified in
+    :code:`structure_settings`
+    :param volumes: dict, contains the pre defined volumes, the volume to be updated should already exist
+    :param structure_settings: dict, contains the parameters needed to create the custom 2d map:
+    :code:`Tags.CUSTOM_2D_MAP` & :code:`Tags.CUSTOM_2D_MAP_PARAM_TAG`. Refer to
+    :code:`ippai.simulate.structures.create_custom_2d_map` for more details
+    :param global_settings: dict, contains the global settings of the simulations
+    :return: dict, new volumes with 2d map updated with parameter specified in :code:`structure_settings`
+    """
+    if isinstance(structure_settings[Tags.CUSTOM_2D_MAP], str) and \
+            os.path.isfile(structure_settings[Tags.CUSTOM_2D_MAP]):
+        custom_map = np.load(structure_settings[Tags.CUSTOM_2D_MAP], allow_pickle=True)
+    elif isinstance(structure_settings[Tags.CUSTOM_2D_MAP], np.ndarray):
+        custom_map = structure_settings[Tags.CUSTOM_2D_MAP]
+    else:
+        raise ValueError(f"CUSTOM_2D_MAP is not a file and not np.ndarray: {structure_settings[Tags.CUSTOM_2D_MAP]}")
+    if Tags.CUSTOM_2D_MAP_PARAM_TAG not in structure_settings \
+            and structure_settings[Tags.CUSTOM_2D_MAP_PARAM_TAG] in volumes:
+        raise ValueError("Tag for custom 2D map does not exist in created volumes or was not specified: "
+                         f"{structure_settings}")
+
+    map_not_empty = volumes[structure_settings[Tags.CUSTOM_2D_MAP_PARAM_TAG]].sum()
+    if map_not_empty:
+        warn("custom 2d map overrides previous non empty volume: "
+             f"{structure_settings[Tags.CUSTOM_2D_MAP_PARAM_TAG]}")
+    if len(custom_map.shape) == 2:
+        if Tags.VOLUME_SYMMETRY_AXIS not in global_settings:
+            raise ValueError("A custom 2D map was specified but a symmetry axis to extend the map was not defined"
+                             "please specify it with Tags.VOLUME_SYMMETRY_AXIS")
+        if Tags.CREATE_AXIS_SYMMETRICAL_VOLUME not in global_settings \
+                and not global_settings[Tags.CREATE_AXIS_SYMMETRICAL_VOLUME]:
+            raise ValueError("A custom 2D map was specified but axis symmetrical volume was not specified in global"
+                             "settings, please specify it with Tags.CREATE_AXIS_SYMMETRICAL_VOLUME")
+        ax = global_settings[Tags.VOLUME_SYMMETRY_AXIS]
+        # we temporarily move the axis to first position to be able to easily modify the data in the volume
+        tmp_volume = np.swapaxes(volumes[structure_settings[Tags.CUSTOM_2D_MAP_PARAM_TAG]], 0, ax)
+        if tmp_volume.shape[0] != 1:
+            raise ValueError("dimension of duplication axis is different than 1, setting a custom 2d map in this "
+                             "case is not well defined, unexpected behaviour is expected")
+        if tmp_volume[0, ...].shape != custom_map.shape:
+            target_scale = np.array(tmp_volume[0, ...].shape, dtype=float) / np.array(custom_map.shape, dtype=float)
+            volume_scaled = zoom(custom_map, zoom=target_scale)
+            tmp_volume[0, ...] = volume_scaled
+        else:
+            tmp_volume[0, ...] = custom_map
+        # we now return the axis to the original order
+        tmp_volume = np.swapaxes(tmp_volume, 0, ax)
+        volumes[structure_settings[Tags.CUSTOM_2D_MAP_PARAM_TAG]][...] = tmp_volume
+    elif len(custom_map.shape) == 3:
+        tmp_volume = volumes[structure_settings[Tags.CUSTOM_2D_MAP_PARAM_TAG]]
+        if np.any(np.array(tmp_volume.shape) == 1):
+            warn(f"custom map is 3D volume but one axis in volumes of global settings is 1: {tmp_volume.shape}")
+        if tmp_volume.shape != custom_map.shape:
+            target_scale = np.array(tmp_volume.shape, dtype=float) / np.array(custom_map.shape, dtype=float)
+            volume_scaled = zoom(custom_map, zoom=target_scale)
+            tmp_volume = volume_scaled
+        else:
+            tmp_volume = custom_map
+        volumes[structure_settings[Tags.CUSTOM_2D_MAP_PARAM_TAG]][...] = tmp_volume
+    else:
+        raise ValueError(f"Dimension of custom 2d map can not be handled, got: {custom_map.shape}")
 
     return volumes
 
