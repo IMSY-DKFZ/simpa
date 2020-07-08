@@ -51,6 +51,7 @@ class Tags:
     OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = "optical_model_illumination_geometry_xml_file"
     LASER_PULSE_ENERGY_IN_MILLIJOULE = "laser_pulse_energy_in_millijoule"
     OPTICAL_MODEL_FLUENCE = "fluence"
+    OPTICAL_MODEL_DIFFUSE_REFLECTANCE = "diffuse_reflectance"
     OPTICAL_MODEL_INITIAL_PRESSURE = "initial_pressure"
     OPTICAL_MODEL_UNITS = "units"
 

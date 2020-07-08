@@ -25,7 +25,7 @@ import matplotlib.pylab as plt
 import numpy as np
 from ippai.simulate import SaveFilePaths
 
-PATH = "/home/leo/DKFZ/common_files/test_ippai_simulation/MyVolumeName_4711/ippai_output.hdf5"
+PATH = "path/to/ippai_output.hdf5"
 WAVELENGTH = 800 # currently only 800 and 900 are simulated as well
 
 file = load_hdf5(PATH)
