@@ -20,10 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags
-from simpa.simulate import SaveFilePaths
-from simpa.simulate.models.reconstruction_models.MitkBeamformingAdapter import MitkBeamformingAdapter
-from simpa.simulate.models.reconstruction_models.TimeReversalAdapter import TimeReversalAdapter
+from simpa.utils import Tags, SaveFilePaths
+from simpa.core.image_reconstruction.MitkBeamformingAdapter import MitkBeamformingAdapter
+from simpa.core.image_reconstruction import TimeReversalAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 

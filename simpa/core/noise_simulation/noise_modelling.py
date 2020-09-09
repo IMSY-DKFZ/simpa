@@ -20,9 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags
-from simpa.simulate import SaveFilePaths
-from simpa.simulate.models.noise_models import GaussianNoiseModel
+from simpa.utils import Tags, SaveFilePaths
+from simpa.core.noise_simulation import GaussianNoiseModel
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 
 

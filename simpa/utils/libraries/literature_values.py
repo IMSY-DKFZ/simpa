@@ -194,7 +194,7 @@ class OpticalTissueProperties:
     # }
     BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE = 0.01  # Value of arterial bvf at t0 in fig 3.
 
-    # Mean and spread calculated from all ethnicities from figure 2C, averaged over both
+    # Mean and spread calculated from europeans from figure 2C, averaged over both
     # photoexposed and photoprotected samples.
     # @article{alaluf2002ethnic,
     #   title={Ethnic variation in melanin content and composition in photoexposed and photoprotected human skin},
@@ -207,13 +207,9 @@ class OpticalTissueProperties:
     #   year={2002},
     #   publisher={Wiley Online Library}
     # }
-    # MELANIN_VOLUME_FRACTION_MEAN = 0.022
-    # MELANIN_VOLUME_FRACTION_STD = 0.01
 
-    # Kris approx for only europeans
     MELANIN_VOLUME_FRACTION_MEAN = 0.002
     MELANIN_VOLUME_FRACTION_STD = 0.0005
-
 
 
 class MorphologicalTissueProperties:
@@ -327,21 +323,14 @@ class MorphologicalTissueProperties:
 
     # The following properties were experimentally determined based on data sets provided by Janek Gröhl
     # (Photoacoustic forearm images) and André Klein (Forearm CT images from full body CTs)
-    # RADIAL_ARTERY_DEPTH_MEAN_MM = 9
-    # RADIAL_ARTERY_DEPTH_STD_MM = 1
-    # ULNAR_ARTERY_DEPTH_MEAN_MM = 8
-    # ULNAR_ARTERY_DEPTH_STD_MM = 1
-    # Kris approximation for realistic forearm images:
+
     RADIAL_ARTERY_DEPTH_MEAN_MM = 6.0
     RADIAL_ARTERY_DEPTH_STD_MM = 0.5
     ULNAR_ARTERY_DEPTH_MEAN_MM = 6.0
     ULNAR_ARTERY_DEPTH_STD_MM = 0.5
 
-    # DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 30
-    # DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM = 5
-    # Kris approx
-    DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 15.0
-    DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM = 5.0
+    DISTANCE_RADIAL_AND_ULNA_ARTERY_MEAN_MM = 30
+    DISTANCE_RADIAL_AND_ULNA_ARTERY_STD_MM = 5
     RADIUS_BONE_DIAMETER_MEAN_MM = 20.0
     RADIUS_BONE_DIAMETER_STD_MM = 2.0
     ULNA_BONE_DIAMETER_MEAN_MM = 15.0

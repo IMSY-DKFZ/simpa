@@ -22,10 +22,10 @@
 
 from simpa.utils import Tags
 
-from simpa.simulate.simulation import simulate
-from simpa.simulate.structures import create_epidermis_layer
-from simpa.simulate.structures import create_muscle_background
-from simpa.simulate.structures import create_vessel_tube
+from simpa.core.simulation import simulate
+from simpa.core.volume_creation import create_epidermis_layer
+from simpa.core.volume_creation import create_muscle_background
+from simpa.core.volume_creation import create_vessel_tube
 
 import numpy as np
 
@@ -87,7 +87,7 @@ settings = {
     Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
 
-    # Add the structures to be simulated to the tissue
+    # Add the volume_creation to be simulated to the tissue
     Tags.STRUCTURES: create_example_tissue()
 }
 print("Simulating ", RANDOM_SEED)

@@ -1,9 +1,10 @@
 import unittest
 from simpa.utils import Tags
-from simpa.simulate.simulation import simulate
-from simpa.simulate import SegmentationClasses
+from simpa.core.simulation import simulate
+from simpa.utils import SegmentationClasses
 from simpa.utils import TISSUE_LIBRARY
 import os
+
 
 class TestTissueProperties(unittest.TestCase):
 

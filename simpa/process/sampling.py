@@ -21,10 +21,8 @@
 # SOFTWARE.
 
 import numpy as np
-from simpa.utils import Tags
-from simpa.simulate import SaveFilePaths
+from simpa.utils import Tags, SaveFilePaths
 from simpa.process import preprocess_images
-from simpa.deep_learning import Architectures, datasets
 from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.utils.serialization import SIMPAJSONSerializer
 from scipy.ndimage import zoom
@@ -53,25 +51,6 @@ def upsample(settings, optical_path):
     #     preprocess_images.preprocess_image(settings, np.rot90(optical_data[Tags.OPTICAL_MODEL_INITIAL_PRESSURE], 3)))
 
     if Tags.UPSAMPLING_METHOD in settings:
-        if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_DEEP_LEARNING:
-            fluence = dl_upsample(settings, fluence)
-            # initial_pressure = dl_upsample(settings, initial_pressure)
-            props = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH],
-                              SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH]))
-            mua = props[Tags.PROPERTY_ABSORPTION_PER_CM]
-
-            # mua = np.flip(mua)
-            if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
-                units = Tags.UNITS_PRESSURE
-                # Initial pressure should be given in units of Pascale
-                conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
-                gruneisen_parameter = props[Tags.PROPERTY_GRUNEISEN_PARAMETER]
-                initial_pressure = (mua * fluence * gruneisen_parameter *
-                                    (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE][str(settings[Tags.WAVELENGTH])] / 1000)
-                                    * conversion_factor)
-            else:
-                initial_pressure = mua*fluence
-
 
         if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_NEAREST_NEIGHBOUR:
             fluence = nn_upsample(settings, fluence)
@@ -159,77 +138,6 @@ def upsample(settings, optical_path):
               upsampled_optical_output_path)
 
     return upsampled_optical_output_path
-
-
-def dl_upsample(settings, image_data):
-    """
-    Upsamples the given image with the deep learning model specified in the settings.
-
-    :param settings: (dict) Dictionary that describes all simulation parameters.
-    :param image_data: (numpy array) Image to be upsampled.
-    :param model_path: (string) Path to the file of the deep learning model state_dict.
-    :return: Upsampled image.
-    """
-
-    def model_prediction(image, upscale_factor, path):
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-        dl_model = Architectures.ESPCN(upscale_factor=upscale_factor)
-        dl_model.to(device)
-        dl_model.load_state_dict(torch.load(path))
-        dl_model.eval()
-
-        with torch.no_grad():
-            normalized_image_data, mx, mn = datasets.normalize_min_max(image)
-            normalized_tensor = torch.from_numpy(normalized_image_data).unsqueeze(0).unsqueeze(0).type(torch.float32)
-
-            upsampled_tensor = dl_model(normalized_tensor.to(device)).cpu()
-
-            normalized_upsampled_image = upsampled_tensor.detach().squeeze(0).squeeze(0).numpy()
-
-            upsampled_image = datasets.normalize_min_max_inverse(normalized_upsampled_image, mx=mx, mn=mn)
-        return upsampled_image
-
-    low_res = settings[Tags.SPACING_MM]
-    high_res = settings[Tags.SPACING_MM]/settings[Tags.UPSCALE_FACTOR]
-
-    if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
-        # cut_off_pixel = int(round(42.2/settings[Tags.SPACING_MM]))
-        # image_data = np.rot90(image_data, 3)
-        # probe_image = image_data[:cut_off_pixel, :]
-        # volume_image = image_data[cut_off_pixel:, :]
-        upsampled_image = model_prediction(image_data, settings[Tags.UPSCALE_FACTOR],
-                                                 "/media/kris/Extreme SSD/master_thesis/simulation_pipeline/upsampling/20200603-122526_Upscalel1_0.6_to_0.3/save/epoch_99.pt")
-        # upsampled_volume_image = model_prediction(volume_image, settings[Tags.UPSCALE_FACTOR],
-        #                                           "/home/kris/hard_drive/simpa/data/deep_learning_models/"
-        #                                           "volume_Upscale_0.34_to_0.17/epoch_199.pt")
-        #
-        # upsampled_image = np.zeros([image_data.shape[0]*2, image_data.shape[1]*2])
-        # upsampled_image[:cut_off_pixel*settings[Tags.UPSCALE_FACTOR], :] = upsampled_probe_image
-        # upsampled_image[cut_off_pixel * settings[Tags.UPSCALE_FACTOR]:, :] = upsampled_volume_image
-        # upsampled_image = np.rot90(upsampled_image)
-
-    else:
-        model_path = settings[Tags.DL_MODEL_PATH]
-
-        if model_path is None:
-            model_root = "/home/kris/hard_drive/simpa/data/deep_learning_models"
-            for i, model in enumerate(os.listdir(model_root)):
-                if str(low_res) in model and str(high_res) in model:
-                    model_path = os.path.join(model_root, model)
-                    break
-                elif i == len(os.listdir(model_root)) - 1:
-                    raise FileNotFoundError("Deep Learning model with specified scales doesn't exist.")
-                else:
-                    continue
-
-            for file in os.listdir(model_path):
-                model_path = os.path.join(model_path, file)
-                break
-
-        upsampled_image = model_prediction(image_data, settings[Tags.UPSCALE_FACTOR], model_path)
-
-    return upsampled_image
 
 
 def nn_upsample(settings, image_data):

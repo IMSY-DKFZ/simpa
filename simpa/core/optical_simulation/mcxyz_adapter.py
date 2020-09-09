@@ -25,7 +25,7 @@ import numpy as np
 import subprocess
 from simpa.utils import Tags
 import os
-from simpa.simulate.models.optical_models import OpticalForwardAdapterBase
+from simpa.core.optical_simulation import OpticalForwardAdapterBase
 
 
 class McxyzAdapter(OpticalForwardAdapterBase):

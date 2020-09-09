@@ -1,5 +1,5 @@
 import unittest
-from simpa.simulate import TissueProperties
+from simpa.core import TissueProperties
 from simpa.utils import TISSUE_LIBRARY
 from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils import calculate_oxygenation

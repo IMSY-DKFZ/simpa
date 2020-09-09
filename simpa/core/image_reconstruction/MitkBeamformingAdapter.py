@@ -22,7 +22,7 @@
 
 from simpa.utils import Tags
 from simpa.utils import StandardProperties
-from simpa.simulate.models.reconstruction_models import ReconstructionAdapterBase
+from simpa.core.image_reconstruction import ReconstructionAdapterBase
 import numpy as np
 import subprocess
 import xmltodict

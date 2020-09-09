@@ -20,12 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import numpy as np
 import copy
 
-from simpa.simulate.tissue_properties import TissueProperties
+from simpa.core.volume_creation.tissue_properties import TissueProperties
 from simpa.utils import Tags, StandardProperties
-from simpa.simulate.constants import SegmentationClasses, SaveFilePaths
+from simpa.utils.constants import SegmentationClasses, SaveFilePaths
 from simpa.utils.calculate import *
 
 from simpa.io_handling.io_hdf5 import save_hdf5

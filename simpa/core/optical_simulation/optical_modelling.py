@@ -20,10 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags
-from simpa.simulate import SaveFilePaths
-from simpa.simulate.models.optical_models.mcx_adapter import McxAdapter
-from simpa.simulate.models.optical_models.mcxyz_adapter import McxyzAdapter
+from simpa.utils import Tags, SaveFilePaths
+from simpa.core.optical_simulation.mcx_adapter import McxAdapter
+from simpa.core.optical_simulation.mcxyz_adapter import McxyzAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 
 

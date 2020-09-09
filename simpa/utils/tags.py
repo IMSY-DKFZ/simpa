@@ -238,7 +238,7 @@ class Tags:
     KEY_ANISOTROPY = "anisotropy"
 
     # Structures
-    STRUCTURES = "structures"
+    STRUCTURES = "volume_creation"
     CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = "structure_type"
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"

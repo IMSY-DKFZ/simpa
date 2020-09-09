@@ -20,8 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.simulate import SegmentationClasses
-from simpa.utils import Tags
+from simpa.utils import Tags, SegmentationClasses
 from simpa.utils import MorphologicalTissueProperties
 from simpa.utils import TISSUE_LIBRARY
 

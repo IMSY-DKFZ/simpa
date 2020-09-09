@@ -20,3 +20,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from simpa.utils import Tags, SaveFilePaths
+from simpa.core.acoustic_simulation import k_wave_adapter
+from simpa.io_handling.io_hdf5 import save_hdf5
+
+
+def run_acoustic_forward_model(settings, optical_path):
+    print("ACOUSTIC FORWARD")
+
+    data = k_wave_adapter.simulate(settings, optical_path)
+
+    acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
+        format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+
+    if Tags.PERFORM_UPSAMPLING in settings:
+        if settings[Tags.PERFORM_UPSAMPLING]:
+            acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
+                format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+
+    save_hdf5({Tags.TIME_SERIES_DATA: data}, settings[Tags.SIMPA_OUTPUT_PATH],
+              acoustic_output_path)
+
+    return acoustic_output_path

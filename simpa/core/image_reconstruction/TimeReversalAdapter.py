@@ -20,11 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags
-from simpa.simulate import SaveFilePaths
-from simpa.simulate.models.reconstruction_models import ReconstructionAdapterBase
+from simpa.utils import Tags, SaveFilePaths
+from simpa.core.image_reconstruction import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_hdf5
-from simpa.simulate.volume_creator import create_volumes
+from simpa.core.volume_creation.volume_creator import create_volumes
 import numpy as np
 import scipy.io as sio
 import subprocess

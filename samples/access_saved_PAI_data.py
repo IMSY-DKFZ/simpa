@@ -23,7 +23,7 @@
 from simpa.io_handling import load_hdf5, save_hdf5
 import matplotlib.pylab as plt
 import numpy as np
-from simpa.simulate import SaveFilePaths
+from simpa.utils import SaveFilePaths
 
 PATH = "path/to/file"
 WAVELENGTH = 800  # currently only 800 and 900 are simulated as well

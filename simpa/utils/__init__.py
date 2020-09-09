@@ -25,6 +25,7 @@ from simpa.utils.tags import Tags
 from simpa.utils.libraries.literature_values import MorphologicalTissueProperties
 from simpa.utils.libraries.literature_values import StandardProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties
+from simpa.utils.constants import SaveFilePaths, SegmentationClasses
 
 # Then load classes and methods with an <b>increasing</b> amount of internal dependencies.
 # If there are import errors in the tests, it is probably due to an incorrect
