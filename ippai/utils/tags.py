@@ -256,7 +256,7 @@ class Tags:
     STRUCTURE_TUBE = "structure_tube"
     STRUCTURE_RADIUS_MIN_MM = "structure_radius_min_mm"
     STRUCTURE_RADIUS_MAX_MM = "structure_radius_max_mm"
-    STRUCTURE_FORCE_ORTHAGONAL_TO_PLANE = "structure_force_orthagonal_to_plane"
+    STRUCTURE_FORCE_ORTHOGONAL_TO_PLANE = "structure_force_orthogonal_to_plane"
     STRUCTURE_TUBE_CENTER_X_MIN_MM = "structure_tube_start_x_min_mm"
     STRUCTURE_TUBE_CENTER_X_MAX_MM = "structure_tube_start_x_max_mm"
 
