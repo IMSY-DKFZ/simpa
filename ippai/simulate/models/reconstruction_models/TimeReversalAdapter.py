@@ -24,6 +24,7 @@ from ippai.utils import Tags
 from ippai.simulate import SaveFilePaths
 from ippai.simulate.models.reconstruction_models import ReconstructionAdapterBase
 from ippai.io_handling.io_hdf5 import load_hdf5
+from ippai.simulate.volume_creator import create_volumes
 import numpy as np
 import scipy.io as sio
 import subprocess
@@ -33,7 +34,7 @@ import os
 class TimeReversalAdapter(ReconstructionAdapterBase):
 
     @staticmethod
-    def get_acoustic_properties(settings, input_data):
+    def get_acoustic_properties(settings, input_data, distortion):
         if Tags.PERFORM_UPSAMPLING in settings and settings[Tags.PERFORM_UPSAMPLING]:
             tmp_ac_properties = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], 
                                           SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA, 
@@ -55,19 +56,28 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
                                         Tags.PROPERTY_ALPHA_COEFF
                                         ]
 
+        if Tags.RECONSTRUCTION_INVERSE_CRIME in settings and settings[Tags.RECONSTRUCTION_INVERSE_CRIME] is False:
+            settings[Tags.SPACING_MM] = 0.1
+            settings[Tags.DIM_VOLUME_Y_MM] = 0.1
+            volumes = create_volumes(settings, settings[Tags.RANDOM_SEED] + 10, distortion=distortion)
+            for key, value in volumes.items():
+                volumes[key] = np.squeeze(value)
+        else:
+            volumes = tmp_ac_properties
+
         for acoustic_property in possible_acoustic_properties:
             if acoustic_property in tmp_ac_properties.keys():
                 try:
-                    input_data[acoustic_property] = np.rot90(tmp_ac_properties[acoustic_property], 3, axes=axes)
+                    input_data[acoustic_property] = np.rot90(volumes[acoustic_property], 3, axes=axes)
                 except ValueError or KeyError:
                     print("{} not specified.".format(acoustic_property))
 
         return input_data
 
-    def reconstruction_algorithm(self, time_series_sensor_data, settings):
+    def reconstruction_algorithm(self, time_series_sensor_data, settings, distortion):
         input_data = dict()
         input_data[Tags.TIME_SERIES_DATA] = time_series_sensor_data
-        input_data = self.get_acoustic_properties(settings, input_data)
+        input_data = self.get_acoustic_properties(settings, input_data, distortion)
         acoustic_path = settings[Tags.IPPAI_OUTPUT_PATH] + ".mat"
 
         input_data["settings"] = settings
@@ -94,6 +104,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.RECONSTRUCTED_DATA]
 
         os.chdir(cur_dir)
+        os.remove(acoustic_path)
         os.remove(acoustic_path + "tr.mat")
 
         return reconstructed_data

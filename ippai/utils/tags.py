@@ -61,6 +61,7 @@ class Tags:
     ILLUMINATION_PARAM1 = "illumination_param1"
     ILLUMINATION_PARAM2 = "illumination_param2"
     TIME_STEP = "time_step"
+    TOTAL_TIME = "total_time"
 
     # Supported illumination types - implemented in mcx
     ILLUMINATION_TYPE_PENCIL = "pencil"
@@ -110,6 +111,7 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
+    RECONSTRUCTION_INVERSE_CRIME = "reconstruction_inverse_crime"
     RECONSTRUCTION_MITK_BINARY_PATH = "reconstruction_mitk_binary_path"
     RECONSTRUCTION_MITK_SETTINGS_XML = "reconstruction_mitk_settings_xml"
     RECONSTRUCTION_BMODE_METHOD = "reconstruction_bmode_method"
@@ -195,9 +197,9 @@ class Tags:
     SENSOR_SAMPLING_RATE_MHZ = "sensor_sampling_rate_mhz"
     SENSOR_NUM_ELEMENTS = "sensor_num_elements"
     SENSOR_NUM_USED_ELEMENTS = "sensor_num_used_elements"
-    SENSOR_CURVED = "sensor_curved"
+    SENSOR_CONCAVE = "concave"
     SENSOR_RADIUS_MM = "sensor_radius_mm"
-    SENSOR_LINEAR = "sensor_linear"
+    SENSOR_LINEAR = "linear"
 
     # Noise properties
     APPLY_NOISE_MODEL = "apply_noise_model"

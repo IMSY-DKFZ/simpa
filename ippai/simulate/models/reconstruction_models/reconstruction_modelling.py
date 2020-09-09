@@ -27,7 +27,7 @@ from ippai.simulate.models.reconstruction_models.TimeReversalAdapter import Time
 from ippai.io_handling.io_hdf5 import save_hdf5
 
 
-def perform_reconstruction(settings, acoustic_data_path):
+def perform_reconstruction(settings, acoustic_data_path, distortion):
     print("ACOUSTIC FORWARD")
 
     reconstruction_method = None
@@ -39,7 +39,7 @@ def perform_reconstruction(settings, acoustic_data_path):
     elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL:
         reconstruction_method = TimeReversalAdapter()
 
-    reconstruction = reconstruction_method.simulate(settings, acoustic_data_path)
+    reconstruction = reconstruction_method.simulate(settings, acoustic_data_path, distortion)
 
     reconstruction_output_path = SaveFilePaths.RECONSTRCTION_OUTPUT.\
         format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])

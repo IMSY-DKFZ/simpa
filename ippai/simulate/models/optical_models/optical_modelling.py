@@ -51,22 +51,25 @@ def run_optical_forward_model(settings, optical_properties_path):
     absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
     gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
 
-    if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
-        units = Tags.UNITS_PRESSURE
-        # Initial pressure should be given in units of Pascale
-        conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
-        initial_pressure = (absorption * fluence * gruneisen_parameter *
-                            (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000)
-                            * conversion_factor)
+    if Tags.PERFORM_UPSAMPLING not in settings or settings[Tags.PERFORM_UPSAMPLING] is False:
+        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
+            units = Tags.UNITS_PRESSURE
+            # Initial pressure should be given in units of Pascale
+            conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
+            initial_pressure = (absorption * fluence * gruneisen_parameter *
+                                (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000)
+                                * conversion_factor)
+        else:
+            units = Tags.UNITS_ARBITRARY
+            # initial_pressure = absorption * fluence
     else:
         units = Tags.UNITS_ARBITRARY
-        initial_pressure = absorption * fluence
 
     optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.\
         format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
 
     save_hdf5({Tags.OPTICAL_MODEL_FLUENCE: fluence,
-               Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
+               # Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
                Tags.OPTICAL_MODEL_UNITS: units},
               settings[Tags.IPPAI_OUTPUT_PATH],
               optical_output_path)

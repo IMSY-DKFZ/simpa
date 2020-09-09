@@ -77,7 +77,7 @@ class StandardProperties:
     ALPHA_COEFF_BLOOD = 0.2056
     ALPHA_COEFF_SKIN = 1.8378
     ALPHA_COEFF_FAT = 0.3785
-    ALPHA_COEFF_GEL_PAD = 3
+    ALPHA_COEFF_GEL_PAD = 0.277
     ALPHA_COEFF_WATER = 2.1976e-3
 
 
@@ -207,8 +207,13 @@ class OpticalTissueProperties:
     #   year={2002},
     #   publisher={Wiley Online Library}
     # }
-    MELANIN_VOLUME_FRACTION_MEAN = 0.022
-    MELANIN_VOLUME_FRACTION_STD = 0.01
+    # MELANIN_VOLUME_FRACTION_MEAN = 0.022
+    # MELANIN_VOLUME_FRACTION_STD = 0.01
+
+    # Kris approx for only europeans
+    MELANIN_VOLUME_FRACTION_MEAN = 0.002
+    MELANIN_VOLUME_FRACTION_STD = 0.0005
+
 
 
 class MorphologicalTissueProperties:

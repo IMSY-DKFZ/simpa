@@ -26,6 +26,7 @@ from ippai.simulate import SaveFilePaths
 from ippai.process import preprocess_images
 from ippai.deep_learning import Architectures, datasets
 from ippai.io_handling.io_hdf5 import load_hdf5, save_hdf5
+from ippai.utils.serialization import IPPAIJSONSerializer
 from scipy.ndimage import zoom
 import os
 import torch
@@ -47,31 +48,109 @@ def upsample(settings, optical_path):
     optical_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], optical_path)
 
     fluence = np.rot90(
-        preprocess_images.preprocess_image(settings, np.rot90(optical_data[Tags.OPTICAL_MODEL_FLUENCE], 3)), 3)
-    initial_pressure = np.rot90(
-        preprocess_images.preprocess_image(settings, np.rot90(optical_data[Tags.OPTICAL_MODEL_INITIAL_PRESSURE], 3)))
+        preprocess_images.preprocess_image(settings, np.rot90(optical_data[Tags.OPTICAL_MODEL_FLUENCE], 3)))
+    # initial_pressure = np.rot90(
+    #     preprocess_images.preprocess_image(settings, np.rot90(optical_data[Tags.OPTICAL_MODEL_INITIAL_PRESSURE], 3)))
 
     if Tags.UPSAMPLING_METHOD in settings:
         if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_DEEP_LEARNING:
             fluence = dl_upsample(settings, fluence)
-            initial_pressure = dl_upsample(settings, initial_pressure)
+            # initial_pressure = dl_upsample(settings, initial_pressure)
+            props = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
+                            SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH]))
+            mua = props[Tags.PROPERTY_ABSORPTION_PER_CM]
+
+            # mua = np.flip(mua)
+            if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
+                units = Tags.UNITS_PRESSURE
+                # Initial pressure should be given in units of Pascale
+                conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
+                gruneisen_parameter = props[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+                initial_pressure = (mua * fluence * gruneisen_parameter *
+                                    (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE][str(settings[Tags.WAVELENGTH])] / 1000)
+                                    * conversion_factor)
+            else:
+                initial_pressure = mua*fluence
+
 
         if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_NEAREST_NEIGHBOUR:
             fluence = nn_upsample(settings, fluence)
-            initial_pressure = nn_upsample(settings, initial_pressure)
+            # initial_pressure = nn_upsample(settings, initial_pressure)
+            props = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
+                              SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA,
+                                                                         settings[Tags.WAVELENGTH]))
+            mua = props[Tags.PROPERTY_ABSORPTION_PER_CM]
+
+            # mua = np.flip(mua)
+            if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
+                units = Tags.UNITS_PRESSURE
+                # Initial pressure should be given in units of Pascale
+                conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
+                gruneisen_parameter = props[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+                initial_pressure = (mua * fluence * gruneisen_parameter *
+                                    (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE][str(settings[Tags.WAVELENGTH])] / 1000)
+                                    * conversion_factor)
+            else:
+                initial_pressure = mua * fluence
 
         if settings[Tags.UPSAMPLING_METHOD] == Tags.UPSAMPLING_METHOD_BILINEAR:
             fluence = bl_upsample(settings, fluence)
-            initial_pressure = bl_upsample(settings, initial_pressure)
+            # initial_pressure = bl_upsample(settings, initial_pressure)
+            props = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
+                              SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA,
+                                                                         settings[Tags.WAVELENGTH]))
+            mua = props[Tags.PROPERTY_ABSORPTION_PER_CM]
+
+            # mua = np.flip(mua)
+            if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
+                units = Tags.UNITS_PRESSURE
+                # Initial pressure should be given in units of Pascale
+                conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
+                gruneisen_parameter = props[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+                initial_pressure = (mua * fluence * gruneisen_parameter *
+                                    (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE][str(settings[Tags.WAVELENGTH])] / 1000)
+                                    * conversion_factor)
+            else:
+                initial_pressure = mua * fluence
 
         if settings[Tags.UPSAMPLING_METHOD] in ["lanczos2", "lanczos3"]:
             fluence = lanczos_upsample(settings, fluence)
-            initial_pressure = lanczos_upsample(settings, initial_pressure)
+            # initial_pressure = lanczos_upsample(settings, initial_pressure)
+            props = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
+                              SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA,
+                                                                         settings[Tags.WAVELENGTH]))
+            mua = props[Tags.PROPERTY_ABSORPTION_PER_CM]
+
+            # mua = np.flip(mua)
+            if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
+                units = Tags.UNITS_PRESSURE
+                # Initial pressure should be given in units of Pascale
+                conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
+                gruneisen_parameter = props[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+                initial_pressure = (mua * fluence * gruneisen_parameter *
+                                    (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE][str(settings[Tags.WAVELENGTH])] / 1000)
+                                    * conversion_factor)
+            else:
+                initial_pressure = mua * fluence
 
     else:
         fluence = nn_upsample(settings, fluence)
-        initial_pressure = nn_upsample(settings, initial_pressure)
+        # initial_pressure = nn_upsample(settings, initial_pressure)
+        props = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH],
+                          SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH]))
+        mua = props[Tags.PROPERTY_ABSORPTION_PER_CM]
 
+        # mua = np.flip(mua)
+        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
+            units = Tags.UNITS_PRESSURE
+            # Initial pressure should be given in units of Pascale
+            conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
+            gruneisen_parameter = props[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+            initial_pressure = (mua * fluence * gruneisen_parameter *
+                                (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE][str(settings[Tags.WAVELENGTH])] / 1000)
+                                * conversion_factor)
+        else:
+            initial_pressure = mua * fluence
     upsampled_optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.\
         format(Tags.UPSAMPLED_DATA, str(settings[Tags.WAVELENGTH]))
 
@@ -115,21 +194,20 @@ def dl_upsample(settings, image_data):
     high_res = settings[Tags.SPACING_MM]/settings[Tags.UPSCALE_FACTOR]
 
     if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
-        cut_off_pixel = int(round(42.2/settings[Tags.SPACING_MM]))
-        image_data = np.rot90(image_data, 3)
-        probe_image = image_data[:cut_off_pixel, :]
-        volume_image = image_data[cut_off_pixel:, :]
-        upsampled_probe_image = model_prediction(probe_image, settings[Tags.UPSCALE_FACTOR],
-                                                 "/home/kris/hard_drive/ippai/data/deep_learning_models/"
-                                                 "probe_Upscale_0.34_to_0.17/epoch_199.pt")
-        upsampled_volume_image = model_prediction(volume_image, settings[Tags.UPSCALE_FACTOR],
-                                                  "/home/kris/hard_drive/ippai/data/deep_learning_models/"
-                                                  "volume_Upscale_0.34_to_0.17/epoch_199.pt")
-
-        upsampled_image = np.zeros([image_data.shape[0]*2, image_data.shape[1]*2])
-        upsampled_image[:cut_off_pixel*settings[Tags.UPSCALE_FACTOR], :] = upsampled_probe_image
-        upsampled_image[cut_off_pixel * settings[Tags.UPSCALE_FACTOR]:, :] = upsampled_volume_image
-        upsampled_image = np.rot90(upsampled_image)
+        # cut_off_pixel = int(round(42.2/settings[Tags.SPACING_MM]))
+        # image_data = np.rot90(image_data, 3)
+        # probe_image = image_data[:cut_off_pixel, :]
+        # volume_image = image_data[cut_off_pixel:, :]
+        upsampled_image = model_prediction(image_data, settings[Tags.UPSCALE_FACTOR],
+                                                 "/media/kris/Extreme SSD/master_thesis/simulation_pipeline/upsampling/20200603-122526_Upscalel1_0.6_to_0.3/save/epoch_99.pt")
+        # upsampled_volume_image = model_prediction(volume_image, settings[Tags.UPSCALE_FACTOR],
+        #                                           "/home/kris/hard_drive/ippai/data/deep_learning_models/"
+        #                                           "volume_Upscale_0.34_to_0.17/epoch_199.pt")
+        #
+        # upsampled_image = np.zeros([image_data.shape[0]*2, image_data.shape[1]*2])
+        # upsampled_image[:cut_off_pixel*settings[Tags.UPSCALE_FACTOR], :] = upsampled_probe_image
+        # upsampled_image[cut_off_pixel * settings[Tags.UPSCALE_FACTOR]:, :] = upsampled_volume_image
+        # upsampled_image = np.rot90(upsampled_image)
 
     else:
         model_path = settings[Tags.DL_MODEL_PATH]
@@ -195,7 +273,8 @@ def lanczos_upsample(settings, image_data):
 
     tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/test_settings.json"
     with open(tmp_json_filename, "w") as json_file:
-        json.dump(settings, json_file, indent="\t")
+        serializer = IPPAIJSONSerializer()
+        json.dump(settings, json_file, indent="\t", default=serializer.default)
 
     cmd = list()
     cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
@@ -203,7 +282,7 @@ def lanczos_upsample(settings, image_data):
     cmd.append("-nosplash")
     cmd.append("-r")
     cmd.append("addpath('"+settings[Tags.UPSAMPLING_SCRIPT_LOCATION]+"');" +
-               settings[Tags.UPSAMPLING_SCRIPT] + "('" + tmp_json_filename + "');exit;")
+               settings[Tags.UPSAMPLING_SCRIPT] + "('" + tmp_output_file + "', '" + tmp_json_filename + "');exit;")
 
     cur_dir = os.getcwd()
     os.chdir(settings[Tags.SIMULATION_PATH])

@@ -41,6 +41,8 @@ source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 if isfield(settings, 'sample') == true
     if settings.sample == true
         dx = double(settings.voxel_spacing_mm)/(double(settings.upscale_factor) * 1000);
+    else
+        dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m
     end
 else
     dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m
@@ -97,9 +99,7 @@ if isfield(data, 'sensor_mask') == true
 else
     num_elements = double(settings.sensor_num_elements);
     element_spacing = Ny / num_elements;
-    sensor.mask = zeros(Nx, Ny);
-    sensor.mask(3, round(element_spacing/2):round(element_spacing):Ny) = 1;
-    writeNPY(sensor.mask, "/home/kris/hard_drive/data/pipeline_test/Pipeline_test/sensor_mask.npy");
+    sensor.mask = ones(Nx, Ny);
 end
 
 % if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
@@ -144,7 +144,7 @@ else
 end
 
 %% Write data to mat array
-save(strcat(optical_path, '.mat'), 'time_series_data')
+save(strcat(optical_path, '.mat'), 'time_series_data')%, '-v7.3')
 time_step = kgrid.dt;
 number_time_steps = kgrid.Nt;
 save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');

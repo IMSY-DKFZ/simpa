@@ -41,6 +41,8 @@ GEL_LAYER_HEIGHT = 0;
 if isfield(settings, 'sample') == true
     if settings.sample == true
         dx = double(settings.voxel_spacing_mm)/(double(settings.upscale_factor) * 1000);
+    else
+        dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m
     end
 else
     dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m

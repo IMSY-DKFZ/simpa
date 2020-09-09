@@ -52,8 +52,12 @@ class McxAdapter(OpticalForwardAdapterBase):
         # write settings to json
         # time = 1.16e-09
         # dt = 8e-12
-        time = 5e-09
-        dt = 5e-09
+        if Tags.TIME_STEP and Tags.TOTAL_TIME in settings:
+            dt = settings[Tags.TIME_STEP]
+            time = settings[Tags.TOTAL_TIME]
+        else:
+            time = 5e-09
+            dt = 5e-09
         frames = int(time/dt)
 
         if Tags.ILLUMINATION_TYPE in settings:
@@ -149,8 +153,9 @@ class McxAdapter(OpticalForwardAdapterBase):
             data = f.read()
         data = struct.unpack('%df' % (len(data) / 4), data)
         fluence = np.asarray(data).reshape([nx, ny, nz, frames], order='F')
-
-        fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
+        np.savez("/media/kris/Extreme SSD/tmp/01_master/forearm_010000/fluence.npz", fluence=fluence*100)
+        if np.shape(fluence)[3] == 1:
+            fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
 
         os.remove(tmp_input_path)
         os.remove(tmp_output_file+".mc2")

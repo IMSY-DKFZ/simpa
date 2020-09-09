@@ -82,7 +82,7 @@ def create_simulation_volume(settings):
                 .format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
             save_hdf5(upsampled_volumes, settings[Tags.IPPAI_OUTPUT_PATH], file_dictionary_path=upsampled_volume_path)
     np.random.seed(seed + 14)
-    return volume_path
+    return volume_path, distortion
 
 
 def create_volumes(settings, seed, distortion=None):
@@ -361,11 +361,11 @@ def append_msot_probe(volumes, global_settings, distortion=None):
 
     if distortion is not None:
         mediprene_layer_settings = {
-            Tags.STRUCTURE_CENTER_DEPTH_MAX_MM: 42.2,
-            Tags.STRUCTURE_CENTER_DEPTH_MIN_MM: 42.2,
+            Tags.STRUCTURE_CENTER_DEPTH_MAX_MM: water_layer_height * global_settings[Tags.SPACING_MM],
+            Tags.STRUCTURE_CENTER_DEPTH_MIN_MM: water_layer_height * global_settings[Tags.SPACING_MM],
             Tags.STRUCTURE_SEGMENTATION_TYPE: SegmentationClasses.ULTRASOUND_GEL_PAD,
-            Tags.STRUCTURE_THICKNESS_MIN_MM: 1,
-            Tags.STRUCTURE_THICKNESS_MAX_MM: 1
+            Tags.STRUCTURE_THICKNESS_MIN_MM: mediprene_layer_height * global_settings[Tags.SPACING_MM],
+            Tags.STRUCTURE_THICKNESS_MAX_MM: mediprene_layer_height * global_settings[Tags.SPACING_MM]
         }
         volumes, _ = add_layer(volumes, global_settings, mediprene_layer_settings, mua=mua_mediprene_layer,
                                mus=mus_mediprene_layer, g=g_mediprene_layer, oxy=-1,
@@ -641,7 +641,7 @@ def add_ellipse(volumes, global_settings, structure_settings, mua, mus, g, oxy, 
     if extent_parent_x_z_mm is None:
         extent_parent_x_z_mm = [0, 0, 0, 0]
 
-    sizes = np.shape(volumes[0])
+    sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
     radius_min = structure_settings[Tags.STRUCTURE_RADIUS_MIN_MM]
     radius_max = structure_settings[Tags.STRUCTURE_RADIUS_MAX_MM]

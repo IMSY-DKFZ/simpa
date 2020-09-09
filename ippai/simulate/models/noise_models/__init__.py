@@ -53,7 +53,7 @@ class GaussianNoiseModel(NoiseModelAdapterBase):
             mean_noise = float(settings[Tags.NOISE_MEAN])
 
         if Tags.NOISE_STD in settings:
-            std_noise = float(settings[Tags.NOISE_STD])
+            std_noise = float(settings[Tags.NOISE_STD][str(settings[Tags.WAVELENGTH])]) * np.max(data)
 
         if Tags.NOISE_MODEL_PATH in settings:
             if Tags.WAVELENGTH in settings:

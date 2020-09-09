@@ -28,7 +28,7 @@ from abc import abstractmethod
 class ReconstructionAdapterBase:
 
     @abstractmethod
-    def reconstruction_algorithm(self, time_series_sensor_data, settings):
+    def reconstruction_algorithm(self, time_series_sensor_data, settings, distortion):
         """
         A deriving class needs to implement this method according to its model.
 
@@ -38,7 +38,7 @@ class ReconstructionAdapterBase:
         """
         pass
 
-    def simulate(self, settings, acoustic_data_path):
+    def simulate(self, settings, acoustic_data_path, distortion):
         """
 
         :param settings:
@@ -49,6 +49,6 @@ class ReconstructionAdapterBase:
 
         time_series_sensor_data = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], acoustic_data_path)[Tags.TIME_SERIES_DATA]
 
-        reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings)
+        reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings, distortion)
         print("Performing reconstruction...Done]")
         return reconstructed_image
