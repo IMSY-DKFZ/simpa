@@ -1,11 +1,11 @@
 # Developer Guide
 
-Dear IPPAI developers.
+Dear SIMPA developers.
 This Guide is meant to be used as a collection of How-To's to contribute to the framework.
 
 ## Coding style
 
-When writing code for IPPAI, please consider to use the following structures in your code in order to make a new
+When writing code for SIMPA, please consider to use the following structures in your code in order to make a new
 developer or someone external always know exactly what to expect.
 
 - Classnames are written in camel-case notation `ClassName`
@@ -46,7 +46,7 @@ For functions, a lot of extra attributes can be added to the documentation:
 ## Adding literature absorption spectra
 
  The central point, where absorption spectra are collected and handled is in 
- `ippai.utils.libraries.spectra_library.py`. The file comprises the class `AbsorptionSpectrumLibrary`, in which the
+ `simpa.utils.libraries.spectra_library.py`. The file comprises the class `AbsorptionSpectrumLibrary`, in which the
  new absorption spectra can be added using the following two steps:
  
  1. In the beginning of the class, there is a bunch of constants that define spectra using the `AbsorptionSpectrum`
@@ -58,5 +58,5 @@ For functions, a lot of extra attributes can be added to the documentation:
  list. This has the benefit of enabling the Library class to be iterable. Add your newly added constant field to 
  the list here.
  
- 3. Your absorption spectrum is now usable throughout all of ippai and is accessible using the `SPECTRAL_LIBRARY`
- sngleton that can be imported using `from ippai.utils import SPECTRAL_LIBRARY`. 
+ 3. Your absorption spectrum is now usable throughout all of simpa and is accessible using the `SPECTRAL_LIBRARY`
+ sngleton that can be imported using `from simpa.utils import SPECTRAL_LIBRARY`. 

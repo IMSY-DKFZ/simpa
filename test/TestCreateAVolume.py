@@ -1,8 +1,8 @@
 import unittest
-from ippai.utils import Tags
-from ippai.simulate.simulation import simulate
-from ippai.simulate import SegmentationClasses
-from ippai.utils import TISSUE_LIBRARY
+from simpa.utils import Tags
+from simpa.simulate.simulation import simulate
+from simpa.simulate import SegmentationClasses
+from simpa.utils import TISSUE_LIBRARY
 import os
 
 class TestTissueProperties(unittest.TestCase):
@@ -61,12 +61,12 @@ class TestTissueProperties(unittest.TestCase):
         print("Simulating ", random_seed)
         output = simulate(settings)
 
-        if (os.path.exists(settings[Tags.IPPAI_OUTPUT_PATH]) and
-           os.path.isfile(settings[Tags.IPPAI_OUTPUT_PATH])):
+        if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
+           os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
             # Delete the created file
-            os.remove(settings[Tags.IPPAI_OUTPUT_PATH])
+            os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
             path = ""
-            for subpath in settings[Tags.IPPAI_OUTPUT_PATH].split("/")[:-1]:
+            for subpath in settings[Tags.SIMPA_OUTPUT_PATH].split("/")[:-1]:
                 path += subpath + "/"
             # Delete the file's parent directory
             os.rmdir(path)

@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ippai.utils import TissueSettingsGenerator
-from ippai.utils import CHROMOPHORE_LIBRARY
-from ippai.utils import Chromophore
-from ippai.utils import AbsorptionSpectrum
+from simpa.utils import TissueSettingsGenerator
+from simpa.utils import CHROMOPHORE_LIBRARY
+from simpa.utils import Chromophore
+from simpa.utils import AbsorptionSpectrum
 import numpy as np
 
 

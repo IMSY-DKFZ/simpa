@@ -7,7 +7,7 @@ with open('requirements.txt', 'r') as requirements_file:
     requirements = requirements_file.read().splitlines()
 
 setuptools.setup(
-    name="ippai",
+    name="simpa",
     version="0.1.0",
     author="Computer Assisted Medical Interventions (CAMI), DKFZ",
     description="Image Processing for Photoacoustic Imaging",

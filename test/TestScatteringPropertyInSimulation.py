@@ -1,6 +1,6 @@
 import unittest
-from ippai.utils import Tags
-from ippai.simulate import run_optical_forward_model
+from simpa.utils import Tags
+from simpa.simulate import run_optical_forward_model
 import numpy as np
 import os
 

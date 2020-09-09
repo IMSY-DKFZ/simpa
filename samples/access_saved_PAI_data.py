@@ -20,13 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ippai.io_handling import load_hdf5, save_hdf5
+from simpa.io_handling import load_hdf5, save_hdf5
 import matplotlib.pylab as plt
 import numpy as np
-from ippai.simulate import SaveFilePaths
+from simpa.simulate import SaveFilePaths
 
-PATH = "/home/janek/test/Vessels_10005/ippai_output.hdf5"
-WAVELENGTH = 800 # currently only 800 and 900 are simulated as well
+PATH = "path/to/file"
+WAVELENGTH = 800  # currently only 800 and 900 are simulated as well
 
 file = load_hdf5(PATH)
 

@@ -1,12 +1,12 @@
 
-Welcome to IPPAI's documentation!
+Welcome to the SIMPA documentation!
 =================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-.. image:: images/ippai_logo.png
+.. image:: images/simpa_logo.png
     :width: 6cm
 
 .. mdinclude::  ../../README.md
@@ -49,71 +49,71 @@ Class references
 Module: utils
 -------------
 
-.. automodule:: ippai.utils
+.. automodule:: simpa.utils
     :members:
 
-.. automodule:: ippai.utils.libraries
+.. automodule:: simpa.utils.libraries
     :members:
-.. automodule:: ippai.utils.libraries.chromophore_library
+.. automodule:: simpa.utils.libraries.chromophore_library
     :members:
-.. automodule:: ippai.utils.libraries.literature_values
+.. automodule:: simpa.utils.libraries.literature_values
     :members:
-.. automodule:: ippai.utils.libraries.spectra_library
+.. automodule:: simpa.utils.libraries.spectra_library
     :members:
-.. automodule:: ippai.utils.libraries.tissue_library
+.. automodule:: simpa.utils.libraries.tissue_library
     :members:
 
 Module: io_handling
 -------------------
 
-.. automodule:: ippai.io_handling
+.. automodule:: simpa.io_handling
     :members:
 
-.. automodule:: ippai.io_handling.io_hdf5
+.. automodule:: simpa.io_handling.io_hdf5
     :members:
 
 Module: simulate
 -------------------
 
-.. automodule:: ippai.simulate
+.. automodule:: simpa.simulate
     :members:
 
-.. automodule:: ippai.simulate.simulation
+.. automodule:: simpa.simulate.simulation
     :members:
 
-.. automodule:: ippai.simulate.tissue_properties
+.. automodule:: simpa.simulate.tissue_properties
     :members:
 
-.. automodule:: ippai.simulate.volume_creator
+.. automodule:: simpa.simulate.volume_creator
     :members:
 
 Conventions
 ^^^^^^^^^^^^^^^
 
-.. automodule:: ippai.simulate.constants
+.. automodule:: simpa.simulate.constants
     :members:
 
 Structures
 ^^^^^^^^^^^^^^^
 
-.. automodule:: ippai.simulate.structures
+.. automodule:: simpa.simulate.structures
     :members:
 
 Forward models
 ^^^^^^^^^^^^^^^
 
-.. automodule:: ippai.simulate.models
+.. automodule:: simpa.simulate.models
     :members:
 
-.. automodule:: ippai.simulate.models.optical_models
+.. automodule:: simpa.simulate.models.optical_models
     :members:
 
-.. automodule:: ippai.simulate.models.acoustic_models
+.. automodule:: simpa.simulate.models.acoustic_models
     :members:
 
-.. automodule:: ippai.simulate.models.reconstruction_models
+.. automodule:: simpa.simulate.models.reconstruction_models
     :members:
 
-.. automodule:: ippai.simulate.models.noise_models
+.. automodule:: simpa.simulate.models.noise_models
     :members:
 

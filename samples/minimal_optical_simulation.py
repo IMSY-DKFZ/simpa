@@ -20,18 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ippai.utils import Tags
+from simpa.utils import Tags
 
-from ippai.simulate.simulation import simulate
-from ippai.simulate.structures import create_epidermis_layer
-from ippai.simulate.structures import create_muscle_background
-from ippai.simulate.structures import create_vessel_tube
+from simpa.simulate.simulation import simulate
+from simpa.simulate.structures import create_epidermis_layer
+from simpa.simulate.structures import create_muscle_background
+from simpa.simulate.structures import create_vessel_tube
 
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "path/to/save/file"
-MCX_BINARY_PATH = "path/to/mcx/binary"
+SAVE_PATH = "/home/kris/hard_drive/data"
+MCX_BINARY_PATH = "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx"
 
 VOLUME_WIDTH_IN_MM = 10
 VOLUME_HEIGHT_IN_MM = 10
@@ -73,7 +73,7 @@ settings = {
 
     # The following parameters set the optical forward model
     Tags.RUN_OPTICAL_MODEL: True,
-    Tags.WAVELENGTHS: np.arange(700, 951, 10),
+    Tags.WAVELENGTHS: np.arange(700, 951, 100),
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
@@ -92,5 +92,5 @@ settings = {
 }
 print("Simulating ", RANDOM_SEED)
 simulate(settings)
-# TODO settings[Tags.IPPAI_OUTPUT_PATH]
+# TODO settings[Tags.SIMPA_OUTPUT_PATH]
 print("Simulating ", RANDOM_SEED, "[Done]")

@@ -1,6 +1,6 @@
 import unittest
-from ippai.utils import Tags
-from ippai.simulate import run_optical_forward_model
+from simpa.utils import Tags
+from simpa.simulate import run_optical_forward_model
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -27,7 +27,8 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.SPACING_MM: 1,
             Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
             Tags.PROPERTY_ANISOTROPY: 0.9,
-            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL
+            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
+            Tags.SIMPA_OUTPUT_PATH: "test.hdf5"
         }
 
         self.volume_path = self.settings[Tags.SIMULATION_PATH] + "/"+ self.settings[Tags.VOLUME_NAME] + "/" \

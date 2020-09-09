@@ -1,9 +1,9 @@
 import unittest
-from ippai.simulate import TissueProperties
-from ippai.utils import TISSUE_LIBRARY
-from ippai.utils import SPECTRAL_LIBRARY
-from ippai.utils import calculate_oxygenation
-from ippai.utils.serialization import IPPAIJSONSerializer
+from simpa.simulate import TissueProperties
+from simpa.utils import TISSUE_LIBRARY
+from simpa.utils import SPECTRAL_LIBRARY
+from simpa.utils import calculate_oxygenation
+from simpa.utils.serialization import SIMPAJSONSerializer
 import json
 import os
 import numpy as np
@@ -74,7 +74,7 @@ class TestTissueProperties(unittest.TestCase):
         settings = TISSUE_LIBRARY.blood_arterial()
         tmp_json_filename = "test_settings.json"
 
-        serializer = IPPAIJSONSerializer()
+        serializer = SIMPAJSONSerializer()
 
         with open(tmp_json_filename, "w") as json_file:
             json.dump(settings, json_file, indent="\t", default=serializer.default)

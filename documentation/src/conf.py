@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'IPPAI'
+project = 'SIMPA'
 copyright = '2020, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
 author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
 
@@ -32,7 +32,7 @@ version = release
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['rst2pdf.pdfbuilder', 'sphinx.ext.autodoc', 'm2r']
-pdf_documents = [('index', 'ippai_documentation', project, author)]
+pdf_documents = [('index', 'simpa_documentation', project, author)]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
