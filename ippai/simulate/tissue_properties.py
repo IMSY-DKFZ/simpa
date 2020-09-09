@@ -68,9 +68,10 @@ class TissueProperties(object):
             _mua_per_centimeter += (chromophore.volume_fraction *
                                     chromophore.spectrum.get_absorption_for_wavelength(wavelength))
             _g += chromophore.volume_fraction * chromophore.anisotropy
-            _mus_per_centimeter += (chromophore.musp500 * (chromophore.f_ray *
+
+            _mus_per_centimeter += (chromophore.volume_fraction * (chromophore.mus500 * (chromophore.f_ray *
                                     (wavelength / 500) ** 1e-4 + (1 - chromophore.f_ray) *
-                                    (wavelength / 500) ** -chromophore.b_mie))
+                                    (wavelength / 500) ** -chromophore.b_mie)))
 
         # If _sum_of_fraction does not add up to one, pretend that it did
         # (we just want the weighted average for the anisotropy)

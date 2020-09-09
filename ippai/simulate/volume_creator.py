@@ -86,6 +86,7 @@ def create_simulation_volume(settings):
 
 
 def create_volumes(settings, seed, distortion=None):
+    #FIXME add it
     tmp_y_dim = settings[Tags.DIM_VOLUME_Y_MM]
     settings[Tags.DIM_VOLUME_Y_MM] = settings[Tags.SPACING_MM]
     np.random.seed(seed)
@@ -99,32 +100,32 @@ def create_volumes(settings, seed, distortion=None):
 
     volumes = create_gruneisen_map(volumes, settings)
 
-    if Tags.RUN_ACOUSTIC_MODEL in settings:
-        if settings[Tags.RUN_ACOUSTIC_MODEL] is True:
+    if Tags.RUN_ACOUSTIC_MODEL in settings and settings[Tags.RUN_ACOUSTIC_MODEL] is True:
             volumes = create_acoustic_properties(volumes, settings)
 
-        for i in volumes.keys():
-            if i not in (Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE):
-                y_slices = int(round(tmp_y_dim / settings[Tags.SPACING_MM]))
-                if Tags.UPSAMPLING_RUN in settings and settings[Tags.UPSAMPLING_RUN]:
-                    if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
-                        y_slices = 1
-                    else:
-                        y_slices = int(round(int(round(tmp_y_dim / (settings[Tags.SPACING_MM] * settings[Tags.UPSCALE_FACTOR]))) * settings[Tags.UPSCALE_FACTOR]))
-                volumes[i] = np.repeat(volumes[i], y_slices, axis=1)
-                volumes[i] = np.flip(volumes[i], 1)
-            elif volumes[i] is not None:
-                tmp_vol = np.zeros(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM]))
-
-                if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
-                    for sl in range(
-                            int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])) - int(13/2 / settings[Tags.SPACING_MM]),
-                            int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])) + int(13/2 / settings[Tags.SPACING_MM])+1):
-                        tmp_vol[:, sl, :] = volumes[i][:, 0, :]
+    #FIXME: there needs to be a flag that checks whether this optimization is allowed to happen.
+    for i in volumes.keys():
+        if i not in (Tags.PROPERTY_SENSOR_MASK, Tags.PROPERTY_DIRECTIVITY_ANGLE):
+            y_slices = int(round(tmp_y_dim / settings[Tags.SPACING_MM]))
+            if Tags.UPSAMPLING_RUN in settings and settings[Tags.UPSAMPLING_RUN]:
+                if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
+                    y_slices = 1
                 else:
-                    tmp_vol[:, int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])), :] = volumes[i][:, 0, :]
+                    y_slices = int(round(int(round(tmp_y_dim / (settings[Tags.SPACING_MM] * settings[Tags.UPSCALE_FACTOR]))) * settings[Tags.UPSCALE_FACTOR]))
+            volumes[i] = np.repeat(volumes[i], y_slices, axis=1)
+            volumes[i] = np.flip(volumes[i], 1)
+        elif volumes[i] is not None:
+            tmp_vol = np.zeros(np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM]))
 
-                volumes[i] = tmp_vol
+            if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+                for sl in range(
+                        int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])) - int(13/2 / settings[Tags.SPACING_MM]),
+                        int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])) + int(13/2 / settings[Tags.SPACING_MM])+1):
+                    tmp_vol[:, sl, :] = volumes[i][:, 0, :]
+            else:
+                tmp_vol[:, int(tmp_y_dim / (2 * settings[Tags.SPACING_MM])), :] = volumes[i][:, 0, :]
+
+            volumes[i] = tmp_vol
     settings[Tags.DIM_VOLUME_Y_MM] = tmp_y_dim
 
     return volumes
