@@ -79,12 +79,14 @@ class Tags:
 
     # Supported optical models
     OPTICAL_MODEL = "optical_model"
-    MODEL_MCXYZ = "mcxyz"
-    MODEL_MCX = "mcx"
+    OPTICAL_MODEL_MCXYZ = "mcxyz"
+    OPTICAL_MODEL_MCX = "mcx"
+    OPTICAL_MODEL_TEST = "test"
 
     # Supported acoustic models
     ACOUSTIC_MODEL = "acoustic_model"
-    MODEL_K_WAVE = "kwave"
+    ACOUSTIC_MODEL_K_WAVE = "kwave"
+    ACOUSTIC_MODEL_TEST = "test"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
     ACOUSTIC_MODEL_SCRIPT_LOCATION = "acoustic_model_script_location"
 
@@ -111,6 +113,7 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
+    RECONSTRUCTION_ALGORITHM_TEST = "TEST"
     RECONSTRUCTION_INVERSE_CRIME = "reconstruction_inverse_crime"
     RECONSTRUCTION_MITK_BINARY_PATH = "reconstruction_mitk_binary_path"
     RECONSTRUCTION_MITK_SETTINGS_XML = "reconstruction_mitk_settings_xml"

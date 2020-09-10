@@ -22,13 +22,22 @@
 
 from simpa.utils import Tags, SaveFilePaths
 from simpa.core.acoustic_simulation import k_wave_adapter
+from simpa.core.acoustic_simulation import test_acoustic_adapter
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 
 def run_acoustic_forward_model(settings, optical_path):
     print("ACOUSTIC FORWARD")
 
-    data = k_wave_adapter.simulate(settings, optical_path)
+    adapter = None
+
+    if Tags.ACOUSTIC_MODEL in settings:
+        if settings[Tags.ACOUSTIC_MODEL] == Tags.ACOUSTIC_MODEL_K_WAVE:
+            adapter = k_wave_adapter
+        elif settings[Tags.ACOUSTIC_MODEL] == Tags.ACOUSTIC_MODEL_TEST:
+            adapter = test_acoustic_adapter
+
+    data = adapter.simulate(settings, optical_path)
 
     acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
         format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])

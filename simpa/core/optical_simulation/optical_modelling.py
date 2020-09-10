@@ -23,6 +23,7 @@
 from simpa.utils import Tags, SaveFilePaths
 from simpa.core.optical_simulation.mcx_adapter import McxAdapter
 from simpa.core.optical_simulation.mcxyz_adapter import McxyzAdapter
+from simpa.core.optical_simulation.test_optical_adapter import TestOpticalAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 
 
@@ -36,12 +37,12 @@ def run_optical_forward_model(settings, optical_properties_path):
     model = settings[Tags.OPTICAL_MODEL]
     forward_model_implementation = None
 
-    if model == Tags.MODEL_MCXYZ:
+    if model == Tags.OPTICAL_MODEL_MCXYZ:
         forward_model_implementation = McxyzAdapter()
-    elif model == Tags.MODEL_MCX:
+    elif model == Tags.OPTICAL_MODEL_MCX:
         forward_model_implementation = McxAdapter()
-    # elif model == Tags.MODEL_TEST_OPTICAL: TODO
-    #     forward_model_implementation =
+    elif model == Tags.OPTICAL_MODEL_TEST:
+        forward_model_implementation = TestOpticalAdapter()
 
 
     fluence = forward_model_implementation.simulate(optical_properties_path, settings)

@@ -19,3 +19,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+from simpa.core.optical_simulation import OpticalForwardAdapterBase
+
+class TestOpticalAdapter(OpticalForwardAdapterBase):
+
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, settings):
+        return absorption_cm / ((1 - anisotropy) * scattering_cm)

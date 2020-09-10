@@ -24,9 +24,9 @@ from simpa.utils import Tags
 
 
 def define_illumination(settings, nx, ny, nz):
-    if settings[Tags.OPTICAL_MODEL] is Tags.MODEL_MCX:
+    if settings[Tags.OPTICAL_MODEL] is Tags.OPTICAL_MODEL_MCX:
         return define_illumination_mcx(settings, nx, ny, nz)
-    if settings[Tags.OPTICAL_MODEL] is Tags.MODEL_MCXYZ:
+    if settings[Tags.OPTICAL_MODEL] is Tags.OPTICAL_MODEL_MCXYZ:
         return define_illumination_mcxyz(settings, nx, ny, nz)
 
 

@@ -22,7 +22,8 @@
 
 from simpa.utils import Tags, SaveFilePaths
 from simpa.core.image_reconstruction.MitkBeamformingAdapter import MitkBeamformingAdapter
-from simpa.core.image_reconstruction import TimeReversalAdapter
+from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
+from simpa.core.image_reconstruction.TestReconstructionAdapter import TestReconstructionAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 
@@ -37,6 +38,8 @@ def perform_reconstruction(settings, acoustic_data_path, distortion):
         reconstruction_method = MitkBeamformingAdapter()
     elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL:
         reconstruction_method = TimeReversalAdapter()
+    elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TEST:
+        reconstruction_method = TestReconstructionAdapter()
 
     reconstruction = reconstruction_method.simulate(settings, acoustic_data_path, distortion)
 
