@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
+from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import load_hdf5
 from abc import abstractmethod
 
@@ -38,7 +39,7 @@ class ReconstructionAdapterBase:
         """
         pass
 
-    def simulate(self, settings, acoustic_data_path, distortion):
+    def simulate(self, settings, distortion):
         """
 
         :param settings:
@@ -46,6 +47,9 @@ class ReconstructionAdapterBase:
         :return:
         """
         print("Performing reconstruction...")
+
+        acoustic_data_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA, wavelength=settings[Tags.WAVELENGTH],
+                                                upsampled_data=True)
 
         time_series_sensor_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[Tags.TIME_SERIES_DATA]
 

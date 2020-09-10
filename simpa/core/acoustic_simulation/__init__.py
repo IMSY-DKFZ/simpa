@@ -22,6 +22,7 @@
 
 from abc import abstractmethod
 
+
 class AcousticForwardAdapterBase:
     """
     Use this class as a base for implementations of optical forward models.

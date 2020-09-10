@@ -85,8 +85,7 @@ def simulate(settings):
         acoustic_output_path = None
 
         if Tags.RUN_OPTICAL_MODEL in settings and settings[Tags.RUN_OPTICAL_MODEL]:
-            optical_output_path = run_optical_forward_model(settings, volume_output_path)
-            optical_output_paths.append(optical_output_path)
+            optical_output_path = run_optical_forward_model(settings)
 
         if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
             if Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW not in settings or settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
@@ -94,23 +93,19 @@ def simulate(settings):
 
         if Tags.PERFORM_UPSAMPLING in settings:
             if settings[Tags.PERFORM_UPSAMPLING]:
-                optical_output_path = upsample(settings, optical_output_path)
-                optical_output_paths.append(optical_output_path)
+                optical_output_path = upsample(settings)
 
         if Tags.RUN_ACOUSTIC_MODEL in settings:
             if settings[Tags.RUN_ACOUSTIC_MODEL]:
-                acoustic_output_path = run_acoustic_forward_model(settings, optical_output_path)
-                acoustic_output_paths.append(acoustic_output_path)
+                acoustic_output_path = run_acoustic_forward_model(settings)
                 if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
                     acoustic_output_path = apply_noise_model_to_time_series_data(settings, acoustic_output_path)
-                    acoustic_output_paths.append(acoustic_output_path)
 
         if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings:
             if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-                reconstruction_output_path = perform_reconstruction(settings, acoustic_output_path, distortion)
+                reconstruction_output_path = perform_reconstruction(settings, distortion)
                 # if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
                 #     reconstruction_output_path = apply_noise_model_to_reconstructed_data(settings, reconstruction_output_path)
-                reconstruction_output_paths.append(reconstruction_output_path)
 
     # Quick and dirty fix:
     all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])

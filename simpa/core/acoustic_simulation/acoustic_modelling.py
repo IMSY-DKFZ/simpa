@@ -26,7 +26,7 @@ from simpa.core.acoustic_simulation import test_acoustic_adapter
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 
-def run_acoustic_forward_model(settings, optical_path):
+def run_acoustic_forward_model(settings):
     print("ACOUSTIC FORWARD")
 
     adapter = None
@@ -37,7 +37,7 @@ def run_acoustic_forward_model(settings, optical_path):
         elif settings[Tags.ACOUSTIC_MODEL] == Tags.ACOUSTIC_MODEL_TEST:
             adapter = test_acoustic_adapter
 
-    data = adapter.simulate(settings, optical_path)
+    data = adapter.simulate(settings)
 
     acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
         format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])

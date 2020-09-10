@@ -27,7 +27,7 @@ from simpa.core.image_reconstruction.TestReconstructionAdapter import TestRecons
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 
-def perform_reconstruction(settings, acoustic_data_path, distortion):
+def perform_reconstruction(settings, distortion):
     print("ACOUSTIC FORWARD")
 
     reconstruction_method = None
@@ -41,7 +41,7 @@ def perform_reconstruction(settings, acoustic_data_path, distortion):
     elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TEST:
         reconstruction_method = TestReconstructionAdapter()
 
-    reconstruction = reconstruction_method.simulate(settings, acoustic_data_path, distortion)
+    reconstruction = reconstruction_method.simulate(settings, distortion)
 
     reconstruction_output_path = SaveFilePaths.RECONSTRCTION_OUTPUT.\
         format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])

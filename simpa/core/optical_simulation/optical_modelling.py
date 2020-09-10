@@ -25,9 +25,10 @@ from simpa.core.optical_simulation.mcx_adapter import McxAdapter
 from simpa.core.optical_simulation.mcxyz_adapter import McxyzAdapter
 from simpa.core.optical_simulation.test_optical_adapter import TestOpticalAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
+from simpa.utils.dict_path_manager import generate_dict_path
 
 
-def run_optical_forward_model(settings, optical_properties_path):
+def run_optical_forward_model(settings):
     # TODO
     print("OPTICAL FORWARD")
 
@@ -44,12 +45,16 @@ def run_optical_forward_model(settings, optical_properties_path):
     elif model == Tags.OPTICAL_MODEL_TEST:
         forward_model_implementation = TestOpticalAdapter()
 
+    optical_properties_path = generate_dict_path(settings, data_field=Tags.SIMULATION_PROPERTIES,
+                                                 wavelength=settings[Tags.WAVELENGTH],
+                                                 upsampled_data=False)
 
     fluence = forward_model_implementation.simulate(optical_properties_path, settings)
 
     optical_properties = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_properties_path)
     absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
     gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+    initial_pressure = absorption * fluence
 
     if Tags.PERFORM_UPSAMPLING not in settings or settings[Tags.PERFORM_UPSAMPLING] is False:
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
@@ -61,7 +66,7 @@ def run_optical_forward_model(settings, optical_properties_path):
                                 * conversion_factor)
         else:
             units = Tags.UNITS_ARBITRARY
-            # initial_pressure = absorption * fluence
+            initial_pressure = absorption * fluence
     else:
         units = Tags.UNITS_ARBITRARY
 
@@ -69,7 +74,7 @@ def run_optical_forward_model(settings, optical_properties_path):
         format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
 
     save_hdf5({Tags.OPTICAL_MODEL_FLUENCE: fluence,
-               # Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
+               Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
                Tags.OPTICAL_MODEL_UNITS: units},
               settings[Tags.SIMPA_OUTPUT_PATH],
               optical_output_path)
