@@ -20,10 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags, SaveFilePaths
+from simpa.utils import Tags
 from simpa.core.acoustic_simulation import k_wave_adapter
 from simpa.core.acoustic_simulation import test_acoustic_adapter
 from simpa.io_handling.io_hdf5 import save_hdf5
+from simpa.utils.dict_path_manager import generate_dict_path
 
 
 def run_acoustic_forward_model(settings):
@@ -39,13 +40,13 @@ def run_acoustic_forward_model(settings):
 
     data = adapter.simulate(settings)
 
-    acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
-        format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+    acoustic_output_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA, upsampled_data=False,
+                                              wavelength=settings[Tags.WAVELENGTH])
 
     if Tags.PERFORM_UPSAMPLING in settings:
         if settings[Tags.PERFORM_UPSAMPLING]:
-            acoustic_output_path = SaveFilePaths.ACOUSTIC_OUTPUT.\
-                format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
+            acoustic_output_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA, upsampled_data=True,
+                                                      wavelength=settings[Tags.WAVELENGTH])
 
     save_hdf5({Tags.TIME_SERIES_DATA: data}, settings[Tags.SIMPA_OUTPUT_PATH],
               acoustic_output_path)
