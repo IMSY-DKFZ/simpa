@@ -25,15 +25,17 @@ import subprocess
 from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling.io_hdf5 import load_hdf5
 from simpa.utils.serialization import SIMPAJSONSerializer
-from simpa.utils.
+from simpa.utils.dict_path_manager import generate_dict_path
 import json
 import os
 import scipy.io as sio
 
 
-def simulate(settings, optical_path):
+def simulate(settings):
 
-    # optical_path =
+    optical_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_OUTPUT_NAME,
+                                      wavelength=settings[Tags.WAVELENGTH],
+                                      upsampled_data=True)
 
     data_dict = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 

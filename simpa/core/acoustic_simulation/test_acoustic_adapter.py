@@ -24,7 +24,7 @@ import numpy as np
 from simpa.utils import Tags
 
 
-def simulate(settings, optical_path):
+def simulate(settings):
 
     if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
         return np.random.random((128, 128, 3000))

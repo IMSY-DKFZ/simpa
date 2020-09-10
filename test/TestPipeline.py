@@ -70,10 +70,13 @@ settings = {
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_TEST,
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+    # Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: [50],
 
     # The following parameters tell the script that we do not want any extra
     # modelling steps
+    Tags.PERFORM_UPSAMPLING: True,
+    Tags.UPSCALE_FACTOR: 1,
+    Tags.UPSAMPLING_METHOD: Tags.UPSAMPLING_METHOD_NEAREST_NEIGHBOUR,
     Tags.RUN_ACOUSTIC_MODEL: True,
     Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_TEST,
     Tags.APPLY_NOISE_MODEL: True,

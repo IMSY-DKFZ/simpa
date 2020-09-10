@@ -54,6 +54,7 @@ def run_optical_forward_model(settings):
     optical_properties = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_properties_path)
     absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
     gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+    initial_pressure = absorption * fluence
 
     if Tags.PERFORM_UPSAMPLING not in settings or settings[Tags.PERFORM_UPSAMPLING] is False:
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
@@ -65,7 +66,7 @@ def run_optical_forward_model(settings):
                                 * conversion_factor)
         else:
             units = Tags.UNITS_ARBITRARY
-            # initial_pressure = absorption * fluence
+            initial_pressure = absorption * fluence
     else:
         units = Tags.UNITS_ARBITRARY
 
@@ -73,7 +74,7 @@ def run_optical_forward_model(settings):
         format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
 
     save_hdf5({Tags.OPTICAL_MODEL_FLUENCE: fluence,
-               # Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
+               Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
                Tags.OPTICAL_MODEL_UNITS: units},
               settings[Tags.SIMPA_OUTPUT_PATH],
               optical_output_path)
