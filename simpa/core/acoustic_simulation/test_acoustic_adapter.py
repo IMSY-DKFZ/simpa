@@ -19,3 +19,14 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+import numpy as np
+from simpa.utils import Tags
+
+
+def simulate(settings, optical_path):
+
+    if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+        return np.random.random((128, 128, 3000))
+    else:
+        return np.random.random((128, 3000))

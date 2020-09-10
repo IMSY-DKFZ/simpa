@@ -21,17 +21,10 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-
+from simpa.core.volume_creation import create_muscle_background, create_epidermis_layer, create_vessel_tube
 from simpa.core.simulation import simulate
-from simpa.core.volume_creation import create_epidermis_layer
-from simpa.core.volume_creation import create_muscle_background
-from simpa.core.volume_creation import create_vessel_tube
-
 import numpy as np
-
-# TODO change these paths to the desired executable and save folder
-SAVE_PATH = "/home/kris/hard_drive/data"
-MCX_BINARY_PATH = "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx"
+import os
 
 VOLUME_WIDTH_IN_MM = 10
 VOLUME_HEIGHT_IN_MM = 10
@@ -62,8 +55,8 @@ np.random.seed(RANDOM_SEED)
 settings = {
     # These parameters set the general propeties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
-    Tags.VOLUME_NAME: "MyVolumeName_"+str(RANDOM_SEED),
-    Tags.SIMULATION_PATH: SAVE_PATH,
+    Tags.VOLUME_NAME: "TestName_"+str(RANDOM_SEED),
+    Tags.SIMULATION_PATH: ".",
     Tags.SPACING_MM: SPACING,
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_WIDTH_IN_MM,
@@ -73,18 +66,20 @@ settings = {
 
     # The following parameters set the optical forward model
     Tags.RUN_OPTICAL_MODEL: True,
-    Tags.WAVELENGTHS: np.arange(700, 951, 100),
+    Tags.WAVELENGTHS: [800],
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-    Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
-    Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
+    Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_TEST,
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 
     # The following parameters tell the script that we do not want any extra
     # modelling steps
-    Tags.RUN_ACOUSTIC_MODEL: False,
-    Tags.APPLY_NOISE_MODEL: False,
-    Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
+    Tags.RUN_ACOUSTIC_MODEL: True,
+    Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_TEST,
+    Tags.APPLY_NOISE_MODEL: True,
+    Tags.NOISE_MODEL: Tags.NOISE_MODEL_GAUSSIAN,
+    Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
+    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_TEST,
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
 
     # Add the volume_creation to be simulated to the tissue
@@ -92,5 +87,15 @@ settings = {
 }
 print("Simulating ", RANDOM_SEED)
 simulate(settings)
-# TODO settings[Tags.SIMPA_OUTPUT_PATH]
+
+if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
+        os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
+    # Delete the created file
+    os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
+    path = ""
+    for subpath in settings[Tags.SIMPA_OUTPUT_PATH].split("/")[:-1]:
+        path += subpath + "/"
+    # Delete the file's parent directory
+    os.rmdir(path)
+
 print("Simulating ", RANDOM_SEED, "[Done]")

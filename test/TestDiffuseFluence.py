@@ -1,3 +1,25 @@
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import unittest
 from simpa.utils import Tags
 from simpa.core import run_optical_forward_model
@@ -25,7 +47,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx",
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 1,
-            Tags.OPTICAL_MODEL: Tags.MODEL_MCX,
+            Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
             Tags.PROPERTY_ANISOTROPY: 0.9,
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
             Tags.SIMPA_OUTPUT_PATH: "test.hdf5"
@@ -74,7 +96,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         :return: fluence at a point with source-detector distance r.
         """
         print(self.settings[Tags.OPTICAL_MODEL])
-        if self.settings[Tags.OPTICAL_MODEL] == Tags.MODEL_MCX:
+        if self.settings[Tags.OPTICAL_MODEL] == Tags.OPTICAL_MODEL_MCX:
             print("MCX: transfer to mm")
             mua = 0.1 * self.mua    # convert mua from cm^-1 to mm^-1
             mus = 0.1 * self.mus    # convert mus from cm^-1 to mm^-1
@@ -105,7 +127,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         # fluence
         phi = 1 / (4*np.pi*D) * (np.exp(-mu_eff*r1) / r1 - np.exp(-mu_eff*r2) / r2)
 
-        if self.settings[Tags.OPTICAL_MODEL] == Tags.MODEL_MCXYZ:
+        if self.settings[Tags.OPTICAL_MODEL] == Tags.OPTICAL_MODEL_MCXYZ:
             phi = phi / 100
 
         return phi
@@ -169,7 +191,3 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         #         we test for 50% of the expected value from the diffusion approx.
         #         """
         #         self.assertAlmostEqual(sim, diff, delta=0.5*diff)
-
-
-if __name__ == "__main__":
-    unittest.main()
