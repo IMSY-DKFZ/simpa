@@ -25,12 +25,15 @@ import subprocess
 from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling.io_hdf5 import load_hdf5
 from simpa.utils.serialization import SIMPAJSONSerializer
+from simpa.utils.
 import json
 import os
 import scipy.io as sio
 
 
 def simulate(settings, optical_path):
+
+    # optical_path =
 
     data_dict = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 

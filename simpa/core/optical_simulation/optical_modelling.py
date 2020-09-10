@@ -24,9 +24,10 @@ from simpa.utils import Tags, SaveFilePaths
 from simpa.core.optical_simulation.mcx_adapter import McxAdapter
 from simpa.core.optical_simulation.mcxyz_adapter import McxyzAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
+from simpa.utils.dict_path_manager import generate_dict_path
 
 
-def run_optical_forward_model(settings, optical_properties_path):
+def run_optical_forward_model(settings):
     # TODO
     print("OPTICAL FORWARD")
 
@@ -43,6 +44,9 @@ def run_optical_forward_model(settings, optical_properties_path):
     # elif model == Tags.MODEL_TEST_OPTICAL: TODO
     #     forward_model_implementation =
 
+    optical_properties_path = generate_dict_path(settings, data_field=Tags.SIMULATION_PROPERTIES,
+                                                 wavelength=settings[Tags.WAVELENGTH],
+                                                 upsampled_data=False)
 
     fluence = forward_model_implementation.simulate(optical_properties_path, settings)
 

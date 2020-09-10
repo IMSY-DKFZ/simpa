@@ -22,6 +22,7 @@
 
 import numpy as np
 from simpa.utils import Tags, SaveFilePaths
+from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.process import preprocess_images
 from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.utils.serialization import SIMPAJSONSerializer
@@ -32,7 +33,7 @@ import subprocess
 import json
 
 
-def upsample(settings, optical_path):
+def upsample(settings):
     """
     Upsamples all image_data saved in optical path.
 
@@ -42,6 +43,10 @@ def upsample(settings, optical_path):
     """
 
     print("UPSAMPLE IMAGE")
+
+    optical_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_OUTPUT_NAME,
+                                      wavelength=settings[Tags.WAVELENGTH],
+                                      upsampled_data=False)
 
     optical_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 

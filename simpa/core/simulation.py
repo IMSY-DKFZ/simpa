@@ -85,7 +85,7 @@ def simulate(settings):
         acoustic_output_path = None
 
         if Tags.RUN_OPTICAL_MODEL in settings and settings[Tags.RUN_OPTICAL_MODEL]:
-            optical_output_path = run_optical_forward_model(settings, volume_output_path)
+            optical_output_path = run_optical_forward_model(settings)
             optical_output_paths.append(optical_output_path)
 
         if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
@@ -94,7 +94,7 @@ def simulate(settings):
 
         if Tags.PERFORM_UPSAMPLING in settings:
             if settings[Tags.PERFORM_UPSAMPLING]:
-                optical_output_path = upsample(settings, optical_output_path)
+                optical_output_path = upsample(settings)
                 optical_output_paths.append(optical_output_path)
 
         if Tags.RUN_ACOUSTIC_MODEL in settings:

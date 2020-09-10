@@ -20,6 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.io_handling.io_hdf5 import load_hdf5
-from simpa.io_handling.io_hdf5 import save_hdf5
-from simpa.io_handling.io_hdf5 import load_data_field
+from simpa.utils import Tags, SaveFilePaths
+
+
+def optical_simulation_settings(wavelengths, random_seed):
+    if wavelengths is None:
+        wavelengths = [800]
+    elif type(wavelengths) in [int, float]:
+        wavelengths = [wavelengths]
+
+    settings = {
+        Tags.WAVELENGTHS: wavelengths,
+        Tags.RANDOM_SEED: random_seed if random_seed is not None else 10,
+        Tags.RUN_OPTICAL_MODEL: True,
+        Tags.OPTICAL_MODEL: Tags.MODEL_MCX
+    }

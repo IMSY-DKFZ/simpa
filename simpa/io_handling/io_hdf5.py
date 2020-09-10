@@ -23,6 +23,7 @@
 import h5py
 from simpa.utils.serialization import SIMPASerializer
 from simpa.utils import AbsorptionSpectrum, Chromophore
+from simpa.utils.dict_path_manager import generate_dict_path
 
 
 def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/"):
@@ -119,3 +120,9 @@ def load_hdf5(file_path, file_dictionary_path="/"):
 
     with h5py.File(file_path, "r") as h5file:
         return data_grabber(h5file, file_dictionary_path)
+
+
+def load_data_field(file_path, settings, data_field, wavelength=None, upsampled_data=None):
+    dict_path = generate_dict_path(settings, data_field, wavelength, upsampled_data)
+    data = load_hdf5(file_path, dict_path)[data_field]
+    return data
