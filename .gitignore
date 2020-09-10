@@ -1,6 +1,8 @@
 # documentation build artifacts
 documentation/.doctrees
 documentation/.doctrees/*
+documentation/test_coverage
+documentation/test_coverage/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

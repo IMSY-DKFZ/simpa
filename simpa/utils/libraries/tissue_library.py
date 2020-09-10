@@ -58,8 +58,8 @@ class TissueLibrary(object):
         TODO
         """
         return (TissueSettingsGenerator().append(key="constant_chromophore",
-                                                 value=Chromophore(SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ONE,
-                                                                   volume_fraction=mua,
+                                                 value=Chromophore(SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(mua),
+                                                                   volume_fraction=1.0,
                                                                    mus500=mus, b_mie=0.0, f_ray=0.0,
                                                                    anisotropy=g)).get_settings())
 

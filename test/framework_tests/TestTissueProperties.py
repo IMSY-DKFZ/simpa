@@ -91,20 +91,3 @@ class TestTissueProperties(unittest.TestCase):
                 assert np.abs(mua - _mua) < 1e-5
                 assert np.abs(mus - _mus) < 1e-5
                 assert np.abs(g - _g) < 1e-5
-
-    def test_dictionary_serialization(self):
-        settings = TISSUE_LIBRARY.blood_arterial()
-        tmp_json_filename = "test_settings.json"
-
-        serializer = SIMPAJSONSerializer()
-
-        with open(tmp_json_filename, "w") as json_file:
-            json.dump(settings, json_file, indent="\t", default=serializer.default)
-
-        with open(tmp_json_filename, "r+") as json_file:
-            new_settings = json.load(json_file)
-
-        print(new_settings)
-
-        os.remove(tmp_json_filename)
-
