@@ -9,3 +9,4 @@ pandas
 sphinx==2.4.0
 rst2pdf==0.97
 m2r
+coverage

@@ -77,6 +77,11 @@ class AbsorptionSpectrumLibrary(object):
     CONSTANT_ABSORBER_ONE = AbsorptionSpectrum("Constant Absorber (1)", np.asarray([450, 1000]), np.asarray([1, 1]))
     CONSTANT_ABSORBER_TEN = AbsorptionSpectrum("Constant Absorber (10)", np.asarray([450, 1000]), np.asarray([10, 10]))
 
+    @staticmethod
+    def CONSTANT_ABSORBER_ARBITRARY(absorption_coefficient:float = 1):
+        return AbsorptionSpectrum("Constant Absorber (1)", np.asarray([450, 1000]),
+                                  np.asarray([absorption_coefficient, absorption_coefficient]))
+
     def __init__(self):
         self.spectra = [
             AbsorptionSpectrumLibrary.DEOXYHEMOGLOBIN,

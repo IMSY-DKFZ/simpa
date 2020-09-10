@@ -28,7 +28,7 @@ from simpa.utils import TISSUE_LIBRARY
 import os
 
 
-class TestTissueProperties(unittest.TestCase):
+class TestCreateVolume(unittest.TestCase):
 
     def create_background(self):
         water_dict = dict()
