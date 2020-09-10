@@ -21,17 +21,47 @@
 # SOFTWARE.
 
 from simpa.utils import Tags, SaveFilePaths
+from simpa.io_handling import save_hdf5, load_hdf5
 
 
-def optical_simulation_settings(wavelengths, random_seed):
-    if wavelengths is None:
-        wavelengths = [800]
-    elif type(wavelengths) in [int, float]:
-        wavelengths = [wavelengths]
+class Settings(dict):
+    def __init__(self, dictionary):
+        super(Settings, self).__init__()
+        for key, value in dictionary.items():
+            self[key] = value
 
-    settings = {
-        Tags.WAVELENGTHS: wavelengths,
-        Tags.RANDOM_SEED: random_seed if random_seed is not None else 10,
-        Tags.RUN_OPTICAL_MODEL: True,
-        Tags.OPTICAL_MODEL: Tags.MODEL_MCX
-    }
+    def add_meta_information(self):
+        self[Tags.VOLUME_NAME] = "Test_Volume"
+        self[Tags.SIMULATION_PATH] = ""
+        self[Tags.RANDOM_SEED] = 100
+        self[Tags.SPACING_MM] = 0.1
+        self[Tags.DIM_VOLUME_X_MM] = 20
+        self[Tags.DIM_VOLUME_Y_MM] = 20
+        self[Tags.DIM_VOLUME_Z_MM] = 20
+
+    def add_optical_properties(self):
+        self[Tags.RUN_OPTICAL_MODEL] = True
+        self[Tags.WAVELENGTHS] = [800]
+        self[Tags.OPTICAL_MODEL] = Tags.OPTICAL_MODEL_MCX
+        self[Tags.OPTICAL_MODEL_NUMBER_PHOTONS] = 1e6
+        self[Tags.ILLUMINATION_TYPE] = Tags.ILLUMINATION_TYPE_PENCIL
+        self[Tags.ILLUMINATION_POSITION] = [0, 0, 0]
+        self[Tags.ILLUMINATION_DIRECTION] = [0, 0.5, 0.5]
+
+    def add_acoustic_properties(self):
+        self[Tags.RUN_ACOUSTIC_MODEL] = True
+        self[Tags.ACOUSTIC_MODEL] = Tags.ACOUSTIC_MODEL_K_WAVE
+        self[Tags.ACOUSTIC_SIMULATION_3D] = False
+        self[Tags.PROPERTY_SPEED_OF_SOUND] = 1540
+        self[Tags.PROPERTY_DENSITY] = 1000
+
+    def add_reconstruction_properties(self):
+        self[Tags.PERFORM_IMAGE_RECONSTRUCTION] = True
+        self[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_DAS
+
+    def save(self, path):
+        save_hdf5(self, path)
+
+    def load(self, path):
+        for key, value in load_hdf5(path).items():
+            self[key] = value

@@ -26,6 +26,7 @@ from simpa.core.simulation import simulate
 from simpa.core.volume_creation import create_epidermis_layer
 from simpa.core.volume_creation import create_muscle_background
 from simpa.core.volume_creation import create_vessel_tube
+from simpa.utils.settings_generator import Settings
 
 import numpy as np
 
@@ -90,6 +91,7 @@ settings = {
     # Add the volume_creation to be simulated to the tissue
     Tags.STRUCTURES: create_example_tissue()
 }
+settings = Settings(settings)
 print("Simulating ", RANDOM_SEED)
 simulate(settings)
 # TODO settings[Tags.SIMPA_OUTPUT_PATH]
