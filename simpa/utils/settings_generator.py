@@ -20,15 +20,54 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags, SaveFilePaths
+from simpa.utils import Tags
 from simpa.io_handling import save_hdf5, load_hdf5
 
 
 class Settings(dict):
-    def __init__(self, dictionary):
+    def __init__(self, dictionary: dict = None):
         super(Settings, self).__init__()
+        if dictionary is None:
+            dictionary = {}
         for key, value in dictionary.items():
             self[key] = value
+
+    def __setitem__(self, key, value):
+        if isinstance(key, str):
+            super().__setitem__(key, value)
+            print(TypeError("The key for the Settings dictionary should be a tuple in the form of "
+                            "('{}', (data_type_1, data_type_2, ...)). "
+                            "The tuple of data types specifies all possible types, the value can have.\n"
+                            "The key '{}' has been given the value {}".format(key, key, value)))
+            return
+        elif not isinstance(key, tuple):
+            raise TypeError("The key for the Settings dictionary has to be a tuple in the form of "
+                            "('{}', (data_type_1, data_type_2, ...)). "
+                            "The tuple of data types specifies all possible types, the value can have.".format(key))
+        if isinstance(value, key[1]):
+            super().__setitem__(key[0], value)
+        else:
+            raise ValueError("The value {} ({}) for the key '{}' has to be an instance of: "
+                             "{}".format(value, type(value), key[0], key[1]))
+
+    def __contains__(self, item):
+        if super().__contains__(item) is True:
+            return True
+        elif isinstance(item, str) is False and super().__contains__(item[0]) is True:
+            return True
+        else:
+            return False
+
+    def __getitem__(self, item):
+        if super().__contains__(item) is True:
+            return super().__getitem__(item)
+        else:
+            try:
+                return super().__getitem__(item[0])
+            except KeyError:
+                raise KeyError("The key '{}' is not in the Settings dictionary".format(item[0])) from None
+
+    # TODO: __delitem__ and docu
 
     def add_minimal_meta_information(self, volume_name: str = None, simulation_path: str = None,
                                      random_seed: int = None, spacing: float = None, volume_dim_x: (int, float) = None,

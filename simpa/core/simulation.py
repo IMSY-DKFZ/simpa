@@ -29,6 +29,7 @@ from simpa.core.image_reconstruction.reconstruction_modelling import perform_rec
 from simpa.process.sampling import upsample
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 from simpa.utils.serialization import SIMPAJSONSerializer
+from simpa.utils.settings_generator import Settings
 import numpy as np
 import os
 import json
@@ -41,13 +42,15 @@ def simulate(settings):
     :return:
     """
 
+    if not isinstance(settings, Settings):
+        raise TypeError("Use a Settings instance from simpa.utils.settings_generator as simulation input.")
+
     simpa_output = dict()
     wavelengths = settings[Tags.WAVELENGTHS]
     volume_output_paths = []
     optical_output_paths = []
     acoustic_output_paths = []
     reconstruction_output_paths = []
-
     path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/"
     if not os.path.exists(path):
         os.makedirs(path)
@@ -120,7 +123,7 @@ def extract_field_of_view(settings, volume_path, optical_path, acoustic_path):
         sizes = np.shape(volume_data[Tags.PROPERTY_ABSORPTION_PER_CM])
         for key, value in volume_data.items():
             if np.shape(value) == sizes:
-                volume_data[key] = value[:, int(sizes[1]/2), :]
+                volume_data[key] = value[:, int(sizes[1] / 2), :]
 
         save_hdf5(volume_data, settings[Tags.SIMPA_OUTPUT_PATH], volume_path)
 
@@ -132,7 +135,6 @@ def extract_field_of_view(settings, volume_path, optical_path, acoustic_path):
         # optical_data['initial_pressure'] = optical_data['initial_pressure'][:, int(sizes[1] / 2), :]
 
         save_hdf5(optical_data, settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-
 
     if acoustic_path is not None:
         acoustic_data = np.load(acoustic_path)

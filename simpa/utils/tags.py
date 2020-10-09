@@ -20,48 +20,52 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import numpy as np
+
 
 class Tags:
     """
     This class contains all 'Tags' for the use in the settings dictionary.
     """
 
+
+
     """
     General settings
     """
-    SIMULATION_PATH = "simulation_path"
-    VOLUME_NAME = "volume_name"
-    WAVELENGTHS = "wavelengths"
-    WAVELENGTH = "wavelength"
-    RANDOM_SEED = "random_seed"
+    SIMULATION_PATH = ("simulation_path", str)
+    VOLUME_NAME = ("volume_name", str)
+    WAVELENGTHS = ("wavelengths", (list, range, tuple, np.ndarray))
+    WAVELENGTH = ("wavelength", (int, np.integer))
+    RANDOM_SEED = ("random_seed", (int, np.integer))
     TISSUE_PROPERTIES_OUPUT_NAME = "properties"
-    SIMULATION_EXTRACT_FIELD_OF_VIEW = "extract_field_of_view"
-    GPU = "gpu"
-    ACOUSTIC_SIMULATION_3D = "acoustic_simulation_3d"
-    MEDIUM_TEMPERATURE_CELCIUS = "medium_temperature"
+    SIMULATION_EXTRACT_FIELD_OF_VIEW = ("extract_field_of_view", bool)
+    GPU = ("gpu", bool)
+    ACOUSTIC_SIMULATION_3D = ("acoustic_simulation_3d", bool)
+    MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float, np.float))
 
     """
     Optical model settings
     """
-    RUN_OPTICAL_MODEL = 'run_optical_forward_model'
+    RUN_OPTICAL_MODEL = ("run_optical_forward_model", bool)
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
-    OPTICAL_MODEL_BINARY_PATH = "optical_model_binary_path"
-    OPTICAL_MODEL_NUMBER_PHOTONS = "optical_model_number_of_photons"
-    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = "optical_model_illumination_geometry_xml_file"
-    LASER_PULSE_ENERGY_IN_MILLIJOULE = "laser_pulse_energy_in_millijoule"
+    OPTICAL_MODEL_BINARY_PATH = ("optical_model_binary_path", str)
+    OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", (int, np.integer, float, np.float))
+    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = ("optical_model_illumination_geometry_xml_file", str)
+    LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, np.float, list, range, tuple, np.ndarray))
     OPTICAL_MODEL_FLUENCE = "fluence"
     OPTICAL_MODEL_INITIAL_PRESSURE = "initial_pressure"
     OPTICAL_MODEL_UNITS = "units"
 
-    ILLUMINATION_TYPE = "optical_model_illumination_type"
+    ILLUMINATION_TYPE = ("optical_model_illumination_type", str)
 
     # Illumination parameters
-    ILLUMINATION_POSITION = "illumination_position"
-    ILLUMINATION_DIRECTION = "illumination_direction"
-    ILLUMINATION_PARAM1 = "illumination_param1"
-    ILLUMINATION_PARAM2 = "illumination_param2"
-    TIME_STEP = "time_step"
-    TOTAL_TIME = "total_time"
+    ILLUMINATION_POSITION = ("illumination_position", (list, tuple, np.ndarray))
+    ILLUMINATION_DIRECTION = ("illumination_direction", (list, tuple, np.ndarray))
+    ILLUMINATION_PARAM1 = ("illumination_param1", (list, tuple, np.ndarray))
+    ILLUMINATION_PARAM2 = ("illumination_param2", (list, tuple, np.ndarray))
+    TIME_STEP = ("time_step", (int, np.integer, float, np.float))
+    TOTAL_TIME = ("total_time", (int, np.integer, float, np.float))
 
     # Supported illumination types - implemented in mcx
     ILLUMINATION_TYPE_PENCIL = "pencil"
@@ -78,13 +82,13 @@ class Tags:
     ILLUMINATION_TYPE_MSOT_ACUITY_ECHO = "msot_acuity_echo"
 
     # Supported optical models
-    OPTICAL_MODEL = "optical_model"
+    OPTICAL_MODEL = ("optical_model", str)
     OPTICAL_MODEL_MCXYZ = "mcxyz"
     OPTICAL_MODEL_MCX = "mcx"
     OPTICAL_MODEL_TEST = "test"
 
     # Supported acoustic models
-    ACOUSTIC_MODEL = "acoustic_model"
+    ACOUSTIC_MODEL = ("acoustic_model", str)
     ACOUSTIC_MODEL_K_WAVE = "kwave"
     ACOUSTIC_MODEL_TEST = "test"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
@@ -94,7 +98,7 @@ class Tags:
     Acoustic model settings
     """
 
-    RUN_ACOUSTIC_MODEL = 'run_acoustic_forward_model'
+    RUN_ACOUSTIC_MODEL = "run_acoustic_forward_model"
     ACOUSTIC_MODEL_BINARY_PATH = "acoustic_model_binary_path"
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
@@ -144,12 +148,12 @@ class Tags:
     DL_MODEL_PATH = "dl_model_path"
 
     # physical property volume types
-    PROPERTY_ABSORPTION_PER_CM = 'mua'
-    PROPERTY_SCATTERING_PER_CM = 'mus'
-    PROPERTY_ANISOTROPY = 'g'
-    PROPERTY_OXYGENATION = 'oxy'
-    PROPERTY_SEGMENTATION = 'seg'
-    PROPERTY_GRUNEISEN_PARAMETER = 'gamma'
+    PROPERTY_ABSORPTION_PER_CM = "mua"
+    PROPERTY_SCATTERING_PER_CM = "mus"
+    PROPERTY_ANISOTROPY = "g"
+    PROPERTY_OXYGENATION = "oxy"
+    PROPERTY_SEGMENTATION = "seg"
+    PROPERTY_GRUNEISEN_PARAMETER = "gamma"
     PROPERTY_SPEED_OF_SOUND = "sos"
     PROPERTY_DENSITY = "density"
     PROPERTY_ALPHA_COEFF = "alpha_coeff"
@@ -165,10 +169,10 @@ class Tags:
     GELPAD_LAYER_HEIGHT_MM = "gelpad_layer_height_mm"
 
     # Volume geometry settings
-    SPACING_MM = "voxel_spacing_mm"
-    DIM_VOLUME_X_MM = "volume_x_dim_mm"
-    DIM_VOLUME_Y_MM = "volume_y_dim_mm"
-    DIM_VOLUME_Z_MM = "volume_z_dim_mm"
+    SPACING_MM = ("voxel_spacing_mm", (int, np.integer, float, np.float))
+    DIM_VOLUME_X_MM = ("volume_x_dim_mm", (int, np.integer, float, np.float))
+    DIM_VOLUME_Y_MM = ("volume_y_dim_mm", (int, np.integer, float, np.float))
+    DIM_VOLUME_Z_MM = ("volume_z_dim_mm", (int, np.integer, float, np.float))
 
     # 2D Acoustic Medium Properties
     MEDIUM_SOUND_SPEED_HOMOGENEOUS = "medium_sound_speed_homogeneous"
@@ -241,7 +245,7 @@ class Tags:
     KEY_ANISOTROPY = "anisotropy"
 
     # Structures
-    STRUCTURES = "volume_creation"
+    STRUCTURES = "structures"
     CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = "structure_type"
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"
