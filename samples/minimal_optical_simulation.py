@@ -31,10 +31,10 @@ from simpa.utils.settings_generator import Settings
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "/home/kris/hard_drive/data"
-MCX_BINARY_PATH = "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx"
+SAVE_PATH = "D:/bin/"
+MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
 
-VOLUME_WIDTH_IN_MM = 10
+VOLUME_WIDTH_IN_MM = 40
 VOLUME_HEIGHT_IN_MM = 10
 SPACING = 0.25
 RANDOM_SEED = 4711
@@ -78,7 +78,7 @@ settings = {
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
+    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 
     # The following parameters tell the script that we do not want any extra

@@ -25,7 +25,7 @@ import matplotlib.pylab as plt
 import numpy as np
 from simpa.utils import SaveFilePaths
 
-PATH = "path/to/file"
+PATH = "D:/bin/MyVolumeName_4711/simpa_output.hdf5"
 WAVELENGTH = 800  # currently only 800 and 900 are simulated as well
 
 file = load_hdf5(PATH)
@@ -49,13 +49,13 @@ if len(shape) > 2:
     plt.subplot(232)
     plt.imshow(np.log10(absorption[int(shape[0]/2), :, :]))
     plt.subplot(233)
-    plt.imshow(np.log10(initial_pressure))
+    plt.imshow(np.log10(initial_pressure[int(shape[0]/2), :, :]))
     plt.subplot(234)
     plt.imshow(np.log10(fluence[:, int(shape[1]/2), :]))
     plt.subplot(235)
     plt.imshow(np.log10(absorption[:, int(shape[1]/2), :]))
     plt.subplot(236)
-    plt.imshow(np.log10(initial_pressure))
+    plt.imshow(np.log10(initial_pressure[:, int(shape[1]/2), :]))
     plt.show()
 else:
     plt.figure()

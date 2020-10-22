@@ -153,7 +153,6 @@ class McxAdapter(OpticalForwardAdapterBase):
             data = f.read()
         data = struct.unpack('%df' % (len(data) / 4), data)
         fluence = np.asarray(data).reshape([nx, ny, nz, frames], order='F')
-        np.savez("/media/kris/Extreme SSD/tmp/01_master/forearm_010000/fluence.npz", fluence=fluence*100)
         if np.shape(fluence)[3] == 1:
             fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
 

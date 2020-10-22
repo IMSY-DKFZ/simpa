@@ -43,12 +43,16 @@ def define_illumination_mcx(settings, nx, ny, nz):
     else:
         source_position = settings[Tags.ILLUMINATION_POSITION]
 
-    if Tags.ILLUMINATION_DIRECTION not in settings:
+    if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
+        source_direction = [0, 0.381070, 0.9245460]
+    elif Tags.ILLUMINATION_DIRECTION not in settings:
         source_direction = [0, 0, 1]
     else:
         source_direction = settings[Tags.ILLUMINATION_DIRECTION]
 
-    if Tags.ILLUMINATION_PARAM1 not in settings:
+    if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
+        source_param1 = [30 / settings[Tags.SPACING_MM], 0, 0, 0]
+    elif Tags.ILLUMINATION_PARAM1 not in settings:
         source_param1 = [0, 0, 0, 0]
     else:
         source_param1 = settings[Tags.ILLUMINATION_PARAM1]
