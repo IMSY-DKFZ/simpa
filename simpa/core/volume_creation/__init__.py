@@ -23,14 +23,28 @@
 from abc import abstractmethod
 from simpa.utils.settings_generator import Settings
 from simpa.utils import MorphologicalTissueProperties, Tags, TISSUE_LIBRARY, SegmentationClasses
+from simpa.utils.tissueproperties import TissueProperties
 import numpy as np
 
 
-class VolumeCreationAdapterBase:
+class VolumeCreatorBase:
     """
     Use this class to define your own volume creation adapter.
 
     """
+
+    def create_empty_volumes(self, global_settings):
+        volumes = dict()
+        voxel_spacing = global_settings[Tags.SPACING_MM]
+        volume_x_dim = int(round(global_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing))
+        volume_y_dim = int(round(global_settings[Tags.DIM_VOLUME_Y_MM] / voxel_spacing))
+        volume_z_dim = int(round(global_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing))
+        sizes = (volume_x_dim, volume_y_dim, volume_z_dim)
+
+        for key in TissueProperties.keys:
+            volumes[key] = np.zeros(sizes)
+
+        return volumes, volume_x_dim, volume_y_dim, volume_z_dim
 
     @abstractmethod
     def create_simulation_volume(self, settings: Settings) -> np.ndarray:
@@ -39,6 +53,7 @@ class VolumeCreationAdapterBase:
         @param settings:
         """
         pass
+
 
 def create_random_ellipse(x_min_mm=2, x_max_mm=35, depth_min_mm=3, depth_max_mm=18,
                           r_min_mm=0.5, r_max_mm=5.0,
