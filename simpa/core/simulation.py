@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.core.volume_creation.volume_creator import create_simulation_volume
+from simpa.core.volume_creation.volume_creation import run_volume_creation
 from simpa.core.optical_simulation.optical_modelling import run_optical_forward_model
 from simpa.core.acoustic_simulation.acoustic_modelling import run_acoustic_forward_model
 from simpa.core.noise_simulation.noise_modelling import apply_noise_model_to_time_series_data
@@ -81,7 +81,7 @@ def simulate(settings):
             np.random.seed(None)
 
         settings[Tags.WAVELENGTH] = wavelength
-        volume_output_path, distortion = create_simulation_volume(settings)
+        volume_output_path, distortion = run_volume_creation(settings)
         volume_output_paths.append(volume_output_path)
 
         optical_output_path = None

@@ -45,6 +45,12 @@ class Tags:
     MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float, np.float))
 
     """
+    Volume Creation Settings
+    """
+    VOLUME_CREATOR = ("volume_creator", str)
+    VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
+
+    """
     Optical model settings
     """
     RUN_OPTICAL_MODEL = ("run_optical_forward_model", bool)

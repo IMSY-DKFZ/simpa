@@ -20,13 +20,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.volume_creation.tissue_properties import TissueProperties
-
-from simpa.core.acoustic_simulation.acoustic_modelling import run_acoustic_forward_model
-from simpa.core.optical_simulation.optical_modelling import run_optical_forward_model
-
+from simpa.utils.settings_generator import Settings
+from simpa.utils import Tags
+from simpa.core.volume_creation.versatile_volume_creator import VersatileVolumeCreator
 
 
+def run_volume_creation(settings: Settings):
+    print("VOLUME CREATION")
 
+    if Tags.VOLUME_CREATOR not in settings:
+        raise AssertionError("Tags.VOLUME_CREATOR tag was not specified in the settings. Skipping optical modelling.")
 
+    model = settings[Tags.VOLUME_CREATOR]
+    volume_creator_adapter = None
 
+    if model == Tags.VOLUME_CREATOR_VERSATILE:
+        volume_creator_adapter = VersatileVolumeCreator()
+
+    return volume_creator_adapter.create_simulation_volume(settings)

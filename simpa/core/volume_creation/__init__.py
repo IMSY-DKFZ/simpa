@@ -20,12 +20,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags, SegmentationClasses
-from simpa.utils import MorphologicalTissueProperties
-from simpa.utils import TISSUE_LIBRARY
-
+from abc import abstractmethod
+from simpa.utils.settings_generator import Settings
+from simpa.utils import MorphologicalTissueProperties, Tags, TISSUE_LIBRARY, SegmentationClasses
 import numpy as np
 
+
+class VolumeCreationAdapterBase:
+    """
+    Use this class to define your own volume creation adapter.
+
+    """
+
+    @abstractmethod
+    def create_simulation_volume(self, settings: Settings) -> np.ndarray:
+        """
+        This method will be called to create a simulation volume.
+        @param settings:
+        """
+        pass
 
 def create_random_ellipse(x_min_mm=2, x_max_mm=35, depth_min_mm=3, depth_max_mm=18,
                           r_min_mm=0.5, r_max_mm=5.0,

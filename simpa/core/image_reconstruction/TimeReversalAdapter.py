@@ -23,7 +23,7 @@
 from simpa.utils import Tags, SaveFilePaths
 from simpa.core.image_reconstruction import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_hdf5
-from simpa.core.volume_creation.volume_creator import create_volumes
+#from simpa.core.volume_creation.versatile_volume_creator import create_volumes
 import numpy as np
 import scipy.io as sio
 import subprocess
@@ -55,14 +55,14 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
                                         Tags.PROPERTY_ALPHA_COEFF
                                         ]
 
-        if Tags.RECONSTRUCTION_INVERSE_CRIME in settings and settings[Tags.RECONSTRUCTION_INVERSE_CRIME] is False:
-            settings[Tags.SPACING_MM] = 0.1
-            settings[Tags.DIM_VOLUME_Y_MM] = 0.1
-            volumes = create_volumes(settings, settings[Tags.RANDOM_SEED] + 10, distortion=distortion)
-            for key, value in volumes.items():
-                volumes[key] = np.squeeze(value)
-        else:
-            volumes = tmp_ac_properties
+        # if Tags.RECONSTRUCTION_INVERSE_CRIME in settings and settings[Tags.RECONSTRUCTION_INVERSE_CRIME] is False:
+        #     settings[Tags.SPACING_MM] = 0.1
+        #     settings[Tags.DIM_VOLUME_Y_MM] = 0.1
+        #     volumes = create_volumes(settings, settings[Tags.RANDOM_SEED] + 10, distortion=distortion)
+        #     for key, value in volumes.items():
+        #         volumes[key] = np.squeeze(value)
+        # else:
+        volumes = tmp_ac_properties
 
         for acoustic_property in possible_acoustic_properties:
             if acoustic_property in tmp_ac_properties.keys():

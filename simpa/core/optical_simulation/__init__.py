@@ -24,6 +24,7 @@ from simpa.utils import Tags
 from simpa.io_handling.io_hdf5 import load_hdf5
 from abc import abstractmethod
 
+
 class OpticalForwardAdapterBase:
     """
     Use this class as a base for implementations of optical forward models.

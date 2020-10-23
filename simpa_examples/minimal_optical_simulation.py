@@ -72,6 +72,8 @@ settings = {
     Tags.AIR_LAYER_HEIGHT_MM: 0,
     Tags.GELPAD_LAYER_HEIGHT_MM: 0,
 
+    Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+
     # The following parameters set the optical forward model
     Tags.RUN_OPTICAL_MODEL: True,
     Tags.WAVELENGTHS: np.arange(700, 951, 100),
