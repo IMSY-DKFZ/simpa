@@ -124,9 +124,9 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
-    RECONSTRUCTION_INVERSE_CRIME = "reconstruction_inverse_crime"
-    RECONSTRUCTION_MITK_BINARY_PATH = "reconstruction_mitk_binary_path"
-    RECONSTRUCTION_MITK_SETTINGS_XML = "reconstruction_mitk_settings_xml"
+    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", bool)
+    RECONSTRUCTION_MITK_BINARY_PATH = ("reconstruction_mitk_binary_path", str)
+    RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml", str)
     RECONSTRUCTION_BMODE_METHOD = "reconstruction_bmode_method"
     RECONSTRUCTION_BMODE_METHOD_ABS = "Abs"
     RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM = "EnvelopeDetection"
@@ -137,20 +137,20 @@ class Tags:
     Upsampling settings
     """
 
-    CROP_IMAGE = "crop_image"
+    CROP_IMAGE = ("crop_image", bool)
     CENTER_CROP = "center_crop"
     CROP_POWER_OF_TWO = "crop_power_of_two"
-    PERFORM_UPSAMPLING = "sample"
+    PERFORM_UPSAMPLING = ("sample", bool)
     UPSAMPLING_METHOD = "upsampling_method"
     UPSAMPLING_METHOD_DEEP_LEARNING = "deeplearning"
     UPSAMPLING_METHOD_NEAREST_NEIGHBOUR = "nearestneighbour"
     UPSAMPLING_METHOD_BILINEAR = "bilinear"
     UPSAMPLING_METHOD_LANCZOS2 = "lanczos2"
     UPSAMPLING_METHOD_LANCZOS3 = "lanczos3"
-    UPSAMPLING_SCRIPT = "upsampling_script"
+    UPSAMPLING_SCRIPT = ("upsampling_script", str)
     UPSAMPLING_SCRIPT_LOCATION = "upsampling_script_location"
     UPSCALE_FACTOR = "upscale_factor"
-    UPSAMPLING_RUN = "upsampling_run"
+    UPSAMPLING_RUN = ("upsampling_run", bool)
     DL_MODEL_PATH = "dl_model_path"
 
     # physical property volume types
@@ -167,12 +167,12 @@ class Tags:
     PROPERTY_DIRECTIVITY_ANGLE = "directivity_angle"
 
     # Air layer
-    AIR_LAYER = "airlayer"
-    AIR_LAYER_HEIGHT_MM = "air_layer_height"
+    AIR_LAYER = ("airlayer", bool)
+    AIR_LAYER_HEIGHT_MM = ("air_layer_height", (int, np.integer, float, np.float))
 
     # Gel Pad Layer
-    GELPAD_LAYER = "gelpad"
-    GELPAD_LAYER_HEIGHT_MM = "gelpad_layer_height_mm"
+    GELPAD_LAYER = ("gelpad", bool)
+    GELPAD_LAYER_HEIGHT_MM = ("gelpad_layer_height_mm", (int, np.integer, float, np.float))
 
     # Volume geometry settings
     SPACING_MM = ("voxel_spacing_mm", (int, np.integer, float, np.float))
@@ -181,7 +181,7 @@ class Tags:
     DIM_VOLUME_Z_MM = ("volume_z_dim_mm", (int, np.integer, float, np.float))
 
     # 2D Acoustic Medium Properties
-    MEDIUM_SOUND_SPEED_HOMOGENEOUS = "medium_sound_speed_homogeneous"
+    MEDIUM_SOUND_SPEED_HOMOGENEOUS = ("medium_sound_speed_homogeneous", bool)
     MEDIUM_SOUND_SPEED = "medium_sound_speed"
     MEDIUM_DENSITY_HOMOGENEOUS = "medium_density_homogeneous"
     MEDIUM_DENSITY = "medium_density"
