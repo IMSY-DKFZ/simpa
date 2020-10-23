@@ -3,7 +3,7 @@
 # Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
+# of this software and associated simpa_documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
@@ -195,7 +195,7 @@ class OpticalTissueProperties:
     BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE = 0.01  # Value of arterial bvf at t0 in fig 3.
 
     # Mean and spread calculated from europeans from figure 2C, averaged over both
-    # photoexposed and photoprotected samples.
+    # photoexposed and photoprotected simpa_examples.
     # @article{alaluf2002ethnic,
     #   title={Ethnic variation in melanin content and composition in photoexposed and photoprotected human skin},
     #   author={Alaluf, Simon and Atkins, Derek and Barrett, Karen and Blount, Margaret and Carter,

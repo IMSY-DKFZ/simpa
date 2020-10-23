@@ -3,7 +3,7 @@
 # Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
+# of this software and associated simpa_documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
@@ -28,11 +28,11 @@ import os
 
 
 """
-This Script uses the Lambert-Beer law to test mcx or mcxyz for the correct
+This Script uses the Lambert-Beer law to simpa_tests mcx or mcxyz for the correct
 attenuation of a photon beam passing through a thin absorbing and/or scattering
 slab.
 
-All tests test a scenario, where a pencil source in z-dir in the middle 
+All tests simpa_tests a scenario, where a pencil source in z-dir in the middle 
 of the xy-plane emits photons in a 27x27x100 medium.
 In the middle of the medium is an absorbing and/or scattering slab of 1 pixel in the xy-plane and some distance in z-dir.
 In all tests, the fluence in the middle of the xy-plane and in z-dir the pixels 10 and 90 is measured.
@@ -43,8 +43,8 @@ Usage of this script:
 The script has to be in the same folder as the mcx executable binary.
 If this is met, the script can just be run.
 
-Use the test functions to test the specific cases that are explained in the respective tests.
-Please read the description of every test and run them one after the other.
+Use the simpa_tests functions to simpa_tests the specific cases that are explained in the respective tests.
+Please read the description of every simpa_tests and run them one after the other.
 Be aware that by running multiple tests at once, the previous tests are overwritten.
 """
 
@@ -53,7 +53,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
     def setUp(self):
         """
-        This is not a completely autonomous test case yet.
+        This is not a completely autonomous simpa_tests case yet.
         If run on another pc, please adjust the SIMULATION_PATH and MODEL_BINARY_PATH fields.
         :return:
         """
@@ -62,7 +62,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
             Tags.VOLUME_NAME: "TestVolume",
-            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test/test",
+            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test/simpa_tests",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e8,
             Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx",

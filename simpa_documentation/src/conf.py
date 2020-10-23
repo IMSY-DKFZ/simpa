@@ -1,14 +1,14 @@
-# Configuration file for the Sphinx documentation builder.
+# Configuration file for the Sphinx simpa_documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
-# list see the documentation:
+# list see the simpa_documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
+# simpa_documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
 import sys
@@ -51,7 +51,7 @@ source_suffix = {
 
 # -- Options for HTML output -------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
+# The theme to use for HTML and HTML Help pages.  See the simpa_documentation for
 # a list of builtin themes.
 #
 html_theme = 'alabaster'

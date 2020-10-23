@@ -3,7 +3,7 @@
 # Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
+# of this software and associated simpa_documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
@@ -85,12 +85,12 @@ class Tags:
     OPTICAL_MODEL = ("optical_model", str)
     OPTICAL_MODEL_MCXYZ = "mcxyz"
     OPTICAL_MODEL_MCX = "mcx"
-    OPTICAL_MODEL_TEST = "test"
+    OPTICAL_MODEL_TEST = "simpa_tests"
 
     # Supported acoustic models
     ACOUSTIC_MODEL = ("acoustic_model", str)
     ACOUSTIC_MODEL_K_WAVE = "kwave"
-    ACOUSTIC_MODEL_TEST = "test"
+    ACOUSTIC_MODEL_TEST = "simpa_tests"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
     ACOUSTIC_MODEL_SCRIPT_LOCATION = "acoustic_model_script_location"
 

@@ -3,7 +3,7 @@
 # Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
+# of this software and associated simpa_documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
@@ -19,3 +19,25 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
+import unittest
+from coverage import Coverage
+
+cov = Coverage(source=['simpa'])
+cov.start()
+
+test_classes = ["simpa_tests.framework_tests.TestPipeline",
+                "simpa_tests.framework_tests.TestCreateAVolume",
+                "simpa_tests.framework_tests.TestIOHandling",
+                "simpa_tests.framework_tests.TestTissueProperties"]
+
+suite = unittest.TestSuite()
+for test_class in test_classes:
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromName(test_class))
+unittest.TextTestRunner().run(suite)
+
+cov.stop()
+cov.save()
+
+cov.report(skip_empty=True, skip_covered=False)
+cov.html_report(directory="../simpa_documentation/test_coverage")

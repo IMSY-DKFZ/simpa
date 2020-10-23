@@ -3,7 +3,7 @@
 # Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
+# of this software and associated simpa_documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
@@ -32,7 +32,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
     def setUp(self):
         """
-        This is not a completely autonomous test case yet.
+        This is not a completely autonomous simpa_tests case yet.
         If run on another pc, please adjust the SIMULATION_PATH and MODEL_BINARY_PATH fields.
         :return:
         """
@@ -41,7 +41,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
             Tags.VOLUME_NAME: "homogeneous_cube",
-            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test/test",
+            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test/simpa_tests",
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
             Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx",
@@ -50,7 +50,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
             Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
             Tags.PROPERTY_ANISOTROPY: 0.9,
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-            Tags.SIMPA_OUTPUT_PATH: "test.hdf5"
+            Tags.SIMPA_OUTPUT_PATH: "simpa_tests.hdf5"
         }
 
         self.volume_path = self.settings[Tags.SIMULATION_PATH] + "/"+ self.settings[Tags.VOLUME_NAME] + "/" \
@@ -188,6 +188,6 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         #         continue
         #     else:
         #         """
-        #         we test for 50% of the expected value from the diffusion approx.
+        #         we simpa_tests for 50% of the expected value from the diffusion approx.
         #         """
         #         self.assertAlmostEqual(sim, diff, delta=0.5*diff)

@@ -3,7 +3,7 @@
 # Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
+# of this software and associated simpa_documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
@@ -21,23 +21,37 @@
 # SOFTWARE.
 
 import unittest
-from coverage import Coverage
+from simpa.utils import Tags
+from simpa.utils.settings_generator import Settings
+import numpy as np
 
-cov = Coverage(source=['simpa'])
-cov.start()
 
-test_classes = ["test.framework_tests.TestPipeline",
-                "test.framework_tests.TestCreateAVolume",
-                "test.framework_tests.TestIOHandling",
-                "test.framework_tests.TestTissueProperties"]
+class TestCreateSettings(unittest.TestCase):
 
-suite = unittest.TestSuite()
-for test_class in test_classes:
-    suite.addTests(unittest.defaultTestLoader.loadTestsFromName(test_class))
-unittest.TextTestRunner().run(suite)
+    def setUp(self):
+        print("setUp")
 
-cov.stop()
-cov.save()
+    def tearDown(self):
+        print("tearDown")
 
-cov.report(skip_empty=True, skip_covered=False)
-cov.html_report(directory="../documentation/test_coverage")
+    def test_create_settings(self):
+
+        settings = Settings()
+        settings[Tags.WAVELENGTHS] = np.arange(800, 950, 10)
+        settings.add_minimal_meta_information()
+
+    @unittest.expectedFailure
+    def test_create_settings_with_irregular_tags(self):
+
+        settings = Settings()
+        settings[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.zeros([2, 2, 3])
+
+    @unittest.expectedFailure
+    def test_create_settings_with_irregular_data_type(self):
+
+        settings = Settings()
+        settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS] = np.zeros([2, 2, 3])
+
+    # TODO: More tests
+
+
