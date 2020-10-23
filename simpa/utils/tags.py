@@ -92,17 +92,17 @@ class Tags:
     ACOUSTIC_MODEL_K_WAVE = "kwave"
     ACOUSTIC_MODEL_TEST = "simpa_tests"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
-    ACOUSTIC_MODEL_SCRIPT_LOCATION = "acoustic_model_script_location"
+    ACOUSTIC_MODEL_SCRIPT_LOCATION = ("acoustic_model_script_location", str)
 
     """
     Acoustic model settings
     """
 
-    RUN_ACOUSTIC_MODEL = "run_acoustic_forward_model"
-    ACOUSTIC_MODEL_BINARY_PATH = "acoustic_model_binary_path"
+    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", bool)
+    ACOUSTIC_MODEL_BINARY_PATH = ("acoustic_model_binary_path", str)
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
-    RECORDMOVIE = "record_movie"
+    RECORDMOVIE = ("record_movie", bool)
     MOVIENAME = "movie_name"
     ACOUSTIC_PLOT_SCALE = "acoustic_plot_scale"
     ACOUSTIC_LOG_SCALE = "acoustic_log_scale"
@@ -110,7 +110,7 @@ class Tags:
     TIME_SERIES_DATA_NOISE = "time_series_data_noise"
 
     # Reconstruction settings
-    PERFORM_IMAGE_RECONSTRUCTION = "perform_image_reconstruction"
+    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", bool)
     RECONSTRUCTION_OUTPUT_NAME = "reconstruction_result"
     RECONSTRUCTION_ALGORITHM = "reconstruction_algorithm"
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
@@ -209,7 +209,7 @@ class Tags:
     SENSOR_LINEAR = "linear"
 
     # Noise properties
-    APPLY_NOISE_MODEL = "apply_noise_model"
+    APPLY_NOISE_MODEL = ("apply_noise_model", bool)
     NOISE_MODEL = "noise_model"
     NOISE_MODEL_GAUSSIAN = "noise_model_gaussian"
     NOISE_MEAN = "noise_mean"
