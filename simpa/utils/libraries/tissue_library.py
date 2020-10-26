@@ -22,8 +22,8 @@
 
 from simpa.utils import OpticalTissueProperties
 from simpa.utils import SPECTRAL_LIBRARY
-from simpa.utils import Chromophore
-from simpa.utils import CHROMOPHORE_LIBRARY
+from simpa.utils import Molecule
+from simpa.utils import MOLECULE_LIBRARY
 from simpa.utils.calculate import randomize_uniform
 
 
@@ -34,7 +34,7 @@ class TissueSettingsGenerator(object):
     def __init__(self):
         self.tissue_dictionary = dict()
 
-    def append(self, key: str, value: Chromophore):
+    def append(self, key: str, value: Molecule):
         self.tissue_dictionary[key] = value
         return self
 
@@ -58,10 +58,10 @@ class TissueLibrary(object):
         TODO
         """
         return (TissueSettingsGenerator().append(key="constant_chromophore",
-                                                 value=Chromophore(SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(mua),
-                                                                   volume_fraction=1.0,
-                                                                   mus500=mus, b_mie=0.0, f_ray=0.0,
-                                                                   anisotropy=g)).get_settings())
+                                                 value=Molecule(SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(mua),
+                                                                volume_fraction=1.0,
+                                                                mus500=mus, b_mie=0.0, f_ray=0.0,
+                                                                anisotropy=g)).get_settings())
 
     def muscle(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
         """
@@ -82,11 +82,11 @@ class TissueLibrary(object):
 
         # generate the tissue dictionary
         return (TissueSettingsGenerator()
-                .append(key="Oxyhemoglobin", value=CHROMOPHORE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                .append(key="Deoxyhemoglobin", value=CHROMOPHORE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(key="background_scatterers", value=CHROMOPHORE_LIBRARY.soft_tissue_scatterer(
+                .append(key="Oxyhemoglobin", value=MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(key="Deoxyhemoglobin", value=MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(key="background_scatterers", value=MOLECULE_LIBRARY.soft_tissue_scatterer(
                         volume_fraction=1-OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE))
-                .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
+                .append(key="water", value=MOLECULE_LIBRARY.water(water_volume_fraction)).get_settings())
 
     def epidermis(self):
         """
@@ -104,9 +104,9 @@ class TissueLibrary(object):
 
         # generate the tissue dictionary
         return (TissueSettingsGenerator()
-                .append(key="melanin", value=CHROMOPHORE_LIBRARY.melanin(melanin_volume_fraction))
-                .append(key="epidermal", value=CHROMOPHORE_LIBRARY.epidermal_scatterer(1-melanin_volume_fraction))
-                .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
+                .append(key="melanin", value=MOLECULE_LIBRARY.melanin(melanin_volume_fraction))
+                .append(key="epidermal", value=MOLECULE_LIBRARY.epidermal_scatterer(1 - melanin_volume_fraction))
+                .append(key="water", value=MOLECULE_LIBRARY.water(water_volume_fraction)).get_settings())
 
     def dermis(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
         """
@@ -127,11 +127,11 @@ class TissueLibrary(object):
 
         # generate the tissue dictionary
         return (TissueSettingsGenerator()
-                .append(key="Oxyhemoglobin", value=CHROMOPHORE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                .append(key="Deoxyhemoglobin", value=CHROMOPHORE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(key="dermal scatterers", value=CHROMOPHORE_LIBRARY.dermal_scatterer(
+                .append(key="Oxyhemoglobin", value=MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(key="Deoxyhemoglobin", value=MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(key="dermal scatterers", value=MOLECULE_LIBRARY.dermal_scatterer(
                                                        1-OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE))
-                .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
+                .append(key="water", value=MOLECULE_LIBRARY.water(water_volume_fraction)).get_settings())
 
     def subcutaneous_fat(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
         """
@@ -155,12 +155,12 @@ class TissueLibrary(object):
 
         # generate the tissue dictionary
         return (TissueSettingsGenerator()
-                .append(key="Oxyhemoglobin", value=CHROMOPHORE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                .append(key="Deoxyhemoglobin", value=CHROMOPHORE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(key="fat", value=CHROMOPHORE_LIBRARY.fat(fat_volume_fraction))
-                .append(key="scatterer", value=CHROMOPHORE_LIBRARY.soft_tissue_scatterer(
+                .append(key="Oxyhemoglobin", value=MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(key="Deoxyhemoglobin", value=MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(key="fat", value=MOLECULE_LIBRARY.fat(fat_volume_fraction))
+                .append(key="scatterer", value=MOLECULE_LIBRARY.soft_tissue_scatterer(
                         1 - (OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE + fat_volume_fraction)))
-                .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
+                .append(key="water", value=MOLECULE_LIBRARY.water(water_volume_fraction)).get_settings())
 
     def blood_generic(self):
         """
@@ -176,9 +176,9 @@ class TissueLibrary(object):
 
         # generate the tissue dictionary
         return (TissueSettingsGenerator()
-                .append(key="Oxyhemoglobin", value=CHROMOPHORE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                .append(key="Deoxyhemoglobin", value=CHROMOPHORE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
+                .append(key="Oxyhemoglobin", value=MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(key="Deoxyhemoglobin", value=MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(key="water", value=MOLECULE_LIBRARY.water(water_volume_fraction)).get_settings())
 
     def blood_arterial(self):
         """
@@ -193,9 +193,9 @@ class TissueLibrary(object):
 
         # generate the tissue dictionary
         return (TissueSettingsGenerator()
-                .append(key="Oxyhemoglobin", value=CHROMOPHORE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                .append(key="Deoxyhemoglobin", value=CHROMOPHORE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
+                .append(key="Oxyhemoglobin", value=MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(key="Deoxyhemoglobin", value=MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(key="water", value=MOLECULE_LIBRARY.water(water_volume_fraction)).get_settings())
 
     def blood_venous(self):
         """
@@ -210,9 +210,9 @@ class TissueLibrary(object):
 
         # generate the tissue dictionary
         return (TissueSettingsGenerator()
-                .append(key="Oxyhemoglobin", value=CHROMOPHORE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                .append(key="Deoxyhemoglobin", value=CHROMOPHORE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
+                .append(key="Oxyhemoglobin", value=MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(key="Deoxyhemoglobin", value=MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(key="water", value=MOLECULE_LIBRARY.water(water_volume_fraction)).get_settings())
 
     def bone(self):
         """
@@ -234,8 +234,8 @@ class TissueLibrary(object):
 
         # generate the tissue dictionary
         return (TissueSettingsGenerator()
-                .append(key="bone", value=CHROMOPHORE_LIBRARY.bone_scatterer())
-                .append(key="water", value=CHROMOPHORE_LIBRARY.water(water_volume_fraction)).get_settings())
+                .append(key="bone", value=MOLECULE_LIBRARY.bone_scatterer())
+                .append(key="water", value=MOLECULE_LIBRARY.water(water_volume_fraction)).get_settings())
 
 
 TISSUE_LIBRARY = TissueLibrary()

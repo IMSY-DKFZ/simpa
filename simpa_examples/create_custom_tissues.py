@@ -21,8 +21,8 @@
 # SOFTWARE.
 
 from simpa.utils import TissueSettingsGenerator
-from simpa.utils import CHROMOPHORE_LIBRARY
-from simpa.utils import Chromophore
+from simpa.utils import MOLECULE_LIBRARY
+from simpa.utils import Molecule
 from simpa.utils import AbsorptionSpectrum
 import numpy as np
 
@@ -37,7 +37,7 @@ def create_custom_absorber():
 
 
 def create_custom_chromophore(volume_fraction: float = 1.0):
-    chromophore = Chromophore(
+    chromophore = Molecule(
             spectrum=create_custom_absorber(),
             volume_fraction=volume_fraction,
             mus500=40.0,
@@ -59,11 +59,11 @@ def create_custom_tissue_type():
 
     # Then append chromophores that you want
     tissue_settings_generator.append(key="oxyhemoglobin", value=
-                            CHROMOPHORE_LIBRARY.oxyhemoglobin(oxy*bvf))
+                            MOLECULE_LIBRARY.oxyhemoglobin(oxy * bvf))
     tissue_settings_generator.append(key="deoxyhemoglobin", value=
-                            CHROMOPHORE_LIBRARY.deoxyhemoglobin(oxy * bvf))
+                            MOLECULE_LIBRARY.deoxyhemoglobin(oxy * bvf))
     tissue_settings_generator.append(key="water", value=
-                            CHROMOPHORE_LIBRARY.water(water_volume_fraction))
+                            MOLECULE_LIBRARY.water(water_volume_fraction))
     tissue_settings_generator.append(key="custom", value=
                             create_custom_chromophore(0.1))
 

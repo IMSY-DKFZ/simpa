@@ -20,11 +20,56 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import OpticalTissueProperties
+from simpa.utils import Tags
+from simpa.utils.tissue_properties import TissueProperties
+from simpa.utils.libraries.literature_values import OpticalTissueProperties
 from simpa.utils import AbsorptionSpectrum
 from simpa.utils import SPECTRAL_LIBRARY
+from simpa.utils.calculate import calculate_oxygenation
 
-class Chromophore(object):
+
+class MolecularComposition(list):
+
+    def __init__(self, segmentation_mask=None, settings=None):
+        super().__init__()
+        self.segmentation_mask = segmentation_mask
+        self.internal_properties = TissueProperties()
+
+        if settings is None:
+            return
+
+        _keys = settings.keys()
+        for molecule_name in _keys:
+            self.append(settings[molecule_name])
+
+    def update(self):
+        """
+        FIXME
+        """
+        self.internal_properties = TissueProperties()
+        self.internal_properties[Tags.PROPERTY_SEGMENTATION] = self.segmentation_mask
+        self.internal_properties[Tags.PROPERTY_OXYGENATION] = calculate_oxygenation(self)
+        for molecule in self:
+            self.internal_properties.volume_fraction += molecule.volume_fraction
+            self.internal_properties[Tags.PROPERTY_ANISOTROPY] += molecule.volume_fraction * molecule.anisotropy
+            self.internal_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER] += molecule.volume_fraction * molecule.gruneisen_parameter
+            self.internal_properties[Tags.PROPERTY_DENSITY] += molecule.volume_fraction * molecule.density
+            self.internal_properties[Tags.PROPERTY_SPEED_OF_SOUND] += molecule.volume_fraction * molecule.speed_of_sound
+            self.internal_properties[Tags.PROPERTY_ALPHA_COEFF] += molecule.volume_fraction * molecule.alpha_coefficient
+
+    def get_properties_for_wavelength(self, wavelength) -> TissueProperties:
+        self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = 0
+        self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = 0
+        for molecule in self:
+            self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] += (molecule.volume_fraction *
+                                                                          molecule.spectrum.get_absorption_for_wavelength(wavelength))
+            self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] += (molecule.volume_fraction * (molecule.mus500 * (molecule.f_ray *
+                                                                          (wavelength / 500) ** 1e-4 + (1 - molecule.f_ray) *
+                                                                          (wavelength / 500) ** -molecule.b_mie)))
+        return self.internal_properties
+
+
+class Molecule(object):
 
     def __init__(self, spectrum: AbsorptionSpectrum,
                  volume_fraction: float,
@@ -63,16 +108,16 @@ class Chromophore(object):
         self.anisotropy = anisotropy
 
 
-class ChromophoreLibrary(object):
+class MoleculeLibrary(object):
 
     # Main absorbers
     def water(self, volume_fraction: float = 1.0):
-        return Chromophore(spectrum=SPECTRAL_LIBRARY.WATER,
-                           volume_fraction=volume_fraction, mus500=0.0,
-                           b_mie=0.0, f_ray=0.0, anisotropy=1.0)
+        return Molecule(spectrum=SPECTRAL_LIBRARY.WATER,
+                        volume_fraction=volume_fraction, mus500=0.0,
+                        b_mie=0.0, f_ray=0.0, anisotropy=1.0)
 
     def oxyhemoglobin(self, volume_fraction: float = 1.0):
-        return Chromophore(
+        return Molecule(
             spectrum=SPECTRAL_LIBRARY.OXYHEMOGLOBIN,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_BLOOD,
@@ -82,7 +127,7 @@ class ChromophoreLibrary(object):
         )
 
     def deoxyhemoglobin(self, volume_fraction: float = 1.0):
-        return Chromophore(
+        return Molecule(
             spectrum=SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_BLOOD,
@@ -92,7 +137,7 @@ class ChromophoreLibrary(object):
         )
 
     def melanin(self, volume_fraction: float = 1.0):
-        return Chromophore(
+        return Molecule(
             spectrum=SPECTRAL_LIBRARY.MELANIN,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_EPIDERMIS,
@@ -102,7 +147,7 @@ class ChromophoreLibrary(object):
         )
 
     def fat(self, volume_fraction: float = 1.0):
-        return Chromophore(
+        return Molecule(
             spectrum=SPECTRAL_LIBRARY.FAT,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_FAT,
@@ -114,36 +159,36 @@ class ChromophoreLibrary(object):
     # Scatterers
     def constant_scatterer(self, scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
                            volume_fraction: float = 1.0):
-        return Chromophore(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-                           volume_fraction=volume_fraction, mus500=scattering_coefficient,
-                           b_mie=0.0, f_ray=0.0, anisotropy=anisotropy)
+        return Molecule(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        volume_fraction=volume_fraction, mus500=scattering_coefficient,
+                        b_mie=0.0, f_ray=0.0, anisotropy=anisotropy)
 
     def soft_tissue_scatterer(self, volume_fraction: float = 1.0):
-        return Chromophore(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-                           volume_fraction=volume_fraction,
-                           mus500=OpticalTissueProperties.MUS500_BACKGROUND_TISSUE,
-                           b_mie=OpticalTissueProperties.BMIE_BACKGROUND_TISSUE,
-                           f_ray=OpticalTissueProperties.FRAY_BACKGROUND_TISSUE,
-                           anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
+        return Molecule(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        volume_fraction=volume_fraction,
+                        mus500=OpticalTissueProperties.MUS500_BACKGROUND_TISSUE,
+                        b_mie=OpticalTissueProperties.BMIE_BACKGROUND_TISSUE,
+                        f_ray=OpticalTissueProperties.FRAY_BACKGROUND_TISSUE,
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
 
     def epidermal_scatterer(self, volume_fraction: float = 1.0):
-        return Chromophore(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-                           volume_fraction=volume_fraction,
-                           mus500=OpticalTissueProperties.MUS500_EPIDERMIS,
-                           b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
-                           f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
-                           anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
+        return Molecule(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        volume_fraction=volume_fraction,
+                        mus500=OpticalTissueProperties.MUS500_EPIDERMIS,
+                        b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
+                        f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
 
     def dermal_scatterer(self, volume_fraction: float = 1.0):
-        return Chromophore(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-                           volume_fraction=volume_fraction,
-                           mus500=OpticalTissueProperties.MUS500_DERMIS,
-                           b_mie=OpticalTissueProperties.BMIE_DERMIS,
-                           f_ray=OpticalTissueProperties.FRAY_DERMIS,
-                           anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
+        return Molecule(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        volume_fraction=volume_fraction,
+                        mus500=OpticalTissueProperties.MUS500_DERMIS,
+                        b_mie=OpticalTissueProperties.BMIE_DERMIS,
+                        f_ray=OpticalTissueProperties.FRAY_DERMIS,
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
 
     def bone_scatterer(self, volume_fraction: float = 1.0):
-        return Chromophore(
+        return Molecule(
             spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_BONE,
@@ -153,4 +198,4 @@ class ChromophoreLibrary(object):
         )
 
 
-CHROMOPHORE_LIBRARY = ChromophoreLibrary()
+MOLECULE_LIBRARY = MoleculeLibrary()

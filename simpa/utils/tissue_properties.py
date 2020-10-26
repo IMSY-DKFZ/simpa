@@ -39,7 +39,7 @@ class TissueProperties(dict):
         super().__init__()
         self.volume_fraction = 0
         for key in TissueProperties.property_tags:
-            self[key] = None
+            self[key] = 0
 
     @staticmethod
     def normalized_merge(property_list: list):

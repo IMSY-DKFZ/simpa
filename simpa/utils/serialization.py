@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from json import JSONEncoder
-from simpa.utils import AbsorptionSpectrum, Chromophore
+from simpa.utils import AbsorptionSpectrum, Molecule
 import numpy as np
 
 
@@ -34,7 +34,7 @@ class SIMPASerializer(object):
         """
 
         """
-        if isinstance(_object, Chromophore):
+        if isinstance(_object, Molecule):
             return _object.__dict__
 
         if isinstance(_object, AbsorptionSpectrum):

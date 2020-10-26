@@ -22,7 +22,7 @@
 
 import h5py
 from simpa.utils.serialization import SIMPASerializer
-from simpa.utils import AbsorptionSpectrum, Chromophore
+from simpa.utils import AbsorptionSpectrum, Molecule
 from simpa.utils.dict_path_manager import generate_dict_path
 
 
@@ -48,7 +48,7 @@ def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/")
         for key, item in data_dictionary.items():
             if not isinstance(item, (list, dict, type(None))):
 
-                if isinstance(item, Chromophore):
+                if isinstance(item, Molecule):
                     data_grabber(file, path + key + "/chromophore/", serializer.serialize(item))
                 elif isinstance(item, AbsorptionSpectrum):
                     data_grabber(file, path + key + "/absorption_spectrum/", serializer.serialize(item))

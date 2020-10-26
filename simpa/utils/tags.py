@@ -50,6 +50,7 @@ class Tags:
     VOLUME_CREATOR = ("volume_creator", str)
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
     PRIORITY = "priority"
+    MOLECULE_COMPOSITION = ("molecule_composition", list)
 
     """
     Optical model settings
@@ -160,6 +161,12 @@ class Tags:
     PROPERTY_ANISOTROPY = "g"
     PROPERTY_OXYGENATION = "oxy"
     PROPERTY_SEGMENTATION = "seg"
+    """
+    We define PROPERTY_GRUNEISEN_PARAMETER to contain all wavelength-independent constituents of the PA signal.
+    This means that it contains the percentage of absorbed light converted into heat.
+    Naturally, one could make an argument that this should not be the case, however, it simplifies the usage of 
+    this tool.
+    """
     PROPERTY_GRUNEISEN_PARAMETER = "gamma"
     PROPERTY_SPEED_OF_SOUND = "sos"
     PROPERTY_DENSITY = "density"

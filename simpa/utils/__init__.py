@@ -35,9 +35,9 @@ from simpa.utils.libraries.spectra_library import AbsorptionSpectrum
 from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 from simpa.utils.libraries.spectra_library import view_absorption_spectra
 
-from simpa.utils.libraries.chromophore_library import Chromophore
-from simpa.utils.libraries.chromophore_library import ChromophoreLibrary
-from simpa.utils.libraries.chromophore_library import CHROMOPHORE_LIBRARY
+from simpa.utils.libraries.molecule_library import Molecule
+from simpa.utils.libraries.molecule_library import MoleculeLibrary
+from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 
 from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY

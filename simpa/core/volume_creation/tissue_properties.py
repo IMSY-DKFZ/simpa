@@ -39,9 +39,7 @@ class TissueProperties(object):
         self.ensure_valid_settings(settings)
 
         self.chromophores = []
-        _keys = settings.keys()
-        for chromophore_name in _keys:
-            self.chromophores.append(settings[chromophore_name])
+
 
     @deprecated(reason="This class should not be used anymore. Use the new utils.TissueProperties class")
     def ensure_valid_settings(self, settings: dict):

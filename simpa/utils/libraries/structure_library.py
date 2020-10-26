@@ -25,6 +25,7 @@ from simpa.utils.settings_generator import Settings
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils import Tags, SegmentationClasses
 import operator
+from simpa.utils.libraries.molecule_library import MolecularComposition
 
 
 class Structures:
@@ -52,7 +53,7 @@ class Structures:
             structure_dict = settings[Tags.STRUCTURES][struc_tag_name]
             try:
                 structure_class = globals()[structure_dict[Tags.STRUCTURE_TYPE]]
-                structure = structure_class(structure_dict)
+                structure = structure_class(structure_dict[Tags.MOLECULE_COMPOSITION])
                 structures.append(structure)
                 print(structure.priority)
             except Exception as e:
@@ -70,11 +71,15 @@ class Structure:
 
     def __init__(self, settings=None):
         self.priority = 0
+        self.molecule_composition = MolecularComposition()
+
         if settings is None:
             return
 
         if Tags.PRIORITY in settings:
             self.priority = settings[Tags.PRIORITY]
+
+        self.molecule_composition = MolecularComposition(settings=settings)
 
     @abstractmethod
     def properties_for_voxel(self, x_idx_px, y_idx_px, z_idx_px, wavelength) -> TissueProperties:
@@ -88,6 +93,7 @@ class Structure:
         """
         settings_dict = dict()
         settings_dict[Tags.STRUCTURE_TYPE] = self.__class__.__name__
+        settings_dict[Tags.MOLECULE_COMPOSITION] = self.molecule_composition
         return settings_dict
 
 
