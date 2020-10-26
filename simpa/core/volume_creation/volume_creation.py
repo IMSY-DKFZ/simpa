@@ -21,7 +21,8 @@
 # SOFTWARE.
 
 from simpa.utils.settings_generator import Settings
-from simpa.utils import Tags
+from simpa.utils import Tags, SaveFilePaths
+from simpa.io_handling import save_hdf5
 from simpa.core.volume_creation.versatile_volume_creator import VersatileVolumeCreator
 
 
@@ -37,4 +38,10 @@ def run_volume_creation(settings: Settings):
     if model == Tags.VOLUME_CREATOR_VERSATILE:
         volume_creator_adapter = VersatileVolumeCreator()
 
-    return volume_creator_adapter.create_simulation_volume(settings)
+    volumes = volume_creator_adapter.create_simulation_volume(settings)
+
+    volume_path = SaveFilePaths.SIMULATION_PROPERTIES \
+        .format(Tags.ORIGINAL_DATA, str(settings[Tags.WAVELENGTH]))
+    save_hdf5(volumes, settings[Tags.SIMPA_OUTPUT_PATH], file_dictionary_path=volume_path)
+
+    return volume_path

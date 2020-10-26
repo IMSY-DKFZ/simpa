@@ -23,7 +23,7 @@
 from abc import abstractmethod
 from simpa.utils.settings_generator import Settings
 from simpa.utils import MorphologicalTissueProperties, Tags, TISSUE_LIBRARY, SegmentationClasses
-from simpa.utils.tissueproperties import TissueProperties
+from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
 
 
@@ -41,13 +41,13 @@ class VolumeCreatorBase:
         volume_z_dim = int(round(global_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing))
         sizes = (volume_x_dim, volume_y_dim, volume_z_dim)
 
-        for key in TissueProperties.keys:
+        for key in TissueProperties.property_tags:
             volumes[key] = np.zeros(sizes)
 
         return volumes, volume_x_dim, volume_y_dim, volume_z_dim
 
     @abstractmethod
-    def create_simulation_volume(self, settings: Settings) -> np.ndarray:
+    def create_simulation_volume(self, settings: Settings) -> dict:
         """
         This method will be called to create a simulation volume.
         @param settings:

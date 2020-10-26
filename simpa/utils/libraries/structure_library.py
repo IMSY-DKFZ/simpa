@@ -22,8 +22,9 @@
 
 from abc import abstractmethod
 from simpa.utils.settings_generator import Settings
-from simpa.utils.tissueproperties import TissueProperties
-from simpa.utils import Tags
+from simpa.utils.tissue_properties import TissueProperties
+from simpa.utils import Tags, SegmentationClasses
+import operator
 
 
 class Structures:
@@ -36,21 +37,23 @@ class Structures:
         """
         # TODO get all structures from dictionary
         self.structures = self.from_settings(settings)
+        print(self.structures)
 
         # TODO sort the structures by priority
-        self.sorted_structures = None
+        self.sorted_structures = sorted(self.structures, key=operator.attrgetter('priority'))
+        print(self.sorted_structures)
 
     def from_settings(self, settings):
         structures = list()
         if not Tags.STRUCTURES in settings:
             print("Did not find any structure definitions in the settings file!")
             return structures
-        for struc_tag_names in settings[Tags.STRUCTURES]:
-            print("Trying to add structure under name struc_tag_names")
-            structure = settings[Tags.STRUCTURES][struc_tag_names]
+        for struc_tag_name in settings[Tags.STRUCTURES]:
+            structure_dict = settings[Tags.STRUCTURES][struc_tag_name]
             try:
-                structure_class = globals()[structure[Tags.STRUCTURE_TYPE]]
-                structure = structure_class(structure)
+                structure_class = globals()[structure_dict[Tags.STRUCTURE_TYPE]]
+                structure = structure_class(structure_dict)
+                structures.append(structure)
                 print(structure.priority)
             except Exception as e:
                 print("An exception has occurred while trying to parse the structure from the dictionary.")
@@ -64,11 +67,54 @@ class Structure:
     """
     TODO
     """
-    def __init__(self, settings):
-        self.priority = priority
+
+    def __init__(self, settings=None):
+        self.priority = 0
+        if settings is None:
+            return
+
+        if Tags.PRIORITY in settings:
+            self.priority = settings[Tags.PRIORITY]
 
     @abstractmethod
-    def properties_for_voxel(self, x_idx_px, y_idx_px, z_idx_px) -> TissueProperties:
+    def properties_for_voxel(self, x_idx_px, y_idx_px, z_idx_px, wavelength) -> TissueProperties:
         pass
 
+    @abstractmethod
+    def to_settings(self) -> dict:
+        """
+        TODO
+        :return : A tuple containing the settings key and the needed entries
+        """
+        settings_dict = dict()
+        settings_dict[Tags.STRUCTURE_TYPE] = self.__class__.__name__
+        return settings_dict
 
+
+class Background(Structure):
+
+    def __init__(self, settings=None):
+        super().__init__(settings)
+
+        if settings is None:
+            return
+
+    def properties_for_voxel(self, x_idx_px, y_idx_px, z_idx_px, wavelength) -> TissueProperties:
+        background_properties = TissueProperties()
+        background_properties.volume_fraction = 1
+        background_properties[Tags.PROPERTY_DENSITY] = 1000
+        background_properties[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+        background_properties[Tags.PROPERTY_OXYGENATION] = 0.5
+        background_properties[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.GENERIC
+        background_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = 0.1
+        background_properties[Tags.PROPERTY_SCATTERING_PER_CM] = 100
+        background_properties[Tags.PROPERTY_ANISOTROPY] = 0.9
+        background_properties[Tags.PROPERTY_ALPHA_COEFF] = 1
+        background_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER] = 1
+        return background_properties
+
+    def to_settings(self) -> dict:
+        settings_dict = super().to_settings()
+        settings_dict[Tags.PRIORITY] = 5
+        print(settings_dict)
+        return settings_dict

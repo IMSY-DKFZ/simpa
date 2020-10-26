@@ -19,13 +19,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from deprecated import deprecated
 
 
+@deprecated(reason="This class should not be used anymore. Use the new utils.TissueProperties class")
 class TissueProperties(object):
     """
 
+    TODO FIXME DELETEME
     """
 
+    @deprecated(reason="This class should not be used anymore. Use the new utils.TissueProperties class")
     def __init__(self, settings: dict):
         """
         :param settings:
@@ -39,6 +43,7 @@ class TissueProperties(object):
         for chromophore_name in _keys:
             self.chromophores.append(settings[chromophore_name])
 
+    @deprecated(reason="This class should not be used anymore. Use the new utils.TissueProperties class")
     def ensure_valid_settings(self, settings: dict):
         """
         :param settings: a dictionary containing at least one key - value pair of a string and a
@@ -54,6 +59,7 @@ class TissueProperties(object):
         if len(settings.keys()) < 1:
             raise ValueError("The settings dictionary must at least contain one entry.")
 
+    @deprecated(reason="This class should not be used anymore. Use the new utils.TissueProperties class")
     def get(self, wavelength):
         """
         TODO

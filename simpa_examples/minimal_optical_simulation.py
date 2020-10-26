@@ -23,9 +23,7 @@
 from simpa.utils import Tags
 
 from simpa.core.simulation import simulate
-from simpa.core.volume_creation import create_epidermis_layer
-from simpa.core.volume_creation import create_muscle_background
-from simpa.core.volume_creation import create_vessel_tube
+from simpa.utils.libraries.structure_library import Background
 from simpa.utils.settings_generator import Settings
 
 import numpy as np
@@ -36,7 +34,7 @@ MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
 
 VOLUME_WIDTH_IN_MM = 40
 VOLUME_HEIGHT_IN_MM = 10
-SPACING = 0.25
+SPACING = 1
 RANDOM_SEED = 4711
 
 
@@ -46,12 +44,9 @@ def create_example_tissue():
     It contains a muscular background, an epidermis layer on top of the muscles
     and a blood vessel.
     """
+    bg = Background()
     tissue_dict = dict()
-    tissue_dict["background"] = create_muscle_background()
-    tissue_dict["epidermis"] = create_epidermis_layer()
-    tissue_dict["vessel"] = create_vessel_tube(x_min=0, x_max=VOLUME_WIDTH_IN_MM,
-                                               z_min=0, z_max=VOLUME_HEIGHT_IN_MM,
-                                               r_min=1, r_max=3)
+    tissue_dict["background"] = bg.to_settings()
     return tissue_dict
 
 # Seed the numpy random configuration prior to creating the settings file in
@@ -76,7 +71,7 @@ settings = {
 
     # The following parameters set the optical forward model
     Tags.RUN_OPTICAL_MODEL: True,
-    Tags.WAVELENGTHS: np.arange(700, 951, 100),
+    Tags.WAVELENGTHS: [800],
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,

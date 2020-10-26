@@ -22,7 +22,7 @@
 
 from simpa.core.volume_creation import VolumeCreatorBase
 from simpa.utils.libraries.structure_library import Structures
-from simpa.utils.tissueproperties import TissueProperties
+from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
 
 
@@ -31,7 +31,7 @@ class VersatileVolumeCreator(VolumeCreatorBase):
     def __init__(self):
         self.EPS = 1e-4
 
-    def create_simulation_volume(self, settings):
+    def create_simulation_volume(self, settings) -> dict:
         """
         This method creates a in silico respresentation of a tissue as described in the settings file that is given.
         :param settings: a dictionary containing all relevant Tags for the simulation to be able to instantiate a tissue.
@@ -41,15 +41,17 @@ class VersatileVolumeCreator(VolumeCreatorBase):
         """
 
         volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes(settings)
+        wavelength = 800
 
         structure_list = Structures(settings)
 
         for z_idx_px in range(z_dim_px):
+            print(z_idx_px)
             for y_idx_px in range(y_dim_px):
                 for x_idx_px in range(x_dim_px):
-                    properties = [structure.properties_for_voxel(x_idx_px, y_idx_px, z_idx_px).weight
-                                  for structure in structure_list.sorted_structures]
-                    priorities = [structure.priority for structure in structure_list.sorted_structures]
+                    properties = np.asarray([structure.properties_for_voxel(x_idx_px, y_idx_px, z_idx_px, wavelength)
+                                  for structure in structure_list.sorted_structures])
+                    priorities = np.asarray([structure.priority for structure in structure_list.sorted_structures])
                     merged_property = self.merge_structures(properties, priorities, max(priorities))
                     modify_volumes(volumes, merged_property, x_idx_px, y_idx_px, z_idx_px)
 
@@ -69,7 +71,7 @@ class VersatileVolumeCreator(VolumeCreatorBase):
 
         prio_properties = properties[priorities >= min_priority]
         prio_priorities = priorities[priorities >= min_priority]
-        weights = [prop.weight for prop in properties]
+        weights = [prop.weight for prop in prio_properties]
 
         if np.sum(weights) < 1:
             # If the sum is smaller than one, check if there are more low priority structures!
@@ -82,15 +84,15 @@ class VersatileVolumeCreator(VolumeCreatorBase):
             return merge_properties(prio_properties, prio_priorities, False)
 
 
-def merge_properties(properties, priorities, force_unweighted_merge):
+def merge_properties(properties, priorities, force_unnormalised_merge):
     """
     #TODO
     :param properties:
     :param priorities:
-    :param force_unweighted_merge:
+    :param force_unnormalised_merge:
     """
 
-    if force_unweighted_merge:
+    if force_unnormalised_merge:
         return TissueProperties.weighted_merge(properties)
     else:
         if min(priorities) < max(priorities):
@@ -98,6 +100,7 @@ def merge_properties(properties, priorities, force_unweighted_merge):
             low_prio_properties = properties[priorities == min(priorities)]
             high_prio_weights = [prop.weight for prop in high_prio_properties]
             weight_sum = np.sum(high_prio_weights)
+            #TODO Error if weight_sum > 1
             high_prio_property = TissueProperties.weighted_merge(high_prio_properties)
             low_prio_property = TissueProperties.weighted_merge(low_prio_properties)
             high_prio_property["weight"] = weight_sum
@@ -116,5 +119,6 @@ def modify_volumes(volumes, merged_property, x_idx_px, y_idx_px, z_idx_px):
     :param y_idx_px:
     :param z_idx_px:
     """
-    for key in merged_property.keys():
+    keys = merged_property.keys()
+    for key in keys:
         volumes[key][x_idx_px, y_idx_px, z_idx_px] = merged_property[key]

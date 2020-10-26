@@ -25,33 +25,34 @@ from simpa.utils import Tags
 
 class TissueProperties(dict):
 
-    keys = [Tags.PROPERTY_ABSORPTION_PER_CM,
-            Tags.PROPERTY_SCATTERING_PER_CM,
-            Tags.PROPERTY_ANISOTROPY,
-            Tags.PROPERTY_SEGMENTATION,
-            Tags.PROPERTY_OXYGENATION,
-            Tags.PROPERTY_DENSITY,
-            Tags.PROPERTY_SPEED_OF_SOUND,
-            Tags.PROPERTY_ALPHA_COEFF]
+    property_tags = [Tags.PROPERTY_ABSORPTION_PER_CM,
+                     Tags.PROPERTY_SCATTERING_PER_CM,
+                     Tags.PROPERTY_ANISOTROPY,
+                     Tags.PROPERTY_GRUNEISEN_PARAMETER,
+                     Tags.PROPERTY_SEGMENTATION,
+                     Tags.PROPERTY_OXYGENATION,
+                     Tags.PROPERTY_DENSITY,
+                     Tags.PROPERTY_SPEED_OF_SOUND,
+                     Tags.PROPERTY_ALPHA_COEFF]
 
     def __init__(self):
         super().__init__()
-        self.weight = None
-        for key in TissueProperties.keys:
+        self.volume_fraction = 0
+        for key in TissueProperties.property_tags:
             self[key] = None
 
     @staticmethod
     def normalized_merge(property_list: list):
         return_property = TissueProperties.weighted_merge(property_list)
-        for key in return_property.keys:
-            return_property[key] = return_property[key] / return_property.weight
+        for key in return_property.property_tags:
+            return_property[key] = return_property[key] / return_property.volume_fraction
         return return_property
 
     @staticmethod
     def weighted_merge(property_list: list):
         return_property = TissueProperties()
         for target_property in property_list:
-            for key in return_property.keys:
+            for key in return_property.property_tags:
                 return_property[key] = target_property.weight * target_property[key]
-            return_property.weight += target_property.weight
+            return_property.volume_fraction += target_property.weight
         return return_property

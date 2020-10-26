@@ -49,6 +49,7 @@ class Tags:
     """
     VOLUME_CREATOR = ("volume_creator", str)
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
+    PRIORITY = "priority"
 
     """
     Optical model settings
@@ -251,7 +252,7 @@ class Tags:
     KEY_ANISOTROPY = "anisotropy"
 
     # Structures
-    STRUCTURES = "structures"
+    STRUCTURES = ("structures", dict)
     CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = "structure_type"
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"
@@ -287,7 +288,7 @@ class Tags:
     IO settings
     """
 
-    SIMPA_OUTPUT_PATH = "simpa_output_path"
+    SIMPA_OUTPUT_PATH = ("simpa_output_path", str)
     SIMPA_OUTPUT_NAME = "simpa_output.hdf5"
     SETTINGS_JSON = "settings_json"
     SETTINGS_JSON_PATH = "settings_json_path"

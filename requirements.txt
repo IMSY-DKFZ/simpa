@@ -10,3 +10,4 @@ sphinx
 rst2pdf
 m2r
 coverage
+deprecated
