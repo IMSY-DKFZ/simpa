@@ -26,6 +26,7 @@ from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils import Tags, SegmentationClasses
 import operator
 from simpa.utils.libraries.molecule_library import MolecularComposition
+import traceback
 
 
 class Structures:
@@ -36,29 +37,26 @@ class Structures:
         """
         TODO
         """
-        # TODO get all structures from dictionary
         self.structures = self.from_settings(settings)
-        print(self.structures)
 
-        # TODO sort the structures by priority
         self.sorted_structures = sorted(self.structures, key=operator.attrgetter('priority'))
-        print(self.sorted_structures)
 
     def from_settings(self, settings):
         structures = list()
         if not Tags.STRUCTURES in settings:
             print("Did not find any structure definitions in the settings file!")
             return structures
-        for struc_tag_name in settings[Tags.STRUCTURES]:
-            structure_dict = settings[Tags.STRUCTURES][struc_tag_name]
+        structure_settings = settings[Tags.STRUCTURES]
+        for struc_tag_name in structure_settings:
+            single_structure_settings = structure_settings[struc_tag_name]
             try:
-                structure_class = globals()[structure_dict[Tags.STRUCTURE_TYPE]]
-                structure = structure_class(structure_dict[Tags.MOLECULE_COMPOSITION])
+                structure_class = globals()[single_structure_settings[Tags.STRUCTURE_TYPE]]
+                structure = structure_class(single_structure_settings)
                 structures.append(structure)
-                print(structure.priority)
             except Exception as e:
                 print("An exception has occurred while trying to parse the structure from the dictionary.")
-                print(e)
+                print("The structure type was", single_structure_settings[Tags.STRUCTURE_TYPE])
+                print(traceback.format_exc())
                 print("trying to continue as normal...")
 
         return structures
@@ -69,20 +67,27 @@ class Structure:
     TODO
     """
 
-    def __init__(self, settings=None):
-        self.priority = 0
-        self.molecule_composition = MolecularComposition()
+    def __init__(self, single_structure_settings=None):
 
-        if settings is None:
+        if single_structure_settings is None:
+            self.molecule_composition = MolecularComposition()
+            self.priority = 0
             return
 
-        if Tags.PRIORITY in settings:
-            self.priority = settings[Tags.PRIORITY]
+        if Tags.PRIORITY in single_structure_settings:
+            self.priority = single_structure_settings[Tags.PRIORITY]
 
-        self.molecule_composition = MolecularComposition(settings=settings)
+        self.molecule_composition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
+        self.molecule_composition.update_internal_properties()
+
+    def properties_for_voxel_and_wavelength(self, x_idx_px, y_idx_px, z_idx_px, wavelength) -> TissueProperties:
+        tp = self.molecule_composition.get_properties_for_wavelength(wavelength)
+        volume_fraction = self.volume_fraction_for_voxel(x_idx_px, y_idx_px, z_idx_px)
+        tp.volume_fraction = volume_fraction
+        return tp
 
     @abstractmethod
-    def properties_for_voxel(self, x_idx_px, y_idx_px, z_idx_px, wavelength) -> TissueProperties:
+    def volume_fraction_for_voxel(self, x_idx_px, y_idx_px, z_idx_px) -> float:
         pass
 
     @abstractmethod
@@ -92,6 +97,7 @@ class Structure:
         :return : A tuple containing the settings key and the needed entries
         """
         settings_dict = dict()
+        settings_dict[Tags.PRIORITY] = self.priority
         settings_dict[Tags.STRUCTURE_TYPE] = self.__class__.__name__
         settings_dict[Tags.MOLECULE_COMPOSITION] = self.molecule_composition
         return settings_dict
@@ -99,28 +105,17 @@ class Structure:
 
 class Background(Structure):
 
-    def __init__(self, settings=None):
-        super().__init__(settings)
+    def __init__(self, background_settings=None):
 
-        if settings is None:
-            return
+        if background_settings is None:
+            super().__init__()
 
-    def properties_for_voxel(self, x_idx_px, y_idx_px, z_idx_px, wavelength) -> TissueProperties:
-        background_properties = TissueProperties()
-        background_properties.volume_fraction = 1
-        background_properties[Tags.PROPERTY_DENSITY] = 1000
-        background_properties[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
-        background_properties[Tags.PROPERTY_OXYGENATION] = 0.5
-        background_properties[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.GENERIC
-        background_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = 0.1
-        background_properties[Tags.PROPERTY_SCATTERING_PER_CM] = 100
-        background_properties[Tags.PROPERTY_ANISOTROPY] = 0.9
-        background_properties[Tags.PROPERTY_ALPHA_COEFF] = 1
-        background_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER] = 1
-        return background_properties
+        background_settings[Tags.PRIORITY] = 0
+        super().__init__(background_settings)
+
+    def volume_fraction_for_voxel(self, x_idx_px, y_idx_px, z_idx_px) -> float:
+        return 1.0
 
     def to_settings(self) -> dict:
         settings_dict = super().to_settings()
-        settings_dict[Tags.PRIORITY] = 5
-        print(settings_dict)
         return settings_dict

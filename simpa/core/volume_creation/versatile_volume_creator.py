@@ -49,9 +49,13 @@ class VersatileVolumeCreator(VolumeCreatorBase):
             print(z_idx_px)
             for y_idx_px in range(y_dim_px):
                 for x_idx_px in range(x_dim_px):
-                    properties = np.asarray([structure.properties_for_voxel(x_idx_px, y_idx_px, z_idx_px, wavelength)
-                                  for structure in structure_list.sorted_structures])
+                    properties = np.asarray([structure.properties_for_voxel_and_wavelength(x_idx_px, y_idx_px,
+                                                                                           z_idx_px, wavelength)
+                                             for structure in structure_list.sorted_structures])
                     priorities = np.asarray([structure.priority for structure in structure_list.sorted_structures])
+                    # TODO
+                    # priorities = priorities[properties is not None]
+                    # properties = properties[properties is not None]
                     merged_property = self.merge_structures(properties, priorities, max(priorities))
                     modify_volumes(volumes, merged_property, x_idx_px, y_idx_px, z_idx_px)
 
@@ -71,7 +75,7 @@ class VersatileVolumeCreator(VolumeCreatorBase):
 
         prio_properties = properties[priorities >= min_priority]
         prio_priorities = priorities[priorities >= min_priority]
-        weights = [prop.weight for prop in prio_properties]
+        weights = [prop.volume_fraction for prop in prio_properties]
 
         if np.sum(weights) < 1:
             # If the sum is smaller than one, check if there are more low priority structures!
@@ -98,7 +102,7 @@ def merge_properties(properties, priorities, force_unnormalised_merge):
         if min(priorities) < max(priorities):
             high_prio_properties = properties[priorities > min(priorities)]
             low_prio_properties = properties[priorities == min(priorities)]
-            high_prio_weights = [prop.weight for prop in high_prio_properties]
+            high_prio_weights = [prop.volume_fraction for prop in high_prio_properties]
             weight_sum = np.sum(high_prio_weights)
             #TODO Error if weight_sum > 1
             high_prio_property = TissueProperties.weighted_merge(high_prio_properties)

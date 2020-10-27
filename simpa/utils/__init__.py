@@ -41,7 +41,7 @@ from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 
 from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-from simpa.utils.libraries.tissue_library import TissueSettingsGenerator
+from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
 
 from simpa.utils.calculate import calculate_oxygenation
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature

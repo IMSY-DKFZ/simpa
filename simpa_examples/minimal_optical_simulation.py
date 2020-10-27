@@ -44,8 +44,10 @@ def create_example_tissue():
     It contains a muscular background, an epidermis layer on top of the muscles
     and a blood vessel.
     """
+    single_structure_dictionary = dict()
+    single_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+    bg = Background(single_structure_dictionary)
 
-    bg = Background(TISSUE_LIBRARY.muscle())
     tissue_dict = dict()
     tissue_dict["background"] = bg.to_settings()
     return tissue_dict
@@ -91,7 +93,6 @@ settings = {
 }
 settings = Settings(settings)
 settings[Tags.STRUCTURES] = create_example_tissue()
-print(settings[Tags.STRUCTURES])
 print("Simulating ", RANDOM_SEED)
 simulate(settings)
 # TODO settings[Tags.SIMPA_OUTPUT_PATH]

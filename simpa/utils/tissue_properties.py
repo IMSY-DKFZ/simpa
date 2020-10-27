@@ -53,6 +53,6 @@ class TissueProperties(dict):
         return_property = TissueProperties()
         for target_property in property_list:
             for key in return_property.property_tags:
-                return_property[key] = target_property.weight * target_property[key]
-            return_property.volume_fraction += target_property.weight
+                return_property[key] = target_property.volume_fraction * target_property[key]
+            return_property.volume_fraction += target_property.volume_fraction
         return return_property

@@ -26,19 +26,20 @@ from scipy.ndimage import gaussian_filter
 from scipy.interpolate import interp1d
 
 
-def calculate_oxygenation(tissue_properties):
+def calculate_oxygenation(molecule_list):
     """
     :return: an oxygenation value between 0 and 1 if possible, or None, if not computable.
     """
-
+    print("Molecule list", molecule_list)
+    print("Type", type(molecule_list))
     hb = None
     hbO2 = None
 
-    for chromophore in tissue_properties.chromophores:
-        if chromophore.spectrum.spectrum_name == SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN.spectrum_name:
-            hb = chromophore.volume_fraction
-        if chromophore.spectrum.spectrum_name == SPECTRAL_LIBRARY.OXYHEMOGLOBIN.spectrum_name:
-            hbO2 = chromophore.volume_fraction
+    for molecule in molecule_list:
+        if molecule.spectrum.spectrum_name == SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN.spectrum_name:
+            hb = molecule.volume_fraction
+        if molecule.spectrum.spectrum_name == SPECTRAL_LIBRARY.OXYHEMOGLOBIN.spectrum_name:
+            hbO2 = molecule.volume_fraction
 
     if hb is None and hbO2 is None:
         return None

@@ -30,24 +30,24 @@ from simpa.utils.calculate import calculate_oxygenation
 
 class MolecularComposition(list):
 
-    def __init__(self, segmentation_mask=None, settings=None):
+    def __init__(self, segmentation_type=None, molecular_composition_settings=None):
         super().__init__()
-        self.segmentation_mask = segmentation_mask
+        self.segmentation_type = segmentation_type
         self.internal_properties = TissueProperties()
 
-        if settings is None:
+        if molecular_composition_settings is None:
             return
 
-        _keys = settings.keys()
+        _keys = molecular_composition_settings.keys()
         for molecule_name in _keys:
-            self.append(settings[molecule_name])
+            self.append(molecular_composition_settings[molecule_name])
 
-    def update(self):
+    def update_internal_properties(self):
         """
         FIXME
         """
         self.internal_properties = TissueProperties()
-        self.internal_properties[Tags.PROPERTY_SEGMENTATION] = self.segmentation_mask
+        self.internal_properties[Tags.PROPERTY_SEGMENTATION] = self.segmentation_type
         self.internal_properties[Tags.PROPERTY_OXYGENATION] = calculate_oxygenation(self)
         for molecule in self:
             self.internal_properties.volume_fraction += molecule.volume_fraction
@@ -71,10 +71,12 @@ class MolecularComposition(list):
 
 class Molecule(object):
 
-    def __init__(self, spectrum: AbsorptionSpectrum,
-                 volume_fraction: float,
-                 mus500: float, f_ray: float, b_mie: float,
-                 anisotropy: float):
+    def __init__(self, spectrum: AbsorptionSpectrum = None,
+                 volume_fraction: float = None,
+                 mus500: float = None, f_ray: float = None, b_mie: float = None,
+                 anisotropy: float = None, gruneisen_parameter: float = None,
+                 density: float = None, speed_of_sound: float = None,
+                 alpha_coefficient: float = None):
         """
         :param spectrum: AbsorptionSpectrum
         :param volume_fraction: float
@@ -83,29 +85,65 @@ class Molecule(object):
         :param b_mie: float
         :param anisotropy: float
         """
+        if spectrum is None:
+            spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
         if not isinstance(spectrum, AbsorptionSpectrum):
             raise TypeError("The given spectrum was not of type AbsorptionSpectrum!")
         self.spectrum = spectrum
 
+        if volume_fraction is None:
+            volume_fraction = 0.0
         if not isinstance(volume_fraction, float):
             raise TypeError("The given volume_fraction was not of type float!")
         self.volume_fraction = volume_fraction
 
+        if mus500 is None:
+            mus500 = 1e-20
         if not isinstance(mus500, float):
             raise TypeError("The given mus500 was not of type float!")
         self.mus500 = mus500
 
+        if f_ray is None:
+            f_ray = 0.0
         if not isinstance(f_ray, float):
             raise TypeError("The given f_ray was not of type float!")
         self.f_ray = f_ray
 
+        if b_mie is None:
+            b_mie = 0.0
         if not isinstance(b_mie, float):
             raise TypeError("The given b_mie was not of type float!")
         self.b_mie = b_mie
 
+        if anisotropy is None:
+            anisotropy = 0.0
         if not isinstance(anisotropy, float):
             raise TypeError("The given anisotropy was not of type float!")
         self.anisotropy = anisotropy
+
+        if gruneisen_parameter is None:
+            gruneisen_parameter = 1.0
+        if not isinstance(gruneisen_parameter, float):
+            raise TypeError("The given gruneisen_parameter was not of type float!")
+        self.gruneisen_parameter = gruneisen_parameter
+
+        if density is None:
+            density = 0.0
+        if not isinstance(density, float):
+            raise TypeError("The given density was not of type float!")
+        self.density = density
+
+        if speed_of_sound is None:
+            speed_of_sound = 0.0
+        if not isinstance(speed_of_sound, float):
+            raise TypeError("The given speed_of_sound was not of type float!")
+        self.speed_of_sound = speed_of_sound
+
+        if alpha_coefficient is None:
+            alpha_coefficient = 0.0
+        if not isinstance(alpha_coefficient, float):
+            raise TypeError("The given alpha_coefficient was not of type float!")
+        self.alpha_coefficient = alpha_coefficient
 
 
 class MoleculeLibrary(object):

@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import TissueSettingsGenerator
+from simpa.utils import MolecularCompositionGenerator
 from simpa.utils import MOLECULE_LIBRARY
 from simpa.utils import Molecule
 from simpa.utils import AbsorptionSpectrum
@@ -51,7 +51,7 @@ def create_custom_chromophore(volume_fraction: float = 1.0):
 def create_custom_tissue_type():
 
     # First create an instance of a TissueSettingsGenerator
-    tissue_settings_generator = TissueSettingsGenerator()
+    tissue_settings_generator = MolecularCompositionGenerator()
 
     water_volume_fraction = 0.4
     bvf = 0.5

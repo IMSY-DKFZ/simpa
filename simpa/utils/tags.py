@@ -50,7 +50,7 @@ class Tags:
     VOLUME_CREATOR = ("volume_creator", str)
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
     PRIORITY = "priority"
-    MOLECULE_COMPOSITION = ("molecule_composition", list)
+    MOLECULE_COMPOSITION = "molecule_composition"
 
     """
     Optical model settings
