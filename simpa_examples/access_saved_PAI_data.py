@@ -26,7 +26,7 @@ import numpy as np
 from simpa.utils import SaveFilePaths
 
 PATH = "D:/bin/MyVolumeName_4711/simpa_output.hdf5"
-WAVELENGTH = 800  # currently only 800 and 900 are simulated as well
+WAVELENGTH = 800
 
 file = load_hdf5(PATH)
 

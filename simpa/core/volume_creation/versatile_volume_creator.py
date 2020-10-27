@@ -53,10 +53,13 @@ class VersatileVolumeCreator(VolumeCreatorBase):
                                                                                            z_idx_px, wavelength)
                                              for structure in structure_list.sorted_structures])
                     priorities = np.asarray([structure.priority for structure in structure_list.sorted_structures])
-                    # TODO
-                    # priorities = priorities[properties is not None]
-                    # properties = properties[properties is not None]
-                    merged_property = self.merge_structures(properties, priorities, max(priorities))
+
+                    priorities = priorities[properties != np.array(None)]
+                    properties = properties[properties != np.array(None)]
+                    if len(properties) > 1:
+                        merged_property = self.merge_structures(properties, priorities, max(priorities))
+                    else:
+                        merged_property = properties[0]
                     modify_volumes(volumes, merged_property, x_idx_px, y_idx_px, z_idx_px)
 
         return volumes

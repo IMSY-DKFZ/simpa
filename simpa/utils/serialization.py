@@ -22,6 +22,7 @@
 
 from json import JSONEncoder
 from simpa.utils import AbsorptionSpectrum, Molecule
+from scipy.interpolate import interp1d
 import numpy as np
 
 
@@ -40,7 +41,7 @@ class SIMPASerializer(object):
         if isinstance(_object, AbsorptionSpectrum):
             return _object.__dict__
 
-        return None
+        return _object
 
 
 class SIMPAJSONSerializer(JSONEncoder):

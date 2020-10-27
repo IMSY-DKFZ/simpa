@@ -38,7 +38,6 @@ class Structures:
         TODO
         """
         self.structures = self.from_settings(settings)
-
         self.sorted_structures = sorted(self.structures, key=operator.attrgetter('priority'))
 
     def from_settings(self, settings):

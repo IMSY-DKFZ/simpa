@@ -57,6 +57,8 @@ class MolecularComposition(list):
             self.internal_properties[Tags.PROPERTY_SPEED_OF_SOUND] += molecule.volume_fraction * molecule.speed_of_sound
             self.internal_properties[Tags.PROPERTY_ALPHA_COEFF] += molecule.volume_fraction * molecule.alpha_coefficient
 
+        self.internal_properties[Tags.PROPERTY_ANISOTROPY] /= self.internal_properties.volume_fraction
+
     def get_properties_for_wavelength(self, wavelength) -> TissueProperties:
         self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = 0
         self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = 0

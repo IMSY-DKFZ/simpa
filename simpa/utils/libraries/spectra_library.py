@@ -22,6 +22,7 @@
 
 import numpy as np
 import matplotlib.pylab as plt
+from scipy.interpolate import interp1d
 
 
 class AbsorptionSpectrum(object):
@@ -37,11 +38,16 @@ class AbsorptionSpectrum(object):
         """
         self.spectrum_name = spectrum_name
         self.wavelengths = wavelengths
+        self.max_wavelength = int(np.max(wavelengths))
+        self.min_wavelength = int(np.min(wavelengths))
         self.absorption_per_centimeter = absorption_per_centimeter
 
         if np.shape(wavelengths) != np.shape(absorption_per_centimeter):
             raise ValueError("The shape of the wavelengths and the absorption coefficients did not match: " +
                              str(np.shape(wavelengths)) + " vs " + str(np.shape(absorption_per_centimeter)))
+
+        self.new_wavelengths = np.arange(self.min_wavelength, self.max_wavelength+1, 1)
+        self.new_absorptions = np.interp(self.new_wavelengths, self.wavelengths, self.absorption_per_centimeter)
 
     def get_absorption_over_wavelength(self):
         """
@@ -49,18 +55,18 @@ class AbsorptionSpectrum(object):
         """
         return np.asarray([self.wavelengths, self.absorption_per_centimeter])
 
-    def get_absorption_for_wavelength(self, wavelength: float) -> float:
+    def get_absorption_for_wavelength(self, wavelength: int) -> float:
         """
         :param wavelength: the wavelength to retrieve a optical absorption value for [cm^{-1}].
+                           Must be an integer value between the minimum and maximum wavelength.
         :return: the best matching linearly interpolated absorption value for the given wavelength.
         """
-        # TODO: behavior outside of the available wavelength range?
-        if wavelength > max(self.wavelengths):
+        if wavelength > self.max_wavelength:
             raise ValueError("Given wavelength is larger than the maximum available wavelength")
-        if wavelength < min(self.wavelengths):
+        if wavelength < self.min_wavelength:
             raise ValueError("Given wavelength is smaller than the minimum available wavelength")
 
-        return np.interp(wavelength, self.wavelengths, self.absorption_per_centimeter)
+        return self.new_absorptions[wavelength-self.min_wavelength]
 
 
 class AbsorptionSpectrumLibrary(object):

@@ -30,8 +30,6 @@ def calculate_oxygenation(molecule_list):
     """
     :return: an oxygenation value between 0 and 1 if possible, or None, if not computable.
     """
-    print("Molecule list", molecule_list)
-    print("Type", type(molecule_list))
     hb = None
     hbO2 = None
 
