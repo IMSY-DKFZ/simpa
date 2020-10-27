@@ -61,10 +61,10 @@ class AbsorptionSpectrum(object):
                            Must be an integer value between the minimum and maximum wavelength.
         :return: the best matching linearly interpolated absorption value for the given wavelength.
         """
-        if wavelength > self.max_wavelength:
-            raise ValueError("Given wavelength is larger than the maximum available wavelength")
-        if wavelength < self.min_wavelength:
-            raise ValueError("Given wavelength is smaller than the minimum available wavelength")
+        # if wavelength > self.max_wavelength:
+        #     raise ValueError("Given wavelength is larger than the maximum available wavelength")
+        # if wavelength < self.min_wavelength:
+        #     raise ValueError("Given wavelength is smaller than the minimum available wavelength")
 
         return self.new_absorptions[wavelength-self.min_wavelength]
 

@@ -44,18 +44,17 @@ class VersatileVolumeCreator(VolumeCreatorBase):
         wavelength = 800
 
         structure_list = Structures(settings)
-
+        properties = np.empty((len(structure_list.sorted_structures)), dtype=TissueProperties)
+        priorities = np.fromiter([structure.priority for structure in structure_list.sorted_structures], int)
         for z_idx_px in range(z_dim_px):
             print(z_idx_px)
             for y_idx_px in range(y_dim_px):
                 for x_idx_px in range(x_dim_px):
-                    properties = np.asarray([structure.properties_for_voxel_and_wavelength(x_idx_px, y_idx_px,
-                                                                                           z_idx_px, wavelength)
-                                             for structure in structure_list.sorted_structures])
-                    priorities = np.asarray([structure.priority for structure in structure_list.sorted_structures])
-
-                    priorities = priorities[properties != np.array(None)]
-                    properties = properties[properties != np.array(None)]
+                    for i in range(len(properties)):
+                        properties[i] = structure_list.sorted_structures[i].properties_for_voxel_and_wavelength(x_idx_px, y_idx_px,
+                                                                                                                z_idx_px, wavelength)
+                    # priorities = priorities[properties != np.array(None)]
+                    # properties = properties[properties != np.array(None)]
                     if len(properties) > 1:
                         merged_property = self.merge_structures(properties, priorities, max(priorities))
                     else:

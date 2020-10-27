@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import numpy as np
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties
@@ -34,6 +35,8 @@ class MolecularComposition(list):
         super().__init__()
         self.segmentation_type = segmentation_type
         self.internal_properties = TissueProperties()
+        self.cached_absorption = np.ones((5000, )) * -1
+        self.cached_scattering = np.ones((5000,)) * -1
 
         if molecular_composition_settings is None:
             return
@@ -57,17 +60,24 @@ class MolecularComposition(list):
             self.internal_properties[Tags.PROPERTY_SPEED_OF_SOUND] += molecule.volume_fraction * molecule.speed_of_sound
             self.internal_properties[Tags.PROPERTY_ALPHA_COEFF] += molecule.volume_fraction * molecule.alpha_coefficient
 
-        self.internal_properties[Tags.PROPERTY_ANISOTROPY] /= self.internal_properties.volume_fraction
+        if self.internal_properties.volume_fraction > 1:
+            self.internal_properties[Tags.PROPERTY_ANISOTROPY] /= self.internal_properties.volume_fraction
 
     def get_properties_for_wavelength(self, wavelength) -> TissueProperties:
-        self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = 0
-        self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = 0
-        for molecule in self:
-            self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] += (molecule.volume_fraction *
-                                                                          molecule.spectrum.get_absorption_for_wavelength(wavelength))
-            self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] += (molecule.volume_fraction * (molecule.mus500 * (molecule.f_ray *
-                                                                          (wavelength / 500) ** 1e-4 + (1 - molecule.f_ray) *
-                                                                          (wavelength / 500) ** -molecule.b_mie)))
+        if self.cached_absorption[wavelength] != -1:
+            self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = self.cached_absorption[wavelength]
+            self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = self.cached_scattering[wavelength]
+        else:
+            self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = 0
+            self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = 0
+            for molecule in self:
+                self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] += (molecule.volume_fraction *
+                                                                              molecule.spectrum.get_absorption_for_wavelength(wavelength))
+                self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] += (molecule.volume_fraction * (molecule.mus500 * (molecule.f_ray *
+                                                                              (wavelength / 500) ** 1e-4 + (1 - molecule.f_ray) *
+                                                                              (wavelength / 500) ** -molecule.b_mie)))
+            self.cached_absorption[wavelength] = self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
+            self.cached_scattering[wavelength] = self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM]
         return self.internal_properties
 
 
