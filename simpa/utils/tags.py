@@ -53,6 +53,13 @@ class Tags:
     MOLECULE_COMPOSITION = "molecule_composition"
 
     """
+        Structure Settings
+    """
+    STRUCTURE_START = ("structure_start", (list, tuple, np.ndarray))
+    STRUCTURE_END = ("structure_end", (list, tuple, np.ndarray))
+    STRUCTURE_RADIUS = ("structure_radius", (int, np.integer, float, np.float))
+
+    """
     Optical model settings
     """
     RUN_OPTICAL_MODEL = ("run_optical_forward_model", bool)

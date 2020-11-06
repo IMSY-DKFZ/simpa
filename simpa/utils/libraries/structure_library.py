@@ -27,6 +27,7 @@ from simpa.utils import Tags, SegmentationClasses
 import operator
 from simpa.utils.libraries.molecule_library import MolecularComposition
 import traceback
+import numpy as np
 
 
 class Structures:
@@ -100,6 +101,100 @@ class Structure:
         settings_dict[Tags.STRUCTURE_TYPE] = self.__class__.__name__
         settings_dict[Tags.MOLECULE_COMPOSITION] = self.molecule_composition
         return settings_dict
+
+
+class GeometricalStructure(Structure):
+    def __init__(self, single_structure_settings):
+        super().__init__()
+        voxel_spacing = single_structure_settings[Tags.SPACING_MM]
+        volume_x_dim = int(round(single_structure_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing))
+        volume_y_dim = int(round(single_structure_settings[Tags.DIM_VOLUME_Y_MM] / voxel_spacing))
+        volume_z_dim = int(round(single_structure_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing))
+        self.volume_dimensions = (volume_x_dim, volume_y_dim, volume_z_dim)
+
+        self.geometrical_volume = np.zeros(self.volume_dimensions)
+
+        self.fill_volume(single_structure_settings)
+
+    def fill_volume(self, single_structure_settings):
+        params = self.get_params_from_settings(single_structure_settings)
+        indices, values = self.get_enclosed_indices(params)
+        self.geometrical_volume[indices] = values
+
+    def volume_fraction_for_voxel(self, x_idx_px, y_idx_px, z_idx_px) -> float:
+        return self.geometrical_volume[x_idx_px, y_idx_px, z_idx_px]
+
+    @abstractmethod
+    def get_enclosed_indices(self, params):
+        pass
+
+    @abstractmethod
+    def get_params_from_settings(self, single_structure_settings):
+        pass
+
+
+class TubularStructure(GeometricalStructure):
+    def get_params_from_settings(self, single_structure_settings):
+        params = single_structure_settings[Tags.STRUCTURE_START], \
+                 single_structure_settings[Tags.STRUCTURE_END], \
+                 single_structure_settings[Tags.STRUCTURE_RADIUS]
+        return params
+
+    def get_enclosed_indices(self, params):
+        start, end, radius = params
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions[0]),
+                              np.arange(self.volume_dimensions[1]),
+                              np.arange(self.volume_dimensions[2]))
+
+        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)
+        cylinder_vector = np.subtract(end, start)
+
+        target_radius = np.linalg.norm(target_vector, axis=-1) * np.sin(
+            np.arccos((np.dot(target_vector, cylinder_vector)) /
+                      (np.linalg.norm(target_vector, axis=-1) * np.linalg.norm(cylinder_vector))))
+
+        return target_radius < radius, 1
+
+    def to_settings(self) -> dict:
+        settings_dict = super().to_settings()
+        return settings_dict
+
+
+class SphericalStructure(GeometricalStructure):
+    def get_params_from_settings(self, single_structure_settings):
+        params = single_structure_settings[Tags.STRUCTURE_START], \
+                 single_structure_settings[Tags.STRUCTURE_RADIUS]
+        return params
+
+    def get_enclosed_indices(self, params):
+        start, radius = params
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions[0]),
+                              np.arange(self.volume_dimensions[1]),
+                              np.arange(self.volume_dimensions[2]))
+
+        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)
+        target_radius = np.linalg.norm(target_vector, axis=-1)
+
+        return target_radius < radius, 1
+
+    def to_settings(self) -> dict:
+        settings_dict = super().to_settings()
+        return settings_dict
+
+
+settings = Settings({Tags.DIM_VOLUME_X_MM: 20,
+                     Tags.DIM_VOLUME_Y_MM: 20,
+                     Tags.DIM_VOLUME_Z_MM: 20,
+                     Tags.SPACING_MM: 0.1,
+                     Tags.STRUCTURE_START: [0, 0, 0],
+                     Tags.STRUCTURE_END: [200, 200, 200],
+                     Tags.STRUCTURE_RADIUS: 50})
+
+test = SphericalStructure(settings)
+import matplotlib.pyplot as plt
+
+plt.imshow(test.geometrical_volume[0, :, :])
+plt.show()
 
 
 class Background(Structure):
