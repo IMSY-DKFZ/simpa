@@ -83,20 +83,32 @@ class MolecularComposition(list):
 
 class Molecule(object):
 
-    def __init__(self, spectrum: AbsorptionSpectrum = None,
+    def __init__(self, name: str = None,
+                 spectrum: AbsorptionSpectrum = None,
                  volume_fraction: float = None,
                  mus500: float = None, f_ray: float = None, b_mie: float = None,
                  anisotropy: float = None, gruneisen_parameter: float = None,
                  density: float = None, speed_of_sound: float = None,
                  alpha_coefficient: float = None):
         """
+        :param name: str
         :param spectrum: AbsorptionSpectrum
         :param volume_fraction: float
         :param mus500: float The scattering coefficient at 500 nanometers
         :param f_ray: float
         :param b_mie: float
         :param anisotropy: float
+        :param gruneisen_parameter: float
+        :param density: float
+        :param speed_of_sound: float
+        :param alpha_coefficient: float
         """
+        if name is None:
+            name = "GenericMoleculeName"
+        if not isinstance(name, str):
+            raise TypeError("Molecule name must be of type str")
+        self.name = name
+
         if spectrum is None:
             spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
         if not isinstance(spectrum, AbsorptionSpectrum):
@@ -162,12 +174,13 @@ class MoleculeLibrary(object):
 
     # Main absorbers
     def water(self, volume_fraction: float = 1.0):
-        return Molecule(spectrum=SPECTRAL_LIBRARY.WATER,
+        return Molecule(name="water",
+                        spectrum=SPECTRAL_LIBRARY.WATER,
                         volume_fraction=volume_fraction, mus500=0.0,
                         b_mie=0.0, f_ray=0.0, anisotropy=1.0)
 
     def oxyhemoglobin(self, volume_fraction: float = 1.0):
-        return Molecule(
+        return Molecule(name="oxyhemoglobin",
             spectrum=SPECTRAL_LIBRARY.OXYHEMOGLOBIN,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_BLOOD,
@@ -177,7 +190,7 @@ class MoleculeLibrary(object):
         )
 
     def deoxyhemoglobin(self, volume_fraction: float = 1.0):
-        return Molecule(
+        return Molecule(name="deoxyhemoglobin",
             spectrum=SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_BLOOD,
@@ -187,7 +200,7 @@ class MoleculeLibrary(object):
         )
 
     def melanin(self, volume_fraction: float = 1.0):
-        return Molecule(
+        return Molecule(name="melanin",
             spectrum=SPECTRAL_LIBRARY.MELANIN,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_EPIDERMIS,
@@ -197,7 +210,7 @@ class MoleculeLibrary(object):
         )
 
     def fat(self, volume_fraction: float = 1.0):
-        return Molecule(
+        return Molecule(name="fat",
             spectrum=SPECTRAL_LIBRARY.FAT,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_FAT,
@@ -209,12 +222,14 @@ class MoleculeLibrary(object):
     # Scatterers
     def constant_scatterer(self, scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
                            volume_fraction: float = 1.0):
-        return Molecule(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+        return Molecule(name="constant_scatterer",
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
                         volume_fraction=volume_fraction, mus500=scattering_coefficient,
                         b_mie=0.0, f_ray=0.0, anisotropy=anisotropy)
 
     def soft_tissue_scatterer(self, volume_fraction: float = 1.0):
-        return Molecule(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+        return Molecule(name="soft_tissue_scatterer",
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
                         volume_fraction=volume_fraction,
                         mus500=OpticalTissueProperties.MUS500_BACKGROUND_TISSUE,
                         b_mie=OpticalTissueProperties.BMIE_BACKGROUND_TISSUE,
@@ -222,7 +237,8 @@ class MoleculeLibrary(object):
                         anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
 
     def epidermal_scatterer(self, volume_fraction: float = 1.0):
-        return Molecule(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+        return Molecule(name="epidermal_scatterer",
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
                         volume_fraction=volume_fraction,
                         mus500=OpticalTissueProperties.MUS500_EPIDERMIS,
                         b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
@@ -230,15 +246,16 @@ class MoleculeLibrary(object):
                         anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
 
     def dermal_scatterer(self, volume_fraction: float = 1.0):
-        return Molecule(spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+        return Molecule(name="dermal_scatterer",
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
                         volume_fraction=volume_fraction,
                         mus500=OpticalTissueProperties.MUS500_DERMIS,
                         b_mie=OpticalTissueProperties.BMIE_DERMIS,
                         f_ray=OpticalTissueProperties.FRAY_DERMIS,
                         anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
 
-    def bone_scatterer(self, volume_fraction: float = 1.0):
-        return Molecule(
+    def bone(self, volume_fraction: float = 1.0):
+        return Molecule(name="bone",
             spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_BONE,

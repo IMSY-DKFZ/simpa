@@ -26,7 +26,9 @@ from simpa.core.volume_creation import VolumeCreatorBase
 from simpa.core.volume_creation.tissue_properties import TissueProperties
 from simpa.utils import Tags, StandardProperties
 from simpa.utils.constants import SegmentationClasses, SaveFilePaths
-from simpa.utils.calculate import *
+from simpa.utils.calculate import create_spline_for_range, randomize_uniform, \
+    calculate_oxygenation, calculate_gruneisen_parameter_from_temperature, spline_evaluator2d_voxel
+import numpy as np
 
 from simpa.io_handling.io_hdf5 import save_hdf5
 
@@ -510,8 +512,8 @@ class LegacyVolumeCreator(VolumeCreatorBase):
         thickness_min = structure_settings[Tags.STRUCTURE_THICKNESS_MIN_MM]
         thickness_max = structure_settings[Tags.STRUCTURE_THICKNESS_MAX_MM]
 
-        depth_in_voxels = randomize(depth_min, depth_max) / global_settings[Tags.SPACING_MM]
-        thickness_in_voxels = randomize(thickness_min, thickness_max) / global_settings[Tags.SPACING_MM]
+        depth_in_voxels = randomize_uniform(depth_min, depth_max) / global_settings[Tags.SPACING_MM]
+        thickness_in_voxels = randomize_uniform(thickness_min, thickness_max) / global_settings[Tags.SPACING_MM]
 
         sizes = np.shape(volumes[Tags.PROPERTY_ABSORPTION_PER_CM])
 
@@ -569,7 +571,7 @@ class LegacyVolumeCreator(VolumeCreatorBase):
 
         radius_min = structure_settings[Tags.STRUCTURE_RADIUS_MIN_MM]
         radius_max = structure_settings[Tags.STRUCTURE_RADIUS_MAX_MM]
-        radius_in_mm = randomize(radius_min, radius_max)
+        radius_in_mm = randomize_uniform(radius_min, radius_max)
         radius_in_voxels = radius_in_mm / global_settings[Tags.SPACING_MM]
 
         start_x_min = structure_settings[Tags.STRUCTURE_TUBE_CENTER_X_MIN_MM] + \
@@ -590,8 +592,8 @@ class LegacyVolumeCreator(VolumeCreatorBase):
         if start_z_max is None:
             start_z_max = (sizes[2] - radius_in_voxels) * global_settings[Tags.SPACING_MM]
 
-        start_in_mm = np.asarray([randomize(start_x_min, start_x_max), 0,
-                                  randomize(start_z_min, start_z_max)])
+        start_in_mm = np.asarray([randomize_uniform(start_x_min, start_x_max), 0,
+                                  randomize_uniform(start_z_min, start_z_max)])
 
         if distortion is not None:
             start_in_mm[2] -= (distortion[1] - distortion[0](start_in_mm[0]))
@@ -635,7 +637,7 @@ class LegacyVolumeCreator(VolumeCreatorBase):
 
         radius_min = structure_settings[Tags.STRUCTURE_RADIUS_MIN_MM]
         radius_max = structure_settings[Tags.STRUCTURE_RADIUS_MAX_MM]
-        radius_in_mm = randomize(radius_min, radius_max)
+        radius_in_mm = randomize_uniform(radius_min, radius_max)
 
         eccentricity_min = structure_settings[Tags.STRUCTURE_MIN_ECCENTRICITY]
         eccentricity_max = structure_settings[Tags.STRUCTURE_MAX_ECCENTRICITY]
@@ -643,7 +645,7 @@ class LegacyVolumeCreator(VolumeCreatorBase):
         if eccentricity_max > radius_in_mm * 0.9:
             eccentricity_max = radius_in_mm * 0.9
 
-        e = randomize(eccentricity_min, eccentricity_max)
+        e = randomize_uniform(eccentricity_min, eccentricity_max)
 
         radius_z_mm = (radius_in_mm ** 2 + e ** 2) / (2 * radius_in_mm)
         radius_x_mm = radius_in_mm - radius_z_mm
@@ -673,8 +675,8 @@ class LegacyVolumeCreator(VolumeCreatorBase):
         if start_z_max is None:
             start_z_max = (sizes[2] - radius_z_in_voxels) * global_settings[Tags.SPACING_MM]
 
-        start_in_mm = np.asarray([randomize(start_x_min, start_x_max), 0,
-                                  randomize(start_z_min, start_z_max)])
+        start_in_mm = np.asarray([randomize_uniform(start_x_min, start_x_max), 0,
+                                  randomize_uniform(start_z_min, start_z_max)])
 
         if distortion is not None:
             start_in_mm[2] -= (distortion[1] - distortion[0](start_in_mm[0]))

@@ -22,6 +22,7 @@
 
 import unittest
 from simpa.utils import Tags
+from simpa.utils.settings_generator import Settings
 from simpa.core.simulation import simulate
 from simpa.utils import SegmentationClasses
 from simpa.utils import TISSUE_LIBRARY
@@ -82,6 +83,7 @@ class TestCreateVolume(unittest.TestCase):
             Tags.STRUCTURES: self.create_test_parameters()
         }
         print("Simulating ", random_seed)
+        settings = Settings(settings)
         output = simulate(settings)
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and

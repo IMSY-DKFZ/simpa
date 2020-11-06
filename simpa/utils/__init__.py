@@ -45,7 +45,6 @@ from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
 
 from simpa.utils.calculate import calculate_oxygenation
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
-from simpa.utils.calculate import randomize
 from simpa.utils.calculate import randomize_uniform
 
 if __name__ == "__main__":

@@ -22,6 +22,7 @@
 
 import unittest
 from simpa.utils import Tags
+from simpa.utils.settings_generator import Settings
 from simpa.core.volume_creation import create_muscle_background, create_epidermis_layer, create_vessel_tube
 from simpa.core.simulation import simulate
 import numpy as np
@@ -92,6 +93,7 @@ class TestPipeline(unittest.TestCase):
             Tags.STRUCTURES: self.create_example_tissue()
         }
         print("Simulating ", self.RANDOM_SEED)
+        settings = Settings(settings)
         simulate(settings)
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and

@@ -120,7 +120,7 @@ class Tags:
     # Reconstruction settings
     PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", bool)
     RECONSTRUCTION_OUTPUT_NAME = "reconstruction_result"
-    RECONSTRUCTION_ALGORITHM = "reconstruction_algorithm"
+    RECONSTRUCTION_ALGORITHM = ("reconstruction_algorithm", str)
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
     RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"

@@ -22,7 +22,6 @@
 
 from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 import numpy as np
-from scipy.ndimage import gaussian_filter
 from scipy.interpolate import interp1d
 
 
@@ -51,46 +50,6 @@ def calculate_oxygenation(molecule_list):
         return None        # will lead to negative side effects.
 
     return hbO2 / (hb + hbO2)
-
-
-def randomize(lower_bound, upper_bound, distribution='uniform', size=(1,), gauss_kernel_size=0):
-    """
-    This function creates a randomly distributed variable between lower_bound and upper_bound.
-
-    The number is drawn from obe of the following distributions:
-        - 'uniform'
-        - 'normal'
-
-    The default behaviour is to draw from a uniform distribution.
-
-    If a gauss_kernel_size > 0 is given, then a gaussian filter is applied to the random distribution.
-
-    :param lower_bound: the lower bound of the random distribution
-    :param upper_bound: the upper bound of the random distribution
-    :param distribution:  string argument: 'uniform', 'normal'
-    :param size: target shape of the output array
-    :param gauss_kernel_size: if >0 then a filter is applied to the distribution with filter size gauss_kernel_size.
-
-    :return: a size shaped array of random numbers
-    """
-    mean = (upper_bound + lower_bound) / 2
-    spread = (upper_bound - lower_bound)
-
-    if distribution == 'normal':
-        result = np.random.normal(mean, (spread / 2), size=size)
-    elif distribution == 'uniform':
-        result = (np.random.random(size=size) * spread) + lower_bound
-    else:
-        result = (np.random.random(size=size) * spread) + lower_bound
-
-    if gauss_kernel_size > 0:
-        result = gaussian_filter(result, gauss_kernel_size)
-        # After filtering, the noise needs to be rescaled to be in the correct range again (esp. wrt the spread)
-        result = ((result - np.mean(result)) / np.std(result)) * \
-                 (spread / 2) + mean
-
-    return result
-
 
 def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spacing=0.1):
     """
