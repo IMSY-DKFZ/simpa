@@ -114,7 +114,7 @@ class Settings(dict):
         else:
             self[Tags.DIM_VOLUME_Z_MM] = 20
 
-    def add_minimal_optical_properties(self, run_optical_model: bool = None, wavelengths: int = None,
+    def add_minimal_optical_properties(self, run_optical_model: bool = None, wavelengths: list = None,
                                        optical_model: str = None, photon_number: int = None,
                                        illumination_type: str = None, illumination_position: list = None,
                                        illumination_direction: list = None):
@@ -149,7 +149,7 @@ class Settings(dict):
         else:
             self[Tags.ILLUMINATION_POSITION] = [0, 0, 0]
 
-        if illumination_position is not None:
+        if illumination_direction is not None:
             self[Tags.ILLUMINATION_DIRECTION] = illumination_direction
         else:
             self[Tags.ILLUMINATION_DIRECTION] = [0, 0.5, 0.5]

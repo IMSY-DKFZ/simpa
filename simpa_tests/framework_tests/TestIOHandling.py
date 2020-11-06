@@ -26,29 +26,8 @@ from simpa.utils import Tags
 from simpa.utils.settings_generator import Settings
 from simpa.utils.libraries.structure_library import Background
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-import numpy as np
+from simpa_tests.test_utils import assert_equals_recursive
 import os
-
-
-def assert_equals_recursive(a, b):
-    if isinstance(a, dict):
-        for item in a:
-            assert item in a, (str(item) + " was not in a: " + str(a))
-            assert item in b, (str(item) + " was not in b: " + str(b))
-            if isinstance(a[item], dict):
-                assert_equals_recursive(a[item], b[item])
-            elif isinstance(a[item], list):
-                assert_equals_recursive(a[item], b[item])
-            else:
-                if isinstance(a[item], np.ndarray):
-                    assert (a[item] == b[item]).all()
-                else:
-                    assert a[item] == b[item], str(a[item]) + " is not the same as " + str(b[item])
-    elif isinstance(a, list):
-        for item1, item2 in zip(a, b):
-            assert_equals_recursive(item1, item2)
-    else:
-        assert a == b, str(a) + " is not the same as " + str(b)
 
 
 class TestIOHandling(unittest.TestCase):
