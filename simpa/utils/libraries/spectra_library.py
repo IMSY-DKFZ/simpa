@@ -68,6 +68,20 @@ class AbsorptionSpectrum(object):
 
         return self.new_absorptions[wavelength-self.min_wavelength]
 
+    def __eq__(self, other):
+        if isinstance(other, AbsorptionSpectrum):
+            return (self.spectrum_name == other.spectrum_name,
+                    self.wavelengths == other.wavelengths,
+                    self.absorption_per_centimeter == other.absorption_per_centimeter)
+        else:
+            return super().__eq__(other)
+
+
+    @staticmethod
+    def from_settings(absorption_spectrum_settings: dict):
+        return AbsorptionSpectrum(spectrum_name=absorption_spectrum_settings["spectrum_name"],
+                                  wavelengths=absorption_spectrum_settings["wavelengths"],
+                                  absorption_per_centimeter=absorption_spectrum_settings["absorption_per_centimeter"])
 
 class AbsorptionSpectrumLibrary(object):
 

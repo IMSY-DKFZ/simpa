@@ -68,11 +68,11 @@ class TestTissueLibrary(unittest.TestCase):
 
     def test_molecular_composition_generator(self):
         mcg = MolecularCompositionGenerator()
-        mcg.append("fat", MOLECULE_LIBRARY.fat(1.0))
+        mcg.append(MOLECULE_LIBRARY.fat(1.0))
         molecular_composition_1 = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
-        mcg.append("oxy", MOLECULE_LIBRARY.oxyhemoglobin(1.0))
+        mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(1.0))
         molecular_composition_2 = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
-        mcg.append("deoxy", MOLECULE_LIBRARY.deoxyhemoglobin(0.0))
+        mcg.append(MOLECULE_LIBRARY.deoxyhemoglobin(0.0))
         molecular_composition_3 = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
         mcg = MolecularCompositionGenerator()
         molecular_composition_4 = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
