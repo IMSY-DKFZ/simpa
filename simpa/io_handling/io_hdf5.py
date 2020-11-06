@@ -20,11 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from simpa.utils import Tags
 import h5py
-from simpa.utils.serialization import SIMPASerializer
+from simpa.io_handling.serialization import SIMPASerializer
 from simpa.utils import AbsorptionSpectrum, Molecule
+from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.dict_path_manager import generate_dict_path
 
+MOLECULE_COMPOSITION = Tags.MOLECULE_COMPOSITION
+MOLECULE = "molecule"
+ABSORPTION_SPECTRUM = "absorption_spectrum"
 
 def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/"):
     """
@@ -49,9 +54,9 @@ def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/")
             if not isinstance(item, (list, dict, type(None))):
 
                 if isinstance(item, Molecule):
-                    data_grabber(file, path + key + "/chromophore/", serializer.serialize(item))
+                    data_grabber(file, path + key + "/" + MOLECULE + "/", serializer.serialize(item))
                 elif isinstance(item, AbsorptionSpectrum):
-                    data_grabber(file, path + key + "/absorption_spectrum/", serializer.serialize(item))
+                    data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/", serializer.serialize(item))
                 else:
                     try:
                         h5file[path + key] = item
@@ -114,6 +119,18 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                         elif isinstance(item[listkey], h5py._hl.group.Group):
                             dictionary.append(
                                 data_grabber(file, path + key + "/" + listkey + "/"))
+                elif key == MOLECULE_COMPOSITION:
+                    mc = MolecularComposition()
+                    molecules = data_grabber(file, path + key + "/")
+                    for molecule in molecules:
+                        mc.append(molecule[MOLECULE])
+                    dictionary[key] = mc
+                elif key == MOLECULE:
+                    data = data_grabber(file, path + key + "/")
+                    dictionary[key] = Molecule.from_settings(data)
+                elif key == ABSORPTION_SPECTRUM:
+                    data = data_grabber(file, path + key + "/")
+                    dictionary[key] = AbsorptionSpectrum.from_settings(data)
                 else:
                     dictionary[key] = data_grabber(file, path + key + "/")
         return dictionary

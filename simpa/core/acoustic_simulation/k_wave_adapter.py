@@ -24,7 +24,7 @@ import numpy as np
 import subprocess
 from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling.io_hdf5 import load_hdf5
-from simpa.utils.serialization import SIMPAJSONSerializer
+from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.dict_path_manager import generate_dict_path
 import json
 import os

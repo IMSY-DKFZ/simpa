@@ -25,10 +25,9 @@ from simpa.utils import Tags, SaveFilePaths
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.process import preprocess_images
 from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
-from simpa.utils.serialization import SIMPAJSONSerializer
+from simpa.io_handling.serialization import SIMPAJSONSerializer
 from scipy.ndimage import zoom
 import os
-import torch
 import subprocess
 import json
 

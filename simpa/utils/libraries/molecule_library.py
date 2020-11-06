@@ -111,8 +111,11 @@ class Molecule(object):
 
         if spectrum is None:
             spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
+        if isinstance(spectrum, dict):
+            spectrum = spectrum[list(spectrum.keys())[0]]
         if not isinstance(spectrum, AbsorptionSpectrum):
-            raise TypeError("The given spectrum was not of type AbsorptionSpectrum!")
+            raise TypeError("The given spectrum was not of type AbsorptionSpectrum! Instead: " + str(type(spectrum)) +
+                            "and reads: " + str(spectrum))
         self.spectrum = spectrum
 
         if volume_fraction is None:
@@ -167,7 +170,40 @@ class Molecule(object):
             alpha_coefficient = 0.0
         if not isinstance(alpha_coefficient, float):
             raise TypeError("The given alpha_coefficient was not of type float!")
-        self.alpha_coefficient = alpha_coefficient
+        self.alpha_coefficient = alpha_coefficient#
+
+    def __eq__(self, other):
+        if isinstance(other, Molecule):
+            return (self.name == other.name and
+                    self.spectrum == other.spectrum and
+                    self.volume_fraction == other.volume_fraction and
+                    self.mus500 == other.mus500 and
+                    self.alpha_coefficient == other.alpha_coefficient and
+                    self.f_ray == other.f_ray and
+                    self.b_mie == other.b_mie and
+                    self.speed_of_sound == other.speed_of_sound and
+                    self.gruneisen_parameter == other.gruneisen_parameter and
+                    self.anisotropy == other.anisotropy and
+                    self.density == other.density
+                    )
+        else:
+            return super().__eq__(other)
+
+
+    @staticmethod
+    def from_settings(settings):
+        return Molecule(name=settings["name"],
+                        spectrum=settings["spectrum"],
+                        volume_fraction=settings["volume_fraction"],
+                        mus500=settings["mus500"],
+                        alpha_coefficient=settings["alpha_coefficient"],
+                        f_ray=settings["f_ray"],
+                        b_mie=settings["b_mie"],
+                        speed_of_sound=settings["speed_of_sound"],
+                        gruneisen_parameter=settings["gruneisen_parameter"],
+                        anisotropy=settings["anisotropy"],
+                        density=settings["density"])
+
 
 
 class MoleculeLibrary(object):

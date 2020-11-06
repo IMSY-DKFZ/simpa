@@ -22,7 +22,6 @@
 
 from json import JSONEncoder
 from simpa.utils import AbsorptionSpectrum, Molecule
-from scipy.interpolate import interp1d
 import numpy as np
 
 

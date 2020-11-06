@@ -106,11 +106,12 @@ class Background(Structure):
 
     def __init__(self, background_settings=None):
 
-        if background_settings is None:
+        if background_settings is not None:
+            background_settings[Tags.PRIORITY] = 0
+            super().__init__(background_settings)
+        else:
             super().__init__()
-
-        background_settings[Tags.PRIORITY] = 0
-        super().__init__(background_settings)
+            self.priority = 0
 
     def volume_fraction_for_voxel(self, x_idx_px, y_idx_px, z_idx_px) -> float:
         return 1.0
