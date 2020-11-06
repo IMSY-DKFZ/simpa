@@ -182,21 +182,6 @@ class SphericalStructure(GeometricalStructure):
         return settings_dict
 
 
-settings = Settings({Tags.DIM_VOLUME_X_MM: 20,
-                     Tags.DIM_VOLUME_Y_MM: 20,
-                     Tags.DIM_VOLUME_Z_MM: 20,
-                     Tags.SPACING_MM: 0.1,
-                     Tags.STRUCTURE_START: [0, 0, 0],
-                     Tags.STRUCTURE_END: [200, 200, 200],
-                     Tags.STRUCTURE_RADIUS: 50})
-
-test = SphericalStructure(settings)
-import matplotlib.pyplot as plt
-
-plt.imshow(test.geometrical_volume[0, :, :])
-plt.show()
-
-
 class Background(Structure):
 
     def __init__(self, background_settings=None):
