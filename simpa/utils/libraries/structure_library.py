@@ -171,7 +171,8 @@ class SphericalStructure(GeometricalStructure):
         start, radius = params
         x, y, z = np.meshgrid(np.arange(self.volume_dimensions[0]),
                               np.arange(self.volume_dimensions[1]),
-                              np.arange(self.volume_dimensions[2]))
+                              np.arange(self.volume_dimensions[2]),
+                              indexing='ij')
 
         target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)
         target_radius = np.linalg.norm(target_vector, axis=-1)
