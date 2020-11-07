@@ -23,9 +23,9 @@
 import unittest
 from simpa.utils import Tags
 from simpa.utils.settings_generator import Settings
-from simpa.core.volume_creation import create_muscle_background, create_epidermis_layer, create_vessel_tube
 from simpa.core.simulation import simulate
 import numpy as np
+from simpa_tests.test_utils import create_test_structure_parameters
 import os
 
 
@@ -33,24 +33,10 @@ class TestPipeline(unittest.TestCase):
 
     def setUp(self):
 
-        self.VOLUME_WIDTH_IN_MM = 10
-        self.VOLUME_HEIGHT_IN_MM = 10
+        self.VOLUME_WIDTH_IN_MM = 4
+        self.VOLUME_HEIGHT_IN_MM = 3
         self.SPACING = 0.25
         self.RANDOM_SEED = 4711
-
-    def create_example_tissue(self):
-        """
-        This is a very simple example script of how to create a tissue definition.
-        It contains a muscular background, an epidermis layer on top of the muscles
-        and a blood vessel.
-        """
-        tissue_dict = dict()
-        tissue_dict["background"] = create_muscle_background()
-        tissue_dict["epidermis"] = create_epidermis_layer()
-        tissue_dict["vessel"] = create_vessel_tube(x_min=0, x_max=self.VOLUME_WIDTH_IN_MM,
-                                                   z_min=0, z_max=self.VOLUME_HEIGHT_IN_MM,
-                                                   r_min=1, r_max=3)
-        return tissue_dict
 
     def test_pipeline(self):
         # Seed the numpy random configuration prior to creating the settings file in
@@ -70,6 +56,7 @@ class TestPipeline(unittest.TestCase):
             Tags.DIM_VOLUME_Y_MM: self.VOLUME_WIDTH_IN_MM,
             Tags.AIR_LAYER_HEIGHT_MM: 0,
             Tags.GELPAD_LAYER_HEIGHT_MM: 0,
+            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 
             # The following parameters set the optical forward model
             Tags.RUN_OPTICAL_MODEL: True,
@@ -90,10 +77,10 @@ class TestPipeline(unittest.TestCase):
             Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
 
             # Add the volume_creation to be simulated to the tissue
-            Tags.STRUCTURES: self.create_example_tissue()
         }
         print("Simulating ", self.RANDOM_SEED)
         settings = Settings(settings)
+        settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
         simulate(settings)
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and

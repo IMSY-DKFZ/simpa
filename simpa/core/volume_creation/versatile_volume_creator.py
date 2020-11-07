@@ -50,12 +50,15 @@ class VersatileVolumeCreator(VolumeCreatorBase):
             print(z_idx_px)
             for y_idx_px in range(y_dim_px):
                 for x_idx_px in range(x_dim_px):
+
                     for i in range(len(properties)):
                         properties[i] = structure_list.sorted_structures[i].properties_for_voxel_and_wavelength(x_idx_px, y_idx_px,
                                                                                                                 z_idx_px, wavelength)
                     # priorities = priorities[properties != np.array(None)]
                     # properties = properties[properties != np.array(None)]
-                    if len(properties) > 1:
+                    if len(properties) == 0:
+                        continue
+                    elif len(properties) > 1:
                         merged_property = self.merge_structures(properties, priorities, max(priorities))
                     else:
                         merged_property = properties[0]

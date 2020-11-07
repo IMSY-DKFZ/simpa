@@ -64,10 +64,10 @@ class TestIOHandling(unittest.TestCase):
 
         save_dictionary[Tags.SETTINGS] = settings
 
+        background_dictionary = dict()
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        bg = Background(settings, background_dictionary)
         structure_settings = dict()
-        single_structure_dictionary = dict()
-        single_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-        bg = Background(single_structure_dictionary)
         structure_settings["background"] = bg.to_settings()
 
         save_dictionary[Tags.STRUCTURES] = structure_settings

@@ -38,7 +38,7 @@ SPACING = 0.25
 RANDOM_SEED = 4711
 
 
-def create_example_tissue():
+def create_example_tissue(global_settings):
     """
     This is a very simple example script of how to create a tissue definition.
     It contains a muscular background, an epidermis layer on top of the muscles
@@ -46,7 +46,7 @@ def create_example_tissue():
     """
     single_structure_dictionary = dict()
     single_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    bg = Background(single_structure_dictionary)
+    bg = Background(global_settings, Settings(single_structure_dictionary))
 
     tissue_dict = dict()
     tissue_dict["background"] = bg.to_settings()
@@ -92,7 +92,7 @@ settings = {
 
 }
 settings = Settings(settings)
-settings[Tags.STRUCTURES] = create_example_tissue()
+settings[Tags.STRUCTURES] = create_example_tissue(settings)
 print("Simulating ", RANDOM_SEED)
 import time
 timer = time.time()

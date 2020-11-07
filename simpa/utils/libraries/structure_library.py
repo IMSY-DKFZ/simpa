@@ -51,7 +51,7 @@ class Structures:
             single_structure_settings = structure_settings[struc_tag_name]
             try:
                 structure_class = globals()[single_structure_settings[Tags.STRUCTURE_TYPE]]
-                structure = structure_class(single_structure_settings)
+                structure = structure_class(settings, Settings(single_structure_settings))
                 structures.append(structure)
             except Exception as e:
                 print("An exception has occurred while trying to parse the structure from the dictionary.")
@@ -67,7 +67,13 @@ class Structure:
     TODO
     """
 
-    def __init__(self, single_structure_settings=None):
+    def __init__(self, global_settings: Settings, single_structure_settings: Settings = None):
+
+        self.voxel_spacing = global_settings[Tags.SPACING_MM]
+        volume_x_dim = int(round(global_settings[Tags.DIM_VOLUME_X_MM] / self.voxel_spacing))
+        volume_y_dim = int(round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.voxel_spacing))
+        volume_z_dim = int(round(global_settings[Tags.DIM_VOLUME_Z_MM] / self.voxel_spacing))
+        self.volume_dimensions = (volume_x_dim, volume_y_dim, volume_z_dim)
 
         if single_structure_settings is None:
             self.molecule_composition = MolecularComposition()
@@ -104,16 +110,10 @@ class Structure:
 
 
 class GeometricalStructure(Structure):
-    def __init__(self, single_structure_settings):
-        super().__init__()
-        voxel_spacing = single_structure_settings[Tags.SPACING_MM]
-        volume_x_dim = int(round(single_structure_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing))
-        volume_y_dim = int(round(single_structure_settings[Tags.DIM_VOLUME_Y_MM] / voxel_spacing))
-        volume_z_dim = int(round(single_structure_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing))
-        self.volume_dimensions = (volume_x_dim, volume_y_dim, volume_z_dim)
+    def __init__(self, global_settings: Settings, single_structure_settings: Settings):
+        super().__init__(global_settings, single_structure_settings)
 
         self.geometrical_volume = np.zeros(self.volume_dimensions)
-
         self.fill_volume(single_structure_settings)
 
     def fill_volume(self, single_structure_settings):
@@ -144,7 +144,8 @@ class TubularStructure(GeometricalStructure):
         start, end, radius = params
         x, y, z = np.meshgrid(np.arange(self.volume_dimensions[0]),
                               np.arange(self.volume_dimensions[1]),
-                              np.arange(self.volume_dimensions[2]))
+                              np.arange(self.volume_dimensions[2]),
+                              indexing='ij')
 
         target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)
         cylinder_vector = np.subtract(end, start)
@@ -184,13 +185,13 @@ class SphericalStructure(GeometricalStructure):
 
 class Background(Structure):
 
-    def __init__(self, background_settings=None):
+    def __init__(self, global_settings: Settings, background_settings: Settings = None):
 
         if background_settings is not None:
             background_settings[Tags.PRIORITY] = 0
-            super().__init__(background_settings)
+            super().__init__(global_settings, background_settings)
         else:
-            super().__init__()
+            super().__init__(global_settings)
             self.priority = 0
 
     def volume_fraction_for_voxel(self, x_idx_px, y_idx_px, z_idx_px) -> float:

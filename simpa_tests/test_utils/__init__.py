@@ -21,6 +21,10 @@
 # SOFTWARE.
 
 import numpy as np
+from simpa.utils import TISSUE_LIBRARY
+from simpa.utils.libraries.structure_library import Background, TubularStructure
+from simpa.utils.settings_generator import Settings
+from simpa.utils import Tags
 
 def assert_equals_recursive(a, b):
     if isinstance(a, dict):
@@ -41,3 +45,29 @@ def assert_equals_recursive(a, b):
             assert_equals_recursive(item1, item2)
     else:
         assert a == b, str(a) + " is not the same as " + str(b)
+
+
+def create_background(global_settings):
+    background_structure_dictionary = dict()
+    background_structure_dictionary[Tags.PRIORITY] = 0
+    background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+    bg = Background(global_settings, Settings(background_structure_dictionary))
+    return bg.to_settings()
+
+
+def create_vessel(global_settings):
+    tubular_structure_dictionary = dict()
+    tubular_structure_dictionary[Tags.PRIORITY] = 2
+    tubular_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+    tubular_structure_dictionary[Tags.STRUCTURE_START] = [0, 0, 0]
+    tubular_structure_dictionary[Tags.STRUCTURE_END] = [10, 10, 10]
+    tubular_structure_dictionary[Tags.STRUCTURE_RADIUS] = 4
+    tube = TubularStructure(global_settings, Settings(tubular_structure_dictionary))
+    return tube.to_settings()
+
+
+def create_test_structure_parameters(global_settings):
+    structures_dict = dict()
+    structures_dict["background"] = create_background(global_settings)
+    structures_dict["vessel"] = create_vessel(global_settings)
+    return structures_dict
