@@ -41,17 +41,17 @@ class Structures:
         self.structures = self.from_settings(settings)
         self.sorted_structures = sorted(self.structures, key=operator.attrgetter('priority'))
 
-    def from_settings(self, settings):
+    def from_settings(self, global_settings):
         structures = list()
-        if not Tags.STRUCTURES in settings:
+        if not Tags.STRUCTURES in global_settings:
             print("Did not find any structure definitions in the settings file!")
             return structures
-        structure_settings = settings[Tags.STRUCTURES]
+        structure_settings = global_settings[Tags.STRUCTURES]
         for struc_tag_name in structure_settings:
             single_structure_settings = structure_settings[struc_tag_name]
             try:
                 structure_class = globals()[single_structure_settings[Tags.STRUCTURE_TYPE]]
-                structure = structure_class(settings, Settings(single_structure_settings))
+                structure = structure_class(global_settings, Settings(single_structure_settings))
                 structures.append(structure)
             except Exception as e:
                 print("An exception has occurred while trying to parse the structure from the dictionary.")
