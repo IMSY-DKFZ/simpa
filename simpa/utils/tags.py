@@ -51,6 +51,15 @@ class Tags:
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
     PRIORITY = "priority"
     MOLECULE_COMPOSITION = "molecule_composition"
+    SIMULATE_DEFORMED_LAYERS = ("simulate_deformed_layers", bool)
+    DEFORMED_LAYERS_SETTINGS = ("deformed_layers_settings", dict)
+    """
+    ADHERE_TO_DEFORMATION default is True
+    """
+    ADHERE_TO_DEFORMATION = ("adhere_to_deformation", bool)
+    DEFORMATION_X_COORDINATES_MM = ("deformation_x_coordinates", list)
+    DEFORMATION_Y_COORDINATES_MM = ("deformation_y_coordinates", list)
+    DEFORMATION_Z_ELEVATIONS_MM = ("deformation_z_elevation", list)
 
     """
         Structure Settings

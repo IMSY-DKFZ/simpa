@@ -25,6 +25,7 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.libraries.structure_library import Background
 from simpa.utils.settings_generator import Settings
+from simpa.utils import create_deformation_settings
 
 import numpy as np
 
@@ -67,8 +68,8 @@ settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_WIDTH_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_WIDTH_IN_MM,
-    Tags.AIR_LAYER_HEIGHT_MM: 0,
-    Tags.GELPAD_LAYER_HEIGHT_MM: 0,
+    Tags.SIMULATE_DEFORMED_LAYERS: True,
+    Tags.DEFORMED_LAYERS_SETTINGS: create_deformation_settings(),
 
     Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 

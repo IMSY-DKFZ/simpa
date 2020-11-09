@@ -47,5 +47,8 @@ from simpa.utils.calculate import calculate_oxygenation
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
 from simpa.utils.calculate import randomize_uniform
 
+from simpa.utils.deformation_manager import create_deformation_settings
+from simpa.utils.deformation_manager import get_functional_from_deformation_settings
+
 if __name__ == "__main__":
     view_absorption_spectra()

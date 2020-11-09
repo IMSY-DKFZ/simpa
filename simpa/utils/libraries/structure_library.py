@@ -28,6 +28,7 @@ import operator
 from simpa.utils.libraries.molecule_library import MolecularComposition
 import traceback
 import numpy as np
+from simpa.utils import get_functional_from_deformation_settings
 
 
 class Structures:
@@ -74,6 +75,16 @@ class Structure:
         volume_y_dim = int(round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.voxel_spacing))
         volume_z_dim = int(round(global_settings[Tags.DIM_VOLUME_Z_MM] / self.voxel_spacing))
         self.volume_dimensions = (volume_x_dim, volume_y_dim, volume_z_dim)
+        self.do_deformation = (Tags.SIMULATE_DEFORMED_LAYERS in global_settings and
+                               global_settings[Tags.SIMULATE_DEFORMED_LAYERS])
+        if (Tags.ADHERE_TO_DEFORMATION in single_structure_settings and
+                not single_structure_settings[Tags.ADHERE_TO_DEFORMATION]):
+            self.do_deformation = False
+        if self.do_deformation and Tags.DEFORMED_LAYERS_SETTINGS in global_settings:
+            self.deformation_functional = get_functional_from_deformation_settings(
+                global_settings[Tags.DEFORMED_LAYERS_SETTINGS])
+        else:
+            self.deformation_functional = None
 
         if single_structure_settings is None:
             self.molecule_composition = MolecularComposition()
