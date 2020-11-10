@@ -32,7 +32,6 @@ def create_deformation_settings(bounds_mm, maximum_z_elevation_mm=1, filter_sigm
     FIXME
     """
     deformation_settings = dict()
-    maximum_z_elevation_mm = -maximum_z_elevation_mm
 
     number_of_boundary_points = np.random.randint(4, 6, size=2)
     surface_elevations = np.random.random(size=(number_of_boundary_points[0],
@@ -56,12 +55,14 @@ def create_deformation_settings(bounds_mm, maximum_z_elevation_mm=1, filter_sigm
             surface_elevations[x_idx, y_idx] = scaling_value * surface_elevations[x_idx, y_idx]
 
     # This rescales and sets the maximum to 0.
-    surface_elevations *= maximum_z_elevation_mm
-    surface_elevations = surface_elevations - np.max(surface_elevations)
+    surface_elevations = surface_elevations * maximum_z_elevation_mm
+    de_facto_max_elevation = np.max(surface_elevations)
+    surface_elevations = surface_elevations - de_facto_max_elevation
 
     deformation_settings[Tags.DEFORMATION_X_COORDINATES_MM] = xx
     deformation_settings[Tags.DEFORMATION_Y_COORDINATES_MM] = yy
     deformation_settings[Tags.DEFORMATION_Z_ELEVATIONS_MM] = surface_elevations
+    deformation_settings[Tags.MAX_DEFORMATION_MM] = de_facto_max_elevation
 
     return deformation_settings
 
@@ -90,7 +91,9 @@ def get_functional_from_deformation_settings(deformation_settings: dict):
 if __name__ == "__main__":
     x_bounds = [0, 9]
     y_bounds = [0, 9]
-    settings = create_deformation_settings([x_bounds, y_bounds], filter_sigma=1, cosine_scaling_factor=4)
+    max_elevation = 3
+    settings = create_deformation_settings([x_bounds, y_bounds], maximum_z_elevation_mm=max_elevation,
+                                           filter_sigma=1, cosine_scaling_factor=4)
     functional = get_functional_from_deformation_settings(settings)
 
     x_positions_vector = np.linspace(x_bounds[0], x_bounds[1], 100)
@@ -99,8 +102,9 @@ if __name__ == "__main__":
     xx, yy = np.meshgrid(x_positions_vector, y_positions_vector, indexing='ij')
 
     values = functional(x_positions_vector, y_positions_vector)
+    max_elevation = -np.min(values)
 
     plt3d = plt.figure().gca(projection='3d')
     plt3d.plot_surface(xx, yy, values, cmap="viridis")
-    plt3d.set_zlim(0, -1)
+    plt3d.set_zlim(-max_elevation, 0)
     plt.show()

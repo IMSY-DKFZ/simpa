@@ -53,20 +53,28 @@ class Tags:
     MOLECULE_COMPOSITION = "molecule_composition"
     SIMULATE_DEFORMED_LAYERS = ("simulate_deformed_layers", bool)
     DEFORMED_LAYERS_SETTINGS = ("deformed_layers_settings", dict)
+
     """
     ADHERE_TO_DEFORMATION default is True
     """
     ADHERE_TO_DEFORMATION = ("adhere_to_deformation", bool)
-    DEFORMATION_X_COORDINATES_MM = ("deformation_x_coordinates", list)
-    DEFORMATION_Y_COORDINATES_MM = ("deformation_y_coordinates", list)
-    DEFORMATION_Z_ELEVATIONS_MM = ("deformation_z_elevation", list)
+    DEFORMATION_X_COORDINATES_MM = "deformation_x_coordinates"
+    DEFORMATION_Y_COORDINATES_MM = "deformation_y_coordinates"
+    DEFORMATION_Z_ELEVATIONS_MM = "deformation_z_elevation"
+    MAX_DEFORMATION_MM = "max_deformation"
 
     """
         Structure Settings
     """
-    STRUCTURE_START = ("structure_start", (list, tuple, np.ndarray))
-    STRUCTURE_END = ("structure_end", (list, tuple, np.ndarray))
-    STRUCTURE_RADIUS = ("structure_radius", (int, np.integer, float, np.float))
+    STRUCTURE_START_MM = "structure_start"
+    STRUCTURE_END_MM = "structure_end"
+    STRUCTURE_RADIUS = "structure_radius"
+
+    """
+    Digital Device Twin Settings
+    """
+    DIGITAL_DEVICE = "digital_device"
+    DIGITAL_DEVICE_MSOT = "digital_device_msot"
 
     """
     Optical model settings

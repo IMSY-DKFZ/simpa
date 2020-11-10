@@ -24,24 +24,36 @@ from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling import save_hdf5
 from simpa.core.volume_creation.versatile_volume_creator import VersatileVolumeCreator
+from simpa.core.device_digital_twins import DEVICE_MAP
 
 
-def run_volume_creation(settings: Settings):
+def run_volume_creation(global_settings: Settings):
     print("VOLUME CREATION")
 
-    if Tags.VOLUME_CREATOR not in settings:
+    if Tags.VOLUME_CREATOR not in global_settings:
         raise AssertionError("Tags.VOLUME_CREATOR tag was not specified in the settings. Skipping optical modelling.")
 
-    model = settings[Tags.VOLUME_CREATOR]
+    model = global_settings[Tags.VOLUME_CREATOR]
     volume_creator_adapter = None
 
     if model == Tags.VOLUME_CREATOR_VERSATILE:
         volume_creator_adapter = VersatileVolumeCreator()
 
-    volumes = volume_creator_adapter.create_simulation_volume(settings)
+    pa_device = None
+    if Tags.DIGITAL_DEVICE in global_settings:
+        try:
+            pa_device = DEVICE_MAP[global_settings[Tags.DIGITAL_DEVICE]]
+            pa_device.check_settings_prerequisites(global_settings)
+        except KeyError:
+            pa_device = None
+
+    volumes = volume_creator_adapter.create_simulation_volume(global_settings)
+
+    if pa_device is not None:
+        volumes, global_settings = pa_device.adjust_simulation_volume_and_settings(volumes, global_settings)
 
     volume_path = SaveFilePaths.SIMULATION_PROPERTIES \
-        .format(Tags.ORIGINAL_DATA, str(settings[Tags.WAVELENGTH]))
-    save_hdf5(volumes, settings[Tags.SIMPA_OUTPUT_PATH], file_dictionary_path=volume_path)
+        .format(Tags.ORIGINAL_DATA, str(global_settings[Tags.WAVELENGTH]))
+    save_hdf5(volumes, global_settings[Tags.SIMPA_OUTPUT_PATH], file_dictionary_path=volume_path)
 
     return volume_path

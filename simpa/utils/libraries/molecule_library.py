@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 import numpy as np
-from simpa.utils import Tags
+from simpa.utils import Tags, StandardProperties
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties
 from simpa.utils import AbsorptionSpectrum
@@ -291,13 +291,36 @@ class MoleculeLibrary(object):
                         anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
 
     def bone(self, volume_fraction: float = 1.0):
-        return Molecule(name="bone",
+        return Molecule(
+            name="bone",
             spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
             volume_fraction=volume_fraction,
             mus500=OpticalTissueProperties.MUS500_BONE,
             b_mie=OpticalTissueProperties.BMIE_BONE,
             f_ray=OpticalTissueProperties.FRAY_BONE,
             anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
+        )
+
+    def mediprene(self, volume_fraction: float = 1.0):
+        return Molecule(
+            name="mediprene",
+            spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),
+            volume_fraction=volume_fraction,
+            mus500=(-np.log(0.85)) - (-np.log(0.85) / 10),
+            b_mie=0.0,
+            f_ray=0.0,
+            anisotropy=0.9
+        )
+
+    def heavy_water(self, volume_fraction: float = 1.0):
+        return Molecule(
+            name="heavy_water",
+            spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA),
+            volume_fraction=volume_fraction,
+            mus500=StandardProperties.AIR_MUS,
+            b_mie=0.0,
+            f_ray=0.0,
+            anisotropy=StandardProperties.AIR_G
         )
 
 

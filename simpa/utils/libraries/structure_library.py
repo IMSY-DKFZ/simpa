@@ -71,20 +71,22 @@ class Structure:
     def __init__(self, global_settings: Settings, single_structure_settings: Settings = None):
 
         self.voxel_spacing = global_settings[Tags.SPACING_MM]
-        volume_x_dim = int(round(global_settings[Tags.DIM_VOLUME_X_MM] / self.voxel_spacing))
-        volume_y_dim = int(round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.voxel_spacing))
-        volume_z_dim = int(round(global_settings[Tags.DIM_VOLUME_Z_MM] / self.voxel_spacing))
-        self.volume_dimensions = (volume_x_dim, volume_y_dim, volume_z_dim)
+        volume_x_dim = int(np.round(global_settings[Tags.DIM_VOLUME_X_MM] / self.voxel_spacing))
+        volume_y_dim = int(np.round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.voxel_spacing))
+        volume_z_dim = int(np.round(global_settings[Tags.DIM_VOLUME_Z_MM] / self.voxel_spacing))
+        self.volume_dimensions_pixels = np.asarray([volume_x_dim, volume_y_dim, volume_z_dim])
+        print(self.volume_dimensions_pixels)
+        self.volume_dimensions_mm = self.volume_dimensions_pixels * self.voxel_spacing
         self.do_deformation = (Tags.SIMULATE_DEFORMED_LAYERS in global_settings and
                                global_settings[Tags.SIMULATE_DEFORMED_LAYERS])
         if (Tags.ADHERE_TO_DEFORMATION in single_structure_settings and
                 not single_structure_settings[Tags.ADHERE_TO_DEFORMATION]):
             self.do_deformation = False
         if self.do_deformation and Tags.DEFORMED_LAYERS_SETTINGS in global_settings:
-            self.deformation_functional = get_functional_from_deformation_settings(
+            self.deformation_functional_mm = get_functional_from_deformation_settings(
                 global_settings[Tags.DEFORMED_LAYERS_SETTINGS])
         else:
-            self.deformation_functional = None
+            self.deformation_functional_mm = None
 
         if single_structure_settings is None:
             self.molecule_composition = MolecularComposition()
@@ -124,8 +126,9 @@ class GeometricalStructure(Structure):
     def __init__(self, global_settings: Settings, single_structure_settings: Settings):
         super().__init__(global_settings, single_structure_settings)
 
-        self.geometrical_volume = np.zeros(self.volume_dimensions)
+        self.geometrical_volume = np.zeros(self.volume_dimensions_pixels)
         self.fill_volume(single_structure_settings)
+        self.params = self.get_params_from_settings(single_structure_settings)
 
     def fill_volume(self, single_structure_settings):
         params = self.get_params_from_settings(single_structure_settings)
@@ -144,18 +147,95 @@ class GeometricalStructure(Structure):
         pass
 
 
-class TubularStructure(GeometricalStructure):
+class HorizontalLayerStructure(GeometricalStructure):
+
     def get_params_from_settings(self, single_structure_settings):
-        params = single_structure_settings[Tags.STRUCTURE_START], \
-                 single_structure_settings[Tags.STRUCTURE_END], \
-                 single_structure_settings[Tags.STRUCTURE_RADIUS]
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
+                  single_structure_settings[Tags.STRUCTURE_END_MM])
         return params
+
+    def to_settings(self):
+        settings = super().to_settings()
+        settings[Tags.STRUCTURE_START_MM] = self.params[0]
+        settings[Tags.STRUCTURE_END_MM] = self.params[1]
+        return settings
+
+    def get_enclosed_indices(self, params):
+        start_mm = np.asarray(params[0])
+        end_mm = np.asarray(params[1])
+        start_voxels = np.round(start_mm / self.voxel_spacing)
+        direction_mm = end_mm - start_mm
+        depth_voxels = np.round(direction_mm[2] / self.voxel_spacing)
+        if direction_mm[0] != 0 or direction_mm[1] != 0 or direction_mm[2] == 0:
+
+            raise ValueError("Horizontal Layer structure needs a start and end vector in the form of [0, 0, n].")
+
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_pixels[0]),
+                              np.arange(self.volume_dimensions_pixels[1]),
+                              np.arange(self.volume_dimensions_pixels[2]),
+                              indexing='ij')
+
+        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
+        target_vector = target_vector[:, :, :, 2]
+        if self.do_deformation:
+            # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
+            deformation_values = self.deformation_functional_mm(np.arange(self.volume_dimensions_pixels[0], step=1) *
+                                                                self.voxel_spacing,
+                                                                np.arange(self.volume_dimensions_pixels[1], step=1) *
+                                                                self.voxel_spacing).T
+            target_vector = target_vector + (deformation_values.reshape(self.volume_dimensions_pixels[0],
+                                                                        self.volume_dimensions_pixels[1], 1)
+                                             / self.voxel_spacing)
+
+        return ((target_vector[:, :, :] >= 0) & (target_vector[:, :, :] <= depth_voxels)), 1
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+    from simpa.utils.deformation_manager import create_deformation_settings
+    global_settings = Settings()
+    global_settings[Tags.SPACING_MM] = 0.1
+    global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = False
+    global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 10], [0, 20]],
+                                                                                 maximum_z_elevation_mm=3)
+    global_settings[Tags.DIM_VOLUME_X_MM] = 10
+    global_settings[Tags.DIM_VOLUME_Y_MM] = 10
+    global_settings[Tags.DIM_VOLUME_Z_MM] = 10
+    structure_settings = Settings()
+    structure_settings[Tags.STRUCTURE_START_MM] = [0, 0, 4]
+    structure_settings[Tags.STRUCTURE_END_MM] = [0, 0, 4.1]
+    structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+    structure_settings[Tags.ADHERE_TO_DEFORMATION] = True
+    ls = HorizontalLayerStructure(global_settings, structure_settings)
+    plt.subplot(121)
+    plt.imshow(ls.geometrical_volume[int(global_settings[Tags.DIM_VOLUME_X_MM] /
+                                         global_settings[Tags.SPACING_MM] / 2), :, :])
+    plt.subplot(122)
+    plt.imshow(ls.geometrical_volume[:, int(global_settings[Tags.DIM_VOLUME_Y_MM] /
+                                            global_settings[Tags.SPACING_MM] / 2), :])
+    plt.show()
+
+
+class TubularStructure(GeometricalStructure):
+
+    def get_params_from_settings(self, single_structure_settings):
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
+                  single_structure_settings[Tags.STRUCTURE_END_MM],
+                  single_structure_settings[Tags.STRUCTURE_RADIUS])
+        return params
+
+    def to_settings(self):
+        settings = super().to_settings()
+        settings[Tags.STRUCTURE_START_MM] = self.params[0]
+        settings[Tags.STRUCTURE_END_MM] = self.params[1]
+        settings[Tags.STRUCTURE_RADIUS] = self.params[2]
+        return settings
 
     def get_enclosed_indices(self, params):
         start, end, radius = params
-        x, y, z = np.meshgrid(np.arange(self.volume_dimensions[0]),
-                              np.arange(self.volume_dimensions[1]),
-                              np.arange(self.volume_dimensions[2]),
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_pixels[0]),
+                              np.arange(self.volume_dimensions_pixels[1]),
+                              np.arange(self.volume_dimensions_pixels[2]),
                               indexing='ij')
 
         target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)
@@ -167,32 +247,31 @@ class TubularStructure(GeometricalStructure):
 
         return target_radius < radius, 1
 
-    def to_settings(self) -> dict:
-        settings_dict = super().to_settings()
-        return settings_dict
-
 
 class SphericalStructure(GeometricalStructure):
+
     def get_params_from_settings(self, single_structure_settings):
-        params = single_structure_settings[Tags.STRUCTURE_START], \
+        params = single_structure_settings[Tags.STRUCTURE_START_MM], \
                  single_structure_settings[Tags.STRUCTURE_RADIUS]
         return params
 
+    def to_settings(self):
+        settings = super().to_settings()
+        settings[Tags.STRUCTURE_START_MM] = self.params[0]
+        settings[Tags.STRUCTURE_RADIUS] = self.params[2]
+        return settings
+
     def get_enclosed_indices(self, params):
         start, radius = params
-        x, y, z = np.meshgrid(np.arange(self.volume_dimensions[0]),
-                              np.arange(self.volume_dimensions[1]),
-                              np.arange(self.volume_dimensions[2]),
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_pixels[0]),
+                              np.arange(self.volume_dimensions_pixels[1]),
+                              np.arange(self.volume_dimensions_pixels[2]),
                               indexing='ij')
 
         target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)
         target_radius = np.linalg.norm(target_vector, axis=-1)
 
         return target_radius < radius, 1
-
-    def to_settings(self) -> dict:
-        settings_dict = super().to_settings()
-        return settings_dict
 
 
 class Background(Structure):

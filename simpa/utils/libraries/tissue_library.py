@@ -247,5 +247,14 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.BONE))
 
+    def mediprene(self):
+        return (MolecularCompositionGenerator()
+                .append(MOLECULE_LIBRARY.mediprene())
+                .get_molecular_composition(SegmentationClasses.MEDIPRENE))
+
+    def heavy_water(self):
+        return (MolecularCompositionGenerator()
+                .append(MOLECULE_LIBRARY.heavy_water())
+                .get_molecular_composition(SegmentationClasses.HEAVY_WATER))
 
 TISSUE_LIBRARY = TissueLibrary()

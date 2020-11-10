@@ -26,7 +26,7 @@ import numpy as np
 from simpa.utils import SaveFilePaths
 
 PATH = "D:/bin/MyVolumeName_4711/simpa_output.hdf5"
-WAVELENGTH = 800
+WAVELENGTH = 700
 
 file = load_hdf5(PATH)
 
@@ -45,26 +45,26 @@ shape = np.shape(fluence)
 if len(shape) > 2:
     plt.figure()
     plt.subplot(231)
-    plt.imshow(np.log10(fluence[int(shape[0]/2), :, :]))
+    plt.imshow(np.rot90(np.log10(fluence[int(shape[0]/2), :, :]), -1))
     plt.subplot(232)
-    plt.imshow(np.log10(absorption[int(shape[0]/2), :, :]))
+    plt.imshow(np.rot90(np.log10(absorption[int(shape[0]/2), :, :]), -1))
     plt.subplot(233)
-    plt.imshow(np.log10(initial_pressure[int(shape[0]/2), :, :]))
+    plt.imshow(np.rot90(np.log10(initial_pressure[int(shape[0]/2), :, :]), -1))
     plt.subplot(234)
-    plt.imshow(np.log10(fluence[:, int(shape[1]/2), :]))
+    plt.imshow(np.rot90(np.log10(fluence[:, int(shape[1]/2), :]), -1))
     plt.subplot(235)
-    plt.imshow(np.log10(absorption[:, int(shape[1]/2), :]))
+    plt.imshow(np.rot90(np.log10(absorption[:, int(shape[1]/2), :]), -1))
     plt.subplot(236)
-    plt.imshow(np.log10(initial_pressure[:, int(shape[1]/2), :]))
+    plt.imshow(np.rot90(np.log10(initial_pressure[:, int(shape[1]/2), :]), -1))
     plt.show()
 else:
     plt.figure()
     plt.subplot(131)
-    plt.imshow(np.log10(fluence[1:129, -65:-1]))
+    plt.imshow(np.rot90(np.log10(fluence[1:129, -65:-1]), -1))
     plt.subplot(132)
-    plt.imshow(np.log10(absorption[1:129, -65:-1]))
+    plt.imshow(np.rot90(np.log10(absorption[1:129, -65:-1]), -1))
     plt.subplot(133)
-    plt.imshow(np.log10(initial_pressure[1:129, -65:-1]))
+    plt.imshow(np.rot90(np.log10(initial_pressure[1:129, -65:-1]), -1))
     plt.show()
 
 save_hdf5(file, PATH)

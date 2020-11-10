@@ -67,13 +67,22 @@ def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/")
                         except RuntimeError as e:
                             print("item", item, "of type", type(item), "was not serializable! Full exception:", e)
                             raise e
+                    except TypeError as e:
+                        print("The key", key, "was not of the correct typing for HDF5 handling."
+                              "Make sure this key is not a tuple.")
+                        raise e
             elif item is None:
                 h5file[path + key] = "None"
             elif isinstance(item, list):
                 list_dict = dict()
                 for i, list_item in enumerate(item):
                     list_dict[str(i)] = list_item
-                data_grabber(file, path + key + "/list/", list_dict)
+                try:
+                    data_grabber(file, path + key + "/list/", list_dict)
+                except TypeError as e:
+                    print("The key", key, "was not of the correct typing for HDF5 handling."
+                                          "Make sure this key is not a tuple.")
+                    raise e
             else:
                 data_grabber(file, path + key + "/", item)
 

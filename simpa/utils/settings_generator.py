@@ -74,7 +74,7 @@ class Settings(dict):
             try:
                 return super().__delitem__(key[0])
             except KeyError:
-                raise KeyError("The key '{}' is not in the Settings dictionary".format(item[0])) from None
+                raise KeyError("The key '{}' is not in the Settings dictionary".format(key)) from None
 
     def add_minimal_meta_information(self, volume_name: str = None, simulation_path: str = None,
                                      random_seed: int = None, spacing: float = None, volume_dim_x: (int, float) = None,

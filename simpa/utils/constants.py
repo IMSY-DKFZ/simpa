@@ -51,3 +51,6 @@ class SegmentationClasses:
     FAT = 6
     ULTRASOUND_GEL_PAD = 7
     WATER = 8
+    HEAVY_WATER = 9
+    COUPLING_ARTIFACT = 10
+    MEDIPRENE = 11

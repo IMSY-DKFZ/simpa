@@ -24,6 +24,7 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 
 from simpa.core.simulation import simulate
 from simpa.utils.libraries.structure_library import Background
+from simpa.utils.libraries.structure_library import HorizontalLayerStructure
 from simpa.utils.settings_generator import Settings
 from simpa.utils import create_deformation_settings
 
@@ -45,12 +46,37 @@ def create_example_tissue(global_settings):
     It contains a muscular background, an epidermis layer on top of the muscles
     and a blood vessel.
     """
-    single_structure_dictionary = dict()
-    single_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    bg = Background(global_settings, Settings(single_structure_dictionary))
+    background_dictionary = Settings()
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
+    bg = Background(global_settings, background_dictionary)
+
+    muscle_dictionary = Settings()
+    muscle_dictionary[Tags.PRIORITY] = 1
+    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
+    muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+    muscle = HorizontalLayerStructure(global_settings, muscle_dictionary)
+
+    dermis_dictionary = Settings()
+    dermis_dictionary[Tags.PRIORITY] = 2
+    dermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    dermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 5]
+    dermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.dermis()
+    dermis = HorizontalLayerStructure(global_settings, dermis_dictionary)
+
+    epidermis_dictionary = Settings()
+    epidermis_dictionary[Tags.PRIORITY] = 3
+    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 3]
+    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+    epidermis = HorizontalLayerStructure(global_settings, epidermis_dictionary)
+
 
     tissue_dict = dict()
     tissue_dict["background"] = bg.to_settings()
+    tissue_dict["muscle"] = muscle.to_settings()
+    tissue_dict["dermis"] = dermis.to_settings()
+    tissue_dict["epidermis"] = epidermis.to_settings()
     return tissue_dict
 
 # Seed the numpy random configuration prior to creating the settings file in
@@ -68,14 +94,14 @@ settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_WIDTH_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_WIDTH_IN_MM,
-    Tags.SIMULATE_DEFORMED_LAYERS: True,
-    Tags.DEFORMED_LAYERS_SETTINGS: create_deformation_settings(),
-
     Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+
+    # Simulation Device
+    Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
 
     # The following parameters set the optical forward model
     Tags.RUN_OPTICAL_MODEL: True,
-    Tags.WAVELENGTHS: [800],
+    Tags.WAVELENGTHS: [700],
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
@@ -93,6 +119,11 @@ settings = {
 
 }
 settings = Settings(settings)
+settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
+np.random.seed(RANDOM_SEED)
+settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, settings[Tags.DIM_VOLUME_X_MM]],
+                                                                                 [0, settings[Tags.DIM_VOLUME_Y_MM]]],
+                                                                      maximum_z_elevation_mm=3)
 settings[Tags.STRUCTURES] = create_example_tissue(settings)
 print("Simulating ", RANDOM_SEED)
 import time
