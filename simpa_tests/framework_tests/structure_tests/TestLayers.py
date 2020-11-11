@@ -39,8 +39,8 @@ class TestLayers(unittest.TestCase):
                                                                                           maximum_z_elevation_mm=3,
                                                                                           filter_sigma=0,
                                                                                           cosine_scaling_factor=4)
-        self.global_settings[Tags.DIM_VOLUME_X_MM] = 1
-        self.global_settings[Tags.DIM_VOLUME_Y_MM] = 1
+        self.global_settings[Tags.DIM_VOLUME_X_MM] = 2
+        self.global_settings[Tags.DIM_VOLUME_Y_MM] = 2
         self.global_settings[Tags.DIM_VOLUME_Z_MM] = 6
 
         self.layer_settings = Settings()

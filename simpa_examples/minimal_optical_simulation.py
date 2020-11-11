@@ -34,9 +34,9 @@ import numpy as np
 SAVE_PATH = "D:/bin/"
 MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
 
-VOLUME_WIDTH_IN_MM = 40
+VOLUME_WIDTH_IN_MM = 10
 VOLUME_HEIGHT_IN_MM = 10
-SPACING = 1.23
+SPACING = 0.34345
 RANDOM_SEED = 4711
 
 

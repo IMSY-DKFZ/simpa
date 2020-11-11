@@ -193,10 +193,10 @@ class HorizontalLayerStructure(GeometricalStructure):
         volume_fractions[bools_first_layer] = 1-np.abs(target_vector_voxels[bools_first_layer])
 
         initial_fractions = np.max(volume_fractions, axis=2, keepdims=True)
-        floored_depth_voxels = int(np.floor(depth_voxels-initial_fractions))
+        floored_depth_voxels = np.floor(depth_voxels-initial_fractions)
 
         bools_last_layer = ((target_vector_voxels >= floored_depth_voxels) &
-                            (target_vector_voxels <= floored_depth_voxels + initial_fractions))
+                            (target_vector_voxels <= floored_depth_voxels + 1))
 
         volume_fractions[bools_last_layer] = depth_voxels - target_vector_voxels[bools_last_layer]
         volume_fractions[volume_fractions > depth_voxels] = depth_voxels
@@ -215,14 +215,14 @@ if __name__ == "__main__":
     from simpa.utils.deformation_manager import create_deformation_settings
     global_settings = Settings()
     global_settings[Tags.SPACING_MM] = 1
-    global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = False
-    global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 20], [0, 20]],
+    global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
+    global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 100], [0, 100]],
                                                                                  maximum_z_elevation_mm=3,
                                                                                  filter_sigma=0,
                                                                                  cosine_scaling_factor=4)
-    global_settings[Tags.DIM_VOLUME_X_MM] = 1
-    global_settings[Tags.DIM_VOLUME_Y_MM] = 1
-    global_settings[Tags.DIM_VOLUME_Z_MM] = 6
+    global_settings[Tags.DIM_VOLUME_X_MM] = 100
+    global_settings[Tags.DIM_VOLUME_Y_MM] = 100
+    global_settings[Tags.DIM_VOLUME_Z_MM] = 10
     structure_settings = Settings()
     structure_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.3]
     structure_settings[Tags.STRUCTURE_END_MM] = [0, 0, 3.5]
