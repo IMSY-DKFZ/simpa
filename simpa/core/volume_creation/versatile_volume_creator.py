@@ -41,93 +41,34 @@ class VersatileVolumeCreator(VolumeCreatorBase):
         """
 
         volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes(settings)
+        global_volume_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
         wavelength = 800
 
         structure_list = Structures(settings)
-        properties = np.empty((len(structure_list.sorted_structures)), dtype=TissueProperties)
-        priorities = np.fromiter([structure.priority for structure in structure_list.sorted_structures], int)
-        for z_idx_px in range(z_dim_px):
-            print(z_idx_px)
-            for y_idx_px in range(y_dim_px):
-                for x_idx_px in range(x_dim_px):
+        priority_sorted_structures = structure_list.sorted_structures
 
-                    for i in range(len(properties)):
-                        properties[i] = structure_list.sorted_structures[i].properties_for_voxel_and_wavelength(x_idx_px, y_idx_px,
-                                                                                                                z_idx_px, wavelength)
-                    # priorities = priorities[properties != np.array(None)]
-                    # properties = properties[properties != np.array(None)]
-                    if len(properties) == 0:
-                        continue
-                    elif len(properties) > 1:
-                        merged_property = self.merge_structures(properties, priorities, max(priorities))
-                    else:
-                        merged_property = properties[0]
-                    modify_volumes(volumes, merged_property, x_idx_px, y_idx_px, z_idx_px)
+        for structure in priority_sorted_structures:
+            print(type(structure))
+            structure_properties = structure.properties_for_wavelength(wavelength)
+            structure_volume_fractions = structure.geometrical_volume
+            structure_indexes_mask = structure_volume_fractions > 0
+            global_volume_fractions_mask = global_volume_fractions <= 1
+            mask = structure_indexes_mask & global_volume_fractions_mask
+            added_volume_fraction = (global_volume_fractions + structure_volume_fractions)
+
+            added_volume_fraction[added_volume_fraction <= 1 & mask] = structure_volume_fractions[added_volume_fraction <= 1 & mask]
+
+            selector_more_than_1 = added_volume_fraction > 1
+            if selector_more_than_1.any():
+                hallo_a = 1 - global_volume_fractions[selector_more_than_1]
+                hallo_b = structure_volume_fractions[selector_more_than_1]
+                hallo_c = np.min([hallo_a, hallo_b], axis=0)
+                added_volume_fraction[selector_more_than_1] = hallo_c
+            for key in volumes.keys():
+                if structure_properties[key] is None:
+                    continue
+                volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
+
+            global_volume_fractions[mask] += added_volume_fraction[mask]
 
         return volumes
-
-    def merge_structures(self, properties, priorities, min_priority):
-        """
-        TODO DO MERGIC
-        :param properties:
-        :param priorities:
-        :param min_priority:
-        """
-        if min_priority == -1:
-            # Are there no structures left and the weights sum to less than 1?
-            # Proceed with the merging!
-            return merge_properties(properties, priorities, True)
-
-        prio_properties = properties[priorities >= min_priority]
-        prio_priorities = priorities[priorities >= min_priority]
-        weights = [prop.volume_fraction for prop in prio_properties]
-
-        if np.sum(weights) < 1:
-            # If the sum is smaller than one, check if there are more low priority structures!
-            return self.merge_structures(properties, priorities, min_priority - 1)
-        elif np.abs(np.sum(weights) - 1) < self.EPS:
-            # If the sum is exactly one, merge the properties!
-            return merge_properties(prio_properties, prio_priorities, True)
-        else:
-            # If the sum is larger than one, also merge the properties
-            return merge_properties(prio_properties, prio_priorities, False)
-
-
-def merge_properties(properties, priorities, force_unnormalised_merge):
-    """
-    #TODO
-    :param properties:
-    :param priorities:
-    :param force_unnormalised_merge:
-    """
-
-    if force_unnormalised_merge:
-        return TissueProperties.weighted_merge(properties)
-    else:
-        if min(priorities) < max(priorities):
-            high_prio_properties = properties[priorities > min(priorities)]
-            low_prio_properties = properties[priorities == min(priorities)]
-            high_prio_weights = [prop.volume_fraction for prop in high_prio_properties]
-            weight_sum = np.sum(high_prio_weights)
-            #TODO Error if weight_sum > 1
-            high_prio_property = TissueProperties.weighted_merge(high_prio_properties)
-            low_prio_property = TissueProperties.weighted_merge(low_prio_properties)
-            high_prio_property["weight"] = weight_sum
-            low_prio_property["weight"] = 1-weight_sum
-            return TissueProperties.weighted_merge([high_prio_property, low_prio_property])
-        else:
-            return TissueProperties.normalized_merge(properties)
-
-
-def modify_volumes(volumes, merged_property, x_idx_px, y_idx_px, z_idx_px):
-    """
-    # TODO
-    :param volumes:
-    :param merged_property:
-    :param x_idx_px:
-    :param y_idx_px:
-    :param z_idx_px:
-    """
-    keys = merged_property.keys()
-    for key in keys:
-        volumes[key][x_idx_px, y_idx_px, z_idx_px] = merged_property[key]

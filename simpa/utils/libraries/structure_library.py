@@ -40,7 +40,7 @@ class Structures:
         TODO
         """
         self.structures = self.from_settings(settings)
-        self.sorted_structures = sorted(self.structures, key=operator.attrgetter('priority'))
+        self.sorted_structures = sorted(self.structures, key=operator.attrgetter('priority'), reverse=True)
 
     def from_settings(self, global_settings):
         structures = list()
@@ -55,7 +55,7 @@ class Structures:
                 structure = structure_class(global_settings, Settings(single_structure_settings))
                 structures.append(structure)
             except Exception as e:
-                print("An exception has occurred while trying to parse the structure from the dictionary.")
+                print("An exception has occurred while trying to parse ", single_structure_settings[Tags.STRUCTURE_TYPE]," from the dictionary.")
                 print("The structure type was", single_structure_settings[Tags.STRUCTURE_TYPE])
                 print(traceback.format_exc())
                 print("trying to continue as normal...")
@@ -63,7 +63,7 @@ class Structures:
         return structures
 
 
-class Structure:
+class GeometricalStructure:
     """
     TODO
     """
@@ -99,15 +99,24 @@ class Structure:
         self.molecule_composition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
         self.molecule_composition.update_internal_properties()
 
-    def properties_for_voxel_and_wavelength(self, x_idx_px, y_idx_px, z_idx_px, wavelength) -> TissueProperties:
-        tp = self.molecule_composition.get_properties_for_wavelength(wavelength)
-        volume_fraction = self.volume_fraction_for_voxel(x_idx_px, y_idx_px, z_idx_px)
-        tp.volume_fraction = volume_fraction
-        return tp
+        self.geometrical_volume = np.zeros(self.volume_dimensions_voxels)
+        self.params = self.get_params_from_settings(single_structure_settings)
+        self.fill_internal_volume()
+
+    def fill_internal_volume(self):
+        indices, values = self.get_enclosed_indices()
+        self.geometrical_volume[indices] = values
 
     @abstractmethod
-    def volume_fraction_for_voxel(self, x_idx_px, y_idx_px, z_idx_px) -> float:
+    def get_enclosed_indices(self):
         pass
+
+    @abstractmethod
+    def get_params_from_settings(self, single_structure_settings):
+        pass
+
+    def properties_for_wavelength(self, wavelength) -> TissueProperties:
+        return self.molecule_composition.get_properties_for_wavelength(wavelength)
 
     @abstractmethod
     def to_settings(self) -> dict:
@@ -120,31 +129,6 @@ class Structure:
         settings_dict[Tags.STRUCTURE_TYPE] = self.__class__.__name__
         settings_dict[Tags.MOLECULE_COMPOSITION] = self.molecule_composition
         return settings_dict
-
-
-class GeometricalStructure(Structure):
-    def __init__(self, global_settings: Settings, single_structure_settings: Settings):
-        super().__init__(global_settings, single_structure_settings)
-
-        self.geometrical_volume = np.zeros(self.volume_dimensions_voxels)
-        self.fill_internal_volume(single_structure_settings)
-        self.params = self.get_params_from_settings(single_structure_settings)
-
-    def fill_internal_volume(self, single_structure_settings):
-        params = self.get_params_from_settings(single_structure_settings)
-        indices, values = self.get_enclosed_indices(params)
-        self.geometrical_volume[indices] = values
-
-    def volume_fraction_for_voxel(self, x_idx_px, y_idx_px, z_idx_px) -> float:
-        return self.geometrical_volume[x_idx_px, y_idx_px, z_idx_px]
-
-    @abstractmethod
-    def get_enclosed_indices(self, params):
-        pass
-
-    @abstractmethod
-    def get_params_from_settings(self, single_structure_settings):
-        pass
 
 
 class HorizontalLayerStructure(GeometricalStructure):
@@ -160,9 +144,9 @@ class HorizontalLayerStructure(GeometricalStructure):
         settings[Tags.STRUCTURE_END_MM] = self.params[1]
         return settings
 
-    def get_enclosed_indices(self, params):
-        start_mm = np.asarray(params[0])
-        end_mm = np.asarray(params[1])
+    def get_enclosed_indices(self):
+        start_mm = np.asarray(self.params[0])
+        end_mm = np.asarray(self.params[1])
         start_voxels = start_mm / self.voxel_spacing
         direction_mm = end_mm - start_mm
         depth_voxels = direction_mm[2] / self.voxel_spacing
@@ -253,8 +237,8 @@ class TubularStructure(GeometricalStructure):
         settings[Tags.STRUCTURE_RADIUS] = self.params[2]
         return settings
 
-    def get_enclosed_indices(self, params):
-        start, end, radius = params
+    def get_enclosed_indices(self):
+        start, end, radius = self.params
         x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
                               np.arange(self.volume_dimensions_voxels[1]),
                               np.arange(self.volume_dimensions_voxels[2]),
@@ -283,8 +267,8 @@ class SphericalStructure(GeometricalStructure):
         settings[Tags.STRUCTURE_RADIUS] = self.params[2]
         return settings
 
-    def get_enclosed_indices(self, params):
-        start, radius = params
+    def get_enclosed_indices(self):
+        start, radius = self.params
         x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
                               np.arange(self.volume_dimensions_voxels[1]),
                               np.arange(self.volume_dimensions_voxels[2]),
@@ -296,7 +280,16 @@ class SphericalStructure(GeometricalStructure):
         return target_radius < radius, 1
 
 
-class Background(Structure):
+class Background(GeometricalStructure):
+
+    def get_enclosed_indices(self):
+        array = np.ones((self.volume_dimensions_voxels[0],
+                         self.volume_dimensions_voxels[1],
+                         self.volume_dimensions_voxels[2]))
+        return array == 1, 1
+
+    def get_params_from_settings(self, single_structure_settings):
+        return None
 
     def __init__(self, global_settings: Settings, background_settings: Settings = None):
 
@@ -306,9 +299,6 @@ class Background(Structure):
         else:
             super().__init__(global_settings)
             self.priority = 0
-
-    def volume_fraction_for_voxel(self, x_idx_px, y_idx_px, z_idx_px) -> float:
-        return 1.0
 
     def to_settings(self) -> dict:
         settings_dict = super().to_settings()
