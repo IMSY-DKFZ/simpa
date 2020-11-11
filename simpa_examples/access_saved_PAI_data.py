@@ -21,9 +21,28 @@
 # SOFTWARE.
 
 from simpa.io_handling import load_hdf5, save_hdf5
-import matplotlib.pylab as plt
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
-from simpa.utils import SaveFilePaths
+from simpa.utils import SegmentationClasses
+
+values = []
+names = []
+
+for string in SegmentationClasses.__dict__:
+    if string[0:2] != "__":
+        values.append(SegmentationClasses.__dict__[string])
+        names.append(string)
+
+values = np.asarray(values)
+names = np.asarray(names)
+sort_indexes = np.argsort(values)
+values = values[sort_indexes]
+names = names[sort_indexes]
+
+colors = [list(np.random.random(3)) for _ in range(len(names))]
+cmap = mpl.colors.LinearSegmentedColormap.from_list(
+    'Custom cmap', colors, len(names))
 
 PATH = "D:/bin/MyVolumeName_4711/simpa_output.hdf5"
 WAVELENGTH = 700
@@ -40,22 +59,33 @@ initial_pressure = (file['simulations']['original_data']
 absorption = (file['simulations']['original_data']['simulation_properties']
               [str(WAVELENGTH)]['mua'])
 
+segmentation = (file['simulations']['original_data']['simulation_properties']
+              [str(WAVELENGTH)]['seg'])
+
 shape = np.shape(fluence)
 
 if len(shape) > 2:
     plt.figure()
-    plt.subplot(231)
+    plt.subplot(241)
     plt.imshow(np.rot90(np.log10(fluence[int(shape[0]/2), :, :]), -1))
-    plt.subplot(232)
+    plt.subplot(242)
     plt.imshow(np.rot90(np.log10(absorption[int(shape[0]/2), :, :]), -1))
-    plt.subplot(233)
+    plt.subplot(243)
     plt.imshow(np.rot90(np.log10(initial_pressure[int(shape[0]/2), :, :]), -1))
-    plt.subplot(234)
+    plt.subplot(244)
+    plt.imshow(np.rot90(segmentation[int(shape[0] / 2), :, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+    cbar = plt.colorbar(ticks=values)
+    cbar.ax.set_yticklabels(names)
+    plt.subplot(245)
     plt.imshow(np.rot90(np.log10(fluence[:, int(shape[1]/2), :]), -1))
-    plt.subplot(235)
+    plt.subplot(246)
     plt.imshow(np.rot90(np.log10(absorption[:, int(shape[1]/2), :]), -1))
-    plt.subplot(236)
+    plt.subplot(247)
     plt.imshow(np.rot90(np.log10(initial_pressure[:, int(shape[1]/2), :]), -1))
+    plt.subplot(248)
+    plt.imshow(np.rot90(segmentation[:, int(shape[1] / 2), :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+    cbar = plt.colorbar(ticks=values)
+    cbar.ax.set_yticklabels(names)
     plt.show()
 else:
     plt.figure()
@@ -67,4 +97,3 @@ else:
     plt.imshow(np.rot90(np.log10(initial_pressure[1:129, -65:-1]), -1))
     plt.show()
 
-save_hdf5(file, PATH)

@@ -22,7 +22,7 @@
 
 from simpa.core.volume_creation import VolumeCreatorBase
 from simpa.utils.libraries.structure_library import Structures
-from simpa.utils.tissue_properties import TissueProperties
+from simpa.utils import Tags
 import numpy as np
 
 
@@ -48,7 +48,6 @@ class VersatileVolumeCreator(VolumeCreatorBase):
         priority_sorted_structures = structure_list.sorted_structures
 
         for structure in priority_sorted_structures:
-            print(type(structure))
             structure_properties = structure.properties_for_wavelength(wavelength)
             structure_volume_fractions = structure.geometrical_volume
             structure_indexes_mask = structure_volume_fractions > 0
@@ -56,18 +55,23 @@ class VersatileVolumeCreator(VolumeCreatorBase):
             mask = structure_indexes_mask & global_volume_fractions_mask
             added_volume_fraction = (global_volume_fractions + structure_volume_fractions)
 
-            added_volume_fraction[added_volume_fraction <= 1 & mask] = structure_volume_fractions[added_volume_fraction <= 1 & mask]
+            added_volume_fraction[added_volume_fraction <= 1 & mask] = structure_volume_fractions[
+                added_volume_fraction <= 1 & mask]
 
             selector_more_than_1 = added_volume_fraction > 1
             if selector_more_than_1.any():
-                hallo_a = 1 - global_volume_fractions[selector_more_than_1]
-                hallo_b = structure_volume_fractions[selector_more_than_1]
-                hallo_c = np.min([hallo_a, hallo_b], axis=0)
-                added_volume_fraction[selector_more_than_1] = hallo_c
+                remaining_volume_fraction_to_fill = 1 - global_volume_fractions[selector_more_than_1]
+                fraction_to_be_filled = structure_volume_fractions[selector_more_than_1]
+                added_volume_fraction[selector_more_than_1] = np.min([remaining_volume_fraction_to_fill,
+                                                                      fraction_to_be_filled], axis=0)
             for key in volumes.keys():
                 if structure_properties[key] is None:
                     continue
-                volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
+                if key == Tags.PROPERTY_SEGMENTATION:
+                    added_fraction_greater_than_filled_fraction = added_volume_fraction > global_volume_fractions
+                    volumes[key][added_fraction_greater_than_filled_fraction & mask] = structure_properties[key]
+                else:
+                    volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
 
             global_volume_fractions[mask] += added_volume_fraction[mask]
 

@@ -36,7 +36,7 @@ MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
 
 VOLUME_WIDTH_IN_MM = 50
 VOLUME_HEIGHT_IN_MM = 20
-SPACING = 0.2
+SPACING = 0.432
 RANDOM_SEED = 4711
 
 
@@ -67,7 +67,7 @@ def create_example_tissue(global_settings):
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 3
     epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 3]
+    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
     epidermis = HorizontalLayerStructure(global_settings, epidermis_dictionary)
 
