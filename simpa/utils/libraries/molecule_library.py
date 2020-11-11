@@ -304,9 +304,9 @@ class MoleculeLibrary(object):
     def mediprene(self, volume_fraction: float = 1.0):
         return Molecule(
             name="mediprene",
-            spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),
+            spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),  # FIXME
             volume_fraction=volume_fraction,
-            mus500=(-np.log(0.85)) - (-np.log(0.85) / 10),
+            mus500=(-np.log(0.85)) - (-np.log(0.85) / 10),  # FIXME
             b_mie=0.0,
             f_ray=0.0,
             anisotropy=0.9

@@ -47,10 +47,10 @@ def run_volume_creation(global_settings: Settings):
         except KeyError:
             pa_device = None
 
-    volumes = volume_creator_adapter.create_simulation_volume(global_settings)
-
     if pa_device is not None:
-        volumes, global_settings = pa_device.adjust_simulation_volume_and_settings(volumes, global_settings)
+        global_settings = pa_device.adjust_simulation_volume_and_settings(global_settings)
+
+    volumes = volume_creator_adapter.create_simulation_volume(global_settings)
 
     volume_path = SaveFilePaths.SIMULATION_PROPERTIES \
         .format(Tags.ORIGINAL_DATA, str(global_settings[Tags.WAVELENGTH]))

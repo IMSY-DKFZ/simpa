@@ -74,9 +74,9 @@ class Structure:
         volume_x_dim = int(np.round(global_settings[Tags.DIM_VOLUME_X_MM] / self.voxel_spacing))
         volume_y_dim = int(np.round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.voxel_spacing))
         volume_z_dim = int(np.round(global_settings[Tags.DIM_VOLUME_Z_MM] / self.voxel_spacing))
-        self.volume_dimensions_pixels = np.asarray([volume_x_dim, volume_y_dim, volume_z_dim])
-        print(self.volume_dimensions_pixels)
-        self.volume_dimensions_mm = self.volume_dimensions_pixels * self.voxel_spacing
+        self.volume_dimensions_voxels = np.asarray([volume_x_dim, volume_y_dim, volume_z_dim])
+
+        self.volume_dimensions_mm = self.volume_dimensions_voxels * self.voxel_spacing
         self.do_deformation = (Tags.SIMULATE_DEFORMED_LAYERS in global_settings and
                                global_settings[Tags.SIMULATE_DEFORMED_LAYERS])
         if (Tags.ADHERE_TO_DEFORMATION in single_structure_settings and
@@ -126,11 +126,11 @@ class GeometricalStructure(Structure):
     def __init__(self, global_settings: Settings, single_structure_settings: Settings):
         super().__init__(global_settings, single_structure_settings)
 
-        self.geometrical_volume = np.zeros(self.volume_dimensions_pixels)
-        self.fill_volume(single_structure_settings)
+        self.geometrical_volume = np.zeros(self.volume_dimensions_voxels)
+        self.fill_internal_volume(single_structure_settings)
         self.params = self.get_params_from_settings(single_structure_settings)
 
-    def fill_volume(self, single_structure_settings):
+    def fill_internal_volume(self, single_structure_settings):
         params = self.get_params_from_settings(single_structure_settings)
         indices, values = self.get_enclosed_indices(params)
         self.geometrical_volume[indices] = values
@@ -163,47 +163,73 @@ class HorizontalLayerStructure(GeometricalStructure):
     def get_enclosed_indices(self, params):
         start_mm = np.asarray(params[0])
         end_mm = np.asarray(params[1])
-        start_voxels = np.round(start_mm / self.voxel_spacing)
+        start_voxels = start_mm / self.voxel_spacing
         direction_mm = end_mm - start_mm
-        depth_voxels = np.round(direction_mm[2] / self.voxel_spacing)
-        if direction_mm[0] != 0 or direction_mm[1] != 0 or direction_mm[2] == 0:
+        depth_voxels = direction_mm[2] / self.voxel_spacing
 
+        if direction_mm[0] != 0 or direction_mm[1] != 0 or direction_mm[2] == 0:
             raise ValueError("Horizontal Layer structure needs a start and end vector in the form of [0, 0, n].")
 
-        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_pixels[0]),
-                              np.arange(self.volume_dimensions_pixels[1]),
-                              np.arange(self.volume_dimensions_pixels[2]),
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
+                              np.arange(self.volume_dimensions_voxels[1]),
+                              np.arange(self.volume_dimensions_voxels[2]),
                               indexing='ij')
 
-        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
-        target_vector = target_vector[:, :, :, 2]
+        target_vector_voxels = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
+        target_vector_voxels = target_vector_voxels[:, :, :, 2]
         if self.do_deformation:
             # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
-            deformation_values = self.deformation_functional_mm(np.arange(self.volume_dimensions_pixels[0], step=1) *
-                                                                self.voxel_spacing,
-                                                                np.arange(self.volume_dimensions_pixels[1], step=1) *
-                                                                self.voxel_spacing).T
-            target_vector = target_vector + (deformation_values.reshape(self.volume_dimensions_pixels[0],
-                                                                        self.volume_dimensions_pixels[1], 1)
-                                             / self.voxel_spacing)
+            deformation_values_mm = self.deformation_functional_mm(np.arange(self.volume_dimensions_voxels[0], step=1) *
+                                                                   self.voxel_spacing,
+                                                                   np.arange(self.volume_dimensions_voxels[1], step=1) *
+                                                                   self.voxel_spacing).T
+            target_vector_voxels = target_vector_voxels + (deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
+                                                                                         self.volume_dimensions_voxels[1], 1)
+                                                           / self.voxel_spacing)
 
-        return ((target_vector[:, :, :] >= 0) & (target_vector[:, :, :] <= depth_voxels)), 1
+        volume_fractions = np.zeros(self.volume_dimensions_voxels)
+        floored_depth_voxels = int(np.floor(depth_voxels))
+
+        bools_first_layer = ((target_vector_voxels >= -1) & (target_vector_voxels < 0))
+        volume_fractions[bools_first_layer] = 1-np.abs(target_vector_voxels[bools_first_layer])
+
+        bools_last_layer = ((target_vector_voxels >= floored_depth_voxels) &
+                            (target_vector_voxels < depth_voxels))
+
+        volume_fractions[bools_last_layer] = depth_voxels - target_vector_voxels[bools_last_layer]
+        #volume_fractions[bools_first_layer] = target_vector_voxels[bools_first_layer]
+
+        #first_values = np.asarray(volume_fractions[bools_last_layer])
+        #last_values = np.asarray(1 + (floored_depth_voxels - target_vector_voxels[
+        #                                            bools_last_layer]))
+        #max_values = np.max([first_values, last_values], axis=0)
+        #volume_fractions[bools_last_layer] = max_values
+
+        volume_fractions[volume_fractions > depth_voxels] = depth_voxels
+
+        bools_fully_filled_layers = ((target_vector_voxels >= 1) & (target_vector_voxels < floored_depth_voxels))
+        volume_fractions[bools_fully_filled_layers] = 1
+
+        bools_all_layers = bools_first_layer | bools_last_layer | bools_fully_filled_layers
+        return bools_all_layers, volume_fractions[bools_all_layers]
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
     from simpa.utils.deformation_manager import create_deformation_settings
     global_settings = Settings()
-    global_settings[Tags.SPACING_MM] = 0.1
+    global_settings[Tags.SPACING_MM] = 1
     global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = False
-    global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 10], [0, 20]],
-                                                                                 maximum_z_elevation_mm=3)
-    global_settings[Tags.DIM_VOLUME_X_MM] = 10
-    global_settings[Tags.DIM_VOLUME_Y_MM] = 10
-    global_settings[Tags.DIM_VOLUME_Z_MM] = 10
+    global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 10], [0, 10]],
+                                                                                 maximum_z_elevation_mm=3,
+                                                                                 filter_sigma=0,
+                                                                                 cosine_scaling_factor=4)
+    global_settings[Tags.DIM_VOLUME_X_MM] = 1
+    global_settings[Tags.DIM_VOLUME_Y_MM] = 1
+    global_settings[Tags.DIM_VOLUME_Z_MM] = 6
     structure_settings = Settings()
-    structure_settings[Tags.STRUCTURE_START_MM] = [0, 0, 4]
-    structure_settings[Tags.STRUCTURE_END_MM] = [0, 0, 4.1]
+    structure_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.5]
+    structure_settings[Tags.STRUCTURE_END_MM] = [0, 0, 3.8]
     structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     structure_settings[Tags.ADHERE_TO_DEFORMATION] = True
     ls = HorizontalLayerStructure(global_settings, structure_settings)
@@ -233,9 +259,9 @@ class TubularStructure(GeometricalStructure):
 
     def get_enclosed_indices(self, params):
         start, end, radius = params
-        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_pixels[0]),
-                              np.arange(self.volume_dimensions_pixels[1]),
-                              np.arange(self.volume_dimensions_pixels[2]),
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
+                              np.arange(self.volume_dimensions_voxels[1]),
+                              np.arange(self.volume_dimensions_voxels[2]),
                               indexing='ij')
 
         target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)
@@ -263,9 +289,9 @@ class SphericalStructure(GeometricalStructure):
 
     def get_enclosed_indices(self, params):
         start, radius = params
-        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_pixels[0]),
-                              np.arange(self.volume_dimensions_pixels[1]),
-                              np.arange(self.volume_dimensions_pixels[2]),
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
+                              np.arange(self.volume_dimensions_voxels[1]),
+                              np.arange(self.volume_dimensions_voxels[2]),
                               indexing='ij')
 
         target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)

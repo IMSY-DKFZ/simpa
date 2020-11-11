@@ -43,8 +43,7 @@ class PAIDeviceBase:
         pass
 
     @abstractmethod
-    def adjust_simulation_volume_and_settings(self, simulation_volume_dict: dict, global_settings: Settings) \
-            -> (dict, Settings):
+    def adjust_simulation_volume_and_settings(self, global_settings: Settings) -> Settings:
         """
         In case that the PAI device needs space for the arrangement of detectors or illuminators in the volume,
         this method will update the volume accordingly.

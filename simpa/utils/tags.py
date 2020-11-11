@@ -53,6 +53,7 @@ class Tags:
     MOLECULE_COMPOSITION = "molecule_composition"
     SIMULATE_DEFORMED_LAYERS = ("simulate_deformed_layers", bool)
     DEFORMED_LAYERS_SETTINGS = ("deformed_layers_settings", dict)
+    BACKGROUND = "background"
 
     """
     ADHERE_TO_DEFORMATION default is True

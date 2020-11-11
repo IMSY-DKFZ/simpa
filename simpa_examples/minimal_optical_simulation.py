@@ -36,7 +36,7 @@ MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
 
 VOLUME_WIDTH_IN_MM = 40
 VOLUME_HEIGHT_IN_MM = 10
-SPACING = 0.25
+SPACING = 1.23
 RANDOM_SEED = 4711
 
 
@@ -73,7 +73,7 @@ def create_example_tissue(global_settings):
 
 
     tissue_dict = dict()
-    tissue_dict["background"] = bg.to_settings()
+    tissue_dict[Tags.BACKGROUND] = bg.to_settings()
     tissue_dict["muscle"] = muscle.to_settings()
     tissue_dict["dermis"] = dermis.to_settings()
     tissue_dict["epidermis"] = epidermis.to_settings()
