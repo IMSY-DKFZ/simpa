@@ -188,30 +188,26 @@ class HorizontalLayerStructure(GeometricalStructure):
                                                            / self.voxel_spacing)
 
         volume_fractions = np.zeros(self.volume_dimensions_voxels)
-        floored_depth_voxels = int(np.floor(depth_voxels))
 
         bools_first_layer = ((target_vector_voxels >= -1) & (target_vector_voxels < 0))
         volume_fractions[bools_first_layer] = 1-np.abs(target_vector_voxels[bools_first_layer])
 
+        initial_fractions = np.max(volume_fractions, axis=2, keepdims=True)
+        floored_depth_voxels = int(np.floor(depth_voxels-initial_fractions))
+
         bools_last_layer = ((target_vector_voxels >= floored_depth_voxels) &
-                            (target_vector_voxels < depth_voxels))
+                            (target_vector_voxels <= floored_depth_voxels + initial_fractions))
 
         volume_fractions[bools_last_layer] = depth_voxels - target_vector_voxels[bools_last_layer]
-        #volume_fractions[bools_first_layer] = target_vector_voxels[bools_first_layer]
-
-        #first_values = np.asarray(volume_fractions[bools_last_layer])
-        #last_values = np.asarray(1 + (floored_depth_voxels - target_vector_voxels[
-        #                                            bools_last_layer]))
-        #max_values = np.max([first_values, last_values], axis=0)
-        #volume_fractions[bools_last_layer] = max_values
-
         volume_fractions[volume_fractions > depth_voxels] = depth_voxels
+        volume_fractions[volume_fractions < 0] = 0
 
-        bools_fully_filled_layers = ((target_vector_voxels >= 1) & (target_vector_voxels < floored_depth_voxels))
+        bools_fully_filled_layers = ((target_vector_voxels >= 0) & (target_vector_voxels < floored_depth_voxels))
         volume_fractions[bools_fully_filled_layers] = 1
 
         bools_all_layers = bools_first_layer | bools_last_layer | bools_fully_filled_layers
         return bools_all_layers, volume_fractions[bools_all_layers]
+
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
@@ -220,7 +216,7 @@ if __name__ == "__main__":
     global_settings = Settings()
     global_settings[Tags.SPACING_MM] = 1
     global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = False
-    global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 10], [0, 10]],
+    global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 20], [0, 20]],
                                                                                  maximum_z_elevation_mm=3,
                                                                                  filter_sigma=0,
                                                                                  cosine_scaling_factor=4)
@@ -228,8 +224,8 @@ if __name__ == "__main__":
     global_settings[Tags.DIM_VOLUME_Y_MM] = 1
     global_settings[Tags.DIM_VOLUME_Z_MM] = 6
     structure_settings = Settings()
-    structure_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.5]
-    structure_settings[Tags.STRUCTURE_END_MM] = [0, 0, 3.8]
+    structure_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.3]
+    structure_settings[Tags.STRUCTURE_END_MM] = [0, 0, 3.5]
     structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     structure_settings[Tags.ADHERE_TO_DEFORMATION] = True
     ls = HorizontalLayerStructure(global_settings, structure_settings)
