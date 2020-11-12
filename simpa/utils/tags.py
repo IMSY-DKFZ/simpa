@@ -67,9 +67,10 @@ class Tags:
     """
         Structure Settings
     """
-    STRUCTURE_START_MM = "structure_start"
-    STRUCTURE_END_MM = "structure_end"
-    STRUCTURE_RADIUS = "structure_radius"
+    STRUCTURE_START_MM = ("structure_start", (list, tuple, np.ndarray))
+    STRUCTURE_END_MM = ("structure_end", (list, tuple, np.ndarray))
+    STRUCTURE_RADIUS = ("structure_radius", (int, np.integer, float, np.float))
+    STRUCTURE_ECCENTRICITY = ("structure_excentricity", (int, np.integer, float, np.float))
 
     """
     Digital Device Twin Settings

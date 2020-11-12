@@ -193,36 +193,36 @@ class HorizontalLayerStructure(GeometricalStructure):
         return bools_all_layers, volume_fractions[bools_all_layers]
 
 
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-    from simpa.utils.deformation_manager import create_deformation_settings
-    global_settings = Settings()
-    global_settings[Tags.SPACING_MM] = 1
-    global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
-    global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 100], [0, 100]],
-                                                                                 maximum_z_elevation_mm=3,
-                                                                                 filter_sigma=0,
-                                                                                 cosine_scaling_factor=4)
-    global_settings[Tags.DIM_VOLUME_X_MM] = 100
-    global_settings[Tags.DIM_VOLUME_Y_MM] = 100
-    global_settings[Tags.DIM_VOLUME_Z_MM] = 10
-    structure_settings = Settings()
-    structure_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.3]
-    structure_settings[Tags.STRUCTURE_END_MM] = [0, 0, 3.5]
-    structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    structure_settings[Tags.ADHERE_TO_DEFORMATION] = True
-    ls = HorizontalLayerStructure(global_settings, structure_settings)
-    plt.subplot(121)
-    plt.imshow(ls.geometrical_volume[int(global_settings[Tags.DIM_VOLUME_X_MM] /
-                                         global_settings[Tags.SPACING_MM] / 2), :, :])
-    plt.subplot(122)
-    plt.imshow(ls.geometrical_volume[:, int(global_settings[Tags.DIM_VOLUME_Y_MM] /
-                                            global_settings[Tags.SPACING_MM] / 2), :])
-    plt.show()
+# if __name__ == "__main__":
+#     import matplotlib.pyplot as plt
+#     from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+#     from simpa.utils.deformation_manager import create_deformation_settings
+#     global_settings = Settings()
+#     global_settings[Tags.SPACING_MM] = 1
+#     global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
+#     global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 100], [0, 100]],
+#                                                                                  maximum_z_elevation_mm=3,
+#                                                                                  filter_sigma=0,
+#                                                                                  cosine_scaling_factor=4)
+#     global_settings[Tags.DIM_VOLUME_X_MM] = 100
+#     global_settings[Tags.DIM_VOLUME_Y_MM] = 100
+#     global_settings[Tags.DIM_VOLUME_Z_MM] = 10
+#     structure_settings = Settings()
+#     structure_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.3]
+#     structure_settings[Tags.STRUCTURE_END_MM] = [0, 0, 3.5]
+#     structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+#     structure_settings[Tags.ADHERE_TO_DEFORMATION] = True
+#     ls = HorizontalLayerStructure(global_settings, structure_settings)
+#     plt.subplot(121)
+#     plt.imshow(ls.geometrical_volume[int(global_settings[Tags.DIM_VOLUME_X_MM] /
+#                                          global_settings[Tags.SPACING_MM] / 2), :, :])
+#     plt.subplot(122)
+#     plt.imshow(ls.geometrical_volume[:, int(global_settings[Tags.DIM_VOLUME_Y_MM] /
+#                                             global_settings[Tags.SPACING_MM] / 2), :])
+#     plt.show()
 
 
-class TubularStructure(GeometricalStructure):
+class CircularTubularStructure(GeometricalStructure):
 
     def get_params_from_settings(self, single_structure_settings):
         params = (single_structure_settings[Tags.STRUCTURE_START_MM],
@@ -278,6 +278,100 @@ class SphericalStructure(GeometricalStructure):
         target_radius = np.linalg.norm(target_vector, axis=-1)
 
         return target_radius < radius, 1
+
+
+class EllipticalTubularStructure(GeometricalStructure):
+
+    def get_params_from_settings(self, single_structure_settings):
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
+                  single_structure_settings[Tags.STRUCTURE_END_MM],
+                  single_structure_settings[Tags.STRUCTURE_RADIUS],
+                  single_structure_settings[Tags.STRUCTURE_ECCENTRICITY])
+        return params
+
+    def to_settings(self):
+        settings = super().to_settings()
+        settings[Tags.STRUCTURE_START_MM] = self.params[0]
+        settings[Tags.STRUCTURE_END_MM] = self.params[1]
+        settings[Tags.STRUCTURE_RADIUS] = self.params[2]
+        settings[Tags.STRUCTURE_ECCENTRICITY] = self.params[3]
+        # settings[Tags.PARTIAL_VOL]
+        return settings
+
+    def get_enclosed_indices(self):
+        start, end, radius, eccentricity = self.params
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
+                              np.arange(self.volume_dimensions_voxels[1]),
+                              np.arange(self.volume_dimensions_voxels[2]),
+                              indexing='ij')
+
+        x = x + 0.5
+        y = y + 0.5
+        z = z + 0.5
+
+        partial_volume = True
+        if partial_volume:
+            radius_margin = 0.5
+        else:
+            radius_margin = 0.7071
+
+        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)
+        cylinder_vector = np.subtract(end, start)
+
+        main_axis_length = radius/(1-eccentricity**2)**0.25
+        main_axis_vector = np.array([cylinder_vector[1], -cylinder_vector[0], 0])
+        main_axis_vector = main_axis_vector/np.linalg.norm(main_axis_vector) * main_axis_length
+
+        minor_axis_length = main_axis_length*np.sqrt(1-eccentricity**2)
+        minor_axis_vector = np.cross(cylinder_vector, main_axis_vector)
+        minor_axis_vector = minor_axis_vector / np.linalg.norm(minor_axis_vector) * minor_axis_length
+
+        dot_product = np.dot(target_vector, cylinder_vector)/np.linalg.norm(cylinder_vector)
+
+        target_vector_projection = np.multiply(dot_product[:, :, :, np.newaxis], cylinder_vector)
+        target_vector_from_projection = target_vector - target_vector_projection
+
+        main_projection = np.dot(target_vector_from_projection, main_axis_vector) / main_axis_length
+
+        minor_projection = np.dot(target_vector_from_projection, minor_axis_vector) / minor_axis_length
+
+        radius_crit = (main_projection/main_axis_length)**2 + (minor_projection/minor_axis_length)**2
+
+        filled_mask = radius_crit < 1
+        border_mask = (radius_crit >= 1) & (radius_crit < np.sqrt(1 + radius_margin))
+        volume_fractions = np.zeros(self.volume_dimensions_voxels)
+        volume_fractions[filled_mask] = 1
+        volume_fractions[border_mask] = 1 - (radius_crit[border_mask] - radius_margin)
+        volume_fractions[volume_fractions < 0] = 0
+
+        if partial_volume:
+
+            mask = filled_mask | border_mask
+        else:
+            mask = filled_mask
+
+        return mask, volume_fractions[mask]
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+    global_settings = Settings()
+    global_settings[Tags.SPACING_MM] = 1
+    global_settings[Tags.DIM_VOLUME_X_MM] = 10
+    global_settings[Tags.DIM_VOLUME_Y_MM] = 10
+    global_settings[Tags.DIM_VOLUME_Z_MM] = 10
+    structure_settings = Settings()
+    structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+    structure_settings[Tags.STRUCTURE_START_MM] = [5, 0, 5]
+    structure_settings[Tags.STRUCTURE_END_MM] = [5, 10, 5]
+    structure_settings[Tags.STRUCTURE_RADIUS] = 2
+    structure_settings[Tags.STRUCTURE_ECCENTRICITY] = 0
+    ellipse = EllipticalTubularStructure(global_settings, structure_settings)
+    vol = ellipse.geometrical_volume
+    print(np.shape(vol))
+    plt.imshow(vol[:, 0, :])
+    plt.show()
 
 
 class Background(GeometricalStructure):
