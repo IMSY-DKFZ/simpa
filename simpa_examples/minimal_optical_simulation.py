@@ -26,6 +26,7 @@ from simpa.core.simulation import simulate
 from simpa.utils.libraries.structure_library import Background
 from simpa.utils.libraries.structure_library import HorizontalLayerStructure
 from simpa.utils.libraries.structure_library import TubularStructure
+from simpa.utils.libraries.structure_library import SphericalStructure
 from simpa.utils.settings_generator import Settings
 from simpa.utils import create_deformation_settings
 
@@ -35,9 +36,10 @@ import numpy as np
 SAVE_PATH = "D:/bin/"
 MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
 
-VOLUME_WIDTH_IN_MM = 50
+VOLUME_TRANSDUCER_DIM_IN_MM = 50
+VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 20
-SPACING = 0.432
+SPACING = 0.25
 RANDOM_SEED = 4711
 
 
@@ -60,11 +62,12 @@ def create_example_tissue(global_settings):
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [25, 0, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [25, 50, 12]
-    vessel_1_dictionary[Tags.STRUCTURE_RADIUS] = 3
+    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                    VOLUME_PLANAR_DIM_IN_MM/2, 10]
+    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM/2, 12]
+    vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
-    vessel_1 = TubularStructure(global_settings, vessel_1_dictionary)
+    vessel_1 = SphericalStructure(global_settings, vessel_1_dictionary)
 
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
@@ -93,8 +96,8 @@ settings = {
     Tags.SIMULATION_PATH: SAVE_PATH,
     Tags.SPACING_MM: SPACING,
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
-    Tags.DIM_VOLUME_X_MM: VOLUME_WIDTH_IN_MM,
-    Tags.DIM_VOLUME_Y_MM: VOLUME_WIDTH_IN_MM,
+    Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
+    Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
     Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 
     # Simulation Device

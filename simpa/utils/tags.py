@@ -67,9 +67,10 @@ class Tags:
     """
         Structure Settings
     """
+    CONSIDER_PARTIAL_VOLUME = "consider_partial_volume"
     STRUCTURE_START_MM = "structure_start"
     STRUCTURE_END_MM = "structure_end"
-    STRUCTURE_RADIUS = "structure_radius"
+    STRUCTURE_RADIUS_MM = "structure_radius"
 
     """
     Digital Device Twin Settings
