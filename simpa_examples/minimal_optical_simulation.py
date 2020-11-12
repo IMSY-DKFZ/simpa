@@ -25,6 +25,7 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.libraries.structure_library import Background
 from simpa.utils.libraries.structure_library import HorizontalLayerStructure
+from simpa.utils.libraries.structure_library import TubularStructure
 from simpa.utils.settings_generator import Settings
 from simpa.utils import create_deformation_settings
 
@@ -57,26 +58,26 @@ def create_example_tissue(global_settings):
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     muscle = HorizontalLayerStructure(global_settings, muscle_dictionary)
 
-    dermis_dictionary = Settings()
-    dermis_dictionary[Tags.PRIORITY] = 2
-    dermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-    dermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 5]
-    dermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.dermis()
-    dermis = HorizontalLayerStructure(global_settings, dermis_dictionary)
+    vessel_1_dictionary = Settings()
+    vessel_1_dictionary[Tags.PRIORITY] = 3
+    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [25, 0, 10]
+    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [25, 50, 12]
+    vessel_1_dictionary[Tags.STRUCTURE_RADIUS] = 3
+    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+    vessel_1 = TubularStructure(global_settings, vessel_1_dictionary)
 
     epidermis_dictionary = Settings()
-    epidermis_dictionary[Tags.PRIORITY] = 3
+    epidermis_dictionary[Tags.PRIORITY] = 8
     epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
     epidermis = HorizontalLayerStructure(global_settings, epidermis_dictionary)
 
-
     tissue_dict = dict()
     tissue_dict[Tags.BACKGROUND] = bg.to_settings()
     tissue_dict["muscle"] = muscle.to_settings()
-    tissue_dict["dermis"] = dermis.to_settings()
     tissue_dict["epidermis"] = epidermis.to_settings()
+    tissue_dict["vessel_1"] = vessel_1.to_settings()
     return tissue_dict
 
 # Seed the numpy random configuration prior to creating the settings file in

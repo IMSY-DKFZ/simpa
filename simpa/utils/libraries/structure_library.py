@@ -225,9 +225,9 @@ if __name__ == "__main__":
 class TubularStructure(GeometricalStructure):
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
-                  single_structure_settings[Tags.STRUCTURE_END_MM],
-                  single_structure_settings[Tags.STRUCTURE_RADIUS])
+        params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_END_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_RADIUS]))
         return params
 
     def to_settings(self):
@@ -238,20 +238,24 @@ class TubularStructure(GeometricalStructure):
         return settings
 
     def get_enclosed_indices(self):
-        start, end, radius = self.params
+        start_mm, end_mm, radius_mm = self.params
+        start_voxels = start_mm / self.voxel_spacing
+        end_voxels = end_mm / self.voxel_spacing
+        radius_voxels = radius_mm / self.voxel_spacing
+
         x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
                               np.arange(self.volume_dimensions_voxels[1]),
                               np.arange(self.volume_dimensions_voxels[2]),
                               indexing='ij')
 
-        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start)
-        cylinder_vector = np.subtract(end, start)
+        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
+        cylinder_vector = np.subtract(end_voxels, start_voxels)
 
         target_radius = np.linalg.norm(target_vector, axis=-1) * np.sin(
             np.arccos((np.dot(target_vector, cylinder_vector)) /
                       (np.linalg.norm(target_vector, axis=-1) * np.linalg.norm(cylinder_vector))))
 
-        return target_radius < radius, 1
+        return target_radius < radius_voxels, 1
 
 
 class SphericalStructure(GeometricalStructure):

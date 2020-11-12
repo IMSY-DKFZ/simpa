@@ -62,6 +62,8 @@ class MolecularComposition(list):
 
         if self.internal_properties.volume_fraction > 1:
             self.internal_properties[Tags.PROPERTY_ANISOTROPY] /= self.internal_properties.volume_fraction
+            # The maximum volume fraction any given molecular composition can have is 1!
+            self.internal_properties.volume_fraction = 1
 
     def get_properties_for_wavelength(self, wavelength) -> TissueProperties:
         if self.cached_absorption[wavelength] != -1:
