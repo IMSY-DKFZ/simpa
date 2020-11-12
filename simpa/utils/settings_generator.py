@@ -65,7 +65,8 @@ class Settings(dict):
             try:
                 return super().__getitem__(item[0])
             except KeyError:
-                raise KeyError("The key '{}' is not in the Settings dictionary".format(item[0])) from None
+                key = item[0] if isinstance(item, tuple) else item
+                raise KeyError("The key '{}' is not in the Settings dictionary".format(key)) from None
 
     def __delitem__(self, key):
         if super().__contains__(key) is True:
