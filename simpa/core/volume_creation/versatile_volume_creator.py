@@ -48,10 +48,27 @@ class VersatileVolumeCreator(VolumeCreatorBase):
         priority_sorted_structures = structure_list.sorted_structures
 
         for structure in priority_sorted_structures:
+            print(type(structure))
+
             structure_properties = structure.properties_for_wavelength(wavelength)
+
+            if structure.priority <= 0:
+                print("BACKGROUND!")
+                # Background structure or "filler" structure
+                mask = global_volume_fractions < 1e-10
+                for key in volumes.keys():
+                    if structure_properties[key] is None:
+                        continue
+                    if key == Tags.PROPERTY_SEGMENTATION:
+                        volumes[key][mask] = structure_properties[key]
+                    else:
+                        volumes[key][mask] = structure.geometrical_volume[mask] * structure_properties[key]
+                global_volume_fractions[mask] += structure.geometrical_volume[mask]
+                continue
+
             structure_volume_fractions = structure.geometrical_volume
             structure_indexes_mask = structure_volume_fractions > 0
-            global_volume_fractions_mask = global_volume_fractions <= 1
+            global_volume_fractions_mask = global_volume_fractions < 1
             mask = structure_indexes_mask & global_volume_fractions_mask
             added_volume_fraction = (global_volume_fractions + structure_volume_fractions)
 

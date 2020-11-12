@@ -174,7 +174,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.FAT))
 
-    def blood_generic(self):
+    def blood_generic(self, oxygenation = None):
         """
 
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
@@ -184,7 +184,10 @@ class TissueLibrary(object):
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
 
         # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(1.0, randomize_uniform(0.0, 1.0))
+        if oxygenation is None:
+            oxygenation = randomize_uniform(0.0, 1.0)
+
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(1.0, oxygenation)
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()

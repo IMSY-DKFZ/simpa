@@ -29,7 +29,7 @@ from simpa.utils.deformation_manager import get_functional_from_deformation_sett
 import numpy as np
 
 
-class MSOTPAIDevice(PAIDeviceBase):
+class MSOTAcuityEcho(PAIDeviceBase):
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         pass
@@ -49,6 +49,7 @@ class MSOTPAIDevice(PAIDeviceBase):
         global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
 
         for structure_key in global_settings[Tags.STRUCTURES]:
+            print("Adjusting", structure_key)
             structure_dict = global_settings[Tags.STRUCTURES][structure_key]
             if Tags.STRUCTURE_START_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][2] + probe_size_mm
@@ -59,6 +60,7 @@ class MSOTPAIDevice(PAIDeviceBase):
             Tags.PRIORITY: 10,
             Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
             Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
+            Tags.CONSIDER_PARTIAL_VOLUME: True,
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene()
         })
 
