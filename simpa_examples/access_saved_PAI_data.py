@@ -51,8 +51,8 @@ file = load_hdf5(PATH)
 
 print(file['simulations'].keys())
 
-fluence = (file['simulations']['original_data']['optical_forward_model_output']
-           [str(WAVELENGTH)]['fluence'])
+fluence = (file['simulations']['original_data']['simulation_properties']
+           [str(WAVELENGTH)]['oxy'])
 initial_pressure = (file['simulations']['original_data']
                     ['optical_forward_model_output']
                     [str(WAVELENGTH)]['initial_pressure'])

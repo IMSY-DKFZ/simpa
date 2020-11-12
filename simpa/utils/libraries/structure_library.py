@@ -355,10 +355,12 @@ class Background(GeometricalStructure):
 
         if background_settings is not None:
             background_settings[Tags.PRIORITY] = 0
+            background_settings[Tags.CONSIDER_PARTIAL_VOLUME] = False
             super().__init__(global_settings, background_settings)
         else:
             super().__init__(global_settings)
             self.priority = 0
+            self.partial_volume = True
 
     def to_settings(self) -> dict:
         settings_dict = super().to_settings()

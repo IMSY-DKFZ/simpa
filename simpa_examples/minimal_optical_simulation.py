@@ -58,6 +58,7 @@ def create_example_tissue(global_settings):
     muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+    muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     muscle = HorizontalLayerStructure(global_settings, muscle_dictionary)
 
     vessel_1_dictionary = Settings()
@@ -67,6 +68,7 @@ def create_example_tissue(global_settings):
     vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM/2, 12]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+    vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1 = SphericalStructure(global_settings, vessel_1_dictionary)
 
     epidermis_dictionary = Settings()
@@ -74,6 +76,7 @@ def create_example_tissue(global_settings):
     epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis = HorizontalLayerStructure(global_settings, epidermis_dictionary)
 
     tissue_dict = dict()

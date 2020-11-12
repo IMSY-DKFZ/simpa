@@ -60,6 +60,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
             Tags.PRIORITY: 10,
             Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
             Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
+            Tags.CONSIDER_PARTIAL_VOLUME: True,
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene()
         })
 
