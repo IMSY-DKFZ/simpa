@@ -400,13 +400,17 @@ class EllipticalTubularStructure(GeometricalStructure):
 
         minor_projection = np.dot(target_vector_from_projection, minor_axis_vector) / minor_axis_length
 
-        radius_crit = (main_projection/main_axis_length)**2 + (minor_projection/minor_axis_length)**2
+        radius_crit = np.sqrt(((main_projection/main_axis_length)**2 + (minor_projection/minor_axis_length)**2) *
+                              radius_voxels**2)
 
-        filled_mask = radius_crit < radius_margin
-        border_mask = (radius_crit >= radius_margin) & (radius_crit < 1 + 2 * radius_margin)
         volume_fractions = np.zeros(self.volume_dimensions_voxels)
+        filled_mask = radius_crit <= radius_voxels - 1 + radius_margin
+        border_mask = (radius_crit > radius_voxels - 1 + radius_margin) & \
+                      (radius_crit < radius_voxels + 2 * radius_margin)
+
         volume_fractions[filled_mask] = 1
-        volume_fractions[border_mask] = 1 - (radius_crit[border_mask] - (1 - radius_margin))
+        volume_fractions[border_mask] = 1 - (radius_crit - (radius_voxels - radius_margin))[border_mask]
+        volume_fractions[volume_fractions < 0] = 0
         volume_fractions[volume_fractions < 0] = 0
 
         if partial_volume:
@@ -420,23 +424,37 @@ class EllipticalTubularStructure(GeometricalStructure):
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+    import matplotlib as mpl
     from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
     global_settings = Settings()
     global_settings[Tags.SPACING_MM] = 1
-    global_settings[Tags.DIM_VOLUME_X_MM] = 100
-    global_settings[Tags.DIM_VOLUME_Y_MM] = 100
-    global_settings[Tags.DIM_VOLUME_Z_MM] = 100
+    global_settings[Tags.DIM_VOLUME_X_MM] = 30
+    global_settings[Tags.DIM_VOLUME_Y_MM] = 30
+    global_settings[Tags.DIM_VOLUME_Z_MM] = 30
     structure_settings = Settings()
     structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    structure_settings[Tags.STRUCTURE_START_MM] = [20, 0, 20]
-    structure_settings[Tags.STRUCTURE_END_MM] = [80, 100, 80]
+    structure_settings[Tags.STRUCTURE_START_MM] = [15, 0, 15]
+    structure_settings[Tags.STRUCTURE_END_MM] = [15, 100, 15]
     structure_settings[Tags.STRUCTURE_RADIUS_MM] = 5
-    structure_settings[Tags.STRUCTURE_ECCENTRICITY] = 0.8
+    structure_settings[Tags.STRUCTURE_ECCENTRICITY] = 0.56
+    structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    ellipse = CircularTubularStructure(global_settings, structure_settings)
+    vol1 = ellipse.geometrical_volume
+
     structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
     ellipse = EllipticalTubularStructure(global_settings, structure_settings)
-    vol = ellipse.geometrical_volume
-    print(np.shape(vol))
-    plt.imshow(vol[:, 0, :])
+    vol2 = ellipse.geometrical_volume
+
+    main_axis = structure_settings[Tags.STRUCTURE_RADIUS_MM]/(1-structure_settings[Tags.STRUCTURE_ECCENTRICITY]**2)**0.25
+    minor_axis = main_axis * np.sqrt(1 - structure_settings[Tags.STRUCTURE_ECCENTRICITY] ** 2)
+    main_axis /= global_settings[Tags.SPACING_MM]
+    minor_axis /= global_settings[Tags.SPACING_MM]
+
+    ax = plt.subplot(111)
+    plt.imshow((vol1)[:, 0, :])
+    ax.add_patch(mpl.patches.Ellipse((15/global_settings[Tags.SPACING_MM] - 0.5,
+                                      15/global_settings[Tags.SPACING_MM] - 0.5),
+                                     2*main_axis, 2*minor_axis, 90, fill=False, color="red"))
     plt.show()
 
 
