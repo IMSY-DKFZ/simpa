@@ -63,7 +63,7 @@ class TissueLibrary(object):
         """
         TODO
         """
-        return (MolecularCompositionGenerator().append(Molecule("constant_absorber",
+        return (MolecularCompositionGenerator().append(Molecule(name="constant_absorber",
                                                                 spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(mua),
                                                                 volume_fraction=1.0,
                                                                 mus500=mus, b_mie=0.0, f_ray=0.0,
