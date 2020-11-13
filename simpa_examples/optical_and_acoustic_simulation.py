@@ -33,8 +33,8 @@ from simpa.utils import create_deformation_settings
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/bin/"
-MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
+SAVE_PATH = "/media/kris/Extreme SSD/data/simpa_examples"
+MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/mcx"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 50
 VOLUME_PLANAR_DIM_IN_MM = 20

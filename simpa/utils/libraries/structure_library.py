@@ -121,12 +121,12 @@ class GeometricalStructure:
         return self.molecule_composition.get_properties_for_wavelength(wavelength)
 
     @abstractmethod
-    def to_settings(self) -> dict:
+    def to_settings(self) -> Settings:
         """
         TODO
         :return : A tuple containing the settings key and the needed entries
         """
-        settings_dict = dict()
+        settings_dict = Settings()
         settings_dict[Tags.PRIORITY] = self.priority
         settings_dict[Tags.STRUCTURE_TYPE] = self.__class__.__name__
         settings_dict[Tags.CONSIDER_PARTIAL_VOLUME] = self.partial_volume

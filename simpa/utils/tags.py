@@ -70,8 +70,8 @@ class Tags:
     CONSIDER_PARTIAL_VOLUME = ("consider_partial_volume", bool)
     STRUCTURE_START_MM = ("structure_start", (list, tuple, np.ndarray))
     STRUCTURE_END_MM = ("structure_end", (list, tuple, np.ndarray))
-    STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float, np.float))
-    STRUCTURE_ECCENTRICITY = ("structure_excentricity", (int, np.integer, float, np.float))
+    STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float, np.float, np.ndarray))
+    STRUCTURE_ECCENTRICITY = ("structure_excentricity", (int, np.integer, float, np.float, np.ndarray))
 
     """
     Digital Device Twin Settings

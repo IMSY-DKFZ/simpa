@@ -121,13 +121,12 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                     dictionary[key] = None
             elif isinstance(item, h5py._hl.group.Group):
                 if key == "list":
-                    dictionary = list()
+                    dictionary_list = [None for x in item.keys()]
                     for listkey in sorted(item.keys()):
                         if isinstance(item[listkey], h5py._hl.dataset.Dataset):
-                            dictionary.append(item[listkey][()])
+                            dictionary_list[int(listkey)] = item[listkey][()]
                         elif isinstance(item[listkey], h5py._hl.group.Group):
-                            dictionary.append(
-                                data_grabber(file, path + key + "/" + listkey + "/"))
+                            dictionary_list[int(listkey)] = data_grabber(file, path + key + "/" + listkey + "/")
                 elif key == MOLECULE_COMPOSITION:
                     mc = MolecularComposition()
                     molecules = data_grabber(file, path + key + "/")
