@@ -26,9 +26,11 @@ from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling.io_hdf5 import load_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.utils.settings_generator import Settings
 import json
 import os
 import scipy.io as sio
+from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 
 
 def simulate(settings):
@@ -60,10 +62,30 @@ def simulate(settings):
     data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3, axes=axes)
     data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3, axes=axes)
     data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
-    data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3, axes=axes)
+    # data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3, axes=axes)
     data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE],
                                                                       axes=axes))
     data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE], axes=axes))
+    print(np.shape(data_dict[Tags.PROPERTY_DENSITY]))
+    import matplotlib.pyplot as plt
+    PA_device = MSOTAcuityEcho()
+    detector_elements = PA_device.get_detector_definition(settings)
+    detector_elements[:, 1] = detector_elements[:, 1] + PA_device.probe_height_mm
+    detector_positions = np.round(detector_elements / settings[Tags.SPACING_MM]).astype(int)
+    sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
+    sensor_map[detector_positions[:, 2], detector_positions[:, 0]] = 1
+    # plt.scatter(detector_elements[:, 0], detector_elements[:, 2])
+    # plt.show()
+    #
+    # plt.subplot(1, 3, 1)
+    # plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE])
+    # plt.subplot(1, 3, 2)
+    # plt.imshow(sensor_map)
+    # plt.subplot(1, 3, 3)
+    # plt.imshow(data_dict[Tags.PROPERTY_DENSITY])
+    # plt.show()
+    data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
+
 
     try:
         data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
@@ -74,15 +96,32 @@ def simulate(settings):
         print("No directivity_angle specified")
 
     optical_path = settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
-    data_dict["settings"] = settings
+
+    possible_k_wave_parameters = [Tags.PERFORM_UPSAMPLING, Tags.SPACING_MM, Tags.UPSCALE_FACTOR,
+                                  Tags.MEDIUM_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
+                                  Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
+                                  Tags.SENSOR_DIRECTIVITY_PATTERN]
+
+    k_wave_settings = Settings({
+        Tags.SENSOR_NUM_ELEMENTS: PA_device.number_detector_elements,
+        Tags.SENSOR_DIRECTIVITY_SIZE_M: PA_device.detector_element_width_mm/1000,
+        Tags.SENSOR_CENTER_FREQUENCY_HZ: PA_device.center_frequency_Hz,
+        Tags.SENSOR_BANDWIDTH_PERCENT: PA_device.bandwidth_percent
+    })
+
+    for parameter in possible_k_wave_parameters:
+        if parameter in settings:
+            k_wave_settings[parameter] = settings[parameter]
+
+    data_dict["settings"] = k_wave_settings
     sio.savemat(optical_path, data_dict, long_field_names=True)
 
     json_path, ext = os.path.splitext(settings[Tags.SIMPA_OUTPUT_PATH])
     tmp_json_filename = json_path + ".json"
-    if Tags.SETTINGS_JSON_PATH not in settings:
-        with open(tmp_json_filename, "w") as json_file:
-            serializer = SIMPAJSONSerializer()
-            json.dump(settings, json_file, indent="\t", default=serializer.default)
+    # if Tags.SETTINGS_JSON_PATH not in settings:
+    #     with open(tmp_json_filename, "w") as json_file:
+    #         serializer = SIMPAJSONSerializer()
+    #         json.dump(settings, json_file, indent="\t", default=serializer.default)
 
     if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
         simulation_script_path = "simulate_3D"

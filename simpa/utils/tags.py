@@ -49,8 +49,8 @@ class Tags:
     """
     VOLUME_CREATOR = ("volume_creator", str)
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
-    PRIORITY = "priority"
-    MOLECULE_COMPOSITION = "molecule_composition"
+    PRIORITY = ("priority", (int, np.integer, float, np.float))
+    MOLECULE_COMPOSITION = ("molecule_composition", list)
     SIMULATE_DEFORMED_LAYERS = ("simulate_deformed_layers", bool)
     DEFORMED_LAYERS_SETTINGS = ("deformed_layers_settings", dict)
     BACKGROUND = "background"
@@ -76,8 +76,9 @@ class Tags:
     """
     Digital Device Twin Settings
     """
-    DIGITAL_DEVICE = "digital_device"
+    DIGITAL_DEVICE = ("digital_device", str)
     DIGITAL_DEVICE_MSOT = "digital_device_msot"
+    DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
 
     """
     Optical model settings
@@ -288,7 +289,7 @@ class Tags:
     # Structures
     STRUCTURES = "structures"
     CHILD_STRUCTURES = "child_structures"
-    STRUCTURE_TYPE = "structure_type"
+    STRUCTURE_TYPE = ("structure_type", str)
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"
     STRUCTURE_TISSUE_PROPERTIES = "structure_tissue_properties"
 

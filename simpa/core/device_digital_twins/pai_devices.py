@@ -58,7 +58,7 @@ class PAIDeviceBase:
         pass
 
     @abstractmethod
-    def get_detector_definition(self):
+    def get_detector_definition(self, global_settings: Settings):
         """
         TODO
         """

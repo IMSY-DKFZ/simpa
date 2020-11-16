@@ -25,6 +25,7 @@ from simpa.core.volume_creation.volume_creation import run_volume_creation
 from simpa.core.optical_simulation.optical_modelling import run_optical_forward_model
 from simpa.core.acoustic_simulation.acoustic_modelling import run_acoustic_forward_model
 from simpa.core.noise_simulation.noise_modelling import apply_noise_model_to_time_series_data
+from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
 from simpa.process.sampling import upsample
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
@@ -103,9 +104,9 @@ def simulate(settings):
                 if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
                     acoustic_output_path = apply_noise_model_to_time_series_data(settings, acoustic_output_path)
 
-        # if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings:
-        #     if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-        #         reconstruction_output_path = perform_reconstruction(settings, distortion)
+        if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings:
+            if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+                reconstruction_output_path = perform_reconstruction(settings, None)
                 # if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
                 #     reconstruction_output_path = apply_noise_model_to_reconstructed_data(settings, reconstruction_output_path)
 
@@ -131,7 +132,7 @@ def extract_field_of_view(settings, volume_path, optical_path, acoustic_path):
         fluence = optical_data['fluence']
         sizes = np.shape(fluence)
         optical_data["fluence"] = fluence[:, int(sizes[1] / 2), :]
-        # optical_data['initial_pressure'] = optical_data['initial_pressure'][:, int(sizes[1] / 2), :]
+        optical_data['initial_pressure'] = optical_data['initial_pressure'][:, int(sizes[1] / 2), :]
 
         save_hdf5(optical_data, settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 

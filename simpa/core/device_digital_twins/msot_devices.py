@@ -31,6 +31,19 @@ import numpy as np
 
 class MSOTAcuityEcho(PAIDeviceBase):
 
+    def __init__(self):
+        self.pitch_mm = 0.34
+        self.radius_mm = 40
+        self.number_detector_elements = 256
+        self.detector_element_width_mm = 0.24
+        self.center_frequency_Hz = 3.96e6
+        self.bandwidth_percent = 55
+        self.sampling_frequency_MHz = 40
+        self.probe_height_mm = 43.2
+        self.probe_width_mm = 2*np.sin(self.pitch_mm/self.radius_mm * 128)*self.radius_mm
+        self.mediprene_membrane_height_mm = 1
+        self.focus_in_field_of_view_mm = [0, 0, 8]
+
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         pass
 
@@ -40,21 +53,34 @@ class MSOTAcuityEcho(PAIDeviceBase):
                                global_settings[Tags.DIM_VOLUME_Y_MM],
                                global_settings[Tags.DIM_VOLUME_Z_MM]])
 
-        probe_size_mm = 1 + 42.2
-        mediprene_layer_height_mm = 1
+        probe_size_mm = self.probe_height_mm
+        mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
         new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
                                heavy_water_layer_height_mm
 
+        # adjust the z-dim to msot probe height
         global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
+
+        # adjust the x-dim to msot probe width
+        # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
+        # of the simulated volume.
+
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.probe_width_mm) + 1:
+            width_shift_for_structures_mm = (round(self.probe_width_mm) + 1 - global_settings[Tags.DIM_VOLUME_X_MM])/2
+            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.probe_width_mm) + 1
+        else:
+            width_shift_for_structures_mm = 0
 
         for structure_key in global_settings[Tags.STRUCTURES]:
             print("Adjusting", structure_key)
             structure_dict = global_settings[Tags.STRUCTURES][structure_key]
             if Tags.STRUCTURE_START_MM in structure_dict:
-                structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][2] + probe_size_mm
+                structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][2] + self.probe_height_mm
             if Tags.STRUCTURE_END_MM in structure_dict:
-                structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][2] + probe_size_mm
+                structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][2] + self.probe_height_mm
 
         mediprene_layer_settings = Settings({
             Tags.PRIORITY: 10,
@@ -78,5 +104,81 @@ class MSOTAcuityEcho(PAIDeviceBase):
     def get_illuminator_definition(self):
         pass
 
-    def get_detector_definition(self):
-        pass
+    def get_detector_definition(self, global_settings: Settings):
+
+        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
+                               global_settings[Tags.DIM_VOLUME_Y_MM],
+                               global_settings[Tags.DIM_VOLUME_Z_MM]])
+
+        if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
+            device_position = np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
+        else:
+            # If no position is given, the device_position is set to the top of the volume
+            # and in the middle of the xy-plane.
+            device_position = np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
+
+        pitch_angle = self.pitch_mm / self.radius_mm
+        detector_radius = self.radius_mm
+
+        # focus = np.asarray([int(round(detector_radius + 11.2 / global_settings[Tags.SPACING_MM])),
+        #                     int(round(detector_map.shape[2] / 2))])
+
+        focus = np.add(np.asarray(self.focus_in_field_of_view_mm), device_position)
+
+        # if distortion is not None:
+        #     focus[0] -= np.round(distortion[1] / (2 * global_settings[Tags.SPACING_MM]))
+
+        detector_positions = np.zeros((self.number_detector_elements, 3))
+        det_elements = np.arange(-int(self.number_detector_elements / 2), int(self.number_detector_elements / 2))
+        detector_positions[:, 0] = focus[0] + np.sin(pitch_angle*det_elements) * detector_radius
+        detector_positions[:, 2] = focus[2] - np.sqrt(detector_radius ** 2 -
+                                                      (np.sin(pitch_angle*det_elements) * detector_radius) ** 2)
+
+        return detector_positions
+        #     detector_map[z_det, field_of_view_slice, y_det] = 1
+        #
+        #     if Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS in global_settings:
+        #         if global_settings[Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS] is True:
+        #             if Tags.SENSOR_DIRECTIVITY_ANGLE in global_settings:
+        #                 detector_directivity[z_det, field_of_view_slice, y_det] = global_settings[Tags.SENSOR_DIRECTIVITY_ANGLE]
+        #             else:
+        #                 detector_directivity = None
+        #         else:
+        #             detector_directivity[z_det, field_of_view_slice, y_det] = -angle
+        #     else:
+        #         detector_directivity = None
+        #
+        # volumes[Tags.PROPERTY_SENSOR_MASK] = np.rot90(detector_map, 1, axes=(0, 2))
+        #
+        # if detector_directivity is not None:
+        #     volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(detector_directivity, 1, axes=(0, 2))
+        # else:
+        #     volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = detector_directivity
+
+
+if __name__ == "__main__":
+    device = MSOTAcuityEcho()
+    print(device.probe_width_mm)
+    settings = Settings()
+    settings[Tags.DIM_VOLUME_X_MM] = 20
+    settings[Tags.DIM_VOLUME_Y_MM] = 50
+    settings[Tags.DIM_VOLUME_Z_MM] = 20
+    settings[Tags.SPACING_MM] = 0.5
+    # settings[Tags.DIGITAL_DEVICE_POSITION] = [50, 50, 50]
+    settings = device.adjust_simulation_volume_and_settings(settings)
+    # print(settings[Tags.DIM_VOLUME_Z_MM])
+
+    x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
+    z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
+    print(x_dim, z_dim)
+
+    detector_positions = device.get_detector_definition(settings)
+    detector_positions[:, 1] = detector_positions[:, 1] + device.probe_height_mm
+    detector_positions = np.round(detector_positions/settings[Tags.SPACING_MM]).astype(int)
+    map = np.zeros((x_dim, z_dim))
+    map[detector_positions[:, 0], detector_positions[:, 2]] = 1
+    import matplotlib.pyplot as plt
+    plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
+    plt.show()
+    plt.imshow(map)
+    plt.show()
