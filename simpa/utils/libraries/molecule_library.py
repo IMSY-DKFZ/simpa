@@ -21,9 +21,9 @@
 # SOFTWARE.
 
 import numpy as np
-from simpa.utils import Tags, StandardProperties
+from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
-from simpa.utils.libraries.literature_values import OpticalTissueProperties
+from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils import AbsorptionSpectrum
 from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils.calculate import calculate_oxygenation
@@ -55,7 +55,8 @@ class MolecularComposition(list):
         for molecule in self:
             self.internal_properties.volume_fraction += molecule.volume_fraction
             self.internal_properties[Tags.PROPERTY_ANISOTROPY] += molecule.volume_fraction * molecule.anisotropy
-            self.internal_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER] += molecule.volume_fraction * molecule.gruneisen_parameter
+            self.internal_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER] += \
+                molecule.volume_fraction * molecule.gruneisen_parameter
             self.internal_properties[Tags.PROPERTY_DENSITY] += molecule.volume_fraction * molecule.density
             self.internal_properties[Tags.PROPERTY_SPEED_OF_SOUND] += molecule.volume_fraction * molecule.speed_of_sound
             self.internal_properties[Tags.PROPERTY_ALPHA_COEFF] += molecule.volume_fraction * molecule.alpha_coefficient
@@ -73,11 +74,12 @@ class MolecularComposition(list):
             self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = 0
             self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = 0
             for molecule in self:
-                self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] += (molecule.volume_fraction *
-                                                                              molecule.spectrum.get_absorption_for_wavelength(wavelength))
-                self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] += (molecule.volume_fraction * (molecule.mus500 * (molecule.f_ray *
-                                                                              (wavelength / 500) ** 1e-4 + (1 - molecule.f_ray) *
-                                                                              (wavelength / 500) ** -molecule.b_mie)))
+                self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] += \
+                    (molecule.volume_fraction * molecule.spectrum.get_absorption_for_wavelength(wavelength))
+                self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] += \
+                    (molecule.volume_fraction * (molecule.mus500 * (molecule.f_ray *
+                                                                    (wavelength / 500) ** 1e-4 + (1 - molecule.f_ray) *
+                                                                    (wavelength / 500) ** -molecule.b_mie)))
             self.cached_absorption[wavelength] = self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
             self.cached_scattering[wavelength] = self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM]
         return self.internal_properties
@@ -108,7 +110,10 @@ class Molecule(object):
         if name is None:
             name = "GenericMoleculeName"
         if not isinstance(name, str):
-            raise TypeError("Molecule name must be of type str")
+            if isinstance(name, bytes):
+                name = name.decode("utf-8")
+            else:
+                raise TypeError("Molecule name must be of type str or bytes instead of {}!".format(type(name)))
         self.name = name
 
         if spectrum is None:
@@ -123,56 +128,60 @@ class Molecule(object):
         if volume_fraction is None:
             volume_fraction = 0.0
         if not isinstance(volume_fraction, float):
-            raise TypeError("The given volume_fraction was not of type float!")
+            raise TypeError("The given volume_fraction was not of type float instead of {}!"
+                            .format(type(volume_fraction)))
         self.volume_fraction = volume_fraction
 
         if mus500 is None:
             mus500 = 1e-20
         if not isinstance(mus500, float):
-            raise TypeError("The given mus500 was not of type float!")
+            raise TypeError("The given mus500 was not of type float instead of {}!".format(type(mus500)))
         self.mus500 = mus500
 
         if f_ray is None:
             f_ray = 0.0
         if not isinstance(f_ray, float):
-            raise TypeError("The given f_ray was not of type float!")
+            raise TypeError("The given f_ray was not of type float instead of {}!".format(type(f_ray)))
         self.f_ray = f_ray
 
         if b_mie is None:
             b_mie = 0.0
         if not isinstance(b_mie, float):
-            raise TypeError("The given b_mie was not of type float!")
+            raise TypeError("The given b_mie was not of type float instead of {}!".format(type(b_mie)))
         self.b_mie = b_mie
 
         if anisotropy is None:
             anisotropy = 0.0
         if not isinstance(anisotropy, float):
-            raise TypeError("The given anisotropy was not of type float!")
+            raise TypeError("The given anisotropy was not of type float instead of {}!".format(type(anisotropy)))
         self.anisotropy = anisotropy
 
         if gruneisen_parameter is None:
             gruneisen_parameter = 1.0
-        if not isinstance(gruneisen_parameter, float):
-            raise TypeError("The given gruneisen_parameter was not of type float!")
+        if not isinstance(gruneisen_parameter, (int, float)):
+            raise TypeError("The given gruneisen_parameter was not of type int or float instead of {}!"
+                            .format(type(gruneisen_parameter)))
         self.gruneisen_parameter = gruneisen_parameter
 
         if density is None:
-            density = 0.0
-        if not isinstance(density, float):
-            raise TypeError("The given density was not of type float!")
+            density = StandardProperties.DENSITY_GENERIC
+        if not isinstance(density, (np.int64, int, np.float, float)):
+            raise TypeError("The given density was not of type int or float instead of {}!".format(type(density)))
         self.density = density
 
         if speed_of_sound is None:
-            speed_of_sound = 0.0
-        if not isinstance(speed_of_sound, float):
-            raise TypeError("The given speed_of_sound was not of type float!")
+            speed_of_sound = StandardProperties.SPEED_OF_SOUND_GENERIC
+        if not isinstance(speed_of_sound, (int, float)):
+            raise TypeError("The given speed_of_sound was not of type int or float instead of {}!"
+                            .format(type(speed_of_sound)))
         self.speed_of_sound = speed_of_sound
 
         if alpha_coefficient is None:
-            alpha_coefficient = 0.0
-        if not isinstance(alpha_coefficient, float):
-            raise TypeError("The given alpha_coefficient was not of type float!")
-        self.alpha_coefficient = alpha_coefficient#
+            alpha_coefficient = StandardProperties.ALPHA_COEFF_GENERIC
+        if not isinstance(alpha_coefficient, (int, float)):
+            raise TypeError("The given alpha_coefficient was not of type int or float instead of {}!"
+                            .format(type(alpha_coefficient)))
+        self.alpha_coefficient = alpha_coefficient
 
     def __eq__(self, other):
         if isinstance(other, Molecule):
@@ -191,7 +200,6 @@ class Molecule(object):
         else:
             return super().__eq__(other)
 
-
     @staticmethod
     def from_settings(settings):
         return Molecule(name=settings["name"],
@@ -207,123 +215,172 @@ class Molecule(object):
                         density=settings["density"])
 
 
-
 class MoleculeLibrary(object):
 
     # Main absorbers
-    def water(self, volume_fraction: float = 1.0):
+    @staticmethod
+    def water(volume_fraction: float = 1.0):
         return Molecule(name="water",
                         spectrum=SPECTRAL_LIBRARY.WATER,
                         volume_fraction=volume_fraction, mus500=0.0,
-                        b_mie=0.0, f_ray=0.0, anisotropy=1.0)
+                        b_mie=0.0, f_ray=0.0, anisotropy=1.0,
+                        density=StandardProperties.DENSITY_WATER,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_WATER,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
+                        )
 
-    def oxyhemoglobin(self, volume_fraction: float = 1.0):
+    @staticmethod
+    def oxyhemoglobin(volume_fraction: float = 1.0):
         return Molecule(name="oxyhemoglobin",
-            spectrum=SPECTRAL_LIBRARY.OXYHEMOGLOBIN,
-            volume_fraction=volume_fraction,
-            mus500=OpticalTissueProperties.MUS500_BLOOD,
-            b_mie=OpticalTissueProperties.BMIE_BLOOD,
-            f_ray=OpticalTissueProperties.FRAY_BLOOD,
-            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
-        )
+                        spectrum=SPECTRAL_LIBRARY.OXYHEMOGLOBIN,
+                        volume_fraction=volume_fraction,
+                        mus500=OpticalTissueProperties.MUS500_BLOOD,
+                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
+                        f_ray=OpticalTissueProperties.FRAY_BLOOD,
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY,
+                        density=StandardProperties.DENSITY_BLOOD,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_BLOOD,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_BLOOD
+                        )
 
-    def deoxyhemoglobin(self, volume_fraction: float = 1.0):
+    @staticmethod
+    def deoxyhemoglobin(volume_fraction: float = 1.0):
         return Molecule(name="deoxyhemoglobin",
-            spectrum=SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN,
-            volume_fraction=volume_fraction,
-            mus500=OpticalTissueProperties.MUS500_BLOOD,
-            b_mie=OpticalTissueProperties.BMIE_BLOOD,
-            f_ray=OpticalTissueProperties.FRAY_BLOOD,
-            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
-        )
+                        spectrum=SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN,
+                        volume_fraction=volume_fraction,
+                        mus500=OpticalTissueProperties.MUS500_BLOOD,
+                        b_mie=OpticalTissueProperties.BMIE_BLOOD,
+                        f_ray=OpticalTissueProperties.FRAY_BLOOD,
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY,
+                        density=StandardProperties.DENSITY_BLOOD,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_BLOOD,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_BLOOD
+                        )
 
-    def melanin(self, volume_fraction: float = 1.0):
+    @staticmethod
+    def melanin(volume_fraction: float = 1.0):
         return Molecule(name="melanin",
-            spectrum=SPECTRAL_LIBRARY.MELANIN,
-            volume_fraction=volume_fraction,
-            mus500=OpticalTissueProperties.MUS500_EPIDERMIS,
-            b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
-            f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
-            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
-        )
+                        spectrum=SPECTRAL_LIBRARY.MELANIN,
+                        volume_fraction=volume_fraction,
+                        mus500=OpticalTissueProperties.MUS500_EPIDERMIS,
+                        b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
+                        f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY,
+                        density=StandardProperties.DENSITY_SKIN,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN
+                        )
 
-    def fat(self, volume_fraction: float = 1.0):
+    @staticmethod
+    def fat(volume_fraction: float = 1.0):
         return Molecule(name="fat",
-            spectrum=SPECTRAL_LIBRARY.FAT,
-            volume_fraction=volume_fraction,
-            mus500=OpticalTissueProperties.MUS500_FAT,
-            b_mie=OpticalTissueProperties.BMIE_FAT,
-            f_ray=OpticalTissueProperties.FRAY_FAT,
-            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
-        )
+                        spectrum=SPECTRAL_LIBRARY.FAT,
+                        volume_fraction=volume_fraction,
+                        mus500=OpticalTissueProperties.MUS500_FAT,
+                        b_mie=OpticalTissueProperties.BMIE_FAT,
+                        f_ray=OpticalTissueProperties.FRAY_FAT,
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY,
+                        density=StandardProperties.DENSITY_FAT,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_FAT,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_FAT
+                        )
 
     # Scatterers
-    def constant_scatterer(self, scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
+    @staticmethod
+    def constant_scatterer(scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
                            volume_fraction: float = 1.0):
         return Molecule(name="constant_scatterer",
                         spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
                         volume_fraction=volume_fraction, mus500=scattering_coefficient,
-                        b_mie=0.0, f_ray=0.0, anisotropy=anisotropy)
+                        b_mie=0.0, f_ray=0.0, anisotropy=anisotropy,
+                        density=StandardProperties.DENSITY_GENERIC,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
+                        )
 
-    def soft_tissue_scatterer(self, volume_fraction: float = 1.0):
+    @staticmethod
+    def soft_tissue_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="soft_tissue_scatterer",
                         spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
                         volume_fraction=volume_fraction,
                         mus500=OpticalTissueProperties.MUS500_BACKGROUND_TISSUE,
                         b_mie=OpticalTissueProperties.BMIE_BACKGROUND_TISSUE,
                         f_ray=OpticalTissueProperties.FRAY_BACKGROUND_TISSUE,
-                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY,
+                        density=StandardProperties.DENSITY_GENERIC,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
+                        )
 
-    def epidermal_scatterer(self, volume_fraction: float = 1.0):
+    @staticmethod
+    def epidermal_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="epidermal_scatterer",
                         spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
                         volume_fraction=volume_fraction,
                         mus500=OpticalTissueProperties.MUS500_EPIDERMIS,
                         b_mie=OpticalTissueProperties.BMIE_EPIDERMIS,
                         f_ray=OpticalTissueProperties.FRAY_EPIDERMIS,
-                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY,
+                        density=StandardProperties.DENSITY_SKIN,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN
+                        )
 
-    def dermal_scatterer(self, volume_fraction: float = 1.0):
+    @staticmethod
+    def dermal_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="dermal_scatterer",
                         spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
                         volume_fraction=volume_fraction,
                         mus500=OpticalTissueProperties.MUS500_DERMIS,
                         b_mie=OpticalTissueProperties.BMIE_DERMIS,
                         f_ray=OpticalTissueProperties.FRAY_DERMIS,
-                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY)
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY,
+                        density=StandardProperties.DENSITY_SKIN,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN
+                        )
 
-    def bone(self, volume_fraction: float = 1.0):
-        return Molecule(
-            name="bone",
-            spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-            volume_fraction=volume_fraction,
-            mus500=OpticalTissueProperties.MUS500_BONE,
-            b_mie=OpticalTissueProperties.BMIE_BONE,
-            f_ray=OpticalTissueProperties.FRAY_BONE,
-            anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY
-        )
+    @staticmethod
+    def bone(volume_fraction: float = 1.0):
+        return Molecule(name="bone",
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        volume_fraction=volume_fraction,
+                        mus500=OpticalTissueProperties.MUS500_BONE,
+                        b_mie=OpticalTissueProperties.BMIE_BONE,
+                        f_ray=OpticalTissueProperties.FRAY_BONE,
+                        anisotropy=OpticalTissueProperties.STANDARD_ANISOTROPY,
+                        density=StandardProperties.DENSITY_BONE,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_BONE,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_BONE
+                        )
 
-    def mediprene(self, volume_fraction: float = 1.0):
-        return Molecule(
-            name="mediprene",
-            spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),  # FIXME
-            volume_fraction=volume_fraction,
-            mus500=(-np.log(0.85)) - (-np.log(0.85) / 10),  # FIXME
-            b_mie=0.0,
-            f_ray=0.0,
-            anisotropy=0.9
-        )
+    @staticmethod
+    def mediprene(volume_fraction: float = 1.0):
+        return Molecule(name="mediprene",
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),  # FIXME
+                        volume_fraction=volume_fraction,
+                        mus500=(-np.log(0.85)) - (-np.log(0.85) / 10),  # FIXME
+                        b_mie=0.0,
+                        f_ray=0.0,
+                        anisotropy=0.9,
+                        density=StandardProperties.DENSITY_GEL_PAD,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_GEL_PAD,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_GEL_PAD
+                        )
 
-    def heavy_water(self, volume_fraction: float = 1.0):
-        return Molecule(
-            name="heavy_water",
-            spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA),
-            volume_fraction=volume_fraction,
-            mus500=StandardProperties.AIR_MUS,
-            b_mie=0.0,
-            f_ray=0.0,
-            anisotropy=StandardProperties.AIR_G
-        )
+    @staticmethod
+    def heavy_water(volume_fraction: float = 1.0):
+        return Molecule(name="heavy_water",
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA),
+                        volume_fraction=volume_fraction,
+                        mus500=StandardProperties.AIR_MUS,
+                        b_mie=0.0,
+                        f_ray=0.0,
+                        anisotropy=StandardProperties.AIR_G,
+                        density=StandardProperties.DENSITY_WATER,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_WATER,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
+                        )
 
 
 MOLECULE_LIBRARY = MoleculeLibrary()

@@ -23,6 +23,7 @@
 from simpa.utils import Tags
 from simpa.utils import StandardProperties
 from simpa.core.image_reconstruction import ReconstructionAdapterBase
+from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 import numpy as np
 import subprocess
 import xmltodict
@@ -33,6 +34,13 @@ import nrrd
 class MitkBeamformingAdapter(ReconstructionAdapterBase):
 
     def convert_settings_file(self, file, settings, save_path):
+
+        if Tags.DIGITAL_DEVICE in settings and settings[Tags.DIGITAL_DEVICE] == Tags.DIGITAL_DEVICE_MSOT:
+            PA_device = MSOTAcuityEcho()
+        else:
+            # default settings for now
+            PA_device = MSOTAcuityEcho()
+
         settings_string = file.readlines()
         settings_string = "\n".join(settings_string)
         beamforming_dict = xmltodict.parse(settings_string)
@@ -43,8 +51,7 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@algorithm"] = settings[
             Tags.RECONSTRUCTION_ALGORITHM]
 
-        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@pitchMilliMeter"] = settings[
-            Tags.SENSOR_ELEMENT_PITCH_MM]
+        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@pitchMilliMeter"] = PA_device.pitch_mm
 
         beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@reconstructionDepthMeter"] = 0.08
 
@@ -61,7 +68,7 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
                 spacing = spacing / settings[Tags.UPSCALE_FACTOR]
 
         beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@spacing"] = spacing
-        beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@dimX"] = 70.856 / spacing
+        beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@dimX"] = PA_device.probe_width_mm / spacing
 
         with open(save_path, "w") as xml_write_file:
             xmltodict.unparse(beamforming_dict, xml_write_file, pretty=True, indent="\t")

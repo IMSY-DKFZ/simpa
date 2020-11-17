@@ -44,7 +44,7 @@ colors = [list(np.random.random(3)) for _ in range(len(names))]
 cmap = mpl.colors.LinearSegmentedColormap.from_list(
     'Custom cmap', colors, len(names))
 
-PATH = "D:/bin/MyVolumeName_4711/simpa_output.hdf5"
+PATH = "/media/kris/Extreme SSD/data/simpa_examples/MyVolumeName_4711/example_output.hdf5"
 WAVELENGTH = 700
 
 file = load_hdf5(PATH)
@@ -61,6 +61,8 @@ absorption = (file['simulations']['original_data']['simulation_properties']
 
 segmentation = (file['simulations']['original_data']['simulation_properties']
               [str(WAVELENGTH)]['seg'])
+
+reconstruction = np.squeeze(file["simulations"]["original_data"]["reconstructed_data"][str(WAVELENGTH)]["reconstructed_data"])
 
 shape = np.shape(fluence)
 
@@ -93,10 +95,10 @@ if len(shape) > 2:
 else:
     plt.figure()
     plt.subplot(131)
-    plt.imshow(np.rot90(np.log10(fluence[1:129, -65:-1]), -1))
+    plt.imshow(np.rot90(np.log10(reconstruction[:, :]), -1))
     plt.subplot(132)
-    plt.imshow(np.rot90(np.log10(absorption[1:129, -65:-1]), -1))
+    plt.imshow(np.rot90(np.log10(absorption[:, :]), -1))
     plt.subplot(133)
-    plt.imshow(np.rot90(np.log10(initial_pressure[1:129, -65:-1]), -1))
+    plt.imshow(np.rot90(np.log10(initial_pressure[:, :]), -1))
     plt.show()
 

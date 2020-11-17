@@ -36,10 +36,10 @@ import numpy as np
 SAVE_PATH = "/media/kris/Extreme SSD/data/simpa_examples"
 MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/mcx"
 
-VOLUME_TRANSDUCER_DIM_IN_MM = 50
+VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
-VOLUME_HEIGHT_IN_MM = 20
-SPACING = 0.25
+VOLUME_HEIGHT_IN_MM = 25
+SPACING = 0.2
 RANDOM_SEED = 4711
 
 
@@ -50,7 +50,7 @@ def create_example_tissue(global_settings):
     and a blood vessel.
     """
     background_dictionary = Settings()
-    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     bg = Background(global_settings, background_dictionary)
 
     muscle_dictionary = Settings()
@@ -117,12 +117,38 @@ settings = {
 
     # The following parameters tell the script that we do not want any extra
     # modelling steps
-    Tags.RUN_ACOUSTIC_MODEL: False,
-    Tags.APPLY_NOISE_MODEL: False,
-    Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
-    Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
+    Tags.RUN_ACOUSTIC_MODEL: True,
+    Tags.ACOUSTIC_SIMULATION_3D: False,
+    Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: "/home/kris/hard_drive/MATLAB/bin/matlab",
+    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "/media/kris/Extreme SSD/simpa/simpa/core/acoustic_simulation",
+    Tags.GPU: True,
 
-    # Add the volume_creation to be simulated to the tissue
+    Tags.MEDIUM_ALPHA_POWER: 1.05,
+
+    Tags.SENSOR_RECORD: "p",
+    Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",
+
+    Tags.PMLInside: False,
+    Tags.PMLSize: [31, 32],
+    Tags.PMLAlpha: 1.5,
+    Tags.PlotPML: False,
+    Tags.RECORDMOVIE: False,
+    Tags.MOVIENAME: "visualization_log",
+    Tags.ACOUSTIC_LOG_SCALE: True,
+
+    Tags.APPLY_NOISE_MODEL: False,
+    Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
+
+    Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
+    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_DAS,
+    Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+    Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/home/kris/hard_drive/MITK/"
+                                          "sDMAS-2018.07-2596-g31d1c60d71-linux-x86_64/"
+                                          "MITK-experiments/sDMAS-2018.07-2596-g31d1c60d71-linux-x86_64/"
+                                          "MitkPABeamformingTool.sh",
+    Tags.RECONSTRUCTION_MITK_SETTINGS_XML: "/home/kris/hard_drive/data/pipeline_test/bf_settings.xml",
+    Tags.RECONSTRUCTION_OUTPUT_NAME: "/home/kris/hard_drive/data/pipeline_test/test.nrrd",
 
 }
 settings = Settings(settings)

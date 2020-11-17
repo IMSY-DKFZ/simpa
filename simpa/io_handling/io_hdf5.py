@@ -60,7 +60,7 @@ def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/")
                 else:
                     try:
                         h5file[path + key] = item
-                    except RuntimeError:
+                    except (OSError, RuntimeError):
                         del h5file[path + key]
                         try:
                             h5file[path + key] = item
