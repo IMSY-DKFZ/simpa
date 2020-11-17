@@ -36,10 +36,10 @@ import numpy as np
 SAVE_PATH = "/media/kris/Extreme SSD/data/simpa_examples"
 MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/mcx"
 
-VOLUME_TRANSDUCER_DIM_IN_MM = 50
+VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
-VOLUME_HEIGHT_IN_MM = 20
-SPACING = 1
+VOLUME_HEIGHT_IN_MM = 25
+SPACING = 0.3
 RANDOM_SEED = 4711
 
 

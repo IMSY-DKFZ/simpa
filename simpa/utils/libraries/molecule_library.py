@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 import numpy as np
-from simpa.utils import Tags, StandardProperties
+from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils import AbsorptionSpectrum
@@ -55,7 +55,8 @@ class MolecularComposition(list):
         for molecule in self:
             self.internal_properties.volume_fraction += molecule.volume_fraction
             self.internal_properties[Tags.PROPERTY_ANISOTROPY] += molecule.volume_fraction * molecule.anisotropy
-            self.internal_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER] += molecule.volume_fraction * molecule.gruneisen_parameter
+            self.internal_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER] += \
+                molecule.volume_fraction * molecule.gruneisen_parameter
             self.internal_properties[Tags.PROPERTY_DENSITY] += molecule.volume_fraction * molecule.density
             self.internal_properties[Tags.PROPERTY_SPEED_OF_SOUND] += molecule.volume_fraction * molecule.speed_of_sound
             self.internal_properties[Tags.PROPERTY_ALPHA_COEFF] += molecule.volume_fraction * molecule.alpha_coefficient
@@ -73,11 +74,12 @@ class MolecularComposition(list):
             self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = 0
             self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = 0
             for molecule in self:
-                self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] += (molecule.volume_fraction *
-                                                                              molecule.spectrum.get_absorption_for_wavelength(wavelength))
-                self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] += (molecule.volume_fraction * (molecule.mus500 * (molecule.f_ray *
-                                                                              (wavelength / 500) ** 1e-4 + (1 - molecule.f_ray) *
-                                                                              (wavelength / 500) ** -molecule.b_mie)))
+                self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] += \
+                    (molecule.volume_fraction * molecule.spectrum.get_absorption_for_wavelength(wavelength))
+                self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] += \
+                    (molecule.volume_fraction * (molecule.mus500 * (molecule.f_ray *
+                                                                    (wavelength / 500) ** 1e-4 + (1 - molecule.f_ray) *
+                                                                    (wavelength / 500) ** -molecule.b_mie)))
             self.cached_absorption[wavelength] = self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
             self.cached_scattering[wavelength] = self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM]
         return self.internal_properties
@@ -111,7 +113,7 @@ class Molecule(object):
             if isinstance(name, bytes):
                 name = name.decode("utf-8")
             else:
-                raise TypeError("Molecule name must be of type str or bytes")
+                raise TypeError("Molecule name must be of type str or bytes instead of {}!".format(type(name)))
         self.name = name
 
         if spectrum is None:
@@ -126,37 +128,39 @@ class Molecule(object):
         if volume_fraction is None:
             volume_fraction = 0.0
         if not isinstance(volume_fraction, float):
-            raise TypeError("The given volume_fraction was not of type float!")
+            raise TypeError("The given volume_fraction was not of type float instead of {}!"
+                            .format(type(volume_fraction)))
         self.volume_fraction = volume_fraction
 
         if mus500 is None:
             mus500 = 1e-20
         if not isinstance(mus500, float):
-            raise TypeError("The given mus500 was not of type float!")
+            raise TypeError("The given mus500 was not of type float instead of {}!".format(type(mus500)))
         self.mus500 = mus500
 
         if f_ray is None:
             f_ray = 0.0
         if not isinstance(f_ray, float):
-            raise TypeError("The given f_ray was not of type float!")
+            raise TypeError("The given f_ray was not of type float instead of {}!".format(type(f_ray)))
         self.f_ray = f_ray
 
         if b_mie is None:
             b_mie = 0.0
         if not isinstance(b_mie, float):
-            raise TypeError("The given b_mie was not of type float!")
+            raise TypeError("The given b_mie was not of type float instead of {}!".format(type(b_mie)))
         self.b_mie = b_mie
 
         if anisotropy is None:
             anisotropy = 0.0
         if not isinstance(anisotropy, float):
-            raise TypeError("The given anisotropy was not of type float!")
+            raise TypeError("The given anisotropy was not of type float instead of {}!".format(type(anisotropy)))
         self.anisotropy = anisotropy
 
         if gruneisen_parameter is None:
             gruneisen_parameter = 1.0
         if not isinstance(gruneisen_parameter, (int, float)):
-            raise TypeError("The given gruneisen_parameter was not of type int or float!")
+            raise TypeError("The given gruneisen_parameter was not of type int or float instead of {}!"
+                            .format(type(gruneisen_parameter)))
         self.gruneisen_parameter = gruneisen_parameter
 
         if density is None:
@@ -168,13 +172,15 @@ class Molecule(object):
         if speed_of_sound is None:
             speed_of_sound = StandardProperties.SPEED_OF_SOUND_GENERIC
         if not isinstance(speed_of_sound, (int, float)):
-            raise TypeError("The given speed_of_sound was not of type int or float!")
+            raise TypeError("The given speed_of_sound was not of type int or float instead of {}!"
+                            .format(type(speed_of_sound)))
         self.speed_of_sound = speed_of_sound
 
         if alpha_coefficient is None:
             alpha_coefficient = StandardProperties.ALPHA_COEFF_GENERIC
         if not isinstance(alpha_coefficient, (int, float)):
-            raise TypeError("The given alpha_coefficient was not of type int or float!")
+            raise TypeError("The given alpha_coefficient was not of type int or float instead of {}!"
+                            .format(type(alpha_coefficient)))
         self.alpha_coefficient = alpha_coefficient
 
     def __eq__(self, other):

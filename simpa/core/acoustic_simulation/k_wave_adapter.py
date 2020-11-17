@@ -60,7 +60,7 @@ def simulate(settings):
     else:
         axes = (0, 2)
     data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3, axes=axes)
-    data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3, axes=axes)
+    data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_ABSORPTION_PER_CM], 3, axes=axes)
     data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
     # data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3, axes=axes)
     data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE],
@@ -69,23 +69,14 @@ def simulate(settings):
     print(np.shape(data_dict[Tags.PROPERTY_DENSITY]))
     import matplotlib.pyplot as plt
     PA_device = MSOTAcuityEcho()
-    detector_elements = PA_device.get_detector_definition(settings)
-    detector_elements[:, 1] = detector_elements[:, 1] + PA_device.probe_height_mm
-    detector_positions = np.round(detector_elements / settings[Tags.SPACING_MM]).astype(int)
+    detector_positions = PA_device.get_detector_element_positions(settings)
+    detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
     sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
-    sensor_map[detector_positions[:, 2], detector_positions[:, 0]] = 1
-    # plt.scatter(detector_elements[:, 0], detector_elements[:, 2])
-    # plt.show()
-    #
-    # plt.subplot(1, 3, 1)
-    # plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE])
-    # plt.subplot(1, 3, 2)
-    # plt.imshow(sensor_map)
-    # plt.subplot(1, 3, 3)
-    # plt.imshow(data_dict[Tags.PROPERTY_DENSITY])
-    # plt.show()
+    if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
+        sensor_map[detector_positions[:, 2], detector_positions[:, 0]] = 1
+    else:
+        sensor_map[detector_positions] = 1
     data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
-
 
     try:
         data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,

@@ -36,13 +36,14 @@ class MSOTAcuityEcho(PAIDeviceBase):
         self.radius_mm = 40
         self.number_detector_elements = 256
         self.detector_element_width_mm = 0.24
+        self.detector_element_length_mm = 13
         self.center_frequency_Hz = 3.96e6
         self.bandwidth_percent = 55
         self.sampling_frequency_MHz = 40
         self.probe_height_mm = 43.2
         self.probe_width_mm = 2*np.sin(self.pitch_mm/self.radius_mm * 128)*self.radius_mm
         self.mediprene_membrane_height_mm = 1
-        self.focus_in_field_of_view_mm = [0, 0, 8]
+        self.focus_in_field_of_view_mm = np.array([0, 0, 8])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         pass
@@ -104,7 +105,27 @@ class MSOTAcuityEcho(PAIDeviceBase):
     def get_illuminator_definition(self):
         pass
 
-    def get_detector_definition(self, global_settings: Settings):
+    def get_detector_definition(self):
+
+        pitch_angle = self.pitch_mm / self.radius_mm
+        detector_radius = self.radius_mm
+
+        # if distortion is not None:
+        #     focus[0] -= np.round(distortion[1] / (2 * global_settings[Tags.SPACING_MM]))
+
+        detector_positions = np.zeros((self.number_detector_elements, 3))
+        # go from -127.5, -126.5, ..., 0, .., 126.5, 177.5 instead of between -128 and 127
+        det_elements = np.arange(-int(self.number_detector_elements / 2) + 0.5,
+                                 int(self.number_detector_elements / 2) + 0.5)
+        detector_positions[:, 0] = self.focus_in_field_of_view_mm[0] \
+            + np.sin(pitch_angle*det_elements) * detector_radius
+        detector_positions[:, 2] = self.focus_in_field_of_view_mm[2] \
+            - np.sqrt(detector_radius ** 2 - (np.sin(pitch_angle*det_elements) * detector_radius) ** 2)
+
+        return detector_positions
+
+    def get_detector_element_positions(self, global_settings: Settings):
+        abstract_element_positions = self.get_detector_definition()
 
         sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
                                global_settings[Tags.DIM_VOLUME_Y_MM],
@@ -117,43 +138,16 @@ class MSOTAcuityEcho(PAIDeviceBase):
             # and in the middle of the xy-plane.
             device_position = np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
 
-        pitch_angle = self.pitch_mm / self.radius_mm
-        detector_radius = self.radius_mm
+        element_positions_in_volume = np.add(abstract_element_positions, device_position)
+        return element_positions_in_volume
 
-        # focus = np.asarray([int(round(detector_radius + 11.2 / global_settings[Tags.SPACING_MM])),
-        #                     int(round(detector_map.shape[2] / 2))])
-
-        focus = np.add(np.asarray(self.focus_in_field_of_view_mm), device_position)
-
-        # if distortion is not None:
-        #     focus[0] -= np.round(distortion[1] / (2 * global_settings[Tags.SPACING_MM]))
-
-        detector_positions = np.zeros((self.number_detector_elements, 3))
-        det_elements = np.arange(-int(self.number_detector_elements / 2), int(self.number_detector_elements / 2))
-        detector_positions[:, 0] = focus[0] + np.sin(pitch_angle*det_elements) * detector_radius
-        detector_positions[:, 2] = focus[2] - np.sqrt(detector_radius ** 2 -
-                                                      (np.sin(pitch_angle*det_elements) * detector_radius) ** 2)
-
-        return detector_positions
-        #     detector_map[z_det, field_of_view_slice, y_det] = 1
-        #
-        #     if Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS in global_settings:
-        #         if global_settings[Tags.SENSOR_DIRECTIVITY_HOMOGENEOUS] is True:
-        #             if Tags.SENSOR_DIRECTIVITY_ANGLE in global_settings:
-        #                 detector_directivity[z_det, field_of_view_slice, y_det] = global_settings[Tags.SENSOR_DIRECTIVITY_ANGLE]
-        #             else:
-        #                 detector_directivity = None
-        #         else:
-        #             detector_directivity[z_det, field_of_view_slice, y_det] = -angle
-        #     else:
-        #         detector_directivity = None
-        #
-        # volumes[Tags.PROPERTY_SENSOR_MASK] = np.rot90(detector_map, 1, axes=(0, 2))
-        #
-        # if detector_directivity is not None:
-        #     volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(detector_directivity, 1, axes=(0, 2))
-        # else:
-        #     volumes[Tags.PROPERTY_DIRECTIVITY_ANGLE] = detector_directivity
+    def get_detector_element_orientations(self):
+        detector_positions = self.get_detector_definition()
+        detector_orientations = np.subtract(self.focus_in_field_of_view_mm, detector_positions)
+        norm = np.linalg.norm(detector_orientations, axis=-1)
+        for dim in range(3):
+            detector_orientations[:, dim] = detector_orientations[:, dim]/norm
+        return detector_orientations
 
 
 if __name__ == "__main__":
@@ -164,6 +158,7 @@ if __name__ == "__main__":
     settings[Tags.DIM_VOLUME_Y_MM] = 50
     settings[Tags.DIM_VOLUME_Z_MM] = 20
     settings[Tags.SPACING_MM] = 0.5
+    settings[Tags.STRUCTURES] = {}
     # settings[Tags.DIGITAL_DEVICE_POSITION] = [50, 50, 50]
     settings = device.adjust_simulation_volume_and_settings(settings)
     # print(settings[Tags.DIM_VOLUME_Z_MM])
@@ -172,13 +167,19 @@ if __name__ == "__main__":
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
     print(x_dim, z_dim)
 
-    detector_positions = device.get_detector_definition(settings)
-    detector_positions[:, 1] = detector_positions[:, 1] + device.probe_height_mm
-    detector_positions = np.round(detector_positions/settings[Tags.SPACING_MM]).astype(int)
+    positions = device.get_detector_element_positions(settings)
+    detector_elements = device.get_detector_element_orientations()
+    # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
+    positions = np.round(positions/settings[Tags.SPACING_MM]).astype(int)
     map = np.zeros((x_dim, z_dim))
-    map[detector_positions[:, 0], detector_positions[:, 2]] = 1
+    map[positions[:, 0], positions[:, 2]] = 1
+    print(np.shape(positions[:, 0]))
+    print(np.shape(positions[:, 2]))
+    print(np.shape(detector_elements[:, 0]))
+    print(np.shape(detector_elements[:, 2]))
     import matplotlib.pyplot as plt
-    plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
+    plt.scatter(positions[:, 0], positions[:, 2])
+    plt.quiver(positions[:, 0], positions[:, 2], detector_elements[:, 0], detector_elements[:, 2])
     plt.show()
-    plt.imshow(map)
-    plt.show()
+    # plt.imshow(map)
+    # plt.show()
