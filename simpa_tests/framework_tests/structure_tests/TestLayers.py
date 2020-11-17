@@ -48,6 +48,7 @@ class TestLayers(unittest.TestCase):
         self.layer_settings[Tags.STRUCTURE_END_MM] = [0, 0, 0]
         self.layer_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
         self.layer_settings[Tags.ADHERE_TO_DEFORMATION] = True
+        self.layer_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
     def assert_values(self, volume, values):
         assert abs(volume[0][0][0] - values[0]) < 1e-5, "excpected " + str(values[0]) + " but was " + str(volume[0][0][0])

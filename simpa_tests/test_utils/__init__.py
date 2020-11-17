@@ -61,7 +61,9 @@ def create_vessel(global_settings):
     tubular_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
     tubular_structure_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     tubular_structure_dictionary[Tags.STRUCTURE_END_MM] = [10, 10, 10]
-    tubular_structure_dictionary[Tags.STRUCTURE_RADIUS] = 4
+    tubular_structure_dictionary[Tags.STRUCTURE_RADIUS_MM] = 4
+    tubular_structure_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    tubular_structure_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     tube = CircularTubularStructure(global_settings, Settings(tubular_structure_dictionary))
     return tube.to_settings()
 

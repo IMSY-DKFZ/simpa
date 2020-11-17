@@ -134,7 +134,7 @@ class Molecule(object):
 
         if mus500 is None:
             mus500 = 1e-20
-        if not isinstance(mus500, float):
+        if not isinstance(mus500, (int, float)):
             raise TypeError("The given mus500 was not of type float instead of {}!".format(type(mus500)))
         self.mus500 = mus500
 
@@ -165,7 +165,7 @@ class Molecule(object):
 
         if density is None:
             density = StandardProperties.DENSITY_GENERIC
-        if not isinstance(density, (np.int64, int, np.float, float)):
+        if not isinstance(density, (np.int32, np.int64, int, np.float, float)):
             raise TypeError("The given density was not of type int or float instead of {}!".format(type(density)))
         self.density = density
 
