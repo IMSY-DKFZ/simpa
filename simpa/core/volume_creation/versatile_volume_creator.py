@@ -42,6 +42,7 @@ class VersatileVolumeCreator(VolumeCreatorBase):
 
         volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes(settings)
         global_volume_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
+        max_added_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
         wavelength = 800
 
         structure_list = Structures(settings)
@@ -51,20 +52,6 @@ class VersatileVolumeCreator(VolumeCreatorBase):
             print(type(structure))
 
             structure_properties = structure.properties_for_wavelength(wavelength)
-
-            if structure.priority <= 0:
-                print("BACKGROUND!")
-                # Background structure or "filler" structure
-                mask = global_volume_fractions < 1e-10
-                for key in volumes.keys():
-                    if structure_properties[key] is None:
-                        continue
-                    if key == Tags.PROPERTY_SEGMENTATION:
-                        volumes[key][mask] = structure_properties[key]
-                    else:
-                        volumes[key][mask] = structure.geometrical_volume[mask] * structure_properties[key]
-                global_volume_fractions[mask] += structure.geometrical_volume[mask]
-                continue
 
             structure_volume_fractions = structure.geometrical_volume
             structure_indexes_mask = structure_volume_fractions > 0
@@ -85,8 +72,10 @@ class VersatileVolumeCreator(VolumeCreatorBase):
                 if structure_properties[key] is None:
                     continue
                 if key == Tags.PROPERTY_SEGMENTATION:
-                    added_fraction_greater_than_filled_fraction = added_volume_fraction > global_volume_fractions
-                    volumes[key][added_fraction_greater_than_filled_fraction & mask] = structure_properties[key]
+                    added_fraction_greater_than_any_added_fraction = added_volume_fraction > max_added_fractions
+                    volumes[key][added_fraction_greater_than_any_added_fraction & mask] = structure_properties[key]
+                    max_added_fractions[added_fraction_greater_than_any_added_fraction & mask] = \
+                        added_volume_fraction[added_fraction_greater_than_any_added_fraction & mask]
                 else:
                     volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
 
