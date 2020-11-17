@@ -62,12 +62,10 @@ def simulate(settings):
     data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3, axes=axes)
     data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_ABSORPTION_PER_CM], 3, axes=axes)
     data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
-    # data_dict[Tags.PROPERTY_SENSOR_MASK] = np.rot90(tmp_ac_data[Tags.PROPERTY_SENSOR_MASK], 3, axes=axes)
     data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE],
-                                                                      axes=axes))
+                                                                      axes=axes))/1000
     data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE], axes=axes))
-    print(np.shape(data_dict[Tags.PROPERTY_DENSITY]))
-    import matplotlib.pyplot as plt
+
     PA_device = MSOTAcuityEcho()
     detector_positions = PA_device.get_detector_element_positions(settings)
     detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
@@ -77,6 +75,24 @@ def simulate(settings):
     else:
         sensor_map[detector_positions] = 1
     data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
+
+    import matplotlib.pyplot as plt
+    plt.subplot(2, 3, 1)
+    plt.title(Tags.PROPERTY_SENSOR_MASK)
+    plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK])
+    plt.subplot(2, 3, 2)
+    plt.title(Tags.OPTICAL_MODEL_INITIAL_PRESSURE)
+    plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE])
+    plt.subplot(2, 3, 3)
+    plt.title(Tags.PROPERTY_DENSITY)
+    plt.imshow(data_dict[Tags.PROPERTY_DENSITY])
+    plt.subplot(2, 3, 4)
+    plt.title(Tags.PROPERTY_SPEED_OF_SOUND)
+    plt.imshow(data_dict[Tags.PROPERTY_SPEED_OF_SOUND])
+    plt.subplot(2, 3, 5)
+    plt.title(Tags.PROPERTY_ALPHA_COEFF)
+    plt.imshow(data_dict[Tags.PROPERTY_ALPHA_COEFF])
+    plt.show()
 
     try:
         data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
@@ -156,9 +172,10 @@ def simulate(settings):
     settings["dt_acoustic_sim"] = float(time_grid["time_step"])
     settings["Nt_acoustic_sim"] = float(time_grid["number_time_steps"])
 
-    os.remove(optical_path)
-    os.remove(optical_path + ".mat")
-    os.remove(optical_path + "dt.mat")
-    os.chdir(cur_dir)
-
+    # os.remove(optical_path)
+    # os.remove(optical_path + ".mat")
+    # os.remove(optical_path + "dt.mat")
+    # os.chdir(cur_dir)
+    plt.imshow(raw_time_series_data)
+    plt.show()
     return raw_time_series_data

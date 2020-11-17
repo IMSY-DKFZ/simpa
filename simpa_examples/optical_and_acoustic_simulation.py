@@ -39,7 +39,7 @@ MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/m
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.3
+SPACING = 0.2
 RANDOM_SEED = 4711
 
 
@@ -50,7 +50,7 @@ def create_example_tissue(global_settings):
     and a blood vessel.
     """
     background_dictionary = Settings()
-    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     bg = Background(global_settings, background_dictionary)
 
     muscle_dictionary = Settings()

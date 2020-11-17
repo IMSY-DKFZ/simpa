@@ -52,7 +52,7 @@ kgrid = kWaveGrid(Nx, dx, Ny, dx);
 %% Define medium
 
 % if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
-if isfield(data, 'sos') == true
+if isfield(data, 'sos') == false
     medium.sound_speed = data.sos;
     % add 2 pixel "gel" to reduce Fourier artifact
     medium.sound_speed = padarray(medium.sound_speed, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
@@ -72,7 +72,7 @@ end
 medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
-if isfield(data, 'density') == true
+if isfield(data, 'density') == false
     medium.density = data.density;
     % add 2 pixel "gel" to reduce Fourier artifact
     medium.density = padarray(medium.density, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
