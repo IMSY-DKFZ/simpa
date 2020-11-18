@@ -25,6 +25,8 @@ from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling import save_hdf5
 from simpa.core.volume_creation.versatile_volume_creator import VersatileVolumeCreator
 from simpa.core.device_digital_twins import DEVICE_MAP
+import numpy as np
+from simpa.utils import create_deformation_settings
 
 
 def run_volume_creation(global_settings: Settings):
@@ -49,6 +51,16 @@ def run_volume_creation(global_settings: Settings):
 
     if pa_device is not None:
         global_settings = pa_device.adjust_simulation_volume_and_settings(global_settings)
+
+    if Tags.SIMULATE_DEFORMED_LAYERS in global_settings and global_settings[Tags.SIMULATE_DEFORMED_LAYERS]:
+        np.random.seed(global_settings[Tags.RANDOM_SEED])
+        global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(
+            bounds_mm=[[0, global_settings[Tags.DIM_VOLUME_X_MM]],
+                       [0, global_settings[Tags.DIM_VOLUME_Y_MM]]],
+            maximum_z_elevation_mm=10,
+            filter_sigma=0,
+            cosine_scaling_factor=1)
+        # TODO extract as settings parameters
 
     volumes = volume_creator_adapter.create_simulation_volume(global_settings)
 

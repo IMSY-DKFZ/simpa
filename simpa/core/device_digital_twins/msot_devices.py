@@ -27,6 +27,7 @@ from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 from simpa.utils.libraries.structure_library import HorizontalLayerStructure, Background
 from simpa.utils.deformation_manager import get_functional_from_deformation_settings
 import numpy as np
+from simpa.utils import create_deformation_settings
 
 
 class MSOTAcuityEcho(PAIDeviceBase):
@@ -88,17 +89,17 @@ class MSOTAcuityEcho(PAIDeviceBase):
             Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
             Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
             Tags.CONSIDER_PARTIAL_VOLUME: True,
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene()
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
+            Tags.STRUCTURE_TYPE: "HorizontalLayerStructure"
         })
 
-        mediprene_layer = HorizontalLayerStructure(global_settings, mediprene_layer_settings)
-        global_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer.to_settings()
+        global_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
 
         background_settings = Settings({
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water()
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
+            Tags.STRUCTURE_TYPE: "Background"
         })
-        background = Background(global_settings, background_settings)
-        global_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background.to_settings()
+        global_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
 
         return global_settings
 

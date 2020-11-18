@@ -40,3 +40,13 @@ However, it can also be used for image processing.
 
 A basic example on how to use simpa in you project to run an optical forward simulation is given in the 
 samples/minimal_optical_simulation.py file.
+
+## Performance profiling
+
+Do you wish to know which parts of the simulation pipeline cost the most amount of time? 
+If that is the case then you can use the following commands to profile the execution of your simulation script.
+You simply need to replace the `myscript` name with your script name.
+
+`python -m cProfile -o myscript.cprof myscript.py`
+
+`pyprof2calltree -k -i myscript.cprof`
