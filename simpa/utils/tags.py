@@ -53,7 +53,7 @@ class Tags:
     MOLECULE_COMPOSITION = ("molecule_composition", list)
     SIMULATE_DEFORMED_LAYERS = ("simulate_deformed_layers", bool)
     DEFORMED_LAYERS_SETTINGS = ("deformed_layers_settings", dict)
-    BACKGROUND = "background"
+    BACKGROUND = "Background"
 
     """
     ADHERE_TO_DEFORMATION default is True
@@ -288,6 +288,11 @@ class Tags:
 
     # Structures
     STRUCTURES = "structures"
+    HORIZONTAL_LAYER_STRUCTURE = "HorizontalLayerStructure"
+    CIRCULAR_TUBULAR_STRUCTURE = "CircularTubularStructure"
+    ELLIPTICAL_TUBULAR_STRUCTURE = "EllipticalTubularStructure"
+    SPHERICAL_STRUCTURE = "SphericalStructure"
+
     CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = ("structure_type", str)
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"

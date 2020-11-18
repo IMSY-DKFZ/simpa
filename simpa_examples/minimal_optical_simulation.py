@@ -51,7 +51,7 @@ def create_example_tissue(global_settings):
     """
     background_dictionary = Settings()
     background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
-    background_dictionary[Tags.STRUCTURE_TYPE] = "Background"
+    background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
     muscle_dictionary = Settings()
     muscle_dictionary[Tags.PRIORITY] = 1
@@ -60,7 +60,7 @@ def create_example_tissue(global_settings):
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    muscle_dictionary[Tags.STRUCTURE_TYPE] = "HorizontalLayerStructure"
+    muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
@@ -70,7 +70,7 @@ def create_example_tissue(global_settings):
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    vessel_1_dictionary[Tags.STRUCTURE_TYPE] = "SphericalStructure"
+    vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.SPHERICAL_STRUCTURE
 
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
@@ -80,7 +80,7 @@ def create_example_tissue(global_settings):
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     # FIXME: 
-    epidermis_dictionary[Tags.STRUCTURE_TYPE] = "HorizontalLayerStructure"
+    epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     tissue_dict = Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary

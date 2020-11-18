@@ -61,7 +61,7 @@ else
 end
 
 % if a field of the struct "data" is given which describes the attenuation, the array is loaded and is used as medium.alpha_coeff
-if isfield(data, 'alpha_coeff') == true
+if isfield(data, 'alpha_coeff') == false
  medium.alpha_coeff = data.alpha_coeff;
  % add 2 pixel "gel" to reduce Fourier artifact
  medium.alpha_coeff = padarray(medium.alpha_coeff, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
@@ -83,7 +83,7 @@ end
 %sound_speed_ref = min(min(medium.sound_speed));
 %kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
 %kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / sound_speed_ref) / kgrid.dt);
-kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.15);	% time array with
+kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 % CFL number of 0.3 (advised by manual)
 % Using makeTime, dt = CFL*dx/medium.sound_speed and the total
 % time is set to the time it would take for an acoustic wave to travel 
@@ -113,7 +113,7 @@ if isfield(data, 'directivity_size')
     sensor.directivity_size = settings.sensor_directivity_size;
 end
 
-sensor.directivity_pattern = settings.sensor_directivity_pattern;
+%sensor.directivity_pattern = settings.sensor_directivity_pattern;
 
 % define the frequency response of the sensor elements, gaussian shape with
 % FWHM = bandwidth*center_freq

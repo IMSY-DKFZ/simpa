@@ -44,7 +44,7 @@ colors = [list(np.random.random(3)) for _ in range(len(names))]
 cmap = mpl.colors.LinearSegmentedColormap.from_list(
     'Custom cmap', colors, len(names))
 
-PATH = "/media/kris/Extreme SSD/data/simpa_examples/MyVolumeName_4711/example_output.hdf5"
+PATH = "/media/kris/Extreme SSD/data/simpa_examples/MyVolumeName_47/simpa_output.hdf5"
 WAVELENGTH = 700
 
 file = load_hdf5(PATH)

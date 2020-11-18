@@ -39,8 +39,8 @@ MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/m
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.2
-RANDOM_SEED = 4711
+SPACING = 0.8
+RANDOM_SEED = 47
 
 
 def create_example_tissue(global_settings):
@@ -51,7 +51,7 @@ def create_example_tissue(global_settings):
     """
     background_dictionary = Settings()
     background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    bg = Background(global_settings, background_dictionary)
+    background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
     muscle_dictionary = Settings()
     muscle_dictionary[Tags.PRIORITY] = 1
@@ -59,7 +59,8 @@ def create_example_tissue(global_settings):
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    muscle = HorizontalLayerStructure(global_settings, muscle_dictionary)
+    muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
@@ -69,7 +70,7 @@ def create_example_tissue(global_settings):
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    vessel_1 = SphericalStructure(global_settings, vessel_1_dictionary)
+    vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.SPHERICAL_STRUCTURE
 
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
@@ -77,13 +78,14 @@ def create_example_tissue(global_settings):
     epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    epidermis = HorizontalLayerStructure(global_settings, epidermis_dictionary)
+    epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     tissue_dict = Settings()
-    tissue_dict[Tags.BACKGROUND] = bg.to_settings()
-    tissue_dict["muscle"] = muscle.to_settings()
-    tissue_dict["epidermis"] = epidermis.to_settings()
-    tissue_dict["vessel_1"] = vessel_1.to_settings()
+    tissue_dict[Tags.BACKGROUND] = background_dictionary
+    tissue_dict["muscle"] = muscle_dictionary
+    tissue_dict["epidermis"] = epidermis_dictionary
+    tissue_dict["vessel_1"] = vessel_1_dictionary
     return tissue_dict
 
 # Seed the numpy random configuration prior to creating the settings file in
@@ -102,6 +104,12 @@ settings = {
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
     Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+    Tags.SIMULATE_DEFORMED_LAYERS: True,
+    # Tags.DEFORMED_LAYERS_SETTINGS: create_deformation_settings([[0, VOLUME_TRANSDUCER_DIM_IN_MM],
+    #                                                            [0, VOLUME_PLANAR_DIM_IN_MM]],
+    #                                                            maximum_z_elevation_mm=10,
+    #                                                            filter_sigma=0,
+    #                                                            cosine_scaling_factor=1),
 
     # Simulation Device
     Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
@@ -127,7 +135,7 @@ settings = {
     Tags.MEDIUM_ALPHA_POWER: 1.05,
 
     Tags.SENSOR_RECORD: "p",
-    Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",
+    # Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",
 
     Tags.PMLInside: False,
     Tags.PMLSize: [31, 32],
@@ -152,11 +160,11 @@ settings = {
 
 }
 settings = Settings(settings)
-settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
+# settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
 np.random.seed(RANDOM_SEED)
-settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, settings[Tags.DIM_VOLUME_X_MM]],
-                                                                                 [0, settings[Tags.DIM_VOLUME_Y_MM]]],
-                                                                      maximum_z_elevation_mm=3)
+# settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, settings[Tags.DIM_VOLUME_X_MM]],
+#                                                                                  [0, settings[Tags.DIM_VOLUME_Y_MM]]],
+#                                                                       maximum_z_elevation_mm=3)
 settings[Tags.STRUCTURES] = create_example_tissue(settings)
 print("Simulating ", RANDOM_SEED)
 import time
