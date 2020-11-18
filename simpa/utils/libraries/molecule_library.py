@@ -223,7 +223,7 @@ class MoleculeLibrary(object):
     def water(volume_fraction: float = 1.0):
         return Molecule(name="water",
                         spectrum=SPECTRAL_LIBRARY.WATER,
-                        volume_fraction=volume_fraction, mus500=0.0,
+                        volume_fraction=volume_fraction, mus500=0.1,
                         b_mie=0.0, f_ray=0.0, anisotropy=1.0,
                         density=StandardProperties.DENSITY_WATER,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_WATER,

@@ -30,13 +30,31 @@ import matplotlib.pyplot as plt
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
+from scipy.ndimage import zoom
+
+target_spacing = 0.2
 
 label_mask, _ = nrrd.read("D:/labels.nrrd")
 label_mask = label_mask[:, :, 0].reshape((256, 1, 128))
 
-segmentation_volume_mask = np.tile(label_mask, (1, 64, 1))
+input_spacing = 0.15625
+
+segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
+segmentation_volume_mask = np.ones((461, 128, 128+244)) * 6
+segmentation_volume_mask[230-128:230+128, :, 244:] = segmentation_volume_tiled
+
+segmentation_volume_mask = np.round(zoom(segmentation_volume_mask, input_spacing/target_spacing,
+                                         order=0)).astype(np.int)
+segmentation_volume_mask[segmentation_volume_mask == 0] = 5
 
 print(np.shape(segmentation_volume_mask))
+
+plt.figure()
+plt.subplot(121)
+plt.imshow(np.rot90(segmentation_volume_mask[10, :, :], -1))
+plt.subplot(122)
+plt.imshow(np.rot90(segmentation_volume_mask[:, 10, :], -1))
+plt.show()
 
 def segmention_class_mapping():
     ret_dict = dict()
@@ -61,10 +79,10 @@ settings[Tags.VOLUME_NAME] = "SegmentationTest"
 settings[Tags.RANDOM_SEED] = 1234
 settings[Tags.WAVELENGTHS] = [700]
 settings[Tags.VOLUME_CREATOR] = Tags.VOLUME_CREATOR_SEGMENTATION_BASED
-settings[Tags.SPACING_MM] = 0.15625
-settings[Tags.DIM_VOLUME_X_MM] = 40
-settings[Tags.DIM_VOLUME_Y_MM] = 10
-settings[Tags.DIM_VOLUME_Z_MM] = 20
+settings[Tags.SPACING_MM] = target_spacing
+settings[Tags.DIM_VOLUME_X_MM] = 72
+settings[Tags.DIM_VOLUME_Y_MM] = 20
+settings[Tags.DIM_VOLUME_Z_MM] = 58.125
 settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW] = False
 settings[Tags.INPUT_SEGMENTATION_VOLUME] = segmentation_volume_mask
 settings[Tags.SEGMENTATION_CLASS_MAPPING] = segmention_class_mapping()
@@ -92,6 +110,10 @@ absorption = (file['simulations']['original_data']['simulation_properties']
 segmentation = (file['simulations']['original_data']['simulation_properties']
               [str(WAVELENGTH)]['seg'])
 
+initial_pressure = (file['simulations']['original_data']
+                    ['optical_forward_model_output']
+                    [str(WAVELENGTH)]['initial_pressure'])
+
 shape = np.shape(absorption)
 print(shape)
 
@@ -99,12 +121,16 @@ x_pos = int(shape[0]/2)
 y_pos = int(shape[1]/2)
 
 plt.figure()
-plt.subplot(221)
+plt.subplot(231)
 plt.imshow(np.rot90(absorption[x_pos, :, :], -1))
-plt.subplot(222)
+plt.subplot(232)
+plt.imshow((np.rot90(initial_pressure[x_pos, :, :], -1)))
+plt.subplot(233)
 plt.imshow(np.rot90(segmentation[x_pos, :, :], -1))
-plt.subplot(223)
+plt.subplot(234)
 plt.imshow(np.rot90(absorption[:, y_pos, :], -1))
-plt.subplot(224)
+plt.subplot(235)
+plt.imshow((np.rot90(initial_pressure[:, y_pos, :], -1)))
+plt.subplot(236)
 plt.imshow(np.rot90(segmentation[:, y_pos, :], -1))
 plt.show()

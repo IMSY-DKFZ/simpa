@@ -47,17 +47,28 @@ class MSOTAcuityEcho(PAIDeviceBase):
         self.focus_in_field_of_view_mm = np.array([0, 0, 8])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        pass
+        if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
+            if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + self.mediprene_membrane_height_mm + 1):
+                raise AssertionError("Volume z dimension is too small to encompass MSOT device in simulation!"
+                                     "Must be at least {} mm but was {} mm"
+                                     .format((self.probe_height_mm + self.mediprene_membrane_height_mm + 1),
+                                             global_settings[Tags.DIM_VOLUME_Z_MM]))
+            if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
+                raise AssertionError("Volume x dimension is too small to encompass MSOT device in simulation!"
+                                     "Must be at least {} mm but was {} mm"
+                                     .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
+
+        return True
 
     def adjust_simulation_volume_and_settings(self, global_settings: Settings):
-
-        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
-                               global_settings[Tags.DIM_VOLUME_Y_MM],
-                               global_settings[Tags.DIM_VOLUME_Z_MM]])
 
         probe_size_mm = self.probe_height_mm
         mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+
+        if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
+            return global_settings
+
         new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
                                heavy_water_layer_height_mm
 
