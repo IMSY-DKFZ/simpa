@@ -136,6 +136,8 @@ class McxAdapter(OpticalForwardAdapterBase):
         cmd.append(settings[Tags.OPTICAL_MODEL_BINARY_PATH])
         cmd.append("-f")
         cmd.append(tmp_json_filename)
+        cmd.append("-E")
+        cmd.append("100000")
         cmd.append("-O")
         cmd.append("F")
 

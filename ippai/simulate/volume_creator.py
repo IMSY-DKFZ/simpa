@@ -40,7 +40,7 @@ from ippai.simulate import SegmentationClasses, SaveFilePaths
 
 
 
-def create_simulation_volume(settings):
+def create_simulation_volume(settings, mua):
     """
     This method creates a in silico respresentation of a tissue as described in the settings file that is given.
     :param settings: a dictionary containing all relevant Tags for the simulation to be able to instantiate a tissue.
@@ -53,6 +53,9 @@ def create_simulation_volume(settings):
 
     volumes = create_empty_volume(settings)
     volumes = add_structures(volumes, settings)
+    if mua is not None:
+        volumes['mua'][1:9,0,1:9] = mua[0,0,:,:]
+        volumes['mua'][:,0,0] = 1.
     volumes = append_gel_pad(volumes, settings)
     volumes = append_air_layer(volumes, settings)
 
@@ -423,6 +426,7 @@ def create_empty_volume(global_settings):
 
 def add_structures(volumes, global_settings):
     for structure in global_settings[Tags.STRUCTURES]:
+        print(structure)
         volumes = add_structure(volumes, global_settings[Tags.STRUCTURES][structure], global_settings)
     return volumes
 

@@ -34,7 +34,7 @@ import os
 import json
 
 
-def simulate(settings):
+def simulate(settings, mua):
     """
 
     :param settings:
@@ -78,7 +78,7 @@ def simulate(settings):
             np.random.seed(None)
 
         settings[Tags.WAVELENGTH] = wavelength
-        volume_output_path = create_simulation_volume(settings)
+        volume_output_path = create_simulation_volume(settings, mua)
         volume_output_paths.append(volume_output_path)
 
         optical_output_path = None
