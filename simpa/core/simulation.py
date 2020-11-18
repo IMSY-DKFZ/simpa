@@ -46,19 +46,18 @@ def simulate(settings):
         raise TypeError("Use a Settings instance from simpa.utils.settings_generator as simulation input.")
 
     simpa_output = dict()
-    wavelengths = settings[Tags.WAVELENGTHS]
     volume_output_paths = []
     optical_output_paths = []
     acoustic_output_paths = []
     reconstruction_output_paths = []
-    path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME] + "/"
+    path = settings[Tags.SIMULATION_PATH] + "/"
     if not os.path.exists(path):
         os.makedirs(path)
 
     if Tags.SIMPA_OUTPUT_NAME in settings:
         simpa_output_path = path + settings[Tags.SIMPA_OUTPUT_NAME]
     else:
-        simpa_output_path = path + "simpa_output"
+        simpa_output_path = path + settings[Tags.VOLUME_NAME]
 
     serializer = SIMPAJSONSerializer()
 
@@ -73,7 +72,7 @@ def simulate(settings):
     simpa_output[Tags.SETTINGS] = settings
     save_hdf5(simpa_output, settings[Tags.SIMPA_OUTPUT_PATH])
 
-    for wavelength in wavelengths:
+    for wavelength in settings[Tags.WAVELENGTHS]:
 
         if settings[Tags.RANDOM_SEED] is not None:
             np.random.seed(settings[Tags.RANDOM_SEED])

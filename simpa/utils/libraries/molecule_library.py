@@ -67,6 +67,7 @@ class MolecularComposition(list):
             self.internal_properties.volume_fraction = 1
 
     def get_properties_for_wavelength(self, wavelength) -> TissueProperties:
+        self.update_internal_properties()
         if self.cached_absorption[wavelength] != -1:
             self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = self.cached_absorption[wavelength]
             self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = self.cached_scattering[wavelength]

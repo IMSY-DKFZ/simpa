@@ -49,6 +49,11 @@ class Tags:
     """
     VOLUME_CREATOR = ("volume_creator", str)
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
+    VOLUME_CREATOR_SEGMENTATION_BASED = "volume_creator_segmentation_based"
+
+    INPUT_SEGMENTATION_VOLUME = "input_segmentation_volume"
+    SEGMENTATION_CLASS_MAPPING = "segmentation_class_mapping"
+
     PRIORITY = ("priority", (int, np.integer, float, np.float))
     MOLECULE_COMPOSITION = ("molecule_composition", list)
     SIMULATE_DEFORMED_LAYERS = ("simulate_deformed_layers", bool)

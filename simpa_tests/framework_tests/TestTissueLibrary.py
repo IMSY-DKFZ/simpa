@@ -29,7 +29,6 @@ from simpa.utils import TISSUE_LIBRARY
 
 
 def assert_defined_in_common_wavelength_range(molecular_composition: MolecularComposition):
-    molecular_composition.update_internal_properties()
     for wavelength in range(600, 1000):
         tissue_properties = molecular_composition.get_properties_for_wavelength(wavelength)
         tissue_properties_2 = molecular_composition.get_properties_for_wavelength(wavelength)

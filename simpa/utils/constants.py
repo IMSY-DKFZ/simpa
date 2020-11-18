@@ -49,7 +49,7 @@ class SegmentationClasses:
     EPIDERMIS = 4
     DERMIS = 5
     FAT = 6
-    ULTRASOUND_GEL_PAD = 7
+    ULTRASOUND_GEL = 7
     WATER = 8
     HEAVY_WATER = 9
     COUPLING_ARTIFACT = 10

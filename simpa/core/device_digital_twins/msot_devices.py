@@ -88,16 +88,16 @@ class MSOTAcuityEcho(PAIDeviceBase):
             Tags.PRIORITY: 10,
             Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
             Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
-            Tags.CONSIDER_PARTIAL_VOLUME: True,
+            Tags.CONSIDER_PARTIAL_VOLUME: False,
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
-            Tags.STRUCTURE_TYPE: "HorizontalLayerStructure"
+            Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
         })
 
         global_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
 
         background_settings = Settings({
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
-            Tags.STRUCTURE_TYPE: "Background"
+            Tags.STRUCTURE_TYPE: Tags.BACKGROUND
         })
         global_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
 

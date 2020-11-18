@@ -51,6 +51,7 @@ def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/")
         """
         serializer = SIMPASerializer()
         for key, item in data_dictionary.items():
+            key = str(key)
             if not isinstance(item, (list, dict, type(None))):
 
                 if isinstance(item, Molecule):

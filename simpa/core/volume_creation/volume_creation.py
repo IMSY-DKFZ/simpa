@@ -24,6 +24,7 @@ from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling import save_hdf5
 from simpa.core.volume_creation.versatile_volume_creator import VersatileVolumeCreator
+from simpa.core.volume_creation.segmentation_based_volume_creator import SegmentationBasedVolumeCreator
 from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 from simpa.utils import create_deformation_settings
@@ -40,6 +41,8 @@ def run_volume_creation(global_settings: Settings):
 
     if model == Tags.VOLUME_CREATOR_VERSATILE:
         volume_creator_adapter = VersatileVolumeCreator()
+    elif model == Tags.VOLUME_CREATOR_SEGMENTATION_BASED:
+        volume_creator_adapter = SegmentationBasedVolumeCreator()
 
     pa_device = None
     if Tags.DIGITAL_DEVICE in global_settings:

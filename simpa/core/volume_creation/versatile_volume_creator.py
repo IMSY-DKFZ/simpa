@@ -43,7 +43,7 @@ class VersatileVolumeCreator(VolumeCreatorBase):
         volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes(settings)
         global_volume_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
         max_added_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
-        wavelength = 800
+        wavelength = settings[Tags.WAVELENGTH]
 
         structure_list = Structures(settings)
         priority_sorted_structures = structure_list.sorted_structures

@@ -260,4 +260,9 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.heavy_water())
                 .get_molecular_composition(SegmentationClasses.HEAVY_WATER))
 
+    def ultrasound_gel(self):
+        return (MolecularCompositionGenerator()
+                .append(MOLECULE_LIBRARY.water())
+                .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
+
 TISSUE_LIBRARY = TissueLibrary()
