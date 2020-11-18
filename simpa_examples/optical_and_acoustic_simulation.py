@@ -51,7 +51,7 @@ def create_example_tissue(global_settings):
     """
     background_dictionary = Settings()
     background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    bg = Background(global_settings, background_dictionary)
+    background_dictionary[Tags.STRUCTURE_TYPE] = "Background"
 
     muscle_dictionary = Settings()
     muscle_dictionary[Tags.PRIORITY] = 1
@@ -59,7 +59,7 @@ def create_example_tissue(global_settings):
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    muscle = HorizontalLayerStructure(global_settings, muscle_dictionary)
+    muscle_dictionary[Tags.STRUCTURE_TYPE] = "HorizontalLayerStructure"
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
@@ -69,7 +69,7 @@ def create_example_tissue(global_settings):
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    vessel_1 = SphericalStructure(global_settings, vessel_1_dictionary)
+    vessel_1_dictionary[Tags.STRUCTURE_TYPE] = "SphericalStructure"
 
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
@@ -77,13 +77,13 @@ def create_example_tissue(global_settings):
     epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    epidermis = HorizontalLayerStructure(global_settings, epidermis_dictionary)
+    epidermis_dictionary[Tags.STRUCTURE_TYPE] = "HorizontalLayerStructure"
 
     tissue_dict = Settings()
-    tissue_dict[Tags.BACKGROUND] = bg.to_settings()
-    tissue_dict["muscle"] = muscle.to_settings()
-    tissue_dict["epidermis"] = epidermis.to_settings()
-    tissue_dict["vessel_1"] = vessel_1.to_settings()
+    tissue_dict[Tags.BACKGROUND] = background_dictionary
+    tissue_dict["muscle"] = muscle_dictionary
+    tissue_dict["epidermis"] = epidermis_dictionary
+    tissue_dict["vessel_1"] = vessel_1_dictionary
     return tissue_dict
 
 # Seed the numpy random configuration prior to creating the settings file in
@@ -117,7 +117,7 @@ settings = {
 
     # The following parameters tell the script that we do not want any extra
     # modelling steps
-    Tags.RUN_ACOUSTIC_MODEL: True,
+    Tags.RUN_ACOUSTIC_MODEL: False,
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: "/home/kris/hard_drive/MATLAB/bin/matlab",
@@ -140,7 +140,7 @@ settings = {
     Tags.APPLY_NOISE_MODEL: False,
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
 
-    Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
+    Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
     Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_DAS,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/home/kris/hard_drive/MITK/"
@@ -154,9 +154,7 @@ settings = {
 settings = Settings(settings)
 settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
 np.random.seed(RANDOM_SEED)
-settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, settings[Tags.DIM_VOLUME_X_MM]],
-                                                                                 [0, settings[Tags.DIM_VOLUME_Y_MM]]],
-                                                                      maximum_z_elevation_mm=3)
+
 settings[Tags.STRUCTURES] = create_example_tissue(settings)
 print("Simulating ", RANDOM_SEED)
 import time

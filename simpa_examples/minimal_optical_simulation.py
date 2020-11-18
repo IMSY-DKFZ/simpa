@@ -39,7 +39,7 @@ MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
 VOLUME_TRANSDUCER_DIM_IN_MM = 50
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 20
-SPACING = 0.3
+SPACING = 0.2
 RANDOM_SEED = 47
 
 
@@ -58,7 +58,7 @@ def create_example_tissue(global_settings):
     muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
     muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     muscle_dictionary[Tags.STRUCTURE_TYPE] = "HorizontalLayerStructure"
 
@@ -69,7 +69,7 @@ def create_example_tissue(global_settings):
     vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM/2, 12]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
-    vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = "SphericalStructure"
 
     epidermis_dictionary = Settings()
@@ -77,9 +77,9 @@ def create_example_tissue(global_settings):
     epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
-    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    # FIXME: 
+    # FIXME:
     epidermis_dictionary[Tags.STRUCTURE_TYPE] = "HorizontalLayerStructure"
 
     tissue_dict = Settings()

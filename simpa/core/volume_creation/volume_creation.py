@@ -57,7 +57,7 @@ def run_volume_creation(global_settings: Settings):
         global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(
             bounds_mm=[[0, global_settings[Tags.DIM_VOLUME_X_MM]],
                        [0, global_settings[Tags.DIM_VOLUME_Y_MM]]],
-            maximum_z_elevation_mm=10,
+            maximum_z_elevation_mm=3,
             filter_sigma=0,
             cosine_scaling_factor=1)
         # TODO extract as settings parameters

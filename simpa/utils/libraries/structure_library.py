@@ -138,7 +138,8 @@ class HorizontalLayerStructure(GeometricalStructure):
 
     def get_params_from_settings(self, single_structure_settings):
         params = (single_structure_settings[Tags.STRUCTURE_START_MM],
-                  single_structure_settings[Tags.STRUCTURE_END_MM])
+                  single_structure_settings[Tags.STRUCTURE_END_MM],
+                  single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME])
         return params
 
     def to_settings(self):
@@ -150,6 +151,7 @@ class HorizontalLayerStructure(GeometricalStructure):
     def get_enclosed_indices(self):
         start_mm = np.asarray(self.params[0])
         end_mm = np.asarray(self.params[1])
+        partial_volume = self.params[2]
         start_voxels = start_mm / self.voxel_spacing
         direction_mm = end_mm - start_mm
         depth_voxels = direction_mm[2] / self.voxel_spacing
@@ -189,10 +191,17 @@ class HorizontalLayerStructure(GeometricalStructure):
         volume_fractions[volume_fractions > depth_voxels] = depth_voxels
         volume_fractions[volume_fractions < 0] = 0
 
-        bools_fully_filled_layers = ((target_vector_voxels >= 0) & (target_vector_voxels < floored_depth_voxels))
+        if partial_volume:
+            bools_fully_filled_layers = ((target_vector_voxels >= 0) & (target_vector_voxels < floored_depth_voxels))
+        else:
+            bools_fully_filled_layers = ((target_vector_voxels >= -0.5) & (target_vector_voxels < floored_depth_voxels + 0.5))
         volume_fractions[bools_fully_filled_layers] = 1
 
-        bools_all_layers = bools_first_layer | bools_last_layer | bools_fully_filled_layers
+        if partial_volume:
+            bools_all_layers = bools_first_layer | bools_last_layer | bools_fully_filled_layers
+        else:
+            bools_all_layers = bools_fully_filled_layers
+
         return bools_all_layers, volume_fractions[bools_all_layers]
 
 
