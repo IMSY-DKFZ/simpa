@@ -51,7 +51,12 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@algorithm"] = settings[
             Tags.RECONSTRUCTION_ALGORITHM]
 
-        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@pitchMilliMeter"] = PA_device.pitch_mm
+        if settings[Tags.SENSOR_NUM_USED_ELEMENTS] < PA_device.number_detector_elements:
+            pitch = PA_device.pitch_mm*PA_device.number_detector_elements/settings[Tags.SENSOR_NUM_USED_ELEMENTS]
+        else:
+            pitch = PA_device.pitch_mm
+        del settings[Tags.SENSOR_NUM_USED_ELEMENTS]
+        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@pitchMilliMeter"] = pitch
 
         beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@reconstructionDepthMeter"] = 0.08
 
@@ -80,6 +85,8 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         tmp_input_path = tmp_path + "_input.nrrd"
         tmp_output_path = tmp_path + "_output.nrrd"
         tmp_settings_xml = tmp_path + "_settings.xml"
+
+        settings[Tags.SENSOR_NUM_USED_ELEMENTS] = np.shape(time_series_sensor_data)[0]
 
         with open(settings[Tags.RECONSTRUCTION_MITK_SETTINGS_XML], "r") as file:
             self.convert_settings_file(file, settings, tmp_settings_xml)
