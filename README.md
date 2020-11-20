@@ -10,7 +10,7 @@ to you).
 
 So, for the 1% of you: Please also follow steps 1 - 3:
 
-1. `git clone https://phabricator.mitk.org/source/ippai.git`
+1. `git clone https://phabricator.mitk.org/source/simpa.git`
 2. `git checkout master`
 3. `git pull`
 
