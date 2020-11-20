@@ -77,6 +77,8 @@ class Tags:
     ILLUMINATION_TYPE_DKFZ_PAUS = "pasetup"  # TODO more explanatory rename of pasetup
     ILLUMINATION_TYPE_MSOT_ACUITY_ECHO = "msot_acuity_echo"
 
+    MCX_SEED = "mcx_seed"
+
     # Supported optical models
     OPTICAL_MODEL = "optical_model"
     MODEL_MCXYZ = "mcxyz"
