@@ -68,9 +68,9 @@ def simulate(settings):
 
     PA_device = MSOTAcuityEcho()
     detector_positions = PA_device.get_detector_element_positions(settings)
-    # import matplotlib.pyplot as plt
-    # plt.subplot(1, 3, 1)
-    # plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
+    import matplotlib.pyplot as plt
+    plt.subplot(2, 3, 6)
+    plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
     detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
     sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
     if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
@@ -79,22 +79,22 @@ def simulate(settings):
         sensor_map[detector_positions] = 1
     data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
 
-    # plt.subplot(2, 3, 1)
-    # plt.title(Tags.PROPERTY_SENSOR_MASK)
-    # plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK])
-    # plt.subplot(2, 3, 2)
-    # plt.title(Tags.OPTICAL_MODEL_INITIAL_PRESSURE)
-    # plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE])
-    # plt.subplot(2, 3, 3)
-    # plt.title(Tags.PROPERTY_DENSITY)
-    # plt.imshow(data_dict[Tags.PROPERTY_DENSITY])
-    # plt.subplot(2, 3, 4)
-    # plt.title(Tags.PROPERTY_SPEED_OF_SOUND)
-    # plt.imshow(data_dict[Tags.PROPERTY_SPEED_OF_SOUND])
-    # plt.subplot(2, 3, 5)
-    # plt.title(Tags.PROPERTY_ALPHA_COEFF)
-    # plt.imshow(data_dict[Tags.PROPERTY_ALPHA_COEFF])
-    # plt.show()
+    plt.subplot(2, 3, 1)
+    plt.title(Tags.PROPERTY_SENSOR_MASK)
+    plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK])
+    plt.subplot(2, 3, 2)
+    plt.title(Tags.OPTICAL_MODEL_INITIAL_PRESSURE)
+    plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE])
+    plt.subplot(2, 3, 3)
+    plt.title(Tags.PROPERTY_DENSITY)
+    plt.imshow(data_dict[Tags.PROPERTY_DENSITY])
+    plt.subplot(2, 3, 4)
+    plt.title(Tags.PROPERTY_SPEED_OF_SOUND)
+    plt.imshow(data_dict[Tags.PROPERTY_SPEED_OF_SOUND])
+    plt.subplot(2, 3, 5)
+    plt.title(Tags.PROPERTY_ALPHA_COEFF)
+    plt.imshow(data_dict[Tags.PROPERTY_ALPHA_COEFF])
+    plt.show()
 
     try:
         data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,

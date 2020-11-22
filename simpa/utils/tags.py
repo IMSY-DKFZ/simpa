@@ -122,6 +122,8 @@ class Tags:
     ILLUMINATION_TYPE_DKFZ_PAUS = "pasetup"  # TODO more explanatory rename of pasetup
     ILLUMINATION_TYPE_MSOT_ACUITY_ECHO = "msot_acuity_echo"
 
+    ILLUMINATION_TYPE_RING = "ring"
+
     # Supported optical models
     OPTICAL_MODEL = ("optical_model", str)
     OPTICAL_MODEL_MCXYZ = "mcxyz"
@@ -144,15 +146,15 @@ class Tags:
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
     RECORDMOVIE = ("record_movie", bool)
-    MOVIENAME = "movie_name"
+    MOVIENAME = ("movie_name", str)
     ACOUSTIC_PLOT_SCALE = "acoustic_plot_scale"
-    ACOUSTIC_LOG_SCALE = "acoustic_log_scale"
+    ACOUSTIC_LOG_SCALE = ("acoustic_log_scale", bool)
     TIME_SERIES_DATA = "time_series_data"
     TIME_SERIES_DATA_NOISE = "time_series_data_noise"
 
     # Reconstruction settings
     PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", bool)
-    RECONSTRUCTION_OUTPUT_NAME = "reconstruction_result"
+    RECONSTRUCTION_OUTPUT_NAME = ("reconstruction_result", str)
     RECONSTRUCTION_ALGORITHM = ("reconstruction_algorithm", str)
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
     RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
@@ -162,7 +164,7 @@ class Tags:
     RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", bool)
     RECONSTRUCTION_MITK_BINARY_PATH = ("reconstruction_mitk_binary_path", str)
     RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml", str)
-    RECONSTRUCTION_BMODE_METHOD = "reconstruction_bmode_method"
+    RECONSTRUCTION_BMODE_METHOD = ("reconstruction_bmode_method", str)
     RECONSTRUCTION_BMODE_METHOD_ABS = "Abs"
     RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM = "EnvelopeDetection"
     RECONSTRUCTED_DATA = "reconstructed_data"
@@ -228,19 +230,19 @@ class Tags:
     MEDIUM_DENSITY = "medium_density"
     MEDIUM_ALPHA_COEFF_HOMOGENEOUS = "medium_alpha_coeff_homogeneous"
     MEDIUM_ALPHA_COEFF = "medium_alpha_coeff"
-    MEDIUM_ALPHA_POWER = "medium_alpha_power"
+    MEDIUM_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float, np.float))
     MEDIUM_NONLINEARITY = "medium_nonlinearity"
 
     # PML parameters
 
-    PMLSize = "pml_size"
-    PMLAlpha = "pml_alpha"
-    PMLInside = "pml_inside"
-    PlotPML = "plot_pml"
+    PMLSize = ("pml_size", (list, tuple, np.ndarray))
+    PMLAlpha = ("pml_alpha", (int, np.integer, float, np.float))
+    PMLInside = ("pml_inside", bool)
+    PlotPML = ("plot_pml", bool)
 
     # Acoustic Sensor Properties
     SENSOR_MASK = "sensor_mask"
-    SENSOR_RECORD = "sensor_record"
+    SENSOR_RECORD = ("sensor_record", str)
     SENSOR_CENTER_FREQUENCY_HZ = "sensor_center_frequency"
     SENSOR_BANDWIDTH_PERCENT = "sensor_bandwidth"
     SENSOR_DIRECTIVITY_HOMOGENEOUS = "sensor_directivity_homogeneous"
@@ -292,7 +294,7 @@ class Tags:
     KEY_ANISOTROPY = "anisotropy"
 
     # Structures
-    STRUCTURES = "structures"
+    STRUCTURES = ("structures", dict)
     HORIZONTAL_LAYER_STRUCTURE = "HorizontalLayerStructure"
     CIRCULAR_TUBULAR_STRUCTURE = "CircularTubularStructure"
     ELLIPTICAL_TUBULAR_STRUCTURE = "EllipticalTubularStructure"

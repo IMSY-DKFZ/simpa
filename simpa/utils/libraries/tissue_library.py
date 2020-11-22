@@ -48,6 +48,7 @@ class MolecularCompositionGenerator(object):
         return MolecularComposition(segmentation_type=segmentation_type,
                                     molecular_composition_settings=self.molecular_composition_dictionary)
 
+
 class TissueLibrary(object):
     """
     TODO
