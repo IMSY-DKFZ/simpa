@@ -17,8 +17,8 @@ import itertools
 import random
 import os
 #lst = list(itertools.product([0, 1], repeat=52))
-
-
+# 
+# '''this script simulates backgorund only'''
 def create_settings_dict():
     settings_dict=dict()
     "This dictionary includes all extrema that can be arranged in the learning process"
