@@ -23,12 +23,7 @@
 from simpa.utils import Tags, TISSUE_LIBRARY
 
 from simpa.core.simulation import simulate
-from simpa.utils.libraries.structure_library import Background
-from simpa.utils.libraries.structure_library import HorizontalLayerStructure
-from simpa.utils.libraries.structure_library import CircularTubularStructure
-from simpa.utils.libraries.structure_library import SphericalStructure
 from simpa.utils.settings_generator import Settings
-from simpa.utils import create_deformation_settings
 
 import numpy as np
 
@@ -39,7 +34,7 @@ MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/m
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.8
+SPACING = 0.2
 RANDOM_SEED = 47
 
 
@@ -125,7 +120,7 @@ settings = {
 
     # The following parameters tell the script that we do not want any extra
     # modelling steps
-    Tags.RUN_ACOUSTIC_MODEL: False,
+    Tags.RUN_ACOUSTIC_MODEL: True,
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: "/home/kris/hard_drive/MATLAB/bin/matlab",
@@ -148,7 +143,7 @@ settings = {
     Tags.APPLY_NOISE_MODEL: False,
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
 
-    Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
+    Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
     Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_DAS,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/home/kris/hard_drive/MITK/"

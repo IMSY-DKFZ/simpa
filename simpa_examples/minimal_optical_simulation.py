@@ -23,23 +23,19 @@
 from simpa.utils import Tags, TISSUE_LIBRARY
 
 from simpa.core.simulation import simulate
-from simpa.utils.libraries.structure_library import Background
-from simpa.utils.libraries.structure_library import HorizontalLayerStructure
-from simpa.utils.libraries.structure_library import CircularTubularStructure
-from simpa.utils.libraries.structure_library import SphericalStructure
 from simpa.utils.settings_generator import Settings
 
 
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/bin/"
-MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
+SAVE_PATH = "/media/kris/Extreme SSD/data/simpa_examples"
+MCX_BINARY_PATH = "/media/kris/Extreme SSD/cami-experimental/PAI/MCX/probe_integration/bin/mcx"
 
-VOLUME_TRANSDUCER_DIM_IN_MM = 50
-VOLUME_PLANAR_DIM_IN_MM = 20
-VOLUME_HEIGHT_IN_MM = 20
-SPACING = 0.5
+VOLUME_TRANSDUCER_DIM_IN_MM = 60
+VOLUME_PLANAR_DIM_IN_MM = 60
+VOLUME_HEIGHT_IN_MM = 60
+SPACING = 1
 RANDOM_SEED = 47
 
 
@@ -58,7 +54,7 @@ def create_example_tissue(global_settings):
     muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
+    muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
@@ -69,7 +65,7 @@ def create_example_tissue(global_settings):
     vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM/2, 12]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
-    vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
+    vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.SPHERICAL_STRUCTURE
 
     epidermis_dictionary = Settings()
@@ -77,7 +73,7 @@ def create_example_tissue(global_settings):
     epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
-    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
+    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     # FIXME:
     epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
@@ -107,7 +103,7 @@ settings = {
     Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 
     # Simulation Device
-    Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
+    # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
 
     # The following parameters set the optical forward model
     Tags.RUN_OPTICAL_MODEL: True,
@@ -115,7 +111,8 @@ settings = {
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
+    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_RING,
+    Tags.ILLUMINATION_PARAM1: [7, 10, 8, 0],
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 
     # The following parameters tell the script that we do not want any extra

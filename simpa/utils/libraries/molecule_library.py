@@ -67,7 +67,7 @@ class MolecularComposition(list):
             self.internal_properties.volume_fraction = 1
 
     def get_properties_for_wavelength(self, wavelength) -> TissueProperties:
-        self.update_internal_properties()
+
         if self.cached_absorption[wavelength] != -1:
             self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = self.cached_absorption[wavelength]
             self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = self.cached_scattering[wavelength]
@@ -378,8 +378,8 @@ class MoleculeLibrary(object):
                         b_mie=0.0,
                         f_ray=0.0,
                         anisotropy=StandardProperties.AIR_G,
-                        density=StandardProperties.DENSITY_WATER,
-                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_WATER,
+                        density=StandardProperties.DENSITY_HEAVY_WATER,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_HEAVY_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
                         )
 

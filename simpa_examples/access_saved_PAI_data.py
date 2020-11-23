@@ -44,15 +44,15 @@ colors = [list(np.random.random(3)) for _ in range(len(names))]
 cmap = mpl.colors.LinearSegmentedColormap.from_list(
     'Custom cmap', colors, len(names))
 
-PATH = "D:/bin/MyVolumeName_47/simpa_output.hdf5"
+PATH = "/media/kris/Extreme SSD/data/simpa_examples/MyVolumeName_47.hdf5"
 WAVELENGTH = 700
 
 file = load_hdf5(PATH)
 
 print(file['simulations'].keys())
 
-fluence = (file['simulations']['original_data']['simulation_properties']
-           [str(WAVELENGTH)]['oxy'])
+fluence = (file['simulations']['original_data']['optical_forward_model_output']
+           [str(WAVELENGTH)]['fluence'])
 initial_pressure = (file['simulations']['original_data']
                     ['optical_forward_model_output']
                     [str(WAVELENGTH)]['initial_pressure'])
@@ -62,7 +62,6 @@ absorption = (file['simulations']['original_data']['simulation_properties']
 segmentation = (file['simulations']['original_data']['simulation_properties']
               [str(WAVELENGTH)]['seg'])
 
-#reconstruction = np.squeeze(file["simulations"]["original_data"]["reconstructed_data"][str(WAVELENGTH)]["reconstructed_data"])
 
 shape = np.shape(fluence)
 
@@ -72,27 +71,29 @@ y_pos = int(shape[1]/2)
 if len(shape) > 2:
     plt.figure()
     plt.subplot(241)
-    plt.imshow(np.rot90(np.log10(fluence[x_pos, :, :]), -1))
+    plt.imshow(np.rot90((fluence[x_pos-1, :, :]), -1))
     plt.subplot(242)
     plt.imshow(np.rot90(np.log10(absorption[x_pos, :, :]), -1))
     plt.subplot(243)
-    plt.imshow(np.rot90((initial_pressure[x_pos, :, :]), -1))
+    plt.imshow(np.rot90(np.log10(initial_pressure[x_pos-1, :, :]), -1))
     plt.subplot(244)
     plt.imshow(np.rot90(segmentation[x_pos, :, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
     cbar = plt.colorbar(ticks=values)
     cbar.ax.set_yticklabels(names)
     plt.subplot(245)
-    plt.imshow(np.rot90(np.log10(fluence[:, y_pos, :]), -1))
+    plt.imshow(np.rot90(np.log10(fluence[:, :, 0]), -1))
     plt.subplot(246)
     plt.imshow(np.rot90(np.log10(absorption[:, y_pos, :]), -1))
     plt.subplot(247)
-    plt.imshow(np.rot90((initial_pressure[:, y_pos, :]), -1))
+    plt.imshow(np.rot90(np.log10(fluence[:, :, 20]), -1))
     plt.subplot(248)
     plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
     cbar = plt.colorbar(ticks=values)
     cbar.ax.set_yticklabels(names)
     plt.show()
 else:
+    reconstruction = np.squeeze(
+        file["simulations"]["original_data"]["reconstructed_data"][str(WAVELENGTH)]["reconstructed_data"])
     plt.figure()
     plt.subplot(131)
     plt.imshow(np.rot90(np.log10(reconstruction[:, :]), -1))
