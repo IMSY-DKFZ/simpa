@@ -23,7 +23,7 @@
 import numpy as np
 import subprocess
 from simpa.utils import Tags, SaveFilePaths
-from simpa.io_handling.io_hdf5 import load_hdf5
+from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.settings_generator import Settings
@@ -69,32 +69,45 @@ def simulate(settings):
     PA_device = MSOTAcuityEcho()
     detector_positions = PA_device.get_detector_element_positions(settings)
     import matplotlib.pyplot as plt
-    plt.subplot(2, 3, 6)
-    plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
+    # plt.subplot(2, 3, 6)
+    # plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
+    # plt.show()
     detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
+
     sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
+    # print(np.shape(sensor_map))
+    shape = np.shape(sensor_map)
+    # print(detector_positions)
     if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
         sensor_map[detector_positions[:, 2], detector_positions[:, 0]] = 1
     else:
-        sensor_map[detector_positions] = 1
+        half_y_dir_detector_pixels = int(round(0.5*PA_device.detector_element_length_mm/settings[Tags.SPACING_MM]))
+        for pixel in np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1):
+            sensor_map[detector_positions[:, 2], detector_positions[:, 1] + pixel, detector_positions[:, 0]] = 1
     data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
+    save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, settings[Tags.SIMPA_OUTPUT_PATH],
+              generate_dict_path(settings, Tags.PROPERTY_SENSOR_MASK, upsampled_data=False,
+                                 wavelength=settings[Tags.WAVELENGTH]))
 
-    plt.subplot(2, 3, 1)
-    plt.title(Tags.PROPERTY_SENSOR_MASK)
-    plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK])
-    plt.subplot(2, 3, 2)
-    plt.title(Tags.OPTICAL_MODEL_INITIAL_PRESSURE)
-    plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE])
-    plt.subplot(2, 3, 3)
-    plt.title(Tags.PROPERTY_DENSITY)
-    plt.imshow(data_dict[Tags.PROPERTY_DENSITY])
-    plt.subplot(2, 3, 4)
-    plt.title(Tags.PROPERTY_SPEED_OF_SOUND)
-    plt.imshow(data_dict[Tags.PROPERTY_SPEED_OF_SOUND])
-    plt.subplot(2, 3, 5)
-    plt.title(Tags.PROPERTY_ALPHA_COEFF)
-    plt.imshow(data_dict[Tags.PROPERTY_ALPHA_COEFF])
-    plt.show()
+    # y_pos = int(round(shape[1]/2))
+    # x_pos = int(round(shape[0]/2))
+    # z_pos = int(round(shape[2]/2))
+    # plt.subplot(2, 3, 1)
+    # plt.title(Tags.PROPERTY_SENSOR_MASK)
+    # plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, z_pos])
+    # plt.subplot(2, 3, 2)
+    # plt.title(Tags.OPTICAL_MODEL_INITIAL_PRESSURE)
+    # plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][:, :, z_pos])
+    # plt.subplot(2, 3, 3)
+    # plt.title(Tags.PROPERTY_DENSITY)
+    # plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, z_pos + 10])
+    # plt.subplot(2, 3, 4)
+    # plt.title(Tags.PROPERTY_SPEED_OF_SOUND)
+    # plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, z_pos + 20])
+    # plt.subplot(2, 3, 5)
+    # plt.title(Tags.PROPERTY_ALPHA_COEFF)
+    # plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, z_pos - 30])
+    # plt.show()
 
     try:
         data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
@@ -146,7 +159,7 @@ def simulate(settings):
                simulation_script_path + "('" + optical_path + "');exit;")
     cur_dir = os.getcwd()
     os.chdir(settings[Tags.SIMULATION_PATH])
-
+    print(cmd)
     subprocess.run(cmd)
 
     raw_time_series_data = sio.loadmat(optical_path + ".mat")[Tags.TIME_SERIES_DATA]

@@ -318,36 +318,141 @@ class SphericalStructure(GeometricalStructure):
         return mask, volume_fractions[mask]
 
 
-# if __name__ == "__main__":
-#     import matplotlib.pyplot as plt
-#     from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-#     from simpa.utils.deformation_manager import create_deformation_settings
-#     global_settings = Settings()
-#     global_settings[Tags.SPACING_MM] = 0.5
-#     global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
-#     global_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(bounds_mm=[[0, 5], [0, 5]],
-#                                                                                  maximum_z_elevation_mm=3,
-#                                                                                  filter_sigma=0,
-#                                                                                  cosine_scaling_factor=4)
-#     global_settings[Tags.DIM_VOLUME_X_MM] = 5
-#     global_settings[Tags.DIM_VOLUME_Y_MM] = 5
-#     global_settings[Tags.DIM_VOLUME_Z_MM] = 5
-#     structure_settings = Settings()
-#     structure_settings[Tags.STRUCTURE_START_MM] = [2.5, 0, 2.5]
-#     structure_settings[Tags.STRUCTURE_END_MM] = [2.5, 5, 2.5]
-#     structure_settings[Tags.STRUCTURE_RADIUS_MM] = 1.5
-#     structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-#     structure_settings[Tags.ADHERE_TO_DEFORMATION] = True
-#     structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
-#     ls = CircularTubularStructure(global_settings, structure_settings)
-#     plt.subplot(121)
-#     plt.imshow(ls.geometrical_volume[int(2 /
-#                                          global_settings[Tags.SPACING_MM]), :, :])
-#     circle1 = plt.Circle((structure_settings[Tags.STRUCTURE_START_MM][0], structure_settings[Tags.STRUCTURE_START_MM] ), 0.2, color='r')
-#     plt.subplot(122)
-#     plt.imshow(ls.geometrical_volume[:, int(2 /
-#                                             global_settings[Tags.SPACING_MM]), :])
-#     plt.show()
+class Quboid(GeometricalStructure):
+
+    def get_params_from_settings(self, single_structure_settings):
+        params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_FIRST_EDGE_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM]),
+                  single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME])
+        return params
+
+    def to_settings(self):
+        settings = super().to_settings()
+        settings[Tags.STRUCTURE_START_MM] = self.params[0]
+        settings[Tags.STRUCTURE_FIRST_EDGE_MM] = self.params[1]
+        settings[Tags.STRUCTURE_FIRST_EDGE_MM] = self.params[2]
+        settings[Tags.STRUCTURE_FIRST_EDGE_MM] = self.params[3]
+        settings[Tags.CONSIDER_PARTIAL_VOLUME] = self.params[4]
+        return settings
+
+    def get_enclosed_indices(self):
+        start_mm, first_edge_mm, second_edge_mm, third_edge_mm, partial_volume = self.params
+        start_voxels = start_mm / self.voxel_spacing
+        first_edge_voxels = first_edge_mm / self.voxel_spacing
+        second_edge_voxels = second_edge_mm / self.voxel_spacing
+        third_edge_voxels = third_edge_mm / self.voxel_spacing
+
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
+                              np.arange(self.volume_dimensions_voxels[1]),
+                              np.arange(self.volume_dimensions_voxels[2]),
+                              indexing='ij')
+
+        # x = x + 0.5
+        # y = y + 0.5
+        # z = z + 0.5
+
+        if partial_volume:
+            radius_margin = 0.5
+        else:
+            radius_margin = 0.7071
+
+        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
+        print(np.shape(target_vector))
+
+        matrix = np.array([first_edge_voxels, second_edge_voxels, third_edge_voxels])
+        print(matrix)
+
+        inverse_matrix = np.linalg.inv(matrix)
+        print(inverse_matrix)
+
+        result = np.matmul(target_vector, inverse_matrix)
+        # print(np.shape(result))
+
+        import matplotlib.pyplot as plt
+        norm_vector = np.array([1/np.linalg.norm(first_edge_voxels),
+                                            1/np.linalg.norm(second_edge_voxels),
+                                            1/np.linalg.norm(third_edge_voxels)])
+        # print(norm_vector)
+        # norm = np.linalg
+        # result_voxel = result * norm_vector
+        # print(np.shape(result_voxel))
+
+        filled_mask_bool = (0 <= result) & (result <= 1 - norm_vector)
+        border_bool = (0 - norm_vector < result) & (result <= 1)
+
+        volume_fractions = np.zeros(self.volume_dimensions_voxels)
+        filled_mask = np.all(filled_mask_bool, axis=-1)
+
+        border_mask = np.all(border_bool, axis=-1)
+
+        border_mask = np.logical_xor(border_mask, filled_mask)
+
+        fraction_values = np.matmul(result[border_mask], matrix)
+        # print(result[border_mask])
+
+        # print(fraction_values)
+
+        larger_fraction_values = (first_edge_voxels + second_edge_voxels + third_edge_voxels) - fraction_values
+        # print(larger_fraction_values)
+
+        small_bool = fraction_values > 0
+        # print(np.shape(small_bool))
+        large_bool = larger_fraction_values >= 1
+        # print(np.shape(large_bool))
+
+        fraction_values[small_bool & large_bool] = 0
+        print(fraction_values)
+
+        fraction_values[fraction_values <= 0] = 1 + fraction_values[fraction_values <= 0]
+
+        fraction_values[larger_fraction_values < 1] = larger_fraction_values[larger_fraction_values < 1]
+
+        fraction_values = np.prod(fraction_values, axis=-1)
+        # print(np.shape(fraction_values))
+        # print(fraction_values)
+
+        # plt.imshow()
+
+        volume_fractions[filled_mask] = 1
+        volume_fractions[border_mask] = fraction_values
+
+        if partial_volume:
+            mask = filled_mask | border_mask
+        else:
+            mask = filled_mask
+
+        return mask, volume_fractions[mask]
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+    from simpa.utils.deformation_manager import create_deformation_settings
+    global_settings = Settings()
+    global_settings[Tags.SPACING_MM] = 1
+
+
+    global_settings[Tags.DIM_VOLUME_X_MM] = 10
+    global_settings[Tags.DIM_VOLUME_Y_MM] = 10
+    global_settings[Tags.DIM_VOLUME_Z_MM] = 10
+    structure_settings = Settings()
+    structure_settings[Tags.STRUCTURE_START_MM] = [1.3, 1.3, 1.3]
+    structure_settings[Tags.STRUCTURE_FIRST_EDGE_MM] = [5, 0, 0]
+    structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM] = [0, 5, 0]
+    structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM] = [0, 0, 5]
+    structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
+
+    structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+
+    struc = Quboid(global_settings, structure_settings)
+
+    vol = struc.geometrical_volume
+
+    plt.imshow(vol[3, :, :])
+
+    plt.show()
 
 class EllipticalTubularStructure(GeometricalStructure):
 
@@ -430,41 +535,41 @@ class EllipticalTubularStructure(GeometricalStructure):
 
         return mask, volume_fractions[mask]
 
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    import matplotlib as mpl
-    from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-    global_settings = Settings()
-    global_settings[Tags.SPACING_MM] = 1
-    global_settings[Tags.DIM_VOLUME_X_MM] = 30
-    global_settings[Tags.DIM_VOLUME_Y_MM] = 30
-    global_settings[Tags.DIM_VOLUME_Z_MM] = 30
-    structure_settings = Settings()
-    structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    structure_settings[Tags.STRUCTURE_START_MM] = [15, 0, 15]
-    structure_settings[Tags.STRUCTURE_END_MM] = [15, 100, 15]
-    structure_settings[Tags.STRUCTURE_RADIUS_MM] = 5
-    structure_settings[Tags.STRUCTURE_ECCENTRICITY] = 0.56
-    structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    ellipse = CircularTubularStructure(global_settings, structure_settings)
-    vol1 = ellipse.geometrical_volume
-
-    structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    ellipse = EllipticalTubularStructure(global_settings, structure_settings)
-    vol2 = ellipse.geometrical_volume
-
-    main_axis = structure_settings[Tags.STRUCTURE_RADIUS_MM]/(1-structure_settings[Tags.STRUCTURE_ECCENTRICITY]**2)**0.25
-    minor_axis = main_axis * np.sqrt(1 - structure_settings[Tags.STRUCTURE_ECCENTRICITY] ** 2)
-    main_axis /= global_settings[Tags.SPACING_MM]
-    minor_axis /= global_settings[Tags.SPACING_MM]
-
-    ax = plt.subplot(111)
-    plt.imshow((vol1)[:, 0, :])
-    ax.add_patch(mpl.patches.Ellipse((15/global_settings[Tags.SPACING_MM] - 0.5,
-                                      15/global_settings[Tags.SPACING_MM] - 0.5),
-                                     2*main_axis, 2*minor_axis, 90, fill=False, color="red"))
-    plt.show()
+#
+# if __name__ == "__main__":
+#     import matplotlib.pyplot as plt
+#     import matplotlib as mpl
+#     from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+#     global_settings = Settings()
+#     global_settings[Tags.SPACING_MM] = 1
+#     global_settings[Tags.DIM_VOLUME_X_MM] = 30
+#     global_settings[Tags.DIM_VOLUME_Y_MM] = 30
+#     global_settings[Tags.DIM_VOLUME_Z_MM] = 30
+#     structure_settings = Settings()
+#     structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+#     structure_settings[Tags.STRUCTURE_START_MM] = [15, 0, 15]
+#     structure_settings[Tags.STRUCTURE_END_MM] = [15, 100, 15]
+#     structure_settings[Tags.STRUCTURE_RADIUS_MM] = 5
+#     structure_settings[Tags.STRUCTURE_ECCENTRICITY] = 0.56
+#     structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
+#     ellipse = CircularTubularStructure(global_settings, structure_settings)
+#     vol1 = ellipse.geometrical_volume
+#
+#     structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
+#     ellipse = EllipticalTubularStructure(global_settings, structure_settings)
+#     vol2 = ellipse.geometrical_volume
+#
+#     main_axis = structure_settings[Tags.STRUCTURE_RADIUS_MM]/(1-structure_settings[Tags.STRUCTURE_ECCENTRICITY]**2)**0.25
+#     minor_axis = main_axis * np.sqrt(1 - structure_settings[Tags.STRUCTURE_ECCENTRICITY] ** 2)
+#     main_axis /= global_settings[Tags.SPACING_MM]
+#     minor_axis /= global_settings[Tags.SPACING_MM]
+#
+#     ax = plt.subplot(111)
+#     plt.imshow((vol1)[:, 0, :])
+#     ax.add_patch(mpl.patches.Ellipse((15/global_settings[Tags.SPACING_MM] - 0.5,
+#                                       15/global_settings[Tags.SPACING_MM] - 0.5),
+#                                      2*main_axis, 2*minor_axis, 90, fill=False, color="red"))
+#     plt.show()
 
 
 class Background(GeometricalStructure):

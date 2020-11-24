@@ -61,7 +61,10 @@ absorption = (file['simulations']['original_data']['simulation_properties']
 
 segmentation = (file['simulations']['original_data']['simulation_properties']
               [str(WAVELENGTH)]['seg'])
+reconstruction = np.squeeze(
+        file["simulations"]["original_data"]["reconstructed_data"][str(WAVELENGTH)]["reconstructed_data"])
 
+sensor_map = file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]['sensor_mask']
 
 shape = np.shape(fluence)
 
@@ -81,11 +84,11 @@ if len(shape) > 2:
     cbar = plt.colorbar(ticks=values)
     cbar.ax.set_yticklabels(names)
     plt.subplot(245)
-    plt.imshow(np.rot90(np.log10(fluence[:, :, 0]), -1))
+    plt.imshow(sensor_map[:, y_pos, :])
     plt.subplot(246)
     plt.imshow(np.rot90(np.log10(absorption[:, y_pos, :]), -1))
     plt.subplot(247)
-    plt.imshow(np.rot90(np.log10(fluence[:, :, 20]), -1))
+    plt.imshow(np.rot90(np.log10(reconstruction), -1))
     plt.subplot(248)
     plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
     cbar = plt.colorbar(ticks=values)
