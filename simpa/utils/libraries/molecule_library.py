@@ -128,7 +128,7 @@ class Molecule(object):
 
         if volume_fraction is None:
             volume_fraction = 0.0
-        if not isinstance(volume_fraction, float):
+        if not isinstance(volume_fraction, (int, float, np.int64)):
             raise TypeError("The given volume_fraction was not of type float instead of {}!"
                             .format(type(volume_fraction)))
         self.volume_fraction = volume_fraction

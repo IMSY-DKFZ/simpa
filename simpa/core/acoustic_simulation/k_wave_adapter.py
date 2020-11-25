@@ -89,26 +89,6 @@ def simulate(settings):
               generate_dict_path(settings, Tags.PROPERTY_SENSOR_MASK, upsampled_data=False,
                                  wavelength=settings[Tags.WAVELENGTH]))
 
-    # y_pos = int(round(shape[1]/2))
-    # x_pos = int(round(shape[0]/2))
-    # z_pos = int(round(shape[2]/2))
-    # plt.subplot(2, 3, 1)
-    # plt.title(Tags.PROPERTY_SENSOR_MASK)
-    # plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, z_pos])
-    # plt.subplot(2, 3, 2)
-    # plt.title(Tags.OPTICAL_MODEL_INITIAL_PRESSURE)
-    # plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][:, :, z_pos])
-    # plt.subplot(2, 3, 3)
-    # plt.title(Tags.PROPERTY_DENSITY)
-    # plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, z_pos + 10])
-    # plt.subplot(2, 3, 4)
-    # plt.title(Tags.PROPERTY_SPEED_OF_SOUND)
-    # plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, z_pos + 20])
-    # plt.subplot(2, 3, 5)
-    # plt.title(Tags.PROPERTY_ALPHA_COEFF)
-    # plt.imshow(data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, z_pos - 30])
-    # plt.show()
-
     try:
         data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
                                                               axes=axes)

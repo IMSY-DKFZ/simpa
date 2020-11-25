@@ -77,13 +77,13 @@ if isfield(data, 'density') == true
     % add 2 pixel "gel" to reduce Fourier artifact
 %    medium.density = padarray(medium.density, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
-    medium.density = ones(Nx, Ny);
+    medium.density = 1000*ones(Nx, Ny, Nz);
 end
 
 %sound_speed_ref = min(min(medium.sound_speed));
 %kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
 %kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / sound_speed_ref) / kgrid.dt);
-kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.15);	% time array with
+kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 % CFL number of 0.3 (advised by manual)
 % Using makeTime, dt = CFL*dx/medium.sound_speed and the total
 % time is set to the time it would take for an acoustic wave to travel

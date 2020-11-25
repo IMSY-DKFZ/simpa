@@ -93,7 +93,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
                 .append(value=MOLECULE_LIBRARY.soft_tissue_scatterer(
-                        volume_fraction=1-OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE),
+                        volume_fraction=1-fraction_oxy - fraction_deoxy - water_volume_fraction),
                         key="background_scatterers")
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.MUSCLE))
@@ -115,7 +115,7 @@ class TissueLibrary(object):
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.melanin(melanin_volume_fraction))
-                .append(MOLECULE_LIBRARY.epidermal_scatterer(1 - melanin_volume_fraction))
+                .append(MOLECULE_LIBRARY.epidermal_scatterer(1 - melanin_volume_fraction - water_volume_fraction))
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.EPIDERMIS))
 
@@ -194,7 +194,7 @@ class TissueLibrary(object):
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
+                # .append(MOLECULE_LIBRARY.water(0))
                 .get_molecular_composition(SegmentationClasses.BLOOD))
 
     def blood_arterial(self):
