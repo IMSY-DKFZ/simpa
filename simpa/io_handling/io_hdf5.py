@@ -26,28 +26,32 @@ from simpa.io_handling.serialization import SIMPASerializer
 from simpa.utils import AbsorptionSpectrum, Molecule
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.dict_path_manager import generate_dict_path
+import numpy as np
 
 MOLECULE_COMPOSITION = Tags.MOLECULE_COMPOSITION
 MOLECULE = "molecule"
 ABSORPTION_SPECTRUM = "absorption_spectrum"
 
-def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/"):
+
+def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/", file_compression: str = None):
     """
     Saves a dictionary with arbitrary content to an hdf5-file with given filepath.
 
     :param dictionary: Dictionary to save.
     :param file_path: Path of the file to save the dictionary in.
     :param file_dictionary_path: Path in dictionary structure of existing hdf5 file to store the dictionary in.
+    :param file_compression: possible file compression for the hdf5 output file. Values are: gzip, lzf and szip.
     :returns: :mod:`Null`
     """
 
-    def data_grabber(file, path, data_dictionary):
+    def data_grabber(file, path, data_dictionary, compression: str = None):
         """
         Helper function which recursively grabs data from dictionaries in order to store them into hdf5 groups.
 
         :param file: hdf5 file instance to store the data in.
         :param path: Current group path in hdf5 file group structure.
         :param data_dictionary: Dictionary to save.
+        :param compression: possible file compression for the corresponding dataset. Values are: gzip, lzf and szip.
         """
         serializer = SIMPASerializer()
         for key, item in data_dictionary.items():
@@ -59,19 +63,26 @@ def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/")
                 elif isinstance(item, AbsorptionSpectrum):
                     data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/", serializer.serialize(item))
                 else:
-                    try:
-                        h5file[path + key] = item
-                    except (OSError, RuntimeError):
-                        del h5file[path + key]
+                    if isinstance(item, (bytes, int, np.int, np.int64, np.float, float, str, bool, np.bool, np.bool_)):
                         try:
                             h5file[path + key] = item
-                        except RuntimeError as e:
-                            print("item", item, "of type", type(item), "was not serializable! Full exception:", e)
+                        except (OSError, RuntimeError, ValueError):
+                            del h5file[path + key]
+                            h5file[path + key] = item
+                    else:
+                        try:
+                            h5file.create_dataset(path + key, data=item, compression=compression)
+                        except (OSError, RuntimeError, ValueError):
+                            del h5file[path + key]
+                            try:
+                                h5file.create_dataset(path + key, data=item, compression=compression)
+                            except RuntimeError as e:
+                                print("item", item, "of type", type(item), "was not serializable! Full exception:", e)
+                                raise e
+                        except TypeError as e:
+                            print("The key", key, "was not of the correct typing for HDF5 handling."
+                                  "Make sure this key is not a tuple.", item, type(item))
                             raise e
-                    except TypeError as e:
-                        print("The key", key, "was not of the correct typing for HDF5 handling."
-                              "Make sure this key is not a tuple.")
-                        raise e
             elif item is None:
                 h5file[path + key] = "None"
             elif isinstance(item, list):

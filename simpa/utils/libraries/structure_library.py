@@ -52,7 +52,7 @@ class Structures:
             single_structure_settings = structure_settings[struc_tag_name]
             try:
                 structure_class = globals()[single_structure_settings[Tags.STRUCTURE_TYPE]]
-                structure = structure_class(global_settings, Settings(single_structure_settings))
+                structure = structure_class(global_settings, single_structure_settings)
                 structures.append(structure)
             except Exception as e:
                 print("An exception has occurred while trying to parse ", single_structure_settings[Tags.STRUCTURE_TYPE]," from the dictionary.")
