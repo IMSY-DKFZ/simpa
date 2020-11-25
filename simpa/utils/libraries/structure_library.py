@@ -318,66 +318,48 @@ class SphericalStructure(GeometricalStructure):
         return mask, volume_fractions[mask]
 
 
-class Quboid(GeometricalStructure):
+class RectangularCuboidStructure(GeometricalStructure):
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
-                  np.asarray(single_structure_settings[Tags.STRUCTURE_FIRST_EDGE_MM]),
-                  np.asarray(single_structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM]),
-                  np.asarray(single_structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_X_EXTENT_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_Y_EXTENT_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_Z_EXTENT_MM]),
                   single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME])
         return params
 
     def to_settings(self):
         settings = super().to_settings()
         settings[Tags.STRUCTURE_START_MM] = self.params[0]
-        settings[Tags.STRUCTURE_FIRST_EDGE_MM] = self.params[1]
-        settings[Tags.STRUCTURE_FIRST_EDGE_MM] = self.params[2]
-        settings[Tags.STRUCTURE_FIRST_EDGE_MM] = self.params[3]
+        settings[Tags.STRUCTURE_X_EXTENT_MM] = self.params[1]
+        settings[Tags.STRUCTURE_Y_EXTENT_MM] = self.params[2]
+        settings[Tags.STRUCTURE_Z_EXTENT_MM] = self.params[3]
         settings[Tags.CONSIDER_PARTIAL_VOLUME] = self.params[4]
         return settings
 
     def get_enclosed_indices(self):
-        start_mm, first_edge_mm, second_edge_mm, third_edge_mm, partial_volume = self.params
+        start_mm, x_edge_mm, y_edge_mm, z_edge_mm, partial_volume = self.params
         start_voxels = start_mm / self.voxel_spacing
-        first_edge_voxels = first_edge_mm / self.voxel_spacing
-        second_edge_voxels = second_edge_mm / self.voxel_spacing
-        third_edge_voxels = third_edge_mm / self.voxel_spacing
+        x_edge_voxels = np.array([x_edge_mm / self.voxel_spacing, 0, 0])
+        y_edge_voxels = np.array([0, y_edge_mm / self.voxel_spacing, 0])
+        z_edge_voxels = np.array([0, 0, z_edge_mm / self.voxel_spacing])
 
         x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
                               np.arange(self.volume_dimensions_voxels[1]),
                               np.arange(self.volume_dimensions_voxels[2]),
                               indexing='ij')
 
-        # x = x + 0.5
-        # y = y + 0.5
-        # z = z + 0.5
-
-        if partial_volume:
-            radius_margin = 0.5
-        else:
-            radius_margin = 0.7071
-
         target_vector = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
-        print(np.shape(target_vector))
 
-        matrix = np.array([first_edge_voxels, second_edge_voxels, third_edge_voxels])
-        print(matrix)
+        matrix = np.array([x_edge_voxels, y_edge_voxels, z_edge_voxels])
 
         inverse_matrix = np.linalg.inv(matrix)
-        print(inverse_matrix)
 
         result = np.matmul(target_vector, inverse_matrix)
-        # print(np.shape(result))
 
-        import matplotlib.pyplot as plt
-        norm_vector = np.array([1/np.linalg.norm(first_edge_voxels),
-                                            1/np.linalg.norm(second_edge_voxels),
-                                            1/np.linalg.norm(third_edge_voxels)])
-        # print(norm_vector)
-        # norm = np.linalg
-        # result_voxel = result * norm_vector
-        # print(np.shape(result_voxel))
+        norm_vector = np.array([1/np.linalg.norm(x_edge_voxels),
+                                1/np.linalg.norm(y_edge_voxels),
+                                1/np.linalg.norm(z_edge_voxels)])
 
         filled_mask_bool = (0 <= result) & (result <= 1 - norm_vector)
         border_bool = (0 - norm_vector < result) & (result <= 1)
@@ -389,31 +371,20 @@ class Quboid(GeometricalStructure):
 
         border_mask = np.logical_xor(border_mask, filled_mask)
 
-        fraction_values = np.matmul(result[border_mask], matrix)
-        # print(result[border_mask])
+        edge_values = result[border_mask]
 
-        # print(fraction_values)
+        fraction_values = np.matmul(edge_values, matrix)
 
-        larger_fraction_values = (first_edge_voxels + second_edge_voxels + third_edge_voxels) - fraction_values
-        # print(larger_fraction_values)
+        larger_fraction_values = (x_edge_voxels + y_edge_voxels + z_edge_voxels) - fraction_values
 
         small_bool = fraction_values > 0
-        # print(np.shape(small_bool))
         large_bool = larger_fraction_values >= 1
-        # print(np.shape(large_bool))
 
         fraction_values[small_bool & large_bool] = 0
-        print(fraction_values)
-
         fraction_values[fraction_values <= 0] = 1 + fraction_values[fraction_values <= 0]
-
         fraction_values[larger_fraction_values < 1] = larger_fraction_values[larger_fraction_values < 1]
 
-        fraction_values = np.prod(fraction_values, axis=-1)
-        # print(np.shape(fraction_values))
-        # print(fraction_values)
-
-        # plt.imshow()
+        fraction_values = np.abs(np.prod(fraction_values, axis=-1))
 
         volume_fractions[filled_mask] = 1
         volume_fractions[border_mask] = fraction_values
@@ -426,33 +397,87 @@ class Quboid(GeometricalStructure):
         return mask, volume_fractions[mask]
 
 
+class ParallelepipedStructure(GeometricalStructure):
+    """
+    This class currently has no partial volume effects implemented. TODO
+    """
+
+    def get_params_from_settings(self, single_structure_settings):
+        params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_FIRST_EDGE_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM]),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM]))
+        return params
+
+    def to_settings(self):
+        settings = super().to_settings()
+        settings[Tags.STRUCTURE_START_MM] = self.params[0]
+        settings[Tags.STRUCTURE_FIRST_EDGE_MM] = self.params[1]
+        settings[Tags.STRUCTURE_SECOND_EDGE_MM] = self.params[2]
+        settings[Tags.STRUCTURE_THIRD_EDGE_MM] = self.params[3]
+        return settings
+
+    def get_enclosed_indices(self):
+        start_mm, x_edge_mm, y_edge_mm, z_edge_mm = self.params
+        start_voxels = start_mm / self.voxel_spacing
+        x_edge_voxels = np.array(x_edge_mm / self.voxel_spacing)
+        y_edge_voxels = np.array(y_edge_mm / self.voxel_spacing)
+        z_edge_voxels = np.array(z_edge_mm / self.voxel_spacing)
+
+        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
+                              np.arange(self.volume_dimensions_voxels[1]),
+                              np.arange(self.volume_dimensions_voxels[2]),
+                              indexing='ij')
+
+        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
+
+        matrix = np.array([x_edge_voxels, y_edge_voxels, z_edge_voxels])
+
+        inverse_matrix = np.linalg.inv(matrix)
+
+        result = np.matmul(target_vector, inverse_matrix)
+
+        norm_vector = np.array([1/np.linalg.norm(x_edge_voxels),
+                                1/np.linalg.norm(y_edge_voxels),
+                                1/np.linalg.norm(z_edge_voxels)])
+
+        filled_mask_bool = (0 <= result) & (result <= 1 - norm_vector)
+
+        volume_fractions = np.zeros(self.volume_dimensions_voxels)
+        filled_mask = np.all(filled_mask_bool, axis=-1)
+
+        volume_fractions[filled_mask] = 1
+
+        return filled_mask, volume_fractions[filled_mask]
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
     from simpa.utils.deformation_manager import create_deformation_settings
     global_settings = Settings()
-    global_settings[Tags.SPACING_MM] = 1
-
+    global_settings[Tags.SPACING_MM] = 0.1
 
     global_settings[Tags.DIM_VOLUME_X_MM] = 10
     global_settings[Tags.DIM_VOLUME_Y_MM] = 10
     global_settings[Tags.DIM_VOLUME_Z_MM] = 10
     structure_settings = Settings()
-    structure_settings[Tags.STRUCTURE_START_MM] = [1.3, 1.3, 1.3]
+    structure_settings[Tags.STRUCTURE_START_MM] = [1.31, 1.31, 1.31]
     structure_settings[Tags.STRUCTURE_FIRST_EDGE_MM] = [5, 0, 0]
-    structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM] = [0, 5, 0]
-    structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM] = [0, 0, 5]
+    structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM] = [0, 5, 2]
+    structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM] = [0, 2, 5]
     structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
     structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
 
-    struc = Quboid(global_settings, structure_settings)
+    struc = ParallelepipedStructure(global_settings, structure_settings)
 
     vol = struc.geometrical_volume
 
-    plt.imshow(vol[3, :, :])
+    plt.imshow(vol[30, :, :])
 
     plt.show()
+
 
 class EllipticalTubularStructure(GeometricalStructure):
 

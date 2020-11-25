@@ -80,6 +80,9 @@ class Tags:
     STRUCTURE_FIRST_EDGE_MM = ("structure_first_edge_mm", (list, tuple, np.ndarray))
     STRUCTURE_SECOND_EDGE_MM = ("structure_second_edge_mm", (list, tuple, np.ndarray))
     STRUCTURE_THIRD_EDGE_MM = ("structure_third_edge_mm", (list, tuple, np.ndarray))
+    STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", (int, np.integer, float, np.float))
+    STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", (int, np.integer, float, np.float))
+    STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", (int, np.integer, float, np.float))
 
     """
     Digital Device Twin Settings
@@ -302,6 +305,8 @@ class Tags:
     CIRCULAR_TUBULAR_STRUCTURE = "CircularTubularStructure"
     ELLIPTICAL_TUBULAR_STRUCTURE = "EllipticalTubularStructure"
     SPHERICAL_STRUCTURE = "SphericalStructure"
+    PARALLELEPIPED_STRUCTURE = "ParallelepipedStructure"
+    RECTANGULAR_CUBOID_STRUCTURE = "RectangularCuboidStructure"
 
     CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = ("structure_type", str)
