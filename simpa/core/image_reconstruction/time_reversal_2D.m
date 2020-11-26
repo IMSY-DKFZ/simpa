@@ -67,11 +67,13 @@ medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
 if isfield(data, 'density') == true
     medium.density = data.density;
 else
-    medium.density = ones(Nx, Ny);
+    medium.density = 1000*ones(Nx, Ny);
 end
 
+kgrid.setTime(settings.Nt, settings.dt)
+
 %sound_speed_ref = min(min(medium.sound_speed));
-kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.15);	% time array with
+%kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 % CFL number of 0.3 (advised by manual)
 % Using makeTime, dt = CFL*dx/medium.sound_speed and the total
 % time is set to the time it would take for an acoustic wave to travel
@@ -91,7 +93,7 @@ sensor.mask = data.sensor_mask;
 %    sensor.directivity_size = settings.sensor_directivity_size;
 %end
 
-sensor.directivity_pattern = settings.sensor_directivity_pattern;
+%sensor.directivity_pattern = settings.sensor_directivity_pattern;
 
 % define the frequency response of the sensor elements, gaussian shape with
 % FWHM = bandwidth*center_freq
@@ -112,7 +114,7 @@ end
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
-              'PlotPML', settings.plot_pml, 'RecordMovie', true, ...
+              'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
               'MovieName', settings.movie_name, 'PlotScale', [0, 1], 'LogScale', settings.acoustic_log_scale};
 
 if settings.gpu == true

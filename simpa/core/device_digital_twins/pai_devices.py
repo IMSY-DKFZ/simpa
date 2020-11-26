@@ -33,7 +33,7 @@ class PAIDeviceBase:
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         """
         It might be that certain device geometries need a certain dimensionality of the simulated PAI volume, or that
-        it required the existence of certain Tags in the global settings.
+        it required the existence of certain Tags in the global global_settings.
         To this end, a  PAI device should use this method to inform the user about a mismatch of the desired device and
         throw a ValueError if that is the case.
 

@@ -68,16 +68,9 @@ def simulate(settings):
 
     PA_device = MSOTAcuityEcho()
     detector_positions = PA_device.get_detector_element_positions(settings)
-    import matplotlib.pyplot as plt
-    # plt.subplot(2, 3, 6)
-    # plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
-    # plt.show()
     detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
 
     sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
-    # print(np.shape(sensor_map))
-    shape = np.shape(sensor_map)
-    # print(detector_positions)
     if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
         sensor_map[detector_positions[:, 2], detector_positions[:, 0]] = 1
     else:
