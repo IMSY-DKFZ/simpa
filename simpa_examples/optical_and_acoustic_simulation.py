@@ -24,7 +24,7 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
-
+from simpa.utils.libraries.structure_library import HorizontalLayerStructure
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
@@ -35,7 +35,7 @@ VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
 SPACING = 0.2
-RANDOM_SEED = 47
+RANDOM_SEED = 471
 
 
 def create_example_tissue(global_settings):
@@ -83,7 +83,7 @@ def create_example_tissue(global_settings):
     tissue_dict["vessel_1"] = vessel_1_dictionary
     return tissue_dict
 
-# Seed the numpy random configuration prior to creating the settings file in
+# Seed the numpy random configuration prior to creating the global_settings file in
 # order to ensure that the same volume
 # is generated with the same random seed every time.
 
@@ -144,7 +144,7 @@ settings = {
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
 
     Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
-    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_DAS,
+    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/home/kris/hard_drive/MITK/"
                                           "sDMAS-2018.07-2596-g31d1c60d71-linux-x86_64/"
@@ -155,7 +155,7 @@ settings = {
 
 }
 settings = Settings(settings)
-# settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
+# global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
 np.random.seed(RANDOM_SEED)
 
 settings[Tags.STRUCTURES] = create_example_tissue(settings)
@@ -164,5 +164,5 @@ import time
 timer = time.time()
 simulate(settings)
 print("Needed", time.time()-timer, "seconds")
-# TODO settings[Tags.SIMPA_OUTPUT_PATH]
+# TODO global_settings[Tags.SIMPA_OUTPUT_PATH]
 print("Simulating ", RANDOM_SEED, "[Done]")

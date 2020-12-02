@@ -30,13 +30,13 @@ import numpy as np
 
 # TODO change these paths to the desired executable and save folder
 SAVE_PATH = "/media/kris/Extreme SSD/data/simpa_examples"
-MCX_BINARY_PATH = "/media/kris/Extreme SSD/cami-experimental/PAI/MCX/probe_integration/bin/mcx"
+MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/mcx"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
-VOLUME_PLANAR_DIM_IN_MM = 60
+VOLUME_PLANAR_DIM_IN_MM = 30
 VOLUME_HEIGHT_IN_MM = 60
 SPACING = 1
-RANDOM_SEED = 47
+RANDOM_SEED = 471
 
 
 def create_example_tissue(global_settings):
@@ -85,7 +85,7 @@ def create_example_tissue(global_settings):
     tissue_dict["vessel_1"] = vessel_1_dictionary
     return tissue_dict
 
-# Seed the numpy random configuration prior to creating the settings file in
+# Seed the numpy random configuration prior to creating the global_settings file in
 # order to ensure that the same volume
 # is generated with the same random seed every time.
 
@@ -111,8 +111,8 @@ settings = {
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_RING,
-    Tags.ILLUMINATION_PARAM1: [7, 10, 8, 0],
+    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
+    # Tags.ILLUMINATION_PARAM1: [7, 10, 8, 0],
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 
     # The following parameters tell the script that we do not want any extra
@@ -135,5 +135,5 @@ import time
 timer = time.time()
 simulate(settings)
 print("Needed", time.time()-timer, "seconds")
-# TODO settings[Tags.SIMPA_OUTPUT_PATH]
+# TODO global_settings[Tags.SIMPA_OUTPUT_PATH]
 print("Simulating ", RANDOM_SEED, "[Done]")
