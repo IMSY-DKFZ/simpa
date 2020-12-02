@@ -87,10 +87,5 @@ class TestPipeline(unittest.TestCase):
                 os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
             # Delete the created file
             os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
-            path = ""
-            for subpath in settings[Tags.SIMPA_OUTPUT_PATH].split("/")[:-1]:
-                path += subpath + "/"
-            # Delete the file's parent directory
-            os.rmdir(path)
 
         print("Simulating ", self.RANDOM_SEED, "[Done]")

@@ -64,11 +64,6 @@ class TestCreateVolume(unittest.TestCase):
            os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
             # Delete the created file
             os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
-            path = ""
-            for subpath in settings[Tags.SIMPA_OUTPUT_PATH].split("/")[:-1]:
-                path += subpath + "/"
-            # Delete the file's parent directory
-            os.rmdir(path)
 
         for item in output:
             print(item)

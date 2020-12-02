@@ -57,17 +57,17 @@ class TestIOHandling(unittest.TestCase):
 
     def test_write_and_read_structure_dictionary(self):
 
-        save_dictionary = dict()
+        save_dictionary = Settings()
         settings = Settings()
         settings.add_minimal_meta_information()
         settings.add_minimal_optical_properties()
 
         save_dictionary[Tags.SETTINGS] = settings
 
-        background_dictionary = dict()
+        background_dictionary = Settings()
         background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
         bg = Background(settings, background_dictionary)
-        structure_settings = dict()
+        structure_settings = Settings()
         structure_settings["background"] = bg.to_settings()
 
         save_dictionary[Tags.STRUCTURES] = structure_settings
