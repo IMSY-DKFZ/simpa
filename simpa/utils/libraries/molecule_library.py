@@ -68,6 +68,7 @@ class MolecularComposition(list):
 
     def get_properties_for_wavelength(self, wavelength) -> TissueProperties:
 
+        self.update_internal_properties()
         if self.cached_absorption[wavelength] != -1:
             self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = self.cached_absorption[wavelength]
             self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = self.cached_scattering[wavelength]
@@ -172,7 +173,7 @@ class Molecule(object):
 
         if speed_of_sound is None:
             speed_of_sound = StandardProperties.SPEED_OF_SOUND_GENERIC
-        if not isinstance(speed_of_sound, (int, float)):
+        if not isinstance(speed_of_sound, (np.int32, np.int64, int, np.float, float)):
             raise TypeError("The given speed_of_sound was not of type int or float instead of {}!"
                             .format(type(speed_of_sound)))
         self.speed_of_sound = speed_of_sound

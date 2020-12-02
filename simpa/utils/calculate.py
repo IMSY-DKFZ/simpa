@@ -138,3 +138,25 @@ def randomize_uniform(min_value: float, max_value: float):
     :return: random number in [min_value, max_value[
     """
     return (np.random.random() * (max_value-min_value)) + min_value
+
+
+def rotation_x(theta):
+    return np.matrix([[1, 0, 0],
+                      [0, np.cos(theta), -np.sin(theta)],
+                      [0, np.sin(theta), np.cos(theta)]])
+
+
+def rotation_y(theta):
+    return np.matrix([[np.cos(theta), 0, np.sin(theta)],
+                      [0, 1, 0],
+                      [-np.sin(theta), 0, np.cos(theta)]])
+
+
+def rotation_z(theta):
+    return np.matrix([[np.cos(theta), -np.sin(theta), 0],
+                      [np.sin(theta), np.cos(theta), 0],
+                      [0, 0, 1]])
+
+
+def rotation(angles):
+    return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])
