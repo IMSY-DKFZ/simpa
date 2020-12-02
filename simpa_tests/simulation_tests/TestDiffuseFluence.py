@@ -28,6 +28,7 @@ import os
 import matplotlib.pyplot as plt
 
 
+@unittest.skip("skipping local simulation tests")
 class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
     def setUp(self):
