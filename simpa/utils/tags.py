@@ -171,6 +171,7 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
+    RECONSTRUCTION_ALGORITHM_BACKPROJECTION = "backprojection"
     RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", bool)
     RECONSTRUCTION_MITK_BINARY_PATH = ("reconstruction_mitk_binary_path", str)
     RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml", str)
@@ -179,6 +180,10 @@ class Tags:
     RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM = "EnvelopeDetection"
     RECONSTRUCTED_DATA = "reconstructed_data"
     RECONSTRUCTED_DATA_NOISE = "reconstructed_data_noise"
+    RECONSTRUCTION_MODE = "reconstruction_mode"
+    RECONSTRUCTION_MODE_DIFFERENTIAL = "differential"
+    RECONSTRUCTION_MODE_PRESSURE = "pressure"
+    RECONSTRUCTION_MODE_FULL = "full"
 
     """
     Upsampling settings
