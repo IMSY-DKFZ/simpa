@@ -10,3 +10,9 @@ sphinx
 rst2pdf
 m2r
 coverage
+
+dash
+plotly
+plotly-express
+dash-bootstrap-components
+dash-daq

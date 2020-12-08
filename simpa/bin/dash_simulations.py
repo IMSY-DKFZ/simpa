@@ -38,65 +38,164 @@ USAGE:
 import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
+import dash_table
 import dash_bootstrap_components as dbc
 import dash_html_components as html
 import argparse
+import base64
 
 
 external_stylesheets = [dbc.themes.JOURNAL, '.assets/dcc.css']
-app = dash.Dash(external_stylesheets=external_stylesheets, title="Manifold Analyzer")
+app = dash.Dash(external_stylesheets=external_stylesheets, title="SIMPA")
+
+simpa_logo = './.assets/simpa_logo.png'
+encoded_logo = (base64.b64encode(open(simpa_logo, 'rb').read())).decode()
 
 app.layout = html.Div([
-    html.H4("Simulations Analysis Multi-toolbox (SAM)"),
-    html.H6("CAMI, Computer Assisted Medical Interventions"),
-    html.Br(),
     dbc.Row([
         dbc.Col([
-            dbc.Input(
-                id="file_path",
-                type="text",
-                pattern=None,
-                placeholder="Path to simulation folder or file",
-                persistence_type="session",
-            ),
+            html.H4("SIMPA Visualization Tool"),
+            html.H6("CAMI, Computer Assisted Medical Interventions"),
+        ], width=9),
+        dbc.Col([
+            html.Img(src='data:image/png;base64,{}'.format(encoded_logo), width='50%')
+        ], width=3)
+    ]),
+    html.Br(),
+    dcc.Tabs([
+        dcc.Tab(label="Visualization", id="tab-1", children=[
             html.Br(),
-            dbc.Input(
-                id="n_plots",
-                type="number",
-                pattern=None,
-                placeholder="Number of plots",
-                persistence_type="session"
-            )
-        ], width=3),
-        dbc.Col(
-            html.Div(
-                id="plot_div",
-                children=[
-                    dcc.Graph(id="plot_1", hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                              style={"width": "50%", "display": 'inline-block'}),
-                    dcc.Graph(id="plot_2", hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                              style={"width": "50%", "display": 'inline-block'})
-                ]
-            )
-        )
+            dbc.Row([
+                dbc.Col([
+                    html.Hr(),
+                    html.H6("Plotting / Handling settings"),
+                    dbc.Input(
+                        id="file_path",
+                        type="text",
+                        pattern=None,
+                        placeholder="Path to simulation folder or file",
+                        persistence_type="session",
+                    ),
+                    dcc.Dropdown(
+                        id="file_selection",
+                        multi=True,
+                        placeholder="Simulation files",
+                        persistence_type="session",
+                        disabled=True
+                    ),
+                    html.Br(),
+                    html.Hr(),
+                    html.H6("Data selection"),
+                    dbc.Input(
+                        id="n_plots",
+                        type="number",
+                        pattern=None,
+                        placeholder="Number of plots",
+                        persistence_type="session",
+                        disabled=True,
+                    ),
+                    dcc.Dropdown(
+                        id="param",
+                        multi=True,
+                        placeholder="Parameter to plot",
+                        persistence_type="session",
+                        disabled=True,
+                    ),
+                    html.Br(),
+                    html.Hr(),
+                    html.H6("Visual settings"),
+                    dcc.Dropdown(
+                        id="palette_chooser",
+                        multi=False,
+                        placeholder="Color palette",
+                        persistence_type="session",
+                        disabled=True,
+                    )
+                ], width=2),
+                dbc.Col([
+                    dbc.Row([
+                        dbc.Col([
+                            html.H6("Parameter visualization"),
+                            html.Div(
+                                id="plot_div_1",
+                                children=[
+                                    dcc.Graph(id="plot_11",
+                                              hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
+                                              style={"width": "50%", "display": 'inline-block'}),
+                                    dcc.Graph(id="plot_12",
+                                              hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
+                                              style={"width": "50%", "display": 'inline-block'})
+                                ]
+                            )
+                        ])
+                    ]),
+                    html.Hr(),
+                    dbc.Row([
+                        dbc.Col([
+                            html.H6("Spectra visualization"),
+                            html.Div(
+                                id="plot_div_2",
+                                children=[
+                                    dcc.Graph(id="plot_21",
+                                              hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
+                                              style={"width": "100%", "display": 'inline-block'})
+                                ]
+                            )
+                        ])
+                    ])
+                ], width=8),
+                dbc.Col([
+                    html.H6("Plot information"),
+                    html.Hr()
+                ], width=2)
+            ])
+        ]),
+        dcc.Tab(label="Properties", children=[
+            html.Br(),
+            dbc.Row([
+                dbc.Col(
+                    html.Div([
+                        html.H6("Data selection"),
+                        html.Hr(),
+                        html.Br(),
+                        dash_table.DataTable(
+                            id="data_table",
+                            columns=[{"name": 'Col 1', "id": 'Col 1'}, {"name": 'Col 2', "id": 'Col 2'}],
+                            data=[{'Col 1': 1, 'Col 2': 0.5}, {'Col 1': 2, 'Col 2': 1.5}],
+                            style_as_list_view=True,
+                            style_table={'overflowX': 'scroll', 'maxHeight': '300px',
+                                         'overflowY': 'scroll', 'maxWidth': '800px'},
+                            fixed_rows={'headers': True, 'data': 0},
+                            style_cell={
+                                'minWidth': '50px', 'maxWidth': '90px',
+                                'overflow': 'hidden',
+                                'textOverflow': 'ellipsis',
+                                'padding': '5px',
+                                'textAlign': 'center'
+                            },
+                            style_data_conditional=[
+                                {
+                                    'if': {'row_index': 'odd'},
+                                    'backgroundColor': 'rgb(248, 248, 248)'
+                                }
+                            ],
+                            style_header={
+                                'backgroundColor': '#e6b600ff',
+                                'fontWeight': 'bold'
+                            },
+                            filter_action='native',
+                            sort_action='native',
+                            sort_mode='multi',
+                            row_selectable="multi",
+                            row_deletable=True,
+                            persistence=False,
+                        )
+                    ]), width=6
+                )
+            ])
+        ])
     ])
 ], style={'padding': 40})
-
-
-@app.callback(Output("plot_div", "children"),
-              [Input("n_plots", "value")])
-def generate_plots(n_plots):
-    if n_plots is None:
-        return [dcc.Graph(id="plot_1", hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                          style={"width": "50%", "display": 'inline-block'})
-                ]
-    n_plots = int(n_plots)
-    plots = []
-    for i in range(n_plots):
-        p = dcc.Graph(id=f"plot_{i}", hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                      style={"width": "50%", "display": 'inline-block'})
-        plots.append(p)
-    return plots
 
 
 if __name__ == "__main__":
