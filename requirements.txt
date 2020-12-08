@@ -10,4 +10,13 @@ sphinx
 rst2pdf
 m2r
 coverage
+<<<<<<< HEAD
 deprecated
+=======
+
+dash
+plotly
+plotly-express
+dash-bootstrap-components
+dash-daq
+>>>>>>> Created basic layout of SIMPA app based on initial requirements discussions, also added dash to simpa requirements
