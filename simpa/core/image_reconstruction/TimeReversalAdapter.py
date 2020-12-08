@@ -36,7 +36,7 @@ import pathlib
 class TimeReversalAdapter(ReconstructionAdapterBase):
 
     @staticmethod
-    def get_acoustic_properties(global_settings, input_data, distortion):
+    def get_acoustic_properties(global_settings, input_data):
         if Tags.PERFORM_UPSAMPLING in global_settings and global_settings[Tags.PERFORM_UPSAMPLING]:
             tmp_ac_properties = load_hdf5(global_settings[Tags.SIMPA_OUTPUT_PATH],
                                           SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA,
