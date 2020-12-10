@@ -58,6 +58,10 @@ class MSOTAcuityEcho(PAIDeviceBase):
                                      "Must be at least {} mm but was {} mm"
                                      .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
 
+        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
+        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
+        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
+
         return True
 
     def adjust_simulation_volume_and_settings(self, global_settings: Settings):
@@ -111,6 +115,9 @@ class MSOTAcuityEcho(PAIDeviceBase):
             Tags.STRUCTURE_TYPE: Tags.BACKGROUND
         })
         global_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
+        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
+        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
+        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
 
         return global_settings
 

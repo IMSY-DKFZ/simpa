@@ -29,17 +29,20 @@ from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import torch
 
+
 class BackprojectionAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
+
+        time_series_sensor_data = np.swapaxes(time_series_sensor_data, 0, 1)
 
         acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
                                                 wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
         sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[Tags.PROPERTY_SPEED_OF_SOUND]
         sound_speed_m = np.mean(sound_speed_m)
 
-        target_dim_m = [settings[Tags.DIM_VOLUME_X_MM]/1000, settings[Tags.DIM_VOLUME_Y_MM]/1000,
-                        settings[Tags.DIM_VOLUME_Z_MM]/1000]
+        target_dim_m = np.asarray([settings[Tags.DIM_VOLUME_X_MM]/1000, settings[Tags.DIM_VOLUME_Y_MM]/1000,
+                                  settings[Tags.DIM_VOLUME_Z_MM]/1000])
 
         resolution_m = settings[Tags.SPACING_MM]/1000
 
@@ -49,7 +52,17 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
         else:
             mode = Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
 
-        sensor_positions = DEVICE_MAP(settings[Tags.DIGITAL_DEVICE]).get_detector_definition()
+        device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
+
+        sensor_positions = device.get_detector_definition() / 1000
+        sensor_positions[:, 1] = 0
+        sensor_positions[:, [1, 2]] = sensor_positions[:, [2, 1]]
+
+        target_dim_m[[0, 1]] = target_dim_m[[1, 0]]
+        print(sound_speed_m)
+        print(target_dim_m)
+        print(resolution_m)
+        print(sampling_frequency)
 
         return self.backprojectionND_torch(time_series_sensor_data, speed_of_sound_m=sound_speed_m,
                                            target_dim_m=target_dim_m, resolution_m=resolution_m,
@@ -65,6 +78,8 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
             mode = Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        print(np.shape(time_series_data))
 
         time_series_data = torch.from_numpy(time_series_data.copy()).float().to(device)
         target_dim_m = torch.from_numpy(target_dim_m.copy()).float().to(device)

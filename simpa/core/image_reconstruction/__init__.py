@@ -53,5 +53,5 @@ class ReconstructionAdapterBase:
         time_series_sensor_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[Tags.TIME_SERIES_DATA]
 
         reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings)
-        print("Performing reconstruction...Done]")
+        print("Performing reconstruction...[Done]")
         return reconstructed_image

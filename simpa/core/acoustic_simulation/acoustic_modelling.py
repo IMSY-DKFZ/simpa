@@ -28,8 +28,6 @@ from simpa.utils.dict_path_manager import generate_dict_path
 
 
 def run_acoustic_forward_model(settings):
-    print("ACOUSTIC FORWARD")
-
     adapter = None
 
     if Tags.ACOUSTIC_MODEL in settings:

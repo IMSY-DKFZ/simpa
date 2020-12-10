@@ -24,13 +24,11 @@ import numpy as np
 import subprocess
 from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
-from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.settings_generator import Settings
-import json
 import os
 import scipy.io as sio
-from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
+from simpa.core.device_digital_twins import DEVICE_MAP
 
 
 def simulate(settings):
@@ -38,6 +36,8 @@ def simulate(settings):
     optical_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_OUTPUT_NAME,
                                       wavelength=settings[Tags.WAVELENGTH],
                                       upsampled_data=True)
+
+    print("OPTICAL_PATH", optical_path)
 
     data_dict = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 
@@ -66,17 +66,20 @@ def simulate(settings):
                                                                       axes=axes))
     data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE], axes=axes))
 
-    PA_device = MSOTAcuityEcho()
-    detector_positions = PA_device.get_detector_element_positions(settings)
-    detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
+    PA_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
+    detector_positions_mm = PA_device.get_detector_element_positions(settings)
+    detector_positions_voxels = np.round(detector_positions_mm / settings[Tags.SPACING_MM]).astype(int)
 
     sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
     if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
-        sensor_map[detector_positions[:, 2], detector_positions[:, 0]] = 1
+        sensor_map[detector_positions_voxels[:, 2], detector_positions_voxels[:, 0]] = 1
     else:
         half_y_dir_detector_pixels = int(round(0.5*PA_device.detector_element_length_mm/settings[Tags.SPACING_MM]))
         for pixel in np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1):
-            sensor_map[detector_positions[:, 2], detector_positions[:, 1] + pixel, detector_positions[:, 0]] = 1
+            sensor_map[detector_positions_voxels[:, 2],
+                       detector_positions_voxels[:, 1] + pixel,
+                       detector_positions_voxels[:, 0]] = 1
+
     data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
     save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, settings[Tags.SIMPA_OUTPUT_PATH],
               generate_dict_path(settings, Tags.PROPERTY_SENSOR_MASK, upsampled_data=False,
@@ -111,13 +114,6 @@ def simulate(settings):
     data_dict["settings"] = k_wave_settings
     sio.savemat(optical_path, data_dict, long_field_names=True)
 
-    json_path, ext = os.path.splitext(settings[Tags.SIMPA_OUTPUT_PATH])
-    tmp_json_filename = json_path + ".json"
-    # if Tags.SETTINGS_JSON_PATH not in settings:
-    #     with open(tmp_json_filename, "w") as json_file:
-    #         serializer = SIMPAJSONSerializer()
-    #         json.dump(settings, json_file, indent="\t", default=serializer.default)
-
     if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
         simulation_script_path = "simulate_3D"
     else:
@@ -127,6 +123,8 @@ def simulate(settings):
     cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
     cmd.append("-nodisplay")
     cmd.append("-nosplash")
+    cmd.append("-automation")
+    cmd.append("-wait")
     cmd.append("-r")
     cmd.append("addpath('"+settings[Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION]+"');" +
                simulation_script_path + "('" + optical_path + "');exit;")
@@ -135,33 +133,31 @@ def simulate(settings):
     print(cmd)
     subprocess.run(cmd)
 
-    raw_time_series_data = sio.loadmat(optical_path + ".mat")[Tags.TIME_SERIES_DATA]
+    raw_time_series_data = sio.loadmat(optical_path)[Tags.TIME_SERIES_DATA]
+
+    time_grid = sio.loadmat(optical_path + "dt.mat")
+    num_time_steps = int(np.round(time_grid["number_time_steps"]))
 
     if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
 
-        num_time_steps = np.shape(raw_time_series_data)[1]
-        num_imaging_plane_sensors = np.shape(np.argwhere(
-            data_dict[Tags.PROPERTY_SENSOR_MASK][:, int(np.shape(data_dict[Tags.PROPERTY_SENSOR_MASK])[1] / 2), :]))[0]
-        num_orthogonal_sensors = np.shape(np.argwhere(
-            data_dict[Tags.PROPERTY_SENSOR_MASK][:, :, int(np.shape(data_dict[Tags.PROPERTY_SENSOR_MASK])[2] / 2)]))[0]
+        sensor_mask = data_dict[Tags.PROPERTY_SENSOR_MASK]
+        num_imaging_plane_sensors = int(np.sum(sensor_mask[:, detector_positions_voxels[0][1], :]))
+
+        raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
 
         if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
             if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_DAS,
                                                            Tags.RECONSTRUCTION_ALGORITHM_DMAS,
-                                                           Tags.RECONSTRUCTION_ALGORITHM_SDMAS]:
-                raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors,
-                                                                         num_orthogonal_sensors, num_time_steps])
-                raw_time_series_data = np.sum(raw_time_series_data, axis=1) / num_orthogonal_sensors
-        else:
-            raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors,
-                                                                     num_orthogonal_sensors, num_time_steps])
+                                                           Tags.RECONSTRUCTION_ALGORITHM_SDMAS,
+                                                           Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION]:
+                raw_time_series_data = np.average(raw_time_series_data, axis=1)
 
-    time_grid = sio.loadmat(optical_path + "dt.mat")
     settings["dt_acoustic_sim"] = float(time_grid["time_step"])
-    settings["Nt_acoustic_sim"] = float(time_grid["number_time_steps"])
+    settings["Nt_acoustic_sim"] = num_time_steps
+
+    save_hdf5(settings, settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
     os.remove(optical_path)
-    os.remove(optical_path + ".mat")
     os.remove(optical_path + "dt.mat")
     os.chdir(cur_dir)
 

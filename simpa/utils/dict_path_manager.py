@@ -38,7 +38,7 @@ def generate_dict_path(settings, data_field, wavelength=None, upsampled_data=Non
     elif Tags.PERFORM_UPSAMPLING not in settings or settings[Tags.PERFORM_UPSAMPLING] is False:
         sampled_data = "/{}/".format(Tags.ORIGINAL_DATA)
 
-    if Tags.WAVELENGTHS in settings:
+    if Tags.WAVELENGTH in settings:
         if wavelength is None:
             raise ValueError("Please specify the wavelength as int!")
         else:

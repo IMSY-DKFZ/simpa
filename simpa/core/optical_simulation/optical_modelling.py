@@ -29,8 +29,9 @@ from simpa.utils.dict_path_manager import generate_dict_path
 
 
 def run_optical_forward_model(settings):
-    # TODO
-    print("OPTICAL FORWARD")
+    """
+    TODO
+    """
 
     if Tags.OPTICAL_MODEL not in settings:
         raise AssertionError("Tags.OPTICAL_MODEL tag was not specified in the settings. Skipping optical modelling.")

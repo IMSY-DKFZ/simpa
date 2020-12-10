@@ -40,7 +40,7 @@ class Tags:
     RANDOM_SEED = ("random_seed", (int, np.integer))
     TISSUE_PROPERTIES_OUPUT_NAME = "properties"
     SIMULATION_EXTRACT_FIELD_OF_VIEW = ("extract_field_of_view", bool)
-    GPU = ("gpu", bool)
+    GPU = ("gpu", (bool, np.bool, np.bool_))
     ACOUSTIC_SIMULATION_3D = ("acoustic_simulation_3d", bool)
     MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float, np.float))
 
@@ -151,19 +151,19 @@ class Tags:
     Acoustic model settings
     """
 
-    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", bool)
+    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool, np.bool_))
     ACOUSTIC_MODEL_BINARY_PATH = ("acoustic_model_binary_path", str)
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
-    RECORDMOVIE = ("record_movie", bool)
+    RECORDMOVIE = ("record_movie", (bool, np.bool, np.bool_))
     MOVIENAME = ("movie_name", str)
     ACOUSTIC_PLOT_SCALE = "acoustic_plot_scale"
-    ACOUSTIC_LOG_SCALE = ("acoustic_log_scale", bool)
+    ACOUSTIC_LOG_SCALE = ("acoustic_log_scale", (bool, np.bool, np.bool_))
     TIME_SERIES_DATA = "time_series_data"
     TIME_SERIES_DATA_NOISE = "time_series_data_noise"
 
     # Reconstruction settings
-    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", bool)
+    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", (bool, np.bool, np.bool_))
     RECONSTRUCTION_OUTPUT_NAME = ("reconstruction_result", str)
     RECONSTRUCTION_ALGORITHM = ("reconstruction_algorithm", str)
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
@@ -172,7 +172,7 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
     RECONSTRUCTION_ALGORITHM_BACKPROJECTION = "backprojection"
-    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", bool)
+    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool, np.bool_))
     RECONSTRUCTION_MITK_BINARY_PATH = ("reconstruction_mitk_binary_path", str)
     RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml", str)
     RECONSTRUCTION_BMODE_METHOD = ("reconstruction_bmode_method", str)
@@ -252,8 +252,8 @@ class Tags:
 
     PMLSize = ("pml_size", (list, tuple, np.ndarray))
     PMLAlpha = ("pml_alpha", (int, np.integer, float, np.float))
-    PMLInside = ("pml_inside", bool)
-    PlotPML = ("plot_pml", bool)
+    PMLInside = ("pml_inside", (bool, np.bool, np.bool_))
+    PlotPML = ("plot_pml", (bool, np.bool, np.bool_))
 
     # Acoustic Sensor Properties
     SENSOR_MASK = "sensor_mask"
