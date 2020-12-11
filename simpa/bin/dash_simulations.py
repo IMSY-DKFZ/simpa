@@ -100,7 +100,6 @@ app.layout = html.Div([
                         pattern=None,
                         placeholder="Path to simulation folder or file",
                         persistence_type="session",
-                        value="/home/kris/Downloads/ippai_output.hdf5"
                     ),
                     dcc.Dropdown(
                         id="file_selection",
