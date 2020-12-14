@@ -49,8 +49,9 @@ import argparse
 import base64
 import numpy as np
 import os
-from simpa.io_handling import load_hdf5
 
+from simpa.io_handling import load_hdf5
+from simpa.utils.tags import Tags
 
 external_stylesheets = [dbc.themes.JOURNAL, '.assets/dcc.css']
 app = dash.Dash(external_stylesheets=external_stylesheets, title="SIMPA")
@@ -60,16 +61,17 @@ cami_logo = './.assets/CAMIC_logo-wo_DKFZ.png'
 encoded_simpa_logo = (base64.b64encode(open(simpa_logo, 'rb').read())).decode()
 encoded_cami_logo = (base64.b64encode(open(cami_logo, 'rb').read())).decode()
 
+DEFAULT_COLORSCALE = ['rgb(5,48,97)', 'rgb(33,102,172)', 'rgb(67,147,195)', 'rgb(146,197,222)', 'rgb(209,229,240)',
+                      'rgb(247,247,247)', 'rgb(253,219,199)', 'rgb(244,165,130)', 'rgb(214,96,77)',
+                      'rgb(178,24,43)', 'rgb(103,0,31)']
+
 
 class DataContainer:
-
     simpa_output = None
     simpa_data_fields = None
     wavelengths = None
     plot_types = ['scatter3d', 'imshow', 'histogram-volume', 'histograme-channel', 'box', 'violin', 'contour']
-DEFAULT_COLORSCALE = ['rgb(5,48,97)', 'rgb(33,102,172)', 'rgb(67,147,195)', 'rgb(146,197,222)', 'rgb(209,229,240)',
-                      'rgb(247,247,247)', 'rgb(253,219,199)', 'rgb(244,165,130)', 'rgb(214,96,77)',
-                      'rgb(178,24,43)', 'rgb(103,0,31)']
+
 
 data = DataContainer()
 
@@ -103,7 +105,6 @@ app.layout = html.Div([
                     ),
                     dcc.Dropdown(
                         id="file_selection",
-                        # multi=True,
                         placeholder="Simulation files",
                         persistence_type="session",
                     ),
@@ -130,18 +131,9 @@ app.layout = html.Div([
                         fixSwatches=True,
                         colorscale=DEFAULT_COLORSCALE
                     ),
-                    html.P("Limit plotted values as %"),
-                    dcc.RangeSlider(
-                        id="plot_scaler",
-                        min=0,
-                        max=100,
-                        value=[10, 90],
-                        marks={i: {'label': str(i)} for i in list(range(101))[::10]},
-                        allowCross=False,
-                        pushable=5,
-                        tooltip=dict(always_visible=True, placement="top"),
-                        persistence_type="session",
-                    )
+                    html.Br(),
+                    html.Hr(),
+                    html.H6("General Information"),
                 ], width=2),
                 dbc.Col([
                     dbc.Row([
@@ -150,12 +142,47 @@ app.layout = html.Div([
                             html.Div(
                                 id="plot_div_1",
                                 children=[
+                                    html.Div([
+                                        dcc.RangeSlider(
+                                            id="plot_scaler1",
+                                            min=0,
+                                            max=1,
+                                            step=0.01,
+                                            value=[0., 1.],
+                                            marks={i: {'label': f'{i:1.1f}'} for i in np.arange(0, 1, 0.1)},
+                                            allowCross=False,
+                                            pushable=0.05,
+                                            tooltip=dict(always_visible=True, placement="left"),
+                                            persistence_type="session",
+                                            disabled=False,
+                                            vertical=True,
+                                        ),
+                                    ], style={"width": "5%", "display": 'inline-block'}
+                                    ),
+
                                     dcc.Graph(id="plot_11",
                                               hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                                              style={"width": "50%", "display": 'inline-block'}),
+                                              style={"width": "45%", "display": 'inline-block'}),
                                     dcc.Graph(id="plot_12",
                                               hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                                              style={"width": "50%", "display": 'inline-block'}),
+                                              style={"width": "45%", "display": 'inline-block'}),
+                                    html.Div([
+                                        dcc.RangeSlider(
+                                            id="plot_scaler2",
+                                            min=0,
+                                            max=1,
+                                            step=0.01,
+                                            value=[0., 1.],
+                                            marks={i: {'label': f'{i:1.1f}'} for i in np.arange(0, 1, 0.1)},
+                                            allowCross=False,
+                                            pushable=0.05,
+                                            tooltip=dict(always_visible=True, placement="left"),
+                                            persistence_type="session",
+                                            disabled=False,
+                                            vertical=True,
+                                        ),
+                                    ], style={"width": "5%", "display": 'inline-block'}
+                                    ),
                                     html.Div([
                                         dcc.Dropdown(
                                             id="plot_type1",
@@ -210,20 +237,20 @@ app.layout = html.Div([
                                         ),
                                         html.H6("Wavelength selector"),
                                         dcc.Slider(
-                                            # min=0,
-                                            # max=100,
-                                            # value=50,
-                                            # step=1,
+                                            min=0,
+                                            max=100,
+                                            value=50,
+                                            step=1,
                                             tooltip=dict(always_visible=True, placement="top"),
                                             updatemode="mouseup",
                                             persistence_type="session",
                                             id="channel_slider",
-                                            # marks={
-                                            #     0: {'label': '0', 'style': {'color': '#77b0b1'}},
-                                            #     26: {'label': '26'},
-                                            #     37: {'label': '37'},
-                                            #     100: {'label': '100', 'style': {'color': '#f50'}}
-                                            # }
+                                            marks={
+                                                0: {'label': '0', 'style': {'color': '#77b0b1'}},
+                                                26: {'label': '26'},
+                                                37: {'label': '37'},
+                                                100: {'label': '100', 'style': {'color': '#f50'}}
+                                            }
                                         )
                                     ], style={"width": "50%", "display": 'inline-block'})
                                 ]
@@ -239,7 +266,7 @@ app.layout = html.Div([
                                 children=[
                                     dcc.Dropdown(
                                         id="param3",
-                                        multi=False,
+                                        multi=True,
                                         placeholder="Parameter to plot over wavelengths",
                                         persistence_type="session",
                                         disabled=True,
@@ -251,11 +278,7 @@ app.layout = html.Div([
                             )
                         ])
                     ])
-                ], width=8),
-                dbc.Col([
-                    html.H6("Plot information"),
-                    html.Hr()
-                ], width=2)
+                ], width=10),
             ])
         ]),
         dcc.Tab(label="Properties", children=[
@@ -306,72 +329,26 @@ app.layout = html.Div([
 ], style={'padding': 40})
 
 
-# class DataContainer(object):
-#     plot_types = ['scatter3d', 'imshow', 'histogram-volume', 'histograme-channel', 'box', 'violin', 'contour']
-#     wavelengths = np.arange(500, 1000, 5)
-#     vol_shape = (60, 60, 60)
-#     X, Y, Z = np.mgrid[:1:20j, :1:20j, :1:20j]
-#     vol = (X - 1) ** 2 + (Y - 1) ** 2 + Z ** 2
-#     data = (X, Y, Z, vol)
-#
-#
-# data_container = DataContainer()
-
-
-# @app.callback(Output("plot_11", "figure"),
-#               [Input("plot_type1", "value"),
-#                Input("param1", "value"),
-#                Input("colorscale_picker", "colorscale")])
-# def update_plot11(plot_type, param, colorscale):
-#     if plot_type == 'scatter3d':
-#         if len(data_container.vol_shape) == 3:
-#             x, y, z, v = data_container.data[param]
-#             fig = go.Volume(
-#                 x=x,
-#                 y=y,
-#                 z=z,
-#                 v=v,
-#                 opacity=0.2,
-#                 colorscale=colorscale
-#             )
-#             return fig
-#         else:
-#             return {"data": []}
-#     elif plot_type == "histogram-volume":
-#         x, y, z, v = data_container.data
-#         if isinstance(v, np.ndarray):
-#             fig = px.histogram(v)
-#             return fig
-#         else:
-#             return {"data": []}
-#     else:
-#         return {"data": []}
-
-
 @app.callback(
     Output("file_selection", "options"),
-    Input("data_path", "value")
+    [Input("data_path", "n_submit")],
+    [State("data_path", "value")]
 )
-def populate_file_selection(data_path):
-    if os.path.isdir(data_path):
-        file_list = os.listdir(data_path)
-        options_list = [{'label': i, 'value': os.path.join(data_path, i)} for i in file_list]
-        return options_list
-    elif os.path.isfile(data_path):
-        file_list = [os.path.basename(data_path)]
-        options_list = [{'label': i, 'value': data_path} for i in file_list]
-        return options_list
+def populate_file_selection(_, data_path):
+    if isinstance(data_path, str):
+        if os.path.isdir(data_path):
+            file_list = os.listdir(data_path)
+            file_list = [f for f in file_list if f.endswith('.hdf5')]
+            options_list = [{'label': i, 'value': os.path.join(data_path, i)} for i in file_list]
+            return options_list
+        elif os.path.isfile(data_path):
+            file_list = [os.path.basename(data_path)]
+            options_list = [{'label': i, 'value': data_path} for i in file_list]
+            return options_list
+        else:
+            raise PreventUpdate("Please select a file or folder!")
     else:
-        raise PreventUpdate("Please select a file or folder!")
-
-
-@app.callback(
-    Output("file_selection", "value"),
-    Input("file_selection", "options")
-)
-def set_default_file(options):
-    if len(options) == 1:
-        return options[0]["value"]
+        raise PreventUpdate()
 
 
 @app.callback(
@@ -381,88 +358,125 @@ def set_default_file(options):
     Output("channel_slider", "max"),
     Output("channel_slider", "value"),
     Output("channel_slider", "step"),
+    Output("channel_slider", "marks"),
+    Output("volume_slider", "min"),
+    Output("volume_slider", "max"),
+    Output("volume_slider", "value"),
+    Output("volume_slider", "step"),
+    Output("volume_slider", "marks"),
     Output("param2", "options"),
     Output("param2", "disabled"),
+    Output("param3", "options"),
+    Output("param3", "disabled"),
+    Output("volume_slider", "disabled"),
     Input("file_selection", "value"),
 )
 def populate_file_params(file_path):
     if file_path is None:
-        raise PreventUpdate
-    print("hallo")
-    data.simpa_output = load_hdf5(file_path)
-    get_data_fields()
-    options_list = [{'label': key, 'value': key} for key in data.simpa_data_fields.keys()]
-
-    return options_list, False, min(data.wavelengths), max(data.wavelengths), data.wavelengths[0], data.wavelengths[1] - data.wavelengths[0], options_list, False
+        raise PreventUpdate()
+    if os.path.isfile(file_path):
+        data.simpa_output = load_hdf5(file_path)
+        get_data_fields()
+        if data.simpa_output["settings"][Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW[0]]:
+            is_2d = True
+            vol_slider_marks = {i: {'label': str(i)} for i in range(10)}
+            vol_slider_min = 0
+            vol_slider_max = 9
+            vol_slider_value = 0
+        else:
+            is_2d = False
+            n_slices = data.simpa_data_fields['mua'][data.wavelengths[0]].shape[-1]
+            vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::int(n_slices / 10)]}
+            vol_slider_min = 0
+            vol_slider_max = n_slices - 1
+            vol_slider_value = 0
+        options_list = [{'label': key, 'value': key} for key in data.simpa_data_fields.keys()]
+        marks = {int(wv): str(wv) for wv in data.wavelengths[::int(len(data.wavelengths) / 10)]}
+        return options_list, False, min(data.wavelengths), max(data.wavelengths), data.wavelengths[0], \
+               data.wavelengths[1] - data.wavelengths[0], marks, \
+               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, \
+               options_list, False, options_list, False, is_2d
 
 
 def get_data_fields():
     data.wavelengths = data.simpa_output["settings"]["wavelengths"]
-    datafields = dict()
-    sim_props = list(data.simpa_output["simulations"]["original_data"]["simulation_properties"]["{}".format(data.wavelengths[0])].keys())
-    simulations = list(data.simpa_output["simulations"]["original_data"]["optical_forward_model_output"]["{}".format(data.wavelengths[0])].keys())
+    data_fields = dict()
+    sim_props = list(data.simpa_output["simulations"]["original_data"]["simulation_properties"][
+                         "{}".format(data.wavelengths[0])].keys())
+    simulations = list(data.simpa_output["simulations"]["original_data"]["optical_forward_model_output"][
+                           "{}".format(data.wavelengths[0])].keys())
 
-    for datafield in sim_props:
-        datafields[datafield] = dict()
+    for data_field in sim_props:
+        data_fields[data_field] = dict()
         for wavelength in data.wavelengths:
-            datafields[datafield][wavelength] = data.simpa_output["simulations"]["original_data"] \
-                ["simulation_properties"]["{}".format(wavelength)][datafield]
+            data_fields[data_field][wavelength] = data.simpa_output["simulations"]["original_data"] \
+                ["simulation_properties"]["{}".format(wavelength)][data_field]
 
-    for datafield in simulations:
-        datafields[datafield] = dict()
+    for data_field in simulations:
+        data_fields[data_field] = dict()
         for wavelength in data.wavelengths:
-            datafields[datafield][wavelength] = data.simpa_output["simulations"]["original_data"] \
-                ["optical_forward_model_output"]["{}".format(wavelength)][datafield]
+            data_fields[data_field][wavelength] = data.simpa_output["simulations"]["original_data"] \
+                ["optical_forward_model_output"]["{}".format(wavelength)][data_field]
 
-    data.simpa_data_fields = datafields
+    data.simpa_data_fields = data_fields
 
 
 @app.callback(
     Output("plot_11", "figure"),
     Input("param1", "value"),
     Input("colorscale_picker", "colorscale"),
-    Input("channel_slider", "value")
+    Input("channel_slider", "value"),
+    Input("plot_scaler1", "value")
 )
-def plot_data_field(datafield, colorscale, wavelength):
-    if datafield is None or wavelength is None:
+def plot_data_field(data_field, colorscale, wavelength, z_range):
+    if data_field is None or wavelength is None:
         raise PreventUpdate
     else:
-        datafield = np.rot90(data.simpa_data_fields[datafield][wavelength], 1)
-        plotdata = [go.Heatmap(z=datafield, colorscale=colorscale)]
-        return go.Figure(data=plotdata)
+        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
+        z_min = np.nanmin(plot_data) * z_range[0]
+        z_max = np.nanmax(plot_data) * z_range[1]
+        plot_data = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
+        return go.Figure(data=plot_data)
 
 
 @app.callback(
     Output("plot_12", "figure"),
     Input("param2", "value"),
     Input("colorscale_picker", "colorscale"),
-    Input("channel_slider", "value")
+    Input("channel_slider", "value"),
+    Input("plot_scaler2", "value")
 )
-def plot_data_field(datafield, colorscale, wavelength):
-    if datafield is None or wavelength is None:
+def plot_data_field(data_field, colorscale, wavelength, z_range):
+    if data_field is None or wavelength is None:
         raise PreventUpdate
     else:
-        datafield = np.rot90(data.simpa_data_fields[datafield][wavelength], 1)
-        plotdata = [go.Heatmap(z=datafield, colorscale=colorscale)]
-        return go.Figure(data=plotdata)
+        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
+        z_min = np.nanmin(plot_data) * z_range[0]
+        z_max = np.nanmax(plot_data) * (1 + z_range[1])
+        plot_data = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
+        return go.Figure(data=plot_data)
 
 
 @app.callback(
     Output("plot_21", "figure"),
-    Input("param1", "value"),
+    Input("param3", "value"),
     Input("plot_11", "clickData")
 )
-def plot_spectrum(datafield, clickdata):
-    if datafield is None or clickdata is None:
+def plot_spectrum(data_field, click_data):
+    if data_field is None or click_data is None:
         raise PreventUpdate
     else:
-        x = clickdata["points"][0]["x"]
-        y = clickdata["points"][0]["y"]
-        spectral_values = list()
-        for wavelength in data.wavelengths:
-            spectral_values.append(np.rot90(data.simpa_data_fields[datafield][wavelength], 1)[y, x])
-        plotdata = [go.Scatter(x=data.wavelengths, y=spectral_values, mode="lines+markers")]
-        return go.Figure(data=plotdata)
+        if isinstance(data_field, str):
+            data_field = [data_field]
+        x = click_data["points"][0]["x"]
+        y = click_data["points"][0]["y"]
+        plot_data = list()
+        for param in data_field:
+            spectral_values = list()
+            for wavelength in data.wavelengths:
+                spectral_values.append(np.rot90(data.simpa_data_fields[param][wavelength], 1)[y, x])
+            plot_data += [go.Scatter(x=data.wavelengths, y=spectral_values, mode="lines+markers", name=param)]
+        return go.Figure(data=plot_data)
 
 
 if __name__ == "__main__":
