@@ -28,7 +28,7 @@ from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.dict_path_manager import generate_dict_path
 import numpy as np
 
-MOLECULE_COMPOSITION = Tags.MOLECULE_COMPOSITION
+MOLECULE_COMPOSITION = "molecule_composition"
 MOLECULE = "molecule"
 ABSORPTION_SPECTRUM = "absorption_spectrum"
 
@@ -141,6 +141,7 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                             dictionary_list[int(listkey)] = item[listkey][()]
                         elif isinstance(item[listkey], h5py._hl.group.Group):
                             dictionary_list[int(listkey)] = data_grabber(file, path + key + "/" + listkey + "/")
+                    dictionary = dictionary_list
                 elif key == MOLECULE_COMPOSITION:
                     mc = MolecularComposition()
                     molecules = data_grabber(file, path + key + "/")

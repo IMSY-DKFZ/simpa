@@ -35,7 +35,7 @@ MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/m
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
 VOLUME_HEIGHT_IN_MM = 60
-SPACING = 1
+SPACING = 0.5
 RANDOM_SEED = 471
 
 
@@ -107,7 +107,7 @@ settings = {
 
     # The following parameters set the optical forward model
     Tags.RUN_OPTICAL_MODEL: True,
-    Tags.WAVELENGTHS: [700],
+    Tags.WAVELENGTHS: list(np.arange(700, 850, 10)),
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
