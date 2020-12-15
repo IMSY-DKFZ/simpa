@@ -71,7 +71,7 @@ class DataContainer:
     simpa_output = None
     simpa_data_fields = None
     wavelengths = None
-    plot_types = ['scatter-3D', 'imshow', 'hist-3D', 'hist-2D', 'box', 'violin', 'contour']
+    plot_types = ['contour-3D', 'imshow', 'hist-3D', 'hist-2D', 'box', 'violin', 'contour']
 
 
 data = DataContainer()
@@ -117,9 +117,9 @@ app.layout = html.Div([
                         multi=False,
                         placeholder="Volume axis",
                         persistence_type="session",
-                        options=[{'label': 'x', 'value': 'x'},
-                                 {'label': 'y', 'value': 'y'},
-                                 {'label': 'z', 'value': 'z'}],
+                        options=[{'label': 'x', 'value': 0},
+                                 {'label': 'y', 'value': 1},
+                                 {'label': 'z', 'value': 2}],
                         value='z'
                     ),
                     html.Br(),
@@ -439,23 +439,57 @@ def get_data_fields():
     Input("channel_slider", "value"),
     Input("plot_scaler1", "value"),
     Input("plot_type1", "value"),
+    State("volume_slider", "value"),
+    Input("volume_axis", "value")
 )
-def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type):
+def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis_ind, axis):
     if data_field is None or wavelength is None:
         raise PreventUpdate
     else:
-        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
+        if len(data.simpa_data_fields[data_field][wavelength].shape) == 3:
+            plot_data = np.take(np.rot90(data.simpa_data_fields[data_field][wavelength], 1),
+                                indices=axis_ind, axis=axis)
+        elif len(data.simpa_data_fields[data_field][wavelength].shape) == 2:
+            plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
+        else:
+            raise PreventUpdate
         z_min = np.nanmin(plot_data) * z_range[0]
         z_max = np.nanmax(plot_data) * z_range[1]
         if plot_type == "imshow":
-            plot_data = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
-            figure = go.Figure(data=plot_data)
+            plot = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
+            figure = go.Figure(data=plot)
             disable_scaler = False
         elif plot_type == "hist-2D":
             df = pd.DataFrame()
             df[data_field] = list(plot_data.flatten())
-            figure = px.histogram(data_frame=df, x=data_field, marginal="violin")
+            figure = px.box(data_frame=df, y=data_field, notched=True)
             disable_scaler = True
+        elif plot_type == "box":
+            df = pd.DataFrame()
+            df[data_field] = list(plot_data.flatten())
+            figure = px.box(data_frame=df, y=data_field, notched=True)
+            disable_scaler = True
+        elif plot_type == 'violin':
+            df = pd.DataFrame()
+            df[data_field] = list(plot_data.flatten())
+            figure = px.violin(data_frame=df, y=data_field, box=True)
+            disable_scaler = True
+        elif plot_type == "contour":
+            figure = go.Figure(data=go.Contour(z=plot_data))
+            disable_scaler = True
+        elif plot_type == "hist-3D":
+            plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1).flatten()
+            if plot_data.size > 10000:
+                plot_data = np.random.choice(plot_data, 10000)
+            df = pd.DataFrame()
+            df[data_field] = list(plot_data)
+            figure = px.box(data_frame=df, y=data_field, notched=True)
+            disable_scaler = True
+        elif plot_type == "contour-3D":
+            x, y, z = np.where(plot_data)
+            v = plot_data[(x, y, z)]
+            figure = go.Figure(go.Volume(x=x, y=y, z=z, value=v, opacity=0.1, surface=dict(count=20)))
+            disable_scaler = False
         else:
             raise PreventUpdate
         return figure, disable_scaler
