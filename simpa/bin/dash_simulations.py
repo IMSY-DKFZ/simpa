@@ -49,6 +49,7 @@ import argparse
 import base64
 import numpy as np
 import os
+import pandas as pd
 
 from simpa.io_handling import load_hdf5
 from simpa.utils.tags import Tags
@@ -70,7 +71,7 @@ class DataContainer:
     simpa_output = None
     simpa_data_fields = None
     wavelengths = None
-    plot_types = ['scatter3d', 'imshow', 'histogram-volume', 'histograme-channel', 'box', 'violin', 'contour']
+    plot_types = ['scatter-3D', 'imshow', 'hist-3D', 'hist-2D', 'box', 'violin', 'contour']
 
 
 data = DataContainer()
@@ -189,7 +190,7 @@ app.layout = html.Div([
                                             multi=False,
                                             placeholder="Plot type",
                                             persistence_type="session",
-                                            disabled=True,
+                                            disabled=False,
                                             style=dict(width='150px', display='inline-block')
                                         ),
                                         dcc.Dropdown(
@@ -369,6 +370,12 @@ def populate_file_selection(_, data_path):
     Output("param3", "options"),
     Output("param3", "disabled"),
     Output("volume_slider", "disabled"),
+    Output("plot_type1", "value"),
+    Output("plot_type1", "options"),
+    Output("plot_type2", "value"),
+    Output("plot_type2", "options"),
+    Output("plot_type1", "disabled"),
+    Output("plot_type2", "disabled"),
     Input("file_selection", "value"),
 )
 def populate_file_params(file_path):
@@ -383,6 +390,7 @@ def populate_file_params(file_path):
             vol_slider_min = 0
             vol_slider_max = 9
             vol_slider_value = 0
+            plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3d" not in t]
         else:
             is_2d = False
             n_slices = data.simpa_data_fields['mua'][data.wavelengths[0]].shape[-1]
@@ -390,12 +398,14 @@ def populate_file_params(file_path):
             vol_slider_min = 0
             vol_slider_max = n_slices - 1
             vol_slider_value = 0
+            plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3d" not in t]
         options_list = [{'label': key, 'value': key} for key in data.simpa_data_fields.keys()]
         marks = {int(wv): str(wv) for wv in data.wavelengths[::int(len(data.wavelengths) / 10)]}
         return options_list, False, min(data.wavelengths), max(data.wavelengths), data.wavelengths[0], \
-               data.wavelengths[1] - data.wavelengths[0], marks, \
-               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, \
-               options_list, False, options_list, False, is_2d
+                data.wavelengths[1] - data.wavelengths[0], marks, \
+                vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, \
+                options_list, False, options_list, False, is_2d, "imshow", plot_options, "imshow", plot_options, \
+                False, False
 
 
 def get_data_fields():
@@ -423,20 +433,32 @@ def get_data_fields():
 
 @app.callback(
     Output("plot_11", "figure"),
+    Output("plot_scaler1", "disabled"),
     Input("param1", "value"),
     Input("colorscale_picker", "colorscale"),
     Input("channel_slider", "value"),
-    Input("plot_scaler1", "value")
+    Input("plot_scaler1", "value"),
+    Input("plot_type1", "value"),
 )
-def plot_data_field(data_field, colorscale, wavelength, z_range):
+def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type):
     if data_field is None or wavelength is None:
         raise PreventUpdate
     else:
         plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
         z_min = np.nanmin(plot_data) * z_range[0]
         z_max = np.nanmax(plot_data) * z_range[1]
-        plot_data = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
-        return go.Figure(data=plot_data)
+        if plot_type == "imshow":
+            plot_data = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
+            figure = go.Figure(data=plot_data)
+            disable_scaler = False
+        elif plot_type == "hist-2D":
+            df = pd.DataFrame()
+            df[data_field] = list(plot_data.flatten())
+            figure = px.histogram(data_frame=df, x=data_field, marginal="violin")
+            disable_scaler = True
+        else:
+            raise PreventUpdate
+        return figure, disable_scaler
 
 
 @app.callback(
