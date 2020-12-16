@@ -390,7 +390,7 @@ def populate_file_params(file_path):
             vol_slider_min = 0
             vol_slider_max = 9
             vol_slider_value = 0
-            plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3d" not in t]
+            plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3D" not in t]
         else:
             is_2d = False
             n_slices = data.simpa_data_fields['mua'][data.wavelengths[0]].shape[-1]
@@ -399,7 +399,7 @@ def populate_file_params(file_path):
             vol_slider_max = n_slices - 1
             vol_slider_value = 0
             plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3d" not in t]
-        options_list = [{'label': key, 'value': key} for key in data.simpa_data_fields.keys()]
+        options_list = [{'label': key, 'value': key} for key in data.simpa_data_fields.keys() if key != 'units']
         marks = {int(wv): str(wv) for wv in data.wavelengths[::int(len(data.wavelengths) / 10)]}
         return options_list, False, min(data.wavelengths), max(data.wavelengths), data.wavelengths[0], \
                 data.wavelengths[1] - data.wavelengths[0], marks, \
@@ -439,10 +439,10 @@ def get_data_fields():
     Input("channel_slider", "value"),
     Input("plot_scaler1", "value"),
     Input("plot_type1", "value"),
+    Input("volume_axis", "value"),
     State("volume_slider", "value"),
-    Input("volume_axis", "value")
 )
-def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis_ind, axis):
+def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
     if data_field is None or wavelength is None:
         raise PreventUpdate
     else:
@@ -462,7 +462,7 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
         elif plot_type == "hist-2D":
             df = pd.DataFrame()
             df[data_field] = list(plot_data.flatten())
-            figure = px.box(data_frame=df, y=data_field, notched=True)
+            figure = px.histogram(data_frame=df, y=data_field, marginal="box")
             disable_scaler = True
         elif plot_type == "box":
             df = pd.DataFrame()
@@ -483,7 +483,7 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
                 plot_data = np.random.choice(plot_data, 10000)
             df = pd.DataFrame()
             df[data_field] = list(plot_data)
-            figure = px.box(data_frame=df, y=data_field, notched=True)
+            figure = px.histogram(data_frame=df, y=data_field, marginal="box")
             disable_scaler = True
         elif plot_type == "contour-3D":
             x, y, z = np.where(plot_data)
