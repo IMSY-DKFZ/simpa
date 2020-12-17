@@ -120,7 +120,7 @@ app.layout = html.Div([
                         options=[{'label': 'x', 'value': 0},
                                  {'label': 'y', 'value': 1},
                                  {'label': 'z', 'value': 2}],
-                        value='z'
+                        value=2
                     ),
                     html.Br(),
                     html.Hr(),
@@ -440,7 +440,7 @@ def get_data_fields():
     Input("plot_scaler1", "value"),
     Input("plot_type1", "value"),
     Input("volume_axis", "value"),
-    State("volume_slider", "value"),
+    Input("volume_slider", "value"),
 )
 def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
     if data_field is None or wavelength is None:
@@ -486,9 +486,13 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
             figure = px.histogram(data_frame=df, y=data_field, marginal="box")
             disable_scaler = True
         elif plot_type == "contour-3D":
+            plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
             x, y, z = np.where(plot_data)
             v = plot_data[(x, y, z)]
-            figure = go.Figure(go.Volume(x=x, y=y, z=z, value=v, opacity=0.1, surface=dict(count=20)))
+            figure = go.Figure(go.Volume(x=x, y=y, z=z, value=v, opacity=0.1, isomin=z_min,
+                                         isomax=z_max,
+                                         caps=dict(x_show=False, y_show=False, z_show=False),
+                                         surface=dict(fill=0.5, pattern='odd', count=10)))
             disable_scaler = False
         else:
             raise PreventUpdate
@@ -516,9 +520,11 @@ def plot_data_field(data_field, colorscale, wavelength, z_range):
 @app.callback(
     Output("plot_21", "figure"),
     Input("param3", "value"),
-    Input("plot_11", "clickData")
+    Input("plot_11", "clickData"),
+    Input("volume_slicer", "value")
 )
-def plot_spectrum(data_field, click_data):
+def plot_spectrum(data_field, click_data, axis_ind):
+    # TODO, revise behaviour when different axis are selected, then the point selection in the volume should change
     if data_field is None or click_data is None:
         raise PreventUpdate
     else:
@@ -526,11 +532,16 @@ def plot_spectrum(data_field, click_data):
             data_field = [data_field]
         x = click_data["points"][0]["x"]
         y = click_data["points"][0]["y"]
+        if "z" in click_data["points"][0]:
+            z = click_data["points"][0]["z"]
+        else:
+            z = None
         plot_data = list()
         for param in data_field:
             spectral_values = list()
             for wavelength in data.wavelengths:
-                spectral_values.append(np.rot90(data.simpa_data_fields[param][wavelength], 1)[y, x])
+                if z:
+                    spectral_values.append(np.rot90(data.simpa_data_fields[param][wavelength], 1)[y, x, z])
             plot_data += [go.Scatter(x=data.wavelengths, y=spectral_values, mode="lines+markers", name=param)]
         return go.Figure(data=plot_data)
 
