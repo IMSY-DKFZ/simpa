@@ -28,7 +28,7 @@ from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.dict_path_manager import generate_dict_path
 import numpy as np
 
-MOLECULE_COMPOSITION = "molecule_composition"
+MOLECULE_COMPOSITION = Tags.MOLECULE_COMPOSITION[0]
 MOLECULE = "molecule"
 ABSORPTION_SPECTRUM = "absorption_spectrum"
 

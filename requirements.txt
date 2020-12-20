@@ -16,4 +16,4 @@ dash
 plotly
 plotly-express
 dash-bootstrap-components
-dash-daq
+dash_colorscales
