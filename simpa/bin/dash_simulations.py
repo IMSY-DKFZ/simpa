@@ -72,11 +72,13 @@ class DataContainer:
     simpa_data_fields = None
     wavelengths = None
     plot_types = ['contour-3D', 'imshow', 'hist-3D', 'hist-2D', 'box', 'violin', 'contour']
+    click_points = {'x': [], 'y': [], 'z': []}
 
 
 data = DataContainer()
 
 app.layout = html.Div([
+    html.Div(id='dummy', style={'display': None}),
     dbc.Row([
         dbc.Col([
             html.H4("SIMPA Visualization Tool"),
@@ -271,6 +273,14 @@ app.layout = html.Div([
                                         placeholder="Parameter to plot over wavelengths",
                                         persistence_type="session",
                                         disabled=True,
+                                        style=dict(width='400px', display='inline-block')
+                                    ),
+                                    dbc.Button(
+                                        "Reset points",
+                                        id="reset_points",
+                                        style={'display': 'inline-block', 'verticalAlign': 'top', 'margin-left': '5px'},
+                                        outline=True,
+                                        color="primary",
                                     ),
                                     dcc.Graph(id="plot_21",
                                               hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
@@ -475,7 +485,8 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
             figure = px.violin(data_frame=df, y=data_field, box=True)
             disable_scaler = True
         elif plot_type == "contour":
-            figure = go.Figure(data=go.Contour(z=plot_data))
+            figure = go.Figure(data=go.Contour(z=plot_data, contours=dict(showlabels=True,
+                                                                          labelfont=dict(size=14, color="white"))))
             disable_scaler = True
         elif plot_type == "hist-3D":
             plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1).flatten()
@@ -493,7 +504,9 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
                                          isomax=z_max,
                                          caps=dict(x_show=False, y_show=False, z_show=False),
                                          surface=dict(fill=0.5, pattern='odd', count=10)))
-            disable_scaler = False
+            for i, x in enumerate(data.click_points["x"]):
+                figure.add_annotation(x, data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
+            disable_scaler = True
         else:
             raise PreventUpdate
         return figure, disable_scaler
@@ -501,48 +514,140 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
 
 @app.callback(
     Output("plot_12", "figure"),
+    Output("plot_scaler2", "disabled"),
     Input("param2", "value"),
     Input("colorscale_picker", "colorscale"),
     Input("channel_slider", "value"),
-    Input("plot_scaler2", "value")
+    Input("plot_scaler2", "value"),
+    Input("plot_type2", "value"),
+    Input("volume_axis", "value"),
+    Input("volume_slider", "value")
 )
-def plot_data_field(data_field, colorscale, wavelength, z_range):
+def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
     if data_field is None or wavelength is None:
         raise PreventUpdate
     else:
-        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
+        if len(data.simpa_data_fields[data_field][wavelength].shape) == 3:
+            plot_data = np.take(np.rot90(data.simpa_data_fields[data_field][wavelength], 1),
+                                indices=axis_ind, axis=axis)
+        elif len(data.simpa_data_fields[data_field][wavelength].shape) == 2:
+            plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
+        else:
+            raise PreventUpdate
         z_min = np.nanmin(plot_data) * z_range[0]
-        z_max = np.nanmax(plot_data) * (1 + z_range[1])
-        plot_data = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
-        return go.Figure(data=plot_data)
+        z_max = np.nanmax(plot_data) * z_range[1]
+        if plot_type == "imshow":
+            plot = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
+            figure = go.Figure(data=plot)
+            disable_scaler = False
+        elif plot_type == "hist-2D":
+            df = pd.DataFrame()
+            df[data_field] = list(plot_data.flatten())
+            figure = px.histogram(data_frame=df, y=data_field, marginal="box")
+            disable_scaler = True
+        elif plot_type == "box":
+            df = pd.DataFrame()
+            df[data_field] = list(plot_data.flatten())
+            figure = px.box(data_frame=df, y=data_field, notched=True)
+            disable_scaler = True
+        elif plot_type == 'violin':
+            df = pd.DataFrame()
+            df[data_field] = list(plot_data.flatten())
+            figure = px.violin(data_frame=df, y=data_field, box=True)
+            disable_scaler = True
+        elif plot_type == "contour":
+            figure = go.Figure(data=go.Contour(z=plot_data, contours=dict(showlabels=True,
+                                                                          labelfont=dict(size=14, color="white"))))
+            disable_scaler = True
+        elif plot_type == "hist-3D":
+            plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1).flatten()
+            if plot_data.size > 10000:
+                plot_data = np.random.choice(plot_data, 10000)
+            df = pd.DataFrame()
+            df[data_field] = list(plot_data)
+            figure = px.histogram(data_frame=df, y=data_field, marginal="box")
+            disable_scaler = True
+        elif plot_type == "contour-3D":
+            plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
+            x, y, z = np.where(plot_data)
+            v = plot_data[(x, y, z)]
+            figure = go.Figure(go.Volume(x=x, y=y, z=z, value=v, opacity=0.1, isomin=z_min,
+                                         isomax=z_max,
+                                         caps=dict(x_show=False, y_show=False, z_show=False),
+                                         surface=dict(fill=0.5, pattern='odd', count=10)))
+            disable_scaler = True
+        else:
+            raise PreventUpdate
+        return figure, disable_scaler
+
+
+@app.callback(Output("dummy", "children"),
+              Output("plot_11", "clickData"),
+              Output("plot_12", "clickData"),
+              Input("reset_points", "n_clicks"))
+def rest_points(_):
+    global data
+    data.click_points = {'x': [], 'y': [], 'z': []}
+    return [], {}, {}
 
 
 @app.callback(
     Output("plot_21", "figure"),
     Input("param3", "value"),
     Input("plot_11", "clickData"),
-    Input("volume_slicer", "value")
+    Input("plot_12", "clickData"),
+    Input("volume_slider", "value"),
+    Input("volume_axis", "value"),
 )
-def plot_spectrum(data_field, click_data, axis_ind):
-    # TODO, revise behaviour when different axis are selected, then the point selection in the volume should change
-    if data_field is None or click_data is None:
+def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis):
+    global data
+    if data_field is None or (click_data1 is None and click_data2 is None):
         raise PreventUpdate
     else:
         if isinstance(data_field, str):
             data_field = [data_field]
-        x = click_data["points"][0]["x"]
-        y = click_data["points"][0]["y"]
-        if "z" in click_data["points"][0]:
-            z = click_data["points"][0]["z"]
+        if data.simpa_output["settings"][Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW[0]]:
+            is_2d = True
         else:
-            z = None
+            is_2d = False
+        for click_data in [click_data1, click_data2]:
+            if not click_data:
+                continue
+            x_c = click_data["points"][0]["x"]
+            y_c = click_data["points"][0]["y"]
+            if "z" in click_data["points"][0]:
+                z_c = click_data["points"][0]["z"]
+            else:
+                z_c = None
+            if not isinstance(x_c, int) or not isinstance(y_c, int):
+                continue
+            if (x_c, y_c, z_c) not in zip(data.click_points["x"], data.click_points["y"],
+                                          data.click_points["z"]):
+                data.click_points["x"].append(x_c)
+                data.click_points["y"].append(y_c)
+                if not isinstance(z_c, int):
+                    z_c = None
+                data.click_points["z"].append(z_c)
+        if not data.click_points["x"] or not data.click_points["y"]:
+            raise PreventUpdate
         plot_data = list()
-        for param in data_field:
-            spectral_values = list()
-            for wavelength in data.wavelengths:
-                if z:
-                    spectral_values.append(np.rot90(data.simpa_data_fields[param][wavelength], 1)[y, x, z])
-            plot_data += [go.Scatter(x=data.wavelengths, y=spectral_values, mode="lines+markers", name=param)]
+        for i, x in enumerate(data.click_points["x"]):
+            y = data.click_points["y"][i]
+            z = data.click_points["z"][i]
+            for param in data_field:
+                spectral_values = list()
+                for wavelength in data.wavelengths:
+                    if z and isinstance(z, int):
+                        spectral_values.append(np.rot90(data.simpa_data_fields[param][wavelength], 1)[x, y, z])
+                    elif is_2d:
+                        spectral_values.append(np.rot90(data.simpa_data_fields[param][wavelength], 1)[y, x])
+                    else:
+                        # 3D data but no "z" in clickData
+                        array = np.take(np.rot90(data.simpa_data_fields[param][wavelength], 1), indices=axis_ind,
+                                        axis=axis)
+                        spectral_values.append(array[y, x])
+                plot_data += [go.Scatter(x=data.wavelengths, y=spectral_values, mode="lines+markers",
+                                         name=param + f" x={x}, y={y}, z={z}")]
         return go.Figure(data=plot_data)
 
 
