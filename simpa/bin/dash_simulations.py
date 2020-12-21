@@ -619,14 +619,14 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis):
                 z_c = click_data["points"][0]["z"]
             else:
                 z_c = None
+            if not isinstance(z_c, int):
+                z_c = None
             if not isinstance(x_c, int) or not isinstance(y_c, int):
                 continue
             if (x_c, y_c, z_c) not in zip(data.click_points["x"], data.click_points["y"],
                                           data.click_points["z"]):
                 data.click_points["x"].append(x_c)
                 data.click_points["y"].append(y_c)
-                if not isinstance(z_c, int):
-                    z_c = None
                 data.click_points["z"].append(z_c)
         if not data.click_points["x"] or not data.click_points["y"]:
             raise PreventUpdate
