@@ -79,6 +79,18 @@ data = DataContainer()
 
 app.layout = html.Div([
     html.Div(id='dummy', style={'display': None}),
+    html.Div([
+        dbc.Toast(
+            [html.P("Found N infinite values in array", id='toast_content')],
+            id="alert_toast",
+            header="Not finite values",
+            is_open=False,
+            dismissable=True,
+            icon="danger",
+            style={"position": "fixed", "top": 66, "right": 10, "width": 250},
+            duration=4000,
+        ),
+    ], style=dict(zIndex=1, position="relative")),
     dbc.Row([
         dbc.Col([
             html.H4("SIMPA Visualization Tool"),
@@ -90,7 +102,7 @@ app.layout = html.Div([
         dbc.Col([
             html.Img(src='data:image/png;base64,{}'.format(encoded_cami_logo), width='50%')
         ], width=3)
-    ]),
+    ], style=dict(zIndex=0)),
     html.Br(),
     dcc.Tabs([
         dcc.Tab(label="Visualization", id="tab-1", children=[
@@ -137,6 +149,9 @@ app.layout = html.Div([
                     html.Br(),
                     html.Hr(),
                     html.H6("General Information"),
+                    html.Div([
+
+                    ], id="general_info")
                 ], width=2),
                 dbc.Col([
                     dbc.Row([
@@ -337,7 +352,7 @@ app.layout = html.Div([
             ])
         ])
     ])
-], style={'padding': 40})
+], style={'padding': 40, 'zIndex': 0})
 
 
 @app.callback(
@@ -619,14 +634,14 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis):
                 z_c = click_data["points"][0]["z"]
             else:
                 z_c = None
+            if not isinstance(z_c, int):
+                z_c = None
             if not isinstance(x_c, int) or not isinstance(y_c, int):
                 continue
             if (x_c, y_c, z_c) not in zip(data.click_points["x"], data.click_points["y"],
                                           data.click_points["z"]):
                 data.click_points["x"].append(x_c)
                 data.click_points["y"].append(y_c)
-                if not isinstance(z_c, int):
-                    z_c = None
                 data.click_points["z"].append(z_c)
         if not data.click_points["x"] or not data.click_points["y"]:
             raise PreventUpdate
@@ -649,6 +664,44 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis):
                 plot_data += [go.Scatter(x=data.wavelengths, y=spectral_values, mode="lines+markers",
                                          name=param + f" x={x}, y={y}, z={z}")]
         return go.Figure(data=plot_data)
+
+
+@app.callback(
+    Output("general_info", "children"),
+    Output("toast_content", "children"),
+    Output("alert_toast", "is_open"),
+    Input("param1", "value"),
+    State("channel_slider", "value"),
+)
+def update_general_info(param1, wv):
+    if not param1:
+        raise PreventUpdate
+    global data
+    if data.simpa_output["settings"][Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW[0]]:
+        is_2d = True
+    else:
+        is_2d = False
+    array = data.simpa_data_fields[param1][wv]
+    shape = array.shape
+    size = array.size * len(data.wavelengths)
+    n_finite = [np.isfinite(data.simpa_data_fields[param1][w]).sum() for w in data.wavelengths]
+    n_finite = np.sum(n_finite)
+    n_not_finite = size - n_finite
+    children = [
+        dcc.Markdown(f'''
+        Data is `{'2D' if is_2d else '3D'}`\n
+        Data shape per channel is `{shape}`\n
+        Data size per parameter is `{size}`\n
+        Not finite points: `{n_not_finite} -> {100*n_not_finite/size}%`\n
+        ''')
+    ]
+    if n_not_finite:
+        open_toast = True
+        toast_child = [dcc.Markdown(f"Found not finite values in array: `{n_not_finite} -> {100*n_not_finite/size}%`")]
+    else:
+        open_toast = False
+        toast_child = []
+    return children, toast_child, open_toast
 
 
 if __name__ == "__main__":
