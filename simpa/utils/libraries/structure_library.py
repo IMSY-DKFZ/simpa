@@ -501,7 +501,14 @@ class EllipticalTubularStructure(GeometricalStructure):
 
     def get_enclosed_indices(self):
         start_mm, end_mm, radius_mm, eccentricity, partial_volume = self.params
-
+        if self.do_deformation:
+            # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
+            start_deformation_value_mm = self.deformation_functional_mm(start_mm[0] * self.voxel_spacing,
+                                                                        start_mm[1] * self.voxel_spacing)
+            start_mm -= start_deformation_value_mm
+            end_deformation_value_mm = self.deformation_functional_mm(end_mm[0] * self.voxel_spacing,
+                                                                      end_mm[1] * self.voxel_spacing)
+            end_mm -= end_deformation_value_mm
         start_voxels = start_mm / self.voxel_spacing
         end_voxels = end_mm / self.voxel_spacing
         radius_voxels = radius_mm / self.voxel_spacing

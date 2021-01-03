@@ -109,9 +109,9 @@ def simulate(settings):
                 # if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
                 #     reconstruction_output_path = apply_noise_model_to_reconstructed_data(settings, reconstruction_output_path)
 
-    # Quick and dirty fix:
-    all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
-    save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH])
+        # Quick and dirty fix:
+        all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
+        save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH])
 
     return [volume_output_paths, optical_output_paths, acoustic_output_paths, reconstruction_output_paths]
 

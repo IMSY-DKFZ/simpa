@@ -34,7 +34,7 @@ MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/m
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.2
+SPACING = 0.5
 RANDOM_SEED = 471
 
 
@@ -57,30 +57,43 @@ def create_example_tissue(global_settings):
     muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
-    vessel_1_dictionary = Settings()
-    vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                    0, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
-    vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
-
-    epidermis_dictionary = Settings()
-    epidermis_dictionary[Tags.PRIORITY] = 8
-    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
-    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
-    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
-
+    # vessel_1_dictionary = Settings()
+    # vessel_1_dictionary[Tags.PRIORITY] = 3
+    # vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+    #                                                 0, 10]
+    # vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10]
+    # vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
+    # vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+    # vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    # vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+    #
+    # epidermis_dictionary = Settings()
+    # epidermis_dictionary[Tags.PRIORITY] = 8
+    # epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    # epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
+    # epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+    # epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    # epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    # epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
     tissue_dict = Settings()
+    #
+    # coupling_artifact = Settings()
+    # coupling_artifact[Tags.PRIORITY] = 100
+    # coupling_artifact[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    # coupling_artifact[Tags.STRUCTURE_X_EXTENT_MM] = 15 + 0.1*40
+    # coupling_artifact[Tags.STRUCTURE_Y_EXTENT_MM] = global_settings[Tags.DIM_VOLUME_Y_MM]
+    # coupling_artifact[Tags.STRUCTURE_Z_EXTENT_MM] = global_settings[Tags.DIM_VOLUME_Z_MM]
+    # epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.heavy_water()
+    # coupling_artifact[Tags.CONSIDER_PARTIAL_VOLUME] = False
+    # coupling_artifact[Tags.ADHERE_TO_DEFORMATION] = False
+    # coupling_artifact[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
+
+
     tissue_dict[Tags.BACKGROUND] = background_dictionary
     tissue_dict["muscle"] = muscle_dictionary
-    tissue_dict["epidermis"] = epidermis_dictionary
-    tissue_dict["vessel_1"] = vessel_1_dictionary
+    # tissue_dict["epidermis"] = epidermis_dictionary
+    # tissue_dict["vessel_1"] = vessel_1_dictionary
+    # tissue_dict["coup"] = coupling_artifact
     return tissue_dict
 
 # Seed the numpy random configuration prior to creating the global_settings file in

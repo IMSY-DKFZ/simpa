@@ -44,7 +44,7 @@ colors = [list(np.random.random(3)) for _ in range(len(names))]
 cmap = mpl.colors.LinearSegmentedColormap.from_list(
     'Custom cmap', colors, len(names))
 
-PATH = "/media/kris/Extreme SSD/master_thesis/data/domain_adaptation/in_silico/sim/forearm_010001/ippai_output.hdf5"
+PATH = "/media/kris/Extreme SSD/data/simpa_examples/MyVolumeName_471.hdf5"
 WAVELENGTH = 700
 
 file = load_hdf5(PATH)

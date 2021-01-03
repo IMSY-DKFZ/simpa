@@ -2,7 +2,7 @@ matplotlib
 numpy
 scipy
 pynrrd
-scikit-image
+scikit-image==0.16.2
 xmltodict
 h5py
 pandas
