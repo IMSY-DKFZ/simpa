@@ -67,7 +67,7 @@ def simulate(settings):
     data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE], axes=axes))
 
     PA_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
-    detector_positions_mm = PA_device.get_detector_element_positions(settings)
+    detector_positions_mm = PA_device.get_detector_element_positions_mm(settings)
     detector_positions_voxels = np.round(detector_positions_mm / settings[Tags.SPACING_MM]).astype(int)
 
     sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
@@ -75,7 +75,12 @@ def simulate(settings):
         sensor_map[detector_positions_voxels[:, 2], detector_positions_voxels[:, 0]] = 1
     else:
         half_y_dir_detector_pixels = int(round(0.5*PA_device.detector_element_length_mm/settings[Tags.SPACING_MM]))
-        for pixel in np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1):
+        aranged_voxels = np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1)
+
+        if len(aranged_voxels) < 1:
+            aranged_voxels = [0]
+
+        for pixel in aranged_voxels:
             sensor_map[detector_positions_voxels[:, 2],
                        detector_positions_voxels[:, 1] + pixel,
                        detector_positions_voxels[:, 0]] = 1

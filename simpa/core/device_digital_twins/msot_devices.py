@@ -121,7 +121,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
 
         return global_settings
 
-    def get_illuminator_definition(self):
+    def get_illuminator_definition(self, global_settings: Settings):
         pass
 
     def get_detector_definition(self):
@@ -143,7 +143,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
 
         return detector_positions
 
-    def get_detector_element_positions(self, global_settings: Settings):
+    def get_detector_element_positions_mm(self, global_settings: Settings):
         abstract_element_positions = self.get_detector_definition()
 
         sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
@@ -160,7 +160,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
         element_positions_in_volume = np.add(abstract_element_positions, device_position)
         return element_positions_in_volume
 
-    def get_detector_element_orientations(self):
+    def get_detector_element_orientations(self, global_settings: Settings):
         detector_positions = self.get_detector_definition()
         detector_orientations = np.subtract(self.focus_in_field_of_view_mm, detector_positions)
         norm = np.linalg.norm(detector_orientations, axis=-1)
@@ -178,6 +178,7 @@ if __name__ == "__main__":
     settings[Tags.DIM_VOLUME_Z_MM] = 20
     settings[Tags.SPACING_MM] = 0.5
     settings[Tags.STRUCTURES] = {}
+    settings[Tags.VOLUME_CREATOR] = Tags.VOLUME_CREATOR_VERSATILE
     # settings[Tags.DIGITAL_DEVICE_POSITION] = [50, 50, 50]
     settings = device.adjust_simulation_volume_and_settings(settings)
     # print(settings[Tags.DIM_VOLUME_Z_MM])
@@ -186,8 +187,8 @@ if __name__ == "__main__":
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
     print(x_dim, z_dim)
 
-    positions = device.get_detector_element_positions(settings)
-    detector_elements = device.get_detector_element_orientations()
+    positions = device.get_detector_element_positions_mm(settings)
+    detector_elements = device.get_detector_element_orientations(global_settings=settings)
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
     positions = np.round(positions/settings[Tags.SPACING_MM]).astype(int)
     map = np.zeros((x_dim, z_dim))

@@ -51,14 +51,21 @@ class PAIDeviceBase:
         pass
 
     @abstractmethod
-    def get_illuminator_definition(self):
+    def get_illuminator_definition(self, global_settings: Settings):
         """
         TODO
         """
         pass
 
     @abstractmethod
-    def get_detector_definition(self):
+    def get_detector_element_positions_mm(self, global_settings: Settings):
+        """
+        TODO
+        """
+        pass
+
+    @abstractmethod
+    def get_detector_element_orientations(self, global_settings: Settings):
         """
         TODO
         """

@@ -93,6 +93,7 @@ class Tags:
     """
     DIGITAL_DEVICE = ("digital_device", str)
     DIGITAL_DEVICE_MSOT = "digital_device_msot"
+    DIGITAL_DEVICE_RSOM = "digital_device_rsom"
     DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
 
     """
@@ -120,11 +121,13 @@ class Tags:
 
     # Supported illumination types - implemented in mcx
     ILLUMINATION_TYPE_PENCIL = "pencil"
+    ILLUMINATION_TYPE_PENCILARRAY = "pencilarray"
     ILLUMINATION_TYPE_DISK = "disk"
     ILLUMINATION_TYPE_SLIT = "slit"
     ILLUMINATION_TYPE_GAUSSIAN = "gaussian"
     ILLUMINATION_TYPE_PATTERN = "pattern"
     ILLUMINATION_TYPE_PATTERN_3D = "pattern3d"
+    ILLUMINATION_TYPE_PLANAR = "planar"
     ILLUMINATION_TYPE_FOURIER = "fourier"
     ILLUMINATION_TYPE_FOURIER_X = "fourierx"
     ILLUMINATION_TYPE_FOURIER_X_2D = "fourierx2d"
