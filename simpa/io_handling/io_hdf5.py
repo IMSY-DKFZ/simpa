@@ -147,13 +147,13 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                     molecules = data_grabber(file, path + key + "/")
                     for molecule in molecules:
                         mc.append(molecule[MOLECULE])
-                    dictionary[key] = mc
+                    dictionary = mc
                 elif key == MOLECULE:
                     data = data_grabber(file, path + key + "/")
-                    dictionary[key] = Molecule.from_settings(data)
+                    dictionary = Molecule.from_settings(data)
                 elif key == ABSORPTION_SPECTRUM:
                     data = data_grabber(file, path + key + "/")
-                    dictionary[key] = AbsorptionSpectrum.from_settings(data)
+                    dictionary = AbsorptionSpectrum.from_settings(data)
                 else:
                     dictionary[key] = data_grabber(file, path + key + "/")
         return dictionary
