@@ -24,23 +24,23 @@ from simpa.io_handling import load_hdf5
 from simpa.utils.settings_generator import Settings
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils import Tags
-from simpa.core.device_digital_twins import MSOTAcuityEcho
+from simpa.core.device_digital_twins.rsom_device import RSOMExplorerP50
 from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
 import matplotlib.pyplot as plt
 import numpy as np
 
-PATH = "D:/save/MyVolumeName_4711.hdf5"
-WAVELENGTH = 700
+PATH = "D:/save/LNetOpticalForward_planar.hdf5"
+WAVELENGTH = 532
 
 file = load_hdf5(PATH)
 settings = Settings(file["settings"])
 print(settings)
 settings[Tags.WAVELENGTH] = WAVELENGTH
-settings[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL
+settings[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
 acoustic_data_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA, wavelength=settings[Tags.WAVELENGTH],
                                                 upsampled_data=True)
-device = MSOTAcuityEcho()
-device.adjust_simulation_volume_and_settings(settings)
+device = RSOMExplorerP50()
+settings = device.adjust_simulation_volume_and_settings(settings)
 time_series_data = load_hdf5(PATH, acoustic_data_path)[Tags.TIME_SERIES_DATA]
 
 print(Tags.ACOUSTIC_SIMULATION_3D in settings)

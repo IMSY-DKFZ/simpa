@@ -52,8 +52,10 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             axes = (0, 2)
 
         PA_device = DEVICE_MAP[global_settings[Tags.DIGITAL_DEVICE]]
-        detector_positions = PA_device.get_detector_element_positions(global_settings)
-        detector_positions = np.round(detector_positions / global_settings[Tags.SPACING_MM]).astype(int)
+        PA_device.check_settings_prerequisites(global_settings)
+        PA_device.adjust_simulation_volume_and_settings(global_settings)
+        detector_positions = PA_device.get_detector_element_positions_mm(global_settings)
+        detector_positions_voxels = np.round(detector_positions / global_settings[Tags.SPACING_MM]).astype(int)
 
         voxel_spacing = global_settings[Tags.SPACING_MM]
         volume_x_dim = int(round(global_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing))
@@ -63,14 +65,21 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         if Tags.ACOUSTIC_SIMULATION_3D not in global_settings or not global_settings[Tags.ACOUSTIC_SIMULATION_3D]:
             sizes = (volume_z_dim, volume_x_dim)
             sensor_map = np.zeros(sizes)
-            sensor_map[detector_positions[:, 2], detector_positions[:, 0]] = 1
+            sensor_map[detector_positions_voxels[:, 2], detector_positions_voxels[:, 0]] = 1
         else:
             sizes = (volume_z_dim, volume_y_dim, volume_x_dim)
             sensor_map = np.zeros(sizes)
             half_y_dir_detector_pixels = int(
                 round(0.5 * PA_device.detector_element_length_mm / voxel_spacing))
-            for pixel in np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1):
-                sensor_map[detector_positions[:, 2], detector_positions[:, 1] + pixel, detector_positions[:, 0]] = 1
+            aranged_voxels = np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1)
+
+            if len(aranged_voxels) < 1:
+                aranged_voxels = [0]
+
+            for pixel in aranged_voxels:
+                sensor_map[detector_positions_voxels[:, 2],
+                           detector_positions_voxels[:, 1] + pixel,
+                           detector_positions_voxels[:, 0]] = 1
 
         possible_acoustic_properties = [Tags.PROPERTY_SPEED_OF_SOUND,
                                         Tags.PROPERTY_DENSITY,

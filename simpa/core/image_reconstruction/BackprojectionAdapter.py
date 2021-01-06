@@ -54,7 +54,7 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
 
-        sensor_positions = device.get_detector_definition() / 1000
+        sensor_positions = device.get_detector_element_positions_mm(settings) / 1000
         sensor_positions[:, 1] = 0
         sensor_positions[:, [1, 2]] = sensor_positions[:, [2, 1]]
 
@@ -66,12 +66,12 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         return self.backprojectionND_torch(time_series_sensor_data, speed_of_sound_m=sound_speed_m,
                                            target_dim_m=target_dim_m, resolution_m=resolution_m,
-                                           sensor_positions=sensor_positions, sampling_frequency=sampling_frequency,
+                                           sensor_positions_m=sensor_positions, sampling_frequency=sampling_frequency,
                                            mode=mode)
 
 
     def backprojectionND_torch(self, time_series_data, speed_of_sound_m, target_dim_m, resolution_m,
-                           sensor_positions, sampling_frequency, mode=None):
+                               sensor_positions_m, sampling_frequency, mode=None):
         """ ND packprojection """
 
         if mode is None:
@@ -83,7 +83,7 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         time_series_data = torch.from_numpy(time_series_data.copy()).float().to(device)
         target_dim_m = torch.from_numpy(target_dim_m.copy()).float().to(device)
-        sensor_positions = torch.from_numpy(sensor_positions.copy()).float().to(device)
+        sensor_positions_m = torch.from_numpy(sensor_positions_m.copy()).float().to(device)
 
         num_detectors = time_series_data.shape[1]
         num_samples = time_series_data.shape[0]
@@ -110,7 +110,7 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
             time_derivative_pressure = torch.mul(time_derivative_pressure, 1 / time_per_sample_s)
             time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
 
-            detectors = torch.add(mesh, torch.reshape(-sensor_positions[i], (-1, 1, 1, 1)))
+            detectors = torch.add(mesh, torch.reshape(-sensor_positions_m[i], (-1, 1, 1, 1)))
 
             distance_to_meshpoints_m = torch.sqrt(torch.sum(torch.square(detectors), axis=0))
             time_delay_s = (distance_to_meshpoints_m / speed_of_sound_m)
