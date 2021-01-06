@@ -383,6 +383,19 @@ class MoleculeLibrary(object):
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_HEAVY_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
                         )
+    @staticmethod
+    def air(volume_fraction: float = 1.0):
+        return Molecule(name="air",
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA),
+                        volume_fraction=volume_fraction,
+                        mus500=StandardProperties.AIR_MUS,
+                        b_mie=0.0,
+                        f_ray=0.0,
+                        anisotropy=StandardProperties.AIR_G,
+                        density=StandardProperties.DENSITY_AIR,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_AIR,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_AIR
+                        )
 
 
 MOLECULE_LIBRARY = MoleculeLibrary()
