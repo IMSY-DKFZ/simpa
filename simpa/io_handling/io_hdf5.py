@@ -146,8 +146,8 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                     mc = MolecularComposition()
                     molecules = data_grabber(file, path + key + "/")
                     for molecule in molecules:
-                        mc.append(molecule[MOLECULE])
-                    dictionary = mc
+                        mc.append(molecule)
+                    dictionary[key] = mc
                 elif key == MOLECULE:
                     data = data_grabber(file, path + key + "/")
                     dictionary = Molecule.from_settings(data)
