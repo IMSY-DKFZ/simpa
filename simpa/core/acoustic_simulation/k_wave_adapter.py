@@ -67,8 +67,11 @@ def simulate(settings):
     data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE], axes=axes))
 
     PA_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
-    detector_positions_mm = PA_device.get_detector_element_positions_mm(settings)
+    PA_device.check_settings_prerequisites(settings)
+    detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(settings)
     detector_positions_voxels = np.round(detector_positions_mm / settings[Tags.SPACING_MM]).astype(int)
+
+    print("Number of detector elements:", len(detector_positions_voxels))
 
     sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
     if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
@@ -84,6 +87,8 @@ def simulate(settings):
             sensor_map[detector_positions_voxels[:, 2],
                        detector_positions_voxels[:, 1] + pixel,
                        detector_positions_voxels[:, 0]] = 1
+
+    print("Number of ones in sensor_map:", np.sum(sensor_map))
 
     data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
     save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, settings[Tags.SIMPA_OUTPUT_PATH],
@@ -120,8 +125,10 @@ def simulate(settings):
     sio.savemat(optical_path, data_dict, long_field_names=True)
 
     if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
+        print("Simulating 3D....")
         simulation_script_path = "simulate_3D"
     else:
+        print("Simulating 2D....")
         simulation_script_path = "simulate_2D"
 
     cmd = list()
@@ -143,22 +150,22 @@ def simulate(settings):
     time_grid = sio.loadmat(optical_path + "dt.mat")
     num_time_steps = int(np.round(time_grid["number_time_steps"]))
 
-    if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+    # if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+    #
+    #     sensor_mask = data_dict[Tags.PROPERTY_SENSOR_MASK]
+    #     num_imaging_plane_sensors = int(np.sum(sensor_mask[:, detector_positions_voxels[0][1], :]))
+    #
+    #     raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
+    #
+    #     if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+    #         if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_DAS,
+    #                                                        Tags.RECONSTRUCTION_ALGORITHM_DMAS,
+    #                                                        Tags.RECONSTRUCTION_ALGORITHM_SDMAS,
+    #                                                        Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION]:
+    #             raw_time_series_data = np.average(raw_time_series_data, axis=1)
 
-        sensor_mask = data_dict[Tags.PROPERTY_SENSOR_MASK]
-        num_imaging_plane_sensors = int(np.sum(sensor_mask[:, detector_positions_voxels[0][1], :]))
-
-        raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
-
-        if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-            if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_DAS,
-                                                           Tags.RECONSTRUCTION_ALGORITHM_DMAS,
-                                                           Tags.RECONSTRUCTION_ALGORITHM_SDMAS,
-                                                           Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION]:
-                raw_time_series_data = np.average(raw_time_series_data, axis=1)
-
-    settings["dt_acoustic_sim"] = float(time_grid["time_step"])
-    settings["Nt_acoustic_sim"] = num_time_steps
+    settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])
+    settings[Tags.K_WAVE_SPECIFIC_NT] = num_time_steps
 
     save_hdf5(settings, settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 

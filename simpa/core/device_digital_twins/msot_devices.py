@@ -49,14 +49,16 @@ class MSOTAcuityEcho(PAIDeviceBase):
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
             if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + self.mediprene_membrane_height_mm + 1):
-                raise AssertionError("Volume z dimension is too small to encompass MSOT device in simulation!"
+                print("Volume z dimension is too small to encompass MSOT device in simulation!"
                                      "Must be at least {} mm but was {} mm"
                                      .format((self.probe_height_mm + self.mediprene_membrane_height_mm + 1),
                                              global_settings[Tags.DIM_VOLUME_Z_MM]))
+                return False
             if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
-                raise AssertionError("Volume x dimension is too small to encompass MSOT device in simulation!"
+                print("Volume x dimension is too small to encompass MSOT device in simulation!"
                                      "Must be at least {} mm but was {} mm"
                                      .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
+                return False
 
         global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
         global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
@@ -69,6 +71,10 @@ class MSOTAcuityEcho(PAIDeviceBase):
         probe_size_mm = self.probe_height_mm
         mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+
+        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
+        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
+        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
 
         if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
             return global_settings
@@ -115,18 +121,16 @@ class MSOTAcuityEcho(PAIDeviceBase):
             Tags.STRUCTURE_TYPE: Tags.BACKGROUND
         })
         global_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
-        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
-        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
-        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
 
         return global_settings
 
     def get_illuminator_definition(self, global_settings: Settings):
         pass
 
-    def get_detector_definition(self):
+    def get_detector_element_positions_base_mm(self):
 
         pitch_angle = self.pitch_mm / self.radius_mm
+        print("pitch angle: ", pitch_angle)
         detector_radius = self.radius_mm
 
         # if distortion is not None:
@@ -137,14 +141,14 @@ class MSOTAcuityEcho(PAIDeviceBase):
         det_elements = np.arange(-int(self.number_detector_elements / 2) + 0.5,
                                  int(self.number_detector_elements / 2) + 0.5)
         detector_positions[:, 0] = self.focus_in_field_of_view_mm[0] \
-            + np.sin(pitch_angle*det_elements) * detector_radius
+            + np.sin(pitch_angle * det_elements) * detector_radius
         detector_positions[:, 2] = self.focus_in_field_of_view_mm[2] \
             - np.sqrt(detector_radius ** 2 - (np.sin(pitch_angle*det_elements) * detector_radius) ** 2)
 
         return detector_positions
 
-    def get_detector_element_positions_mm(self, global_settings: Settings):
-        abstract_element_positions = self.get_detector_definition()
+    def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings):
+        abstract_element_positions = self.get_detector_element_positions_base_mm()
 
         sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
                                global_settings[Tags.DIM_VOLUME_Y_MM],
@@ -157,11 +161,10 @@ class MSOTAcuityEcho(PAIDeviceBase):
             # and in the middle of the xy-plane.
             device_position = np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
 
-        element_positions_in_volume = np.add(abstract_element_positions, device_position)
-        return element_positions_in_volume
+        return np.add(abstract_element_positions, device_position)
 
     def get_detector_element_orientations(self, global_settings: Settings):
-        detector_positions = self.get_detector_definition()
+        detector_positions = self.get_detector_element_positions_base_mm()
         detector_orientations = np.subtract(self.focus_in_field_of_view_mm, detector_positions)
         norm = np.linalg.norm(detector_orientations, axis=-1)
         for dim in range(3):
@@ -187,12 +190,13 @@ if __name__ == "__main__":
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
     print(x_dim, z_dim)
 
-    positions = device.get_detector_element_positions_mm(settings)
+    positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
+    print("Positions in mm:", positions)
     detector_elements = device.get_detector_element_orientations(global_settings=settings)
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
     positions = np.round(positions/settings[Tags.SPACING_MM]).astype(int)
-    map = np.zeros((x_dim, z_dim))
-    map[positions[:, 0], positions[:, 2]] = 1
+    position_map = np.zeros((x_dim, z_dim))
+    position_map[positions[:, 0], positions[:, 2]] = 1
     print(np.shape(positions[:, 0]))
     print(np.shape(positions[:, 2]))
     print(np.shape(detector_elements[:, 0]))

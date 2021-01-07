@@ -33,12 +33,14 @@ from simpa.utils import create_deformation_settings
 class RSOMExplorerP50(PAIDeviceBase):
 
     def __init__(self, element_spacing_mm=0.04):
-        self.center_frequency_Hz = 50e6
-        self.bandwidth_percent = 100
-        self.sampling_frequency_MHz = 500
+        self.center_frequency_Hz = float(50e6)
+        self.bandwidth_percent = 100.0
+        self.sampling_frequency_MHz = 500.0
         self.detector_element_length_mm = 1
         self.detector_element_width_mm = 1
         self.number_detector_elements = 1
+        self.num_elements_x = 0
+        self.num_elements_y = 0
         self.element_spacing_mm = element_spacing_mm
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
@@ -52,37 +54,46 @@ class RSOMExplorerP50(PAIDeviceBase):
         self.detector_element_width_mm = global_settings[Tags.SPACING_MM]
         if self.element_spacing_mm < global_settings[Tags.SPACING_MM]:
             self.element_spacing_mm = global_settings[Tags.SPACING_MM]
+
+        self.num_elements_x = np.round(global_settings[Tags.DIM_VOLUME_X_MM] / self.element_spacing_mm).astype(int)
+        self.num_elements_y = np.round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.element_spacing_mm).astype(int)
+        self.number_detector_elements = self.num_elements_x * self.num_elements_y
+
         return global_settings
 
-    def get_illuminator_definition(self):
+    def get_illuminator_definition(self, global_settings: Settings):
         pass
 
-    def get_detector_element_positions_mm(self, global_settings: Settings):
-
-        num_elements_x = np.round(global_settings[Tags.DIM_VOLUME_X_MM] / self.element_spacing_mm).astype(int)
-        num_elements_y = np.round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.element_spacing_mm).astype(int)
-        self.number_detector_elements = num_elements_x * num_elements_y
-
+    def get_detector_element_positions_base_mm(self):
         detector_element_positions_mm = np.zeros((self.number_detector_elements, 3))
-
-        for x in range(num_elements_x):
-            for y in range(num_elements_y):
-                detector_element_positions_mm[x + y*num_elements_x] = [x * self.element_spacing_mm,
-                                                                       y * self.element_spacing_mm,
-                                                                       0]
-
+        for x in range(self.num_elements_x):
+            for y in range(self.num_elements_y):
+                detector_element_positions_mm[x + y*self.num_elements_x] = [(x - self.num_elements_x/2) * self.element_spacing_mm,
+                                                                            (y - self.num_elements_y/2) * self.element_spacing_mm,
+                                                                            0]
         return detector_element_positions_mm
 
-    def get_detector_element_orientations(self, global_settings: Settings):
-        num_elements_x = np.round(global_settings[Tags.DIM_VOLUME_X_MM] / self.element_spacing_mm).astype(int)
-        num_elements_y = np.round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.element_spacing_mm).astype(int)
-        self.number_detector_elements = num_elements_x * num_elements_y
+    def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings):
 
+        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
+                               global_settings[Tags.DIM_VOLUME_Y_MM],
+                               global_settings[Tags.DIM_VOLUME_Z_MM]])
+
+        detector_element_positions_mm = self.get_detector_element_positions_base_mm()
+
+        if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
+            device_position = np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
+        else:
+            device_position = np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, 0])
+
+        return np.add(detector_element_positions_mm, device_position)
+
+    def get_detector_element_orientations(self, global_settings: Settings):
         detector_element_orientations = np.zeros((self.number_detector_elements, 3))
 
-        for x in range(num_elements_x):
-            for y in range(num_elements_y):
-                detector_element_orientations[x + y * num_elements_x] = [0, 0, 1]
+        for x in range(self.num_elements_x):
+            for y in range(self.num_elements_y):
+                detector_element_orientations[x + y * self.num_elements_x] = [0, 0, 1]
 
         return detector_element_orientations
 
@@ -103,7 +114,7 @@ if __name__ == "__main__":
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
     print(x_dim, z_dim)
 
-    positions = device.get_detector_element_positions_mm(settings)
+    positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
     detector_elements = device.get_detector_element_orientations(global_settings=settings)
     print(np.shape(positions))
     print(np.shape(detector_elements))

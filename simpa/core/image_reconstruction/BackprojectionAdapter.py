@@ -34,6 +34,8 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
 
+        print("Time series data shape", np.shape(time_series_sensor_data))
+
         time_series_sensor_data = np.swapaxes(time_series_sensor_data, 0, 1)
 
         acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
@@ -46,29 +48,32 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         resolution_m = settings[Tags.SPACING_MM]/1000
 
-        sampling_frequency = settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000000
+        if Tags.K_WAVE_SPECIFIC_DT in settings:
+            sampling_frequency = 1 / settings[Tags.K_WAVE_SPECIFIC_DT]
+        else:
+            sampling_frequency = settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000000
+
         if Tags.RECONSTRUCTION_MODE in settings:
             mode = settings[Tags.RECONSTRUCTION_MODE]
         else:
-            mode = Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
+            mode = Tags.RECONSTRUCTION_MODE_FULL
 
         device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
+        device.check_settings_prerequisites(settings)
+        device.adjust_simulation_volume_and_settings(settings)
 
-        sensor_positions = device.get_detector_element_positions_mm(settings) / 1000
-        sensor_positions[:, 1] = 0
-        sensor_positions[:, [1, 2]] = sensor_positions[:, [2, 1]]
+        sensor_positions = device.get_detector_element_positions_base_mm() / 1000
 
-        target_dim_m[[0, 1]] = target_dim_m[[1, 0]]
-        print(sound_speed_m)
-        print(target_dim_m)
-        print(resolution_m)
-        print(sampling_frequency)
+        print("SOS:", sound_speed_m)
+        print("Target dimensions:", target_dim_m)
+        print("Sensor positions:", np.shape(sensor_positions))
+        print("Target resolution:", resolution_m)
+        print("Sampling frequency:", sampling_frequency)
 
         return self.backprojectionND_torch(time_series_sensor_data, speed_of_sound_m=sound_speed_m,
                                            target_dim_m=target_dim_m, resolution_m=resolution_m,
                                            sensor_positions_m=sensor_positions, sampling_frequency=sampling_frequency,
                                            mode=mode)
-
 
     def backprojectionND_torch(self, time_series_data, speed_of_sound_m, target_dim_m, resolution_m,
                                sensor_positions_m, sampling_frequency, mode=None):
@@ -79,7 +84,7 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        print(np.shape(time_series_data))
+        print("Time series data shape", np.shape(time_series_data))
 
         time_series_data = torch.from_numpy(time_series_data.copy()).float().to(device)
         target_dim_m = torch.from_numpy(target_dim_m.copy()).float().to(device)
@@ -101,12 +106,14 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
         mesh = torch.zeros([3, len(gridsizes[0]), len(gridsizes[1]), len(gridsizes[2])], names=None).to(device)
         torch.stack(torch.meshgrid(*gridsizes), out=mesh)
 
+        zero = torch.zeros([1], names=None).to(device)
+
         for i in range(num_detectors):
 
             time_series_pressure_of_detection_element = time_series_data[:, i]
             time_derivative_pressure = (time_series_pressure_of_detection_element[1:] -
                                         time_series_pressure_of_detection_element[0:-1])
-            time_derivative_pressure = torch.cat([time_derivative_pressure, torch.zeros([1], names=None).to(device)])
+            time_derivative_pressure = torch.cat([time_derivative_pressure, zero])
             time_derivative_pressure = torch.mul(time_derivative_pressure, 1 / time_per_sample_s)
             time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
 

@@ -58,7 +58,14 @@ class PAIDeviceBase:
         pass
 
     @abstractmethod
-    def get_detector_element_positions_mm(self, global_settings: Settings):
+    def get_detector_element_positions_base_mm(self):
+        """
+        TODO
+        """
+        pass
+
+    @abstractmethod
+    def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings):
         """
         TODO
         """

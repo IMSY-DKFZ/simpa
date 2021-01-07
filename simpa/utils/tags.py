@@ -51,8 +51,8 @@ class Tags:
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
     VOLUME_CREATOR_SEGMENTATION_BASED = "volume_creator_segmentation_based"
 
-    INPUT_SEGMENTATION_VOLUME = "input_segmentation_volume"
-    SEGMENTATION_CLASS_MAPPING = "segmentation_class_mapping"
+    INPUT_SEGMENTATION_VOLUME = ("input_segmentation_volume", np.ndarray)
+    SEGMENTATION_CLASS_MAPPING = ("segmentation_class_mapping", dict)
 
     PRIORITY = ("priority", (int, np.integer, float, np.float))
     MOLECULE_COMPOSITION = ("molecule_composition", list)
@@ -146,6 +146,8 @@ class Tags:
     # Supported acoustic models
     ACOUSTIC_MODEL = ("acoustic_model", str)
     ACOUSTIC_MODEL_K_WAVE = "kwave"
+    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float, np.float))
+    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float, np.float))
     ACOUSTIC_MODEL_TEST = "simpa_tests"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
     ACOUSTIC_MODEL_SCRIPT_LOCATION = ("acoustic_model_script_location", str)
@@ -261,15 +263,15 @@ class Tags:
     # Acoustic Sensor Properties
     SENSOR_MASK = "sensor_mask"
     SENSOR_RECORD = ("sensor_record", str)
-    SENSOR_CENTER_FREQUENCY_HZ = "sensor_center_frequency"
-    SENSOR_BANDWIDTH_PERCENT = "sensor_bandwidth"
+    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer, float, np.float))
+    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float, np.float))
     SENSOR_DIRECTIVITY_HOMOGENEOUS = "sensor_directivity_homogeneous"
     SENSOR_DIRECTIVITY_ANGLE = "sensor_directivity_angle"
-    SENSOR_DIRECTIVITY_SIZE_M = "sensor_directivity_size"
+    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer, float, np.float))
     SENSOR_DIRECTIVITY_PATTERN = "sensor_directivity_pattern"
     SENSOR_ELEMENT_PITCH_MM = "sensor_element_pitch"
-    SENSOR_SAMPLING_RATE_MHZ = "sensor_sampling_rate_mhz"
-    SENSOR_NUM_ELEMENTS = "sensor_num_elements"
+    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer, float, np.float))
+    SENSOR_NUM_ELEMENTS = ("sensor_num_elements", (int, np.integer))
     SENSOR_NUM_USED_ELEMENTS = "sensor_num_used_elements"
     SENSOR_CONCAVE = "concave"
     SENSOR_RADIUS_MM = "sensor_radius_mm"

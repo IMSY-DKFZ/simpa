@@ -20,51 +20,60 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.io_handling import load_hdf5
+import nrrd
+import numpy as np
 from simpa.utils.settings_generator import Settings
-from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils import Tags
-from simpa.core.device_digital_twins.rsom_device import RSOMExplorerP50
 from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
 import matplotlib.pyplot as plt
-import numpy as np
+from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.io_handling import load_hdf5, save_hdf5
 
-PATH = "D:/save/LNetOpticalForward_planar_SMALL.hdf5"
-WAVELENGTH = 532
 
-file = load_hdf5(PATH)
-settings = Settings(file["settings"])
-settings[Tags.WAVELENGTH] = WAVELENGTH
+from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
+
+raw, _ = nrrd.read("I:/reco/Scan_10.PA.rf.0000000.nrrd")
+raw = raw[:, :, 0]
+das, _ = nrrd.read("I:/reco/Scan_10.PA.bf.0000000.nrrd")
+das = das[:, :, 0]
+
+settings = Settings()
+settings[Tags.DIM_VOLUME_X_MM] = 38.4
+settings[Tags.DIM_VOLUME_Y_MM] = 0.15
+settings[Tags.DIM_VOLUME_Z_MM] = 38.4
+settings[Tags.SPACING_MM] = 0.15
+settings[Tags.PERFORM_IMAGE_RECONSTRUCTION] = True
 settings[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
+settings[Tags.SIMULATION_PATH] = "D:/save/"
+settings[Tags.VOLUME_CREATOR] = "None"
+settings[Tags.WAVELENGTH] = 700
+settings[Tags.SIMPA_OUTPUT_PATH] = "D:/save/TestFile.hdf5"
+settings[Tags.DIGITAL_DEVICE] = Tags.DIGITAL_DEVICE_MSOT
 settings[Tags.DIGITAL_DEVICE_POSITION] = [0, 0, 0]
-acoustic_data_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA, wavelength=settings[Tags.WAVELENGTH],
-                                                upsampled_data=True)
-optical_data_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=settings[Tags.WAVELENGTH],
-                                                upsampled_data=True)
-device = RSOMExplorerP50()
-device.check_settings_prerequisites(settings)
-settings = device.adjust_simulation_volume_and_settings(settings)
-time_series_data = load_hdf5(PATH, acoustic_data_path)[Tags.TIME_SERIES_DATA]
-initial_pressure = load_hdf5(PATH, optical_data_path)[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]
 
-print(Tags.ACOUSTIC_SIMULATION_3D in settings)
-print(settings[Tags.ACOUSTIC_SIMULATION_3D])
+device = MSOTAcuityEcho()
+settings = device.adjust_simulation_volume_and_settings(settings)
+
+print(settings)
+
+save_hdf5({Tags.SETTINGS: settings}, settings[Tags.SIMPA_OUTPUT_PATH])
+time_series_image_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA,
+                                            wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
+save_hdf5({Tags.TIME_SERIES_DATA: raw}, settings[Tags.SIMPA_OUTPUT_PATH], time_series_image_path)
+acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
+                                                wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
+save_hdf5({Tags.PROPERTY_SPEED_OF_SOUND: 1540}, settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)
 
 perform_reconstruction(settings)
 
 reconstructed_image_path = generate_dict_path(settings, Tags.RECONSTRUCTED_DATA,
                                               wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
-
-reconstructed_image = load_hdf5(PATH, reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
+reconstructed_image = load_hdf5("D:/save/TestFile.hdf5", reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
 
 shape = np.shape(reconstructed_image)
 
-plt.subplot(141)
-plt.imshow(initial_pressure[int(shape[0]/2), :, :])
-plt.subplot(142)
-plt.imshow(reconstructed_image[int(shape[0]/2), :, :])
-plt.subplot(143)
-plt.imshow(initial_pressure[:, :, int(shape[2]/2)])
-plt.subplot(144)
-plt.imshow(reconstructed_image[:, :, int(shape[2]/2)])
+plt.subplot(121)
+plt.imshow(np.rot90(das, -1))
+plt.subplot(122)
+plt.imshow(np.rot90(np.abs(reconstructed_image[:, 0, :]), -3))
 plt.show()

@@ -22,6 +22,8 @@
 
 function [] = simulate_3D(optical_path)
 
+fprintf("TEST")
+
 %% Read settings file
 
 data = load(optical_path);
@@ -94,6 +96,7 @@ kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 % if a field of the struct "data" is given which describes the sensor mask, the array is loaded and is used as sensor.mask
 if isfield(data, 'sensor_mask')
     sensor.mask = data.sensor_mask;
+    fprintf("Number of elements in sensor mask: %d", sum(sensor.mask,'all'))
 end
 
 % if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
