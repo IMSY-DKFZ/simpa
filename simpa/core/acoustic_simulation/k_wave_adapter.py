@@ -150,19 +150,20 @@ def simulate(settings):
     time_grid = sio.loadmat(optical_path + "dt.mat")
     num_time_steps = int(np.round(time_grid["number_time_steps"]))
 
-    # if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
-    #
-    #     sensor_mask = data_dict[Tags.PROPERTY_SENSOR_MASK]
-    #     num_imaging_plane_sensors = int(np.sum(sensor_mask[:, detector_positions_voxels[0][1], :]))
-    #
-    #     raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
-    #
-    #     if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-    #         if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_DAS,
-    #                                                        Tags.RECONSTRUCTION_ALGORITHM_DMAS,
-    #                                                        Tags.RECONSTRUCTION_ALGORITHM_SDMAS,
-    #                                                        Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION]:
-    #             raw_time_series_data = np.average(raw_time_series_data, axis=1)
+    if (Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] and
+        Tags.DIGITAL_DEVICE in settings and settings[Tags.DIGITAL_DEVICE] == Tags.DIGITAL_DEVICE_MSOT):
+
+        sensor_mask = data_dict[Tags.PROPERTY_SENSOR_MASK]
+        num_imaging_plane_sensors = int(np.sum(sensor_mask[:, detector_positions_voxels[0][1], :]))
+
+        raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
+
+        if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+            if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_DAS,
+                                                           Tags.RECONSTRUCTION_ALGORITHM_DMAS,
+                                                           Tags.RECONSTRUCTION_ALGORITHM_SDMAS,
+                                                           Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION]:
+                raw_time_series_data = np.average(raw_time_series_data, axis=1)
 
     settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])
     settings[Tags.K_WAVE_SPECIFIC_NT] = num_time_steps

@@ -29,8 +29,8 @@ from simpa.core.image_reconstruction.reconstruction_modelling import perform_rec
 import matplotlib.pyplot as plt
 import numpy as np
 
-PATH = "D:/save/LNetOpticalForward_planar_SMALL.hdf5"
-WAVELENGTH = 532
+PATH = "D:/save/CompletePipelineTestMSOT_4711.hdf5"
+WAVELENGTH = 700
 
 file = load_hdf5(PATH)
 settings = Settings(file["settings"])
@@ -57,14 +57,8 @@ reconstructed_image_path = generate_dict_path(settings, Tags.RECONSTRUCTED_DATA,
 
 reconstructed_image = load_hdf5(PATH, reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
 
-shape = np.shape(reconstructed_image)
-
 plt.subplot(141)
-plt.imshow(initial_pressure[int(shape[0]/2), :, :])
+plt.imshow(initial_pressure[:, int(np.shape(initial_pressure)[1]/2), :])
 plt.subplot(142)
-plt.imshow(reconstructed_image[int(shape[0]/2), :, :])
-plt.subplot(143)
-plt.imshow(initial_pressure[:, :, int(shape[2]/2)])
-plt.subplot(144)
-plt.imshow(reconstructed_image[:, :, int(shape[2]/2)])
+plt.imshow(np.abs(reconstructed_image[:, int(np.shape(reconstructed_image)[1]/2), :]))
 plt.show()

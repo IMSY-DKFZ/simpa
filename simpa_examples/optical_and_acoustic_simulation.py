@@ -34,7 +34,7 @@ MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.25
+SPACING = 0.15
 RANDOM_SEED = 4711
 
 
@@ -92,7 +92,7 @@ np.random.seed(RANDOM_SEED)
 settings = {
     # These parameters set the general propeties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
-    Tags.VOLUME_NAME: "MyVolumeName_"+str(RANDOM_SEED),
+    Tags.VOLUME_NAME: "CompletePipelineTestMSOT_"+str(RANDOM_SEED),
     Tags.SIMULATION_PATH: SAVE_PATH,
     Tags.SPACING_MM: SPACING,
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
@@ -144,7 +144,7 @@ settings = {
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
 
     Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
-    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL
+    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
 }
 settings = Settings(settings)
 # global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
