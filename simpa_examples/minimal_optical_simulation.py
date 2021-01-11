@@ -29,8 +29,8 @@ from simpa.utils.settings_generator import Settings
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "/media/kris/Extreme SSD/data/simpa_examples"
-MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/mcx"
+SAVE_PATH = "C:/bin/"
+MCX_BINARY_PATH = "C:/Users/jgroe/Downloads/mcxcl-win-x86_64-v2020/mcxcl/bin/mcxcl.exe"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
@@ -111,8 +111,7 @@ settings = {
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
-    # Tags.ILLUMINATION_PARAM1: [7, 10, 8, 0],
+    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 
     # The following parameters tell the script that we do not want any extra

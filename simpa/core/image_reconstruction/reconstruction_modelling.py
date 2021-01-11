@@ -24,12 +24,11 @@ from simpa.utils import Tags, SaveFilePaths
 from simpa.core.image_reconstruction.MitkBeamformingAdapter import MitkBeamformingAdapter
 from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
 from simpa.core.image_reconstruction.TestReconstructionAdapter import TestReconstructionAdapter
+from simpa.core.image_reconstruction.BackprojectionAdapter import BackprojectionAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 
-def perform_reconstruction(settings, distortion):
-    print("ACOUSTIC FORWARD")
-
+def perform_reconstruction(settings):
     reconstruction_method = None
 
     if ((settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DAS) or
@@ -40,8 +39,10 @@ def perform_reconstruction(settings, distortion):
         reconstruction_method = TimeReversalAdapter()
     elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TEST:
         reconstruction_method = TestReconstructionAdapter()
+    elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION:
+        reconstruction_method = BackprojectionAdapter()
 
-    reconstruction = reconstruction_method.simulate(settings, distortion)
+    reconstruction = reconstruction_method.simulate(settings)
 
     reconstruction_output_path = SaveFilePaths.RECONSTRCTION_OUTPUT.\
         format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])

@@ -86,6 +86,9 @@ kgrid.setTime(settings.Nt, settings.dt)
 
 sensor.mask = data.sensor_mask;
 
+disp("Sensor Mask Size")
+disp(size(sensor.mask))
+
 
 % if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
 %if isfield(data, 'directivity_angle') == true
@@ -106,6 +109,9 @@ bandwidth = double(settings.sensor_bandwidth); % [%]
 sensor.frequency_response = [center_freq, bandwidth];
 
 sensor.time_reversal_boundary_data = time_series_data;
+
+disp("Time Series Data Size")
+disp(size(sensor.time_reversal_boundary_data))
 
 %% Computation settings
 

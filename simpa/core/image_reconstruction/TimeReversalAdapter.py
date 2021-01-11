@@ -24,7 +24,7 @@ from simpa.utils import Tags, SaveFilePaths
 from simpa.utils.settings_generator import Settings
 from simpa.core.image_reconstruction import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_hdf5
-#from simpa.core.volume_creation.versatile_volume_creator import create_volumes
+from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import scipy.io as sio
 import subprocess
@@ -36,7 +36,7 @@ import pathlib
 class TimeReversalAdapter(ReconstructionAdapterBase):
 
     @staticmethod
-    def get_acoustic_properties(global_settings, input_data, distortion):
+    def get_acoustic_properties(global_settings, input_data):
         if Tags.PERFORM_UPSAMPLING in global_settings and global_settings[Tags.PERFORM_UPSAMPLING]:
             tmp_ac_properties = load_hdf5(global_settings[Tags.SIMPA_OUTPUT_PATH],
                                           SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA,
@@ -51,9 +51,11 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         else:
             axes = (0, 2)
 
-        PA_device = MSOTAcuityEcho()
-        detector_positions = PA_device.get_detector_element_positions(global_settings)
-        detector_positions = np.round(detector_positions / global_settings[Tags.SPACING_MM]).astype(int)
+        PA_device = DEVICE_MAP[global_settings[Tags.DIGITAL_DEVICE]]
+        PA_device.check_settings_prerequisites(global_settings)
+        PA_device.adjust_simulation_volume_and_settings(global_settings)
+        detector_positions = PA_device.get_detector_element_positions_accounting_for_device_position_mm(global_settings)
+        detector_positions_voxels = np.round(detector_positions / global_settings[Tags.SPACING_MM]).astype(int)
 
         voxel_spacing = global_settings[Tags.SPACING_MM]
         volume_x_dim = int(round(global_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing))
@@ -63,27 +65,28 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         if Tags.ACOUSTIC_SIMULATION_3D not in global_settings or not global_settings[Tags.ACOUSTIC_SIMULATION_3D]:
             sizes = (volume_z_dim, volume_x_dim)
             sensor_map = np.zeros(sizes)
-            sensor_map[detector_positions[:, 2], detector_positions[:, 0]] = 1
+            sensor_map[detector_positions_voxels[:, 2], detector_positions_voxels[:, 0]] = 1
         else:
             sizes = (volume_z_dim, volume_y_dim, volume_x_dim)
             sensor_map = np.zeros(sizes)
             half_y_dir_detector_pixels = int(
                 round(0.5 * PA_device.detector_element_length_mm / voxel_spacing))
-            for pixel in np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1):
-                sensor_map[detector_positions[:, 2], detector_positions[:, 1] + pixel, detector_positions[:, 0]] = 1
+            aranged_voxels = np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1)
+
+            if len(aranged_voxels) < 1:
+                aranged_voxels = [0]
+
+            for pixel in aranged_voxels:
+                sensor_map[detector_positions_voxels[:, 2],
+                           detector_positions_voxels[:, 1] + pixel,
+                           detector_positions_voxels[:, 0]] = 1
 
         possible_acoustic_properties = [Tags.PROPERTY_SPEED_OF_SOUND,
                                         Tags.PROPERTY_DENSITY,
                                         Tags.PROPERTY_ALPHA_COEFF
                                         ]
         input_data[Tags.PROPERTY_SENSOR_MASK] = sensor_map
-        # if Tags.RECONSTRUCTION_INVERSE_CRIME in global_settings and global_settings[Tags.RECONSTRUCTION_INVERSE_CRIME] is False:
-        #     global_settings[Tags.SPACING_MM] = 0.1
-        #     global_settings[Tags.DIM_VOLUME_Y_MM] = 0.1
-        #     volumes = create_volumes(global_settings, global_settings[Tags.RANDOM_SEED] + 10, distortion=distortion)
-        #     for key, value in volumes.items():
-        #         volumes[key] = np.squeeze(value)
-        # else:
+
         volumes = tmp_ac_properties
 
         for acoustic_property in possible_acoustic_properties:
@@ -95,17 +98,17 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         return input_data
 
-    def reconstruction_algorithm(self, time_series_sensor_data, settings, distortion):
+    def reconstruction_algorithm(self, time_series_sensor_data, settings):
         input_data = dict()
         input_data[Tags.TIME_SERIES_DATA] = time_series_sensor_data
-        input_data = self.get_acoustic_properties(settings, input_data, distortion)
+        input_data = self.get_acoustic_properties(settings, input_data)
         acoustic_path = settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
         possible_k_wave_parameters = [Tags.PERFORM_UPSAMPLING, Tags.SPACING_MM, Tags.UPSCALE_FACTOR,
                                       Tags.MEDIUM_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
-        PA_device = MSOTAcuityEcho()
+        PA_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: PA_device.number_detector_elements,
             Tags.SENSOR_DIRECTIVITY_SIZE_M: PA_device.detector_element_width_mm / 1000,
@@ -122,7 +125,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         input_data["settings"] = k_wave_settings
         sio.savemat(acoustic_path, input_data, long_field_names=True)
 
-        if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
+        if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
             time_reversal_script = "time_reversal_3D"
         else:
             time_reversal_script = "time_reversal_2D"
@@ -133,6 +136,8 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
         cmd.append("-nodisplay")
         cmd.append("-nosplash")
+        cmd.append("-automation")
+        cmd.append("-wait")
         cmd.append("-r")
         cmd.append("addpath('" + path + "');" +
                    time_reversal_script + "('" + acoustic_path + "');exit;")

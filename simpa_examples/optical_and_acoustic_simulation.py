@@ -28,17 +28,17 @@ from simpa.utils.libraries.structure_library import HorizontalLayerStructure
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "/media/kris/Extreme SSD/data/simpa_examples"
-MCX_BINARY_PATH = "/media/kris/Extreme SSD/simpa/simpa/core/optical_simulation/mcx"
+SAVE_PATH = "D:/save/"
+MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.2
-RANDOM_SEED = 471
+SPACING = 0.15
+RANDOM_SEED = 4711
 
 
-def create_example_tissue(global_settings):
+def create_example_tissue():
     """
     This is a very simple example script of how to create a tissue definition.
     It contains a muscular background, an epidermis layer on top of the muscles
@@ -92,7 +92,7 @@ np.random.seed(RANDOM_SEED)
 settings = {
     # These parameters set the general propeties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
-    Tags.VOLUME_NAME: "MyVolumeName_"+str(RANDOM_SEED),
+    Tags.VOLUME_NAME: "CompletePipelineTestMSOT_"+str(RANDOM_SEED),
     Tags.SIMULATION_PATH: SAVE_PATH,
     Tags.SPACING_MM: SPACING,
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
@@ -121,10 +121,10 @@ settings = {
     # The following parameters tell the script that we do not want any extra
     # modelling steps
     Tags.RUN_ACOUSTIC_MODEL: True,
-    Tags.ACOUSTIC_SIMULATION_3D: True,
+    Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
-    Tags.ACOUSTIC_MODEL_BINARY_PATH: "/home/kris/hard_drive/MATLAB/bin/matlab",
-    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "/media/kris/Extreme SSD/simpa/simpa/core/acoustic_simulation",
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: "C:/Program Files/MATLAB/R2020b/bin/matlab.exe",
+    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "C:/simpa/simpa/core/acoustic_simulation",
     Tags.GPU: True,
 
     Tags.MEDIUM_ALPHA_POWER: 1.05,
@@ -144,25 +144,16 @@ settings = {
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
 
     Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
-    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL,
-    Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
-    Tags.RECONSTRUCTION_MITK_BINARY_PATH: "/home/kris/hard_drive/MITK/"
-                                          "sDMAS-2018.07-2596-g31d1c60d71-linux-x86_64/"
-                                          "MITK-experiments/sDMAS-2018.07-2596-g31d1c60d71-linux-x86_64/"
-                                          "MitkPABeamformingTool.sh",
-    Tags.RECONSTRUCTION_MITK_SETTINGS_XML: "/home/kris/hard_drive/data/pipeline_test/bf_settings.xml",
-    Tags.RECONSTRUCTION_OUTPUT_NAME: "/home/kris/hard_drive/data/pipeline_test/test.nrrd",
-
+    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
 }
 settings = Settings(settings)
 # global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
 np.random.seed(RANDOM_SEED)
 
-settings[Tags.STRUCTURES] = create_example_tissue(settings)
+settings[Tags.STRUCTURES] = create_example_tissue()
 print("Simulating ", RANDOM_SEED)
 import time
 timer = time.time()
 simulate(settings)
 print("Needed", time.time()-timer, "seconds")
-# TODO global_settings[Tags.SIMPA_OUTPUT_PATH]
 print("Simulating ", RANDOM_SEED, "[Done]")

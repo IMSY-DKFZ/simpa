@@ -105,7 +105,7 @@ def simulate(settings):
 
         if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings:
             if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-                reconstruction_output_path = perform_reconstruction(settings, None)
+                reconstruction_output_path = perform_reconstruction(settings)
                 # if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
                 #     reconstruction_output_path = apply_noise_model_to_reconstructed_data(settings, reconstruction_output_path)
 

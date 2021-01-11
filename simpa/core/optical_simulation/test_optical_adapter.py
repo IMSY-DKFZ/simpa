@@ -22,7 +22,11 @@
 
 from simpa.core.optical_simulation import OpticalForwardAdapterBase
 
+
 class TestOpticalAdapter(OpticalForwardAdapterBase):
+    """
+    This Adapter was created for tesing purposes and only
+    """
 
     def forward_model(self, absorption_cm, scattering_cm, anisotropy, settings):
         return absorption_cm / ((1 - anisotropy) * scattering_cm)

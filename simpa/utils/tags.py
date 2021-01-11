@@ -40,7 +40,7 @@ class Tags:
     RANDOM_SEED = ("random_seed", (int, np.integer))
     TISSUE_PROPERTIES_OUPUT_NAME = "properties"
     SIMULATION_EXTRACT_FIELD_OF_VIEW = ("extract_field_of_view", bool)
-    GPU = ("gpu", bool)
+    GPU = ("gpu", (bool, np.bool, np.bool_))
     ACOUSTIC_SIMULATION_3D = ("acoustic_simulation_3d", bool)
     MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float, np.float))
 
@@ -51,8 +51,8 @@ class Tags:
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
     VOLUME_CREATOR_SEGMENTATION_BASED = "volume_creator_segmentation_based"
 
-    INPUT_SEGMENTATION_VOLUME = "input_segmentation_volume"
-    SEGMENTATION_CLASS_MAPPING = "segmentation_class_mapping"
+    INPUT_SEGMENTATION_VOLUME = ("input_segmentation_volume", np.ndarray)
+    SEGMENTATION_CLASS_MAPPING = ("segmentation_class_mapping", dict)
 
     PRIORITY = ("priority", (int, np.integer, float, np.float))
     MOLECULE_COMPOSITION = ("molecule_composition", list)
@@ -93,6 +93,7 @@ class Tags:
     """
     DIGITAL_DEVICE = ("digital_device", str)
     DIGITAL_DEVICE_MSOT = "digital_device_msot"
+    DIGITAL_DEVICE_RSOM = "digital_device_rsom"
     DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
 
     """
@@ -120,11 +121,13 @@ class Tags:
 
     # Supported illumination types - implemented in mcx
     ILLUMINATION_TYPE_PENCIL = "pencil"
+    ILLUMINATION_TYPE_PENCILARRAY = "pencilarray"
     ILLUMINATION_TYPE_DISK = "disk"
     ILLUMINATION_TYPE_SLIT = "slit"
     ILLUMINATION_TYPE_GAUSSIAN = "gaussian"
     ILLUMINATION_TYPE_PATTERN = "pattern"
     ILLUMINATION_TYPE_PATTERN_3D = "pattern3d"
+    ILLUMINATION_TYPE_PLANAR = "planar"
     ILLUMINATION_TYPE_FOURIER = "fourier"
     ILLUMINATION_TYPE_FOURIER_X = "fourierx"
     ILLUMINATION_TYPE_FOURIER_X_2D = "fourierx2d"
@@ -143,6 +146,8 @@ class Tags:
     # Supported acoustic models
     ACOUSTIC_MODEL = ("acoustic_model", str)
     ACOUSTIC_MODEL_K_WAVE = "kwave"
+    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float, np.float))
+    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float, np.float))
     ACOUSTIC_MODEL_TEST = "simpa_tests"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
     ACOUSTIC_MODEL_SCRIPT_LOCATION = ("acoustic_model_script_location", str)
@@ -151,19 +156,19 @@ class Tags:
     Acoustic model settings
     """
 
-    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", bool)
+    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool, np.bool_))
     ACOUSTIC_MODEL_BINARY_PATH = ("acoustic_model_binary_path", str)
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
-    RECORDMOVIE = ("record_movie", bool)
+    RECORDMOVIE = ("record_movie", (bool, np.bool, np.bool_))
     MOVIENAME = ("movie_name", str)
     ACOUSTIC_PLOT_SCALE = "acoustic_plot_scale"
-    ACOUSTIC_LOG_SCALE = ("acoustic_log_scale", bool)
+    ACOUSTIC_LOG_SCALE = ("acoustic_log_scale", (bool, np.bool, np.bool_))
     TIME_SERIES_DATA = "time_series_data"
     TIME_SERIES_DATA_NOISE = "time_series_data_noise"
 
     # Reconstruction settings
-    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", bool)
+    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", (bool, np.bool, np.bool_))
     RECONSTRUCTION_OUTPUT_NAME = ("reconstruction_result", str)
     RECONSTRUCTION_ALGORITHM = ("reconstruction_algorithm", str)
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
@@ -171,7 +176,8 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
-    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", bool)
+    RECONSTRUCTION_ALGORITHM_BACKPROJECTION = "backprojection"
+    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool, np.bool_))
     RECONSTRUCTION_MITK_BINARY_PATH = ("reconstruction_mitk_binary_path", str)
     RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml", str)
     RECONSTRUCTION_BMODE_METHOD = ("reconstruction_bmode_method", str)
@@ -179,6 +185,10 @@ class Tags:
     RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM = "EnvelopeDetection"
     RECONSTRUCTED_DATA = "reconstructed_data"
     RECONSTRUCTED_DATA_NOISE = "reconstructed_data_noise"
+    RECONSTRUCTION_MODE = "reconstruction_mode"
+    RECONSTRUCTION_MODE_DIFFERENTIAL = "differential"
+    RECONSTRUCTION_MODE_PRESSURE = "pressure"
+    RECONSTRUCTION_MODE_FULL = "full"
 
     """
     Upsampling settings
@@ -247,21 +257,21 @@ class Tags:
 
     PMLSize = ("pml_size", (list, tuple, np.ndarray))
     PMLAlpha = ("pml_alpha", (int, np.integer, float, np.float))
-    PMLInside = ("pml_inside", bool)
-    PlotPML = ("plot_pml", bool)
+    PMLInside = ("pml_inside", (bool, np.bool, np.bool_))
+    PlotPML = ("plot_pml", (bool, np.bool, np.bool_))
 
     # Acoustic Sensor Properties
     SENSOR_MASK = "sensor_mask"
     SENSOR_RECORD = ("sensor_record", str)
-    SENSOR_CENTER_FREQUENCY_HZ = "sensor_center_frequency"
-    SENSOR_BANDWIDTH_PERCENT = "sensor_bandwidth"
+    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer, float, np.float))
+    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float, np.float))
     SENSOR_DIRECTIVITY_HOMOGENEOUS = "sensor_directivity_homogeneous"
     SENSOR_DIRECTIVITY_ANGLE = "sensor_directivity_angle"
-    SENSOR_DIRECTIVITY_SIZE_M = "sensor_directivity_size"
+    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer, float, np.float))
     SENSOR_DIRECTIVITY_PATTERN = "sensor_directivity_pattern"
     SENSOR_ELEMENT_PITCH_MM = "sensor_element_pitch"
-    SENSOR_SAMPLING_RATE_MHZ = "sensor_sampling_rate_mhz"
-    SENSOR_NUM_ELEMENTS = "sensor_num_elements"
+    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer, float, np.float))
+    SENSOR_NUM_ELEMENTS = ("sensor_num_elements", (int, np.integer))
     SENSOR_NUM_USED_ELEMENTS = "sensor_num_used_elements"
     SENSOR_CONCAVE = "concave"
     SENSOR_RADIUS_MM = "sensor_radius_mm"
