@@ -121,7 +121,7 @@ settings = {
     # The following parameters tell the script that we do not want any extra
     # modelling steps
     Tags.RUN_ACOUSTIC_MODEL: True,
-    Tags.ACOUSTIC_SIMULATION_3D: True,
+    Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: "C:/Program Files/MATLAB/R2020b/bin/matlab.exe",
     Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "C:/simpa/simpa/core/acoustic_simulation",

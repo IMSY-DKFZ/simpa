@@ -54,7 +54,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         PA_device = DEVICE_MAP[global_settings[Tags.DIGITAL_DEVICE]]
         PA_device.check_settings_prerequisites(global_settings)
         PA_device.adjust_simulation_volume_and_settings(global_settings)
-        detector_positions = PA_device.get_detector_element_positions_mm(global_settings)
+        detector_positions = PA_device.get_detector_element_positions_accounting_for_device_position_mm(global_settings)
         detector_positions_voxels = np.round(detector_positions / global_settings[Tags.SPACING_MM]).astype(int)
 
         voxel_spacing = global_settings[Tags.SPACING_MM]
