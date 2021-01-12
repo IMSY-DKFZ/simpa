@@ -45,7 +45,7 @@ colors = [list(np.random.random(3)) for _ in range(len(names))]
 cmap = mpl.colors.LinearSegmentedColormap.from_list(
     'Custom cmap', colors, len(names))
 
-PATH = "D:/save/LNetOpticalForward_planar_SMALL.hdf5"
+PATH = "D:/save/LNetOpticalForward_planar_LARGE.hdf5"
 WAVELENGTH = 532
 
 file = load_hdf5(PATH)
@@ -72,18 +72,37 @@ if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE
 
     speed_of_sound = file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]["sos"]
 
-shape = np.shape(fluence)
+reconstruction = reconstruction.T
+
+shape = np.shape(reconstruction)
 
 x_pos = int(shape[0]/2)
-y_pos = 0
+y_pos = int(shape[1]/2)
+z_pos = int(shape[2]/2)
+
+plt.figure()
+plt.subplot(161)
+plt.imshow(np.fliplr(np.rot90(reconstruction[x_pos, :, :], -1)))
+plt.subplot(162)
+plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
+plt.subplot(163)
+plt.imshow(np.fliplr(np.rot90(reconstruction[:, y_pos, :], -1)))
+plt.subplot(164)
+plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
+plt.subplot(165)
+plt.imshow(np.fliplr(np.rot90(reconstruction[:, :, z_pos], -1)))
+plt.subplot(166)
+plt.imshow(np.rot90(np.log10(initial_pressure[:, :, z_pos]), -3))
+plt.show()
+exit()
 
 if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
     if len(shape) > 2:
         plt.figure()
         plt.subplot(141)
-        plt.imshow(np.rot90((time_series[:, :]), -1), aspect=0.2)
+        plt.imshow(np.rot90(np.log10(np.log10(time_series[:, :]-np.min(time_series))), -1), aspect=np.shape(time_series)[0]/np.shape(time_series)[1])
         plt.subplot(142)
-        plt.imshow(np.rot90((reconstruction[:, y_pos, :]), -1))
+        plt.imshow(np.rot90((reconstruction[:, y_pos, :]), -2))
         plt.subplot(143)
         plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
         plt.subplot(144)

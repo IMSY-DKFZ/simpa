@@ -73,7 +73,7 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
         print("Target resolution:", resolution_m)
         print("Sampling frequency:", sampling_frequency)
 
-        return self.backprojection3D_torch_fast(time_series_sensor_data, speed_of_sound_m=sound_speed_m,
+        return self.backprojection3D_torch(time_series_sensor_data, speed_of_sound_m=sound_speed_m,
                                            target_dim_m=target_dim_m, resolution_m=resolution_m,
                                            sensor_positions_m=sensor_positions, sampling_frequency=sampling_frequency,
                                            mode=mode)

@@ -120,8 +120,14 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             if parameter in settings:
                 k_wave_settings[parameter] = settings[parameter]
 
-        k_wave_settings["dt"] = settings["dt_acoustic_sim"]
-        k_wave_settings["Nt"] = settings["Nt_acoustic_sim"]
+        if Tags.K_WAVE_SPECIFIC_DT in settings and Tags.K_WAVE_SPECIFIC_NT in settings:
+            k_wave_settings["dt"] = settings[Tags.K_WAVE_SPECIFIC_DT]
+            k_wave_settings["Nt"] = settings[Tags.K_WAVE_SPECIFIC_NT]
+        else:
+            num_samples = time_series_sensor_data.shape[1]
+            time_per_sample_s = 1 / (settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000000)
+            k_wave_settings["dt"] = time_per_sample_s
+            k_wave_settings["Nt"] = num_samples
         input_data["settings"] = k_wave_settings
         sio.savemat(acoustic_path, input_data, long_field_names=True)
 

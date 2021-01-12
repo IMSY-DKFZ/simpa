@@ -36,13 +36,16 @@ WAVELENGTH = 532
 file = load_hdf5(PATH)
 settings = Settings(file["settings"])
 settings[Tags.WAVELENGTH] = WAVELENGTH
-settings[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
+settings[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL
+settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
 settings[Tags.RECONSTRUCTION_MODE] = Tags.RECONSTRUCTION_MODE_FULL
-settings[Tags.DIGITAL_DEVICE_POSITION] = [0, 0, -1.4]
-acoustic_data_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA, wavelength=settings[Tags.WAVELENGTH],
-                                                upsampled_data=True)
-optical_data_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=settings[Tags.WAVELENGTH],
-                                                upsampled_data=True)
+settings[Tags.DIGITAL_DEVICE_POSITION] = [0, 0, 0]
+acoustic_data_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA,
+                                        wavelength=settings[Tags.WAVELENGTH],
+                                        upsampled_data=True)
+optical_data_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+                                       wavelength=settings[Tags.WAVELENGTH],
+                                       upsampled_data=True)
 device = RSOMExplorerP50()
 device.check_settings_prerequisites(settings)
 settings = device.adjust_simulation_volume_and_settings(settings)
