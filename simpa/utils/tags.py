@@ -151,6 +151,7 @@ class Tags:
     ACOUSTIC_MODEL_TEST = "simpa_tests"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
     ACOUSTIC_MODEL_SCRIPT_LOCATION = ("acoustic_model_script_location", str)
+    TIME_REVEARSAL_SCRIPT_LOCATION = ("time_revearsal_script_location", str)
 
     """
     Acoustic model settings

@@ -136,7 +136,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         else:
             time_reversal_script = "time_reversal_2D"
 
-        path = str(pathlib.Path(__file__).parent.absolute())
+        path = settings[Tags.TIME_REVEARSAL_SCRIPT_LOCATION]
 
         cmd = list()
         cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])

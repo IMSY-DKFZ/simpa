@@ -80,7 +80,7 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
     def backprojection3D_torch(self, time_series_data, speed_of_sound_m, target_dim_m, resolution_m,
                                sensor_positions_m, sampling_frequency, mode=None):
-        """ ND packprojection """
+        """ backprojection3D_torch """
 
         if mode is None:
             mode = Tags.RECONSTRUCTION_MODE_DIFFERENTIAL

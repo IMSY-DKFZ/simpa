@@ -45,7 +45,7 @@ colors = [list(np.random.random(3)) for _ in range(len(names))]
 cmap = mpl.colors.LinearSegmentedColormap.from_list(
     'Custom cmap', colors, len(names))
 
-PATH = "D:/save/LNetOpticalForward_planar_LARGE.hdf5"
+PATH = "D:/save/LNetOpticalForward_planar_0.hdf5"
 WAVELENGTH = 532
 
 file = load_hdf5(PATH)

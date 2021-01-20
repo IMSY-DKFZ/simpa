@@ -47,7 +47,7 @@ class GaussianNoiseModel(NoiseModelAdapterBase):
     """
     def apply_noise_model(self, data, settings):
         mean_noise = 0
-        std_noise = 1
+        std_noise = 400
 
         if Tags.NOISE_MEAN in settings:
             mean_noise = float(settings[Tags.NOISE_MEAN])
