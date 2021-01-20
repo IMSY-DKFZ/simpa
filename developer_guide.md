@@ -1,11 +1,31 @@
 # Developer Guide
 
-Dear SIMPA developers.
+Dear SIMPA developers,
+Dear person who wants to contribute to the SIMPA toolkit,
+
+First of all: Thank you for your participation and help! It is much appreciated!
 This Guide is meant to be used as a collection of How-To's to contribute to the framework.
+In case you have any questions, do not hesitate to get in touch with the members of the core development team:
+
+Kris K. Dreher (k.dreher@dkfz-heidelberg.de)
+
+Janek M. Groehl (janek.grohl@cruk.cam.ac.uk)
+
+## How to contribute
+
+The SIMPA code is written and maintained on a closed repository that is hosted on a server
+of the German Cancer Research Center.
+The current master branch of the repository is open source and mirrored on github.
+
+To contribute to SIMPA, please fork the SIMPA github repository and create a pull request with a branch containing your 
+suggested changes. The core team developers will then review the suggested changes and integrate these into the code 
+base.
+
+Please see the github guidelines for creating pull requests: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests
 
 ## Coding style
 
-When writing code for SIMPA, please consider to use the following structures in your code in order to make a new
+When writing code for SIMPA, please use the PEP 8 python coding conventions (https://www.python.org/dev/peps/pep-0008/) and consider to use the following structures in your code in order to make a new
 developer or someone external always know exactly what to expect.
 
 - Classnames are written in camel-case notation `ClassName`

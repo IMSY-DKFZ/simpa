@@ -7,44 +7,85 @@ Welcome to the SIMPA documentation!
    :caption: Contents:
 
 .. image:: images/simpa_logo.png
-    :width: 6cm
+    :width: 12cm
 
 .. mdinclude::  ../../README.md
 
-.. mdinclude::  developer_guide.md
-
-Examples
-================
-
-Performing a simple opical forward simulation
----------------------------------------------
-
-The file can be found in samples/minimal_optical_simulation.py:
-
-.. literalinclude:: ../../samples/minimal_optical_simulation.py
-    :language: python
-    :lines: 23-
-
-Reading the HDF5 simulation output
-----------------------------------
-
-The file can be found in samples/access_saved_PAI_data.py:
-
-.. literalinclude:: ../../samples/access_saved_PAI_data.py
-    :language: python
-    :lines: 23-
-
-Defining custom tissue structures and properties
-------------------------------------------------
-
-The file can be found in samples/create_custom_tissues.py:
-
-.. literalinclude:: ../../samples/create_custom_tissues.py
-    :language: python
-    :lines: 23-
+.. mdinclude::  ../../developer_guide.md
 
 Class references
 ================
+
+This component diagram shows the three principle modules
+of the SIMPA toolkit and gives an insight into their constituents.
+The core is concerned with providing interfaces for the
+simulation tools, while the utils module contains many scripts
+and classes to facilitate the use of the simulation pipeline.
+
+.. image:: images/simpa_component_diagram.png
+    :width: 20cm
+
+Module: core
+-------------------
+
+The purpose of the core module is to provide interfaces that facilitate the integration of toolboxes and code for
+photoacoustic modeling into a single continuous pipeline:
+
+.. image:: images/pipeline_overview.png
+    :width: 20cm
+
+Volume creation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: simpa.core.volume_creation
+    :members:
+
+Optical forward modeling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: simpa.core.optical_simulation
+    :members:
+
+Acoustic forward modeling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: simpa.core.acoustic_simulation
+    :members:
+
+Noise modeling
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: simpa.core.noise_simulation
+    :members:
+
+Image reconstruction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: simpa.core.image_reconstruction
+    :members:
+
+Digital device twins
+^^^^^^^^^^^^^^^^^^^^^
+
+At every step along the forward simulation, knowledge of the photoacoustic device that is used for the measurements is
+needed. This is important to reflect characteristic artefacts and challenges for the respective device.
+
+To this end, we have included digital twins of commonly used devices into the SIMPA core.
+
+.. automodule:: simpa.core.device_digital_twins
+    :members:
+
+MSOT Acuity Echo
+""""""""""""""""""
+
+.. automodule:: simpa.core.device_digital_twins.msot_devices
+    :members:
+
+RSOM Explorer P50
+"""""""""""""""""""
+
+.. automodule:: simpa.core.device_digital_twins.rsom_device
+    :members:
 
 Module: utils
 -------------
@@ -72,48 +113,32 @@ Module: io_handling
 .. automodule:: simpa.io_handling.io_hdf5
     :members:
 
-Module: simulate
--------------------
+Examples
+================
 
-.. automodule:: simpa.simulate
-    :members:
+Performing a complete forward simulation with acoustic modeling, optical modeling, as well as image reconstruction
+---------------------------------------------
 
-.. automodule:: simpa.simulate.simulation
-    :members:
+The file can be found in simpa_examples/minimal_optical_simulation.py:
 
-.. automodule:: simpa.simulate.tissue_properties
-    :members:
+.. literalinclude:: ../../simpa_examples/optical_and_acoustic_simulation.py
+    :language: python
+    :lines: 23-
 
-.. automodule:: simpa.simulate.volume_creator
-    :members:
+Reading the HDF5 simulation output
+----------------------------------
 
-Conventions
-^^^^^^^^^^^^^^^
+The file can be found in simpa_examples/access_saved_PAI_data.py:
 
-.. automodule:: simpa.simulate.constants
-    :members:
+.. literalinclude:: ../../simpa_examples/access_saved_PAI_data.py
+    :language: python
+    :lines: 23-
 
-Structures
-^^^^^^^^^^^^^^^
+Defining custom tissue structures and properties
+------------------------------------------------
 
-.. automodule:: simpa.simulate.structures
-    :members:
+The file can be found in simpa_examples/create_custom_tissues.py:
 
-Forward models
-^^^^^^^^^^^^^^^
-
-.. automodule:: simpa.simulate.models
-    :members:
-
-.. automodule:: simpa.simulate.models.optical_models
-    :members:
-
-.. automodule:: simpa.simulate.models.acoustic_models
-    :members:
-
-.. automodule:: simpa.simulate.models.reconstruction_models
-    :members:
-
-.. automodule:: simpa.simulate.models.noise_models
-    :members:
-
+.. literalinclude:: ../../simpa_examples/create_custom_tissues.py
+    :language: python
+    :lines: 23-
