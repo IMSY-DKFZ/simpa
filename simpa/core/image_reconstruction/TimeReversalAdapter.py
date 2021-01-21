@@ -29,14 +29,32 @@ import numpy as np
 import scipy.io as sio
 import subprocess
 import os
-from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
-import pathlib
 
 
 class TimeReversalAdapter(ReconstructionAdapterBase):
+    """
+    The time reversal adapter includes the time reversal reconstruction
+    algorithm implemented by the k-Wave toolkit into SIMPA.
+
+    Time reversal reconstruction uses the time series data and computes the forward simulation model
+    backwards in time::
+
+        Treeby, Bradley E., Edward Z. Zhang, and Benjamin T. Cox.
+        "Photoacoustic tomography in absorbing acoustic media using
+        time reversal." Inverse Problems 26.11 (2010): 115003.
+
+
+    """
 
     @staticmethod
-    def get_acoustic_properties(global_settings, input_data):
+    def get_acoustic_properties(global_settings: dict, input_data: dict):
+        """
+        This method extracts the acoustic tissue properties from the settings dictionary and
+        amends the information to the input_data.
+
+        :param global_settings: the settings dictionary containing key value pairs with the simulation instructions.
+        :param input_data: a dictionary containing the information needed for time reversal.
+        """
         if Tags.PERFORM_UPSAMPLING in global_settings and global_settings[Tags.PERFORM_UPSAMPLING]:
             tmp_ac_properties = load_hdf5(global_settings[Tags.SIMPA_OUTPUT_PATH],
                                           SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA,
@@ -51,10 +69,10 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         else:
             axes = (0, 2)
 
-        PA_device = DEVICE_MAP[global_settings[Tags.DIGITAL_DEVICE]]
-        PA_device.check_settings_prerequisites(global_settings)
-        PA_device.adjust_simulation_volume_and_settings(global_settings)
-        detector_positions = PA_device.get_detector_element_positions_accounting_for_device_position_mm(global_settings)
+        pa_device = DEVICE_MAP[global_settings[Tags.DIGITAL_DEVICE]]
+        pa_device.check_settings_prerequisites(global_settings)
+        pa_device.adjust_simulation_volume_and_settings(global_settings)
+        detector_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(global_settings)
         detector_positions_voxels = np.round(detector_positions / global_settings[Tags.SPACING_MM]).astype(int)
 
         voxel_spacing = global_settings[Tags.SPACING_MM]
@@ -70,7 +88,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             sizes = (volume_z_dim, volume_y_dim, volume_x_dim)
             sensor_map = np.zeros(sizes)
             half_y_dir_detector_pixels = int(
-                round(0.5 * PA_device.detector_element_length_mm / voxel_spacing))
+                round(0.5 * pa_device.detector_element_length_mm / voxel_spacing))
             aranged_voxels = np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1)
 
             if len(aranged_voxels) < 1:
@@ -108,12 +126,12 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
                                       Tags.MEDIUM_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
-        PA_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
+        pa_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
         k_wave_settings = Settings({
-            Tags.SENSOR_NUM_ELEMENTS: PA_device.number_detector_elements,
-            Tags.SENSOR_DIRECTIVITY_SIZE_M: PA_device.detector_element_width_mm / 1000,
-            Tags.SENSOR_CENTER_FREQUENCY_HZ: PA_device.center_frequency_Hz,
-            Tags.SENSOR_BANDWIDTH_PERCENT: PA_device.bandwidth_percent
+            Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
+            Tags.SENSOR_DIRECTIVITY_SIZE_M: pa_device.detector_element_width_mm / 1000,
+            Tags.SENSOR_CENTER_FREQUENCY_HZ: pa_device.center_frequency_Hz,
+            Tags.SENSOR_BANDWIDTH_PERCENT: pa_device.bandwidth_percent
         })
 
         for parameter in possible_k_wave_parameters:

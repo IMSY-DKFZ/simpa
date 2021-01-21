@@ -27,6 +27,9 @@ from abc import abstractmethod
 
 
 class ReconstructionAdapterBase:
+    """
+    TODO
+    """
 
     @abstractmethod
     def reconstruction_algorithm(self, time_series_sensor_data, settings):

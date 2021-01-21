@@ -70,7 +70,22 @@ Noise modeling
 Image reconstruction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. automodule:: simpa.core.image_reconstruction.reconstruction_modelling
+    :members:
+
 .. automodule:: simpa.core.image_reconstruction
+    :members:
+
+Backprojection
+"""""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.image_reconstruction.BackprojectionAdapter
+    :members:
+
+Time Revearsal
+"""""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.image_reconstruction.TimeReversalAdapter
     :members:
 
 Digital device twins

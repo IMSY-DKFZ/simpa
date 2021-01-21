@@ -32,6 +32,10 @@ import nrrd
 
 
 class MitkBeamformingAdapter(ReconstructionAdapterBase):
+    """
+    This adapter can be used to reconstruct an image with the MITK beamforming tool.
+    However, there is only support for linear and curved transducers.
+    """
 
     def convert_settings_file(self, file, settings, save_path):
 
