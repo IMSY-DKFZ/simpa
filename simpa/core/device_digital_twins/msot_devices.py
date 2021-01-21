@@ -22,17 +22,28 @@
 
 from simpa.core.device_digital_twins.pai_devices import PAIDeviceBase
 from simpa.utils.settings_generator import Settings
-from simpa.utils import Tags, SegmentationClasses
+from simpa.utils import Tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-from simpa.utils.libraries.structure_library import HorizontalLayerStructure, Background
-from simpa.utils.deformation_manager import get_functional_from_deformation_settings
 import numpy as np
-from simpa.utils import create_deformation_settings
 
 
 class MSOTAcuityEcho(PAIDeviceBase):
     """
-    TODO
+    This class represents a digital twin of the MSOT Acuity Echo, manufactured by iThera Medical, Munich, Germany
+    (https://www.ithera-medical.com/products/msot-acuity/). It is based on the real specifications of the device, but
+    due to the limitations of the possibilities how to represent a device in the software frameworks,
+    constitutes only an approximation.
+
+    Some important publications that showcase the use cases of the MSOT Acuity and Acuity Echo device are::
+
+        Regensburger, Adrian P., et al. "Detection of collagens by multispectral optoacoustic
+        tomography as an imaging biomarker for Duchenne muscular dystrophy."
+        Nature Medicine 25.12 (2019): 1905-1915.
+
+        Knieling, Ferdinand, et al. "Multispectral Optoacoustic Tomography for Assessment of
+        Crohn's Disease Activity."
+        The New England journal of medicine 376.13 (2017): 1292.
+
     """
 
     def __init__(self):
@@ -130,7 +141,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
     def get_illuminator_definition(self, global_settings: Settings):
         pass
 
-    def get_detector_element_positions_base_mm(self):
+    def get_detector_element_positions_base_mm(self) -> np.ndarray:
 
         pitch_angle = self.pitch_mm / self.radius_mm
         print("pitch angle: ", pitch_angle)
@@ -150,7 +161,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
 
         return detector_positions
 
-    def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings):
+    def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings) -> np.ndarray:
         abstract_element_positions = self.get_detector_element_positions_base_mm()
 
         sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
@@ -166,7 +177,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
 
         return np.add(abstract_element_positions, device_position)
 
-    def get_detector_element_orientations(self, global_settings: Settings):
+    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
         detector_positions = self.get_detector_element_positions_base_mm()
         detector_orientations = np.subtract(self.focus_in_field_of_view_mm, detector_positions)
         norm = np.linalg.norm(detector_orientations, axis=-1)
