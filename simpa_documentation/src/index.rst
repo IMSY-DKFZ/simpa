@@ -43,7 +43,19 @@ Volume creation
 Optical forward modeling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. automodule:: simpa.core.optical_simulation.optical_modelling
+    :members:
+
 .. automodule:: simpa.core.optical_simulation
+    :members:
+
+.. automodule:: simpa.core.optical_simulation.illumination_definition
+    :members:
+
+mcx integration
+""""""""""""""""""
+
+.. automodule:: simpa.core.optical_simulation.mcx_adapter
     :members:
 
 Acoustic forward modeling
@@ -55,14 +67,17 @@ Acoustic forward modeling
 .. automodule:: simpa.core.acoustic_simulation
     :members:
 
-k-Wave
-""""""""""""""""""
+k-Wave integration
+"""""""""""""""""""
 
 .. automodule:: simpa.core.acoustic_simulation.k_wave_adapter
     :members:
 
 Noise modeling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: simpa.core.noise_simulation.noise_modelling
+    :members:
 
 .. automodule:: simpa.core.noise_simulation
     :members:

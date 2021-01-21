@@ -27,9 +27,13 @@ from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 
 def apply_noise_model_to_time_series_data(settings, acoustic_model_result_path):
     """
+    This is the primary method for performing noise pertubation of data.
 
-    :param settings:
-    :param acoustic_model_result_path:
+    The noise model can be activated using the Tags.NOISE_MODEL and
+    Tags.APPLY_NOISE_MODEL tags.
+
+    :param settings: the settings dictionary containing the simulation instructions
+    :param acoustic_model_result_path: path where the data is within the HDF5 file.
     :return:
     """
 
@@ -54,4 +58,3 @@ def apply_noise_model_to_time_series_data(settings, acoustic_model_result_path):
               noise_output_path)
 
     return noise_output_path
-
