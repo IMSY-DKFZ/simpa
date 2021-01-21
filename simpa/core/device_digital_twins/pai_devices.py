@@ -38,7 +38,8 @@ class PAIDeviceBase:
         throw a ValueError if that is the case.
 
         :raises ValueError: raises a value error if the prerequisites are not matched.
-        :returns : True if the prerequisites are met.
+        :returns: True if the prerequisites are met.
+
         """
         pass
 

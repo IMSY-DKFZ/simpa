@@ -46,7 +46,7 @@ class AcousticForwardAdapterBase:
         A adapter that implements the forward_model method, will take acoustic properties as input
         and return the time series pressure data as output.
 
-        :param optical_properties_path: path to a *.npz file that contains the following tags:
+        :param optical_properties_path: path to a .npz file that contains the following tags:
             Tags.PROPERTY_ABSORPTION_PER_CM -> contains the optical absorptions in units of one per centimeter
             Tags.PROPERTY_SCATTERING_PER_CM -> contains the optical scattering in units of one per centimeter
             Tags.PROPERTY_ANISOTROPY -> contains the dimensionless optical scattering anisotropy

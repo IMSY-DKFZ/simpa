@@ -87,18 +87,49 @@ RSOM Explorer P50
 Module: utils
 -------------
 
-.. automodule:: simpa.utils
+The utils module contains several general-purpose utility functions whose purpose it is to facilitate
+the use of SIMPA. The most important of these is the Tags class, which defines the strings and data types
+that have to be used for the keys and values of the settings dictionary.
+
+.. automodule:: simpa.utils.tags
     :members:
+
+.. automodule:: simpa.utils.constants
+    :members:
+
+.. automodule:: simpa.utils.deformation_manager
+    :members:
+
+.. automodule:: simpa.utils.dict_path_manager
+    :members:
+
+.. automodule:: simpa.utils.settings_generator
+    :members:
+
+.. automodule:: simpa.utils.calculate
+    :members:
+
+.. automodule:: simpa.utils.tissue_properties
+    :members:
+
+Libraries
+^^^^^^^^^^^^^^^^^^^^^
+
+Another important aspect of the utils class is the libraries that are being provided.
+These contain compilations of literature values for the acoustic and optical properties
+of commonly used tissue.
 
 .. automodule:: simpa.utils.libraries
     :members:
-.. automodule:: simpa.utils.libraries.chromophore_library
+.. automodule:: simpa.utils.libraries.molecule_library
     :members:
 .. automodule:: simpa.utils.libraries.literature_values
     :members:
 .. automodule:: simpa.utils.libraries.spectra_library
     :members:
 .. automodule:: simpa.utils.libraries.tissue_library
+    :members:
+.. automodule:: simpa.utils.libraries.structure_library
     :members:
 
 Module: io_handling
