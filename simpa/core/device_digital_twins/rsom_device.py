@@ -40,13 +40,17 @@ class RSOMExplorerP50(PAIDeviceBase):
     The digital device is modeled based on the reported specifications of the RSOM Explorer P50 system.
     Technical details of the system can be found in the dissertation of Mathias Schwarz
     (https://mediatum.ub.tum.de/doc/1324031/1324031.pdf) and you can find more details on
-    use cases of the device in the following literature sources:
+    use cases of the device in the following literature sources::
 
-    Yew, Yik Weng, et al. "Raster-scanning optoacoustic mesoscopy (RSOM) imaging as an objective disease
-    severity tool in atopic dermatitis patients." Journal of the American Academy of Dermatology (2020).
+        Yew, Yik Weng, et al. "Raster-scanning optoacoustic mesoscopy (RSOM) imaging
+        as an objective disease severity tool in atopic dermatitis patients."
+        Journal of the American Academy of Dermatology (2020).
 
-    Hindelang, B., et al. "Non‐invasive imaging in dermatology and the unique potential of raster‐scan
-    optoacoustic mesoscopy." Journal of the European Academy of Dermatology and Venereology 33.6 (2019): 1051-1061.
+        Hindelang, B., et al. "Non-invasive imaging in dermatology and the unique
+        potential of raster-scan optoacoustic mesoscopy."
+        Journal of the European Academy of Dermatology and Venereology
+        33.6 (2019): 1051-1061.
+
     """
 
     def __init__(self, element_spacing_mm=0.02):

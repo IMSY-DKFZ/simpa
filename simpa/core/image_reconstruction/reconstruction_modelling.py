@@ -28,7 +28,16 @@ from simpa.core.image_reconstruction.BackprojectionAdapter import Backprojection
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 
-def perform_reconstruction(settings):
+def perform_reconstruction(settings: dict) -> str:
+    """
+    This method is the main entry point to perform image reconstruction using the SIMPA toolkit.
+    All information necessary for the respective reconstruction method must be contained in the
+    settings dictionary.
+
+    :param settings: a dictionary containing key-value pairs with simulation instructions.
+    :returns: the path to the result data in the written HDF5 file.
+
+    """
     reconstruction_method = None
 
     if ((settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DAS) or

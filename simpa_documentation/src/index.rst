@@ -34,26 +34,73 @@ photoacoustic modeling into a single continuous pipeline:
 .. image:: images/pipeline_overview.png
     :width: 20cm
 
+.. automodule:: simpa.core.simulation
+    :members:
+
 Volume creation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The core contribution of the SIMPA toolkit is the creation of in silico tissue-mimicking
+phantoms. This feature is represented by the volume_creation module, that two main volume creation modules:
+| Model-based creation of volumes using a set of rules
+| Segmentation-based creation of volumes
+
 .. automodule:: simpa.core.volume_creation
+    :members:
+
+.. automodule:: simpa.core.volume_creation.volume_creation
+    :members:
+
+Model-based volume creation
+""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.volume_creation.versatile_volume_creator
+    :members:
+
+Segmentation-based volume creation
+"""""""""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.volume_creation.segmentation_based_volume_creator
     :members:
 
 Optical forward modeling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. automodule:: simpa.core.optical_simulation.optical_modelling
+    :members:
+
 .. automodule:: simpa.core.optical_simulation
+    :members:
+
+.. automodule:: simpa.core.optical_simulation.illumination_definition
+    :members:
+
+mcx integration
+""""""""""""""""""
+
+.. automodule:: simpa.core.optical_simulation.mcx_adapter
     :members:
 
 Acoustic forward modeling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. automodule:: simpa.core.acoustic_simulation.acoustic_modelling
+    :members:
+
 .. automodule:: simpa.core.acoustic_simulation
+    :members:
+
+k-Wave integration
+"""""""""""""""""""
+
+.. automodule:: simpa.core.acoustic_simulation.k_wave_adapter
     :members:
 
 Noise modeling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: simpa.core.noise_simulation.noise_modelling
+    :members:
 
 .. automodule:: simpa.core.noise_simulation
     :members:
@@ -61,7 +108,22 @@ Noise modeling
 Image reconstruction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. automodule:: simpa.core.image_reconstruction.reconstruction_modelling
+    :members:
+
 .. automodule:: simpa.core.image_reconstruction
+    :members:
+
+Backprojection
+"""""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.image_reconstruction.BackprojectionAdapter
+    :members:
+
+Time Revearsal
+"""""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.image_reconstruction.TimeReversalAdapter
     :members:
 
 Digital device twins

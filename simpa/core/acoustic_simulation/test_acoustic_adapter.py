@@ -22,11 +22,14 @@
 
 import numpy as np
 from simpa.utils import Tags
+from simpa.core.acoustic_simulation import AcousticForwardAdapterBase
 
 
-def simulate(settings):
+class TestAcousticAdapter(AcousticForwardAdapterBase):
 
-    if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
-        return np.random.random((128, 128, 3000))
-    else:
-        return np.random.random((128, 3000))
+    def forward_model(self, settings) -> np.ndarray:
+
+        if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+            return np.random.random((128, 128, 3000))
+        else:
+            return np.random.random((128, 3000))

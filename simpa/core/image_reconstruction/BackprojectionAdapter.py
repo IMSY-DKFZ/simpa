@@ -31,6 +31,21 @@ import torch
 
 
 class BackprojectionAdapter(ReconstructionAdapterBase):
+    """
+    SIMPA provides a pytorch-based implementations of the universal backprojection algorithm::
+
+        Xu, Minghua, and Lihong V. Wang. "Universal back-projection algorithm for
+        photoacoustic computed tomography."
+        Physical Review E 71.1 (2005): 016706.
+
+    In case a CUDA-capable device is available on the system, the backprojection algorithm
+    will be computed on the GPU, otherwise, the code will be run on the CPU.
+
+    Depending on the reconstruction mode (Tags.RECONSTRUCTION_MODE), the image reconstruction
+    will be performed using the time series pressure (Tags.RECONSTRUCTION_MODE_PRESSURE),
+    the derivative of the time series pressure (Tags.RECONSTRUCTION_MODE_DIFFERENTIAL),
+    or a combination (Tags.RECONSTRUCTION_MODE_FULL).
+    """
 
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
 
@@ -75,12 +90,27 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         return self.backprojection3D_torch(time_series_sensor_data, speed_of_sound_m=sound_speed_m,
                                            target_dim_m=target_dim_m, resolution_m=resolution_m,
-                                           sensor_positions_m=sensor_positions, sampling_frequency=sampling_frequency,
+                                           sensor_positions_m=sensor_positions, sampling_frequency_Hz=sampling_frequency,
                                            mode=mode)
 
     def backprojection3D_torch(self, time_series_data, speed_of_sound_m, target_dim_m, resolution_m,
-                               sensor_positions_m, sampling_frequency, mode=None):
-        """ backprojection3D_torch """
+                               sensor_positions_m, sampling_frequency_Hz, mode=None):
+        """
+        The implementation of the actual algorithm.
+
+        :param time_series_data: The time series pressure data with the shape [num_samples, num_detectors]
+        :param speed_of_sound_m: The speed of sound in meters
+        :param target_dim_m: The target dimension of the reconstruction volume in meters
+        :param resolution_m: The target resolution of the reconstruction volume in meters
+        :param sensor_positions_m: The sensor positions in meters. Must be num_detector elements.
+        :param sampling_frequency_Hz: The sampling frequency of the device in Hertz
+        :param mode: The reconstruction mode. Depending on the reconstruction mode (Tags.RECONSTRUCTION_MODE), the image reconstruction
+            will be performed using the time series pressure (Tags.RECONSTRUCTION_MODE_PRESSURE),
+            the derivative of the time series pressure (Tags.RECONSTRUCTION_MODE_DIFFERENTIAL),
+            or a combination (Tags.RECONSTRUCTION_MODE_FULL).
+        :returns: a numpy array containing the reconstructed volume.
+
+        """
 
         if mode is None:
             mode = Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
@@ -96,7 +126,7 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         num_detectors = time_series_data.shape[1]
         num_samples = time_series_data.shape[0]
-        time_per_sample_s = 1/sampling_frequency
+        time_per_sample_s = 1 / sampling_frequency_Hz
 
         time_vector = torch.arange(0, num_samples * time_per_sample_s, time_per_sample_s).to(device)
         target_dim_voxels = torch.round(torch.true_divide(target_dim_m, resolution_m)).int().to(device)
@@ -149,78 +179,3 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
                 back_projection = back_projection + pressure - derivative_pressure
 
         return back_projection.cpu().numpy()
-
-    def backprojection3D_torch_fast(self, time_series_data, speed_of_sound_m, target_dim_m, resolution_m,
-                                    sensor_positions_m, sampling_frequency, mode=None, batch_size=10):
-        """ ND packprojection """
-
-        if mode is None:
-            mode = Tags.RECONSTRUCTION_MODE_FULL
-
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        time_series_data = torch.from_numpy(time_series_data.copy()).float().to(device)
-        print("Time series data:", np.shape(time_series_data))
-
-        target_dim_m = torch.from_numpy(target_dim_m.copy()).float().to(device)
-        print("target_dim_m:", target_dim_m)
-
-        sensor_positions_m = torch.from_numpy(sensor_positions_m.copy()).float().to(device)
-        print("sensor_positions_m:", np.shape(sensor_positions_m))
-
-        num_detectors = time_series_data.shape[1]
-        num_samples = time_series_data.shape[0]
-        time_per_sample_s = 1/sampling_frequency
-        time_vector = torch.arange(0, num_samples * time_per_sample_s, time_per_sample_s).to(device)
-        target_dim_voxels = torch.round(torch.true_divide(target_dim_m, resolution_m)).int().to(device)
-        print("target_dim_voxels:", target_dim_voxels)
-
-        sizeT = len(time_vector)
-        time_vector = torch.unsqueeze(time_vector, 1)
-        back_projection = torch.zeros(*target_dim_voxels, names=None).float().to(device)
-        edges_m = torch.true_divide(target_dim_voxels, 2) * resolution_m
-        gridsizes_x = torch.linspace(-edges_m[0], edges_m[0], target_dim_voxels[0])
-        gridsizes_y = torch.linspace(-edges_m[1], edges_m[1], target_dim_voxels[1])
-        gridsizes_z = torch.linspace(-edges_m[2], edges_m[2], target_dim_voxels[2])
-        gridsizes = [gridsizes_x, gridsizes_y, gridsizes_z]
-
-        mesh = torch.zeros([3, len(gridsizes[0]), len(gridsizes[1]), len(gridsizes[2])], names=None).to(device)
-        torch.stack(torch.meshgrid(*gridsizes), out=mesh)
-        mesh = torch.unsqueeze(mesh, 4)
-        NUM_BATCHES = int(np.ceil(num_detectors / batch_size))
-
-        for batch_idx in range(NUM_BATCHES):
-            print(batch_idx, "/", NUM_BATCHES)
-            time_series_pressure_of_detection_element = time_series_data[:, (batch_idx*batch_size):((batch_idx+1)*batch_size)]
-            effective_batch_size = time_series_pressure_of_detection_element.shape[1]
-            time_derivative_pressure = (time_series_pressure_of_detection_element[1:] -
-                                        time_series_pressure_of_detection_element[0:-1])
-            time_derivative_pressure = torch.cat([time_derivative_pressure, torch.zeros([1, effective_batch_size], names=None).to(device)], 0)
-            time_derivative_pressure = torch.mul(time_derivative_pressure, 1 / time_per_sample_s)
-            time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
-
-            positions = sensor_positions_m[(batch_idx*batch_size):((batch_idx+1)*batch_size)]
-            det_pos = torch.transpose(positions, 0, 1)
-            det_pos = torch.reshape(det_pos, (3, 1, 1, 1, -1))
-            detector_distances = torch.add(mesh, -det_pos)
-            distance_to_meshpoints_m = torch.sqrt(torch.sum(torch.square(detector_distances), axis=0))
-
-            time_delay_voxels_indices = torch.round((distance_to_meshpoints_m / speed_of_sound_m) / time_per_sample_s).long() - 1
-
-            # correct for out of bounds indices
-            time_delay_voxels_indices[time_delay_voxels_indices >= sizeT] = sizeT
-            time_delay_voxels_indices[time_delay_voxels_indices <= 0] = 0
-
-
-            if mode == Tags.RECONSTRUCTION_MODE_PRESSURE or mode == Tags.RECONSTRUCTION_MODE_FULL:
-                back_projection = back_projection + \
-                                  torch.sum(torch.stack([time_series_pressure_of_detection_element[:, i]
-                                                        [time_delay_voxels_indices[:, :, :, i]]
-                                                         for i in range(batch_size)], dim=3), axis=3)
-
-            if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL or mode == Tags.RECONSTRUCTION_MODE_FULL:
-                back_projection = back_projection - \
-                                  torch.sum(torch.stack([time_derivative_pressure[:, i]
-                                                        [time_delay_voxels_indices[:, :, :, i]]
-                                                        for i in range(batch_size)], dim=3), axis=3)
-
-        return back_projection.cpu().numpy().squeeze()
