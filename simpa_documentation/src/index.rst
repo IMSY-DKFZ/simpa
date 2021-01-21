@@ -49,7 +49,16 @@ Optical forward modeling
 Acoustic forward modeling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. automodule:: simpa.core.acoustic_simulation.acoustic_modelling
+    :members:
+
 .. automodule:: simpa.core.acoustic_simulation
+    :members:
+
+k-Wave
+""""""""""""""""""
+
+.. automodule:: simpa.core.acoustic_simulation.k_wave_adapter
     :members:
 
 Noise modeling
