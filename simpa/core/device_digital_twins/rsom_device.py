@@ -22,17 +22,34 @@
 
 from simpa.core.device_digital_twins.pai_devices import PAIDeviceBase
 from simpa.utils.settings_generator import Settings
-from simpa.utils import Tags, SegmentationClasses
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-from simpa.utils.libraries.structure_library import HorizontalLayerStructure, Background
-from simpa.utils.deformation_manager import get_functional_from_deformation_settings
+from simpa.utils import Tags
 import numpy as np
-from simpa.utils import create_deformation_settings
 
 
 class RSOMExplorerP50(PAIDeviceBase):
+    """
+    This class represents an approximation of the Raster-scanning Optoacoustic Mesoscopy (RSOM) device
+    built by iThera Medical (Munich, Germany). Please refer to the companie's website for more information
+    (https://www.ithera-medical.com/products/rsom-explorer-p50/).
 
-    def __init__(self, element_spacing_mm=0.04):
+    Since simulating thousands of individual forward modeling steps to obtain a single raster-scanned image
+    is computationally not feasible, we approximate the process with a device design that has detection elements
+    across the entire field of view. Because of this limitation we also need to approximate the light source
+    with a homogeneous illumination across the field of view.
+
+    The digital device is modeled based on the reported specifications of the RSOM Explorer P50 system.
+    Technical details of the system can be found in the dissertation of Mathias Schwarz
+    (https://mediatum.ub.tum.de/doc/1324031/1324031.pdf) and you can find more details on
+    use cases of the device in the following literature sources:
+
+    Yew, Yik Weng, et al. "Raster-scanning optoacoustic mesoscopy (RSOM) imaging as an objective disease
+    severity tool in atopic dermatitis patients." Journal of the American Academy of Dermatology (2020).
+
+    Hindelang, B., et al. "Non‐invasive imaging in dermatology and the unique potential of raster‐scan
+    optoacoustic mesoscopy." Journal of the European Academy of Dermatology and Venereology 33.6 (2019): 1051-1061.
+    """
+
+    def __init__(self, element_spacing_mm=0.02):
         self.center_frequency_Hz = float(50e6)
         self.bandwidth_percent = 100.0
         self.sampling_frequency_MHz = 500.0
@@ -68,9 +85,10 @@ class RSOMExplorerP50(PAIDeviceBase):
         detector_element_positions_mm = np.zeros((self.number_detector_elements, 3))
         for x in range(self.num_elements_x):
             for y in range(self.num_elements_y):
-                detector_element_positions_mm[x + y*self.num_elements_x] = [(x - self.num_elements_x/2) * self.element_spacing_mm,
-                                                                            (y - self.num_elements_y/2) * self.element_spacing_mm,
-                                                                            0]
+                detector_element_positions_mm[x + y*self.num_elements_x] = \
+                    [(x - self.num_elements_x/2) * self.element_spacing_mm,
+                     (y - self.num_elements_y/2) * self.element_spacing_mm,
+                     0]
         return detector_element_positions_mm
 
     def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings):

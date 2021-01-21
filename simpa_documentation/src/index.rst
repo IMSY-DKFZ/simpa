@@ -1,6 +1,6 @@
 
 Welcome to the SIMPA documentation!
-=================================
+===================================
 
 .. toctree::
    :maxdepth: 2
@@ -72,9 +72,6 @@ needed. This is important to reflect characteristic artefacts and challenges for
 
 To this end, we have included digital twins of commonly used devices into the SIMPA core.
 
-.. automodule:: simpa.core.device_digital_twins
-    :members:
-
 MSOT Acuity Echo
 """"""""""""""""""
 
@@ -117,7 +114,7 @@ Examples
 ================
 
 Performing a complete forward simulation with acoustic modeling, optical modeling, as well as image reconstruction
----------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
 
 The file can be found in simpa_examples/minimal_optical_simulation.py:
 

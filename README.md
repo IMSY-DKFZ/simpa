@@ -28,8 +28,8 @@ When the installation went fine and you want to make sure that you have the late
 you should do the following steps in a command line:
 
 1. Navigate to the `simpa` source directory (same level where the setup.py is in)
-2. Execute the command `sphinx-build -b pdf -a documentation/src documentation`
-3. Find the `PDF` file in `documentation/simpa_documantation.pdf`
+2. Execute the command `sphinx-build -b pdf -a simpa_documentation/src simpa_documentation`
+3. Find the `PDF` file in `simpa_documentation/simpa_documantation.pdf`
 
 ## External Tools installation instructions
 

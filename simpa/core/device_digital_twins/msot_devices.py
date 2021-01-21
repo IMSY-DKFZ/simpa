@@ -31,6 +31,9 @@ from simpa.utils import create_deformation_settings
 
 
 class MSOTAcuityEcho(PAIDeviceBase):
+    """
+    TODO
+    """
 
     def __init__(self):
         self.pitch_mm = 0.34
