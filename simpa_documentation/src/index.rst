@@ -34,10 +34,33 @@ photoacoustic modeling into a single continuous pipeline:
 .. image:: images/pipeline_overview.png
     :width: 20cm
 
+.. automodule:: simpa.core.simulation
+    :members:
+
 Volume creation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The core contribution of the SIMPA toolkit is the creation of in silico tissue-mimicking
+phantoms. This feature is represented by the volume_creation module, that two main volume creation modules:
+| Model-based creation of volumes using a set of rules
+| Segmentation-based creation of volumes
+
 .. automodule:: simpa.core.volume_creation
+    :members:
+
+.. automodule:: simpa.core.volume_creation.volume_creation
+    :members:
+
+Model-based volume creation
+""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.volume_creation.versatile_volume_creator
+    :members:
+
+Segmentation-based volume creation
+"""""""""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.volume_creation.segmentation_based_volume_creator
     :members:
 
 Optical forward modeling

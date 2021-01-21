@@ -22,7 +22,7 @@
 
 from abc import abstractmethod
 from simpa.utils.settings_generator import Settings
-from simpa.utils import MorphologicalTissueProperties, Tags, TISSUE_LIBRARY, SegmentationClasses
+from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
 
@@ -50,6 +50,7 @@ class VolumeCreatorBase:
     def create_simulation_volume(self, settings: Settings) -> dict:
         """
         This method will be called to create a simulation volume.
-        @param settings:
+
+        :param settings: the settings dictionary containing the simulation instructions.
         """
         pass
