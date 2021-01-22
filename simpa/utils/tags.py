@@ -545,13 +545,13 @@ class Tags:
     K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float, np.float))
     """
     Temporal resolution of kwave.\n
-    Usage: adapter k_wave_adapter, adapter TimeReversalAdapter
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter
     """
 
     K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float, np.float))
     """
     Total time steps simulated by kwave.\n
-    Usage: adapter k_wave_adapter, adapter TimeReversalAdapter
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter
     """
 
     ACOUSTIC_MODEL_TEST = "simpa_tests"
@@ -577,58 +577,261 @@ class Tags:
     """
 
     RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool, np.bool_))
+    """
+    If True, the simulation will run the acoustic forward model.\n
+    Usage: module core (simulate.py)
+    """
+
     ACOUSTIC_MODEL_BINARY_PATH = ("acoustic_model_binary_path", str)
+    """
+    Absolute path of the location of the acoustic forward model binary.\n
+    Usage: module optical_simulation
+    """
+
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
-    ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
+    """
+    Location of the acoustic forward model output in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     RECORDMOVIE = ("record_movie", (bool, np.bool, np.bool_))
+    """
+    If True, a movie of the kwave simulation will be recorded.\n
+    Usage: adapter KwaveAcousticForwardModel
+    """
+
     MOVIENAME = ("movie_name", str)
-    ACOUSTIC_PLOT_SCALE = "acoustic_plot_scale"
+    """
+    Name of the movie recorded by kwave.\n
+    Usage: adapter KwaveAcousticForwardModel
+    """
+
     ACOUSTIC_LOG_SCALE = ("acoustic_log_scale", (bool, np.bool, np.bool_))
+    """
+    If True, the movie of the kwave simulation will be recorded in a log scale.\n
+    Usage: adapter KwaveAcousticForwardModel
+    """
+
     TIME_SERIES_DATA = "time_series_data"
+    """
+    Location of the time series data in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     TIME_SERIES_DATA_NOISE = "time_series_data_noise"
+    """
+    Location of the time series data with applied noise in the SIMPA output file.\n
+    Usage: naming convention
+    """
 
     # Reconstruction settings
     PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", (bool, np.bool, np.bool_))
+    """
+    If True, the simulation will run the image reconstruction.\n
+    Usage: module core (simulate.py)
+    """
+
     RECONSTRUCTION_OUTPUT_NAME = ("reconstruction_result", str)
+    """
+    Absolute path of the image reconstruction result.\n
+    Usage: adapter MitkBeamformingAdapter
+    """
+
     RECONSTRUCTION_ALGORITHM = ("reconstruction_algorithm", str)
+    """
+    Choice of the used reconstruction algorithm.\n
+    Usage: module image_reconstruction
+    """
+
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
+    """
+    Corresponds to the reconstruction algorithm DAS with the MitkBeamformingAdapter.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
+    """
+    Corresponds to the reconstruction algorithm DMAS with the MitkBeamformingAdapter.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
+    """
+    Corresponds to the reconstruction algorithm sDMAS with the MitkBeamformingAdapter.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
+    """
+    Corresponds to the reconstruction algorithm Time Reversal with TimeReversalAdapter.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
+    """
+    Corresponds to an adapter for testing purposes only.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_ALGORITHM_BACKPROJECTION = "backprojection"
+    """
+    Corresponds to the reconstruction algorithm Backprojection with BackprojectionAdapter.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool, np.bool_))
+    """
+    If True, the Time Reversal reconstruction will commit the "inverse crime".\n
+    Usage: TimeReversalAdapter
+    """
+
     RECONSTRUCTION_MITK_BINARY_PATH = ("reconstruction_mitk_binary_path", str)
+    """
+    Absolute path to the Mitk Beamforming script.\n
+    Usage: adapter MitkBeamformingAdapter
+    """
+
     RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml", str)
+    """
+    Absolute path to the Mitk Beamforming script settings.\n
+    Usage: adapter MitkBeamformingAdapter
+    """
+
     RECONSTRUCTION_BMODE_METHOD = ("reconstruction_bmode_method", str)
+    """
+    Choice of the B-Mode method used in the Mitk Beamforming.\n
+    Usage: adapter MitkBeamformingAdapter
+    """
+
     RECONSTRUCTION_BMODE_METHOD_ABS = "Abs"
+    """
+    Corresponds to the absolute value as the B-Mode method used in the Mitk Beamforming.\n
+    Usage: adapter MitkBeamformingAdapter, naming convention
+    """
+
     RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM = "EnvelopeDetection"
+    """
+    Corresponds to the Hilbert transform as the B-Mode method used in the Mitk Beamforming.\n
+    Usage: adapter MitkBeamformingAdapter, naming convention
+    """
+
     RECONSTRUCTED_DATA = "reconstructed_data"
+    """
+    Location of the reconstructed data in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     RECONSTRUCTED_DATA_NOISE = "reconstructed_data_noise"
-    RECONSTRUCTION_MODE = "reconstruction_mode"
+    """
+    Location of the reconstructed data with applied noise in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
+    RECONSTRUCTION_MODE = ("reconstruction_mode", str)
+    """
+    Choice of the reconstruction mode used in the Backprojection.\n
+    Usage: adapter BackprojectionAdapter
+    """
+
     RECONSTRUCTION_MODE_DIFFERENTIAL = "differential"
+    """
+    Corresponds to the differential mode used in the Backprojection.\n
+    Usage: adapter BackprojectionAdapter, naming_convention
+    """
+
     RECONSTRUCTION_MODE_PRESSURE = "pressure"
+    """
+    Corresponds to the pressure mode used in the Backprojection.\n
+    Usage: adapter BackprojectionAdapter, naming_convention
+    """
+
     RECONSTRUCTION_MODE_FULL = "full"
+    """
+    Corresponds to the full mode used in the Backprojection.\n
+    Usage: adapter BackprojectionAdapter, naming_convention
+    """
 
     """
     Upsampling settings
     """
 
     CROP_IMAGE = ("crop_image", bool)
-    CENTER_CROP = "center_crop"
-    CROP_POWER_OF_TWO = "crop_power_of_two"
+    """
+    If True, the PA image cropped in the image processing.\n
+    Usage: module process
+    """
+
+    CROP_POWER_OF_TWO = ("crop_power_of_two", bool)
+    """
+    If True, the PA image cropped to the shape as the nearest power of two in the image processing.\n
+    Usage: module process
+    """
+
     PERFORM_UPSAMPLING = ("sample", bool)
-    UPSAMPLING_METHOD = "upsampling_method"
+    """
+    If True, the PA image upsampled in the image processing.\n
+    Usage: module process
+    """
+
+    UPSAMPLING_METHOD = ("upsampling_method", str)
+    """
+    Choice of the upsampling method used in the image processing.\n
+    Usage: module process
+    """
+
     UPSAMPLING_METHOD_DEEP_LEARNING = "deeplearning"
+    """
+    Corresponds to deep learning as the upsampling method used in the image processing.\n
+    Usage: module process, naming concention
+    """
+
     UPSAMPLING_METHOD_NEAREST_NEIGHBOUR = "nearestneighbour"
+    """
+    Corresponds to nearest neighbour as the upsampling method used in the image processing.\n
+    Usage: module process, naming concention
+    """
+
     UPSAMPLING_METHOD_BILINEAR = "bilinear"
+    """
+    Corresponds to the bilinear upsampling method used in the image processing.\n
+    Usage: module process, naming concention
+    """
+
     UPSAMPLING_METHOD_LANCZOS2 = "lanczos2"
+    """
+    Corresponds to lanczos with kernel size 2 as the upsampling method used in the image processing.\n
+    Usage: module process, naming concention
+    """
+
     UPSAMPLING_METHOD_LANCZOS3 = "lanczos3"
+    """
+    Corresponds to lanczos with kernel size 3 as the upsampling method used in the image processing.\n
+    Usage: module process, naming concention
+    """
+
     UPSAMPLING_SCRIPT = ("upsampling_script", str)
-    UPSAMPLING_SCRIPT_LOCATION = "upsampling_script_location"
-    UPSCALE_FACTOR = "upscale_factor"
-    UPSAMPLING_RUN = ("upsampling_run", bool)
-    DL_MODEL_PATH = "dl_model_path"
+    """
+    Name of the upsampling script used for the lanczos upsampling.\n
+    Usage: module process
+    """
+
+    UPSAMPLING_SCRIPT_LOCATION = ("upsampling_script_location", str)
+    """
+    Absolute path to the upsampling script used for the lanczos upsampling.\n
+    Usage: module process
+    """
+
+    UPSCALE_FACTOR = ("upscale_factor", (int, float, np.int_, np.float_))
+    """
+    Upscale factor of the upsampling in the image processing.\n
+    Usage: module process
+    """
+
+    DL_MODEL_PATH = ("dl_model_path", str)
+    """
+    Absolute path to the deep learning model used for the deep learning upsampling.\n
+    Usage: module process
+    """
 
     # physical property volume types
     PROPERTY_ABSORPTION_PER_CM = "mua"
