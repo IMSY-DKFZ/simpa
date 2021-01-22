@@ -30,8 +30,8 @@ class Tags:
     Every Tag that is intended to be used as a key in the settings dictionary is represented by a tuple.
     The first element of the tuple is a string that corresponds to the name of the Tag.
     The second element of the tuple is a data type or a tuple of data types.
-    The values that are assigned to these keys in the settings should match those data types.
-    Their usage throughout the SIMPA package is divided in "SIMPA package", "module X", "adapter Y", "class Z" and
+    The values that are assigned to the keys in the settings should match these data types.
+    Their usage within the SIMPA package is divided in "SIMPA package", "module X", "adapter Y", "class Z" and
     "naming convention".
     """
 
@@ -293,66 +293,284 @@ class Tags:
     """
 
     DIGITAL_DEVICE = ("digital_device", str)
+    """
+    Digital device that is chosen as illumination source and detector for the simulation.\n
+    Usage: SIMPA package
+    """
+
     DIGITAL_DEVICE_MSOT = "digital_device_msot"
+    """
+    Corresponds to the MSOTAcuityEcho device.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DIGITAL_DEVICE_RSOM = "digital_device_rsom"
+    """
+    Corresponds to the RSOMExplorerP50 device.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
+    """
+    Position in [x, y, z] coordinates of the device in the generated volume.\n
+    Usage: SIMPA package
+    """
 
     """
     Optical model settings
     """
+
     RUN_OPTICAL_MODEL = ("run_optical_forward_model", bool)
+    """
+    If True, the simulation will run the optical forward model.\n
+    Usage: module core (simulate.py)
+    """
+
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
+    """
+    Location of the optical forward model output in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     OPTICAL_MODEL_BINARY_PATH = ("optical_model_binary_path", str)
+    """
+    Absolute path of the location of the optical forward model binary.\n
+    Usage: module optical_simulation
+    """
+
     OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", (int, np.integer, float, np.float))
+    """
+    Number of photons used in the optical simulation.\n
+    Usage: module optical_simulation
+    """
+
     OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = ("optical_model_illumination_geometry_xml_file", str)
-    LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, np.float, list, range, tuple, np.ndarray))
+    """
+    Absolute path of the location of the optical forward model illumination geometry.\n
+    Usage: module optical_simulation
+    """
+
+    LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, np.float, list,
+                                                                             range, tuple, np.ndarray))
+    """
+    Laser pulse energy used in the optical simulation.\n
+    Usage: module optical_simulation
+    """
+
     OPTICAL_MODEL_FLUENCE = "fluence"
+    """
+    Location of the optical forward model output fluence in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     OPTICAL_MODEL_INITIAL_PRESSURE = "initial_pressure"
+    """
+    Location of the optical forward model output initial pressure in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     OPTICAL_MODEL_UNITS = "units"
+    """
+    Location of the optical forward model output units in the SIMPA output file.\n
+    Usage: naming convention
+    """
 
     ILLUMINATION_TYPE = ("optical_model_illumination_type", str)
+    """
+    Type of the illumination geometry used in mcx.\n
+    Usage: module optical_modelling, adapter mcx_adapter
+    """
 
     # Illumination parameters
     ILLUMINATION_POSITION = ("illumination_position", (list, tuple, np.ndarray))
+    """
+    Position of the photon source in [x, y, z] coordinates used in mcx.\n
+    Usage: module optical_modelling, adapter mcx_adapter
+    """
+
     ILLUMINATION_DIRECTION = ("illumination_direction", (list, tuple, np.ndarray))
+    """
+    Direction of the photon source as [x, y, z] vector used in mcx.\n
+    Usage: module optical_modelling, adapter mcx_adapter
+    """
+
     ILLUMINATION_PARAM1 = ("illumination_param1", (list, tuple, np.ndarray))
+    """
+    First parameter group of the specified illumination type as [x, y, z, w] vector used in mcx.\n
+    Usage: module optical_modelling, adapter mcx_adapter
+    """
+
     ILLUMINATION_PARAM2 = ("illumination_param2", (list, tuple, np.ndarray))
+    """
+    Second parameter group of the specified illumination type as [x, y, z, w] vector used in mcx.\n
+    Usage: module optical_modelling, adapter mcx_adapter
+    """
+
     TIME_STEP = ("time_step", (int, np.integer, float, np.float))
+    """
+    Temporal resolution of mcx.\n
+    Usage: adapter mcx_adapter
+    """
+
     TOTAL_TIME = ("total_time", (int, np.integer, float, np.float))
+    """
+    Total simulated time in mcx.\n
+    Usage: adapter mcx_adapter
+    """
 
     # Supported illumination types - implemented in mcx
     ILLUMINATION_TYPE_PENCIL = "pencil"
+    """
+    Corresponds to pencil source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_PENCILARRAY = "pencilarray"
+    """
+    Corresponds to pencilarray source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_DISK = "disk"
+    """
+    Corresponds to disk source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_SLIT = "slit"
+    """
+    Corresponds to slit source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_GAUSSIAN = "gaussian"
+    """
+    Corresponds to gaussian source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_PATTERN = "pattern"
+    """
+    Corresponds to pattern source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_PATTERN_3D = "pattern3d"
+    """
+    Corresponds to pattern3d source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_PLANAR = "planar"
+    """
+    Corresponds to planar source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_FOURIER = "fourier"
+    """
+    Corresponds to fourier source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_FOURIER_X = "fourierx"
+    """
+    Corresponds to fourierx source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_FOURIER_X_2D = "fourierx2d"
+    """
+    Corresponds to fourierx2d source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
 
     ILLUMINATION_TYPE_DKFZ_PAUS = "pasetup"  # TODO more explanatory rename of pasetup
+    """
+    Corresponds to pasetup source in mcx. The geometrical definition is described in:\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_MSOT_ACUITY_ECHO = "msot_acuity_echo"
+    """
+    Corresponds to msot_acuity_echo source in mcx. The device is manufactured by iThera Medical, Munich, Germany
+    (https: // www.ithera-medical.com / products / msot-acuity /).\n
+    Usage: adapter mcx_adapter, naming convention
+    """
 
     ILLUMINATION_TYPE_RING = "ring"
+    """
+    Corresponds to ring source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
 
     # Supported optical models
     OPTICAL_MODEL = ("optical_model", str)
+    """
+    Choice of the used optical model.\n
+    Usage: module optical_simulation
+    """
+
     OPTICAL_MODEL_MCXYZ = "mcxyz"
+    """
+    Corresponds to the mcxyz simulation.\n
+    Usage: module optical_simulation, naming convention
+    """
+
     OPTICAL_MODEL_MCX = "mcx"
+    """
+    Corresponds to the mcx simulation.\n
+    Usage: module optical_simulation, naming convention
+    """
+
     OPTICAL_MODEL_TEST = "simpa_tests"
+    """
+    Corresponds to an adapter for testing purposes only.\n
+    Usage: module optical_simulation, naming convention
+    """
 
     # Supported acoustic models
     ACOUSTIC_MODEL = ("acoustic_model", str)
+    """
+    Choice of the used acoustic model.\n
+    Usage: module acoustic_simulation
+    """
+
     ACOUSTIC_MODEL_K_WAVE = "kwave"
+    """
+    Corresponds to the kwave simulaiton.\n
+    Usage: module acoustic_simulation, naming convention
+    """
+
     K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float, np.float))
+    """
+    Temporal resolution of kwave.\n
+    Usage: adapter k_wave_adapter, adapter TimeReversalAdapter
+    """
+
     K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float, np.float))
+    """
+    Total time steps simulated by kwave.\n
+    Usage: adapter k_wave_adapter, adapter TimeReversalAdapter
+    """
+
     ACOUSTIC_MODEL_TEST = "simpa_tests"
-    ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
+    """
+    Corresponds to an adapter for testing purposes only.\n
+    Usage: module acoustic_simulation, naming convention
+    """
+
     ACOUSTIC_MODEL_SCRIPT_LOCATION = ("acoustic_model_script_location", str)
+    """
+    Absolute path of the location of the acoustic_simulation folder in the SIMPA core module.\n
+    Usage: module acoustic_simulation
+    """
+
     TIME_REVEARSAL_SCRIPT_LOCATION = ("time_revearsal_script_location", str)
+    """
+    Absolute path of the location of the image_reconstruction folder in the SIMPA core module.\n
+    Usage: adapter TimeReversalAdapter
+    """
 
     """
     Acoustic model settings
