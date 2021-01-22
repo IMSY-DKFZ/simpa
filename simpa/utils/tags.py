@@ -25,72 +25,273 @@ import numpy as np
 
 class Tags:
     """
-    This class contains all 'Tags' for the use in the settings dictionary.
+    This class contains all 'Tags' for the use in the settings dictionary as well as strings that are used in SIMPA
+    as naming conventions.
+    Every Tag that is intended to be used as a key in the settings dictionary is represented by a tuple.
+    The first element of the tuple is a string that corresponds to the name of the Tag.
+    The second element of the tuple is a data type or a tuple of data types.
+    The values that are assigned to these keys in the settings should match those data types.
+    Their usage throughout the SIMPA package is divided in "SIMPA package", "module X", "adapter Y", "class Z" and
+    "naming convention".
     """
-
-
 
     """
     General settings
     """
+
     SIMULATION_PATH = ("simulation_path", str)
+    """
+    Absolute path to the folder where the SIMPA output is saved.\n
+    Usage: SIMPA package
+    """
+
     VOLUME_NAME = ("volume_name", str)
+    """
+    Name of the SIMPA output file.\n
+    Usage: SIMPA package
+    """
+
     WAVELENGTHS = ("wavelengths", (list, range, tuple, np.ndarray))
+    """
+    Iterable of all the wavelengths used for the simulation.\n
+    Usage: SIMPA package
+    """
+
     WAVELENGTH = ("wavelength", (int, np.integer))
+    """
+    Single wavelength used for the current simulation.\n
+    Usage: SIMPA package
+    """
+
     RANDOM_SEED = ("random_seed", (int, np.integer))
+    """
+    Random seed for numpy and torch.\n
+    Usage: SIMPA package
+    """
+
     TISSUE_PROPERTIES_OUPUT_NAME = "properties"
+    """
+    Location of the simulation properties in the SIMPA output file\n
+    Usage: naming convention
+    """
+
     SIMULATION_EXTRACT_FIELD_OF_VIEW = ("extract_field_of_view", bool)
+    """
+    If True, converts a 3D volume to a 2D volume by extracting the middle slice along the y-axis.\n
+    Usage: SIMPA package
+    """
+
     GPU = ("gpu", (bool, np.bool, np.bool_))
+    """
+    If True, uses all available gpu options of the used modules.\n
+    Usage: SIMPA package 
+    """
+
     ACOUSTIC_SIMULATION_3D = ("acoustic_simulation_3d", bool)
+    """
+    If True, simulates the acoustic forward model in 3D.\n
+    Usage: SIMPA package
+    """
+
     MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float, np.float))
+    """
+    Temperature of the simulated volume.\n
+    Usage: module noise_simulation
+    """
 
     """
     Volume Creation Settings
     """
+
     VOLUME_CREATOR = ("volume_creator", str)
+    """
+    Choice of the volume creator adapter.\n 
+    Usage: module volume_creation, module device_digital_twins
+    """
+
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
+    """
+    Corresponds to the ModelBasedVolumeCreator.\n
+    Usage: module volume_creation, naming convention
+    """
+
     VOLUME_CREATOR_SEGMENTATION_BASED = "volume_creator_segmentation_based"
+    """
+    Corresponds to the SegmentationBasedVolumeCreator.\n
+    Usage: module volume_creation, naming convention
+    """
 
     INPUT_SEGMENTATION_VOLUME = ("input_segmentation_volume", np.ndarray)
+    """
+    Array that defines a segmented volume.\n
+    Usage: adapter segmentation_based_volume_creator
+    """
+
     SEGMENTATION_CLASS_MAPPING = ("segmentation_class_mapping", dict)
+    """
+    Mapping that assigns every class in the INPUT_SEGMENTATION_VOLUME a MOLECULE_COMPOSITION.\n
+    Usage: adapter segmentation_based_volume_creator
+    """
 
     PRIORITY = ("priority", (int, np.integer, float, np.float))
+    """
+    Number that corresponds to a priority of the assigned structure. If another structure occupies the same voxel 
+    in a volume, the structure with a higher priority will be preferred.\n
+    Usage: adapter versatile_volume_creator
+    """
+
     MOLECULE_COMPOSITION = ("molecule_composition", list)
+    """
+    List that contains all the molecules within a structure.\n
+    Usage: module volume_creation
+    """
+
     SIMULATE_DEFORMED_LAYERS = ("simulate_deformed_layers", bool)
+    """
+    If True, the horizontal layers are deformed according to the DEFORMED_LAYERS_SETTINGS.\n
+    Usage: adapter versatile_volume_creation
+    """
+
     DEFORMED_LAYERS_SETTINGS = ("deformed_layers_settings", dict)
+    """
+    Settings that contain the functional which defines the deformation of the layers.\n
+    Usage: adapter versatile_volume_creation
+    """
+
     BACKGROUND = "Background"
+    """
+    Corresponds to the name of a structure.\n
+    Usage: adapter versatile_volume_creation, naming convention
+    """
 
-    """
-    ADHERE_TO_DEFORMATION default is True
-    """
     ADHERE_TO_DEFORMATION = ("adhere_to_deformation", bool)
+    """
+    If True, a structure will be shifted according to the deformation.\n
+    Usage: adapter versatile_volume_creation
+    """
+
     DEFORMATION_X_COORDINATES_MM = "deformation_x_coordinates"
+    """
+    Mesh that defines the x coordinates of the deformation.\n
+    Usage: adapter versatile_volume_creation, naming convention
+    """
+
     DEFORMATION_Y_COORDINATES_MM = "deformation_y_coordinates"
+    """
+    Mesh that defines the y coordinates of the deformation.\n
+    Usage: adapter versatile_volume_creation, naming convention
+    """
+
     DEFORMATION_Z_ELEVATIONS_MM = "deformation_z_elevation"
+    """
+    Mesh that defines the z coordinates of the deformation.\n
+    Usage: adapter versatile_volume_creation, naming convention
+    """
+
     MAX_DEFORMATION_MM = "max_deformation"
+    """
+    Maximum deformation in z-direction.\n
+    Usage: adapter versatile_volume_creation, naming convention
+    """
 
     """
-        Structure Settings
+    Structure Settings
     """
+
     CONSIDER_PARTIAL_VOLUME = ("consider_partial_volume", bool)
+    """
+    If True, the structure will be generated with its edges only occupying a partial volume of the voxel.\n
+    Usage: adapter versatile_volume_creation
+    """
+
     STRUCTURE_START_MM = ("structure_start", (list, tuple, np.ndarray))
+    """
+    Beginning of the structure as [x, y, z] coordinates in the generated volume.\n
+    Usage: adapter versatile_volume_creation, class GeometricalStructure
+    """
+
     STRUCTURE_END_MM = ("structure_end", (list, tuple, np.ndarray))
+    """
+    Ending of the structure as [x, y, z] coordinates in the generated volume.\n
+    Usage: adapter versatile_volume_creation, class GeometricalStructure
+    """
+
     STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float, np.float, np.ndarray))
+    """
+    Radius of the structure.\n
+    Usage: adapter versatile_volume_creation, class GeometricalStructure
+    """
+
     STRUCTURE_ECCENTRICITY = ("structure_excentricity", (int, np.integer, float, np.float, np.ndarray))
+    """
+    Eccentricity of the structure.\n
+    Usage: adapter versatile_volume_creation, class EllipticalTubularStructure
+    """
+
     STRUCTURE_FIRST_EDGE_MM = ("structure_first_edge_mm", (list, tuple, np.ndarray))
+    """
+    Edge of the structure as [x, y, z] vector starting from STRUCTURE_START_MM in the generated volume.\n
+    Usage: adapter versatile_volume_creation, class ParallelepipedStructure
+    """
+
     STRUCTURE_SECOND_EDGE_MM = ("structure_second_edge_mm", (list, tuple, np.ndarray))
+    """
+    Edge of the structure as [x, y, z] vector starting from STRUCTURE_START_MM in the generated volume.\n
+    Usage: adapter versatile_volume_creation, class ParallelepipedStructure
+    """
+
     STRUCTURE_THIRD_EDGE_MM = ("structure_third_edge_mm", (list, tuple, np.ndarray))
+    """
+    Edge of the structure as [x, y, z] vector starting from STRUCTURE_START_MM in the generated volume.\n
+    Usage: adapter versatile_volume_creation, class ParallelepipedStructure
+    """
+
     STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", (int, np.integer, float, np.float))
+    """
+    X-extent of the structure in the generated volume.\n
+    Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
+    """
+
     STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", (int, np.integer, float, np.float))
+    """
+    Y-extent of the structure in the generated volume.\n
+    Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
+    """
+
     STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", (int, np.integer, float, np.float))
+    """
+    Z-extent of the structure in the generated volume.\n
+    Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
+    """
+
     STRUCTURE_BIFURCATION_LENGTH_MM = ("structure_bifurcation_length_mm", (int, np.integer, float, np.float))
+    """
+    Length after which a VesselStructure will bifurcate.\n
+    Usage: adapter versatile_volume_creation, class VesselStructure
+    """
+
     STRUCTURE_CURVATURE_FACTOR = ("structure_curvature_factor", (int, np.integer, float, np.float))
+    """
+    Factor that determines how strongly a vessel tree is curved.\n
+    Usage: adapter versatile_volume_creation, class VesselStructure
+    """
+
     STRUCTURE_RADIUS_VARIATION_FACTOR = ("structure_radius_variation_factor", (int, np.integer, float, np.float))
+    """
+    Factor that determines how strongly a the radius of vessel tree varies.\n
+    Usage: adapter versatile_volume_creation, class VesselStructure
+    """
+
     STRUCTURE_DIRECTION = ("structure_direction", (list, tuple, np.ndarray))
+    """
+    Direction as [x, y, z] vector starting from STRUCTURE_START_MM in which the vessel will grow.\n
+    Usage: adapter versatile_volume_creation, class VesselStructure
+    """
 
     """
     Digital Device Twin Settings
     """
+
     DIGITAL_DEVICE = ("digital_device", str)
     DIGITAL_DEVICE_MSOT = "digital_device_msot"
     DIGITAL_DEVICE_RSOM = "digital_device_rsom"
