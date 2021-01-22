@@ -56,7 +56,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
             Tags.PERFORM_UPSAMPLING
             Tags.SPACING_MM
             Tags.UPSCALE_FACTOR
-            Tags.MEDIUM_ALPHA_POWER
+            Tags.PROPERTY_ALPHA_POWER
             Tags.GPU
             Tags.PMLInside
             Tags.PMLAlpha
@@ -150,7 +150,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         optical_path = settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
         possible_k_wave_parameters = [Tags.PERFORM_UPSAMPLING, Tags.SPACING_MM, Tags.UPSCALE_FACTOR,
-                                      Tags.MEDIUM_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
+                                      Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
 

@@ -71,7 +71,7 @@ class Tags:
 
     TISSUE_PROPERTIES_OUPUT_NAME = "properties"
     """
-    Location of the simulation properties in the SIMPA output file\n
+    Name of the simulation properties field in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -328,7 +328,7 @@ class Tags:
 
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
     """
-    Location of the optical forward model output in the SIMPA output file.\n
+    Name of the optical forward model output field in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -359,19 +359,19 @@ class Tags:
 
     OPTICAL_MODEL_FLUENCE = "fluence"
     """
-    Location of the optical forward model output fluence in the SIMPA output file.\n
+    Name of the optical forward model output fluence field in the SIMPA output file.\n
     Usage: naming convention
     """
 
     OPTICAL_MODEL_INITIAL_PRESSURE = "initial_pressure"
     """
-    Location of the optical forward model output initial pressure in the SIMPA output file.\n
+    Name of the optical forward model output initial pressure field in the SIMPA output file.\n
     Usage: naming convention
     """
 
     OPTICAL_MODEL_UNITS = "units"
     """
-    Location of the optical forward model output units in the SIMPA output file.\n
+    Name of the optical forward model output units field in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -590,7 +590,7 @@ class Tags:
 
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     """
-    Location of the acoustic forward model output in the SIMPA output file.\n
+    Name of the acoustic forward model output field in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -614,13 +614,13 @@ class Tags:
 
     TIME_SERIES_DATA = "time_series_data"
     """
-    Location of the time series data in the SIMPA output file.\n
+    Name of the time series data field in the SIMPA output file.\n
     Usage: naming convention
     """
 
     TIME_SERIES_DATA_NOISE = "time_series_data_noise"
     """
-    Location of the time series data with applied noise in the SIMPA output file.\n
+    Name of the time series data with applied noise field in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -717,13 +717,13 @@ class Tags:
 
     RECONSTRUCTED_DATA = "reconstructed_data"
     """
-    Location of the reconstructed data in the SIMPA output file.\n
+    Name of the reconstructed data field in the SIMPA output file.\n
     Usage: naming convention
     """
 
     RECONSTRUCTED_DATA_NOISE = "reconstructed_data_noise"
     """
-    Location of the reconstructed data with applied noise in the SIMPA output file.\n
+    Name of the reconstructed data with applied noise field in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -835,157 +835,356 @@ class Tags:
 
     # physical property volume types
     PROPERTY_ABSORPTION_PER_CM = "mua"
+    """
+    Optical absorption of the generated volume/structure in 1/cm.\n
+    Usage: SIMPA package, naming convention
+    """
+
     PROPERTY_SCATTERING_PER_CM = "mus"
+    """
+    Optical scattering (NOT REDUCED SCATTERING mus'! mus'=mus*(1-g) ) of the generated volume/structure in 1/cm.\n
+    Usage: SIMPA package, naming convention
+    """
+
     PROPERTY_ANISOTROPY = "g"
+    """
+    Optical scattering anisotropy of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
     PROPERTY_OXYGENATION = "oxy"
+    """
+    Oxygenation of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
     PROPERTY_SEGMENTATION = "seg"
+    """
+    Segmentation of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
+    PROPERTY_GRUNEISEN_PARAMETER = "gamma"
     """
     We define PROPERTY_GRUNEISEN_PARAMETER to contain all wavelength-independent constituents of the PA signal.
     This means that it contains the percentage of absorbed light converted into heat.
     Naturally, one could make an argument that this should not be the case, however, it simplifies the usage of 
-    this tool.
+    this tool.\n
+    Usage: SIMPA package, naming convention
     """
-    PROPERTY_GRUNEISEN_PARAMETER = "gamma"
+
     PROPERTY_SPEED_OF_SOUND = "sos"
+    """
+    Speed of sound of the generated volume/structure in m/s.\n
+    Usage: SIMPA package, naming convention
+    """
+
     PROPERTY_DENSITY = "density"
+    """
+    Density of the generated volume/structure in kg/m³.\n
+    Usage: SIMPA package, naming convention
+    """
+
     PROPERTY_ALPHA_COEFF = "alpha_coeff"
+    """
+    Acoustic attenuation of kwave of the generated volume/structure in dB/cm/MHz.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     PROPERTY_SENSOR_MASK = "sensor_mask"
+    """
+    Sensor mask of kwave of the used PA device.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     PROPERTY_DIRECTIVITY_ANGLE = "directivity_angle"
+    """
+    Directionality of the sensors in kwave of the used PA device.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
 
-    # Air layer
-    AIR_LAYER = ("airlayer", bool)
-    AIR_LAYER_HEIGHT_MM = ("air_layer_height", (int, np.integer, float, np.float))
-
-    # Gel Pad Layer
-    GELPAD_LAYER = ("gelpad", bool)
-    GELPAD_LAYER_HEIGHT_MM = ("gelpad_layer_height_mm", (int, np.integer, float, np.float))
+    PROPERTY_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float, np.float))
+    """
+    Exponent of the exponential acoustic attenuation law of kwave.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
 
     # Volume geometry settings
     SPACING_MM = ("voxel_spacing_mm", (int, np.integer, float, np.float))
-    DIM_VOLUME_X_MM = ("volume_x_dim_mm", (int, np.integer, float, np.float))
-    DIM_VOLUME_Y_MM = ("volume_y_dim_mm", (int, np.integer, float, np.float))
-    DIM_VOLUME_Z_MM = ("volume_z_dim_mm", (int, np.integer, float, np.float))
+    """
+    Isotropic extent of one voxels in mm in the generated volume.\n
+    Usage: SIMPA package
+    """
 
-    # 2D Acoustic Medium Properties
-    MEDIUM_SOUND_SPEED_HOMOGENEOUS = ("medium_sound_speed_homogeneous", bool)
-    MEDIUM_SOUND_SPEED = "medium_sound_speed"
-    MEDIUM_DENSITY_HOMOGENEOUS = "medium_density_homogeneous"
-    MEDIUM_DENSITY = "medium_density"
-    MEDIUM_ALPHA_COEFF_HOMOGENEOUS = "medium_alpha_coeff_homogeneous"
-    MEDIUM_ALPHA_COEFF = "medium_alpha_coeff"
-    MEDIUM_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float, np.float))
-    MEDIUM_NONLINEARITY = "medium_nonlinearity"
+    DIM_VOLUME_X_MM = ("volume_x_dim_mm", (int, np.integer, float, np.float))
+    """
+    Extent of the x-axis of the generated volume.\n
+    Usage: SIMPA package
+    """
+
+    DIM_VOLUME_Y_MM = ("volume_y_dim_mm", (int, np.integer, float, np.float))
+    """
+    Extent of the y-axis of the generated volume.\n
+    Usage: SIMPA package
+    """
+
+    DIM_VOLUME_Z_MM = ("volume_z_dim_mm", (int, np.integer, float, np.float))
+    """
+    Extent of the z-axis of the generated volume.\n
+    Usage: SIMPA package
+    """
 
     # PML parameters
-
     PMLSize = ("pml_size", (list, tuple, np.ndarray))
+    """
+    Size of the "perfectly matched layer" (PML) around the simulated volume in kwave.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     PMLAlpha = ("pml_alpha", (int, np.integer, float, np.float))
+    """
+    Alpha coefficient of the "perfectly matched layer" (PML) around the simulated volume in kwave.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     PMLInside = ("pml_inside", (bool, np.bool, np.bool_))
+    """
+    If True, the "perfectly matched layer" (PML) in kwave is located inside the volume.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     PlotPML = ("plot_pml", (bool, np.bool, np.bool_))
+    """
+    If True, the "perfectly matched layer" (PML) around the simulated volume in kwave is plotted.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
 
     # Acoustic Sensor Properties
-    SENSOR_MASK = "sensor_mask"
     SENSOR_RECORD = ("sensor_record", str)
+    """
+    Sensor Record mode of the sensor in kwave. Default should be "p".\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer, float, np.float))
+    """
+    Sensor center frequency in kwave.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float, np.float))
-    SENSOR_DIRECTIVITY_HOMOGENEOUS = "sensor_directivity_homogeneous"
-    SENSOR_DIRECTIVITY_ANGLE = "sensor_directivity_angle"
+    """
+    Sensor bandwidth in kwave.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer, float, np.float))
+    """
+    Size of each detector element in kwave.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     SENSOR_DIRECTIVITY_PATTERN = "sensor_directivity_pattern"
-    SENSOR_ELEMENT_PITCH_MM = "sensor_element_pitch"
+    """
+    Sensor directivity pattern of the sensor in kwave. Default should be "pressure".\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer, float, np.float))
+    """
+    Sampling rate of the used PA device.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     SENSOR_NUM_ELEMENTS = ("sensor_num_elements", (int, np.integer))
-    SENSOR_NUM_USED_ELEMENTS = "sensor_num_used_elements"
+    """
+    Number of detector elements for kwave if no device was selected.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
+    SENSOR_NUM_USED_ELEMENTS = ("sensor_num_used_elements", (int, np.integer))
+    """
+    Number of detector elements that fit into the generated volume if the dimensions and/or spacing of the generated 
+    volume were not highly resolved enough to be sufficient for the selected PA device.\n
+    Usage: module acoustic_simulation, naming convention
+    """
+
     SENSOR_CONCAVE = "concave"
-    SENSOR_RADIUS_MM = "sensor_radius_mm"
+    """
+    Indicates that the geometry of the used PA device in the Mitk Beamforming is concave.\n
+    Usage: adapter MitkBeamformingAdapter, naming convention
+    """
+
     SENSOR_LINEAR = "linear"
+    """
+    Indicates that the geometry of the used PA device in the Mitk Beamforming is linear.\n
+    Usage: adapter MitkBeamformingAdapter, naming convention
+    """
+
+    SENSOR_RADIUS_MM = "sensor_radius_mm"
+    """
+    Radius of a concave geometry of the used PA device in the Mitk Beamforming.\n
+    Usage: adapter MitkBeamformingAdapter, naming convention
+    """
 
     # Noise properties
     APPLY_NOISE_MODEL = ("apply_noise_model", bool)
-    NOISE_MODEL = "noise_model"
+    """
+    If True, the simulation will apply a noise model.\n
+    Usage: module core (simulate.py)
+    """
+
+    NOISE_MODEL = ("noise_model", str)
+    """
+    Choice of the noise model.\n 
+    Usage: module noise_simulation
+    """
+
     NOISE_MODEL_GAUSSIAN = "noise_model_gaussian"
-    NOISE_MEAN = "noise_mean"
-    NOISE_STD = "noise_std"
-    NOISE_MODEL_OUTPUT_NAME = "noise_model_output"
-    NOISE_MODEL_PATH = "noise_model_path"
+    """
+    Corresponds to a gaussian noise model.\n 
+    Usage: module noise_simulation
+    """
 
-    # Constant Tissue Properties
-    KEY_CONSTANT_PROPERTIES = "constant_properties"
-    KEY_MUA = "mua"
-    KEY_MUS = "mus"
-    KEY_G = "g"
+    NOISE_MEAN = ("noise_mean", (int, np.integer, float, np.float))
+    """
+    Mean of the gaussian noise model used in the noise modelling.\n 
+    Usage: module noise_simulation
+    """
 
-    # Tissue Properties Settings
-    KEY_B = "B"
-    KEY_B_MIN = "B_min"
-    KEY_B_MAX = "B_max"
-    KEY_W = "W"
-    KEY_W_MAX = "w_max"
-    KEY_W_MIN = "w_min"
-    KEY_F = "F"
-    KEY_F_MAX = "f_max"
-    KEY_F_MIN = "f_min"
-    KEY_M = "M"
-    KEY_M_MAX = "m_max"
-    KEY_M_MIN = "m_min"
-    KEY_OXY = "OXY"
-    KEY_OXY_MAX = "oxy_max"
-    KEY_OXY_MIN = "oxy_min"
-    KEY_MUSP500 = "musp500"
-    KEY_F_RAY = "f_ray"
-    KEY_B_MIE = "b_mie"
-    KEY_ANISOTROPY = "anisotropy"
+    NOISE_STD = ("noise_std", (int, np.integer, float, np.float))
+    """
+    Standard deviation of the gaussian noise model used in the noise modelling.\n 
+    Usage: module noise_simulation
+    """
+
+    NOISE_MODEL_PATH = ("noise_model_path", str)
+    """
+    Absolute path of a .csv file with an experimentally recorded noise model.\n
+    Usage: module noise_simulation
+    """
 
     # Structures
     STRUCTURES = ("structures", dict)
+    """
+    Settings dictionary which contains all the structures that should be generated inside the volume.\n
+    Usage: module volume_creation
+    """
+
     HORIZONTAL_LAYER_STRUCTURE = "HorizontalLayerStructure"
+    """
+    Corresponds to the HorizontalLayerStructure in the structure_library.\n
+    Usage: module volume_creation, naming_convention
+    """
+
     CIRCULAR_TUBULAR_STRUCTURE = "CircularTubularStructure"
+    """
+    Corresponds to the CircularTubularStructure in the structure_library.\n
+    Usage: module volume_creation, naming_convention
+    """
+
     ELLIPTICAL_TUBULAR_STRUCTURE = "EllipticalTubularStructure"
+    """
+    Corresponds to the EllipticalTubularStructure in the structure_library.\n
+    Usage: module volume_creation, naming_convention
+    """
+
     SPHERICAL_STRUCTURE = "SphericalStructure"
+    """
+    Corresponds to the SphericalStructure in the structure_library.\n
+    Usage: module volume_creation, naming_convention
+    """
+
     PARALLELEPIPED_STRUCTURE = "ParallelepipedStructure"
+    """
+    Corresponds to the ParallelepipedStructure in the structure_library.\n
+    Usage: module volume_creation, naming_convention
+    """
+
     RECTANGULAR_CUBOID_STRUCTURE = "RectangularCuboidStructure"
+    """
+    Corresponds to the RectangularCuboidStructure in the structure_library.\n
+    Usage: module volume_creation, naming_convention
+    """
 
-    CHILD_STRUCTURES = "child_structures"
     STRUCTURE_TYPE = ("structure_type", str)
+    """
+    Defines the structure type to one structure in the structure_library.\n
+    Usage: module volume_creation
+    """
+
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"
-    STRUCTURE_TISSUE_PROPERTIES = "structure_tissue_properties"
-
-    STRUCTURE_CENTER_DEPTH_MIN_MM = "structure_depth_min_mm"
-    STRUCTURE_CENTER_DEPTH_MAX_MM = "structure_depth_max_mm"
-
-    STRUCTURE_BACKGROUND = "structure_background"
-
-    STRUCTURE_LAYER = "structure_layer"
-    STRUCTURE_THICKNESS_MIN_MM = "structure_thickness_min_mm"
-    STRUCTURE_THICKNESS_MAX_MM = "structure_thickness_max_mm"
-
-    STRUCTURE_TUBE = "structure_tube"
-    STRUCTURE_RADIUS_MIN_MM = "structure_radius_min_mm"
-    STRUCTURE_RADIUS_MAX_MM = "structure_radius_max_mm"
-    STRUCTURE_FORCE_ORTHOGONAL_TO_PLANE = "structure_force_orthogonal_to_plane"
-    STRUCTURE_TUBE_CENTER_X_MIN_MM = "structure_tube_start_x_min_mm"
-    STRUCTURE_TUBE_CENTER_X_MAX_MM = "structure_tube_start_x_max_mm"
-
-    STRUCTURE_ELLIPSE = "structure_ellipse"
-    STRUCTURE_MIN_ECCENTRICITY = "structure_eccentricity_min"
-    STRUCTURE_MAX_ECCENTRICITY = "structure_eccentricity_max"
-
-    STRUCTURE_DISTORTED_LAYERS = "distorted_layers"
-    STRUCTURE_DISTORTED_LAYERS_ELEVATION = "distorted_layers_elevation"
+    """
+    Defines the structure segmentation type to one segmentation type in SegmentationClasses.\n
+    Usage: module volume_creation, naming convention
+    """
 
     UNITS_ARBITRARY = "arbitrary_unity"
+    """
+    Define arbitrary units if no units were given in the settings.\n
+    Usage: module optical_simulation, naming convention
+    """
+
     UNITS_PRESSURE = "newton_per_meters_squared"
+    """
+    Standard units used in the SIMPA framework.\n
+    Usage: module optical_simulation, naming convention
+    """
 
     """
     IO settings
     """
 
     SIMPA_OUTPUT_PATH = ("simpa_output_path", str)
+    """
+    Default path of the SIMPA output if not specified otherwise.\n
+    Usage: SIMPA package
+    """
+
     SIMPA_OUTPUT_NAME = "simpa_output.hdf5"
-    SETTINGS_JSON = "settings_json"
-    SETTINGS_JSON_PATH = "settings_json_path"
+    """
+    Default filename of the SIMPA output if not specified otherwise.\n
+    Usage: SIMPA package, naming convention
+    """
+
+    SETTINGS_JSON = ("settings_json", (bool, np.bool_))
+    """
+    If True, the SIMPA settings are saved in a .json file.\n
+    Usage: SIMPA package
+    """
+
+    SETTINGS_JSON_PATH = ("settings_json_path", str)
+    """
+    Absolute path to a .json file if SETTINGS_JSON is set to True.
+    Usage: SIMPA package
+    """
+
     SETTINGS = "settings"
+    """
+    Location of the simulation settings in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     SIMULATION_PROPERTIES = "simulation_properties"
+    """
+    Location of the simulation properties in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     SIMULATIONS = "simulations"
+    """
+    Location of the simulation outputs in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     UPSAMPLED_DATA = "upsampled_data"
+    """
+    Name of the simulation outputs as upsampled data in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
     ORIGINAL_DATA = "original_data"
+    """
+    Name of the simulation outputs as original data in the SIMPA output file.\n
+    Usage: naming convention
+    """

@@ -54,8 +54,6 @@ class TestPipeline(unittest.TestCase):
             Tags.DIM_VOLUME_Z_MM: self.VOLUME_HEIGHT_IN_MM,
             Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM,
             Tags.DIM_VOLUME_Y_MM: self.VOLUME_WIDTH_IN_MM,
-            Tags.AIR_LAYER_HEIGHT_MM: 0,
-            Tags.GELPAD_LAYER_HEIGHT_MM: 0,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 
             # The following parameters set the optical forward model
