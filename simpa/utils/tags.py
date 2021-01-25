@@ -27,9 +27,6 @@ class Tags:
     """
     This class contains all 'Tags' for the use in the settings dictionary.
     """
-
-
-
     """
     General settings
     """
@@ -42,8 +39,8 @@ class Tags:
     SIMULATION_EXTRACT_FIELD_OF_VIEW = ("extract_field_of_view", bool)
     GPU = ("gpu", (bool, np.bool, np.bool_))
     ACOUSTIC_SIMULATION_3D = ("acoustic_simulation_3d", bool)
-    MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float, np.float))
-
+    MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer,
+                                                         float, np.float))
     """
     Volume Creation Settings
     """
@@ -59,7 +56,6 @@ class Tags:
     SIMULATE_DEFORMED_LAYERS = ("simulate_deformed_layers", bool)
     DEFORMED_LAYERS_SETTINGS = ("deformed_layers_settings", dict)
     BACKGROUND = "Background"
-
     """
     ADHERE_TO_DEFORMATION default is True
     """
@@ -68,43 +64,56 @@ class Tags:
     DEFORMATION_Y_COORDINATES_MM = "deformation_y_coordinates"
     DEFORMATION_Z_ELEVATIONS_MM = "deformation_z_elevation"
     MAX_DEFORMATION_MM = "max_deformation"
-
     """
         Structure Settings
     """
     CONSIDER_PARTIAL_VOLUME = ("consider_partial_volume", bool)
     STRUCTURE_START_MM = ("structure_start", (list, tuple, np.ndarray))
     STRUCTURE_END_MM = ("structure_end", (list, tuple, np.ndarray))
-    STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float, np.float, np.ndarray))
-    STRUCTURE_ECCENTRICITY = ("structure_excentricity", (int, np.integer, float, np.float, np.ndarray))
-    STRUCTURE_FIRST_EDGE_MM = ("structure_first_edge_mm", (list, tuple, np.ndarray))
-    STRUCTURE_SECOND_EDGE_MM = ("structure_second_edge_mm", (list, tuple, np.ndarray))
-    STRUCTURE_THIRD_EDGE_MM = ("structure_third_edge_mm", (list, tuple, np.ndarray))
-    STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", (int, np.integer, float, np.float))
-    STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", (int, np.integer, float, np.float))
-    STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", (int, np.integer, float, np.float))
-    STRUCTURE_BIFURCATION_LENGTH_MM = ("structure_bifurcation_length_mm", (int, np.integer, float, np.float))
-    STRUCTURE_CURVATURE_FACTOR = ("structure_curvature_factor", (int, np.integer, float, np.float))
-    STRUCTURE_RADIUS_VARIATION_FACTOR = ("structure_radius_variation_factor", (int, np.integer, float, np.float))
+    STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float,
+                                                np.float, np.ndarray))
+    STRUCTURE_ECCENTRICITY = ("structure_excentricity",
+                              (int, np.integer, float, np.float, np.ndarray))
+    STRUCTURE_FIRST_EDGE_MM = ("structure_first_edge_mm", (list, tuple,
+                                                           np.ndarray))
+    STRUCTURE_SECOND_EDGE_MM = ("structure_second_edge_mm", (list, tuple,
+                                                             np.ndarray))
+    STRUCTURE_THIRD_EDGE_MM = ("structure_third_edge_mm", (list, tuple,
+                                                           np.ndarray))
+    STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", (int, np.integer, float,
+                                                       np.float))
+    STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", (int, np.integer, float,
+                                                       np.float))
+    STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", (int, np.integer, float,
+                                                       np.float))
+    STRUCTURE_BIFURCATION_LENGTH_MM = ("structure_bifurcation_length_mm",
+                                       (int, np.integer, float, np.float))
+    STRUCTURE_CURVATURE_FACTOR = ("structure_curvature_factor",
+                                  (int, np.integer, float, np.float))
+    STRUCTURE_RADIUS_VARIATION_FACTOR = ("structure_radius_variation_factor",
+                                         (int, np.integer, float, np.float))
     STRUCTURE_DIRECTION = ("structure_direction", (list, tuple, np.ndarray))
-
     """
     Digital Device Twin Settings
     """
     DIGITAL_DEVICE = ("digital_device", str)
     DIGITAL_DEVICE_MSOT = "digital_device_msot"
     DIGITAL_DEVICE_RSOM = "digital_device_rsom"
-    DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
-
+    DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple,
+                                                           np.ndarray))
     """
     Optical model settings
     """
     RUN_OPTICAL_MODEL = ("run_optical_forward_model", bool)
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
     OPTICAL_MODEL_BINARY_PATH = ("optical_model_binary_path", str)
-    OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", (int, np.integer, float, np.float))
-    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = ("optical_model_illumination_geometry_xml_file", str)
-    LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, np.float, list, range, tuple, np.ndarray))
+    OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons",
+                                    (int, np.integer, float, np.float))
+    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = (
+        "optical_model_illumination_geometry_xml_file", str)
+    LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule",
+                                        (int, np.integer, float, np.float,
+                                         list, range, tuple, np.ndarray))
     OPTICAL_MODEL_FLUENCE = "fluence"
     OPTICAL_MODEL_INITIAL_PRESSURE = "initial_pressure"
     OPTICAL_MODEL_UNITS = "units"
@@ -112,8 +121,10 @@ class Tags:
     ILLUMINATION_TYPE = ("optical_model_illumination_type", str)
 
     # Illumination parameters
-    ILLUMINATION_POSITION = ("illumination_position", (list, tuple, np.ndarray))
-    ILLUMINATION_DIRECTION = ("illumination_direction", (list, tuple, np.ndarray))
+    ILLUMINATION_POSITION = ("illumination_position", (list, tuple,
+                                                       np.ndarray))
+    ILLUMINATION_DIRECTION = ("illumination_direction", (list, tuple,
+                                                         np.ndarray))
     ILLUMINATION_PARAM1 = ("illumination_param1", (list, tuple, np.ndarray))
     ILLUMINATION_PARAM2 = ("illumination_param2", (list, tuple, np.ndarray))
     TIME_STEP = ("time_step", (int, np.integer, float, np.float))
@@ -146,17 +157,19 @@ class Tags:
     # Supported acoustic models
     ACOUSTIC_MODEL = ("acoustic_model", str)
     ACOUSTIC_MODEL_K_WAVE = "kwave"
-    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float, np.float))
-    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float, np.float))
+    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float,
+                                              np.float))
+    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float,
+                                              np.float))
     ACOUSTIC_MODEL_TEST = "simpa_tests"
     ACOUSTIC_MODEL_SCRIPT = "acoustic_model_script"
     ACOUSTIC_MODEL_SCRIPT_LOCATION = ("acoustic_model_script_location", str)
-
     """
     Acoustic model settings
     """
 
-    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool, np.bool_))
+    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool,
+                                                         np.bool_))
     ACOUSTIC_MODEL_BINARY_PATH = ("acoustic_model_binary_path", str)
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
     ACOUSTIC_SIMULATION_PATH = "acoustic_simulation_path"
@@ -168,18 +181,22 @@ class Tags:
     TIME_SERIES_DATA_NOISE = "time_series_data_noise"
 
     # Reconstruction settings
-    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", (bool, np.bool, np.bool_))
+    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction",
+                                    (bool, np.bool, np.bool_))
     RECONSTRUCTION_OUTPUT_NAME = ("reconstruction_result", str)
     RECONSTRUCTION_ALGORITHM = ("reconstruction_algorithm", str)
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
     RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
+    RECONSTRUCTION_ALGORITHM_PYTORCH_DAS = "PyTorch_DAS"
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
     RECONSTRUCTION_ALGORITHM_BACKPROJECTION = "backprojection"
-    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool, np.bool_))
+    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime",
+                                    (bool, np.bool, np.bool_))
     RECONSTRUCTION_MITK_BINARY_PATH = ("reconstruction_mitk_binary_path", str)
-    RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml", str)
+    RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml",
+                                        str)
     RECONSTRUCTION_BMODE_METHOD = ("reconstruction_bmode_method", str)
     RECONSTRUCTION_BMODE_METHOD_ABS = "Abs"
     RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM = "EnvelopeDetection"
@@ -189,7 +206,6 @@ class Tags:
     RECONSTRUCTION_MODE_DIFFERENTIAL = "differential"
     RECONSTRUCTION_MODE_PRESSURE = "pressure"
     RECONSTRUCTION_MODE_FULL = "full"
-
     """
     Upsampling settings
     """
@@ -231,11 +247,13 @@ class Tags:
 
     # Air layer
     AIR_LAYER = ("airlayer", bool)
-    AIR_LAYER_HEIGHT_MM = ("air_layer_height", (int, np.integer, float, np.float))
+    AIR_LAYER_HEIGHT_MM = ("air_layer_height", (int, np.integer, float,
+                                                np.float))
 
     # Gel Pad Layer
     GELPAD_LAYER = ("gelpad", bool)
-    GELPAD_LAYER_HEIGHT_MM = ("gelpad_layer_height_mm", (int, np.integer, float, np.float))
+    GELPAD_LAYER_HEIGHT_MM = ("gelpad_layer_height_mm", (int, np.integer,
+                                                         float, np.float))
 
     # Volume geometry settings
     SPACING_MM = ("voxel_spacing_mm", (int, np.integer, float, np.float))
@@ -250,7 +268,8 @@ class Tags:
     MEDIUM_DENSITY = "medium_density"
     MEDIUM_ALPHA_COEFF_HOMOGENEOUS = "medium_alpha_coeff_homogeneous"
     MEDIUM_ALPHA_COEFF = "medium_alpha_coeff"
-    MEDIUM_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float, np.float))
+    MEDIUM_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float,
+                                                 np.float))
     MEDIUM_NONLINEARITY = "medium_nonlinearity"
 
     # PML parameters
@@ -263,14 +282,18 @@ class Tags:
     # Acoustic Sensor Properties
     SENSOR_MASK = "sensor_mask"
     SENSOR_RECORD = ("sensor_record", str)
-    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer, float, np.float))
-    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float, np.float))
+    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer,
+                                                              float, np.float))
+    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float,
+                                                     np.float))
     SENSOR_DIRECTIVITY_HOMOGENEOUS = "sensor_directivity_homogeneous"
     SENSOR_DIRECTIVITY_ANGLE = "sensor_directivity_angle"
-    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer, float, np.float))
+    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer,
+                                                             float, np.float))
     SENSOR_DIRECTIVITY_PATTERN = "sensor_directivity_pattern"
     SENSOR_ELEMENT_PITCH_MM = "sensor_element_pitch"
-    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer, float, np.float))
+    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer,
+                                                             float, np.float))
     SENSOR_NUM_ELEMENTS = ("sensor_num_elements", (int, np.integer))
     SENSOR_NUM_USED_ELEMENTS = "sensor_num_used_elements"
     SENSOR_CONCAVE = "concave"
@@ -352,7 +375,6 @@ class Tags:
 
     UNITS_ARBITRARY = "arbitrary_unity"
     UNITS_PRESSURE = "newton_per_meters_squared"
-
     """
     IO settings
     """
