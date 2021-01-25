@@ -171,8 +171,6 @@ class MSOTAcuityEcho(PAIDeviceBase):
         if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
             device_position = np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
         else:
-            # If no position is given, the device_position is set to the top of the volume
-            # and in the middle of the xy-plane.
             device_position = np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
 
         return np.add(abstract_element_positions, device_position)
