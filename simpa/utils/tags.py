@@ -34,7 +34,6 @@ class Tags:
     Their usage within the SIMPA package is divided in "SIMPA package", "module X", "adapter Y", "class Z" and
     "naming convention".
     """
-
     """
     General settings
     """
@@ -93,12 +92,12 @@ class Tags:
     Usage: SIMPA package
     """
 
-    MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float, np.float))
+    MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer,
+                                                         float, np.float))
     """
     Temperature of the simulated volume.\n
     Usage: module noise_simulation
     """
-
     """
     Volume Creation Settings
     """
@@ -193,7 +192,6 @@ class Tags:
     Maximum deformation in z-direction.\n
     Usage: adapter versatile_volume_creation, naming convention
     """
-
     """
     Structure Settings
     """
@@ -216,67 +214,78 @@ class Tags:
     Usage: adapter versatile_volume_creation, class GeometricalStructure
     """
 
-    STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float, np.float, np.ndarray))
+    STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float,
+                                                np.float, np.ndarray))
     """
     Radius of the structure.\n
     Usage: adapter versatile_volume_creation, class GeometricalStructure
     """
 
-    STRUCTURE_ECCENTRICITY = ("structure_excentricity", (int, np.integer, float, np.float, np.ndarray))
+    STRUCTURE_ECCENTRICITY = ("structure_excentricity",
+                              (int, np.integer, float, np.float, np.ndarray))
     """
     Eccentricity of the structure.\n
     Usage: adapter versatile_volume_creation, class EllipticalTubularStructure
     """
 
-    STRUCTURE_FIRST_EDGE_MM = ("structure_first_edge_mm", (list, tuple, np.ndarray))
+    STRUCTURE_FIRST_EDGE_MM = ("structure_first_edge_mm", (list, tuple,
+                                                           np.ndarray))
     """
     Edge of the structure as [x, y, z] vector starting from STRUCTURE_START_MM in the generated volume.\n
     Usage: adapter versatile_volume_creation, class ParallelepipedStructure
     """
 
-    STRUCTURE_SECOND_EDGE_MM = ("structure_second_edge_mm", (list, tuple, np.ndarray))
+    STRUCTURE_SECOND_EDGE_MM = ("structure_second_edge_mm", (list, tuple,
+                                                             np.ndarray))
     """
     Edge of the structure as [x, y, z] vector starting from STRUCTURE_START_MM in the generated volume.\n
     Usage: adapter versatile_volume_creation, class ParallelepipedStructure
     """
 
-    STRUCTURE_THIRD_EDGE_MM = ("structure_third_edge_mm", (list, tuple, np.ndarray))
+    STRUCTURE_THIRD_EDGE_MM = ("structure_third_edge_mm", (list, tuple,
+                                                           np.ndarray))
     """
     Edge of the structure as [x, y, z] vector starting from STRUCTURE_START_MM in the generated volume.\n
     Usage: adapter versatile_volume_creation, class ParallelepipedStructure
     """
 
-    STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", (int, np.integer, float, np.float))
+    STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", (int, np.integer, float,
+                                                       np.float))
     """
     X-extent of the structure in the generated volume.\n
     Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
     """
 
-    STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", (int, np.integer, float, np.float))
+    STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", (int, np.integer, float,
+                                                       np.float))
     """
     Y-extent of the structure in the generated volume.\n
     Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
     """
 
-    STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", (int, np.integer, float, np.float))
+    STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", (int, np.integer, float,
+                                                       np.float))
     """
     Z-extent of the structure in the generated volume.\n
     Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
     """
 
-    STRUCTURE_BIFURCATION_LENGTH_MM = ("structure_bifurcation_length_mm", (int, np.integer, float, np.float))
+    STRUCTURE_BIFURCATION_LENGTH_MM = ("structure_bifurcation_length_mm",
+                                       (int, np.integer, float, np.float))
     """
     Length after which a VesselStructure will bifurcate.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
     """
 
-    STRUCTURE_CURVATURE_FACTOR = ("structure_curvature_factor", (int, np.integer, float, np.float))
+    STRUCTURE_CURVATURE_FACTOR = ("structure_curvature_factor",
+                                  (int, np.integer, float, np.float))
     """
     Factor that determines how strongly a vessel tree is curved.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
     """
 
-    STRUCTURE_RADIUS_VARIATION_FACTOR = ("structure_radius_variation_factor", (int, np.integer, float, np.float))
+    STRUCTURE_RADIUS_VARIATION_FACTOR = ("structure_radius_variation_factor",
+                                         (int, np.integer, float, np.float))
     """
     Factor that determines how strongly a the radius of vessel tree varies.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
@@ -287,7 +296,6 @@ class Tags:
     Direction as [x, y, z] vector starting from STRUCTURE_START_MM in which the vessel will grow.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
     """
-
     """
     Digital Device Twin Settings
     """
@@ -310,12 +318,12 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
-    DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
+    DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple,
+                                                           np.ndarray))
     """
     Position in [x, y, z] coordinates of the device in the generated volume.\n
     Usage: SIMPA package
     """
-
     """
     Optical model settings
     """
@@ -338,20 +346,23 @@ class Tags:
     Usage: module optical_simulation
     """
 
-    OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", (int, np.integer, float, np.float))
+    OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons",
+                                    (int, np.integer, float, np.float))
     """
     Number of photons used in the optical simulation.\n
     Usage: module optical_simulation
     """
 
-    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = ("optical_model_illumination_geometry_xml_file", str)
+    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = (
+        "optical_model_illumination_geometry_xml_file", str)
     """
     Absolute path of the location of the optical forward model illumination geometry.\n
     Usage: module optical_simulation
     """
 
-    LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, np.float, list,
-                                                                             range, tuple, np.ndarray))
+    LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule",
+                                        (int, np.integer, float, np.float,
+                                         list, range, tuple, np.ndarray))
     """
     Laser pulse energy used in the optical simulation.\n
     Usage: module optical_simulation
@@ -382,13 +393,15 @@ class Tags:
     """
 
     # Illumination parameters
-    ILLUMINATION_POSITION = ("illumination_position", (list, tuple, np.ndarray))
+    ILLUMINATION_POSITION = ("illumination_position", (list, tuple,
+                                                       np.ndarray))
     """
     Position of the photon source in [x, y, z] coordinates used in mcx.\n
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
-    ILLUMINATION_DIRECTION = ("illumination_direction", (list, tuple, np.ndarray))
+    ILLUMINATION_DIRECTION = ("illumination_direction", (list, tuple,
+                                                         np.ndarray))
     """
     Direction of the photon source as [x, y, z] vector used in mcx.\n
     Usage: module optical_modelling, adapter mcx_adapter
@@ -542,13 +555,15 @@ class Tags:
     Usage: module acoustic_simulation, naming convention
     """
 
-    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float, np.float))
+    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float,
+                                              np.float))
     """
     Temporal resolution of kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter
     """
 
-    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float, np.float))
+    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float,
+                                              np.float))
     """
     Total time steps simulated by kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter
@@ -571,12 +586,12 @@ class Tags:
     Absolute path of the location of the image_reconstruction folder in the SIMPA core module.\n
     Usage: adapter TimeReversalAdapter
     """
-
     """
     Acoustic model settings
     """
 
-    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool, np.bool_))
+    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool,
+                                                         np.bool_))
     """
     If True, the simulation will run the acoustic forward model.\n
     Usage: module core (simulate.py)
@@ -625,7 +640,8 @@ class Tags:
     """
 
     # Reconstruction settings
-    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", (bool, np.bool, np.bool_))
+    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction",
+                                    (bool, np.bool, np.bool_))
     """
     If True, the simulation will run the image reconstruction.\n
     Usage: module core (simulate.py)
@@ -661,6 +677,12 @@ class Tags:
     Usage: module image_reconstruction, naming convention
     """
 
+    RECONSTRUCTION_ALGORITHM_PYTORCH_DAS = "PyTorch_DAS"
+    """
+    Corresponds to the reconstruction algorithm DAS with the PyTorchDASAdapter.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     """
     Corresponds to the reconstruction algorithm Time Reversal with TimeReversalAdapter.\n
@@ -679,7 +701,8 @@ class Tags:
     Usage: module image_reconstruction, naming convention
     """
 
-    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool, np.bool_))
+    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime",
+                                    (bool, np.bool, np.bool_))
     """
     If True, the Time Reversal reconstruction will commit the "inverse crime".\n
     Usage: TimeReversalAdapter
@@ -691,7 +714,8 @@ class Tags:
     Usage: adapter MitkBeamformingAdapter
     """
 
-    RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml", str)
+    RECONSTRUCTION_MITK_SETTINGS_XML = ("reconstruction_mitk_settings_xml",
+                                        str)
     """
     Absolute path to the Mitk Beamforming script settings.\n
     Usage: adapter MitkBeamformingAdapter
@@ -750,7 +774,6 @@ class Tags:
     Corresponds to the full mode used in the Backprojection.\n
     Usage: adapter BackprojectionAdapter, naming_convention
     """
-
     """
     Upsampling settings
     """
@@ -903,7 +926,8 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    PROPERTY_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float, np.float))
+    PROPERTY_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float,
+                                                   np.float))
     """
     Exponent of the exponential acoustic attenuation law of kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -966,19 +990,22 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer, float, np.float))
+    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer,
+                                                              float, np.float))
     """
     Sensor center frequency in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float, np.float))
+    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float,
+                                                     np.float))
     """
     Sensor bandwidth in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer, float, np.float))
+    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer,
+                                                             float, np.float))
     """
     Size of each detector element in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -990,7 +1017,8 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer, float, np.float))
+    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer,
+                                                             float, np.float))
     """
     Sampling rate of the used PA device.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -1130,7 +1158,6 @@ class Tags:
     Standard units used in the SIMPA framework.\n
     Usage: module optical_simulation, naming convention
     """
-
     """
     IO settings
     """

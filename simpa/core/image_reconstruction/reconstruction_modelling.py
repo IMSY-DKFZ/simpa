@@ -25,6 +25,7 @@ from simpa.core.image_reconstruction.MitkBeamformingAdapter import MitkBeamformi
 from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
 from simpa.core.image_reconstruction.TestReconstructionAdapter import TestReconstructionAdapter
 from simpa.core.image_reconstruction.BackprojectionAdapter import BackprojectionAdapter
+from simpa.core.image_reconstruction.PyTorchDASAdapter import PyTorchDASAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 
@@ -40,15 +41,28 @@ def perform_reconstruction(settings: dict) -> str:
     """
     reconstruction_method = None
 
-    if ((settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DAS) or
-        (settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DMAS) or
-            (settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_SDMAS)):
+    if ((settings[Tags.RECONSTRUCTION_ALGORITHM]
+         == Tags.RECONSTRUCTION_ALGORITHM_DAS)
+            or (settings[Tags.RECONSTRUCTION_ALGORITHM]
+                == Tags.RECONSTRUCTION_ALGORITHM_DMAS)
+            or (settings[Tags.RECONSTRUCTION_ALGORITHM]
+                == Tags.RECONSTRUCTION_ALGORITHM_SDMAS)):
         reconstruction_method = MitkBeamformingAdapter()
-    elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL:
+    elif settings[
+            Tags.
+            RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS:
+        reconstruction_method = PyTorchDASAdapter()
+    elif settings[
+            Tags.
+            RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL:
         reconstruction_method = TimeReversalAdapter()
-    elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TEST:
+    elif settings[
+            Tags.
+            RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TEST:
         reconstruction_method = TestReconstructionAdapter()
-    elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION:
+    elif settings[
+            Tags.
+            RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION:
         reconstruction_method = BackprojectionAdapter()
 
     reconstruction = reconstruction_method.simulate(settings)
@@ -60,7 +74,8 @@ def perform_reconstruction(settings: dict) -> str:
         if settings[Tags.PERFORM_UPSAMPLING]:
             reconstruction_output_path = \
                 SaveFilePaths.RECONSTRCTION_OUTPUT.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
-    save_hdf5({Tags.RECONSTRUCTED_DATA: reconstruction}, settings[Tags.SIMPA_OUTPUT_PATH],
-              reconstruction_output_path)
+
+    save_hdf5({Tags.RECONSTRUCTED_DATA: reconstruction},
+              settings[Tags.SIMPA_OUTPUT_PATH], reconstruction_output_path)
 
     return reconstruction_output_path

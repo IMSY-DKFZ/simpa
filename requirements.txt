@@ -12,6 +12,7 @@ m2r
 mistune==0.8.4
 coverage
 deprecated
+torch
 dash
 plotly
 plotly-express
