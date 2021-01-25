@@ -11,6 +11,7 @@ rst2pdf
 m2r
 coverage
 deprecated
+torch
 dash
 plotly
 plotly-express
