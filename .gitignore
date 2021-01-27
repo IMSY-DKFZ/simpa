@@ -1,6 +1,8 @@
-# documentation build artifacts
-documentation/.doctrees
-documentation/.doctrees/*
+# simpa_documentation build artifacts
+simpa_documentation/.doctrees
+simpa_documentation/.doctrees/*
+simpa_documentation/test_coverage
+simpa_documentation/test_coverage/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -41,7 +43,7 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit simpa_tests / coverage reports
 htmlcov/
 .tox/
 .nox/
@@ -70,7 +72,7 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# Sphinx documentation
+# Sphinx simpa_documentation
 docs/_build/
 
 # PyBuilder
@@ -108,7 +110,7 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
+# mkdocs simpa_documentation
 /site
 
 # mypy
