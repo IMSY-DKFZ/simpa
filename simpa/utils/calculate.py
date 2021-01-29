@@ -142,22 +142,46 @@ def randomize_uniform(min_value: float, max_value: float):
 
 
 def rotation_x(theta):
+    """
+    Rotation matrix around the x-axis with angle theta.
+
+    :param theta: Angle through which the matrix is supposed to rotate.
+    :return: rotation matrix
+    """
     return np.matrix([[1, 0, 0],
                       [0, np.cos(theta), -np.sin(theta)],
                       [0, np.sin(theta), np.cos(theta)]])
 
 
 def rotation_y(theta):
+    """
+    Rotation matrix around the y-axis with angle theta.
+
+    :param theta: Angle through which the matrix is supposed to rotate.
+    :return: rotation matrix
+    """
     return np.matrix([[np.cos(theta), 0, np.sin(theta)],
                       [0, 1, 0],
                       [-np.sin(theta), 0, np.cos(theta)]])
 
 
 def rotation_z(theta):
+    """
+    Rotation matrix around the z-axis with angle theta.
+
+    :param theta: Angle through which the matrix is supposed to rotate.
+    :return: rotation matrix
+    """
     return np.matrix([[np.cos(theta), -np.sin(theta), 0],
                       [np.sin(theta), np.cos(theta), 0],
                       [0, 0, 1]])
 
 
 def rotation(angles):
+    """
+    Rotation matrix around the x-, y-, and z-axis with angles [theta_x, theta_y, theta_z].
+
+    :param angles: Angles through which the matrix is supposed to rotate in the form of [theta_x, theta_y, theta_z].
+    :return: rotation matrix
+    """
     return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])
