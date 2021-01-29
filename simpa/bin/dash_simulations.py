@@ -404,15 +404,15 @@ def populate_file_params(file_path):
         else:
             is_2d = False
             n_slices = data.simpa_data_fields['mua'][data.wavelengths[0]].shape[-1]
-            vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::int(n_slices / 10)]}
+            vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::int(np.ceil(n_slices / 10))]}
             vol_slider_min = 0
             vol_slider_max = n_slices - 1
             vol_slider_value = 0
             plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3d" not in t]
         options_list = [{'label': key, 'value': key} for key in data.simpa_data_fields.keys() if key != 'units']
-        marks = {int(wv): str(wv) for wv in data.wavelengths[::int(len(data.wavelengths) / 10)]}
+        marks = {int(wv): str(wv) for wv in data.wavelengths[::int(np.ceil(len(data.wavelengths) / 10))]}
         return options_list, False, min(data.wavelengths), max(data.wavelengths), data.wavelengths[0], \
-                data.wavelengths[1] - data.wavelengths[0], marks, \
+                1, marks, \
                 vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, \
                 options_list, False, options_list, False, is_2d, "imshow", plot_options, "imshow", plot_options, \
                 False, False
@@ -423,8 +423,11 @@ def get_data_fields():
     data_fields = dict()
     sim_props = list(data.simpa_output["simulations"]["original_data"]["simulation_properties"][
                          "{}".format(data.wavelengths[0])].keys())
-    simulations = list(data.simpa_output["simulations"]["original_data"]["optical_forward_model_output"][
+    optical_simulations = list(data.simpa_output["simulations"]["original_data"]["optical_forward_model_output"][
                            "{}".format(data.wavelengths[0])].keys())
+
+    # acoustic_simulations = list(data.simpa_output["simulations"][Tags.UPSAMPLED_DATA][Tags.ACOUSTIC_MODEL_OUTPUT_NAME][
+    #                                "{}".format(data.wavelengths[0])].keys())
 
     for data_field in sim_props:
         data_fields[data_field] = dict()
@@ -432,11 +435,17 @@ def get_data_fields():
             data_fields[data_field][wavelength] = data.simpa_output["simulations"]["original_data"] \
                 ["simulation_properties"]["{}".format(wavelength)][data_field]
 
-    for data_field in simulations:
+    for data_field in optical_simulations:
         data_fields[data_field] = dict()
         for wavelength in data.wavelengths:
             data_fields[data_field][wavelength] = data.simpa_output["simulations"]["original_data"] \
                 ["optical_forward_model_output"]["{}".format(wavelength)][data_field]
+
+    # for data_field in acoustic_simulations:
+    #     data_fields[data_field] = dict()
+    #     for wavelength in data.wavelengths:
+    #         data_fields[data_field][wavelength] = data.simpa_output["simulations"][Tags.UPSAMPLED_DATA] \
+    #             [Tags.ACOUSTIC_MODEL_OUTPUT_NAME]["{}".format(wavelength)][data_field]
 
     data.simpa_data_fields = data_fields
 

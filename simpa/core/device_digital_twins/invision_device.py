@@ -76,8 +76,8 @@ class InVision256TF(PAIDeviceBase):
         # go from -127.5, -126.5, ..., 0, .., 126.5, 177.5 instead of between -128 and 127
         det_elements = np.arange(-int(self.number_detector_elements / 2) + 0.5,
                                  int(self.number_detector_elements / 2) + 0.5)
-        detector_positions[:, 0] = np.sin(pitch_angle * det_elements) * detector_radius
-        detector_positions[:, 2] = np.cos(pitch_angle * det_elements) * detector_radius
+        detector_positions[:, 0] = np.sin(pitch_angle * det_elements - np.pi/2) * detector_radius
+        detector_positions[:, 2] = np.cos(pitch_angle * det_elements - np.pi/2) * detector_radius
 
         return detector_positions
 

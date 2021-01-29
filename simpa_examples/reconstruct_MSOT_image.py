@@ -44,6 +44,7 @@ settings[Tags.DIM_VOLUME_Z_MM] = 38.4
 settings[Tags.SPACING_MM] = 0.15
 settings[Tags.PERFORM_IMAGE_RECONSTRUCTION] = True
 settings[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
+settings[Tags.RECONSTRUCTION_MODE] = Tags.RECONSTRUCTION_MODE_FULL
 settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
 settings[Tags.PROPERTY_ALPHA_POWER] = 1.05
 settings[Tags.GPU] = True
@@ -59,7 +60,7 @@ settings[Tags.VOLUME_CREATOR] = "None"
 settings[Tags.WAVELENGTH] = 700
 settings[Tags.SIMPA_OUTPUT_PATH] = "D:/save/TestFile.hdf5"
 settings[Tags.DIGITAL_DEVICE] = Tags.DIGITAL_DEVICE_MSOT
-settings[Tags.DIGITAL_DEVICE_POSITION] = [0, 0, 0]
+settings[Tags.DIGITAL_DEVICE_POSITION] = [19.2, 0, 11.2]
 device = MSOTAcuityEcho()
 settings = device.adjust_simulation_volume_and_settings(settings)
 
@@ -78,6 +79,7 @@ perform_reconstruction(settings)
 reconstructed_image_path = generate_dict_path(settings, Tags.RECONSTRUCTED_DATA,
                                               wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
 reconstructed_image = load_hdf5("D:/save/TestFile.hdf5", reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
+reconstructed_image = np.squeeze(reconstructed_image)
 
 shape = np.shape(reconstructed_image)
 
@@ -85,7 +87,7 @@ if len(np.shape(reconstructed_image)) > 2:
     plt.subplot(121)
     plt.imshow(np.rot90(das, -1))
     plt.subplot(122)
-    plt.imshow(np.rot90(np.abs(reconstructed_image[:, 0, :]), -1))
+    plt.imshow(np.rot90(np.abs(reconstructed_image), -1))
     plt.show()
 else:
     plt.subplot(121)

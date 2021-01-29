@@ -25,6 +25,7 @@ from simpa.utils import Tags
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import load_hdf5
 from simpa.core.device_digital_twins import DEVICE_MAP
+from scipy.ndimage import gaussian_filter
 
 import numpy as np
 import torch
@@ -82,6 +83,8 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         sensor_positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings) / 1000
 
+        # time_series_sensor_data = gaussian_filter(time_series_sensor_data, [5, 1])
+
         print("SOS:", sound_speed_m)
         print("Target dimensions:", target_dim_m)
         print("Sensor positions:", np.shape(sensor_positions))
@@ -134,15 +137,18 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
         sizeT = len(time_vector)
         back_projection = torch.zeros(*target_dim_voxels, names=None).float().to(device)
 
-        edges_m = torch.true_divide(target_dim_voxels, 2) * resolution_m
-        gridsizes_x = torch.linspace(-edges_m[0], edges_m[0], target_dim_voxels[0])
-        gridsizes_y = torch.linspace(-edges_m[1], edges_m[1], target_dim_voxels[1])
-        gridsizes_z = torch.linspace(-edges_m[2], edges_m[2], target_dim_voxels[2])
+        edges_m = target_dim_voxels * resolution_m
+        gridsizes_x = torch.linspace(0, edges_m[0], target_dim_voxels[0])
+        gridsizes_y = torch.linspace(0, edges_m[1], target_dim_voxels[1])
+        gridsizes_z = torch.linspace(0, edges_m[2], target_dim_voxels[2])
         gridsizes = [gridsizes_x, gridsizes_y, gridsizes_z]
 
         zero = torch.zeros([1], names=None).to(device)
         mesh = torch.zeros([3, len(gridsizes[0]), len(gridsizes[1]), len(gridsizes[2])], names=None).to(device)
+        print("mesh", mesh.shape)
         torch.stack(torch.meshgrid(*gridsizes), out=mesh)
+        mesh_cpu = mesh.cpu().numpy()
+        print("min", np.min(mesh_cpu), "max", np.max(mesh_cpu))
 
         for det_idx in range(num_detectors):
             print(det_idx, "/", num_detectors)
@@ -158,6 +164,11 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
             detector_distances = torch.add(mesh, -det_pos)
 
             distance_to_meshpoints_m = torch.sqrt(torch.sum(torch.square(detector_distances), axis=0))
+
+            # import matplotlib.pyplot as plt
+            # plt.imshow(distance_to_meshpoints_m.cpu().numpy()[:, 0, :])
+            # plt.show()
+            # plt.close()
 
             time_delay_s = (distance_to_meshpoints_m / speed_of_sound_m)
             time_delay_voxels = time_delay_s / time_per_sample_s
