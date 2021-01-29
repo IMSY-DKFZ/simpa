@@ -23,7 +23,17 @@
 from simpa.utils import Tags
 
 
-def generate_dict_path(settings, data_field, wavelength=None, upsampled_data=None):
+def generate_dict_path(settings, data_field, wavelength: (int, float) = None, upsampled_data: bool = None) -> str:
+    """
+    Generates a path within an hdf5 file in the SIMPA convention
+
+    :param settings: SIMPA Settings dictionary.
+    :param data_field: Data field that is supposed to be stored in an hdf5 file.
+    :param wavelength: Wavelength of the current simulation.
+    :param upsampled_data: If True, data_field will be stored in the "upsampled_data" section of the hdf5 file.
+    :return: String which defines the path to the data_field.
+    """
+
     sampled_data = "/"
     wl = "/"
 
