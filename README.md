@@ -22,6 +22,10 @@ virtual environment activated
 
 If no error messages arise, you are now setup to use simpa in your project.
 
+You also need to manually install the pytorch library to use all features of SIMPA.
+To this end, use the pytorch website tool to figure out which version to install:
+`https://pytorch.org/get-started/locally/`
+
 ## Building the documentation
 
 When the installation went fine and you want to make sure that you have the latest documentation
