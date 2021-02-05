@@ -22,58 +22,65 @@
 
 from simpa.utils import Tags
 from simpa.core.image_reconstruction import ReconstructionAdapterBase
+from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.io_handling.io_hdf5 import load_hdf5
+from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import torch
 
 
 class PyTorchDASAdapter(ReconstructionAdapterBase):
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
-        ''' 
-        Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the first dimension corresponds to the sensor elements 
-        and the second to the recorded time steps) with the given beamforming settings (dictionary). 
+        """
+        Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the first dimension corresponds to the sensor elements
+        and the second to the recorded time steps) with the given beamforming settings (dictionary).
         A reconstructed image (2D numpy array) is returned.
         This implementation uses PyTorch Tensors to perform computations and is able to run on GPUs.
 
         [1] T. Kirchner et al. 2018, "Signed Real-Time Delay Multiply and Sum Beamformingfor Multispectral Photoacoustic Imaging", https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwi3hZjA48jtAhUM6OAKHWK-BuAQFjAAegQIBxAC&url=https%3A%2F%2Fwww.mdpi.com%2F2313-433X%2F4%2F10%2F121%2Fpdf&usg=AOvVaw3CCZEt7L_xoUbWvlW1Ljx5
-        '''
+        """
 
-        #### INPUT CHECKING AND VALIDATION ####
+        ### INPUT CHECKING AND VALIDATION ###
 
         # check settings dictionary for elements and read them in
-        if Tags.MEDIUM_SOUND_SPEED in settings and settings[
-                Tags.MEDIUM_SOUND_SPEED]:
-            speed_of_sound = settings[Tags.MEDIUM_SOUND_SPEED]
+        if Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
+            acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
+                                                    wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
+            sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[
+                Tags.PROPERTY_SPEED_OF_SOUND]
+            speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
         else:
-            raise AttributeError(
-                "Please specify a value for MEDIUM_SOUND_SPEED")
+            raise AttributeError("Please specify a value for WAVELENGTH to obtain the average speed of sound")
 
-        if Tags.SENSOR_CENTER_FREQUENCY_HZ in settings and settings[
-                Tags.SENSOR_CENTER_FREQUENCY_HZ]:
-            time_spacing = settings[Tags.SENSOR_CENTER_FREQUENCY_HZ]
+        if Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
+            time_spacing_in_ms = settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
         else:
-            raise AttributeError(
-                "Please specify a value for SENSOR_CENTER_FREQUENCY_HZ")
+            raise AttributeError("Please specify a value for K_WAVE_SPECIFIC_DT")
 
         if Tags.SPACING_MM in settings and settings[Tags.SPACING_MM]:
-            sensor_spacing = settings[Tags.SPACING_MM]
+            sensor_spacing_in_mm = settings[Tags.SPACING_MM]
         else:
             raise AttributeError("Please specify a value for SPACING_MM")
 
-        #get linear sensor geometry positions
-        # TODO: at the moment the sensor data is hardcodes, this should be read from a digital device twin
-        sensor_positions = np.array([np.arange(256), np.array([0] * 256)]).T
+        # get device specific sensor positions
+        device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
+        device.check_settings_prerequisites(settings)
+        device.adjust_simulation_volume_and_settings(settings)
+
+        sensor_positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
+        sensor_positions = np.round(sensor_positions / sensor_spacing_in_mm).astype(int)
+        sensor_positions = np.array(sensor_positions[:, [0, 2]])  # only use x and y positions and ignore z
 
         # time series sensor data must be numpy array
         if isinstance(sensor_positions, np.ndarray):
             sensor_positions = torch.from_numpy(sensor_positions)
         if isinstance(time_series_sensor_data, np.ndarray):
             time_series_sensor_data = torch.from_numpy(time_series_sensor_data)
-        assert isinstance(
-            time_series_sensor_data, torch.Tensor
-        ), 'The time series sensor data must have been converted to a tensor'
+        assert isinstance(time_series_sensor_data,
+                          torch.Tensor), 'The time series sensor data must have been converted to a tensor'
 
         # move tensors to GPU if available, otherwise use CPU
-        if settings[Tags.GPU] is None:
+        if Tags.GPU not in settings:
             if torch.cuda.is_available():
                 dev = "cuda"
             else:
@@ -86,47 +93,43 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         time_series_sensor_data = time_series_sensor_data.to(device)
 
         # array must be of correct dimension
-        assert time_series_sensor_data.ndim == 2, 'Samples must have exactly 2 dimensions. Apply beamforming per wavelength if you have a 3D array.'
+        assert time_series_sensor_data.ndim == 2, 'Samples must have exactly 2 dimensions. ' \
+                                                  'Apply beamforming per wavelength if you have a 3D array. '
 
-        #### ALGORITHM ITSELF ####
+        ### ALGORITHM ITSELF ###
 
         ## compute size of beamformed image ##
-        xdim = max(sensor_positions[:, 0]) - min(sensor_positions[:, 0])
-        # correction due to subtraction of indices starting at 0
-        xdim = int(xdim) + 1
-        ydim = float(time_series_sensor_data.shape[1] * time_spacing *
-                     speed_of_sound) / sensor_spacing
+        xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))
+        xdim = int(xdim) + 1  # correction due to subtraction of indices starting at 0
+        ydim = float(time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) / sensor_spacing_in_mm
         ydim = int(round(ydim))
         n_sensor_elements = time_series_sensor_data.shape[0]
 
-        print(
-            f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, sensor elements: {n_sensor_elements}'
-        )
+        print(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, sensor elements: {n_sensor_elements}')
 
         # construct output image
         output = torch.zeros((xdim, ydim), dtype=torch.float32, device=device)
 
-        xx, yy, jj = torch.meshgrid(
-            torch.arange(xdim, device=device), torch.arange(ydim,
-                                                            device=device),
-            torch.arange(n_sensor_elements, device=device))
-        delays = torch.sqrt(((yy - sensor_positions[:, 1][jj])* sensor_spacing)**2 + \
-                (( xx - torch.abs(sensor_positions[:, 0][jj])) * sensor_spacing)**2 ) \
-                / (speed_of_sound * time_spacing)
+        xx, yy, jj = torch.meshgrid(torch.arange(xdim, device=device),
+                                    torch.arange(ydim, device=device),
+                                    torch.arange(n_sensor_elements, device=device))
+
+        delays = torch.sqrt(((yy - sensor_positions[:, 1][jj]) * sensor_spacing_in_mm) ** 2 +
+                            ((xx - torch.abs(sensor_positions[:, 0][jj])) * sensor_spacing_in_mm) ** 2) \
+                            / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
 
         delays = torch.round(delays).long()
 
-        #perfom index validation
-        invalid_indices = torch.where(
-            torch.logical_or(delays < 0,
-                             delays >= time_series_sensor_data.shape[1]))
+        # perform index validation
+        invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
         delays[invalid_indices] = 0
 
         values = time_series_sensor_data[jj, delays]
-        #set values of invalid indices to 0 so that they don't influence the result
+
+        # set values of invalid indices to 0 so that they don't influence the result
         values[invalid_indices] = 0
-        sum = torch.sum(values, axis=2)
-        counter = torch.count_nonzero(values, axis=2)
+        sum = torch.sum(values, dim=2)
+        counter = torch.count_nonzero(values, dim=2)
         torch.divide(sum, counter, out=output)
 
         return output.cpu().numpy()

@@ -24,12 +24,15 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
+from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.io_handling import load_hdf5
 from simpa.utils.libraries.structure_library import HorizontalLayerStructure
 import numpy as np
+import matplotlib.pyplot as plt
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/save/"
-MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
+SAVE_PATH = "/home/tom/dev/FP/simpa/simpa_examples"
+MCX_BINARY_PATH = "./mcx"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
@@ -123,8 +126,8 @@ settings = {
     Tags.RUN_ACOUSTIC_MODEL: True,
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
-    Tags.ACOUSTIC_MODEL_BINARY_PATH: "C:/Program Files/MATLAB/R2020b/bin/matlab.exe",
-    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "C:/simpa/simpa/core/acoustic_simulation",
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: "/usr/local/MATLAB/R2020b/bin/matlab",
+    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "/home/tom/dev/FP/simpa/simpa/core/acoustic_simulation",
     Tags.GPU: True,
 
     Tags.PROPERTY_ALPHA_POWER: 1.05,
@@ -144,7 +147,7 @@ settings = {
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
 
     Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
-    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
+    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS
 }
 settings = Settings(settings)
 # global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
@@ -157,3 +160,25 @@ timer = time.time()
 simulate(settings)
 print("Needed", time.time()-timer, "seconds")
 print("Simulating ", RANDOM_SEED, "[Done]")
+
+reconstructed_image_path = generate_dict_path(
+    settings,
+    Tags.RECONSTRUCTED_DATA,
+    wavelength=settings[Tags.WAVELENGTH],
+    upsampled_data=True)
+
+optical_data_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+                                       wavelength=settings[Tags.WAVELENGTH],
+                                       upsampled_data=True)
+
+reconstructed_image = load_hdf5(
+    settings[Tags.SIMPA_OUTPUT_PATH],
+    reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
+
+initial_pressure = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_data_path)[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]
+
+plt.imshow(reconstructed_image)
+plt.show()
+
+plt.imshow(initial_pressure)
+plt.show()
