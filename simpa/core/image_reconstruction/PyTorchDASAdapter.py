@@ -132,4 +132,4 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         counter = torch.count_nonzero(values, dim=2)
         torch.divide(sum, counter, out=output)
 
-        return output.cpu().numpy()
+        return np.flipud(output.cpu().numpy())
