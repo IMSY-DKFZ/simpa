@@ -27,7 +27,7 @@ from simpa.io_handling.io_hdf5 import load_hdf5
 from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import torch
-
+from scipy.signal import hilbert
 
 class PyTorchDASAdapter(ReconstructionAdapterBase):
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
@@ -132,4 +132,10 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         counter = torch.count_nonzero(values, dim=2)
         torch.divide(sum, counter, out=output)
 
-        return np.flipud(output.cpu().numpy())
+        reconstructed = np.flipud(output.cpu().numpy())
+
+        # perform envelope detection using hilbert transform
+        hilbert_transformed = hilbert(reconstructed)
+        magnitude = np.abs(hilbert_transformed)
+
+        return magnitude
