@@ -1107,6 +1107,12 @@ class Tags:
     Usage: module volume_creation, naming_convention
     """
 
+    VESSEL_STRUCTURE = "VesselStructure"
+    """
+    Corresponds to the VesselStructure in the structure_library.\n
+    Usage: module volume_creation, naming_convention
+    """
+
     STRUCTURE_TYPE = ("structure_type", str)
     """
     Defines the structure type to one structure in the structure_library.\n

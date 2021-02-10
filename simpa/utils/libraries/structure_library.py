@@ -264,7 +264,7 @@ class CircularTubularStructure(GeometricalStructure):
         structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
         structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
         structure[Tags.ADHERE_TO_DEFORMATION] = True
-        structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+        structure[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
     """
 
@@ -344,7 +344,7 @@ class SphericalStructure(GeometricalStructure):
         structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
         structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
         structure[Tags.ADHERE_TO_DEFORMATION] = True
-        structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+        structure[Tags.STRUCTURE_TYPE] = Tags.SPHERICAL_STRUCTURE
 
     """
 
@@ -417,7 +417,7 @@ class RectangularCuboidStructure(GeometricalStructure):
         structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
         structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
         structure[Tags.ADHERE_TO_DEFORMATION] = True
-        structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+        structure[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
 
     """
 
@@ -500,7 +500,21 @@ class RectangularCuboidStructure(GeometricalStructure):
 
 class ParallelepipedStructure(GeometricalStructure):
     """
-    This class currently has no partial volume effects implemented. TODO
+    Defines a parallelepiped which is defined by a start point and three edge vectors which originate from the start
+    point. This structure currently does not implement partial volume effects.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [25, 25, 25]
+        structure[Tags.STRUCTURE_FIRST_EDGE_MM] = [5, 1, 1]
+        structure[Tags.STRUCTURE_SECOND_EDGE_MM] = [1, 5, 1]
+        structure[Tags.STRUCTURE_THIRD_EDGE_MM] = [1, 1, 5]
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        structure[Tags.STRUCTURE_TYPE] = Tags.PARALLELEPIPED_STRUCTURE
+
     """
 
     def get_params_from_settings(self, single_structure_settings):
@@ -601,7 +615,7 @@ class EllipticalTubularStructure(GeometricalStructure):
         structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
         structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
         structure[Tags.ADHERE_TO_DEFORMATION] = True
-        structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+        structure[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
 
     """
 
@@ -686,6 +700,14 @@ class EllipticalTubularStructure(GeometricalStructure):
 
 
 class Background(GeometricalStructure):
+    """
+    Defines a background that fills the whole simulation volume. It is always given the priority of 0 so that other
+    structures can overwrite it when necessary.
+    Example usage:
+        background_dictionary = Settings()
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
+        background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    """
 
     def get_enclosed_indices(self):
         array = np.ones((self.volume_dimensions_voxels[0],
@@ -713,6 +735,29 @@ class Background(GeometricalStructure):
 
 
 class VesselStructure(GeometricalStructure):
+    """
+    Defines a vessel tree that is generated randomly in the simulation volume. The generation process begins at the
+    start with a specified radius. The vessel grows roughly in the specified direction. The deviation is specified by
+    the curvature factor. Furthermore, the radius of the vessel can vary depending on the specified radius variation
+    factor. The bifurcation length defines how long a vessel can get until it will bifurcate. This structure implements
+    partial volume effects.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure_settings = Settings()
+
+        structure_settings[Tags.PRIORITY] = 10
+        structure_settings[Tags.STRUCTURE_START_MM] = [50, 0, 50]
+        structure_settings[Tags.STRUCTURE_DIRECTION] = [0, 1, 0]
+        structure_settings[Tags.STRUCTURE_RADIUS_MM] = 4
+        structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.05
+        structure_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
+        structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 70
+        structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure_settings[Tags.STRUCTURE_TYPE] = Tags.VESSEL_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
