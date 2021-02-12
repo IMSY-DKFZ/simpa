@@ -124,7 +124,21 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
         delays[invalid_indices] = 0
 
-        values = time_series_sensor_data[jj, delays]
+        # check for apodization method
+        if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings:
+            # hann window
+            if settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HANN:
+                hann = torch.hann_window(n_sensor_elements, device=device)
+                apodization = hann.expand((xdim, ydim,n_sensor_elements))
+            # hamming window
+            elif settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HAMMING:
+                hamming = torch.hamming_window(n_sensor_elements, device=device)
+                apodization = hamming.expand((xdim, ydim, n_sensor_elements))
+        else:
+            # box window apodization as default
+            apodization = torch.ones((xdim, ydim, n_sensor_elements), device=device)
+
+        values = time_series_sensor_data[jj, delays] * apodization
 
         # set values of invalid indices to 0 so that they don't influence the result
         values[invalid_indices] = 0

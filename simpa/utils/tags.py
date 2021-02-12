@@ -739,6 +739,30 @@ class Tags:
     Usage: adapter MitkBeamformingAdapter, naming convention
     """
 
+    RECONSTRUCTION_APODIZATION_METHOD = ("reconstruction_apodization_method", str)
+    """
+    Choice of the apodization method used, i.e. window functions .\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    RECONSTRUCTION_APODIZATION_BOX = "BoxApodization"
+    """
+    Corresponds to the box window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_HANN = "HannApodization"
+    """
+    Corresponds to the Hann window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_HAMMING = "HammingApodization"
+    """
+    Corresponds to the Hamming window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
     RECONSTRUCTED_DATA = "reconstructed_data"
     """
     Name of the reconstructed data field in the SIMPA output file.\n
