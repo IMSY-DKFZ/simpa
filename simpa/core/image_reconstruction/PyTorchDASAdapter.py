@@ -134,8 +134,16 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         reconstructed = np.flipud(output.cpu().numpy())
 
-        # perform envelope detection using hilbert transform
-        hilbert_transformed = hilbert(reconstructed)
-        magnitude = np.abs(hilbert_transformed)
+        #check for B-mode methods and applies it
+        if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
+            if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
+                # perform envelope detection using hilbert transform
+                hilbert_transformed = hilbert(reconstructed)
+                magnitude = np.abs(hilbert_transformed)
+                return magnitude
+            if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
+                # perform envelope detection using absolute value
+                magnitude = np.abs(reconstructed)
+                return magnitude
 
-        return magnitude
+        return reconstructed
