@@ -210,8 +210,8 @@ class OpticalTissueProperties:
     #   publisher={Wiley Online Library}
     # }
 
-    MELANIN_VOLUME_FRACTION_MEAN = 0.002
-    MELANIN_VOLUME_FRACTION_STD = 0.0005
+    MELANIN_VOLUME_FRACTION_MEAN = 0.011
+    MELANIN_VOLUME_FRACTION_STD = 0.003
 
 
 class MorphologicalTissueProperties:

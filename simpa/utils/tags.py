@@ -316,6 +316,13 @@ class Tags:
     Usage: SIMPA package
     """
 
+    US_GEL = ("us_gel", bool)
+    """
+    If True, us gel is placed between the PA device and the simulated volume.\n
+    Usage: SIMPA package
+    """
+
+
     """
     Optical model settings
     """
@@ -1068,6 +1075,13 @@ class Tags:
     STRUCTURES = ("structures", dict)
     """
     Settings dictionary which contains all the structures that should be generated inside the volume.\n
+    Usage: module volume_creation
+    """
+
+    CHILD_STRUCTURES = ("structures", dict)
+    """
+    Settings dictionary which contains all the child structures of a main structue that should be generated inside the 
+    volume.\n
     Usage: module volume_creation
     """
 

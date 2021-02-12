@@ -136,12 +136,16 @@ class TissueLibrary(object):
         [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(
             OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE, oxy)
 
+        dermal_scatterer = 1 - water_volume_fraction - fraction_deoxy - fraction_oxy
+        # print(water_volume_fraction, fraction_oxy, fraction_deoxy, dermal_scatterer)
+
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.dermal_scatterer(
-                                                       1-OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE))
+                .append(MOLECULE_LIBRARY.dermal_scatterer(dermal_scatterer))
+                # .append(MOLECULE_LIBRARY.dermal_scatterer(
+                #     1 - OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE))
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.DERMIS))
 
@@ -207,12 +211,11 @@ class TissueLibrary(object):
 
         # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
         [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(1.0, randomize_uniform(0.8, 1.0))
-
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
+                # .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.BLOOD))
 
     def blood_venous(self):
@@ -230,7 +233,7 @@ class TissueLibrary(object):
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
+                # .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.BLOOD))
 
     def bone(self):
