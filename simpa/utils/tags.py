@@ -763,6 +763,19 @@ class Tags:
     Usage: adapter PyTorchDASAdapter, naming convention
     """
 
+    RECONSTRUCTION_PERFORM_BANDPASS_FILTERING = ("reconstruction_perform_bandpass_filtering",
+                                    (bool, np.bool, np.bool_))
+    """
+    Whether bandpass filtering should be applied or not. Default should be True\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float, np.float))
+    """
+    Sets alpha value of Tukey window. Default should be 0.5\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
     RECONSTRUCTED_DATA = "reconstructed_data"
     """
     Name of the reconstructed data field in the SIMPA output file.\n

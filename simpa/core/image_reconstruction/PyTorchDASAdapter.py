@@ -27,7 +27,9 @@ from simpa.io_handling.io_hdf5 import load_hdf5
 from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import torch
+import torch.fft
 from scipy.signal import hilbert
+from scipy.signal.windows import tukey
 
 class PyTorchDASAdapter(ReconstructionAdapterBase):
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
@@ -40,9 +42,23 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         [1] T. Kirchner et al. 2018, "Signed Real-Time Delay Multiply and Sum Beamformingfor Multispectral Photoacoustic Imaging", https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwi3hZjA48jtAhUM6OAKHWK-BuAQFjAAegQIBxAC&url=https%3A%2F%2Fwww.mdpi.com%2F2313-433X%2F4%2F10%2F121%2Fpdf&usg=AOvVaw3CCZEt7L_xoUbWvlW1Ljx5
         """
 
-        ### INPUT CHECKING AND VALIDATION ###
+        # check for B-mode methods and envelope detection straight away
+        if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
+            if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
+                # perform envelope detection using hilbert transform
+                hilbert_transformed = hilbert(time_series_sensor_data, axis=1)
+                time_series_sensor_data = np.abs(hilbert_transformed)
 
+            if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
+                # perform envelope detection using absolute value
+                time_series_sensor_data = np.abs(time_series_sensor_data)
+        else:
+            raise Warning("You have not specified a B-mode method")
+
+        ### INPUT CHECKING AND VALIDATION ###
         # check settings dictionary for elements and read them in
+
+        # speed of sound
         if Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
             acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
                                                     wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
@@ -52,11 +68,15 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         else:
             raise AttributeError("Please specify a value for WAVELENGTH to obtain the average speed of sound")
 
-        if Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
+        # time spacing: use sampling rate is specified, otherwise kWave specific dt from simulation
+        if Tags.SENSOR_SAMPLING_RATE_MHZ in settings and settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
+            time_spacing_in_ms = 1.0/(settings[Tags.SENSOR_SAMPLING_RATE_MHZ]*1000)
+        elif Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
             time_spacing_in_ms = settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
         else:
-            raise AttributeError("Please specify a value for K_WAVE_SPECIFIC_DT")
+            raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
 
+        # spacing
         if Tags.SPACING_MM in settings and settings[Tags.SPACING_MM]:
             sensor_spacing_in_mm = settings[Tags.SPACING_MM]
         else:
@@ -97,6 +117,18 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                                                   'Apply beamforming per wavelength if you have a 3D array. '
 
         ### ALGORITHM ITSELF ###
+
+        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
+            # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
+            fft_time_series_sensor_data = torch.fft.rfft(time_series_sensor_data)
+            alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
+            tukey_window = torch.tensor(tukey(time_series_sensor_data.shape[0], alpha=alpha), device=device)
+            tukey_window = tukey_window.expand_as(fft_time_series_sensor_data.T).T
+            filtered = fft_time_series_sensor_data * tukey_window
+
+            time_series_sensor_data = torch.fft.irfft(filtered)
+
+
 
         ## compute size of beamformed image ##
         xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))
@@ -148,16 +180,6 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         reconstructed = np.flipud(output.cpu().numpy())
 
-        #check for B-mode methods and applies it
-        if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
-            if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
-                # perform envelope detection using hilbert transform
-                hilbert_transformed = hilbert(reconstructed)
-                magnitude = np.abs(hilbert_transformed)
-                return magnitude
-            if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
-                # perform envelope detection using absolute value
-                magnitude = np.abs(reconstructed)
-                return magnitude
+
 
         return reconstructed
