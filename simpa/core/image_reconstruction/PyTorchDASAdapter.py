@@ -31,6 +31,7 @@ import torch.fft
 from scipy.signal import hilbert
 from scipy.signal.windows import tukey
 
+
 class PyTorchDASAdapter(ReconstructionAdapterBase):
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
         """
@@ -53,7 +54,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                 # perform envelope detection using absolute value
                 time_series_sensor_data = np.abs(time_series_sensor_data)
         else:
-            raise Warning("You have not specified a B-mode method")
+            print("You have not specified a B-mode method")
 
         ### INPUT CHECKING AND VALIDATION ###
         # check settings dictionary for elements and read them in
@@ -70,7 +71,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         # time spacing: use sampling rate is specified, otherwise kWave specific dt from simulation
         if Tags.SENSOR_SAMPLING_RATE_MHZ in settings and settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
-            time_spacing_in_ms = 1.0/(settings[Tags.SENSOR_SAMPLING_RATE_MHZ]*1000)
+            time_spacing_in_ms = 1.0 / (settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
         elif Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
             time_spacing_in_ms = settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
         else:
@@ -118,7 +119,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         ### ALGORITHM ITSELF ###
 
-        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
+        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[
+            Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
             # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
             fft_time_series_sensor_data = torch.fft.rfft(time_series_sensor_data)
             alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
@@ -128,12 +130,11 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
             time_series_sensor_data = torch.fft.irfft(filtered)
 
-
-
         ## compute size of beamformed image ##
         xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))
         xdim = int(xdim) + 1  # correction due to subtraction of indices starting at 0
-        ydim = float(time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) / sensor_spacing_in_mm
+        ydim = float(
+            time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) / sensor_spacing_in_mm
         ydim = int(round(ydim))
         n_sensor_elements = time_series_sensor_data.shape[0]
 
@@ -148,7 +149,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         delays = torch.sqrt(((yy - sensor_positions[:, 1][jj]) * sensor_spacing_in_mm) ** 2 +
                             ((xx - torch.abs(sensor_positions[:, 0][jj])) * sensor_spacing_in_mm) ** 2) \
-                            / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
+                 / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
 
         delays = torch.round(delays).long()
 
@@ -161,7 +162,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             # hann window
             if settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HANN:
                 hann = torch.hann_window(n_sensor_elements, device=device)
-                apodization = hann.expand((xdim, ydim,n_sensor_elements))
+                apodization = hann.expand((xdim, ydim, n_sensor_elements))
             # hamming window
             elif settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HAMMING:
                 hamming = torch.hamming_window(n_sensor_elements, device=device)
@@ -180,6 +181,15 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         reconstructed = np.flipud(output.cpu().numpy())
 
-
-
         return reconstructed
+
+
+def reconstruct_DAS_PyTorch(time_series_sensor_data, settings=None):
+    """
+    Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
+    :param time_series_sensor_data: 2D numpy array of sensor data of shape (sensor elements, time steps)
+    :param settings: settings dictionary
+    :return: reconstructed image as 2D numpy array
+    """
+    adapter = PyTorchDASAdapter()
+    return adapter.reconstruction_algorithm(time_series_sensor_data, settings)
