@@ -119,11 +119,27 @@ class MSOTAcuityEcho(PAIDeviceBase):
                 structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][2] + self.probe_height_mm
 
+        if Tags.US_GEL in settings and settings[Tags.US_GEL]:
+            us_gel_thickness = np.random.normal(0.4, 0.1)
+            us_gel_layer_settings = Settings({
+                Tags.PRIORITY: 5,
+                Tags.STRUCTURE_START_MM: [0, 0,
+                                          heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+                Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
+                Tags.CONSIDER_PARTIAL_VOLUME: True,
+                Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
+                Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
+            })
+
+            global_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
+        else:
+            us_gel_thickness = 0
+
         mediprene_layer_settings = Settings({
-            Tags.PRIORITY: 10,
-            Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
-            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
-            Tags.CONSIDER_PARTIAL_VOLUME: False,
+            Tags.PRIORITY: 5,
+            Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness],
+            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+            Tags.CONSIDER_PARTIAL_VOLUME: True,
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
             Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
         })

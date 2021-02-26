@@ -26,7 +26,7 @@ from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils import AbsorptionSpectrum
 from simpa.utils import SPECTRAL_LIBRARY
-from simpa.utils.calculate import calculate_oxygenation
+from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
 
 
 class MolecularComposition(list):
@@ -159,7 +159,8 @@ class Molecule(object):
         self.anisotropy = anisotropy
 
         if gruneisen_parameter is None:
-            gruneisen_parameter = 1.0
+            gruneisen_parameter = calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)
         if not isinstance(gruneisen_parameter, (int, float)):
             raise TypeError("The given gruneisen_parameter was not of type int or float instead of {}!"
                             .format(type(gruneisen_parameter)))
