@@ -12,8 +12,3 @@ m2r
 mistune==0.8.4
 coverage
 deprecated
-dash
-plotly
-plotly-express
-dash-bootstrap-components
-dash_colorscales

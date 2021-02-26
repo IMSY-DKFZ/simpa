@@ -29,8 +29,8 @@ from simpa.utils.settings_generator import Settings
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "C:/bin/"
-MCX_BINARY_PATH = "C:/Users/jgroe/Downloads/mcxcl-win-x86_64-v2020/mcxcl/bin/mcxcl.exe"
+SAVE_PATH = "/Path/to/Save/location"
+MCX_BINARY_PATH = "/Path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe ate the end can be omitted.
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
