@@ -73,3 +73,15 @@ def create_test_structure_parameters(global_settings):
     structures_dict["background"] = create_background(global_settings)
     structures_dict["vessel"] = create_vessel(global_settings)
     return structures_dict
+
+def create_background_of_molecule(global_settings, molecule):
+    background_structure_dictionary = dict()
+    background_structure_dictionary[Tags.PRIORITY] = 0
+    background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = molecule
+    bg = Background(global_settings, Settings(background_structure_dictionary))
+    return bg.to_settings()
+
+def create_test_structure_of_molecule(global_settings, molecule):
+    structures_dict = dict()
+    structures_dict["background"] = create_background_of_molecule(global_settings, molecule)
+    return structures_dict
