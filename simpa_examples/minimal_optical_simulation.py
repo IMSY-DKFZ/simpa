@@ -38,6 +38,9 @@ VOLUME_HEIGHT_IN_MM = 60
 SPACING = 1
 RANDOM_SEED = 471
 
+# If VISUALIZE is set to True, the simulation result will be plotted
+VISUALIZE = True
+
 
 def create_example_tissue(global_settings):
     """
@@ -60,13 +63,13 @@ def create_example_tissue(global_settings):
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                    VOLUME_PLANAR_DIM_IN_MM/2, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM/2, 12]
+    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, 10,
+                                                    VOLUME_PLANAR_DIM_IN_MM/2]
+    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, 12, VOLUME_PLANAR_DIM_IN_MM/2]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.SPHERICAL_STRUCTURE
+    vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
@@ -136,3 +139,81 @@ simulate(settings)
 print("Needed", time.time()-timer, "seconds")
 # TODO global_settings[Tags.SIMPA_OUTPUT_PATH]
 print("Simulating ", RANDOM_SEED, "[Done]")
+
+if VISUALIZE:
+    from simpa.io_handling.io_hdf5 import load_hdf5
+    from simpa.utils import SegmentationClasses
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+
+    PATH = "/home/kris/Downloads/MyVolumeName_471.hdf5"
+
+    file = load_hdf5(PATH)
+    settings = Settings(file["settings"])
+
+    if Tags.WAVELENGTH in settings:
+        WAVELENGTH = settings[Tags.WAVELENGTH]
+    else:
+        WAVELENGTH = 700
+
+    fluence = (file['simulations']['original_data']['optical_forward_model_output']
+    [str(WAVELENGTH)]['fluence'])
+    initial_pressure = (file['simulations']['original_data']
+    ['optical_forward_model_output']
+    [str(WAVELENGTH)]['initial_pressure'])
+    absorption = (file['simulations']['original_data']['simulation_properties']
+    [str(WAVELENGTH)]['mua'])
+
+    segmentation = (file['simulations']['original_data']['simulation_properties']
+    [str(WAVELENGTH)]['seg'])
+    values = []
+    names = []
+
+    for string in SegmentationClasses.__dict__:
+        if string[0:2] != "__":
+            values.append(SegmentationClasses.__dict__[string])
+            names.append(string)
+
+    values = np.asarray(values)
+    names = np.asarray(names)
+    sort_indexes = np.argsort(values)
+    values = values[sort_indexes]
+    names = names[sort_indexes]
+
+    colors = [list(np.random.random(3)) for _ in range(len(names))]
+    cmap = mpl.colors.LinearSegmentedColormap.from_list(
+        'Custom cmap', colors, len(names))
+
+    shape = np.shape(initial_pressure)
+
+    x_pos = int(shape[0] / 2)
+    y_pos = int(shape[1] / 2)
+    z_pos = int(shape[2] / 2)
+    plt.figure()
+    plt.subplot(241)
+    plt.ylabel("X-Z Plane")
+    plt.title("Fluence")
+    plt.imshow(np.rot90(fluence[:, y_pos, :], -1))
+    plt.subplot(242)
+    plt.title("Absorption")
+    plt.imshow(np.rot90(np.log10(absorption[:, y_pos, :]), -1))
+    plt.subplot(243)
+    plt.title("Initial Pressure")
+    plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
+    plt.subplot(244)
+    plt.title("Segmentation")
+    plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+    cbar = plt.colorbar(ticks=values)
+    cbar.ax.set_yticklabels(names)
+    plt.subplot(245)
+    plt.ylabel("Y-Z Plane")
+    plt.imshow(np.rot90((fluence[x_pos, :, :]), -1))
+    plt.subplot(246)
+    plt.imshow(np.rot90(np.log10(absorption[x_pos, :, :]), -1))
+    plt.subplot(247)
+    plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
+    plt.subplot(248)
+    plt.imshow(np.rot90(segmentation[x_pos, :, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+    cbar = plt.colorbar(ticks=values)
+    cbar.ax.set_yticklabels(names)
+    plt.show()
