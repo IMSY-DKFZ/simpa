@@ -34,6 +34,14 @@ class StandardProperties:
     GELPAD_MUS = 1e-10
     GELPAD_G = 1.0
 
+    #   @article{morel1974optical,
+    #   title={Optical properties of pure water and pure sea water.},
+    #   author={Morel, Andre and others},
+    #   year={1974}
+    # }
+    WATER_MUS = 1e-13
+    WATER_G = 1.0
+
     # @book{marx2013rosen,
     #   title={Rosen's Emergency Medicine-Concepts and Clinical Practice E-Book},
     #   author={Marx, John and Walls, Ron and Hockberger, Robert},
