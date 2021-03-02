@@ -105,7 +105,7 @@ class TestMoleculeLibrary(unittest.TestCase):
     def set_settings():
         random_seed = 4711
         settings = {
-            Tags.WAVELENGTHS: [650, 700, 750, 800, 850, 900, 950, 1000],
+            Tags.WAVELENGTHS: [500, 650, 700, 750, 800, 850, 900, 950, 1000],
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.RANDOM_SEED: random_seed,
             Tags.VOLUME_NAME: "MoleculePhantom_" + str(random_seed).zfill(6),
@@ -148,31 +148,344 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_WATER).all()
             print('molecule ', MOLECULE_NAME, 'is ok ')
 
-    # @staticmethod
-    # def test_oxyhemoglobin():
-    #     print("Simulating oxyhemoglobin")
-    #     settings = Settings(self.settings)
+    @staticmethod
+    def test_oxyhemoglobin():
+        print("Simulating oxyhemoglobin")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
         
-    #     molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.oxyhemoglobin()).get_molecular_composition(SegmentationClasses.MUSCLE)
-    #     settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-    #     spectrum = SPECTRAL_LIBRARY.OXYHEMOGLOBIN
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.oxyhemoglobin()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.OXYHEMOGLOBIN
             
-    #     MOLECULE_NAME = 'oxyhemoglobin'
-    #     print('Molecule: ', MOLECULE_NAME)
+        MOLECULE_NAME = 'oxyhemoglobin'
+        print('Molecule: ', MOLECULE_NAME)
 
-    #     for wavelength in settings[Tags.WAVELENGTHS]:
-    #         settings[Tags.WAVELENGTH] = wavelength
-    #         volume_creator_adapter = ModelBasedVolumeCreator()
-    #         volume = volume_creator_adapter.create_simulation_volume(settings)
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
 
-    #         if wavelength == 500:
-    #             assert (volume['mus'] == StandardProperties.MUS500_BLOOD).all()
-    #         assert (volume['density'] == StandardProperties.DENSITY_BLOOD).all()
-    #         assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()
-    #         assert (volume['gamma'] == 0.2004).all()
-    #         assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-    #         assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_BLOOD).all()
-    #         print('molecule ', MOLECULE_NAME, 'is ok ')
+            if wavelength == 500:
+                assert (volume['mus'] == OpticalTissueProperties.MUS500_BLOOD).all()#TODO
+            assert (volume['density'] == StandardProperties.DENSITY_BLOOD).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_BLOOD).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+    
+    @staticmethod
+    def test_deoxyhemoglobin():
+        print("Simulating deoxyhemoglobin")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.deoxyhemoglobin()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN
+            
+        MOLECULE_NAME = 'deoxyhemoglobin'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == OpticalTissueProperties.MUS500_BLOOD).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_BLOOD).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_BLOOD).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+    @staticmethod
+    def test_melanin():
+        print("Simulating melanin")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.MELANIN
+            
+        MOLECULE_NAME = 'melanin'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == OpticalTissueProperties.MUS500_EPIDERMIS).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_SKIN).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_SKIN).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+    @staticmethod
+    def test_fat():
+        print("Simulating fat")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.fat()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.FAT
+            
+        MOLECULE_NAME = 'fat'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == OpticalTissueProperties.MUS500_FAT).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_FAT).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_FAT).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+    @staticmethod
+    def test_constant_scatterer():
+        print("Simulating constant_scatterer")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.constant_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
+            
+        MOLECULE_NAME = 'constant_scatterer'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == 100.0).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_GENERIC).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_GENERIC).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+    @staticmethod
+    def test_soft_tissue_scatterer():
+        print("Simulating soft_tissue_scatterer")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.soft_tissue_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
+            
+        MOLECULE_NAME = 'soft_tissue_scatterer'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == OpticalTissueProperties.MUS500_BACKGROUND_TISSUE).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_GENERIC).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_GENERIC).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+    @staticmethod
+    def test_epidermal_scatterer():
+        print("Simulating epidermal_scatterer")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.epidermal_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
+            
+        MOLECULE_NAME = 'epidermal_scatterer'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == OpticalTissueProperties.MUS500_EPIDERMIS).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_SKIN).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_SKIN).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+    @staticmethod
+    def test_dermal_scatterer():
+        print("Simulating dermal_scatterer")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.dermal_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
+            
+        MOLECULE_NAME = 'dermal_scatterer'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == OpticalTissueProperties.MUS500_DERMIS).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_SKIN).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_SKIN).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+    
+    
+    @staticmethod
+    def test_bone():
+        print("Simulating bone")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.bone()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
+            
+        MOLECULE_NAME = 'bone'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == OpticalTissueProperties.MUS500_BONE).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_BONE).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_BONE).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+    @staticmethod
+    def test_mediprene():
+        print("Simulating mediprene")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.mediprene()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10)
+            
+        MOLECULE_NAME = 'mediprene'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == (-np.log(0.85)) - (-np.log(0.85) / 10)).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_GEL_PAD).all()
+            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+    @staticmethod
+    def test_heavy_water():
+        print("Simulating heavy_water")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.heavy_water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA)
+            
+        MOLECULE_NAME = 'heavy_water'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == StandardProperties.WATER_MUS).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_HEAVY_WATER).all()
+            assert (volume['g'] == StandardProperties.WATER_G).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+    @staticmethod
+    def test_air():
+        print("Simulating air")
+        settings = TestMoleculeLibrary.set_settings()
+        settings = Settings(settings)
+        
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.air()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA)
+            
+        MOLECULE_NAME = 'air'
+        print('Molecule: ', MOLECULE_NAME)
+
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (volume['mus'] == StandardProperties.AIR_MUS).all() #TODO
+            assert (volume['density'] == StandardProperties.DENSITY_AIR).all()
+            assert (volume['g'] == StandardProperties.AIR_G).all()#TODO
+            assert (volume['gamma'] == 0.2004).all()
+            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_AIR).all()
+            print('molecule ', MOLECULE_NAME, 'is ok ')
+
+
 
 TestMoleculeLibrary.test_water()
+TestMoleculeLibrary.test_oxyhemoglobin()
+TestMoleculeLibrary.test_deoxyhemoglobin()
+TestMoleculeLibrary.test_melanin()
+TestMoleculeLibrary.test_fat()
+TestMoleculeLibrary.test_constant_scatterer()
+TestMoleculeLibrary.test_soft_tissue_scatterer()
+TestMoleculeLibrary.test_epidermal_scatterer()
+TestMoleculeLibrary.test_dermal_scatterer()
+TestMoleculeLibrary.test_bone()
+TestMoleculeLibrary.test_mediprene()
+TestMoleculeLibrary.test_heavy_water()
+TestMoleculeLibrary.test_air()
 
