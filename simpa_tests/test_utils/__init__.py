@@ -81,7 +81,28 @@ def create_background_of_molecule(global_settings, molecule):
     bg = Background(global_settings, Settings(background_structure_dictionary))
     return bg.to_settings()
 
-def create_test_structure_of_molecule(global_settings, molecule):
+
+def create_vessel_of_molecule(global_settings, molecule, prio, structure_start):
+    tubular_structure_dictionary = dict()
+    tubular_structure_dictionary[Tags.PRIORITY] = prio
+    tubular_structure_dictionary[Tags.MOLECULE_COMPOSITION] = molecule
+    tubular_structure_dictionary[Tags.STRUCTURE_START_MM] = [structure_start, 0, 1]
+    tubular_structure_dictionary[Tags.STRUCTURE_END_MM] = [structure_start, 2, 1]
+    tubular_structure_dictionary[Tags.STRUCTURE_RADIUS_MM] = 0.5
+    tubular_structure_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
+    tubular_structure_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
+    tube = CircularTubularStructure(global_settings, Settings(tubular_structure_dictionary))
+    return tube.to_settings()
+
+def create_test_structure_of_molecule(global_settings, molecule1, molecule2, molecule3, key):
     structures_dict = dict()
-    structures_dict["background"] = create_background_of_molecule(global_settings, molecule)
+    if key =="setting1":
+        structures_dict["background"] = create_background_of_molecule(global_settings, molecule1)
+    if key =="setting2":
+        structures_dict["background"] = create_background_of_molecule(global_settings, molecule1)
+        structures_dict["vessel"] = create_vessel_of_molecule(global_settings, molecule2, prio=1, structure_start=1)
+    if key =="setting3":
+        structures_dict["background"] = create_background_of_molecule(global_settings, molecule1)
+        structures_dict["vessel"] = create_vessel_of_molecule(global_settings, molecule2, prio=1,structure_start=1 )
+        structures_dict["vessel2"] = create_vessel_of_molecule(global_settings, molecule3, prio=2, structure_start=1.25)
     return structures_dict
