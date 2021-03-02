@@ -34,13 +34,36 @@ class StandardProperties:
     GELPAD_MUS = 1e-10
     GELPAD_G = 1.0
 
-    #   @article{morel1974optical,
-    #   title={Optical properties of pure water and pure sea water.},
-    #   author={Morel, Andre and others},
-    #   year={1974}
-    # }
-    WATER_MUS = 1e-13
+    # @article{Zhang:09,
+    # author = {Xiaodong Zhang and Lianbo Hu and Ming-Xia He},
+    # journal = {Opt. Express},
+    # number = {7},
+    # pages = {5698--5710},
+    # publisher = {OSA},
+    # title = {Scattering by pure seawater: Effect of salinity},
+    # volume = {17},
+    # month = {Mar},
+    # year = {2009},
+    # doi = {10.1364/OE.17.005698},
+    # and https://www.oceanopticsbook.info/view/optical-constituents-of-the-ocean/water
+    WATER_MUS = 1e-10
     WATER_G = 1.0
+
+
+    # @article{Kedenburg:12,
+    # author = {S. Kedenburg and M. Vieweg and T. Gissibl and H. Giessen},
+    # journal = {Opt. Mater. Express},
+    # number = {11},
+    # pages = {1588--1611},
+    # publisher = {OSA},
+    # title = {Linear refractive index and absorption measurements of nonlinear optical liquids in the visible and near-infrared spectral region},
+    # volume = {2},
+    # month = {Nov},
+    # year = {2012},
+    # url = {http://www.osapublishing.org/ome/abstract.cfm?URI=ome-2-11-1588},
+    # doi = {10.1364/OME.2.001588},
+
+    HEAVY_WATER_MUA = 0.0008 
 
     # @book{marx2013rosen,
     #   title={Rosen's Emergency Medicine-Concepts and Clinical Practice E-Book},
