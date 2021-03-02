@@ -32,67 +32,8 @@ import numpy as np
 from simpa.utils.settings_generator import Settings
 from simpa.utils.libraries.structure_library import Background
 from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
-
-def create_background_of_molecule(global_settings, molecule):
-    background_structure_dictionary = dict()
-    background_structure_dictionary[Tags.PRIORITY] = 0
-    background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = molecule
-    bg = Background(global_settings, Settings(background_structure_dictionary))
-    return bg.to_settings()
-
-def create_test_structure_of_molecule(global_settings, molecule):
-    structures_dict = dict()
-    structures_dict["background"] = create_background_of_molecule(global_settings, molecule)
-    return structures_dict
-
-# MOLECULES = [
-#     MOLECULE_LIBRARY.water(),
-#     MOLECULE_LIBRARY.oxyhemoglobin(),
-#     MOLECULE_LIBRARY.deoxyhemoglobin(),
-#     MOLECULE_LIBRARY.melanin(),
-#     MOLECULE_LIBRARY.fat(),
-#     MOLECULE_LIBRARY.constant_scatterer(), 
-#     MOLECULE_LIBRARY.soft_tissue_scatterer(),
-#     MOLECULE_LIBRARY.epidermal_scatterer(),
-#     MOLECULE_LIBRARY.dermal_scatterer(),
-#     MOLECULE_LIBRARY.bone(),
-#     MOLECULE_LIBRARY.mediprene(),
-#     MOLECULE_LIBRARY.heavy_water(),
-#     MOLECULE_LIBRARY.air()
-# ]
-
-# SPECTRA = [
-#     SPECTRAL_LIBRARY.WATER,
-#     SPECTRAL_LIBRARY.OXYHEMOGLOBIN,
-#     SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN, 
-#     SPECTRAL_LIBRARY.MELANIN,
-#     SPECTRAL_LIBRARY.FAT,
-#     SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-#     SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-#     SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-#     SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-#     SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
-#     SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),
-#     SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA),
-#     SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA),
-# ]
-
-# MOLECULE_NAMES = [
-#     'WATER',
-#     'BLOOD',
-#     'BLOOD', 
-#     'SKIN',
-#     'FAT',
-#     'GENERIC', 
-#     'GENERIC',
-#     'SKIN',
-#     'SKIN', 
-#     'BONE', 
-#     'GEL_PAD',
-#     'HEAVY_WATER', 
-#     'AIR',
-# ]
-
+from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
+from simpa_tests.test_utils import create_test_structure_of_molecule, create_background_of_molecule
 
 class TestMoleculeLibrary(unittest.TestCase):
     def setUp(self):
@@ -104,6 +45,7 @@ class TestMoleculeLibrary(unittest.TestCase):
     @staticmethod
     def set_settings():
         random_seed = 4711
+        confidence_interval = 0.01
         settings = {
             Tags.WAVELENGTHS: [500, 650, 700, 750, 800, 850, 900, 950, 1000],
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
@@ -118,360 +60,1046 @@ class TestMoleculeLibrary(unittest.TestCase):
             Tags.DIM_VOLUME_X_MM: 2,
             Tags.DIM_VOLUME_Y_MM: 2
         }
-        return settings
+        return settings, confidence_interval
 
     @staticmethod
     def test_water():
         print("Simulating Water")
-        settings=TestMoleculeLibrary.set_settings()
+        settings, confidence_interval=TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
-        
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+    
+        MOLECULE_NAME = 'Water'  
+        print('Molecule: ', MOLECULE_NAME)   
         spectrum = SPECTRAL_LIBRARY.WATER
-            
-        MOLECULE_NAME = 'Water'
-        print('Molecule: ', MOLECULE_NAME)
-
+                
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
+            #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval
             if wavelength ==500:
-                assert (volume['mus'] == StandardProperties.WATER_MUS).all()
+                assert (np.abs(volume['mus'] - StandardProperties.WATER_MUS)<confidence_interval*StandardProperties.WATER_MUS).all()
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_WATER)<confidence_interval *StandardProperties.DENSITY_WATER).all()
+            assert (np.abs(volume['g'] - StandardProperties.WATER_G)<confidence_interval*StandardProperties.WATER_G).all() 
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength)<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength))).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_WATER).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
-            assert (volume['density'] == StandardProperties.DENSITY_WATER).all()
-            assert (volume['g'] == StandardProperties.WATER_G).all() 
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_WATER).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
 
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.fat()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+                
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+    
+            #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval
+            if wavelength ==500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - StandardProperties.WATER_MUS)<confidence_interval*StandardProperties.WATER_MUS).all()
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_WATER)<confidence_interval *StandardProperties.DENSITY_WATER).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - StandardProperties.WATER_G)<confidence_interval*StandardProperties.WATER_G).all() 
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength)<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength))).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_WATER).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+
+
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.fat()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+                
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval
+            if wavelength ==500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - StandardProperties.WATER_MUS)<confidence_interval*StandardProperties.WATER_MUS).all()
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_WATER)<confidence_interval *StandardProperties.DENSITY_WATER).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - StandardProperties.WATER_G)<confidence_interval*StandardProperties.WATER_G).all() 
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength)<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength))).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_WATER).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+
+
+
+
+    
     @staticmethod
     def test_oxyhemoglobin():
         print("Simulating oxyhemoglobin")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
         
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.oxyhemoglobin()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.OXYHEMOGLOBIN
-            
         MOLECULE_NAME = 'oxyhemoglobin'
         print('Molecule: ', MOLECULE_NAME)
+        spectrum = SPECTRAL_LIBRARY.OXYHEMOGLOBIN
+                
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.oxyhemoglobin()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')
 
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
             if wavelength == 500:
-                assert (volume['mus'] == OpticalTissueProperties.MUS500_BLOOD).all()#TODO
-            assert (volume['density'] == StandardProperties.DENSITY_BLOOD).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_BLOOD).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - OpticalTissueProperties.MUS500_BLOOD)<confidence_interval*OpticalTissueProperties.MUS500_BLOOD).all()
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_BLOOD)<confidence_interval*StandardProperties.DENSITY_BLOOD).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.oxyhemoglobin()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_BLOOD)<confidence_interval*OpticalTissueProperties.MUS500_BLOOD).all()
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_BLOOD)<confidence_interval*StandardProperties.DENSITY_BLOOD).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
     
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.oxyhemoglobin()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_BLOOD)<confidence_interval*OpticalTissueProperties.MUS500_BLOOD).all()
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_BLOOD)<confidence_interval*StandardProperties.DENSITY_BLOOD).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+        
+
+
+
+
+
     @staticmethod
     def test_deoxyhemoglobin():
         print("Simulating deoxyhemoglobin")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
-        
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.deoxyhemoglobin()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN
-            
+
         MOLECULE_NAME = 'deoxyhemoglobin'
         print('Molecule: ', MOLECULE_NAME)
+        spectrum = SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN
 
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.deoxyhemoglobin()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
             if wavelength == 500:
-                assert (volume['mus'] == OpticalTissueProperties.MUS500_BLOOD).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_BLOOD).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_BLOOD).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - OpticalTissueProperties.MUS500_BLOOD)<confidence_interval*OpticalTissueProperties.MUS500_BLOOD).all()
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_BLOOD)<confidence_interval*StandardProperties.DENSITY_BLOOD).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
+            print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.deoxyhemoglobin()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_BLOOD)<confidence_interval*OpticalTissueProperties.MUS500_BLOOD).all()
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_BLOOD)<confidence_interval*StandardProperties.DENSITY_BLOOD).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.deoxyhemoglobin()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_BLOOD)<confidence_interval*OpticalTissueProperties.MUS500_BLOOD).all()
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_BLOOD)<confidence_interval*StandardProperties.DENSITY_BLOOD).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+        
+
+
+
+
+
 
     @staticmethod
     def test_melanin():
         print("Simulating melanin")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
         
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.MELANIN
-            
         MOLECULE_NAME = 'melanin'
         print('Molecule: ', MOLECULE_NAME)
-
+        spectrum = SPECTRAL_LIBRARY.MELANIN
+        
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
             if wavelength == 500:
-                assert (volume['mus'] == OpticalTissueProperties.MUS500_EPIDERMIS).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_SKIN).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_SKIN).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - OpticalTissueProperties.MUS500_EPIDERMIS)<confidence_interval*OpticalTissueProperties.MUS500_EPIDERMIS).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_EPIDERMIS)<confidence_interval*OpticalTissueProperties.MUS500_EPIDERMIS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.fat()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_EPIDERMIS)<confidence_interval*OpticalTissueProperties.MUS500_EPIDERMIS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+
+
+        
+
 
     @staticmethod
     def test_fat():
         print("Simulating fat")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
-        
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.fat()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.FAT
-            
+
         MOLECULE_NAME = 'fat'
         print('Molecule: ', MOLECULE_NAME)
-
+        spectrum = SPECTRAL_LIBRARY.FAT
+                
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.fat()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
             if wavelength == 500:
-                assert (volume['mus'] == OpticalTissueProperties.MUS500_FAT).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_FAT).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_FAT).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - OpticalTissueProperties.MUS500_FAT)<confidence_interval*OpticalTissueProperties.MUS500_FAT).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_FAT)<confidence_interval*StandardProperties.DENSITY_FAT).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_FAT)<confidence_interval*StandardProperties.SPEED_OF_SOUND_FAT).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.fat()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_FAT)<confidence_interval*OpticalTissueProperties.MUS500_FAT).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_FAT)<confidence_interval*StandardProperties.DENSITY_FAT).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_FAT)<confidence_interval*StandardProperties.SPEED_OF_SOUND_FAT).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.fat()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_FAT)<confidence_interval*OpticalTissueProperties.MUS500_FAT).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_FAT)<confidence_interval*StandardProperties.DENSITY_FAT).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_FAT)<confidence_interval*StandardProperties.SPEED_OF_SOUND_FAT).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+
+
+
+
 
     @staticmethod
     def test_constant_scatterer():
         print("Simulating constant_scatterer")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
         
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.constant_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
-            
         MOLECULE_NAME = 'constant_scatterer'
         print('Molecule: ', MOLECULE_NAME)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
 
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.constant_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')   
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
             if wavelength == 500:
-                assert (volume['mus'] == 100.0).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_GENERIC).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_GENERIC).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - 100.0)<confidence_interval*100.0).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_GENERIC)<confidence_interval*StandardProperties.DENSITY_GENERIC).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.constant_scatterer()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - 100.0)<confidence_interval*100.0).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_GENERIC)<confidence_interval*StandardProperties.DENSITY_GENERIC).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.constant_scatterer()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - 100.0)<confidence_interval*100.0).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_GENERIC)<confidence_interval*StandardProperties.DENSITY_GENERIC).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+
+
+
+
+
 
     @staticmethod
     def test_soft_tissue_scatterer():
         print("Simulating soft_tissue_scatterer")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
         
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.soft_tissue_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
-            
         MOLECULE_NAME = 'soft_tissue_scatterer'
         print('Molecule: ', MOLECULE_NAME)
-
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
+        
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.soft_tissue_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')   
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
             if wavelength == 500:
-                assert (volume['mus'] == OpticalTissueProperties.MUS500_BACKGROUND_TISSUE).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_GENERIC).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_GENERIC).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - OpticalTissueProperties.MUS500_BACKGROUND_TISSUE)<confidence_interval*OpticalTissueProperties.MUS500_BACKGROUND_TISSUE).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_GENERIC)<confidence_interval*StandardProperties.DENSITY_GENERIC).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.soft_tissue_scatterer()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_BACKGROUND_TISSUE)<confidence_interval*OpticalTissueProperties.MUS500_BACKGROUND_TISSUE).all() 
+            assert (np.abs(volume['density'][volume['seg']==3]  - StandardProperties.DENSITY_GENERIC)<confidence_interval*StandardProperties.DENSITY_GENERIC).all()
+            assert (np.abs(volume['g'][volume['seg']==3]  - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3]  - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3]  - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3]  - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.soft_tissue_scatterer()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_BACKGROUND_TISSUE)<confidence_interval*OpticalTissueProperties.MUS500_BACKGROUND_TISSUE).all() 
+            assert (np.abs(volume['density'][volume['seg']==3]  - StandardProperties.DENSITY_GENERIC)<confidence_interval*StandardProperties.DENSITY_GENERIC).all()
+            assert (np.abs(volume['g'][volume['seg']==3]  - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3]  - calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3]  - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3]  - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+
+
+
 
     @staticmethod
     def test_epidermal_scatterer():
         print("Simulating epidermal_scatterer")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
         
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.epidermal_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
-            
         MOLECULE_NAME = 'epidermal_scatterer'
         print('Molecule: ', MOLECULE_NAME)
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
 
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.epidermal_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')   
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
-
+   
             if wavelength == 500:
-                assert (volume['mus'] == OpticalTissueProperties.MUS500_EPIDERMIS).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_SKIN).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_SKIN).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - OpticalTissueProperties.MUS500_EPIDERMIS)<confidence_interval*OpticalTissueProperties.MUS500_EPIDERMIS).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.epidermal_scatterer()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_EPIDERMIS)<confidence_interval*OpticalTissueProperties.MUS500_EPIDERMIS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.epidermal_scatterer()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_EPIDERMIS)<confidence_interval*OpticalTissueProperties.MUS500_EPIDERMIS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+
+
+
+
+
 
     @staticmethod
     def test_dermal_scatterer():
         print("Simulating dermal_scatterer")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
-        
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.dermal_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
+
+        MOLECULE_NAME = 'dermal_scatterer'
+        print('Molecule: ', MOLECULE_NAME)        
         spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
             
-        MOLECULE_NAME = 'dermal_scatterer'
-        print('Molecule: ', MOLECULE_NAME)
-
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.dermal_scatterer()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')   
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
-
             if wavelength == 500:
-                assert (volume['mus'] == OpticalTissueProperties.MUS500_DERMIS).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_SKIN).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_SKIN).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - OpticalTissueProperties.MUS500_DERMIS)<confidence_interval*OpticalTissueProperties.MUS500_DERMIS).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.dermal_scatterer()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_DERMIS)<confidence_interval*OpticalTissueProperties.MUS500_DERMIS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.dermal_scatterer()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_DERMIS)<confidence_interval*OpticalTissueProperties.MUS500_DERMIS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
     
     
+
+
+
     @staticmethod
     def test_bone():
         print("Simulating bone")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
-        
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.bone()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
-            
-        MOLECULE_NAME = 'bone'
-        print('Molecule: ', MOLECULE_NAME)
 
+        MOLECULE_NAME = 'bone'
+        print('Molecule: ', MOLECULE_NAME)        
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
+
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.bone()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')   
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
-
+   
             if wavelength == 500:
-                assert (volume['mus'] == OpticalTissueProperties.MUS500_BONE).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_BONE).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_BONE).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - OpticalTissueProperties.MUS500_BONE)<confidence_interval*OpticalTissueProperties.MUS500_BONE).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_BONE)<confidence_interval*StandardProperties.DENSITY_BONE).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_BONE)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BONE).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.bone()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_BONE)<confidence_interval*OpticalTissueProperties.MUS500_BONE).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_BONE)<confidence_interval*StandardProperties.DENSITY_BONE).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BONE)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BONE).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.bone()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - OpticalTissueProperties.MUS500_BONE)<confidence_interval*OpticalTissueProperties.MUS500_BONE).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_BONE)<confidence_interval*StandardProperties.DENSITY_BONE).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BONE)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BONE).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+
+
+
 
     @staticmethod
     def test_mediprene():
         print("Simulating mediprene")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
         
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.mediprene()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10)
-            
         MOLECULE_NAME = 'mediprene'
         print('Molecule: ', MOLECULE_NAME)
-
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10)
+        
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.mediprene()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')      
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
-
+   
             if wavelength == 500:
-                assert (volume['mus'] == (-np.log(0.85)) - (-np.log(0.85) / 10)).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_GEL_PAD).all()
-            assert (volume['g'] == OpticalTissueProperties.STANDARD_ANISOTROPY).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - ((-np.log(0.85)) - (-np.log(0.85) / 10)))<confidence_interval*((-np.log(0.85)) - (-np.log(0.85) / 10))).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_GEL_PAD)<confidence_interval*StandardProperties.DENSITY_GEL_PAD).all()
+            assert (np.abs(volume['g'] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_GEL_PAD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.mediprene()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - ((-np.log(0.85)) - (-np.log(0.85) / 10)))<confidence_interval*((-np.log(0.85)) - (-np.log(0.85) / 10))).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_GEL_PAD)<confidence_interval*StandardProperties.DENSITY_GEL_PAD).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GEL_PAD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.mediprene()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - ((-np.log(0.85)) - (-np.log(0.85) / 10)))<confidence_interval*((-np.log(0.85)) - (-np.log(0.85) / 10))).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_GEL_PAD)<confidence_interval*StandardProperties.DENSITY_GEL_PAD).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GEL_PAD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+
+
+
+
 
     @staticmethod
     def test_heavy_water():
         print("Simulating heavy_water")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
-        
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.heavy_water()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA)
-            
-        MOLECULE_NAME = 'heavy_water'
-        print('Molecule: ', MOLECULE_NAME)
 
+        MOLECULE_NAME = 'heavy_water'
+        print('Molecule: ', MOLECULE_NAME)        
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.HEAVY_WATER_MUA)
+        
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.heavy_water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')   
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
             if wavelength == 500:
-                assert (volume['mus'] == StandardProperties.WATER_MUS).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_HEAVY_WATER).all()
-            assert (volume['g'] == StandardProperties.WATER_G).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - StandardProperties.WATER_MUS)<confidence_interval*StandardProperties.WATER_MUS).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_HEAVY_WATER)<confidence_interval*StandardProperties.DENSITY_HEAVY_WATER).all()
+            assert (np.abs(volume['g'] - StandardProperties.WATER_G)<confidence_interval*StandardProperties.WATER_G).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_HEAVY_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.heavy_water()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - StandardProperties.WATER_MUS)<confidence_interval*StandardProperties.WATER_MUS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_HEAVY_WATER)<confidence_interval*StandardProperties.DENSITY_HEAVY_WATER).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - StandardProperties.WATER_G)<confidence_interval*StandardProperties.WATER_G).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_HEAVY_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.heavy_water()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - StandardProperties.WATER_MUS)<confidence_interval*StandardProperties.WATER_MUS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_HEAVY_WATER)<confidence_interval*StandardProperties.DENSITY_HEAVY_WATER).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - StandardProperties.WATER_G)<confidence_interval*StandardProperties.WATER_G).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_HEAVY_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
+
+
+
+
 
     @staticmethod
     def test_air():
         print("Simulating air")
-        settings = TestMoleculeLibrary.set_settings()
+        settings, confidence_interval = TestMoleculeLibrary.set_settings()
         settings = Settings(settings)
-        
-        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.air()).get_molecular_composition(SegmentationClasses.MUSCLE)
-        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule)
-        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA)
-            
-        MOLECULE_NAME = 'air'
-        print('Molecule: ', MOLECULE_NAME)
 
+        MOLECULE_NAME = 'air'
+        print('Molecule: ', MOLECULE_NAME)    
+        spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA)
+
+        #setting1: background of molecule
+        molecule = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.air()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule, molecule, molecule, key='setting1')   
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval  
         for wavelength in settings[Tags.WAVELENGTHS]:
             settings[Tags.WAVELENGTH] = wavelength
             volume_creator_adapter = ModelBasedVolumeCreator()
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
             if wavelength == 500:
-                assert (volume['mus'] == StandardProperties.AIR_MUS).all() #TODO
-            assert (volume['density'] == StandardProperties.DENSITY_AIR).all()
-            assert (volume['g'] == StandardProperties.AIR_G).all()#TODO
-            assert (volume['gamma'] == 0.2004).all()
-            assert (volume['mua'] == spectrum.get_absorption_for_wavelength(wavelength)).all()
-            assert (volume['sos'] == StandardProperties.SPEED_OF_SOUND_AIR).all()
-            print('molecule ', MOLECULE_NAME, 'is ok ')
+                assert (np.abs(volume['mus'] - StandardProperties.AIR_MUS)<confidence_interval*StandardProperties.AIR_MUS).all() 
+            assert (np.abs(volume['density'] - StandardProperties.DENSITY_AIR)<confidence_interval*StandardProperties.DENSITY_AIR).all()
+            assert (np.abs(volume['g'] - StandardProperties.AIR_G)<confidence_interval*StandardProperties.AIR_G).all()
+            assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
+
+        #setting2: vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.air()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule2, key='setting2')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - StandardProperties.AIR_MUS)<confidence_interval*StandardProperties.AIR_MUS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_AIR)<confidence_interval*StandardProperties.DENSITY_AIR).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - StandardProperties.AIR_G)<confidence_interval*StandardProperties.AIR_G).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
+    
+        #setting3: vessel of molecule on top of vessel of molecule
+        molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
+        molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
+        molecule3 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.air()).get_molecular_composition(SegmentationClasses.BLOOD)
+        settings[Tags.STRUCTURES] = create_test_structure_of_molecule(settings, molecule1, molecule2, molecule3, key='setting3')
+
+        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
+        for wavelength in settings[Tags.WAVELENGTHS]:
+            settings[Tags.WAVELENGTH] = wavelength
+            volume_creator_adapter = ModelBasedVolumeCreator()
+            volume = volume_creator_adapter.create_simulation_volume(settings)
+           
+            if wavelength == 500:
+                assert (np.abs(volume['mus'][volume['seg']==3] - StandardProperties.AIR_MUS)<confidence_interval*StandardProperties.AIR_MUS).all() 
+            assert (np.abs(volume['density'][volume['seg']==3] - StandardProperties.DENSITY_AIR)<confidence_interval*StandardProperties.DENSITY_AIR).all()
+            assert (np.abs(volume['g'][volume['seg']==3] - StandardProperties.AIR_G)<confidence_interval*StandardProperties.AIR_G).all()
+            assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()
+        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 
@@ -489,3 +1117,15 @@ TestMoleculeLibrary.test_mediprene()
 TestMoleculeLibrary.test_heavy_water()
 TestMoleculeLibrary.test_air()
 
+
+
+
+# @Kris:
+# Molecule_library: 
+# HEAVY WATER:
+#     MUA auf lit-wert gesetzt 
+#     MUS und G auf lit-wert von WATER gesetzt
+# WATER:
+#     MUS und G auf lit-wert von WATER gesetzt
+#
+#Im Endeffekt wurden die Moleküle mit den Lit-Werten verglichen. Also z.B. das scattering von Hb auch mit scattering von blut, wie es definiert wurde, aber alles im conf-interval
