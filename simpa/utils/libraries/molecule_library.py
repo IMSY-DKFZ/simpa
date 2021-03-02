@@ -374,7 +374,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def heavy_water(volume_fraction: float = 1.0):
         return Molecule(name="heavy_water",
-                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA),
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.HEAVY_WATER_MUA),
                         volume_fraction=volume_fraction,
                         mus500=StandardProperties.WATER_MUS,
                         b_mie=0.0,
