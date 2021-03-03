@@ -346,7 +346,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def bone(volume_fraction: float = 1.0):
         return Molecule(name="bone",
-                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(OpticalTissueProperties.BONE_ABSORPTION),
                         volume_fraction=volume_fraction,
                         mus500=OpticalTissueProperties.MUS500_BONE,
                         b_mie=OpticalTissueProperties.BMIE_BONE,
