@@ -43,9 +43,9 @@ project = 'SIMPA'
 copyright = '2020, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
 author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
 
-# The full version, including alpha/beta/rc tags
-release = '0.1.0'
-version = release
+# The full version
+# SIMPA syntax: RELEASE.MAJOR.MINOR
+version = '0.2.0'
 
 
 # -- General configuration ---------------------------------------------------

@@ -66,7 +66,12 @@ class Structures:
 
 class GeometricalStructure:
     """
-    TODO
+    Base class for all model-based structures for ModelBasedVolumeCreator. A GeometricalStructure has an internal
+    representation of its own geometry. This is represented by self.geometrical_volume which is a 3D array that defines
+    for every voxel within the simulation volume if it is enclosed in the GeometricalStructure or if it is outside.
+    Most of the GeometricalStructures implement a partial volume effect. So if a voxel has the value 1, it is completely
+    enclosed by the GeometricalStructure. If a voxel has a value between 0 and 1, that fraction of the volume is
+    occupied by the GeometricalStructure. If a voxel has the value 0, it is outside of the GeometricalStructure.
     """
 
     def __init__(self, global_settings: Settings, single_structure_settings: Settings = None):
@@ -107,24 +112,42 @@ class GeometricalStructure:
         self.fill_internal_volume()
 
     def fill_internal_volume(self):
+        """
+        Fills self.geometrical_volume of the GeometricalStructure.
+        """
         indices, values = self.get_enclosed_indices()
         self.geometrical_volume[indices] = values
 
     @abstractmethod
     def get_enclosed_indices(self):
+        """
+        Gets indices of the voxels that are either entirely or partially occupied by the GeometricalStructure.
+        :return: mask for a numpy array
+        """
         pass
 
     @abstractmethod
     def get_params_from_settings(self, single_structure_settings):
+        """
+        Gets all the parameters required for the specific GeometricalStructure.
+        :param single_structure_settings: Settings which describe the specific GeometricalStructure.
+        :return: Tuple of parameters
+        """
         pass
 
     def properties_for_wavelength(self, wavelength) -> TissueProperties:
+        """
+        Returns the values corresponding to each optical/acoustic property used in SIMPA.
+        :param wavelength: Wavelength of the queried properties
+        :return: optical/acoustic properties
+        """
         return self.molecule_composition.get_properties_for_wavelength(wavelength)
 
     @abstractmethod
     def to_settings(self) -> Settings:
         """
-        TODO
+        Creates a Settings dictionary which contains all the parameters needed to create the same GeometricalStructure
+        again.
         :return : A tuple containing the settings key and the needed entries
         """
         settings_dict = Settings()
@@ -136,6 +159,23 @@ class GeometricalStructure:
 
 
 class HorizontalLayerStructure(GeometricalStructure):
+    """
+    Defines a Layer structure which spans the xy-plane in the SIMPA axis convention. The thickness of the layer is
+    defined along the z-axis. This layer can be deformed by the simpa.utils.deformation_manager.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 10
+        structure[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+        structure[Tags.STRUCTURE_END_MM] = [0, 0, 100]
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (single_structure_settings[Tags.STRUCTURE_START_MM],
@@ -207,6 +247,26 @@ class HorizontalLayerStructure(GeometricalStructure):
 
 
 class CircularTubularStructure(GeometricalStructure):
+    """
+    Defines a circular tube which is defined by a start and end point as well as a radius. This structure implements
+    partial volume effects. The tube can be set to adhere to a deformation defined by the
+    simpa.utils.deformation_manager. The start and end points of the tube will then be shifted along the z-axis
+    accordingly.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [50, 0, 50]
+        structure[Tags.STRUCTURE_END_MM] = [50, 100, 50]
+        structure[Tags.STRUCTURE_RADIUS_MM] = 5
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
@@ -268,6 +328,25 @@ class CircularTubularStructure(GeometricalStructure):
 
 
 class SphericalStructure(GeometricalStructure):
+    """
+    Defines a sphere which is defined by a start point and a radius. This structure implements
+    partial volume effects. The sphere can be set to adhere to a deformation defined by the
+    simpa.utils.deformation_manager. The start point of the sphere will then be shifted along the z-axis
+    accordingly.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [50, 50, 50]
+        structure[Tags.STRUCTURE_RADIUS_MM] = 10
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.SPHERICAL_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
@@ -320,6 +399,27 @@ class SphericalStructure(GeometricalStructure):
 
 
 class RectangularCuboidStructure(GeometricalStructure):
+    """
+    Defines a rectangular cuboid (box) which is defined by a start point its extent along the x-, y-, and z-axis.
+    This structure implements partial volume effects. The box can be set to adhere to a deformation defined by the
+    simpa.utils.deformation_manager. The start point of the box will then be shifted along the z-axis
+    accordingly.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [25, 25, 25]
+        structure[Tags.STRUCTURE_X_EXTENT_MM] = 40
+        structure[Tags.STRUCTURE_Y_EXTENT_MM] = 50
+        structure[Tags.STRUCTURE_Z_EXTENT_MM] = 60
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
@@ -400,7 +500,21 @@ class RectangularCuboidStructure(GeometricalStructure):
 
 class ParallelepipedStructure(GeometricalStructure):
     """
-    This class currently has no partial volume effects implemented. TODO
+    Defines a parallelepiped which is defined by a start point and three edge vectors which originate from the start
+    point. This structure currently does not implement partial volume effects.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [25, 25, 25]
+        structure[Tags.STRUCTURE_FIRST_EDGE_MM] = [5, 1, 1]
+        structure[Tags.STRUCTURE_SECOND_EDGE_MM] = [1, 5, 1]
+        structure[Tags.STRUCTURE_THIRD_EDGE_MM] = [1, 1, 5]
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        structure[Tags.STRUCTURE_TYPE] = Tags.PARALLELEPIPED_STRUCTURE
+
     """
 
     def get_params_from_settings(self, single_structure_settings):
@@ -481,6 +595,29 @@ class ParallelepipedStructure(GeometricalStructure):
 
 
 class EllipticalTubularStructure(GeometricalStructure):
+    """
+    Defines a elliptical tube which is defined by a start and end point as well as a radius and an eccentricity. The
+    elliptical geometry corresponds to a circular tube of the specified radius which is compressed along the z-axis
+    until it reaches the specified eccentricity under the assumption of a constant volume. This structure implements
+    partial volume effects. The tube can be set to adhere to a deformation defined by the
+    simpa.utils.deformation_manager. The start and end points of the tube will then be shifted along the z-axis
+    accordingly.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [50, 0, 50]
+        structure[Tags.STRUCTURE_END_MM] = [50, 100, 50]
+        structure[Tags.STRUCTURE_RADIUS_MM] = 5
+        structure[Tags.STRUCTURE_ECCENTRICITY] = 0.8
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
@@ -563,6 +700,14 @@ class EllipticalTubularStructure(GeometricalStructure):
 
 
 class Background(GeometricalStructure):
+    """
+    Defines a background that fills the whole simulation volume. It is always given the priority of 0 so that other
+    structures can overwrite it when necessary.
+    Example usage:
+        background_dictionary = Settings()
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
+        background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    """
 
     def get_enclosed_indices(self):
         array = np.ones((self.volume_dimensions_voxels[0],
@@ -590,6 +735,29 @@ class Background(GeometricalStructure):
 
 
 class VesselStructure(GeometricalStructure):
+    """
+    Defines a vessel tree that is generated randomly in the simulation volume. The generation process begins at the
+    start with a specified radius. The vessel grows roughly in the specified direction. The deviation is specified by
+    the curvature factor. Furthermore, the radius of the vessel can vary depending on the specified radius variation
+    factor. The bifurcation length defines how long a vessel can get until it will bifurcate. This structure implements
+    partial volume effects.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure_settings = Settings()
+
+        structure_settings[Tags.PRIORITY] = 10
+        structure_settings[Tags.STRUCTURE_START_MM] = [50, 0, 50]
+        structure_settings[Tags.STRUCTURE_DIRECTION] = [0, 1, 0]
+        structure_settings[Tags.STRUCTURE_RADIUS_MM] = 4
+        structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.05
+        structure_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
+        structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 70
+        structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure_settings[Tags.STRUCTURE_TYPE] = Tags.VESSEL_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),

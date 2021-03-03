@@ -51,17 +51,17 @@ def calculate_oxygenation(molecule_list):
 
     return hbO2 / (hb + hbO2)
 
+
 def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spacing=0.1):
     """
     Creates a functional that simulates distortion along the y position
     between the minimum and maximum x positions. The elevation can never be
     smaller than 0 or bigger than maximum_y_elevation_mm.
 
-    @param xmin_mm: the minimum x axis value the return functional is defined in
-    @param xmax_mm: the maximum x axis value the return functional is defined in
-    @param maximum_y_elevation_mm: the maximum y axis value the return functional will yield
-
-    @return: a functional that describes a distortion field along the y axis
+    :param xmin_mm: the minimum x axis value the return functional is defined in
+    :param xmax_mm: the maximum x axis value the return functional is defined in
+    :param maximum_y_elevation_mm: the maximum y axis value the return functional will yield
+    :return: a functional that describes a distortion field along the y axis
 
     """
     # Convert units from mm spacing to voxel spacing.
@@ -113,18 +113,18 @@ def spline_evaluator2d_voxel(x, y, spline, offset_voxel, thickness_voxel):
 def calculate_gruneisen_parameter_from_temperature(temperature_in_celcius):
     """
     This function returns the dimensionless gruneisen parameter based on a heuristic formula that
-    was determined experimentally:
+    was determined experimentally::
 
-    @book{wang2012biomedical,
-        title={Biomedical optics: principles and imaging},
-        author={Wang, Lihong V and Wu, Hsin-i},
-        year={2012},
-        publisher={John Wiley \& Sons}
-    }
+        @book{wang2012biomedical,
+            title={Biomedical optics: principles and imaging},
+            author={Wang, Lihong V and Wu, Hsin-i},
+            year={2012},
+            publisher={John Wiley \& Sons}
+        }
 
     :param temperature_in_celcius: the temperature in degrees celcius
-    :return: a floating point number, if temperature_in_celcius is a number or a
-    float array, if temperature_in_celcius is an array
+    :return: a floating point number, if temperature_in_celcius is a number or a float array, if temperature_in_celcius is an array
+
     """
     return 0.0043 + 0.0053 * temperature_in_celcius
 
@@ -136,27 +136,52 @@ def randomize_uniform(min_value: float, max_value: float):
     :param min_value: minimum value
     :param max_value: maximum value
     :return: random number in [min_value, max_value[
+
     """
     return (np.random.random() * (max_value-min_value)) + min_value
 
 
 def rotation_x(theta):
+    """
+    Rotation matrix around the x-axis with angle theta.
+
+    :param theta: Angle through which the matrix is supposed to rotate.
+    :return: rotation matrix
+    """
     return np.matrix([[1, 0, 0],
                       [0, np.cos(theta), -np.sin(theta)],
                       [0, np.sin(theta), np.cos(theta)]])
 
 
 def rotation_y(theta):
+    """
+    Rotation matrix around the y-axis with angle theta.
+
+    :param theta: Angle through which the matrix is supposed to rotate.
+    :return: rotation matrix
+    """
     return np.matrix([[np.cos(theta), 0, np.sin(theta)],
                       [0, 1, 0],
                       [-np.sin(theta), 0, np.cos(theta)]])
 
 
 def rotation_z(theta):
+    """
+    Rotation matrix around the z-axis with angle theta.
+
+    :param theta: Angle through which the matrix is supposed to rotate.
+    :return: rotation matrix
+    """
     return np.matrix([[np.cos(theta), -np.sin(theta), 0],
                       [np.sin(theta), np.cos(theta), 0],
                       [0, 0, 1]])
 
 
 def rotation(angles):
+    """
+    Rotation matrix around the x-, y-, and z-axis with angles [theta_x, theta_y, theta_z].
+
+    :param angles: Angles through which the matrix is supposed to rotate in the form of [theta_x, theta_y, theta_z].
+    :return: rotation matrix
+    """
     return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])

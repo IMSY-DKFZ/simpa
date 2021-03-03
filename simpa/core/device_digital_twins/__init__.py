@@ -22,11 +22,13 @@
 
 from simpa.utils import Tags
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
+from simpa.core.device_digital_twins.rsom_device import RSOMExplorerP50
 
 """
 This DEVICE_MAP can be used in order to obtain appropriate device specifications based on
 the desired device design.
 """
 DEVICE_MAP = {
-    Tags.DIGITAL_DEVICE_MSOT: MSOTAcuityEcho()
+    Tags.DIGITAL_DEVICE_MSOT: MSOTAcuityEcho(),
+    Tags.DIGITAL_DEVICE_RSOM: RSOMExplorerP50()
 }

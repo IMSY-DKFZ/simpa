@@ -29,8 +29,11 @@ from simpa.utils.dict_path_manager import generate_dict_path
 
 
 def run_optical_forward_model(settings):
-    # TODO
-    print("OPTICAL FORWARD")
+    """
+    This method is the main entry point for running optical forward simulations with the SIMPA toolkit.
+    It is important, that the Tags.OPTICAL_MODEL tag is set in the settings dictionary, as well as any
+    tags that have to be present for the specific model.
+    """
 
     if Tags.OPTICAL_MODEL not in settings:
         raise AssertionError("Tags.OPTICAL_MODEL tag was not specified in the settings. Skipping optical modelling.")

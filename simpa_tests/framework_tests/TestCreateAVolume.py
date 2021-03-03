@@ -51,9 +51,7 @@ class TestCreateVolume(unittest.TestCase):
             Tags.SPACING_MM: 0.3,
             Tags.DIM_VOLUME_Z_MM: 5,
             Tags.DIM_VOLUME_X_MM: 4,
-            Tags.DIM_VOLUME_Y_MM: 3,
-            Tags.AIR_LAYER_HEIGHT_MM: 1,
-            Tags.GELPAD_LAYER_HEIGHT_MM: 1,
+            Tags.DIM_VOLUME_Y_MM: 3
         }
         print("Simulating ", random_seed)
         settings = Settings(settings)

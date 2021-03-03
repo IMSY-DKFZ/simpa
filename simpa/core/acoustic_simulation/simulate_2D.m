@@ -144,7 +144,7 @@ else
 end
 
 %% Write data to mat array
-save(strcat(optical_path, '.mat'), 'time_series_data')%, '-v7.3')
+save(optical_path, 'time_series_data')%, '-v7.3')
 time_step = kgrid.dt;
 number_time_steps = kgrid.Nt;
 save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');

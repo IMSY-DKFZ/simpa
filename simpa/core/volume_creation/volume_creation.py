@@ -23,7 +23,7 @@
 from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling import save_hdf5
-from simpa.core.volume_creation.versatile_volume_creator import VersatileVolumeCreator
+from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
 from simpa.core.volume_creation.segmentation_based_volume_creator import SegmentationBasedVolumeCreator
 from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
@@ -31,6 +31,14 @@ from simpa.utils import create_deformation_settings
 
 
 def run_volume_creation(global_settings: Settings):
+    """
+    This method is the main entry point of volume creation for the SIMPA framework.
+    It uses the Tags.VOLUME_CREATOR tag to determine which of the volume creators
+    should be used to create the simulation phantom.
+
+    :param global_settings: the settings dictionary that contains the simulation instructions
+
+    """
     print("VOLUME CREATION")
 
     if Tags.VOLUME_CREATOR not in global_settings:
@@ -40,7 +48,7 @@ def run_volume_creation(global_settings: Settings):
     volume_creator_adapter = None
 
     if model == Tags.VOLUME_CREATOR_VERSATILE:
-        volume_creator_adapter = VersatileVolumeCreator()
+        volume_creator_adapter = ModelBasedVolumeCreator()
     elif model == Tags.VOLUME_CREATOR_SEGMENTATION_BASED:
         volume_creator_adapter = SegmentationBasedVolumeCreator()
 

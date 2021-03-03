@@ -21,10 +21,15 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.io_handling import save_hdf5, load_hdf5
 
 
 class Settings(dict):
+    """
+    The Settings class is a dictionary that contains all relevant settings for running a simulation in the SIMPA
+    toolkit. It includes an automatic sanity check for input parameters using the simpa.utils.Tags class. \n
+    Usage: Seetings({Tags.KEY1: value1, Tags.KEY2: value2, ...})
+    """
+
     def __init__(self, dictionary: dict = None):
         super(Settings, self).__init__()
         if dictionary is None:
@@ -80,6 +85,19 @@ class Settings(dict):
     def add_minimal_meta_information(self, volume_name: str = None, simulation_path: str = None,
                                      random_seed: int = None, spacing: float = None, volume_dim_x: (int, float) = None,
                                      volume_dim_y: (int, float) = None, volume_dim_z: (int, float) = None):
+        """
+        Helper function that adds minimal meta information required for running a simulation in SIMPA to an existing
+        Settings inplace.
+
+        :param volume_name: Name of the SIMPA output file.
+        :param simulation_path: Absolute path to the folder where the SIMPA output is saved.
+        :param random_seed: Random seed for numpy and torch.
+        :param spacing: Isotropic extent of one voxels in mm in the generated volume.
+        :param volume_dim_x: Extent of the x-axis of the generated volume.
+        :param volume_dim_y: Extent of the y-axis of the generated volume.
+        :param volume_dim_z: Extent of the z-axis of the generated volume.
+
+        """
         if volume_name is not None:
             self[Tags.VOLUME_NAME] = volume_name
         else:
@@ -119,6 +137,21 @@ class Settings(dict):
                                        optical_model: str = None, photon_number: int = None,
                                        illumination_type: str = None, illumination_position: list = None,
                                        illumination_direction: list = None):
+        """
+        Helper function that adds minimal optical properties required for running an optical forward model in SIMPA
+        to an existing Settings inplace.
+
+        :param run_optical_model: If True, the simulation will run the optical forward model.
+        :param wavelengths: Iterable of all the wavelengths used for the simulation.
+        :param optical_model: Choice of the used optical model.
+        :param photon_number: Number of photons used in the optical simulation.
+        :param illumination_type: Type of the illumination geometry used in the optical simulation.
+        :param illumination_position: Position of the photon source in [x, y, z] coordinates used in the optical
+        simulation.
+        :param illumination_direction: Direction of the photon source as [x, y, z] vector used in the optical
+        simulation.
+
+        """
 
         if run_optical_model is not None:
             self[Tags.RUN_OPTICAL_MODEL] = run_optical_model
@@ -158,6 +191,17 @@ class Settings(dict):
     def add_acoustic_properties(self, run_acoustic_model: bool = None, acoustic_model: str = None,
                                 acoustic_simulation_3D: bool = None, speed_of_sound: (int, float) = None,
                                 density: (int, float) = None):
+        """
+        Helper function that adds minimal acoustic properties required for running an optical forward model in SIMPA
+        to an existing Settings inplace.
+
+        :param run_acoustic_model: If True, the simulation will run the acoustic forward model.
+        :param acoustic_model: Choice of the used acoustic model.
+        :param acoustic_simulation_3D: If True, simulates the acoustic forward model in 3D.
+        :param speed_of_sound: Speed of sound of the generated volume/structure in m/s.
+        :param density: Density of the generated volume/structure in kg/m³.
+
+        """
 
         if run_acoustic_model is not None:
             self[Tags.RUN_ACOUSTIC_MODEL] = run_acoustic_model
@@ -186,6 +230,14 @@ class Settings(dict):
 
     def add_reconstruction_properties(self, perform_image_reconstruction: bool = None,
                                       reconstruction_algorithm: str = None):
+        """
+        Helper function that adds minimal reconstruction properties required for running an optical forward model in
+        SIMPA to an existing Settings inplace.
+
+        :param perform_image_reconstruction: If True, the simulation will run the image reconstruction.
+        :param reconstruction_algorithm: Choice of the used reconstruction algorithm.
+
+        """
 
         if perform_image_reconstruction is not None:
             self[Tags.PERFORM_IMAGE_RECONSTRUCTION] = perform_image_reconstruction
@@ -198,8 +250,10 @@ class Settings(dict):
             self[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_DAS
 
     def save(self, path):
+        from simpa.io_handling.io_hdf5 import save_hdf5
         save_hdf5(self, path)
 
     def load(self, path):
+        from simpa.io_handling.io_hdf5 import load_hdf5
         for key, value in load_hdf5(path).items():
             self[key] = value

@@ -37,9 +37,27 @@ import json
 
 def simulate(settings):
     """
+    This method constitutes the staring point for the simulation pipeline
+    of the SIMPA toolkit. It calls all relevant and wanted simulation modules in the
+    following pre-determined order::
 
-    :param settings:
-    :return:
+        def simulation(settings):
+            for wavelength in settings[Tags.WAVELENGTHS]:
+
+                simulation_data = volume_creator.create_simulation_volumes(settings)
+                if optical_simulation in settings:
+                    optical_model.simulate(simulation_data, settings)
+                if acoustic_simulation in settings:
+                    acoustic_model.simulate(simulation_data, settings)
+                if noise_simulation in settings:
+                    noise_model.simulate(simulation_data, settings)
+                if image_reconstruction in settings:
+                    reconstruction_model.simulate(simulation_data, settings)
+
+                io_handler.save_hdf5(simulation_data, settings)
+
+    :param settings: settings dictionary containing the simulation instructions
+    :return: list with the save paths of the simulated data within the HDF5 file.
     """
 
     if not isinstance(settings, Settings):
@@ -105,9 +123,7 @@ def simulate(settings):
 
         if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings:
             if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-                reconstruction_output_path = perform_reconstruction(settings, None)
-                # if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
-                #     reconstruction_output_path = apply_noise_model_to_reconstructed_data(settings, reconstruction_output_path)
+                reconstruction_output_path = perform_reconstruction(settings)
 
     # Quick and dirty fix:
     all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])

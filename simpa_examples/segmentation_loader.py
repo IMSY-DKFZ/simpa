@@ -82,7 +82,7 @@ settings = {
     Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "/media/kris/Extreme SSD/simpa/simpa/core/acoustic_simulation",
     Tags.GPU: True,
 
-    Tags.MEDIUM_ALPHA_POWER: 1.05,
+    Tags.PROPERTY_ALPHA_POWER: 1.05,
 
     Tags.SENSOR_RECORD: "p",
     # Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",

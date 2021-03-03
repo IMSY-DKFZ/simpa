@@ -50,5 +50,7 @@ from simpa.utils.calculate import randomize_uniform
 from simpa.utils.deformation_manager import create_deformation_settings
 from simpa.utils.deformation_manager import get_functional_from_deformation_settings
 
+from simpa.utils.settings_generator import Settings
+
 if __name__ == "__main__":
     view_absorption_spectra()

@@ -26,7 +26,40 @@ from simpa.utils import Tags
 import numpy as np
 
 
-class VersatileVolumeCreator(VolumeCreatorBase):
+class ModelBasedVolumeCreator(VolumeCreatorBase):
+    """
+    The model-based volume creator uses a set of rules how to generate structures
+    to create a simulation volume.
+    These structures are added to the dictionary and later combined by the algorithm::
+
+        # Initialise settings dictionaries
+        simulation_settings = Settings()
+        all_structures = Settings()
+        structure = Settings()
+
+        # Definition of en example structure.
+        # The concrete structure parameters will change depending on the
+        # structure type
+        structure[Tags.PRIORITY] = 1
+        structure[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+        structure[Tags.STRUCTURE_END_MM] = [0, 0, 100]
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+
+        all_structures["arbitrary_identifier"] = structure
+
+        simulation_settings[Tags.STRUCTURES] = all_structures
+
+        # ...
+        # Define further simulation settings
+        # ...
+
+        simulate(simulation_settings)
+
+
+    """
 
     def __init__(self):
         self.EPS = 1e-4
@@ -34,6 +67,7 @@ class VersatileVolumeCreator(VolumeCreatorBase):
     def create_simulation_volume(self, settings) -> dict:
         """
         This method creates a in silico respresentation of a tissue as described in the settings file that is given.
+
         :param settings: a dictionary containing all relevant Tags for the simulation to be able to instantiate a tissue.
         :return: a path to a npz file containing characteristics of the simulated volume:
                 absorption, scattering, anisotropy, oxygenation, and a segmentation mask. All of these are given as 3d

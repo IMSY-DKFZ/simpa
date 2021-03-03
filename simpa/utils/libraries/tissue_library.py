@@ -266,4 +266,5 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water())
                 .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
 
+
 TISSUE_LIBRARY = TissueLibrary()
