@@ -30,14 +30,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-PATH = "D:/save/LNetOpticalForward_planar_LARGE.hdf5"
+PATH = "path/to/hdf5_file.hdf5"
+MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
 WAVELENGTH = 532
 
 file = load_hdf5(PATH)
 settings = Settings(file["settings"])
 settings[Tags.WAVELENGTH] = WAVELENGTH
 settings[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL
-settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
+settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] = MATLAB_PATH
 settings[Tags.RECONSTRUCTION_MODE] = Tags.RECONSTRUCTION_MODE_FULL
 settings[Tags.DIGITAL_DEVICE_POSITION] = [0, 0, 0]
 acoustic_data_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA,
