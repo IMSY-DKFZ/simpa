@@ -23,65 +23,56 @@
 from simpa.utils import Tags
 
 
-def generate_dict_path(settings, data_field, wavelength: (int, float) = None, upsampled_data: bool = None) -> str:
+def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     """
     Generates a path within an hdf5 file in the SIMPA convention
 
     :param settings: SIMPA Settings dictionary.
     :param data_field: Data field that is supposed to be stored in an hdf5 file.
     :param wavelength: Wavelength of the current simulation.
-    :param upsampled_data: If True, data_field will be stored in the "upsampled_data" section of the hdf5 file.
     :return: String which defines the path to the data_field.
     """
 
-    sampled_data = "/"
-    wl = "/"
+    wavelength_dependent_properties = [Tags.PROPERTY_ABSORPTION_PER_CM,
+                                       Tags.PROPERTY_SCATTERING_PER_CM,
+                                       Tags.PROPERTY_ANISOTROPY]
 
-    if Tags.PERFORM_UPSAMPLING in settings and settings[Tags.PERFORM_UPSAMPLING] is True:
-        if upsampled_data is None:
-            raise ValueError("Please specify if the data is the original data or the upsampled data with "
-                             "the parameter 'upsampled_data' using either Tags.ORIGINAL_DATA or Tags.UPSAMPLED_DATA!")
-        elif upsampled_data is True:
-            sampled_data = "/{}/".format(Tags.UPSAMPLED_DATA)
-        elif upsampled_data is False:
-            sampled_data = "/{}/".format(Tags.ORIGINAL_DATA)
-    elif Tags.PERFORM_UPSAMPLING not in settings or settings[Tags.PERFORM_UPSAMPLING] is False:
-        sampled_data = "/{}/".format(Tags.ORIGINAL_DATA)
+    wavelength_independent_properties = [Tags.PROPERTY_OXYGENATION,
+                                         Tags.PROPERTY_SEGMENTATION,
+                                         Tags.PROPERTY_GRUNEISEN_PARAMETER,
+                                         Tags.PROPERTY_SPEED_OF_SOUND,
+                                         Tags.PROPERTY_DENSITY,
+                                         Tags.PROPERTY_ALPHA_COEFF,
+                                         Tags.PROPERTY_SENSOR_MASK,
+                                         Tags.PROPERTY_DIRECTIVITY_ANGLE]
 
-    if Tags.WAVELENGTH in settings:
-        if wavelength is None:
-            raise ValueError("Please specify the wavelength as int!")
-        else:
-            wl = "/{}/".format(wavelength)
-
-    simulation_properties = [Tags.SIMULATION_PROPERTIES,
-                             Tags.PROPERTY_ABSORPTION_PER_CM,
-                             Tags.PROPERTY_SCATTERING_PER_CM,
-                             Tags.PROPERTY_ANISOTROPY,
-                             Tags.PROPERTY_OXYGENATION,
-                             Tags.PROPERTY_SEGMENTATION,
-                             Tags.PROPERTY_GRUNEISEN_PARAMETER,
-                             Tags.PROPERTY_SPEED_OF_SOUND,
-                             Tags.PROPERTY_DENSITY,
-                             Tags.PROPERTY_ALPHA_COEFF,
-                             Tags.PROPERTY_SENSOR_MASK,
-                             Tags.PROPERTY_DIRECTIVITY_ANGLE]
-
-    simulation_output = [Tags.OPTICAL_MODEL_OUTPUT_NAME,
-                         Tags.OPTICAL_MODEL_FLUENCE,
+    simulation_output = [Tags.OPTICAL_MODEL_FLUENCE,
                          Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+                         Tags.OPTICAL_MODEL_UNITS,
                          Tags.TIME_SERIES_DATA,
                          Tags.TIME_SERIES_DATA_NOISE,
                          Tags.RECONSTRUCTED_DATA,
                          Tags.RECONSTRUCTED_DATA_NOISE]
 
-    if data_field in simulation_properties:
-        dict_path = "/" + Tags.SIMULATIONS + sampled_data + Tags.SIMULATION_PROPERTIES + wl
+    simulation_ouput_fields = [Tags.OPTICAL_MODEL_OUTPUT_NAME,
+                               Tags.SIMULATION_PROPERTIES]
+
+    if wavelength is None and ((data_field in wavelength_dependent_properties) or (data_field in simulation_output)):
+        raise ValueError("Please specify the wavelength as integer!")
+    else:
+        wl = "/{}/".format(wavelength)
+
+    if data_field in wavelength_dependent_properties:
+        dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + wl
     elif data_field in simulation_output:
-        if data_field in [Tags.OPTICAL_MODEL_FLUENCE, Tags.OPTICAL_MODEL_INITIAL_PRESSURE]:
-            dict_path = "/" + Tags.SIMULATIONS + sampled_data + Tags.OPTICAL_MODEL_OUTPUT_NAME + wl
+        if data_field in [Tags.OPTICAL_MODEL_FLUENCE, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS]:
+            dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field + wl
         else:
-            dict_path = "/" + Tags.SIMULATIONS + sampled_data + data_field + wl
+            dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + wl
+    elif data_field in wavelength_independent_properties:
+        dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + "/"
+    elif data_field in simulation_ouput_fields:
+        dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + "/"
     else:
         raise ValueError("The requested data_field is not a valid argument. Please specify a valid data_field using "
                          "the Tags from simpa/utils/tags.py!")

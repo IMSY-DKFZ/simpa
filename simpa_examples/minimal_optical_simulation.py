@@ -157,16 +157,11 @@ if VISUALIZE:
     else:
         WAVELENGTH = 700
 
-    fluence = (file['simulations']['original_data']['optical_forward_model_output']
-    [str(WAVELENGTH)]['fluence'])
-    initial_pressure = (file['simulations']['original_data']
-    ['optical_forward_model_output']
-    [str(WAVELENGTH)]['initial_pressure'])
-    absorption = (file['simulations']['original_data']['simulation_properties']
-    [str(WAVELENGTH)]['mua'])
+    fluence = (file['simulations']['optical_forward_model_output']['fluence'])[str(WAVELENGTH)]
+    initial_pressure = (file['simulations']['optical_forward_model_output']['initial_pressure'])[str(WAVELENGTH)]
+    absorption = (file['simulations']['simulation_properties']['mua'])[str(WAVELENGTH)]
+    segmentation = (file['simulations']['simulation_properties']['seg'])[str(WAVELENGTH)]
 
-    segmentation = (file['simulations']['original_data']['simulation_properties']
-    [str(WAVELENGTH)]['seg'])
     values = []
     names = []
 
