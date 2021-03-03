@@ -30,10 +30,9 @@ from simpa.utils import Tags
 from simpa.utils import SPECTRAL_LIBRARY
 import numpy as np
 from simpa.utils.settings_generator import Settings
-from simpa.utils.libraries.structure_library import Background
 from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
-from simpa_tests.test_utils import create_test_structure_of_molecule, create_background_of_molecule
+from simpa_tests.test_utils import create_test_structure_of_molecule, create_background_of_molecule, set_settings
 
 class TestMoleculeLibrary(unittest.TestCase):
     def setUp(self):
@@ -42,30 +41,11 @@ class TestMoleculeLibrary(unittest.TestCase):
     def tearDown(self):
         print("\n[TearDown]")
 
-    @staticmethod
-    def set_settings():
-        random_seed = 4711
-        confidence_interval = 0.01
-        settings = {
-            Tags.WAVELENGTHS: [500, 650, 700, 750, 800, 850, 900, 950, 1000],
-            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
-            Tags.RANDOM_SEED: random_seed,
-            Tags.VOLUME_NAME: "MoleculePhantom_" + str(random_seed).zfill(6),
-            Tags.SIMULATION_PATH: ".",
-            Tags.RUN_OPTICAL_MODEL: False,
-            Tags.RUN_ACOUSTIC_MODEL: False,
-            Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
-            Tags.SPACING_MM: 0.25,
-            Tags.DIM_VOLUME_Z_MM: 2,
-            Tags.DIM_VOLUME_X_MM: 2,
-            Tags.DIM_VOLUME_Y_MM: 2
-        }
-        return settings, confidence_interval
-
-    @staticmethod
-    def test_water():
+################################################
+    def test_water(self):
         print("Simulating Water")
-        settings, confidence_interval=TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
     
         MOLECULE_NAME = 'Water'  
@@ -144,10 +124,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
     
-    @staticmethod
-    def test_oxyhemoglobin():
+################################################
+    def test_oxyhemoglobin(self):
         print("Simulating oxyhemoglobin")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'oxyhemoglobin'
@@ -227,10 +208,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-    @staticmethod
-    def test_deoxyhemoglobin():
+################################################
+    def test_deoxyhemoglobin(self):
         print("Simulating deoxyhemoglobin")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'deoxyhemoglobin'
@@ -309,10 +291,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-    @staticmethod
-    def test_melanin():
+################################################
+    def test_melanin(self):
         print("Simulating melanin")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'melanin'
@@ -389,10 +372,11 @@ class TestMoleculeLibrary(unittest.TestCase):
         
 
 
-    @staticmethod
-    def test_fat():
+################################################
+    def test_fat(self):
         print("Simulating fat")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'fat'
@@ -469,10 +453,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-    @staticmethod
-    def test_constant_scatterer():
+################################################
+    def test_constant_scatterer(self):
         print("Simulating constant_scatterer")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'constant_scatterer'
@@ -550,10 +535,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-    @staticmethod
-    def test_soft_tissue_scatterer():
+################################################
+    def test_soft_tissue_scatterer(self):
         print("Simulating soft_tissue_scatterer")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'soft_tissue_scatterer'
@@ -628,10 +614,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-    @staticmethod
-    def test_epidermal_scatterer():
+################################################
+    def test_epidermal_scatterer(self):
         print("Simulating epidermal_scatterer")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'epidermal_scatterer'
@@ -708,11 +695,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-
-    @staticmethod
-    def test_dermal_scatterer():
+################################################
+    def test_dermal_scatterer(self):
         print("Simulating dermal_scatterer")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'dermal_scatterer'
@@ -788,10 +775,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-    @staticmethod
-    def test_bone():
+################################################
+    def test_bone(self):
         print("Simulating bone")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'bone'
@@ -867,10 +855,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-    @staticmethod
-    def test_mediprene():
+################################################
+    def test_mediprene(self):
         print("Simulating mediprene")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'mediprene'
@@ -947,10 +936,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-    @staticmethod
-    def test_heavy_water():
+################################################
+    def test_heavy_water(self):
         print("Simulating heavy_water")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'heavy_water'
@@ -1026,10 +1016,11 @@ class TestMoleculeLibrary(unittest.TestCase):
 
 
 
-    @staticmethod
-    def test_air():
+################################################
+    def test_air(self):
         print("Simulating air")
-        settings, confidence_interval = TestMoleculeLibrary.set_settings()
+        settings = set_settings()
+        confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'air'
@@ -1100,32 +1091,3 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()
         print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
-
-
-
-TestMoleculeLibrary.test_water()
-TestMoleculeLibrary.test_oxyhemoglobin()
-TestMoleculeLibrary.test_deoxyhemoglobin()
-TestMoleculeLibrary.test_melanin()
-TestMoleculeLibrary.test_fat()
-TestMoleculeLibrary.test_constant_scatterer()
-TestMoleculeLibrary.test_soft_tissue_scatterer()
-TestMoleculeLibrary.test_epidermal_scatterer()
-TestMoleculeLibrary.test_dermal_scatterer()
-TestMoleculeLibrary.test_bone()
-TestMoleculeLibrary.test_mediprene()
-TestMoleculeLibrary.test_heavy_water()
-TestMoleculeLibrary.test_air()
-
-
-
-
-# @Kris:
-# Molecule_library: 
-# HEAVY WATER:
-#     MUA auf lit-wert gesetzt 
-#     MUS und G auf lit-wert von WATER gesetzt
-# WATER:
-#     MUS und G auf lit-wert von WATER gesetzt
-#
-#Im Endeffekt wurden die Moleküle mit den Lit-Werten verglichen. Also z.B. das scattering von Hb auch mit scattering von blut, wie es definiert wurde, aber alles im conf-interval
