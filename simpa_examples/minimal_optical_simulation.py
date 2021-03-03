@@ -37,6 +37,7 @@ VOLUME_PLANAR_DIM_IN_MM = 30
 VOLUME_HEIGHT_IN_MM = 60
 SPACING = 1
 RANDOM_SEED = 471
+VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
@@ -146,7 +147,7 @@ if VISUALIZE:
     import matplotlib as mpl
     import matplotlib.pyplot as plt
 
-    PATH = "/home/kris/Downloads/MyVolumeName_471.hdf5"
+    PATH = SAVE_PATH + "/" + VOLUME_NAME + ".hdf5"
 
     file = load_hdf5(PATH)
     settings = Settings(file["settings"])
