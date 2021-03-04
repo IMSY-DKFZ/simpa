@@ -28,12 +28,6 @@ from simpa.utils.settings_generator import Settings
 from simpa.utils.libraries.structure_library import EllipticalTubularStructure
 
 
-def plot(structure, slice=0):
-    import matplotlib.pyplot as plt
-    plt.imshow(structure.geometrical_volume[:, slice, :])
-    plt.show()
-
-
 class TestEllipticalTubes(unittest.TestCase):
 
     def setUp(self):
@@ -125,7 +119,6 @@ class TestEllipticalTubes(unittest.TestCase):
         self.elliptical_tube_settings[Tags.STRUCTURE_RADIUS_MM] = 15
         self.elliptical_tube_settings[Tags.STRUCTURE_ECCENTRICITY] = 0.8
         ets = EllipticalTubularStructure(self.global_settings, self.elliptical_tube_settings)
-        plot(ets)
         assert ets.geometrical_volume[50, 50, 50] == 1
         assert ets.geometrical_volume[50, 50, 40] == 1
         assert ets.geometrical_volume[50, 50, 60] == 1
