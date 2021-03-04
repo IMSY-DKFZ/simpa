@@ -310,6 +310,12 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
+    DIGITAL_DEVICE_INVISION = "digital_device_invision"
+    """
+    Corresponds to the InVision 256-TF device.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
     """
     Position in [x, y, z] coordinates of the device in the generated volume.\n
