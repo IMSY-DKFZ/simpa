@@ -33,10 +33,6 @@ from scipy.signal.windows import tukey
 
 from simpa.utils.settings_generator import Settings
 
-class InvalidBandpassFilterCutoffValueError(Exception):
-    """Raised when the given cutoff values are either too small or too large"""
-    pass
-
 
 class PyTorchDASAdapter(ReconstructionAdapterBase):
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
@@ -65,23 +61,23 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         ### INPUT CHECKING AND VALIDATION ###
         # check settings dictionary for elements and read them in
 
-        # speed of sound
-        if Tags.PROPERTY_SPEED_OF_SOUND in settings and settings[Tags.PROPERTY_SPEED_OF_SOUND]:
-            speed_of_sound_in_m_per_s = settings[Tags.PROPERTY_SPEED_OF_SOUND]
-        elif Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
+        # speed of sound: use average from simulation if specified, otherwise use given speed of sound
+        if Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
             acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
                                                     wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
             sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[
                 Tags.PROPERTY_SPEED_OF_SOUND]
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
+        elif Tags.PROPERTY_SPEED_OF_SOUND in settings and settings[Tags.PROPERTY_SPEED_OF_SOUND]:
+            speed_of_sound_in_m_per_s = settings[Tags.PROPERTY_SPEED_OF_SOUND]
         else:
             raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND or WAVELENGTH to obtain the average speed of sound")
 
-        # time spacing: use sampling rate is specified, otherwise kWave specific dt from simulation
-        if Tags.SENSOR_SAMPLING_RATE_MHZ in settings and settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
-            time_spacing_in_ms = 1.0 / (settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
-        elif Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
+        # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
+        if Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
             time_spacing_in_ms = settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
+        elif Tags.SENSOR_SAMPLING_RATE_MHZ in settings and settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
+            time_spacing_in_ms = 1.0 / (settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
         else:
             raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
 
@@ -135,18 +131,13 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             frequencies = np.fft.fftfreq(time_series_sensor_data.shape[1], d=time_spacing_in_ms/1000)
             cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(8e6)
             cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(0.1e6)
+            print(cutoff_highpass, cutoff_lowpass)
+            print(frequencies)
             if cutoff_highpass > cutoff_lowpass:
-                raise InvalidBandpassFilterCutoffValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
-            try:
-                small_index = np.where(frequencies == cutoff_highpass)[0][0]
-            except IndexError:
-                raise InvalidBandpassFilterCutoffValueError(f"The highpass cutoff value is invalid for the given time spacing. "
-                      f"Please set it to {np.min(frequencies)} at least.")
-            try:
-                large_index = np.where(frequencies == cutoff_lowpass)[0][0]
-            except IndexError:
-                raise InvalidBandpassFilterCutoffValueError(f"The lowpass cutoff value is invalid for the given time spacing."
-                     f" Please set it to {np.max(frequencies)} at max.")
+                raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
+            # find closest indices for frequencies
+            small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
+            large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
 
             tukey_alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
             win = torch.tensor(tukey(large_index - small_index, alpha = tukey_alpha), device=device)
