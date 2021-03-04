@@ -66,14 +66,16 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         # check settings dictionary for elements and read them in
 
         # speed of sound
-        if Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
+        if Tags.PROPERTY_SPEED_OF_SOUND in settings and settings[Tags.PROPERTY_SPEED_OF_SOUND]:
+            speed_of_sound_in_m_per_s = settings[Tags.PROPERTY_SPEED_OF_SOUND]
+        elif Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
             acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
                                                     wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
             sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[
                 Tags.PROPERTY_SPEED_OF_SOUND]
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
         else:
-            raise AttributeError("Please specify a value for WAVELENGTH to obtain the average speed of sound")
+            raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND or WAVELENGTH to obtain the average speed of sound")
 
         # time spacing: use sampling rate is specified, otherwise kWave specific dt from simulation
         if Tags.SENSOR_SAMPLING_RATE_MHZ in settings and settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
@@ -193,6 +195,9 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             elif settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HAMMING:
                 hamming = torch.hamming_window(n_sensor_elements, device=device)
                 apodization = hamming.expand((xdim, ydim, n_sensor_elements))
+            # box window apodization as default
+            else:
+                apodization = torch.ones((xdim, ydim, n_sensor_elements), device=device)
         else:
             # box window apodization as default
             apodization = torch.ones((xdim, ydim, n_sensor_elements), device=device)
