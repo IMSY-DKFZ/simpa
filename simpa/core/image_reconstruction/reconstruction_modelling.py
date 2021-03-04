@@ -20,7 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags, SaveFilePaths
+from simpa.utils import Tags
+from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.core.image_reconstruction.MitkBeamformingAdapter import MitkBeamformingAdapter
 from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
 from simpa.core.image_reconstruction.TestReconstructionAdapter import TestReconstructionAdapter
@@ -53,13 +54,8 @@ def perform_reconstruction(settings: dict) -> str:
 
     reconstruction = reconstruction_method.simulate(settings)
 
-    reconstruction_output_path = SaveFilePaths.RECONSTRCTION_OUTPUT.\
-        format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
+    reconstruction_output_path = generate_dict_path(Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 
-    if Tags.PERFORM_UPSAMPLING in settings:
-        if settings[Tags.PERFORM_UPSAMPLING]:
-            reconstruction_output_path = \
-                SaveFilePaths.RECONSTRCTION_OUTPUT.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
     save_hdf5({Tags.RECONSTRUCTED_DATA: reconstruction}, settings[Tags.SIMPA_OUTPUT_PATH],
               reconstruction_output_path)
 

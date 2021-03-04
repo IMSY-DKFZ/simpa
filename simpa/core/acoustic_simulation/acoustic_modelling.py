@@ -61,15 +61,8 @@ def run_acoustic_forward_model(settings):
 
     data = adapter.simulate(settings)
 
-    acoustic_output_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA, upsampled_data=False,
-                                              wavelength=settings[Tags.WAVELENGTH])
+    acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=settings[Tags.WAVELENGTH])
 
-    if Tags.PERFORM_UPSAMPLING in settings:
-        if settings[Tags.PERFORM_UPSAMPLING]:
-            acoustic_output_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA, upsampled_data=True,
-                                                      wavelength=settings[Tags.WAVELENGTH])
-
-    save_hdf5({Tags.TIME_SERIES_DATA: data}, settings[Tags.SIMPA_OUTPUT_PATH],
-              acoustic_output_path)
+    save_hdf5(data, settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
 
     return acoustic_output_path

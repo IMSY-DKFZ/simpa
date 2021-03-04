@@ -63,7 +63,7 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
                 elif isinstance(item, AbsorptionSpectrum):
                     data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/", serializer.serialize(item))
                 else:
-                    if isinstance(item, (bytes, int, np.int, np.int64, np.float, float, str, bool, np.bool, np.bool_)):
+                    if isinstance(item, (bytes, int, np.int64, float, str, bool, np.bool_)):
                         try:
                             h5file[path + key] = item
                         except (OSError, RuntimeError, ValueError):
@@ -171,5 +171,9 @@ def load_hdf5(file_path, file_dictionary_path="/"):
 
 def load_data_field(file_path, data_field, wavelength=None):
     dict_path = generate_dict_path(data_field, wavelength=wavelength)
-    data = load_hdf5(file_path, dict_path)[data_field]
+    data_field_key = data_field
+    if wavelength is not None:
+        data_field_key = dict_path.split("/")[-2]
+        dict_path = "/".join(dict_path.split("/")[:-2])
+    data = load_hdf5(file_path, dict_path)[data_field_key]
     return data

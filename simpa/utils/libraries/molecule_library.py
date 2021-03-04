@@ -168,13 +168,13 @@ class Molecule(object):
 
         if density is None:
             density = StandardProperties.DENSITY_GENERIC
-        if not isinstance(density, (np.int32, np.int64, int, np.float, float)):
+        if not isinstance(density, (np.int32, np.int64, int, float)):
             raise TypeError("The given density was not of type int or float instead of {}!".format(type(density)))
         self.density = density
 
         if speed_of_sound is None:
             speed_of_sound = StandardProperties.SPEED_OF_SOUND_GENERIC
-        if not isinstance(speed_of_sound, (np.int32, np.int64, int, np.float, float)):
+        if not isinstance(speed_of_sound, (np.int32, np.int64, int, float)):
             raise TypeError("The given speed_of_sound was not of type int or float instead of {}!"
                             .format(type(speed_of_sound)))
         self.speed_of_sound = speed_of_sound
