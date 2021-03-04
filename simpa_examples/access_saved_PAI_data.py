@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.io_handling import load_hdf5, save_hdf5
+from simpa.io_handling import load_hdf5
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
