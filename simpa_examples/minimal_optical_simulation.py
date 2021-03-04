@@ -21,16 +21,14 @@
 # SOFTWARE.
 
 from simpa.utils import Tags, TISSUE_LIBRARY
-
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
-
-
+from simpa_examples.access_saved_PAI_data import visualise_data
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "/Path/to/Save/location"
-MCX_BINARY_PATH = "/Path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe at the end can be omitted.
+SAVE_PATH = "D:/save/"
+MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
@@ -50,12 +48,12 @@ def create_example_tissue(global_settings):
     and a blood vessel.
     """
     background_dictionary = Settings()
-    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
     background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
     muscle_dictionary = Settings()
     muscle_dictionary[Tags.PRIORITY] = 1
-    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 10]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
@@ -64,9 +62,12 @@ def create_example_tissue(global_settings):
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, 10,
-                                                    VOLUME_PLANAR_DIM_IN_MM/2]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, 12, VOLUME_PLANAR_DIM_IN_MM/2]
+    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                    10,
+                                                    VOLUME_HEIGHT_IN_MM/2]
+    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                  12,
+                                                  VOLUME_HEIGHT_IN_MM/2]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
@@ -74,12 +75,11 @@ def create_example_tissue(global_settings):
 
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
-    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
+    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 9]
+    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 10]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    # FIXME:
     epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     tissue_dict = Settings()
@@ -140,75 +140,79 @@ simulate(settings)
 print("Needed", time.time()-timer, "seconds")
 print("Simulating ", RANDOM_SEED, "[Done]")
 
+if Tags.WAVELENGTH in settings:
+    WAVELENGTH = settings[Tags.WAVELENGTH]
+else:
+    WAVELENGTH = 700
+
 if VISUALIZE:
-    from simpa.io_handling.io_hdf5 import load_hdf5
-    from simpa.utils import SegmentationClasses
-    import matplotlib as mpl
-    import matplotlib.pyplot as plt
-
-    PATH = SAVE_PATH + "/" + VOLUME_NAME + ".hdf5"
-
-    file = load_hdf5(PATH)
-    settings = Settings(file["settings"])
-
-    if Tags.WAVELENGTH in settings:
-        WAVELENGTH = settings[Tags.WAVELENGTH]
-    else:
-        WAVELENGTH = 700
-
-    fluence = (file['simulations']['optical_forward_model_output']['fluence'])[str(WAVELENGTH)]
-    initial_pressure = (file['simulations']['optical_forward_model_output']['initial_pressure'])[str(WAVELENGTH)]
-    absorption = (file['simulations']['simulation_properties']['mua'])[str(WAVELENGTH)]
-    segmentation = (file['simulations']['simulation_properties']['seg'])[str(WAVELENGTH)]
-
-    values = []
-    names = []
-
-    for string in SegmentationClasses.__dict__:
-        if string[0:2] != "__":
-            values.append(SegmentationClasses.__dict__[string])
-            names.append(string)
-
-    values = np.asarray(values)
-    names = np.asarray(names)
-    sort_indexes = np.argsort(values)
-    values = values[sort_indexes]
-    names = names[sort_indexes]
-
-    colors = [list(np.random.random(3)) for _ in range(len(names))]
-    cmap = mpl.colors.LinearSegmentedColormap.from_list(
-        'Custom cmap', colors, len(names))
-
-    shape = np.shape(initial_pressure)
-
-    x_pos = int(shape[0] / 2)
-    y_pos = int(shape[1] / 2)
-    z_pos = int(shape[2] / 2)
-    plt.figure()
-    plt.subplot(241)
-    plt.ylabel("X-Z Plane")
-    plt.title("Fluence")
-    plt.imshow(np.rot90(fluence[:, y_pos, :], -1))
-    plt.subplot(242)
-    plt.title("Absorption")
-    plt.imshow(np.rot90(np.log10(absorption[:, y_pos, :]), -1))
-    plt.subplot(243)
-    plt.title("Initial Pressure")
-    plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
-    plt.subplot(244)
-    plt.title("Segmentation")
-    plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-    cbar = plt.colorbar(ticks=values)
-    cbar.ax.set_yticklabels(names)
-    plt.subplot(245)
-    plt.ylabel("Y-Z Plane")
-    plt.imshow(np.rot90((fluence[x_pos, :, :]), -1))
-    plt.subplot(246)
-    plt.imshow(np.rot90(np.log10(absorption[x_pos, :, :]), -1))
-    plt.subplot(247)
-    plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
-    plt.subplot(248)
-    plt.imshow(np.rot90(segmentation[x_pos, :, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-    cbar = plt.colorbar(ticks=values)
-    cbar.ax.set_yticklabels(names)
-    plt.show()
+    visualise_data(SAVE_PATH + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH)
+    #
+    # from simpa.io_handling.io_hdf5 import load_hdf5
+    # from simpa.utils import SegmentationClasses
+    # import matplotlib as mpl
+    # import matplotlib.pyplot as plt
+    #
+    # PATH =
+    #
+    # file = load_hdf5(PATH)
+    # settings = Settings(file["settings"])
+    #
+    #
+    #
+    # fluence = (file['simulations']['optical_forward_model_output']['fluence'])[str(WAVELENGTH)]
+    # initial_pressure = (file['simulations']['optical_forward_model_output']['initial_pressure'])[str(WAVELENGTH)]
+    # absorption = (file['simulations']['simulation_properties']['mua'])[str(WAVELENGTH)]
+    # segmentation = (file['simulations']['simulation_properties']['seg'])[str(WAVELENGTH)]
+    #
+    # values = []
+    # names = []
+    #
+    # for string in SegmentationClasses.__dict__:
+    #     if string[0:2] != "__":
+    #         values.append(SegmentationClasses.__dict__[string])
+    #         names.append(string)
+    #
+    # values = np.asarray(values)
+    # names = np.asarray(names)
+    # sort_indexes = np.argsort(values)
+    # values = values[sort_indexes]
+    # names = names[sort_indexes]
+    #
+    # colors = [list(np.random.random(3)) for _ in range(len(names))]
+    # cmap = mpl.colors.LinearSegmentedColormap.from_list(
+    #     'Custom cmap', colors, len(names))
+    #
+    # shape = np.shape(initial_pressure)
+    #
+    # x_pos = int(shape[0] / 2)
+    # y_pos = int(shape[1] / 2)
+    # z_pos = int(shape[2] / 2)
+    # plt.figure()
+    # plt.subplot(241)
+    # plt.ylabel("X-Z Plane")
+    # plt.title("Fluence")
+    # plt.imshow(np.rot90(fluence[:, y_pos, :], -1))
+    # plt.subplot(242)
+    # plt.title("Absorption")
+    # plt.imshow(np.rot90(np.log10(absorption[:, y_pos, :]), -1))
+    # plt.subplot(243)
+    # plt.title("Initial Pressure")
+    # plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
+    # plt.subplot(244)
+    # plt.title("Segmentation")
+    # plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+    # cbar = plt.colorbar(ticks=values)
+    # cbar.ax.set_yticklabels(names)
+    # plt.subplot(245)
+    # plt.ylabel("Y-Z Plane")
+    # plt.imshow(np.rot90((fluence[x_pos, :, :]), -1))
+    # plt.subplot(246)
+    # plt.imshow(np.rot90(np.log10(absorption[x_pos, :, :]), -1))
+    # plt.subplot(247)
+    # plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
+    # plt.subplot(248)
+    # plt.imshow(np.rot90(segmentation[x_pos, :, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+    # cbar = plt.colorbar(ticks=values)
+    # cbar.ax.set_yticklabels(names)
+    # plt.show()
