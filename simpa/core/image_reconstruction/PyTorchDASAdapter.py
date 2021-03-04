@@ -33,6 +33,10 @@ from scipy.signal.windows import tukey
 
 from simpa.utils.settings_generator import Settings
 
+class InvalidBandpassFilterCutoffValueError(Exception):
+    """Raised when the given cutoff values are either too small or too large"""
+    pass
+
 
 class PyTorchDASAdapter(ReconstructionAdapterBase):
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
@@ -121,16 +125,36 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         ### ALGORITHM ITSELF ###
 
+        # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
-            # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
-            fft_time_series_sensor_data = torch.fft.rfft(time_series_sensor_data)
-            alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
-            tukey_window = torch.tensor(tukey(time_series_sensor_data.shape[0], alpha=alpha), device=device)
-            tukey_window = tukey_window.expand_as(fft_time_series_sensor_data.T).T
-            filtered = fft_time_series_sensor_data * tukey_window
 
-            time_series_sensor_data = torch.fft.irfft(filtered)
+            # construct bandpass filter given the cutoff values and time spacing
+            frequencies = np.fft.fftfreq(time_series_sensor_data.shape[1], d=time_spacing_in_ms/1000)
+            cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(8e6)
+            cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(0.1e6)
+            if cutoff_highpass > cutoff_lowpass:
+                raise InvalidBandpassFilterCutoffValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
+            try:
+                small_index = np.where(frequencies == cutoff_highpass)[0][0]
+            except IndexError:
+                raise InvalidBandpassFilterCutoffValueError(f"The highpass cutoff value is invalid for the given time spacing. "
+                      f"Please set it to {np.min(frequencies)} at least.")
+            try:
+                large_index = np.where(frequencies == cutoff_lowpass)[0][0]
+            except IndexError:
+                raise InvalidBandpassFilterCutoffValueError(f"The lowpass cutoff value is invalid for the given time spacing."
+                     f" Please set it to {np.max(frequencies)} at max.")
+
+            tukey_alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
+            win = torch.tensor(tukey(large_index - small_index, alpha = tukey_alpha), device=device)
+            window = torch.zeros(frequencies.shape, device=device)
+            window[small_index:large_index] = win
+
+            # transform data into Fourier space, multiply filter and transform back
+            TIME_SERIES_SENSOR_DATA = torch.fft.fft(time_series_sensor_data)
+            FILTERED = TIME_SERIES_SENSOR_DATA * window.expand_as(TIME_SERIES_SENSOR_DATA)
+            time_series_sensor_data = torch.abs(torch.fft.ifft(FILTERED))
 
         ## compute size of beamformed image ##
         xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))
