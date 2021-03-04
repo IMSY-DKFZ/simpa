@@ -505,9 +505,13 @@ class Tags:
     """
 
     ILLUMINATION_TYPE_RING = "ring"
-    """
-    Corresponds to ring source in mcx.\n
-    Usage: adapter mcx_adapter, naming convention
+    f"""
+    Corresponds to ring source in mcx. Not implemented in github repository of MCX\n
+    Usage: adapter mcx_adapter, naming convention. ILLUMINATION_PARAM1 and ILLUMINATION_PARAM1 have to be parsed.\n
+    ILLUMINATION_PARAM1 : defines parameters of truncated ring, [min_r, max_r, angle_1, angle_2] \n
+    set angle_1 = angle_2 = 180 for a full ring\n
+    ILLUMINATION_PARAM2: defines dispersion of photons when launching them -> [angle, 0, 0, 0]\n
+    only first value of ILLUMINATION_PARAM2 should be != 0
     """
 
     # Supported optical models
@@ -1198,5 +1202,24 @@ class Tags:
     ORIGINAL_DATA = "original_data"
     """
     Name of the simulation outputs as original data in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
+    SAVE_DIFFUSE_REFLECTANCE = "save_diffuse_reflectance"
+    """
+    If True, the diffuse reflectance values at the surface of the volume are saved\n
+    Usage: naming convention
+    """
+
+    OPTICAL_MODEL_DIFFUSE_REFLECTANCE = "diffuse_reflectance"
+    """
+    Name of diffuse reflectance map in SIMPA output file.\n
+    Usage: naming convention
+    """
+
+    ZERO_LAYER_POSITION = "zero_layer_position"
+    """
+    Tag that holds the indices of the position where diffuse reflectance is stored in the fluence map. Those values are
+    0 in volume after extracting the diffuse reflectance. 
     Usage: naming convention
     """

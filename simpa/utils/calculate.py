@@ -23,6 +23,7 @@
 from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 import numpy as np
 from scipy.interpolate import interp1d
+from typing import Tuple
 
 
 def calculate_oxygenation(molecule_list):
@@ -185,3 +186,16 @@ def rotation(angles):
     :return: rotation matrix
     """
     return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])
+
+
+def get_dr_layer_pos(volume: np.ndarray, ax: int = 2) -> Tuple[np.ndarray]:
+    """
+    Locates the position at which diffuse reflectance is stored in volume. That is the first layer along last axis along
+    which all values are different than 0.
+
+    :param
+    """
+    volume_non_zero = volume != 0
+    pos = np.argmax(volume_non_zero, axis=ax)
+    pos = np.where(pos) + (pos.flatten(),)
+    return pos

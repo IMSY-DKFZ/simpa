@@ -66,7 +66,7 @@ class ModelBasedVolumeCreator(VolumeCreatorBase):
 
     def create_simulation_volume(self, settings) -> dict:
         """
-        This method creates a in silico respresentation of a tissue as described in the settings file that is given.
+        This method creates an in silico representation of a tissue as described in the settings file that is given.
 
         :param settings: a dictionary containing all relevant Tags for the simulation to be able to instantiate a tissue.
         :return: a path to a npz file containing characteristics of the simulated volume:
@@ -79,8 +79,8 @@ class ModelBasedVolumeCreator(VolumeCreatorBase):
         max_added_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
         wavelength = settings[Tags.WAVELENGTH]
 
-        structure_list = Structures(settings)
-        priority_sorted_structures = structure_list.sorted_structures
+        structures = Structures(settings)
+        priority_sorted_structures = structures.sorted_structures
 
         for structure in priority_sorted_structures:
             print(type(structure))
@@ -114,5 +114,19 @@ class ModelBasedVolumeCreator(VolumeCreatorBase):
                     volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
 
             global_volume_fractions[mask] += added_volume_fraction[mask]
-
+        if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
+            if not np.all(volumes['mua'][..., 0] == 0):
+                append_z_layer = True
+            else:
+                append_z_layer = False
+            for key in volumes:
+                # append zero layer only if top layer is not 0's
+                if append_z_layer:
+                    shapes = list(volumes[key].shape)
+                    # add one layer to z-axis
+                    shapes[-1] += 1
+                    new_volume = np.zeros(shapes)
+                    # Top layer of volume has to be 0 to store diffuse reflectance
+                    new_volume[..., 1:] = volumes[key]
+                    volumes[key] = new_volume
         return volumes

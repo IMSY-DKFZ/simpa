@@ -155,18 +155,19 @@ class McxAdapter(OpticalForwardAdapterBase):
         cmd.append("F")
         if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
             volume_path = SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, str(settings[Tags.WAVELENGTH]))
-            volumes = load_hdf5(settings[Tags.IPPAI_OUTPUT_PATH], volume_path)
+            volumes = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], volume_path)
             zero_layer_present = True
             no_zero_layer_volumes = []
             for key in volumes:
-                if volumes[key][:, :, 0].sum() != 0:
+                if not np.all(volumes[key][..., 0] == 0):
                     zero_layer_present = False
                     no_zero_layer_volumes.append(key)
             if no_zero_layer_volumes:
                 raise ValueError("Saving diffuse reflectance was specified but zero layer was not appended to "
                                  f" volumes with keys: {no_zero_layer_volumes}")
             if zero_layer_present:
-                cmd.append("-X 1")
+                cmd.append("-X")
+                cmd.append("1")
 
         res = subprocess.run(cmd)
 

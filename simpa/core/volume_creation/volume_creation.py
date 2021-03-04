@@ -45,12 +45,13 @@ def run_volume_creation(global_settings: Settings):
         raise AssertionError("Tags.VOLUME_CREATOR tag was not specified in the settings. Skipping optical modelling.")
 
     model = global_settings[Tags.VOLUME_CREATOR]
-    volume_creator_adapter = None
 
     if model == Tags.VOLUME_CREATOR_VERSATILE:
         volume_creator_adapter = ModelBasedVolumeCreator()
     elif model == Tags.VOLUME_CREATOR_SEGMENTATION_BASED:
         volume_creator_adapter = SegmentationBasedVolumeCreator()
+    else:
+        raise ValueError(f"Parsed volume creator unknown: {model}")
 
     pa_device = None
     if Tags.DIGITAL_DEVICE in global_settings:
