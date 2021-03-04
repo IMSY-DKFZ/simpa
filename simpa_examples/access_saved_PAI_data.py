@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -27,134 +27,140 @@ import numpy as np
 from simpa.utils import SegmentationClasses, Tags
 from simpa.utils.settings_generator import Settings
 
-values = []
-names = []
 
-for string in SegmentationClasses.__dict__:
-    if string[0:2] != "__":
-        values.append(SegmentationClasses.__dict__[string])
-        names.append(string)
+def visualise_data(path_to_hdf5_file: str, wavelength: int):
+    values = []
+    names = []
 
-values = np.asarray(values)
-names = np.asarray(names)
-sort_indexes = np.argsort(values)
-values = values[sort_indexes]
-names = names[sort_indexes]
+    for string in SegmentationClasses.__dict__:
+        if string[0:2] != "__":
+            values.append(SegmentationClasses.__dict__[string])
+            names.append(string)
 
-colors = [list(np.random.random(3)) for _ in range(len(names))]
-cmap = mpl.colors.LinearSegmentedColormap.from_list(
-    'Custom cmap', colors, len(names))
+    values = np.asarray(values)
+    names = np.asarray(names)
+    sort_indexes = np.argsort(values)
+    values = values[sort_indexes]
+    names = names[sort_indexes]
 
-PATH = "D:/save/LNetOpticalForward_planar_0.hdf5"
-WAVELENGTH = 532
+    colors = [list(np.random.random(3)) for _ in range(len(names))]
+    cmap = mpl.colors.LinearSegmentedColormap.from_list(
+        'Custom cmap', colors, len(names))
 
-file = load_hdf5(PATH)
-settings = Settings(file["settings"])
+PATH = "D:/save/InVisionTest_HighRes_4711.hdf5"
+WAVELENGTH = 700
 
-fluence = (file['simulations']['original_data']['optical_forward_model_output']
-           [str(WAVELENGTH)]['fluence'])
-initial_pressure = (file['simulations']['original_data']
-                    ['optical_forward_model_output']
-                    [str(WAVELENGTH)]['initial_pressure'])
-absorption = (file['simulations']['original_data']['simulation_properties']
-              [str(WAVELENGTH)]['mua'])
+    file = load_hdf5(PATH)
+    settings = Settings(file["settings"])
 
-segmentation = (file['simulations']['original_data']['simulation_properties']
-              [str(WAVELENGTH)]['seg'])
+    fluence = (file['simulations']['original_data']['optical_forward_model_output']
+               [str(WAVELENGTH)]['fluence'])
+    initial_pressure = (file['simulations']['original_data']
+                        ['optical_forward_model_output']
+                        [str(WAVELENGTH)]['initial_pressure'])
+    absorption = (file['simulations']['original_data']['simulation_properties']
+                  [str(WAVELENGTH)]['mua'])
 
-reconstruction = None
-speed_of_sound = None
-if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-    time_series = np.squeeze(
-        file["simulations"]["original_data"]["time_series_data"][str(WAVELENGTH)]["time_series_data"])
-    reconstruction = np.squeeze(
-            file["simulations"]["original_data"]["reconstructed_data"][str(WAVELENGTH)]["reconstructed_data"])
+    segmentation = (file['simulations']['original_data']['simulation_properties']
+                  [str(WAVELENGTH)]['seg'])
 
-    speed_of_sound = file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]["sos"]
+    reconstruction = None
+    speed_of_sound = None
+    if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+        time_series = np.squeeze(
+            file["simulations"]["original_data"]["time_series_data"][str(WAVELENGTH)]["time_series_data"])
+        reconstruction = np.squeeze(
+                file["simulations"]["original_data"]["reconstructed_data"][str(WAVELENGTH)]["reconstructed_data"])
 
-reconstruction = reconstruction.T
+        speed_of_sound = file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]["sos"]
 
-shape = np.shape(reconstruction)
+    reconstruction = reconstruction.T
 
-x_pos = int(shape[0]/2)
-y_pos = int(shape[1]/2)
-z_pos = int(shape[2]/2)
+    shape = np.shape(reconstruction)
 
-plt.figure()
-plt.subplot(161)
-plt.imshow(np.fliplr(np.rot90(reconstruction[x_pos, :, :], -1)))
-plt.subplot(162)
-plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
-plt.subplot(163)
-plt.imshow(np.fliplr(np.rot90(reconstruction[:, y_pos, :], -1)))
-plt.subplot(164)
-plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
-plt.subplot(165)
-plt.imshow(np.fliplr(np.rot90(reconstruction[:, :, z_pos], -1)))
-plt.subplot(166)
-plt.imshow(np.rot90(np.log10(initial_pressure[:, :, z_pos]), -3))
-plt.show()
-exit()
+    x_pos = int(shape[0]/2)
+    y_pos = int(shape[1]/2)
+# z_pos = int(shape[2]/2)
 
-if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-    if len(shape) > 2:
-        plt.figure()
-        plt.subplot(141)
-        plt.imshow(np.rot90(np.log10(np.log10(time_series[:, :]-np.min(time_series))), -1), aspect=np.shape(time_series)[0]/np.shape(time_series)[1])
-        plt.subplot(142)
-        plt.imshow(np.rot90((reconstruction[:, y_pos, :]), -2))
-        plt.subplot(143)
-        plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
-        plt.subplot(144)
-        plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-        plt.show()
-    else:
-        plt.figure()
-        plt.subplot(141)
-        plt.imshow(np.rot90((reconstruction[:, :]), -1))
-        plt.subplot(142)
-        plt.imshow(np.rot90((speed_of_sound), -1))
-        plt.subplot(143)
-        plt.imshow(np.rot90(np.log10(initial_pressure), -1))
-        plt.subplot(144)
-        plt.imshow(np.rot90(segmentation, -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-        plt.show()
-else:
-    if len(shape) > 2:
-        plt.figure()
-        plt.subplot(241)
-        plt.title("Fluence")
-        plt.imshow(np.rot90((fluence[x_pos, :, :]), -1))
-        plt.subplot(242)
-        plt.title("Absorption")
-        plt.imshow(np.rot90(np.log10(absorption[x_pos, :, :]), -1))
-        plt.subplot(243)
+# plt.figure()
+# plt.subplot(161)
+# plt.imshow(np.fliplr(np.rot90(reconstruction[x_pos, :, :], -1)))
+# plt.subplot(162)
+# plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
+# plt.subplot(163)
+# plt.imshow(np.fliplr(np.rot90(reconstruction[:, y_pos, :], -1)))
+# plt.subplot(164)
+# plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
+# plt.subplot(165)
+# plt.imshow(np.fliplr(np.rot90(reconstruction[:, :, z_pos], -1)))
+# plt.subplot(166)
+# plt.imshow(np.rot90(np.log10(initial_pressure[:, :, z_pos]), -3))
+# plt.show()
+# exit()
+
+    if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+        if len(shape) > 2:
+            plt.figure()
+            plt.subplot(141)
+            plt.imshow(np.rot90(np.log10(np.log10(time_series[:, :]-np.min(time_series))), -1), aspect=np.shape(time_series)[0]/np.shape(time_series)[1])
+            plt.subplot(142)
+            plt.imshow(np.rot90((reconstruction[:, y_pos, :]), -2))
+            plt.subplot(143)
+            plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
+            plt.subplot(144)
+            plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+            plt.show()
+        else:
+            plt.figure()
+            plt.subplot(141)
+        plt.title("Reconstruction")
+            plt.imshow(np.rot90((reconstruction[:, :]), -1))
+            plt.subplot(142)
+        plt.title("Absorption Coefficient")
+            plt.imshow(np.rot90((speed_of_sound), -1))
+            plt.subplot(143)
         plt.title("Initial Pressure")
-        plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
-        plt.subplot(244)
+        plt.imshow(np.rot90((initial_pressure), -1))
+            plt.subplot(144)
         plt.title("Segmentation")
-        plt.imshow(np.rot90(segmentation[x_pos, :, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-        cbar = plt.colorbar(ticks=values)
-        cbar.ax.set_yticklabels(names)
-        plt.subplot(245)
-        plt.imshow(np.rot90(fluence[:, y_pos, :], -1))
-        plt.subplot(246)
-        plt.imshow(np.rot90(np.log10(absorption[:, y_pos, :]), -1))
-        plt.subplot(247)
-        plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
-        plt.subplot(248)
-        plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-        cbar = plt.colorbar(ticks=values)
-        cbar.ax.set_yticklabels(names)
-        plt.show()
+            plt.imshow(np.rot90(segmentation, -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+            plt.show()
     else:
-        plt.figure()
-        plt.subplot(141)
-        plt.imshow(np.rot90(np.log10(fluence), -1))
-        plt.subplot(142)
-        plt.imshow(np.rot90(np.log10(absorption), -1))
-        plt.subplot(143)
-        plt.imshow(np.rot90(np.log10(initial_pressure), -1))
-        plt.subplot(144)
-        plt.imshow(np.rot90(segmentation, -1))
-        plt.show()
+        if len(shape) > 2:
+            plt.figure()
+            plt.subplot(241)
+            plt.title("Fluence")
+            plt.imshow(np.rot90((fluence[x_pos, :, :]), -1))
+            plt.subplot(242)
+            plt.title("Absorption")
+            plt.imshow(np.rot90(np.log10(absorption[x_pos, :, :]), -1))
+            plt.subplot(243)
+            plt.title("Initial Pressure")
+            plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
+            plt.subplot(244)
+            plt.title("Segmentation")
+            plt.imshow(np.rot90(segmentation[x_pos, :, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+            cbar = plt.colorbar(ticks=values)
+            cbar.ax.set_yticklabels(names)
+            plt.subplot(245)
+            plt.imshow(np.rot90(fluence[:, y_pos, :], -1))
+            plt.subplot(246)
+            plt.imshow(np.rot90(np.log10(absorption[:, y_pos, :]), -1))
+            plt.subplot(247)
+            plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
+            plt.subplot(248)
+            plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
+            cbar = plt.colorbar(ticks=values)
+            cbar.ax.set_yticklabels(names)
+            plt.show()
+        else:
+            plt.figure()
+            plt.subplot(141)
+            plt.imshow(np.rot90(np.log10(fluence), -1))
+            plt.subplot(142)
+            plt.imshow(np.rot90(np.log10(absorption), -1))
+            plt.subplot(143)
+            plt.imshow(np.rot90(np.log10(initial_pressure), -1))
+            plt.subplot(144)
+            plt.imshow(np.rot90(segmentation, -1))
+            plt.show()

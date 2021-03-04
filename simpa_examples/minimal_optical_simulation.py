@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ import numpy as np
 
 # TODO change these paths to the desired executable and save folder
 SAVE_PATH = "/Path/to/Save/location"
-MCX_BINARY_PATH = "/Path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe ate the end can be omitted.
+MCX_BINARY_PATH = "/Path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe at the end can be omitted.
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
@@ -138,7 +138,6 @@ import time
 timer = time.time()
 simulate(settings)
 print("Needed", time.time()-timer, "seconds")
-# TODO global_settings[Tags.SIMPA_OUTPUT_PATH]
 print("Simulating ", RANDOM_SEED, "[Done]")
 
 if VISUALIZE:

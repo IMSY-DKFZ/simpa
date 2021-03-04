@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -28,8 +28,10 @@ from simpa.utils.libraries.structure_library import HorizontalLayerStructure
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/save/"
-MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
+SAVE_PATH = "path/to/output/folder/"
+MCX_BINARY_PATH = "path/to/mcx.exe"
+MATLAB_PATH = "path/to/matlab.exe"
+ACOUSTIC_MODEL_SCRIPT = "/path/to/simpa/simpa/core/acoustic_simulation"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
@@ -123,8 +125,8 @@ settings = {
     Tags.RUN_ACOUSTIC_MODEL: True,
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
-    Tags.ACOUSTIC_MODEL_BINARY_PATH: "C:/Program Files/MATLAB/R2020b/bin/matlab.exe",
-    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "C:/simpa/simpa/core/acoustic_simulation",
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
+    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
     Tags.GPU: True,
 
     Tags.PROPERTY_ALPHA_POWER: 1.05,
