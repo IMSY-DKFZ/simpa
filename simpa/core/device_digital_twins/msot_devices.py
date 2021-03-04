@@ -119,7 +119,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
                 structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][2] + self.probe_height_mm
 
-        if Tags.US_GEL in settings and settings[Tags.US_GEL]:
+        if Tags.US_GEL in global_settings and global_settings[Tags.US_GEL]:
             us_gel_thickness = np.random.normal(0.4, 0.1)
             us_gel_layer_settings = Settings({
                 Tags.PRIORITY: 5,
