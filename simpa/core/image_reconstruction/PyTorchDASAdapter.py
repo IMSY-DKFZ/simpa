@@ -31,6 +31,8 @@ import torch.fft
 from scipy.signal import hilbert
 from scipy.signal.windows import tukey
 
+from simpa.utils.settings_generator import Settings
+
 
 class PyTorchDASAdapter(ReconstructionAdapterBase):
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
@@ -188,8 +190,31 @@ def reconstruct_DAS_PyTorch(time_series_sensor_data, settings=None):
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
     :param time_series_sensor_data: 2D numpy array of sensor data of shape (sensor elements, time steps)
-    :param settings: settings dictionary
     :return: reconstructed image as 2D numpy array
     """
+    adapter = PyTorchDASAdapter()
+    return adapter.reconstruction_algorithm(time_series_sensor_data, settings)
+
+
+def reconstruct_DAS_PyTorch(time_series_sensor_data, settings = None, sound_of_speed=1500, time_spacing=2.5e-8, sensor_spacing=0.1):
+    """
+    Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
+    :param time_series_sensor_data: 2D numpy array of sensor data of shape (sensor elements, time steps)
+    :param settings: settings dictionary (by default there is none and the other parameters are used instead)
+    :param sound_of_speed: speed of sound in medium in meters per second (default: 1500 m/s)
+    :param time_spacing: time between sampling points in seconds (default: 2.5e-8 s which is equal to 40 MHz)
+    :param sensor_spacing: space between sensor elements in millimeters (default: 0.1 mm)
+    :return: reconstructed image as 2D numpy array
+    """
+
+    # create settings if they don't exist yet
+    if settings is None:
+        settings = Settings()
+
+        # parse reconstruction settings
+        #settings[Tags.PROPERTY_SPEED_OF_SOUND] = sound_of_speed
+        settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = (1.0 / time_spacing) / 1000000
+        settings[Tags.SPACING_MM] = sensor_spacing
+
     adapter = PyTorchDASAdapter()
     return adapter.reconstruction_algorithm(time_series_sensor_data, settings)
