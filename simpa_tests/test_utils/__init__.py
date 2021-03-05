@@ -74,6 +74,7 @@ def create_test_structure_parameters(global_settings):
     structures_dict["vessel"] = create_vessel(global_settings)
     return structures_dict
 
+
 def create_background_of_molecule(global_settings, molecule):
     background_structure_dictionary = dict()
     background_structure_dictionary[Tags.PRIORITY] = 0
@@ -94,6 +95,7 @@ def create_vessel_of_molecule(global_settings, molecule, prio, structure_start):
     tube = CircularTubularStructure(global_settings, Settings(tubular_structure_dictionary))
     return tube.to_settings()
 
+
 def create_test_structure_of_molecule(global_settings, molecule1, molecule2, molecule3, key):
     structures_dict = dict()
     if key =="setting1":
@@ -103,10 +105,9 @@ def create_test_structure_of_molecule(global_settings, molecule1, molecule2, mol
         structures_dict["vessel"] = create_vessel_of_molecule(global_settings, molecule2, prio=1, structure_start=1)
     if key =="setting3":
         structures_dict["background"] = create_background_of_molecule(global_settings, molecule1)
-        structures_dict["vessel"] = create_vessel_of_molecule(global_settings, molecule2, prio=1,structure_start=1 )
+        structures_dict["vessel"] = create_vessel_of_molecule(global_settings, molecule2, prio=1, structure_start=1)
         structures_dict["vessel2"] = create_vessel_of_molecule(global_settings, molecule3, prio=2, structure_start=1.25)
     return structures_dict
-
 
 
 def create_background_of_tissue(global_settings, tissue):
@@ -116,12 +117,14 @@ def create_background_of_tissue(global_settings, tissue):
     bg = Background(global_settings, Settings(background_structure_dictionary))
     return bg.to_settings()
 
-def create_vessel_of_tissue(global_settings, tissue): #TODO 
+
+def create_vessel_of_tissue(global_settings, tissue, prio=0):
     background_structure_dictionary = dict()
-    background_structure_dictionary[Tags.PRIORITY] = 0
+    background_structure_dictionary[Tags.PRIORITY] = prio
     background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = tissue
     bg = Background(global_settings, Settings(background_structure_dictionary))
     return bg.to_settings()
+
 
 def create_test_structure_of_tissue(global_settings, tissue1, tissue2, tissue3, key):
     structures_dict = dict()
@@ -132,7 +135,7 @@ def create_test_structure_of_tissue(global_settings, tissue1, tissue2, tissue3, 
         structures_dict["vessel"] = create_vessel_of_tissue(global_settings, tissue2, prio=1, structure_start=1)
     if key =="setting3":
         structures_dict["background"] = create_background_of_tissue(global_settings, tissue1)
-        structures_dict["vessel"] = create_vessel_of_tissue(global_settings, tissue2, prio=1,structure_start=1 )
+        structures_dict["vessel"] = create_vessel_of_tissue(global_settings, tissue2, prio=1, structure_start=1)
         structures_dict["vessel2"] = create_vessel_of_tissue(global_settings, tissue3, prio=2, structure_start=1.25)
     return structures_dict
 

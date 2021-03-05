@@ -257,9 +257,7 @@ class OpticalTissueProperties:
     #   pages = {36},
     #   year = {2019}
     # }
-
     BONE_ABSORPTION = 1.8
-
 
 class MorphologicalTissueProperties:
     """

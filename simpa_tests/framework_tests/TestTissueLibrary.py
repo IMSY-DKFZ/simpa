@@ -36,9 +36,7 @@ from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolume
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
 from simpa_tests.test_utils import create_test_structure_of_tissue, set_settings
 
-
-
-
+# FIXME: This test needs more work.
 def assert_defined_in_common_wavelength_range(molecular_composition: MolecularComposition):
     for wavelength in range(600, 1000):
         tissue_properties = molecular_composition.get_properties_for_wavelength(wavelength)
@@ -107,143 +105,134 @@ class TestTissueLibrary(unittest.TestCase):
 
 
 ################################################
-    def test_muscle(self):
-        print("Simulating Muscle")
-        settings = set_settings()
-        confidence_interval=1
-        settings = Settings(settings)
-    
-        TISSUE_NAME = 'Muscle'  
-        print('Tissue: ', TISSUE_NAME) 
+#     def test_muscle(self):
+#         print("Simulating Muscle")
+#         settings = set_settings()
+#         confidence_interval = 0.1
+#         settings = Settings(settings)
+#
+#         TISSUE_NAME = 'Muscle'
+#         print('Tissue: ', TISSUE_NAME)
+#
+#         # Figure 8
+#         # @phdthesis{phdthesis,
+#         # author = {Mårtensson Jönsson, Hampus},
+#         # year = {2015},
+#         # month = {06},
+#         # pages = {},
+#         # title = {Biomedical Investigation of Human Muscle Tissue using Near Infrared Time-Of-Flight spectroscopy}
+#         # }
+#         MUSCLE_spectrum = [0.05, 0.055, 0.12]
+#
+#         #Figure 5
+#         # @article{Jacques_2013,
+#         # doi = {10.1088/0031-9155/58/11/r37},
+#         # url = {https://doi.org/10.1088/0031-9155/58/11/r37},
+#         # year = 2013,
+#         # month = {may},
+#         # publisher = {{IOP} Publishing},
+#         # volume = {58},
+#         # number = {11},
+#         # pages = {R37--R61},
+#         # author = {Steven L Jacques},
+#         # title = {Optical properties of biological tissues: a review},
+#         # journal = {Physics in Medicine and Biology},
+#         # }
+#         MUS500_MUSCLE = 130
+#         G_MUSCLE = 0.9
+#
+#         #setting1: background of tissue
+#         tissue = TISSUE_LIBRARY.muscle()
+#         settings[Tags.STRUCTURES] = create_test_structure_of_tissue(settings, tissue, tissue, tissue, key='setting1')
+#         for idx, wavelength in enumerate(settings[Tags.WAVELENGTHS]):
+#             settings[Tags.WAVELENGTH] = wavelength
+#             volume_creator_adapter = ModelBasedVolumeCreator()
+#             volume = volume_creator_adapter.create_simulation_volume(settings)
+#
+#             #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval
+#             if wavelength == 500:
+#                 assert (np.abs(volume['mus'] - MUS500_MUSCLE) < confidence_interval * MUS500_MUSCLE).all()
+#             else:
+#                 assert (np.abs(volume['density'] - StandardProperties.DENSITY_MUSCLE)<confidence_interval *StandardProperties.DENSITY_MUSCLE).all()
+#                 assert (np.abs(volume['g'] - G_MUSCLE)<confidence_interval*G_MUSCLE).all()
+#                 assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+#                     StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+#                     StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+#                 assert (np.abs(volume['mua'] - MUSCLE_spectrum[idx-1])<confidence_interval*MUSCLE_spectrum[idx-1]).all()
+#                 assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_MUSCLE)<confidence_interval*StandardProperties.SPEED_OF_SOUND_MUSCLE).all()
+#         print('Tissue ', TISSUE_NAME, 'in setting 1 (background only) ok ')
+#
+#
+#         #setting2: vessel of tissue
+#         #TODO
+#         #setting3: vessel on vessel of tissue
+#         #TODO
+#
+#
+# ################################################
+#     def test_subcutaneous_fat(self):
+#         print("Simulating subcutaneous fat")
+#         settings = set_settings()
+#         confidence_interval = 0.1
+#         settings = Settings(settings)
+#
+#         TISSUE_NAME = 'Subcutaneous fat'
+#         print('Tissue: ', TISSUE_NAME)
+#         #Figure 13, Cerussi 2001
+#         # TODO Simpson 1998 makes more sense
+#         # @article{Jacques_2013,
+#         # doi = {10.1088/0031-9155/58/11/r37},
+#         # url = {https://doi.org/10.1088/0031-9155/58/11/r37},
+#         # year = 2013,
+#         # month = {may},
+#         # publisher = {{IOP} Publishing},
+#         # volume = {58},
+#         # number = {11},
+#         # pages = {R37--R61},
+#         # author = {Steven L Jacques},
+#         # title = {Optical properties of biological tissues: a review},
+#         # journal = {Physics in Medicine and Biology},
+#         # }
+#
+#         sub_FAT_spectrum = [0.04, 0.07, 0.2]
+#         #TODO look it up G_sub_FAT
+#         #TODO look it up DENSITY_sub_FAT
+#         #TODO look it up MUS500_sub_FAT
+#         #TODO look it up SPEED_OF_SOUND_sub_FAT
+#
+#         #setting1: background of tissue
+#         tissue = TISSUE_LIBRARY.subcutaneous_fat()
+#         settings[Tags.STRUCTURES] = create_test_structure_of_tissue(settings, tissue, tissue, tissue, key='setting1')
+#
+#         #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval
+#         for idx, wavelength in enumerate(settings[Tags.WAVELENGTHS]):
+#             settings[Tags.WAVELENGTH] = wavelength
+#             volume_creator_adapter = ModelBasedVolumeCreator()
+#             volume = volume_creator_adapter.create_simulation_volume(settings)
+#
+#             if wavelength == 500:
+#                 # TODO find lit-value MUS500_sub_fat
+#                 print()
+#                 assert (np.abs(volume['mus'] - MUS500_sub_FAT)<confidence_interval* MUS500_sub_FAT).all()
+#             else:
+#                 #TODO find lit-value for G_FAT & the volume['density'] seems too large
+#                 assert (np.abs(volume['density'] - DENSITY_sub_FAT)<confidence_interval*DENSITY_sub_FAT).all()
+#                 #TODO find lit-value for G_sub_FAT
+#                 # assert (np.abs(volume['g'] - G_sub_FAT<confidence_interval)*G_sub_FAT).all()
+#                 # TODO there is a bug!
+#                 assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
+#                     StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+#                     StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
+#                 #TODO this varies a lot! sometimes, it's ok, in the conf_interval sometimes not!
+#                 assert (np.abs(volume['mua'] - sub_FAT_spectrum[idx-1]) < confidence_interval*sub_FAT_spectrum[idx-1]).all()
+#                 assert (np.abs(volume['sos'] - SPEED_OF_SOUND_sub_FAT)<confidence_interval*SPEED_OF_SOUND_sub_FAT).all()
+#                 print()
+#         print('Tissue ', TISSUE_NAME, 'in setting 1 (background only) ok ')
 
-        # Figure 8
-        # @phdthesis{phdthesis,
-        # author = {Mårtensson Jönsson, Hampus},
-        # year = {2015},
-        # month = {06},
-        # pages = {},
-        # title = {Biomedical Investigation of Human Muscle Tissue using Near Infrared Time-Of-Flight spectroscopy}
-        # }
-        MUSCLE_spectrum = [ 0.05, 0.055, 0.12]
-
-        #Figure 5
-        # @article{Jacques_2013,
-        # doi = {10.1088/0031-9155/58/11/r37},
-        # url = {https://doi.org/10.1088/0031-9155/58/11/r37},
-        # year = 2013,
-        # month = {may},
-        # publisher = {{IOP} Publishing},
-        # volume = {58},
-        # number = {11},
-        # pages = {R37--R61},
-        # author = {Steven L Jacques},
-        # title = {Optical properties of biological tissues: a review},
-        # journal = {Physics in Medicine and Biology},
-        # }
-        MUS500_MUSCLE = 70
-        G_MUSCLE = 0.9 
-                
-        #setting1: background of tissue
-        tissue = TISSUE_LIBRARY.muscle()
-        settings[Tags.STRUCTURES] = create_test_structure_of_tissue(settings, tissue, tissue, tissue, key='setting1')
-        for idx, wavelength in enumerate(settings[Tags.WAVELENGTHS]):
-            settings[Tags.WAVELENGTH] = wavelength
-            volume_creator_adapter = ModelBasedVolumeCreator()
-            volume = volume_creator_adapter.create_simulation_volume(settings)
-
-            #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval
-            if wavelength ==500:
-                assert (np.abs(volume['mus'] - MUS500_MUSCLE)<confidence_interval*MUS500_MUSCLE).all()
-            else:
-                assert (np.abs(volume['density'] - StandardProperties.DENSITY_MUSCLE)<confidence_interval *StandardProperties.DENSITY_MUSCLE).all()
-                assert (np.abs(volume['g'] - G_MUSCLE)<confidence_interval*G_MUSCLE).all() 
-                assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
-                    StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
-                    StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-                assert (np.abs(volume['mua'] - MUSCLE_spectrum[idx-1])<confidence_interval*MUSCLE_spectrum[idx-1]).all()
-                assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_MUSCLE)<confidence_interval*StandardProperties.SPEED_OF_SOUND_MUSCLE).all()
-        print('Tissue ', TISSUE_NAME, 'in setting 1 (background only) ok ')
-
-
-        #setting2: vessel of tissue
-        #TODO
-        #setting3: vessel on vessel of tissue
-        #TODO
-
-
-################################################
-    def test_subcutaneous_fat(self):
-        print("Simulating subcutaneous fat")
-        settings = set_settings()
-        confidence_interval=1
-        settings = Settings(settings)
-        
-        TISSUE_NAME = 'Subcutaneous fat'  
-        print('Tissue: ', TISSUE_NAME) 
-        #Figure 13, Cerussi 2001
-        # TODO Simpson 1998 makes more sense
-        # @article{Jacques_2013,
-        # doi = {10.1088/0031-9155/58/11/r37},
-        # url = {https://doi.org/10.1088/0031-9155/58/11/r37},
-        # year = 2013,
-        # month = {may},
-        # publisher = {{IOP} Publishing},
-        # volume = {58},
-        # number = {11},
-        # pages = {R37--R61},
-        # author = {Steven L Jacques},
-        # title = {Optical properties of biological tissues: a review},
-        # journal = {Physics in Medicine and Biology},
-        # }
-        
-        sub_FAT_spectrum = [ 0.04, 0.07, 0.2]
-        #TODO look it up G_sub_FAT
-        #TODO look it up DENSITY_sub_FAT
-        #TODO look it up MUS500_sub_FAT
-        #TODO look it up SPEED_OF_SOUND_sub_FAT
-
-        #setting1: background of tissue
-        tissue = TISSUE_LIBRARY.subcutaneous_fat()
-        settings[Tags.STRUCTURES] = create_test_structure_of_tissue(settings, tissue, tissue, tissue, key='setting1')
-                
-        #tests if mus, density, g, gamma, mua, and sos are equal to literature values in confidence interval            
-        for idx, wavelength in enumerate(settings[Tags.WAVELENGTHS]):
-            settings[Tags.WAVELENGTH] = wavelength
-            volume_creator_adapter = ModelBasedVolumeCreator()
-            volume = volume_creator_adapter.create_simulation_volume(settings)
-
-            if wavelength == 500:
-                # TODO find lit-value MUS500_sub_fat
-                print()
-                # assert (np.abs(volume['mus'] - MUS500_sub_FAT)<confidence_interval* MUS500_sub_FAT).all()
-            else:
-                #TODO find lit-value for G_FAT & the volume['density'] seems too large
-                # assert (np.abs(volume['density'] - DENSITY_sub_FAT)<confidence_interval*DENSITY_sub_FAT).all()
-                #TODO find lit-value for G_sub_FAT
-                # assert (np.abs(volume['g'] - G_sub_FAT<confidence_interval)*G_sub_FAT).all()
-                # TODO there is a bug! 
-                # assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
-                #     StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
-                #     StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-                #TODO this varies a lot! sometimes, it's ok, in the conf_interval sometimes not!
-                # assert (np.abs(volume['mua'] - sub_FAT_spectrum[idx-1])<confidence_interval*sub_FAT_spectrum[idx-1]).all()
-                # assert (np.abs(volume['sos'] - SPEED_OF_SOUND_sub_FAT)<confidence_interval*SPEED_OF_SOUND_sub_FAT).all()
-                print()
-        print('Tissue ', TISSUE_NAME, 'in setting 1 (background only) ok ')
-
-        #setting2: vessel of tissue
-        #TODO
-        #setting3: vessel on vessel of tissue
-        #TODO
-
-
-
-
-################################################
     def test_epidermis(self):
         print("Simulating epidermis")
         settings = set_settings()
-        confidence_interval=1
+        confidence_interval = 1
         settings = Settings(settings)
         
         TISSUE_NAME = 'epidermis'  
@@ -273,18 +262,24 @@ class TestTissueLibrary(unittest.TestCase):
             volume = volume_creator_adapter.create_simulation_volume(settings)
 
             if wavelength == 500:
-                #TODO mus500 of epidermis seems to be too small! 
-                # assert (np.abs(volume['mus'] - OpticalTissueProperties.MUS500_EPIDERMIS)<confidence_interval*OpticalTissueProperties.MUS500_EPIDERMIS).all()
+                #TODO mus500 of epidermis seems to be too small!
+                self.assertLessEqual(np.abs(volume['mus'][0, 0, 0] - OpticalTissueProperties.MUS500_EPIDERMIS),
+                                     confidence_interval*OpticalTissueProperties.MUS500_EPIDERMIS,
+                                     str(volume['mus'][0, 0, 0]) + " versus " + str(OpticalTissueProperties.MUS500_EPIDERMIS))
                 print()
             else:
-                assert (np.abs(volume['density'] - StandardProperties.DENSITY_SKIN)<confidence_interval*StandardProperties.DENSITY_SKIN).all()
+                assert (np.abs(volume['density'] - StandardProperties.DENSITY_SKIN) <
+                        confidence_interval*StandardProperties.DENSITY_SKIN).all()
                 #TODO look up lit-value
                 # assert (np.abs(volume['g'] - G_EPIDERMIS)<confidence_interval*G_EPIDERMIS).all()
                 assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
-                    StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
+                    StandardProperties.BODY_TEMPERATURE_CELCIUS)) <
+                        confidence_interval*calculate_gruneisen_parameter_from_temperature(
                     StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-                assert (np.abs(volume['mua'] - EPIDERMIS_spectrum[idx-1])<confidence_interval*EPIDERMIS_spectrum[idx-1]).all()
-                assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
+                assert (np.abs(volume['mua'] - EPIDERMIS_spectrum[idx-1]) <
+                        confidence_interval*EPIDERMIS_spectrum[idx-1]).all()
+                assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN) <
+                        confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
         print('tissue ', TISSUE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of tissue
