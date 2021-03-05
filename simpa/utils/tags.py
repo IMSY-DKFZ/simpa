@@ -727,6 +727,18 @@ class Tags:
     Usage: adapter MitkBeamformingAdapter, naming convention
     """
 
+    RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION = "Envelope_Detection_before_Reconstruction"
+    """
+    Specifies whether an envelope detection should be performed before reconstruction, default is False
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION = "Envelope_Detection_after_Reconstruction"
+    """
+    Specifies whether an envelope detection should be performed after reconstruction, default is False
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
     RECONSTRUCTION_APODIZATION_METHOD = ("reconstruction_apodization_method", str)
     """
     Choice of the apodization method used, i.e. window functions .\n
