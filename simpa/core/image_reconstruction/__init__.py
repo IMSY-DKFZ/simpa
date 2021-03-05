@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -22,14 +22,17 @@
 
 from simpa.utils import Tags
 from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.io_handling.io_hdf5 import load_hdf5
+from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
 
 
 class ReconstructionAdapterBase:
+    """
+    TODO
+    """
 
     @abstractmethod
-    def reconstruction_algorithm(self, time_series_sensor_data, settings, distortion):
+    def reconstruction_algorithm(self, time_series_sensor_data, settings):
         """
         A deriving class needs to implement this method according to its model.
 
@@ -39,20 +42,16 @@ class ReconstructionAdapterBase:
         """
         pass
 
-    def simulate(self, settings, distortion):
+    def simulate(self, settings):
         """
 
         :param settings:
-        :param acoustic_data_path:
         :return:
         """
         print("Performing reconstruction...")
 
-        acoustic_data_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA, wavelength=settings[Tags.WAVELENGTH],
-                                                upsampled_data=True)
+        time_series_sensor_data = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.TIME_SERIES_DATA, settings[Tags.WAVELENGTH])
 
-        time_series_sensor_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[Tags.TIME_SERIES_DATA]
-
-        reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings, distortion)
-        print("Performing reconstruction...Done]")
+        reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings)
+        print("Performing reconstruction...[Done]")
         return reconstructed_image

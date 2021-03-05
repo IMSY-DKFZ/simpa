@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -29,31 +29,42 @@ import json
 
 
 class NoiseModelAdapterBase:
+    """
+    This class functions as a base class that can be used to easily define different
+    noise models by extending the apply_noise_model function.
+    """
 
     @abstractmethod
-    def apply_noise_model(self, data, settings):
+    def apply_noise_model(self, time_series_data: np.ndarray, settings: dict) -> np.ndarray:
         """
+        Applies the defined noise model to the input time series data.
 
-        :param data:
-        :param settings:
-        :return:
+        :param time_series_data: the data the noise should be applied to.
+        :param settings: the settings dictionary that contains the simulation instructions.
+        :return: a numpy array of the same shape as the input data.
         """
         pass
 
 
 class GaussianNoiseModel(NoiseModelAdapterBase):
     """
-    This class is reponsible to apply an additive gaussian noise to the input data.
+    The purpose of the GaussianNoiseModel class is to apply an additive gaussian noise to the input data.
+
+    The mean and standard deviation of the model can be defined either by using the
+    Tags.NOISE_MEAN and Tags.NOISE_STD tags, but they can also be set using a pandas dataframe
+    that contains mean and standard deviation of noise for different wavelengths and
+    temperatures. This can be done using the Tags.NOISE_MODEL_PATH tag.
     """
-    def apply_noise_model(self, data, settings):
+
+    def apply_noise_model(self, time_series_data, settings):
         mean_noise = 0
-        std_noise = 1
+        std_noise = 400
 
         if Tags.NOISE_MEAN in settings:
             mean_noise = float(settings[Tags.NOISE_MEAN])
 
         if Tags.NOISE_STD in settings:
-            std_noise = float(settings[Tags.NOISE_STD][str(settings[Tags.WAVELENGTH])]) * np.max(data)
+            std_noise = float(settings[Tags.NOISE_STD][str(settings[Tags.WAVELENGTH])]) * np.max(time_series_data)
 
         if Tags.NOISE_MODEL_PATH in settings:
             if Tags.WAVELENGTH in settings:
@@ -70,6 +81,6 @@ class GaussianNoiseModel(NoiseModelAdapterBase):
             mean_noise = json.loads(noise_parameters)[0]
             std_noise = json.loads(noise_parameters)[1]
 
-        data = data + np.random.normal(mean_noise, std_noise, size=np.shape(data))
+        time_series_data = time_series_data + np.random.normal(mean_noise, std_noise, size=np.shape(time_series_data))
 
-        return data
+        return time_series_data

@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -22,11 +22,14 @@
 
 import numpy as np
 from simpa.utils import Tags
+from simpa.core.acoustic_simulation import AcousticForwardAdapterBase
 
 
-def simulate(settings):
+class TestAcousticAdapter(AcousticForwardAdapterBase):
 
-    if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
-        return np.random.random((128, 128, 3000))
-    else:
-        return np.random.random((128, 3000))
+    def forward_model(self, settings) -> np.ndarray:
+
+        if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D]:
+            return np.random.random((128, 128, 3000))
+        else:
+            return np.random.random((128, 3000))

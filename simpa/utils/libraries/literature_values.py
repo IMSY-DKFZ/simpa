@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -33,6 +33,37 @@ class StandardProperties:
     GELPAD_MUA = 1e-10
     GELPAD_MUS = 1e-10
     GELPAD_G = 1.0
+
+    # @article{Zhang:09,
+    # author = {Xiaodong Zhang and Lianbo Hu and Ming-Xia He},
+    # journal = {Opt. Express},
+    # number = {7},
+    # pages = {5698--5710},
+    # publisher = {OSA},
+    # title = {Scattering by pure seawater: Effect of salinity},
+    # volume = {17},
+    # month = {Mar},
+    # year = {2009},
+    # doi = {10.1364/OE.17.005698},
+    # and https://www.oceanopticsbook.info/view/optical-constituents-of-the-ocean/water
+    WATER_MUS = 1e-10
+    WATER_G = 1.0
+
+
+    # @article{Kedenburg:12,
+    # author = {S. Kedenburg and M. Vieweg and T. Gissibl and H. Giessen},
+    # journal = {Opt. Mater. Express},
+    # number = {11},
+    # pages = {1588--1611},
+    # publisher = {OSA},
+    # title = {Linear refractive index and absorption measurements of nonlinear optical liquids in the visible and near-infrared spectral region},
+    # volume = {2},
+    # month = {Nov},
+    # year = {2012},
+    # url = {http://www.osapublishing.org/ome/abstract.cfm?URI=ome-2-11-1588},
+    # doi = {10.1364/OME.2.001588},
+
+    HEAVY_WATER_MUA = 0.0008 
 
     # @book{marx2013rosen,
     #   title={Rosen's Emergency Medicine-Concepts and Clinical Practice E-Book},
@@ -196,6 +227,8 @@ class OpticalTissueProperties:
     # }
     BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE = 0.01  # Value of arterial bvf at t0 in fig 3.
 
+    BLOOD_PLASMA_FRACTION = 0.55    # This value seems to be widely accepted.
+
     # Mean and spread calculated from europeans from figure 2C, averaged over both
     # photoexposed and photoprotected simpa_examples.
     # @article{alaluf2002ethnic,
@@ -210,9 +243,21 @@ class OpticalTissueProperties:
     #   publisher={Wiley Online Library}
     # }
 
-    MELANIN_VOLUME_FRACTION_MEAN = 0.002
-    MELANIN_VOLUME_FRACTION_STD = 0.0005
+    MELANIN_VOLUME_FRACTION_MEAN = 0.011
+    MELANIN_VOLUME_FRACTION_STD = 0.003
 
+    # Approximated mean of figure 3
+    # @inproceedings{antunes2019optical,
+    #   title = {Optical Properties on Bone Analysis: An Approach to Biomaterials},
+    #   author = {Antunes, Andrea and Pontes, Jos{\'e} HL and Monte, Adamo FG and Barbosa, Alcimar and Ferreira,
+    # Nuno MF},
+    #   booktitle = {Multidisciplinary Digital Publishing Institute Proceedings},
+    #   volume = {27},
+    #   number = {1},
+    #   pages = {36},
+    #   year = {2019}
+    # }
+    BONE_ABSORPTION = 1.8
 
 class MorphologicalTissueProperties:
     """

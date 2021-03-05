@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -22,20 +22,22 @@
 
 from simpa.core.volume_creation import VolumeCreatorBase
 from simpa.utils.settings_generator import Settings
-from simpa.utils import SegmentationClasses, Tags
+from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
 
 
 class SegmentationBasedVolumeCreator(VolumeCreatorBase):
     """
-    TODO
+    This volume creator expects a np.ndarray to be in the settigs
+    under the Tags.INPUT_SEGMENTATION_VOLUME tag and uses this array
+    together with a SegmentationClass mapping which is a dict defined in
+    the settings under Tags.SEGMENTATION_CLASS_MAPPING.
+
+    With this, an even greater utility is warranted.
     """
 
     def create_simulation_volume(self, settings: Settings) -> dict:
-        """
-        TODO
-        """
         volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes(settings)
         wavelength = settings[Tags.WAVELENGTH]
 
@@ -54,7 +56,6 @@ class SegmentationBasedVolumeCreator(VolumeCreatorBase):
                              .format(z_dim_px, z_dim_seg_px))
 
         class_mapping = settings[Tags.SEGMENTATION_CLASS_MAPPING]
-        # TODO check class mapping
 
         for seg_class in segmentation_classes:
             class_properties = class_mapping[seg_class].get_properties_for_wavelength(wavelength)

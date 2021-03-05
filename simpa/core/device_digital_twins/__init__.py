@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -22,11 +22,15 @@
 
 from simpa.utils import Tags
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
+from simpa.core.device_digital_twins.rsom_device import RSOMExplorerP50
+from simpa.core.device_digital_twins.invision_device import InVision256TF
 
 """
 This DEVICE_MAP can be used in order to obtain appropriate device specifications based on
 the desired device design.
 """
 DEVICE_MAP = {
-    Tags.DIGITAL_DEVICE_MSOT: MSOTAcuityEcho()
+    Tags.DIGITAL_DEVICE_MSOT: MSOTAcuityEcho(),
+    Tags.DIGITAL_DEVICE_RSOM: RSOMExplorerP50(),
+    Tags.DIGITAL_DEVICE_INVISION: InVision256TF()
 }

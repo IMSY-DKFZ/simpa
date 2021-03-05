@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -51,20 +51,16 @@ class TestCreateVolume(unittest.TestCase):
             Tags.SPACING_MM: 0.3,
             Tags.DIM_VOLUME_Z_MM: 5,
             Tags.DIM_VOLUME_X_MM: 4,
-            Tags.DIM_VOLUME_Y_MM: 3,
-            Tags.AIR_LAYER_HEIGHT_MM: 1,
-            Tags.GELPAD_LAYER_HEIGHT_MM: 1,
+            Tags.DIM_VOLUME_Y_MM: 3
         }
         print("Simulating ", random_seed)
         settings = Settings(settings)
         settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
-        output = simulate(settings)
+        simulate(settings)
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
            os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
             # Delete the created file
             os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
 
-        for item in output:
-            print(item)
         print("Simulating ", random_seed, "[Done]")

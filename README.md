@@ -2,7 +2,7 @@
 
 The Simulation and Image Processing for Photoacoustic Imaging (SIMPA) toolkit.
 
-## Internal Install Instructions
+## SIMPA Install Instructions
 
 These install instructions are made under the assumption that you have access to the phabricator simpa project.
 When you are reading these instructions there is a 99% chance that is the case (or someone send these instructions
@@ -22,14 +22,41 @@ virtual environment activated
 
 If no error messages arise, you are now setup to use simpa in your project.
 
+You also need to manually install the pytorch library to use all features of SIMPA.
+To this end, use the pytorch website tool to figure out which version to install:
+`https://pytorch.org/get-started/locally/`
+
 ## Building the documentation
 
 When the installation went fine and you want to make sure that you have the latest documentation
 you should do the following steps in a command line:
 
 1. Navigate to the `simpa` source directory (same level where the setup.py is in)
-2. Execute the command `sphinx-build -b pdf -a documentation/src documentation`
-3. Find the `PDF` file in `documentation/simpa_documantation.pdf`
+2. Execute the command `sphinx-build -b pdf -a simpa_documentation/src simpa_documentation`
+3. Find the `PDF` file in `simpa_documentation/simpa_documantation.pdf`
+
+## External Tools installation instructions
+
+### mcx (Optical Forward Model)
+
+Either download suitable executables or build yourself from the following sources:
+http://mcx.space/
+
+### k-Wave (Acoustic Forward Model)
+
+Please follow the following steps and use the k-Wave install instructions 
+for further (and much better) guidance under http://www.k-wave.org/!
+
+1. Install MATLAB with the core and parallel computing toolboxes activated at the minimum.
+2. Download the kWave toolbox
+3. Add the kWave toolbox base bath to the toolbox paths in MATLAB
+4. If wanted: Download the CPP and CUDA binary files and place them inthe k-Wave/binaries folder
+5. Note down the system path to the `matlab` executable file. 
+
+On MATLAB r2020a or newer there is a bug when using the GPU binaries with kWave. Please follow these instructions
+http://www.k-wave.org/forum/topic/error-reading-h5-files-when-using-binaries to fix this bug.
+
+### MITK
 
 ## Overview
 

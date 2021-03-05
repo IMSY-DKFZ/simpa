@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils import AbsorptionSpectrum
 from simpa.utils import SPECTRAL_LIBRARY
-from simpa.utils.calculate import calculate_oxygenation
+from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
 
 
 class MolecularComposition(list):
@@ -159,7 +159,8 @@ class Molecule(object):
         self.anisotropy = anisotropy
 
         if gruneisen_parameter is None:
-            gruneisen_parameter = 1.0
+            gruneisen_parameter = calculate_gruneisen_parameter_from_temperature(
+                StandardProperties.BODY_TEMPERATURE_CELCIUS)
         if not isinstance(gruneisen_parameter, (int, float)):
             raise TypeError("The given gruneisen_parameter was not of type int or float instead of {}!"
                             .format(type(gruneisen_parameter)))
@@ -167,13 +168,13 @@ class Molecule(object):
 
         if density is None:
             density = StandardProperties.DENSITY_GENERIC
-        if not isinstance(density, (np.int32, np.int64, int, np.float, float)):
+        if not isinstance(density, (np.int32, np.int64, int, float)):
             raise TypeError("The given density was not of type int or float instead of {}!".format(type(density)))
         self.density = density
 
         if speed_of_sound is None:
             speed_of_sound = StandardProperties.SPEED_OF_SOUND_GENERIC
-        if not isinstance(speed_of_sound, (np.int32, np.int64, int, np.float, float)):
+        if not isinstance(speed_of_sound, (np.int32, np.int64, int, float)):
             raise TypeError("The given speed_of_sound was not of type int or float instead of {}!"
                             .format(type(speed_of_sound)))
         self.speed_of_sound = speed_of_sound
@@ -224,8 +225,8 @@ class MoleculeLibrary(object):
     def water(volume_fraction: float = 1.0):
         return Molecule(name="water",
                         spectrum=SPECTRAL_LIBRARY.WATER,
-                        volume_fraction=volume_fraction, mus500=0.1,
-                        b_mie=0.0, f_ray=0.0, anisotropy=1.0,
+                        volume_fraction=volume_fraction, mus500=StandardProperties.WATER_MUS,
+                        b_mie=0.0, f_ray=0.0, anisotropy=StandardProperties.WATER_G,
                         density=StandardProperties.DENSITY_WATER,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
@@ -345,7 +346,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def bone(volume_fraction: float = 1.0):
         return Molecule(name="bone",
-                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(OpticalTissueProperties.BONE_ABSORPTION),
                         volume_fraction=volume_fraction,
                         mus500=OpticalTissueProperties.MUS500_BONE,
                         b_mie=OpticalTissueProperties.BMIE_BONE,
@@ -373,15 +374,28 @@ class MoleculeLibrary(object):
     @staticmethod
     def heavy_water(volume_fraction: float = 1.0):
         return Molecule(name="heavy_water",
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.HEAVY_WATER_MUA),
+                        volume_fraction=volume_fraction,
+                        mus500=StandardProperties.WATER_MUS,
+                        b_mie=0.0,
+                        f_ray=0.0,
+                        anisotropy=StandardProperties.WATER_G,
+                        density=StandardProperties.DENSITY_HEAVY_WATER,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_HEAVY_WATER,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
+                        )
+    @staticmethod
+    def air(volume_fraction: float = 1.0):
+        return Molecule(name="air",
                         spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA),
                         volume_fraction=volume_fraction,
                         mus500=StandardProperties.AIR_MUS,
                         b_mie=0.0,
                         f_ray=0.0,
                         anisotropy=StandardProperties.AIR_G,
-                        density=StandardProperties.DENSITY_HEAVY_WATER,
-                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_HEAVY_WATER,
-                        alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
+                        density=StandardProperties.DENSITY_AIR,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_AIR,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_AIR
                         )
 
 

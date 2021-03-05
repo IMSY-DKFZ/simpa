@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 from simpa.utils import Tags
 
+
 def preprocess_image(settings, image_data):
     """
     Preprocess a photoacoustic image depending on the properties defined by the settings.
@@ -33,14 +34,6 @@ def preprocess_image(settings, image_data):
 
     if Tags.CROP_IMAGE in settings:
         if settings[Tags.CROP_IMAGE]:
-            if Tags.AIR_LAYER_HEIGHT_MM in settings:
-                air_layer_height = int(settings[Tags.AIR_LAYER_HEIGHT_MM] / settings[Tags.SPACING_MM])
-                image_data = image_data[air_layer_height:, :]
-
-            # if Tags.GELPAD_LAYER_HEIGHT_MM in settings:
-            #     gelpad_layer_height = int(settings[Tags.GELPAD_LAYER_HEIGHT_MM] / settings[Tags.SPACING_MM])
-            #     image_data = image_data[gelpad_layer_height:, :]
-
             if Tags.CROP_POWER_OF_TWO in settings:
                 if settings[Tags.CROP_POWER_OF_TWO]:
                     print("Previous sizes: ", image_data.shape)

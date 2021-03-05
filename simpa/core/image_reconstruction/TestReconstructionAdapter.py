@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -25,5 +25,5 @@ from simpa.core.image_reconstruction import ReconstructionAdapterBase
 
 class TestReconstructionAdapter(ReconstructionAdapterBase):
 
-    def reconstruction_algorithm(self, time_series_sensor_data, settings, distortion):
+    def reconstruction_algorithm(self, time_series_sensor_data, settings):
         return time_series_sensor_data / 10 + 5

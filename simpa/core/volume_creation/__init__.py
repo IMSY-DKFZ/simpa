@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 
 from abc import abstractmethod
 from simpa.utils.settings_generator import Settings
-from simpa.utils import MorphologicalTissueProperties, Tags, TISSUE_LIBRARY, SegmentationClasses
+from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
 
@@ -50,6 +50,7 @@ class VolumeCreatorBase:
     def create_simulation_volume(self, settings: Settings) -> dict:
         """
         This method will be called to create a simulation volume.
-        @param settings:
+
+        :param settings: the settings dictionary containing the simulation instructions.
         """
         pass

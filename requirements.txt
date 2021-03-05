@@ -6,8 +6,10 @@ scikit-image
 xmltodict
 h5py
 pandas
-sphinx
+sphinx==2.4.4
 rst2pdf
 m2r
+mistune==0.8.4
 coverage
 deprecated
+torch

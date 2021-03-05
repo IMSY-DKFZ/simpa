@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -31,6 +31,15 @@ from simpa.core.optical_simulation.illumination_definition import define_illumin
 
 
 class McxAdapter(OpticalForwardAdapterBase):
+    """
+    This class implements a bridge to the mcx framework to integrate mcx into SIMPA.
+    MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue::
+
+        Fang, Qianqian, and David A. Boas. "Monte Carlo simulation of photon migration in 3D
+        turbid media accelerated by graphics processing units."
+        Optics express 17.22 (2009): 20178-20190.
+
+    """
 
     def forward_model(self, absorption_cm, scattering_cm, anisotropy, settings):
 
