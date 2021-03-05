@@ -766,7 +766,20 @@ class Tags:
 
     TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float, np.float))
     """
-    Sets alpha value of Tukey window. Default should be 0.5\n
+    Sets alpha value of Tukey window between 0 (similar to box window) and 1 (similar to Hann window).
+    Default is 0.5\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float, np.float))
+    """
+    Sets the cutoff threshold in MHz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", (int, np.integer, float, np.float))
+    """
+    Sets the cutoff threshold in MHz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 

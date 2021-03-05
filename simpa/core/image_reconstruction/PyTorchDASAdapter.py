@@ -31,6 +31,8 @@ import torch.fft
 from scipy.signal import hilbert
 from scipy.signal.windows import tukey
 
+from simpa.utils.settings_generator import Settings
+
 
 class PyTorchDASAdapter(ReconstructionAdapterBase):
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
@@ -59,21 +61,23 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         ### INPUT CHECKING AND VALIDATION ###
         # check settings dictionary for elements and read them in
 
-        # speed of sound
+        # speed of sound: use average from simulation if specified, otherwise use given speed of sound
         if Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
             acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
                                                     wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
             sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[
                 Tags.PROPERTY_SPEED_OF_SOUND]
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
+        elif Tags.PROPERTY_SPEED_OF_SOUND in settings and settings[Tags.PROPERTY_SPEED_OF_SOUND]:
+            speed_of_sound_in_m_per_s = settings[Tags.PROPERTY_SPEED_OF_SOUND]
         else:
-            raise AttributeError("Please specify a value for WAVELENGTH to obtain the average speed of sound")
+            raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND or WAVELENGTH to obtain the average speed of sound")
 
-        # time spacing: use sampling rate is specified, otherwise kWave specific dt from simulation
-        if Tags.SENSOR_SAMPLING_RATE_MHZ in settings and settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
-            time_spacing_in_ms = 1.0 / (settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
-        elif Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
+        # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
+        if Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
             time_spacing_in_ms = settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
+        elif Tags.SENSOR_SAMPLING_RATE_MHZ in settings and settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
+            time_spacing_in_ms = 1.0 / (settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
         else:
             raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
 
@@ -119,16 +123,57 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         ### ALGORITHM ITSELF ###
 
+        # check reconstruction mode - pressure by default
+        if Tags.RECONSTRUCTION_MODE in settings:
+            mode = settings[Tags.RECONSTRUCTION_MODE]
+        else:
+            mode = Tags.RECONSTRUCTION_MODE_PRESSURE
+
+        # depending on mode use pressure data or its derivative
+        if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL:
+            zero = torch.zeros([1], names=None).to(device)
+            time_vector = torch.arange(0, time_series_sensor_data.shape[1] * (time_spacing_in_ms/1000), (time_spacing_in_ms/1000)).to(device)
+            differential = torch.zeros_like(time_series_sensor_data, device=device)
+            for det_idx in range(time_series_sensor_data.shape[0]):
+                time_series_pressure_of_detection_element = time_series_sensor_data[det_idx,:]
+                time_derivative_pressure = (time_series_pressure_of_detection_element[1:] -
+                                            time_series_pressure_of_detection_element[0:-1])
+                time_derivative_pressure = torch.cat([time_derivative_pressure, zero])
+                time_derivative_pressure = torch.mul(time_derivative_pressure, 1 / (time_spacing_in_ms/1000))
+                time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
+                differential[det_idx,:] = time_derivative_pressure
+            time_series_sensor_data = differential
+        elif mode == Tags.RECONSTRUCTION_MODE_PRESSURE:
+            pass  # already in pressure format
+        else:
+            raise AttributeError(
+                "An invalid reconstruction mode was set, only differential and pressure are supported.")
+
+
+        # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
-            # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
-            fft_time_series_sensor_data = torch.fft.rfft(time_series_sensor_data)
-            alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
-            tukey_window = torch.tensor(tukey(time_series_sensor_data.shape[0], alpha=alpha), device=device)
-            tukey_window = tukey_window.expand_as(fft_time_series_sensor_data.T).T
-            filtered = fft_time_series_sensor_data * tukey_window
 
-            time_series_sensor_data = torch.fft.irfft(filtered)
+            # construct bandpass filter given the cutoff values and time spacing
+            frequencies = np.fft.fftfreq(time_series_sensor_data.shape[1], d=time_spacing_in_ms/1000)
+            cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(8e6)
+            cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(0.1e6)
+
+            if cutoff_highpass > cutoff_lowpass:
+                raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
+            # find closest indices for frequencies
+            small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
+            large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
+
+            tukey_alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
+            win = torch.tensor(tukey(large_index - small_index, alpha = tukey_alpha), device=device)
+            window = torch.zeros(frequencies.shape, device=device)
+            window[small_index:large_index] = win
+
+            # transform data into Fourier space, multiply filter and transform back
+            TIME_SERIES_SENSOR_DATA = torch.fft.fft(time_series_sensor_data)
+            FILTERED = TIME_SERIES_SENSOR_DATA * window.expand_as(TIME_SERIES_SENSOR_DATA)
+            time_series_sensor_data = torch.abs(torch.fft.ifft(FILTERED))
 
         ## compute size of beamformed image ##
         xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))
@@ -167,6 +212,9 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             elif settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HAMMING:
                 hamming = torch.hamming_window(n_sensor_elements, device=device)
                 apodization = hamming.expand((xdim, ydim, n_sensor_elements))
+            # box window apodization as default
+            else:
+                apodization = torch.ones((xdim, ydim, n_sensor_elements), device=device)
         else:
             # box window apodization as default
             apodization = torch.ones((xdim, ydim, n_sensor_elements), device=device)
@@ -184,12 +232,31 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         return reconstructed
 
 
-def reconstruct_DAS_PyTorch(time_series_sensor_data, settings=None):
+def reconstruct_DAS_PyTorch(time_series_sensor_data, settings = None, sound_of_speed=1540, time_spacing=2.5e-8, sensor_spacing=0.1):
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
     :param time_series_sensor_data: 2D numpy array of sensor data of shape (sensor elements, time steps)
-    :param settings: settings dictionary
+    :param settings: settings dictionary (by default there is none and the other parameters are used instead,
+    but if parameters are given in the settings those will be used instead of parsed arguments)
+    :param sound_of_speed: speed of sound in medium in meters per second (default: 1540 m/s)
+    :param time_spacing: time between sampling points in seconds (default: 2.5e-8 s which is equal to 40 MHz)
+    :param sensor_spacing: space between sensor elements in millimeters (default: 0.1 mm)
     :return: reconstructed image as 2D numpy array
     """
+
+    # create settings if they don't exist yet
+    if settings is None:
+        settings = Settings()
+
+    # parse reconstruction settings if they are not given in the settings
+    if Tags.PROPERTY_SPEED_OF_SOUND not in settings or settings[Tags.PROPERTY_SPEED_OF_SOUND] is None:
+        settings[Tags.PROPERTY_SPEED_OF_SOUND] = sound_of_speed
+
+    if Tags.SENSOR_SAMPLING_RATE_MHZ not in settings or settings[Tags.SENSOR_SAMPLING_RATE_MHZ] is None:
+        settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = (1.0 / time_spacing) / 1000000
+
+    if Tags.SPACING_MM not in settings or settings[Tags.SPACING_MM] is None:
+        settings[Tags.SPACING_MM] = sensor_spacing
+
     adapter = PyTorchDASAdapter()
     return adapter.reconstruction_algorithm(time_series_sensor_data, settings)
