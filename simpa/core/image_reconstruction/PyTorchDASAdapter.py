@@ -91,6 +91,10 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         device.check_settings_prerequisites(settings)
         device.adjust_simulation_volume_and_settings(settings)
 
+        settings[Tags.DIGITAL_DEVICE_POSITION] = [settings[Tags.DIM_VOLUME_X_MM]/2,
+                                                  settings[Tags.DIM_VOLUME_Y_MM]/2,
+                                                  device.probe_height_mm]
+
         sensor_positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
         sensor_positions = np.round(sensor_positions / sensor_spacing_in_mm).astype(int)
         sensor_positions = np.array(sensor_positions[:, [0, 2]])  # only use x and y positions and ignore z
@@ -131,16 +135,17 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         # depending on mode use pressure data or its derivative
         if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL:
             zero = torch.zeros([1], names=None).to(device)
-            time_vector = torch.arange(0, time_series_sensor_data.shape[1] * (time_spacing_in_ms/1000), (time_spacing_in_ms/1000)).to(device)
+            time_vector = torch.linspace(0, time_series_sensor_data.shape[1] * (time_spacing_in_ms/1000),
+                                         time_series_sensor_data.shape[1]).to(device)
             differential = torch.zeros_like(time_series_sensor_data, device=device)
             for det_idx in range(time_series_sensor_data.shape[0]):
-                time_series_pressure_of_detection_element = time_series_sensor_data[det_idx,:]
+                time_series_pressure_of_detection_element = time_series_sensor_data[det_idx, :]
                 time_derivative_pressure = (time_series_pressure_of_detection_element[1:] -
                                             time_series_pressure_of_detection_element[0:-1])
                 time_derivative_pressure = torch.cat([time_derivative_pressure, zero])
                 time_derivative_pressure = torch.mul(time_derivative_pressure, 1 / (time_spacing_in_ms/1000))
                 time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
-                differential[det_idx,:] = time_derivative_pressure
+                differential[det_idx, :] = time_derivative_pressure
             time_series_sensor_data = differential
         elif mode == Tags.RECONSTRUCTION_MODE_PRESSURE:
             pass  # already in pressure format

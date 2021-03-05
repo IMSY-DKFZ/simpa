@@ -193,7 +193,8 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
             raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
 
             if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-                if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_DAS,
+                if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
+                                                               Tags.RECONSTRUCTION_ALGORITHM_DAS,
                                                                Tags.RECONSTRUCTION_ALGORITHM_DMAS,
                                                                Tags.RECONSTRUCTION_ALGORITHM_SDMAS,
                                                                Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION]:

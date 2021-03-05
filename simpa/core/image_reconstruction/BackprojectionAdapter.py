@@ -22,8 +22,7 @@
 
 from simpa.core.image_reconstruction import ReconstructionAdapterBase
 from simpa.utils import Tags
-from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.io_handling.io_hdf5 import load_hdf5
+from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.core.device_digital_twins import DEVICE_MAP
 
 import numpy as np
@@ -53,10 +52,7 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         time_series_sensor_data = np.swapaxes(time_series_sensor_data, 0, 1)
 
-        wavelength = str(settings[Tags.WAVELENGTH])
-
-        speed_of_sound_data_path = generate_dict_path(Tags.PROPERTY_SPEED_OF_SOUND, settings[Tags.WAVELENGTH])
-        sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], speed_of_sound_data_path)[wavelength]
+        sound_speed_m = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
         sound_speed_m = np.mean(sound_speed_m)
 
         target_dim_m = np.asarray([settings[Tags.DIM_VOLUME_X_MM]/1000, settings[Tags.DIM_VOLUME_Y_MM]/1000,
