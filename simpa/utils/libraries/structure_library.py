@@ -810,21 +810,25 @@ class VesselStructure(GeometricalStructure):
                     vessel_branch_radius_variation1 = 1 / np.sqrt(2) * radius_variation
                     vessel_branch_radius_variation2 = 1 / np.sqrt(2) * radius_variation
 
-                    vessel1_pos, vessel1_rad = calculate_vessel_samples(vessel_branch_positions1,
-                                                                        vessel_branch_directions1,
-                                                                        bifurcation_length,
-                                                                        vessel_branch_radius1,
-                                                                        vessel_branch_radius_variation1,
-                                                                        volume_dimensions)
+                    if vessel_branch_radius1 >= 0.5:
+                        vessel1_pos, vessel1_rad = calculate_vessel_samples(vessel_branch_positions1,
+                                                                            vessel_branch_directions1,
+                                                                            bifurcation_length,
+                                                                            vessel_branch_radius1,
+                                                                            vessel_branch_radius_variation1,
+                                                                            volume_dimensions)
+                        position_array += vessel1_pos
+                        radius_array += vessel1_rad
 
-                    vessel2_pos, vessel2_rad = calculate_vessel_samples(vessel_branch_positions2,
-                                                                        vessel_branch_directions2,
-                                                                        bifurcation_length,
-                                                                        vessel_branch_radius2,
-                                                                        vessel_branch_radius_variation2,
-                                                                        volume_dimensions)
-                    position_array += vessel1_pos + vessel2_pos
-                    radius_array += vessel1_rad + vessel2_rad
+                    if vessel_branch_radius2 >= 0.5:
+                        vessel2_pos, vessel2_rad = calculate_vessel_samples(vessel_branch_positions2,
+                                                                            vessel_branch_directions2,
+                                                                            bifurcation_length,
+                                                                            vessel_branch_radius2,
+                                                                            vessel_branch_radius_variation2,
+                                                                            volume_dimensions)
+                        position_array += vessel2_pos
+                        radius_array += vessel2_rad
                     break
 
                 position = np.add(position, direction)
@@ -880,7 +884,7 @@ if __name__ == "__main__":
     timer = time.time()
 
     global_settings = Settings()
-    global_settings[Tags.SPACING_MM] = 0.9
+    global_settings[Tags.SPACING_MM] = 2
     global_settings[Tags.DIM_VOLUME_X_MM] = 80
     global_settings[Tags.DIM_VOLUME_Y_MM] = 90
     global_settings[Tags.DIM_VOLUME_Z_MM] = 100
@@ -890,19 +894,15 @@ if __name__ == "__main__":
     structure_settings[Tags.STRUCTURE_START_MM] = [50, 0, 50]
     structure_settings[Tags.STRUCTURE_DIRECTION] = [0, 1, 0]
     structure_settings[Tags.STRUCTURE_RADIUS_MM] = 4
-    structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.05
+    structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.1
     structure_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
-    structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 70
+    structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 15
     structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
     vessel = VesselStructure(global_settings, structure_settings)
     vol1 = vessel.geometrical_volume
-    print("generation of the vessel took", timer - time.time())
+    print("generation of the vessel took", time.time() - timer)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.voxels(vol1, shade=True)
-    # ax.set_xlim(0, 100)
-    # ax.set_ylim(0, 100)
-    # ax.set_zlim(0, 100)
-
     plt.show()

@@ -33,7 +33,7 @@ MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"     # On Linux systems, the .exe at t
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
 VOLUME_HEIGHT_IN_MM = 60
-SPACING = 1
+SPACING = 0.5
 RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
 
