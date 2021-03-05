@@ -54,9 +54,9 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
     absorption = simulation_properties['mua'][str(wavelength)]
     scattering = simulation_properties['mus'][str(wavelength)]
     anisotropy = simulation_properties['g'][str(wavelength)]
-    segmentation_map = simulation_properties['seg'][str(wavelength)]
-    speed_of_sound = simulation_properties['sos'][str(wavelength)]
-    density = simulation_properties['density'][str(wavelength)]
+    segmentation_map = simulation_properties['seg']
+    speed_of_sound = simulation_properties['sos']
+    density = simulation_properties['density']
 
     if Tags.RUN_OPTICAL_MODEL in settings and settings[Tags.RUN_OPTICAL_MODEL]:
         optical_data = simulation_result_data['optical_forward_model_output']

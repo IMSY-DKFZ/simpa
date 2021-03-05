@@ -133,21 +133,26 @@ def simulate(settings):
 
 
 def extract_field_of_view(settings, volume_path, optical_path, acoustic_path):
+    wavelength = str(settings[Tags.WAVELENGTH])
     if volume_path is not None:
         volume_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], volume_path)
         sizes = np.shape(volume_data[Tags.PROPERTY_ABSORPTION_PER_CM])
         for key, value in volume_data.items():
-            if np.shape(value) == sizes:
-                volume_data[key] = value[:, int(sizes[1] / 2), :]
+            if key in [Tags.PROPERTY_ABSORPTION_PER_CM, Tags.PROPERTY_SCATTERING_PER_CM, Tags.PROPERTY_ANISOTROPY]:
+                if np.shape(value[wavelength]) == sizes:
+                    volume_data[key][wavelength] = value[:, int(sizes[1] / 2), :]
+            else:
+                if np.shape(value) == sizes:
+                    volume_data[key] = value[:, int(sizes[1] / 2), :]
 
         save_hdf5(volume_data, settings[Tags.SIMPA_OUTPUT_PATH], volume_path)
 
     if optical_path is not None:
         optical_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-        fluence = optical_data['fluence']
+        fluence = optical_data['fluence'][wavelength]
         sizes = np.shape(fluence)
-        optical_data["fluence"] = fluence[:, int(sizes[1] / 2), :]
-        optical_data['initial_pressure'] = optical_data['initial_pressure'][:, int(sizes[1] / 2), :]
+        optical_data["fluence"][wavelength] = fluence[:, int(sizes[1] / 2), :]
+        optical_data['initial_pressure'][wavelength] = optical_data['initial_pressure'][wavelength][:, int(sizes[1] / 2), :]
 
         save_hdf5(optical_data, settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 

@@ -77,7 +77,10 @@ def run_volume_creation(global_settings: Settings):
     volumes = volume_creator_adapter.create_simulation_volume(global_settings)
     save_volumes = dict()
     for key, value in volumes.items():
-        save_volumes[key] = {global_settings[Tags.WAVELENGTH]: value}
+        if key in [Tags.PROPERTY_ABSORPTION_PER_CM, Tags.PROPERTY_SCATTERING_PER_CM, Tags.PROPERTY_ANISOTROPY]:
+            save_volumes[key] = {global_settings[Tags.WAVELENGTH]: value}
+        else:
+            save_volumes[key] = value
 
     volume_path = generate_dict_path(Tags.SIMULATION_PROPERTIES, global_settings[Tags.WAVELENGTH])
     save_hdf5(save_volumes, global_settings[Tags.SIMPA_OUTPUT_PATH], file_dictionary_path=volume_path)

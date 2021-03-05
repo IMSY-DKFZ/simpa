@@ -54,7 +54,7 @@ def run_optical_forward_model(settings):
 
     optical_properties = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_properties_path)
     absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(settings[Tags.WAVELENGTH])]
-    gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER][str(settings[Tags.WAVELENGTH])]
+    gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
     initial_pressure = absorption * fluence
 
     if Tags.PERFORM_UPSAMPLING not in settings or settings[Tags.PERFORM_UPSAMPLING] is False:
