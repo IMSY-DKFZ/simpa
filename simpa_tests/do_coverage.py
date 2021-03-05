@@ -27,6 +27,11 @@ cov = Coverage(source=['simpa'])
 cov.start()
 
 test_classes = ["simpa_tests.framework_tests.structure_tests.TestLayers",
+                "simpa_tests.framework_tests.structure_tests.TestBoxes",
+                "simpa_tests.framework_tests.structure_tests.TestEllipticalTubes",
+                "simpa_tests.framework_tests.structure_tests.TestParallelEpipeds",
+                "simpa_tests.framework_tests.structure_tests.TestSpheres",
+                "simpa_tests.framework_tests.structure_tests.TestTubes",
                 "simpa_tests.framework_tests.TestPipeline",
                 "simpa_tests.framework_tests.TestCreateAVolume",
                 "simpa_tests.framework_tests.TestCreateSettings",
