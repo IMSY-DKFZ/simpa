@@ -673,6 +673,12 @@ class Tags:
     Usage: module image_reconstruction, naming convention
     """
 
+    RECONSTRUCTION_ALGORITHM_PYTORCH_DAS = "PyTorch_DAS"
+    """
+    Corresponds to the reconstruction algorithm DAS with the PyTorchDASAdapter.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     """
     Corresponds to the reconstruction algorithm Time Reversal with TimeReversalAdapter.\n
@@ -725,6 +731,43 @@ class Tags:
     """
     Corresponds to the Hilbert transform as the B-Mode method used in the Mitk Beamforming.\n
     Usage: adapter MitkBeamformingAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_METHOD = ("reconstruction_apodization_method", str)
+    """
+    Choice of the apodization method used, i.e. window functions .\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    RECONSTRUCTION_APODIZATION_BOX = "BoxApodization"
+    """
+    Corresponds to the box window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_HANN = "HannApodization"
+    """
+    Corresponds to the Hann window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_HAMMING = "HammingApodization"
+    """
+    Corresponds to the Hamming window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_PERFORM_BANDPASS_FILTERING = ("reconstruction_perform_bandpass_filtering",
+                                    (bool, np.bool, np.bool_))
+    """
+    Whether bandpass filtering should be applied or not. Default should be True\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float, np.float))
+    """
+    Sets alpha value of Tukey window. Default should be 0.5\n
+    Usage: adapter PyTorchDASAdapter
     """
 
     RECONSTRUCTED_DATA = "reconstructed_data"
@@ -1116,12 +1159,6 @@ class Tags:
     RECTANGULAR_CUBOID_STRUCTURE = "RectangularCuboidStructure"
     """
     Corresponds to the RectangularCuboidStructure in the structure_library.\n
-    Usage: module volume_creation, naming_convention
-    """
-
-    VESSEL_STRUCTURE = "VesselStructure"
-    """
-    Corresponds to the VesselStructure in the structure_library.\n
     Usage: module volume_creation, naming_convention
     """
 

@@ -25,6 +25,9 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
 from simpa_examples.access_saved_PAI_data import visualise_data
+from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.io_handling import load_hdf5
+from simpa.utils.libraries.structure_library import HorizontalLayerStructure
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
@@ -151,7 +154,7 @@ settings = {
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
 
     Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
-    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
+    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS
 }
 settings = Settings(settings)
 # global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
