@@ -47,18 +47,19 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         Photoacoustic Imaging", https://doi.org/10.3390/jimaging4100121
         """
 
-        # check for B-mode methods and envelope detection straight away
-        if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
-            if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
-                # perform envelope detection using hilbert transform
-                hilbert_transformed = hilbert(time_series_sensor_data, axis=1)
-                time_series_sensor_data = np.abs(hilbert_transformed)
+        # check for B-mode methods and perform envelope detection on time series data if specified
+        if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in settings and settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION]:
+            if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
+                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
+                    # perform envelope detection using hilbert transform
+                    hilbert_transformed = hilbert(time_series_sensor_data, axis=1)
+                    time_series_sensor_data = np.abs(hilbert_transformed)
 
-            if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
-                # perform envelope detection using absolute value
-                time_series_sensor_data = np.abs(time_series_sensor_data)
-        else:
-            print("You have not specified a B-mode method")
+                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
+                    # perform envelope detection using absolute value
+                    time_series_sensor_data = np.abs(time_series_sensor_data)
+            else:
+                print("You have not specified a B-mode method")
 
         ### INPUT CHECKING AND VALIDATION ###
         # check settings dictionary for elements and read them in
@@ -221,6 +222,21 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         torch.divide(sum, counter, out=output)
 
         reconstructed = np.flipud(output.cpu().numpy())
+
+        # check for B-mode methods and perform envelope detection on beamformed image if specified
+        if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in settings and settings[
+            Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:
+            if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
+                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
+                    # perform envelope detection using hilbert transform
+                    hilbert_transformed = hilbert(reconstructed, axis=1)
+                    reconstructed = np.abs(hilbert_transformed)
+
+                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
+                    # perform envelope detection using absolute value
+                    reconstructed = np.abs(reconstructed)
+            else:
+                print("You have not specified a B-mode method")
 
         return reconstructed
 
