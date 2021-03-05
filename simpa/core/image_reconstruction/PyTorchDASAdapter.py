@@ -123,6 +123,33 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         ### ALGORITHM ITSELF ###
 
+        # check reconstruction mode - pressure by default
+        if Tags.RECONSTRUCTION_MODE in settings:
+            mode = settings[Tags.RECONSTRUCTION_MODE]
+        else:
+            mode = Tags.RECONSTRUCTION_MODE_PRESSURE
+
+        # depending on mode use pressure data or its derivative
+        if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL:
+            zero = torch.zeros([1], names=None).to(device)
+            time_vector = torch.arange(0, time_series_sensor_data.shape[1] * (time_spacing_in_ms/1000), (time_spacing_in_ms/1000)).to(device)
+            differential = torch.zeros_like(time_series_sensor_data, device=device)
+            for det_idx in range(time_series_sensor_data.shape[0]):
+                time_series_pressure_of_detection_element = time_series_sensor_data[det_idx,:]
+                time_derivative_pressure = (time_series_pressure_of_detection_element[1:] -
+                                            time_series_pressure_of_detection_element[0:-1])
+                time_derivative_pressure = torch.cat([time_derivative_pressure, zero])
+                time_derivative_pressure = torch.mul(time_derivative_pressure, 1 / (time_spacing_in_ms/1000))
+                time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
+                differential[det_idx,:] = time_derivative_pressure
+            time_series_sensor_data = differential
+        elif mode == Tags.RECONSTRUCTION_MODE_PRESSURE:
+            pass  # already in pressure format
+        else:
+            raise AttributeError(
+                "An invalid reconstruction mode was set, only differential and pressure are supported.")
+
+
         # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
@@ -131,8 +158,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             frequencies = np.fft.fftfreq(time_series_sensor_data.shape[1], d=time_spacing_in_ms/1000)
             cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(8e6)
             cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(0.1e6)
-            print(cutoff_highpass, cutoff_lowpass)
-            print(frequencies)
+
             if cutoff_highpass > cutoff_lowpass:
                 raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
             # find closest indices for frequencies
