@@ -22,7 +22,7 @@
 
 from simpa.utils import Tags, SaveFilePaths
 from simpa.core.noise_simulation import GaussianNoiseModel
-from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5, load_data_field
+from simpa.io_handling.io_hdf5 import save_hdf5, load_data_field
 
 
 def apply_noise_model_to_time_series_data(settings, acoustic_model_result_path):

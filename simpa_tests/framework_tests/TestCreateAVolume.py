@@ -56,13 +56,11 @@ class TestCreateVolume(unittest.TestCase):
         print("Simulating ", random_seed)
         settings = Settings(settings)
         settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
-        output = simulate(settings)
+        simulate(settings)
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
            os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
             # Delete the created file
             os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
 
-        for item in output:
-            print(item)
         print("Simulating ", random_seed, "[Done]")

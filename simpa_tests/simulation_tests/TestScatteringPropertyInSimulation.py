@@ -157,7 +157,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         """
         self.perform_test(20, 0, np.e ** 2, 1)
 
-    def perform_test(self, distance=10, volume_idx=0, decay_ratio=np.e, volume_value=1.0):
+    def perform_test(self, distance=10, volume_idx: (int, list) = 0, decay_ratio=np.e, volume_value=1.0):
 
         # Define the volume of the thin slab
 
@@ -183,9 +183,9 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.assertDecayRatio(expected_decay_ratio=decay_ratio)
 
     def assertDecayRatio(self, expected_decay_ratio=np.e):
-        optical_path = run_optical_forward_model(self.settings)
-        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_FLUENCE, self.settings[Tags.WAVELENGTH])
-        absorption = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM, self.settings[Tags.WAVELENGTH])
+        run_optical_forward_model(self.settings)
+        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_FLUENCE,
+                                  self.settings[Tags.WAVELENGTH])
         half_dim = int(self.xy_dim / 2) - 1
         decay_ratio = np.sum(fluence[half_dim, half_dim, 10]) / np.sum(fluence[half_dim, half_dim, 90])
         print(np.sum(fluence[half_dim, half_dim, 10]))

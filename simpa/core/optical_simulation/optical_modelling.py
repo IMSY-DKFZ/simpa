@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags, SaveFilePaths
+from simpa.utils import Tags
 from simpa.core.optical_simulation.mcx_adapter import McxAdapter
 from simpa.core.optical_simulation.mcxyz_adapter import McxyzAdapter
 from simpa.core.optical_simulation.test_optical_adapter import TestOpticalAdapter

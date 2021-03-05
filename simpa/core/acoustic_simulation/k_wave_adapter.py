@@ -196,8 +196,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
                 if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
                                                                Tags.RECONSTRUCTION_ALGORITHM_DAS,
                                                                Tags.RECONSTRUCTION_ALGORITHM_DMAS,
-                                                               Tags.RECONSTRUCTION_ALGORITHM_SDMAS,
-                                                               Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION]:
+                                                               Tags.RECONSTRUCTION_ALGORITHM_SDMAS]:
                     raw_time_series_data = np.average(raw_time_series_data, axis=1)
 
         settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])

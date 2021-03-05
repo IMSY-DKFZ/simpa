@@ -28,10 +28,10 @@ from simpa_examples.access_saved_PAI_data import visualise_data
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/save/"
-MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
-MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
-ACOUSTIC_MODEL_SCRIPT = "C:/simpa/simpa/core/acoustic_simulation"
+SAVE_PATH = "path/to/save/folder"
+MCX_BINARY_PATH = "/path/to/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
+MATLAB_PATH = "/path/to/matlab.exe"
+ACOUSTIC_MODEL_SCRIPT = "path/to/simpa/core/acoustic_simulation"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20

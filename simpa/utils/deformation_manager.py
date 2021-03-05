@@ -96,15 +96,15 @@ if __name__ == "__main__":
                                            filter_sigma=1, cosine_scaling_factor=4)
     functional = get_functional_from_deformation_settings(settings)
 
-    x_positions_vector = np.linspace(x_bounds[0], x_bounds[1], 100)
-    y_positions_vector = np.linspace(y_bounds[0], y_bounds[1], 100)
+    x_pos_vector = np.linspace(x_bounds[0], x_bounds[1], 100)
+    y_pos_vector = np.linspace(y_bounds[0], y_bounds[1], 100)
 
-    xx, yy = np.meshgrid(x_positions_vector, y_positions_vector, indexing='ij')
+    _xx, _yy = np.meshgrid(x_pos_vector, y_pos_vector, indexing='ij')
 
-    values = functional(x_positions_vector, y_positions_vector)
+    values = functional(x_pos_vector, y_pos_vector)
     max_elevation = -np.min(values)
 
     plt3d = plt.figure().gca(projection='3d')
-    plt3d.plot_surface(xx, yy, values, cmap="viridis")
+    plt3d.plot_surface(_xx, _yy, values, cmap="viridis")
     plt3d.set_zlim(-max_elevation, 0)
     plt.show()

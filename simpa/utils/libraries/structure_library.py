@@ -23,7 +23,7 @@
 from abc import abstractmethod
 from simpa.utils.settings_generator import Settings
 from simpa.utils.tissue_properties import TissueProperties
-from simpa.utils import Tags, SegmentationClasses
+from simpa.utils import Tags
 from simpa.utils.calculate import rotation
 import operator
 from simpa.utils.libraries.molecule_library import MolecularComposition
@@ -55,7 +55,7 @@ class Structures:
                 structure_class = globals()[single_structure_settings[Tags.STRUCTURE_TYPE]]
                 structure = structure_class(global_settings, single_structure_settings)
                 structures.append(structure)
-            except Exception as e:
+            except Exception:
                 print("An exception has occurred while trying to parse ", single_structure_settings[Tags.STRUCTURE_TYPE]," from the dictionary.")
                 print("The structure type was", single_structure_settings[Tags.STRUCTURE_TYPE])
                 print(traceback.format_exc())
@@ -783,68 +783,70 @@ class VesselStructure(GeometricalStructure):
     def fill_internal_volume(self):
         self.geometrical_volume = self.get_enclosed_indices()
 
+    def calculate_vessel_samples(self, position, direction, bifurcation_length, radius, radius_variation,
+                                 volume_dimensions, curvature_factor):
+        position_array = [position]
+        radius_array = [radius]
+        samples = 0
+
+        while np.all(position < volume_dimensions) and np.all(0 <= position):
+            if samples >= bifurcation_length:
+                vessel_branch_positions1 = position
+                vessel_branch_positions2 = position
+                angles = np.random.normal(np.pi / 16, np.pi / 8, 3)
+                vessel_branch_directions1 = np.squeeze(np.array(np.matmul(rotation(angles), direction)))
+                vessel_branch_directions2 = np.squeeze(np.array(np.matmul(rotation(-angles), direction)))
+                vessel_branch_radius1 = 1 / np.sqrt(2) * radius
+                vessel_branch_radius2 = 1 / np.sqrt(2) * radius
+                vessel_branch_radius_variation1 = 1 / np.sqrt(2) * radius_variation
+                vessel_branch_radius_variation2 = 1 / np.sqrt(2) * radius_variation
+
+                if vessel_branch_radius1 >= 0.5:
+                    vessel1_pos, vessel1_rad = self.calculate_vessel_samples(vessel_branch_positions1,
+                                                                             vessel_branch_directions1,
+                                                                             bifurcation_length,
+                                                                             vessel_branch_radius1,
+                                                                             vessel_branch_radius_variation1,
+                                                                             volume_dimensions, curvature_factor)
+                    position_array += vessel1_pos
+                    radius_array += vessel1_rad
+
+                if vessel_branch_radius2 >= 0.5:
+                    vessel2_pos, vessel2_rad = self.calculate_vessel_samples(vessel_branch_positions2,
+                                                                             vessel_branch_directions2,
+                                                                             bifurcation_length,
+                                                                             vessel_branch_radius2,
+                                                                             vessel_branch_radius_variation2,
+                                                                             volume_dimensions, curvature_factor)
+                    position_array += vessel2_pos
+                    radius_array += vessel2_rad
+                break
+
+            position = np.add(position, direction)
+            position_array.append(position)
+            radius_array.append(np.random.uniform(-1, 1) * radius_variation + radius)
+
+            step_vector = np.random.uniform(-1, 1, 3)
+            step_vector = direction + curvature_factor * step_vector
+            direction = step_vector / np.linalg.norm(step_vector)
+            samples += 1
+
+        return position_array, radius_array
+
     def get_enclosed_indices(self):
-        start_mm, radius_mm, direction_mm, bifurcation_length_mm, curvature_factor, radius_variation_factor, \
-        partial_volume = self.params
+        start_mm, radius_mm, direction_mm, bifurcation_length_mm, curvature_factor, \
+            radius_variation_factor, partial_volume = self.params
         start_voxels = start_mm / self.voxel_spacing
         radius_voxels = radius_mm / self.voxel_spacing
         direction_voxels = direction_mm / self.voxel_spacing
         direction_vector_voxels = direction_voxels / np.linalg.norm(direction_voxels)
         bifurcation_length_voxels = bifurcation_length_mm / self.voxel_spacing
 
-        def calculate_vessel_samples(position, direction, bifurcation_length, radius, radius_variation,
-                                     volume_dimensions):
-            position_array = [position]
-            radius_array = [radius]
-            samples = 0
-
-            while np.all(position < volume_dimensions) and np.all(0 <= position):
-                if samples >= bifurcation_length:
-                    vessel_branch_positions1 = position
-                    vessel_branch_positions2 = position
-                    angles = np.random.normal(np.pi / 16, np.pi / 8, 3)
-                    vessel_branch_directions1 = np.squeeze(np.array(np.matmul(rotation(angles), direction)))
-                    vessel_branch_directions2 = np.squeeze(np.array(np.matmul(rotation(-angles), direction)))
-                    vessel_branch_radius1 = 1 / np.sqrt(2) * radius
-                    vessel_branch_radius2 = 1 / np.sqrt(2) * radius
-                    vessel_branch_radius_variation1 = 1 / np.sqrt(2) * radius_variation
-                    vessel_branch_radius_variation2 = 1 / np.sqrt(2) * radius_variation
-
-                    if vessel_branch_radius1 >= 0.5:
-                        vessel1_pos, vessel1_rad = calculate_vessel_samples(vessel_branch_positions1,
-                                                                            vessel_branch_directions1,
-                                                                            bifurcation_length,
-                                                                            vessel_branch_radius1,
-                                                                            vessel_branch_radius_variation1,
-                                                                            volume_dimensions)
-                        position_array += vessel1_pos
-                        radius_array += vessel1_rad
-
-                    if vessel_branch_radius2 >= 0.5:
-                        vessel2_pos, vessel2_rad = calculate_vessel_samples(vessel_branch_positions2,
-                                                                            vessel_branch_directions2,
-                                                                            bifurcation_length,
-                                                                            vessel_branch_radius2,
-                                                                            vessel_branch_radius_variation2,
-                                                                            volume_dimensions)
-                        position_array += vessel2_pos
-                        radius_array += vessel2_rad
-                    break
-
-                position = np.add(position, direction)
-                position_array.append(position)
-                radius_array.append(np.random.uniform(-1, 1) * radius_variation + radius)
-
-                step_vector = np.random.uniform(-1, 1, 3)
-                step_vector = direction + curvature_factor * step_vector
-                direction = step_vector / np.linalg.norm(step_vector)
-                samples += 1
-
-            return position_array, radius_array
-
-        position_array, radius_array = calculate_vessel_samples(start_voxels, direction_vector_voxels,
-                                                                bifurcation_length_voxels, radius_voxels,
-                                                                radius_variation_factor, self.volume_dimensions_voxels)
+        position_array, radius_array = self.calculate_vessel_samples(start_voxels, direction_vector_voxels,
+                                                                     bifurcation_length_voxels, radius_voxels,
+                                                                     radius_variation_factor,
+                                                                     self.volume_dimensions_voxels,
+                                                                     curvature_factor)
 
         position_array = np.array(position_array)
 
@@ -876,30 +878,28 @@ class VesselStructure(GeometricalStructure):
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    import matplotlib as mpl
     from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-    from simpa.utils.deformation_manager import create_deformation_settings
 
     import time
     timer = time.time()
 
-    global_settings = Settings()
-    global_settings[Tags.SPACING_MM] = 2
-    global_settings[Tags.DIM_VOLUME_X_MM] = 80
-    global_settings[Tags.DIM_VOLUME_Y_MM] = 90
-    global_settings[Tags.DIM_VOLUME_Z_MM] = 100
+    _global_settings = Settings()
+    _global_settings[Tags.SPACING_MM] = 2
+    _global_settings[Tags.DIM_VOLUME_X_MM] = 80
+    _global_settings[Tags.DIM_VOLUME_Y_MM] = 90
+    _global_settings[Tags.DIM_VOLUME_Z_MM] = 100
 
     structure_settings = Settings()
     structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     structure_settings[Tags.STRUCTURE_START_MM] = [50, 0, 50]
     structure_settings[Tags.STRUCTURE_DIRECTION] = [0, 1, 0]
     structure_settings[Tags.STRUCTURE_RADIUS_MM] = 4
-    structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.1
+    structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.2
     structure_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
-    structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 15
+    structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 10
     structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
-    vessel = VesselStructure(global_settings, structure_settings)
+    vessel = VesselStructure(_global_settings, structure_settings)
     vol1 = vessel.geometrical_volume
     print("generation of the vessel took", time.time() - timer)
     fig = plt.figure()

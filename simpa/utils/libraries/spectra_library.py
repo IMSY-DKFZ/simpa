@@ -22,7 +22,6 @@
 
 import numpy as np
 import matplotlib.pylab as plt
-from scipy.interpolate import interp1d
 
 
 class AbsorptionSpectrum(object):
