@@ -52,5 +52,7 @@ from simpa.utils.deformation_manager import get_functional_from_deformation_sett
 
 from simpa.utils.settings_generator import Settings
 
+from simpa.utils.dict_path_manager import generate_dict_path
+
 if __name__ == "__main__":
     view_absorption_spectra()

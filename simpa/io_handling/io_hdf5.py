@@ -101,7 +101,7 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
     if file_dictionary_path == "/":
         writing_mode = "w"
     else:
-        writing_mode = "r+"
+        writing_mode = "a"
 
     if isinstance(save_item, dict):
         with h5py.File(file_path, writing_mode) as h5file:
