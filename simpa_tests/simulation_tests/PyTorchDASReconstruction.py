@@ -39,10 +39,10 @@ class PyTorchDASReconstruction():
         """
         print("setUp")
 
-        SAVE_PATH = "/home/tom/dev/FP/simpa/simpa_examples"
-        MCX_BINARY_PATH = "../../simpa_examples/mcx"  # On Linux systems, the .exe at the end must be omitted.
-        MATLAB_PATH = "/usr/local/MATLAB/R2020b/bin/matlab"
-        ACOUSTIC_MODEL_SCRIPT = "/home/tom/dev/FP/simpa/simpa/core/acoustic_simulation"
+        SAVE_PATH = "D:/save/"
+        MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"  # On Linux systems, the .exe at the end must be omitted.
+        MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
+        ACOUSTIC_MODEL_SCRIPT = "C:/simpa/simpa/core/acoustic_simulation"
 
         self.VOLUME_TRANSDUCER_DIM_IN_MM = 75
         self.VOLUME_PLANAR_DIM_IN_MM = 20

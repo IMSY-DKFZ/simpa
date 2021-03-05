@@ -59,8 +59,8 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         If run on another pc, please adjust the SIMULATION_PATH and MCX_BINARY_PATH.
         """
 
-        SIMULATION_PATH = "/home/kris/Work/Data/Test"
-        MCX_BINARY_PATH = "/home/kris/Work/Repositories/MCX/probe_integration/bin/mcx"
+        SIMULATION_PATH = "/path/to/save/location"
+        MCX_BINARY_PATH = "/path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
         VOLUME_NAME = "TestVolume"
 
         print("setUp")

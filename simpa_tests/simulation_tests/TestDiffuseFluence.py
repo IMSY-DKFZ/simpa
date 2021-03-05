@@ -37,15 +37,20 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         If run on another pc, please adjust the SIMULATION_PATH and MODEL_BINARY_PATH fields.
         :return:
         """
+
+        SIMULATION_PATH = "/path/to/save/location"
+        MCX_BINARY_PATH = "/path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
+        VOLUME_NAME = "TestVolume"
+
         print("setUp")
         self.settings = {
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
-            Tags.VOLUME_NAME: "homogeneous_cube",
-            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test/simpa_tests",
+            Tags.VOLUME_NAME: VOLUME_NAME,
+            Tags.SIMULATION_PATH: SIMULATION_PATH,
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx",
+            Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 1,
             Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
