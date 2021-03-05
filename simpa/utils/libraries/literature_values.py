@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -227,6 +227,8 @@ class OpticalTissueProperties:
     # }
     BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE = 0.01  # Value of arterial bvf at t0 in fig 3.
 
+    BLOOD_PLASMA_FRACTION = 0.55    # This value seems to be widely accepted.
+
     # Mean and spread calculated from europeans from figure 2C, averaged over both
     # photoexposed and photoprotected simpa_examples.
     # @article{alaluf2002ethnic,
@@ -243,6 +245,20 @@ class OpticalTissueProperties:
 
     MELANIN_VOLUME_FRACTION_MEAN = 0.011
     MELANIN_VOLUME_FRACTION_STD = 0.003
+
+    # Approximated mean of figure 3
+    # @inproceedings{antunes2019optical,
+    #   title = {Optical Properties on Bone Analysis: An Approach to Biomaterials},
+    #   author = {Antunes, Andrea and Pontes, Jos{\'e} HL and Monte, Adamo FG and Barbosa, Alcimar and Ferreira,
+    # Nuno MF},
+    #   booktitle = {Multidisciplinary Digital Publishing Institute Proceedings},
+    #   volume = {27},
+    #   number = {1},
+    #   pages = {36},
+    #   year = {2019}
+    # }
+
+    BONE_ABSORPTION = 1.8
 
 
 class MorphologicalTissueProperties:

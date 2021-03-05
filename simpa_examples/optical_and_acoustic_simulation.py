@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -24,18 +24,23 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
-from simpa.utils.libraries.structure_library import HorizontalLayerStructure
+from simpa_examples.access_saved_PAI_data import visualise_data
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
 SAVE_PATH = "D:/save/"
-MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"
+MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
+MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
+ACOUSTIC_MODEL_SCRIPT = "C:/simpa/simpa/core/acoustic_simulation"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.15
+SPACING = 0.5
 RANDOM_SEED = 4711
+
+# If VISUALIZE is set to True, the simulation result will be plotted
+VISUALIZE = True
 
 
 def create_example_tissue():
@@ -88,11 +93,12 @@ def create_example_tissue():
 # is generated with the same random seed every time.
 
 np.random.seed(RANDOM_SEED)
+VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 
 settings = {
     # These parameters set the general propeties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
-    Tags.VOLUME_NAME: "CompletePipelineTestMSOT_"+str(RANDOM_SEED),
+    Tags.VOLUME_NAME: VOLUME_NAME,
     Tags.SIMULATION_PATH: SAVE_PATH,
     Tags.SPACING_MM: SPACING,
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
@@ -123,8 +129,9 @@ settings = {
     Tags.RUN_ACOUSTIC_MODEL: True,
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
-    Tags.ACOUSTIC_MODEL_BINARY_PATH: "C:/Program Files/MATLAB/R2020b/bin/matlab.exe",
-    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: "C:/simpa/simpa/core/acoustic_simulation",
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
+    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
+    Tags.ACOUSTIC_SIMULATION_3D: True,
     Tags.GPU: True,
 
     Tags.PROPERTY_ALPHA_POWER: 1.05,
@@ -141,7 +148,7 @@ settings = {
     Tags.ACOUSTIC_LOG_SCALE: True,
 
     Tags.APPLY_NOISE_MODEL: False,
-    Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
+    Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
 
     Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
     Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
@@ -157,3 +164,15 @@ timer = time.time()
 simulate(settings)
 print("Needed", time.time()-timer, "seconds")
 print("Simulating ", RANDOM_SEED, "[Done]")
+
+if Tags.WAVELENGTH in settings:
+    WAVELENGTH = settings[Tags.WAVELENGTH]
+else:
+    WAVELENGTH = 700
+
+if VISUALIZE:
+    visualise_data(SAVE_PATH + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
+                   show_time_series_data=True,
+                   show_tissue_density=True,
+                   show_reconstructed_data=True,
+                   show_fluence=True)

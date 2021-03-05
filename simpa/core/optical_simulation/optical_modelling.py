@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -48,15 +48,13 @@ def run_optical_forward_model(settings):
     elif model == Tags.OPTICAL_MODEL_TEST:
         forward_model_implementation = TestOpticalAdapter()
 
-    optical_properties_path = generate_dict_path(settings, data_field=Tags.SIMULATION_PROPERTIES,
-                                                 wavelength=settings[Tags.WAVELENGTH],
-                                                 upsampled_data=False)
+    optical_properties_path = generate_dict_path(Tags.SIMULATION_PROPERTIES, wavelength=settings[Tags.WAVELENGTH])
 
     fluence = forward_model_implementation.simulate(optical_properties_path, settings)
 
     optical_properties = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_properties_path)
-    absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
-    gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+    absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(settings[Tags.WAVELENGTH])]
+    gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER][str(settings[Tags.WAVELENGTH])]
     initial_pressure = absorption * fluence
 
     if Tags.PERFORM_UPSAMPLING not in settings or settings[Tags.PERFORM_UPSAMPLING] is False:
@@ -73,13 +71,14 @@ def run_optical_forward_model(settings):
     else:
         units = Tags.UNITS_ARBITRARY
 
-    optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.\
-        format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
+    optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
 
-    save_hdf5({Tags.OPTICAL_MODEL_FLUENCE: fluence,
-               Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
-               Tags.OPTICAL_MODEL_UNITS: units},
-              settings[Tags.SIMPA_OUTPUT_PATH],
-              optical_output_path)
+    optical_output = {
+        Tags.OPTICAL_MODEL_FLUENCE: {settings[Tags.WAVELENGTH]: fluence},
+        Tags.OPTICAL_MODEL_INITIAL_PRESSURE: {settings[Tags.WAVELENGTH]: initial_pressure},
+        Tags.OPTICAL_MODEL_UNITS: {settings[Tags.WAVELENGTH]: units}
+    }
+
+    save_hdf5(optical_output, settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
 
     return optical_output_path

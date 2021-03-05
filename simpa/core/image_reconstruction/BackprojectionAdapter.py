@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -53,9 +53,10 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         time_series_sensor_data = np.swapaxes(time_series_sensor_data, 0, 1)
 
-        acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
-                                                wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
-        sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[Tags.PROPERTY_SPEED_OF_SOUND]
+        wavelength = str(settings[Tags.WAVELENGTH])
+
+        speed_of_sound_data_path = generate_dict_path(Tags.PROPERTY_SPEED_OF_SOUND, settings[Tags.WAVELENGTH])
+        sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], speed_of_sound_data_path)[wavelength]
         sound_speed_m = np.mean(sound_speed_m)
 
         target_dim_m = np.asarray([settings[Tags.DIM_VOLUME_X_MM]/1000, settings[Tags.DIM_VOLUME_Y_MM]/1000,
@@ -81,12 +82,6 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
         device.adjust_simulation_volume_and_settings(settings)
 
         sensor_positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings) / 1000
-
-        print("SOS:", sound_speed_m)
-        print("Target dimensions:", target_dim_m)
-        print("Sensor positions:", np.shape(sensor_positions))
-        print("Target resolution:", resolution_m)
-        print("Sampling frequency:", sampling_frequency)
 
         return self.backprojection3D_torch(time_series_sensor_data, speed_of_sound_m=sound_speed_m,
                                            target_dim_m=target_dim_m, resolution_m=resolution_m,
@@ -119,8 +114,6 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         time_series_data = torch.from_numpy(time_series_data.copy()).float().to(device)
 
-        print(np.shape(time_series_data))
-
         target_dim_m = torch.from_numpy(target_dim_m.copy()).float().to(device)
         sensor_positions_m = torch.from_numpy(sensor_positions_m.copy()).float().to(device)
 
@@ -128,16 +121,16 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
         num_samples = time_series_data.shape[0]
         time_per_sample_s = 1 / sampling_frequency_Hz
 
-        time_vector = torch.arange(0, num_samples * time_per_sample_s, time_per_sample_s).to(device)
+        time_vector = torch.linspace(0, num_samples * time_per_sample_s, num_samples).to(device)
         target_dim_voxels = torch.round(torch.true_divide(target_dim_m, resolution_m)).int().to(device)
 
         sizeT = len(time_vector)
         back_projection = torch.zeros(*target_dim_voxels, names=None).float().to(device)
 
-        edges_m = torch.true_divide(target_dim_voxels, 2) * resolution_m
-        gridsizes_x = torch.linspace(-edges_m[0], edges_m[0], target_dim_voxels[0])
-        gridsizes_y = torch.linspace(-edges_m[1], edges_m[1], target_dim_voxels[1])
-        gridsizes_z = torch.linspace(-edges_m[2], edges_m[2], target_dim_voxels[2])
+        edges_m = target_dim_voxels * resolution_m
+        gridsizes_x = torch.linspace(0, edges_m[0], target_dim_voxels[0])
+        gridsizes_y = torch.linspace(0, edges_m[1], target_dim_voxels[1])
+        gridsizes_z = torch.linspace(0, edges_m[2], target_dim_voxels[2])
         gridsizes = [gridsizes_x, gridsizes_y, gridsizes_z]
 
         zero = torch.zeros([1], names=None).to(device)
