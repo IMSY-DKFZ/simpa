@@ -53,9 +53,10 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         time_series_sensor_data = np.swapaxes(time_series_sensor_data, 0, 1)
 
-        acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
-                                                wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
-        sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[Tags.PROPERTY_SPEED_OF_SOUND]
+        wavelength = str(settings[Tags.WAVELENGTH])
+
+        speed_of_sound_data_path = generate_dict_path(Tags.PROPERTY_SPEED_OF_SOUND, settings[Tags.WAVELENGTH])
+        sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], speed_of_sound_data_path)[wavelength]
         sound_speed_m = np.mean(sound_speed_m)
 
         target_dim_m = np.asarray([settings[Tags.DIM_VOLUME_X_MM]/1000, settings[Tags.DIM_VOLUME_Y_MM]/1000,
@@ -120,7 +121,7 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
         num_samples = time_series_data.shape[0]
         time_per_sample_s = 1 / sampling_frequency_Hz
 
-        time_vector = torch.arange(0, num_samples * time_per_sample_s, time_per_sample_s).to(device)
+        time_vector = torch.linspace(0, num_samples * time_per_sample_s, num_samples).to(device)
         target_dim_voxels = torch.round(torch.true_divide(target_dim_m, resolution_m)).int().to(device)
 
         sizeT = len(time_vector)
@@ -135,7 +136,6 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
         zero = torch.zeros([1], names=None).to(device)
         mesh = torch.zeros([3, len(gridsizes[0]), len(gridsizes[1]), len(gridsizes[2])], names=None).to(device)
         torch.stack(torch.meshgrid(*gridsizes), out=mesh)
-        mesh_cpu = mesh.cpu().numpy()
 
         for det_idx in range(num_detectors):
             print(det_idx, "/", num_detectors)
