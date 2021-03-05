@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -37,12 +37,14 @@ from simpa.utils.settings_generator import Settings
 class PyTorchDASAdapter(ReconstructionAdapterBase):
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
         """
-        Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the first dimension corresponds to the sensor elements
-        and the second to the recorded time steps) with the given beamforming settings (dictionary).
+        Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
+        first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
+        beamforming settings (dictionary).
         A reconstructed image (2D numpy array) is returned.
         This implementation uses PyTorch Tensors to perform computations and is able to run on GPUs.
 
-        [1] T. Kirchner et al. 2018, "Signed Real-Time Delay Multiply and Sum Beamformingfor Multispectral Photoacoustic Imaging", https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwi3hZjA48jtAhUM6OAKHWK-BuAQFjAAegQIBxAC&url=https%3A%2F%2Fwww.mdpi.com%2F2313-433X%2F4%2F10%2F121%2Fpdf&usg=AOvVaw3CCZEt7L_xoUbWvlW1Ljx5
+        [1] T. Kirchner et al. 2018, "Signed Real-Time Delay Multiply and Sum Beamforming for Multispectral
+        Photoacoustic Imaging", https://doi.org/10.3390/jimaging4100121
         """
 
         # check for B-mode methods and envelope detection straight away
@@ -61,15 +63,14 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         ### INPUT CHECKING AND VALIDATION ###
         # check settings dictionary for elements and read them in
 
-        # speed of sound: use average from simulation if specified, otherwise use given speed of sound
-        if Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
-            acoustic_data_path = generate_dict_path(settings, Tags.PROPERTY_SPEED_OF_SOUND,
-                                                    wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
+        # speed of sound: use given speed of sound, otherwise use average from simulation if specified
+        if Tags.PROPERTY_SPEED_OF_SOUND in settings and settings[Tags.PROPERTY_SPEED_OF_SOUND]:
+            speed_of_sound_in_m_per_s = settings[Tags.PROPERTY_SPEED_OF_SOUND]
+        elif Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
+            acoustic_data_path = generate_dict_path(Tags.PROPERTY_SPEED_OF_SOUND, wavelength=settings[Tags.WAVELENGTH])
             sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[
                 Tags.PROPERTY_SPEED_OF_SOUND]
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
-        elif Tags.PROPERTY_SPEED_OF_SOUND in settings and settings[Tags.PROPERTY_SPEED_OF_SOUND]:
-            speed_of_sound_in_m_per_s = settings[Tags.PROPERTY_SPEED_OF_SOUND]
         else:
             raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND or WAVELENGTH to obtain the average speed of sound")
 
