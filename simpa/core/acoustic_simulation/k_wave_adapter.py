@@ -91,9 +91,9 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         else:
             axes = (0, 2)
         wavelength = str(settings[Tags.WAVELENGTH])
-        data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND][wavelength], 3, axes=axes)
-        data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY][wavelength], 3, axes=axes)
-        data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF][wavelength], 3, axes=axes)
+        data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3, axes=axes)
+        data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3, axes=axes)
+        data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
         data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(
             np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength], axes=axes))
         data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(

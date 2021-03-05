@@ -23,7 +23,7 @@
 from simpa.utils import Tags
 from simpa.core.image_reconstruction import ReconstructionAdapterBase
 from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.io_handling.io_hdf5 import load_hdf5
+from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import torch
@@ -67,9 +67,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         if Tags.PROPERTY_SPEED_OF_SOUND in settings and settings[Tags.PROPERTY_SPEED_OF_SOUND]:
             speed_of_sound_in_m_per_s = settings[Tags.PROPERTY_SPEED_OF_SOUND]
         elif Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
-            acoustic_data_path = generate_dict_path(Tags.PROPERTY_SPEED_OF_SOUND, wavelength=settings[Tags.WAVELENGTH])
-            sound_speed_m = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_data_path)[
-                Tags.PROPERTY_SPEED_OF_SOUND]
+            sound_speed_m = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
         else:
             raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND or WAVELENGTH to obtain the average speed of sound")

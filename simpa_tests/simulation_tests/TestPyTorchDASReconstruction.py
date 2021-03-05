@@ -27,7 +27,7 @@ import os
 import matplotlib.pyplot as plt
 from simpa.utils.settings_generator import Settings
 from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.io_handling import load_hdf5
+from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.simulation import simulate
 
 
@@ -48,7 +48,7 @@ class TestPyTorchDASReconstruction(unittest.TestCase):
         self.VOLUME_TRANSDUCER_DIM_IN_MM = 75
         self.VOLUME_PLANAR_DIM_IN_MM = 20
         self.VOLUME_HEIGHT_IN_MM = 25
-        self.SPACING = 0.15
+        self.SPACING = 0.3 #15
         self.RANDOM_SEED = 4711
         np.random.seed(self.RANDOM_SEED)
 
@@ -101,13 +101,13 @@ class TestPyTorchDASReconstruction(unittest.TestCase):
 
             Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
-            Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: True,
+            Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
             Tags.TUKEY_WINDOW_ALPHA: 0.5,
             Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
             Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
-            Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+            #Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
-            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
+            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
         }
         self.settings = Settings(self.settings)
         np.random.seed(self.RANDOM_SEED)
@@ -126,28 +126,21 @@ class TestPyTorchDASReconstruction(unittest.TestCase):
         print("Simulating ", self.RANDOM_SEED, "[Done]")
 
         reconstructed_image_path = generate_dict_path(
-            self.settings,
             Tags.RECONSTRUCTED_DATA,
-            wavelength=self.settings[Tags.WAVELENGTH],
-            upsampled_data=True)
-
-        optical_data_path = generate_dict_path(self.settings, Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
-                                               wavelength=self.settings[Tags.WAVELENGTH],
-                                               upsampled_data=True)
+            wavelength=self.settings[Tags.WAVELENGTH])
 
         reconstructed_image = load_hdf5(
             self.settings[Tags.SIMPA_OUTPUT_PATH],
             reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
 
-        initial_pressure = load_hdf5(self.settings[Tags.SIMPA_OUTPUT_PATH], optical_data_path)[
-            Tags.OPTICAL_MODEL_INITIAL_PRESSURE]
+        initial_pressure = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=self.settings[Tags.WAVELENGTH])
 
         plt.subplot(1, 2, 1)
         plt.title("Reconstructed image")
-        plt.imshow(reconstructed_image)
+        plt.imshow(np.log10(np.abs(reconstructed_image)))
         plt.subplot(1, 2, 2)
         plt.title("Initial pressure")
-        plt.imshow(initial_pressure)
+        plt.imshow(np.log10(initial_pressure))
         plt.show()
 
     def create_example_tissue(self):
@@ -215,7 +208,7 @@ class TestPyTorchDASReconstruction(unittest.TestCase):
         tissue_dict = Settings()
         tissue_dict[Tags.BACKGROUND] = background_dictionary
         tissue_dict["muscle"] = muscle_dictionary
-        tissue_dict["epidermis"] = epidermis_dictionary
+        #tissue_dict["epidermis"] = epidermis_dictionary
         tissue_dict["vessel_1"] = vessel_1_dictionary
         tissue_dict["vessel_2"] = vessel_2_dictionary
         tissue_dict["vessel_3"] = vessel_3_dictionary
