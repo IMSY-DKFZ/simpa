@@ -25,7 +25,6 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.core.image_reconstruction.MitkBeamformingAdapter import MitkBeamformingAdapter
 from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
 from simpa.core.image_reconstruction.TestReconstructionAdapter import TestReconstructionAdapter
-from simpa.core.image_reconstruction.BackprojectionAdapter import BackprojectionAdapter
 from simpa.core.image_reconstruction.PyTorchDASAdapter import PyTorchDASAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5
 
@@ -61,10 +60,6 @@ def perform_reconstruction(settings: dict) -> str:
             Tags.
             RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TEST:
         reconstruction_method = TestReconstructionAdapter()
-    elif settings[
-            Tags.
-            RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION:
-        reconstruction_method = BackprojectionAdapter()
 
     reconstruction = reconstruction_method.simulate(settings)
 

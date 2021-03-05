@@ -691,12 +691,6 @@ class Tags:
     Usage: module image_reconstruction, naming convention
     """
 
-    RECONSTRUCTION_ALGORITHM_BACKPROJECTION = "backprojection"
-    """
-    Corresponds to the reconstruction algorithm Backprojection with BackprojectionAdapter.\n
-    Usage: module image_reconstruction, naming convention
-    """
-
     RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool, np.bool_))
     """
     If True, the Time Reversal reconstruction will commit the "inverse crime".\n

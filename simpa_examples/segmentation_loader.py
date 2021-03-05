@@ -23,9 +23,7 @@
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags, SegmentationClasses
-import nrrd
 import numpy as np
-from simpa.io_handling import load_hdf5
 from skimage.data import shepp_logan_phantom
 import matplotlib.pyplot as plt
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY

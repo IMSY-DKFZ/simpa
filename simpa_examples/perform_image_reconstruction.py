@@ -27,7 +27,6 @@ from simpa.utils import Tags
 from simpa.core.device_digital_twins.invision_device import InVision256TF
 from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
 import matplotlib.pyplot as plt
-from scipy.ndimage import gaussian_filter
 import numpy as np
 import time
 

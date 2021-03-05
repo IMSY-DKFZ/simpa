@@ -25,9 +25,6 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
 from simpa_examples.access_saved_PAI_data import visualise_data
-from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.io_handling import load_hdf5
-from simpa.utils.libraries.structure_library import HorizontalLayerStructure
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
@@ -147,14 +144,13 @@ settings = {
 
             Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
-            #Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/image_reconstruction/time_reversal_3D.m",
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
             Tags.TUKEY_WINDOW_ALPHA: 0.5,
             Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
             Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
-            #Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+            Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
-            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
+            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
         }
 settings = Settings(settings)
 np.random.seed(RANDOM_SEED)
