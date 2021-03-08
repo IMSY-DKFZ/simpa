@@ -1217,9 +1217,24 @@ class Tags:
     Usage: naming convention
     """
 
-    ZERO_LAYER_POSITION = "zero_layer_position"
+    SURFACE_LAYER_POSITION = "surface_layer_position"
     """
     Tag that holds the indices of the position where diffuse reflectance is stored in the fluence map. Those values are
     0 in volume after extracting the diffuse reflectance. 
+    Usage: naming convention
+    """
+
+    CUSTOM_VOLUMES = "custom_volumes"
+    """
+    Tag containing the custom dict of volumes used for simulations.
+    Usage: naming convention
+    """
+
+    MINIMUM_REQUIRED_VOLUMES = [PROPERTY_ABSORPTION_PER_CM,
+                                PROPERTY_SCATTERING_PER_CM,
+                                PROPERTY_ANISOTROPY,
+                                PROPERTY_GRUNEISEN_PARAMETER]
+    """
+    A list of minimal required definitions needed to simulate with custom defined volumes
     Usage: naming convention
     """

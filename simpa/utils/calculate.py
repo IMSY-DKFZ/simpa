@@ -188,14 +188,24 @@ def rotation(angles):
     return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])
 
 
-def get_dr_layer_pos(volume: np.ndarray, ax: int = 2) -> Tuple[np.ndarray]:
+def get_surface_from_volume(volume: np.ndarray, ax: int = 2) -> Tuple[np.ndarray]:
     """
     Locates the position at which diffuse reflectance is stored in volume. That is the first layer along last axis along
-    which all values are different than 0.
+    which all values are different than 0. a surface is defined as the collection of values along an axis with values
+    different than 0. If all values along specified axis are 0 for one location, the position of surface at that
+    location is set to `volume.shape[ax] - 1`.
 
-    :param
+    :param volume: array from which the surface wants to be obtained along a given axis
+    :param ax: default=2, axis along which surface is desired
+    :return: tuple containing the position of the surface along specified axis, can be used to slice volume
     """
     volume_non_zero = volume != 0
     pos = np.argmax(volume_non_zero, axis=ax)
-    pos = np.where(pos) + (pos.flatten(),)
+    all_zero_lines = np.where(np.apply_along_axis(np.all, ax, volume == 0))
+    pos[all_zero_lines] = volume.shape[ax] - 1
+    pos = np.where(np.isreal(pos)) + (pos.flatten(),)
+    if ax == 0:
+        pos = (pos[2], pos[0], pos[1])
+    elif ax == 1:
+        pos = (pos[0], pos[2], pos[1])
     return pos

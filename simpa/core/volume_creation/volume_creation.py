@@ -20,29 +20,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import numpy as np
+from itertools import groupby
+
 from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling import save_hdf5
 from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
 from simpa.core.volume_creation.segmentation_based_volume_creator import SegmentationBasedVolumeCreator
 from simpa.core.device_digital_twins import DEVICE_MAP
-import numpy as np
 from simpa.utils import create_deformation_settings
 
 
-def run_volume_creation(global_settings: Settings):
+def run_volume_creation(global_settings: Settings, wavelength: float):
     """
     This method is the main entry point of volume creation for the SIMPA framework.
     It uses the Tags.VOLUME_CREATOR tag to determine which of the volume creators
     should be used to create the simulation phantom.
 
     :param global_settings: the settings dictionary that contains the simulation instructions
-
+    :param wavelength: value of wavelength for volume creation
     """
     print("VOLUME CREATION")
+    if Tags.CUSTOM_VOLUMES in global_settings and Tags.VOLUME_CREATOR in global_settings:
+        raise ValueError(f"Both tags where provided but only one is allowed: "
+                         "Tags.CUSTOM_VOLUMES, Tags.VOLUME_CREATOR")
+    if Tags.CUSTOM_VOLUMES in global_settings:
+        volumes = global_settings[Tags.CUSTOM_VOLUMES][str(wavelength)]
+        check_volumes(volumes)
+        volume_path = save_volumes_to_file(global_settings, volumes)
+        return volume_path
 
-    if Tags.VOLUME_CREATOR not in global_settings:
-        raise AssertionError("Tags.VOLUME_CREATOR tag was not specified in the settings. Skipping optical modelling.")
+    if Tags.CUSTOM_VOLUMES not in global_settings and Tags.VOLUME_CREATOR not in global_settings:
+        raise AssertionError("Tags.VOLUME_CREATOR nor Tags.CUSTOM_VOLUMES tag were not specified in the settings. "
+                             "Either one is required. Skipping optical modelling.")
 
     model = global_settings[Tags.VOLUME_CREATOR]
 
@@ -76,8 +87,45 @@ def run_volume_creation(global_settings: Settings):
 
     volumes = volume_creator_adapter.create_simulation_volume(global_settings)
 
-    volume_path = SaveFilePaths.SIMULATION_PROPERTIES \
-        .format(Tags.ORIGINAL_DATA, str(global_settings[Tags.WAVELENGTH]))
-    save_hdf5(volumes, global_settings[Tags.SIMPA_OUTPUT_PATH], file_dictionary_path=volume_path)
+    volume_path = save_volumes_to_file(global_settings, volumes)
 
     return volume_path
+
+
+def save_volumes_to_file(global_settings: dict, volumes: dict) -> str:
+    """
+    Saves volumes to path defined by:
+    `SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, str(global_settings[Tags.WAVELENGTH]))`
+    :param global_settings: dictionary containing the settings of the simulations
+    :param volumes: dictionary containing the volumes to be saved
+    :return: path to saved volumes
+    """
+    volume_path = SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, str(global_settings[Tags.WAVELENGTH]))
+    save_hdf5(volumes, global_settings[Tags.SIMPA_OUTPUT_PATH], file_dictionary_path=volume_path)
+    return volume_path
+
+
+def check_volumes(volumes: dict) -> None:
+    """
+    Checks consistency of volumes. Helpful when parsing custom volumes to simulations. Checks that all volumes have same
+    shape, that the minimum required volumes are defined and that values are meaningful for specific volumes.
+    For example: `np.all(volumes['mua'] >= 0)`. It also checks that there are no nan or inf values in all volumes.
+    :param volumes: dictionary containing the volumes to check
+    :return: None
+    """
+    shapes = []
+    required_vol_keys = Tags.MINIMUM_REQUIRED_VOLUMES
+    for key in volumes:
+        vol = volumes[key]
+        if np.any(np.isnan(vol)) or np.any(np.isinf(vol)):
+            raise ValueError(f"Found nan or inf value in volume: {key}")
+        if key in ["mua", "mus"] and not np.all(vol >= 0):
+            raise ValueError(f"Found negative value in volume: {key}")
+        shapes.append(vol.shape)
+    g = groupby(shapes)
+    shapes_equal = next(g, True) and not next(g, False)
+    if not shapes_equal:
+        raise ValueError(f"Not all shapes of custom volumes are equal: {shapes}")
+    for key in required_vol_keys:
+        if key not in volumes.keys():
+            raise ValueError(f"Could not find required key in custom volumes {key}")

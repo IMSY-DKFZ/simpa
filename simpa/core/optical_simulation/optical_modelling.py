@@ -58,17 +58,7 @@ def run_optical_forward_model(settings):
     absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
     gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
     initial_pressure = absorption * fluence
-    diffuse_reflectance = None
-    dr_layer_pos = None
     if Tags.PERFORM_UPSAMPLING not in settings or not settings[Tags.PERFORM_UPSAMPLING]:
-        if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
-            dr_layer_pos = calculate.get_dr_layer_pos(fluence)
-            settings[Tags.ZERO_LAYER_POSITION] = dr_layer_pos
-            volumes_to_modify = [fluence, absorption, gruneisen_parameter, initial_pressure]
-            diffuse_reflectance = fluence[dr_layer_pos]
-            diffuse_reflectance = diffuse_reflectance.reshape(fluence.shape[:2])
-            for volume in volumes_to_modify:
-                volume[dr_layer_pos] -= volume[dr_layer_pos]
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
             units = Tags.UNITS_PRESSURE
             # Initial pressure should be given in units of Pascale
@@ -83,15 +73,35 @@ def run_optical_forward_model(settings):
         units = Tags.UNITS_ARBITRARY
         #  TODO: what happens if up-sampling is set to True?
 
-    optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.\
-        format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
+    optical_output_path = SaveFilePaths.OPTICAL_OUTPUT.format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
+    volumes = {Tags.OPTICAL_MODEL_FLUENCE: fluence,
+               Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure}
 
-    save_hdf5({Tags.OPTICAL_MODEL_FLUENCE: fluence,
-               Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure,
-               Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE: diffuse_reflectance,
-               Tags.ZERO_LAYER_POSITION: dr_layer_pos,
-               Tags.OPTICAL_MODEL_UNITS: units},
+    if settings.get(Tags.SAVE_DIFFUSE_REFLECTANCE):
+        volumes = extract_diffuse_reflectance(volumes)
+
+    volumes[Tags.OPTICAL_MODEL_UNITS] = units
+    save_hdf5(volumes,
               settings[Tags.SIMPA_OUTPUT_PATH],
               optical_output_path)
 
     return optical_output_path
+
+
+def extract_diffuse_reflectance(volumes: dict) -> dict:
+    """
+    Extracts the diffuse reflectance layer from fluence volume and stores in a new key inside volumes. Then sets all
+    values in volumes where the diffuse reflectance is located to 0.
+    :param volumes: dictionary with original volumes
+    :return: dictionary containing the corrected volumes and the diffuse reflectance
+    """
+    fluence = volumes[Tags.OPTICAL_MODEL_FLUENCE]
+    dr_layer_pos = calculate.get_surface_from_volume(fluence)
+    diffuse_reflectance = fluence[dr_layer_pos]
+    diffuse_reflectance = diffuse_reflectance.reshape(fluence.shape[:2])
+    for key in volumes:
+        volume = volumes[key]
+        volume[dr_layer_pos] -= volume[dr_layer_pos]
+    volumes[Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE] = diffuse_reflectance
+    volumes[Tags.SURFACE_LAYER_POSITION] = dr_layer_pos
+    return volumes

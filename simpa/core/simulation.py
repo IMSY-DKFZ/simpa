@@ -98,7 +98,7 @@ def simulate(settings):
             np.random.seed(None)
 
         settings[Tags.WAVELENGTH] = wavelength
-        volume_output_path = run_volume_creation(settings)
+        volume_output_path = run_volume_creation(settings, wavelength)
         volume_output_paths.append(volume_output_path)
 
         optical_output_path = None
