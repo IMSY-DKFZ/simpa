@@ -21,11 +21,15 @@
 # SOFTWARE.
 
 import unittest
+import os
+import numpy as np
+from copy import copy
+
 from simpa.utils import Tags
 from simpa.utils.settings_generator import Settings
 from simpa.core.simulation import simulate
-import os
 from simpa_tests.test_utils import create_test_structure_parameters
+from simpa.core.volume_creation.volume_creation import check_volumes
 
 
 class TestCreateVolume(unittest.TestCase):
@@ -66,3 +70,38 @@ class TestCreateVolume(unittest.TestCase):
         for item in output:
             print(item)
         print("Simulating ", random_seed, "[Done]")
+
+
+class TestCheckVolumes(unittest.TestCase):
+    def setUp(self) -> None:
+        self.required_tags = Tags.MINIMUM_REQUIRED_VOLUMES
+        self.volumes = dict()
+        self.seed = 1234
+        np.random.seed(self.seed)
+        self.shape = (100, 50, 200)
+        for key in self.required_tags:
+            self.volumes[key] = np.random.random_sample(self.shape)
+
+    def test_check_volumes_shapes(self):
+        new_shape = tuple([s+1 for s in self.shape])
+        new_volumes = copy(self.volumes)
+        new_volumes[self.required_tags[0]] = np.random.random_sample(new_shape)
+        with self.assertRaises(ValueError, msg="ValueError was not raised when volume shapes differ"):
+            check_volumes(new_volumes)
+
+    def test_check_volumes_keys(self):
+        self.volumes.pop(self.required_tags[0])
+        with self.assertRaises(ValueError, msg="ValueError was not raised when tag is missing in volume"):
+            check_volumes(self.volumes)
+
+    def test_check_volumes_values_nan(self):
+        new_volumes = copy(self.volumes)
+        new_volumes[self.required_tags[0]][0, 0] = np.nan
+        with self.assertRaises(ValueError, msg="ValueError was not raised when volume shapes differ"):
+            check_volumes(new_volumes)
+
+    def test_check_volumes_values_inf(self):
+        new_volumes = copy(self.volumes)
+        new_volumes[self.required_tags[0]][0, 0] = np.inf
+        with self.assertRaises(ValueError, msg="ValueError was not raised when volume shapes differ"):
+            check_volumes(new_volumes)
