@@ -98,7 +98,7 @@ settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+    # Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 
     # Simulation Device
     # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
@@ -121,8 +121,22 @@ settings = {
     Tags.APPLY_NOISE_MODEL: False,
     Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
-
+    # custom volumes
+    Tags.CUSTOM_VOLUMES: {'700': dict(mua=np.random.rand(int(VOLUME_TRANSDUCER_DIM_IN_MM/SPACING),
+                                                         int(VOLUME_PLANAR_DIM_IN_MM/SPACING),
+                                                         int(VOLUME_HEIGHT_IN_MM/SPACING)),
+                                      mus=np.random.rand(int(VOLUME_TRANSDUCER_DIM_IN_MM / SPACING),
+                                                         int(VOLUME_PLANAR_DIM_IN_MM / SPACING),
+                                                         int(VOLUME_HEIGHT_IN_MM / SPACING)),
+                                      g=0.9*np.ones((int(VOLUME_TRANSDUCER_DIM_IN_MM/SPACING),
+                                                    int(VOLUME_PLANAR_DIM_IN_MM/SPACING),
+                                                    int(VOLUME_HEIGHT_IN_MM/SPACING))),
+                                      gamma=np.ones((int(VOLUME_TRANSDUCER_DIM_IN_MM/SPACING),
+                                                    int(VOLUME_PLANAR_DIM_IN_MM/SPACING),
+                                                    int(VOLUME_HEIGHT_IN_MM/SPACING))))},
 }
+for key in settings[Tags.CUSTOM_VOLUMES]['700']:
+    settings[Tags.CUSTOM_VOLUMES]['700'][key][..., 0] = 0
 
 settings = Settings(settings)
 settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
@@ -158,18 +172,18 @@ if VISUALIZE:
     dr = (file['simulations']['original_data']['optical_forward_model_output']
     [str(WAVELENGTH)][Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE])
     dr_pos = (file['simulations']['original_data']['optical_forward_model_output']
-    [str(WAVELENGTH)][Tags.ZERO_LAYER_POSITION])
+    [str(WAVELENGTH)][Tags.SURFACE_LAYER_POSITION])
     depth_map = np.zeros_like(dr)
     depth_map[dr_pos[0], dr_pos[1]] = dr_pos[2]
 
     initial_pressure = (file['simulations']['original_data']
     ['optical_forward_model_output']
     [str(WAVELENGTH)]['initial_pressure'])
-    absorption = (file['simulations']['original_data']['simulation_properties']
-    [str(WAVELENGTH)]['mua'])
-
-    segmentation = (file['simulations']['original_data']['simulation_properties']
-    [str(WAVELENGTH)]['seg'])
+    absorption = (file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]['mua'])
+    if 'seg' in file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]:
+        segmentation = (file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]['seg'])
+    else:
+        segmentation = np.zeros_like(fluence)
     values = []
     names = []
 
