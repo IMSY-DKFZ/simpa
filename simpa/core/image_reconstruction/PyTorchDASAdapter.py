@@ -198,7 +198,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         # perform index validation
         invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
-        delays[invalid_indices] = 0
+        torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1]-1)
 
         # check for apodization method
         if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings:
