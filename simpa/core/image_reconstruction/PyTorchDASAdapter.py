@@ -194,11 +194,9 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                             ((xx - torch.abs(sensor_positions[:, 0][jj])) * sensor_spacing_in_mm) ** 2) \
                  / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
 
-        delays = torch.round(delays).long()
-
         # perform index validation
         invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
-        torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1]-1)
+        torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1] - 1)
 
         # check for apodization method
         if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings:
@@ -217,7 +215,14 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             # box window apodization as default
             apodization = torch.ones((xdim, ydim, n_sensor_elements), device=device)
 
-        values = time_series_sensor_data[jj, delays] * apodization
+        #interpolation of delays
+        lower_delays = (torch.floor(delays)).long()
+        upper_delays = lower_delays + 1
+        torch.clip_(upper_delays, min=0, max=time_series_sensor_data.shape[1] - 1)
+        lower_values = time_series_sensor_data[jj, lower_delays]
+        upper_values = time_series_sensor_data[jj, upper_delays]
+        values = lower_values * (upper_delays - delays) + upper_values * (delays - lower_delays)
+        values = values * apodization
 
         # set values of invalid indices to 0 so that they don't influence the result
         values[invalid_indices] = 0
