@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -148,7 +148,7 @@ def rotation_x(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.matrix([[1, 0, 0],
+    return np.array([[1, 0, 0],
                       [0, np.cos(theta), -np.sin(theta)],
                       [0, np.sin(theta), np.cos(theta)]])
 
@@ -160,7 +160,7 @@ def rotation_y(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.matrix([[np.cos(theta), 0, np.sin(theta)],
+    return np.array([[np.cos(theta), 0, np.sin(theta)],
                       [0, 1, 0],
                       [-np.sin(theta), 0, np.cos(theta)]])
 
@@ -172,7 +172,7 @@ def rotation_z(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.matrix([[np.cos(theta), -np.sin(theta), 0],
+    return np.array([[np.cos(theta), -np.sin(theta), 0],
                       [np.sin(theta), np.cos(theta), 0],
                       [0, 0, 1]])
 

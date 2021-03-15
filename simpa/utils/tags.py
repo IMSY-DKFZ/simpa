@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -310,9 +310,21 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
+    DIGITAL_DEVICE_INVISION = "digital_device_invision"
+    """
+    Corresponds to the InVision 256-TF device.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
     """
     Position in [x, y, z] coordinates of the device in the generated volume.\n
+    Usage: SIMPA package
+    """
+
+    US_GEL = ("us_gel", bool)
+    """
+    If True, us gel is placed between the PA device and the simulated volume.\n
     Usage: SIMPA package
     """
 
@@ -680,6 +692,12 @@ class Tags:
     Usage: module image_reconstruction, naming convention
     """
 
+    RECONSTRUCTION_ALGORITHM_PYTORCH_DAS = "PyTorch_DAS"
+    """
+    Corresponds to the reconstruction algorithm DAS with the PyTorchDASAdapter.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     """
     Corresponds to the reconstruction algorithm Time Reversal with TimeReversalAdapter.\n
@@ -689,12 +707,6 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
     """
     Corresponds to an adapter for testing purposes only.\n
-    Usage: module image_reconstruction, naming convention
-    """
-
-    RECONSTRUCTION_ALGORITHM_BACKPROJECTION = "backprojection"
-    """
-    Corresponds to the reconstruction algorithm Backprojection with BackprojectionAdapter.\n
     Usage: module image_reconstruction, naming convention
     """
 
@@ -732,6 +744,68 @@ class Tags:
     """
     Corresponds to the Hilbert transform as the B-Mode method used in the Mitk Beamforming.\n
     Usage: adapter MitkBeamformingAdapter, naming convention
+    """
+
+    RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION = "Envelope_Detection_before_Reconstruction"
+    """
+    Specifies whether an envelope detection should be performed before reconstruction, default is False
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION = "Envelope_Detection_after_Reconstruction"
+    """
+    Specifies whether an envelope detection should be performed after reconstruction, default is False
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_METHOD = ("reconstruction_apodization_method", str)
+    """
+    Choice of the apodization method used, i.e. window functions .\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    RECONSTRUCTION_APODIZATION_BOX = "BoxApodization"
+    """
+    Corresponds to the box window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_HANN = "HannApodization"
+    """
+    Corresponds to the Hann window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_HAMMING = "HammingApodization"
+    """
+    Corresponds to the Hamming window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_PERFORM_BANDPASS_FILTERING = ("reconstruction_perform_bandpass_filtering",
+                                    (bool, np.bool, np.bool_))
+    """
+    Whether bandpass filtering should be applied or not. Default should be True\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float, np.float))
+    """
+    Sets alpha value of Tukey window between 0 (similar to box window) and 1 (similar to Hann window).
+    Default is 0.5\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float, np.float))
+    """
+    Sets the cutoff threshold in MHz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", (int, np.integer, float, np.float))
+    """
+    Sets the cutoff threshold in MHz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
+    Usage: adapter PyTorchDASAdapter
     """
 
     RECONSTRUCTED_DATA = "reconstructed_data"

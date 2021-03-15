@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -249,8 +249,10 @@ class Settings(dict):
             self[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_DAS
 
     def save(self, path):
+        from simpa.io_handling.io_hdf5 import save_hdf5
         save_hdf5(self, path)
 
     def load(self, path):
+        from simpa.io_handling.io_hdf5 import load_hdf5
         for key, value in load_hdf5(path).items():
             self[key] = value

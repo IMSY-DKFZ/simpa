@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -20,11 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags, SaveFilePaths
+from simpa.utils import Tags
+from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.core.image_reconstruction.MitkBeamformingAdapter import MitkBeamformingAdapter
 from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
 from simpa.core.image_reconstruction.TestReconstructionAdapter import TestReconstructionAdapter
-from simpa.core.image_reconstruction.BackprojectionAdapter import BackprojectionAdapter
+from simpa.core.image_reconstruction.PyTorchDASAdapter import PyTorchDASAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 
@@ -40,26 +41,30 @@ def perform_reconstruction(settings: dict) -> str:
     """
     reconstruction_method = None
 
-    if ((settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DAS) or
-        (settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_DMAS) or
-            (settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_SDMAS)):
+    if ((settings[Tags.RECONSTRUCTION_ALGORITHM]
+         == Tags.RECONSTRUCTION_ALGORITHM_DAS)
+            or (settings[Tags.RECONSTRUCTION_ALGORITHM]
+                == Tags.RECONSTRUCTION_ALGORITHM_DMAS)
+            or (settings[Tags.RECONSTRUCTION_ALGORITHM]
+                == Tags.RECONSTRUCTION_ALGORITHM_SDMAS)):
         reconstruction_method = MitkBeamformingAdapter()
-    elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL:
+    elif settings[
+            Tags.
+            RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS:
+        reconstruction_method = PyTorchDASAdapter()
+    elif settings[
+            Tags.
+            RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL:
         reconstruction_method = TimeReversalAdapter()
-    elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TEST:
+    elif settings[
+            Tags.
+            RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_TEST:
         reconstruction_method = TestReconstructionAdapter()
-    elif settings[Tags.RECONSTRUCTION_ALGORITHM] == Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION:
-        reconstruction_method = BackprojectionAdapter()
 
     reconstruction = reconstruction_method.simulate(settings)
 
-    reconstruction_output_path = SaveFilePaths.RECONSTRCTION_OUTPUT.\
-        format(Tags.ORIGINAL_DATA, settings[Tags.WAVELENGTH])
+    reconstruction_output_path = generate_dict_path(Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 
-    if Tags.PERFORM_UPSAMPLING in settings:
-        if settings[Tags.PERFORM_UPSAMPLING]:
-            reconstruction_output_path = \
-                SaveFilePaths.RECONSTRCTION_OUTPUT.format(Tags.UPSAMPLED_DATA, settings[Tags.WAVELENGTH])
     save_hdf5({Tags.RECONSTRUCTED_DATA: reconstruction}, settings[Tags.SIMPA_OUTPUT_PATH],
               reconstruction_output_path)
 

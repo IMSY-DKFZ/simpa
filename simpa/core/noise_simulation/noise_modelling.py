@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 
 from simpa.utils import Tags, SaveFilePaths
 from simpa.core.noise_simulation import GaussianNoiseModel
-from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
+from simpa.io_handling.io_hdf5 import save_hdf5, load_data_field
 
 
 def apply_noise_model_to_time_series_data(settings, acoustic_model_result_path):
@@ -42,7 +42,7 @@ def apply_noise_model_to_time_series_data(settings, acoustic_model_result_path):
         return acoustic_model_result_path
 
     noise_model = None
-    time_series_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], acoustic_model_result_path)[Tags.TIME_SERIES_DATA]
+    time_series_data = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.TIME_SERIES_DATA, settings[Tags.WAVELENGTH])
 
     if settings[Tags.NOISE_MODEL] == Tags.NOISE_MODEL_GAUSSIAN:
         noise_model = GaussianNoiseModel()

@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -138,6 +138,9 @@ class McxAdapter(OpticalForwardAdapterBase):
                 "Dim": [nx, ny, nz],
                 "VolumeFile": settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".bin"
             }}
+
+        if Tags.MCX_SEED in settings:
+            settings_dict["RNGSeed"] = settings[Tags.MCX_SEED]
 
         tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".json"
         with open(tmp_json_filename, "w") as json_file:

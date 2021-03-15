@@ -4,21 +4,22 @@ The Simulation and Image Processing for Photoacoustic Imaging (SIMPA) toolkit.
 
 ## SIMPA Install Instructions
 
-These install instructions are made under the assumption that you have access to the phabricator simpa project.
-When you are reading these instructions there is a 99% chance that is the case (or someone send these instructions
-to you).
+You can install simpa with pip. Simply run:
 
-So, for the 1% of you: Please also follow steps 1 - 3:
+`pip install simpa`
 
-1. `git clone https://phabricator.mitk.org/source/simpa.git`
+For a manual installation from the code, please follow steps 1 - 3:
+
+1. `git clone https://github.com/CAMI-DKFZ/simpa.git`
 2. `git checkout master`
 3. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
 virtual environment activated
-4. `cd simpa`
-5. `python -m setup.py build install`
-6. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
+1. `cd simpa`
+2. `pip install -r requirements.txt`
+3. `python -m setup.py install`
+4. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
 If no error messages arise, you are now setup to use simpa in your project.
 

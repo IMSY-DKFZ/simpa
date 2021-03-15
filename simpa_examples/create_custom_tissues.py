@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -54,17 +54,20 @@ def create_custom_tissue_type():
     tissue_settings_generator = MolecularCompositionGenerator()
 
     water_volume_fraction = 0.4
-    bvf = 0.5
-    oxy = 0.4
+    blood_volume_fraction = 0.5
+    custom_chromophore_volume_fraction = 0.1
+    # The volume fraction within every tissue type should sum up to 1.
+
+    oxygenation = 0.4
 
     # Then append chromophores that you want
-    tissue_settings_generator.append(key="oxyhemoglobin", value=
-                            MOLECULE_LIBRARY.oxyhemoglobin(oxy * bvf))
-    tissue_settings_generator.append(key="deoxyhemoglobin", value=
-                            MOLECULE_LIBRARY.deoxyhemoglobin(oxy * bvf))
-    tissue_settings_generator.append(key="water", value=
-                            MOLECULE_LIBRARY.water(water_volume_fraction))
-    tissue_settings_generator.append(key="custom", value=
-                            create_custom_chromophore(0.1))
+    tissue_settings_generator.append(key="oxyhemoglobin",
+                                     value=MOLECULE_LIBRARY.oxyhemoglobin(oxygenation * blood_volume_fraction))
+    tissue_settings_generator.append(key="deoxyhemoglobin",
+                                     value=MOLECULE_LIBRARY.deoxyhemoglobin((1 - oxygenation) * blood_volume_fraction))
+    tissue_settings_generator.append(key="water",
+                                     value=MOLECULE_LIBRARY.water(water_volume_fraction))
+    tissue_settings_generator.append(key="custom",
+                                     value=create_custom_chromophore(custom_chromophore_volume_fraction))
 
-    return tissue_settings_generator.get_settings()
+    return tissue_settings_generator

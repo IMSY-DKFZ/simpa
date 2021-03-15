@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 import unittest
-import matplotlib.pyplot as plt
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 from simpa.utils.deformation_manager import create_deformation_settings
 from simpa.utils import Tags
@@ -58,31 +57,31 @@ class TestLayers(unittest.TestCase):
         assert abs(volume[0][0][4] - values[4]) < 1e-5, "excpected " + str(values[4]) + " but was " + str(volume[0][0][4])
         assert abs(volume[0][0][5] - values[5]) < 1e-5, "excpected " + str(values[5]) + " but was " + str(volume[0][0][5])
 
-    def test_layer_structes_partial_volume_within_one_voxel(self):
+    def test_layer_structure_partial_volume_within_one_voxel(self):
         self.layer_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.3]
         self.layer_settings[Tags.STRUCTURE_END_MM] = [0, 0, 1.7]
         ls = HorizontalLayerStructure(self.global_settings, self.layer_settings)
         self.assert_values(ls.geometrical_volume, [0, 0.4, 0, 0, 0, 0])
 
-    def test_layer_structes_partial_volume_within_two_voxels(self):
+    def test_layer_structure_partial_volume_within_two_voxels(self):
         self.layer_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.4]
         self.layer_settings[Tags.STRUCTURE_END_MM] = [0, 0, 2.5]
         ls = HorizontalLayerStructure(self.global_settings, self.layer_settings)
         self.assert_values(ls.geometrical_volume, [0, 0.6, 0.5, 0, 0, 0])
 
-    def test_layer_structes_partial_volume_within_three_voxels(self):
+    def test_layer_structure_partial_volume_within_three_voxels(self):
         self.layer_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.3]
         self.layer_settings[Tags.STRUCTURE_END_MM] = [0, 0, 3.5]
         ls = HorizontalLayerStructure(self.global_settings, self.layer_settings)
         self.assert_values(ls.geometrical_volume, [0, 0.7, 1, 0.5, 0, 0])
 
-    def test_layer_structes_partial_volume_close_to_border(self):
+    def test_layer_structure_partial_volume_close_to_border(self):
         self.layer_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.2]
         self.layer_settings[Tags.STRUCTURE_END_MM] = [0, 0, 2.1]
         ls = HorizontalLayerStructure(self.global_settings, self.layer_settings)
         self.assert_values(ls.geometrical_volume, [0, 0.8, 0.1, 0, 0, 0])
 
-    def test_layer_structes_partial_volume_at_border(self):
+    def test_layer_structure_partial_volume_at_border(self):
         self.layer_settings[Tags.STRUCTURE_START_MM] = [0, 0, 1.2]
         self.layer_settings[Tags.STRUCTURE_END_MM] = [0, 0, 2.0]
         ls = HorizontalLayerStructure(self.global_settings, self.layer_settings)
@@ -92,7 +91,3 @@ class TestLayers(unittest.TestCase):
         self.layer_settings[Tags.STRUCTURE_END_MM] = [0, 0, 1.8]
         ls = HorizontalLayerStructure(self.global_settings, self.layer_settings)
         self.assert_values(ls.geometrical_volume, [0, 0.8, 0, 0, 0, 0])
-
-
-
-

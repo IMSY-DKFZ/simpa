@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -21,7 +21,8 @@
 # SOFTWARE.
 
 from simpa.utils.settings_generator import Settings
-from simpa.utils import Tags, SaveFilePaths
+from simpa.utils import Tags
+from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import save_hdf5
 from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
 from simpa.core.volume_creation.segmentation_based_volume_creator import SegmentationBasedVolumeCreator
@@ -74,9 +75,14 @@ def run_volume_creation(global_settings: Settings):
         # TODO extract as settings parameters
 
     volumes = volume_creator_adapter.create_simulation_volume(global_settings)
+    save_volumes = dict()
+    for key, value in volumes.items():
+        if key in [Tags.PROPERTY_ABSORPTION_PER_CM, Tags.PROPERTY_SCATTERING_PER_CM, Tags.PROPERTY_ANISOTROPY]:
+            save_volumes[key] = {global_settings[Tags.WAVELENGTH]: value}
+        else:
+            save_volumes[key] = value
 
-    volume_path = SaveFilePaths.SIMULATION_PROPERTIES \
-        .format(Tags.ORIGINAL_DATA, str(global_settings[Tags.WAVELENGTH]))
-    save_hdf5(volumes, global_settings[Tags.SIMPA_OUTPUT_PATH], file_dictionary_path=volume_path)
+    volume_path = generate_dict_path(Tags.SIMULATION_PROPERTIES, global_settings[Tags.WAVELENGTH])
+    save_hdf5(save_volumes, global_settings[Tags.SIMPA_OUTPUT_PATH], file_dictionary_path=volume_path)
 
     return volume_path
