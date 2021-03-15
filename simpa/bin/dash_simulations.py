@@ -404,15 +404,25 @@ def populate_file_params(file_path):
         else:
             is_2d = False
             n_slices = data.simpa_data_fields['mua'][data.wavelengths[0]].shape[-1]
-            vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::int(n_slices / 10)]}
+            steps = int(n_slices / 10)
+            if steps < 1:
+                steps = 1
+            vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::steps]}
             vol_slider_min = 0
             vol_slider_max = n_slices - 1
             vol_slider_value = 0
             plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3d" not in t]
         options_list = [{'label': key, 'value': key} for key in data.simpa_data_fields.keys() if key != 'units']
-        marks = {int(wv): str(wv) for wv in data.wavelengths[::int(len(data.wavelengths) / 10)]}
+        steps = int(len(data.wavelengths) / 10)
+        if steps < 1:
+            steps = 1
+        marks = {int(wv): str(wv) for wv in data.wavelengths[::steps]}
+        if len(data.wavelengths) < 2:
+            wl_distance = 0
+        else:
+            wl_distance = data.wavelengths[1] - data.wavelengths[0]
         return options_list, False, min(data.wavelengths), max(data.wavelengths), data.wavelengths[0], \
-                data.wavelengths[1] - data.wavelengths[0], marks, \
+                wl_distance, marks, \
                 vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, \
                 options_list, False, options_list, False, is_2d, "imshow", plot_options, "imshow", plot_options, \
                 False, False

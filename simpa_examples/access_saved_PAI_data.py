@@ -45,8 +45,8 @@ colors = [list(np.random.random(3)) for _ in range(len(names))]
 cmap = mpl.colors.LinearSegmentedColormap.from_list(
     'Custom cmap', colors, len(names))
 
-PATH = "D:/save/LNetOpticalForward_planar_0.hdf5"
-WAVELENGTH = 532
+PATH = "D:/mcx-tmp-output/MyVolumeName_471.hdf5"
+WAVELENGTH = 700
 
 file = load_hdf5(PATH)
 settings = Settings(file["settings"])
@@ -72,89 +72,15 @@ if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE
 
     speed_of_sound = file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]["sos"]
 
-reconstruction = reconstruction.T
+    reconstruction = reconstruction.T
 
-shape = np.shape(reconstruction)
+shape = np.shape(initial_pressure)
 
 x_pos = int(shape[0]/2)
 y_pos = int(shape[1]/2)
 z_pos = int(shape[2]/2)
 
 plt.figure()
-plt.subplot(161)
-plt.imshow(np.fliplr(np.rot90(reconstruction[x_pos, :, :], -1)))
-plt.subplot(162)
-plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
-plt.subplot(163)
-plt.imshow(np.fliplr(np.rot90(reconstruction[:, y_pos, :], -1)))
-plt.subplot(164)
-plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
-plt.subplot(165)
-plt.imshow(np.fliplr(np.rot90(reconstruction[:, :, z_pos], -1)))
-plt.subplot(166)
-plt.imshow(np.rot90(np.log10(initial_pressure[:, :, z_pos]), -3))
+plt.imshow(np.rot90(fluence[:, y_pos, :], -1))
 plt.show()
-exit()
 
-if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-    if len(shape) > 2:
-        plt.figure()
-        plt.subplot(141)
-        plt.imshow(np.rot90(np.log10(np.log10(time_series[:, :]-np.min(time_series))), -1), aspect=np.shape(time_series)[0]/np.shape(time_series)[1])
-        plt.subplot(142)
-        plt.imshow(np.rot90((reconstruction[:, y_pos, :]), -2))
-        plt.subplot(143)
-        plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
-        plt.subplot(144)
-        plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-        plt.show()
-    else:
-        plt.figure()
-        plt.subplot(141)
-        plt.imshow(np.rot90((reconstruction[:, :]), -1))
-        plt.subplot(142)
-        plt.imshow(np.rot90((speed_of_sound), -1))
-        plt.subplot(143)
-        plt.imshow(np.rot90(np.log10(initial_pressure), -1))
-        plt.subplot(144)
-        plt.imshow(np.rot90(segmentation, -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-        plt.show()
-else:
-    if len(shape) > 2:
-        plt.figure()
-        plt.subplot(241)
-        plt.title("Fluence")
-        plt.imshow(np.rot90((fluence[x_pos, :, :]), -1))
-        plt.subplot(242)
-        plt.title("Absorption")
-        plt.imshow(np.rot90(np.log10(absorption[x_pos, :, :]), -1))
-        plt.subplot(243)
-        plt.title("Initial Pressure")
-        plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
-        plt.subplot(244)
-        plt.title("Segmentation")
-        plt.imshow(np.rot90(segmentation[x_pos, :, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-        cbar = plt.colorbar(ticks=values)
-        cbar.ax.set_yticklabels(names)
-        plt.subplot(245)
-        plt.imshow(np.rot90(fluence[:, y_pos, :], -1))
-        plt.subplot(246)
-        plt.imshow(np.rot90(np.log10(absorption[:, y_pos, :]), -1))
-        plt.subplot(247)
-        plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
-        plt.subplot(248)
-        plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-        cbar = plt.colorbar(ticks=values)
-        cbar.ax.set_yticklabels(names)
-        plt.show()
-    else:
-        plt.figure()
-        plt.subplot(141)
-        plt.imshow(np.rot90(np.log10(fluence), -1))
-        plt.subplot(142)
-        plt.imshow(np.rot90(np.log10(absorption), -1))
-        plt.subplot(143)
-        plt.imshow(np.rot90(np.log10(initial_pressure), -1))
-        plt.subplot(144)
-        plt.imshow(np.rot90(segmentation, -1))
-        plt.show()

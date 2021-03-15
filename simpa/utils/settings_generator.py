@@ -21,8 +21,6 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.io_handling import save_hdf5, load_hdf5
-
 
 class Settings(dict):
     """

@@ -350,6 +350,13 @@ class Tags:
     Usage: module optical_simulation
     """
 
+    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_JSON_FILE = ("optical_model_illumination_geometry_json_file", str)
+    """
+    Absolute path of the location of the JSON file containing the IPASC-formatted optical forward 
+    model illumination geometry.\n
+    Usage: module optical_simulation
+    """
+
     LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, np.float, list,
                                                                              range, tuple, np.ndarray))
     """
@@ -492,15 +499,27 @@ class Tags:
     """
 
     ILLUMINATION_TYPE_MSOT_ACUITY_ECHO = "msot_acuity_echo"
-    """
+    """s
     Corresponds to msot_acuity_echo source in mcx. The device is manufactured by iThera Medical, Munich, Germany
     (https: // www.ithera-medical.com / products / msot-acuity /).\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
+    ILLUMINATION_TYPE_MSOT_INVISION = "invision"
+    """
+    Corresponds to a source definition in mcx.\n
     Usage: adapter mcx_adapter, naming convention
     """
 
     ILLUMINATION_TYPE_RING = "ring"
     """
     Corresponds to ring source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
+    ILLUMINATION_TYPE_IPASC_DEFINITION = "ipasc"
+    """
+    Corresponds to a source definition in mcx.\n
     Usage: adapter mcx_adapter, naming convention
     """
 

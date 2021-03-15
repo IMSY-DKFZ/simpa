@@ -56,6 +56,8 @@ def define_illumination_mcx(settings, nx, ny, nz) -> dict:
 
     if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
         source_position = [int(nx/2.0) + 0.5, int(ny/2.0 - 17.81/settings[Tags.SPACING_MM]) + 0.5, 1]
+    elif settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_INVISION:
+        source_position = [int(nx / 2.0) + 0.5, int(ny / 2.0) + 0.5, int(nz / 2.0) + 0.5]
     elif Tags.ILLUMINATION_POSITION not in settings:
         source_position = [int(nx / 2.0) + 0.5, int(ny / 2.0) + 0.5, 1]
     else:
@@ -70,6 +72,8 @@ def define_illumination_mcx(settings, nx, ny, nz) -> dict:
 
     if settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
         source_param1 = [30 / settings[Tags.SPACING_MM], 0, 0, 0]
+    elif settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_INVISION:
+        source_param1 = [settings[Tags.SPACING_MM], 0, 0, 0]
     elif Tags.ILLUMINATION_PARAM1 not in settings:
         source_param1 = [0, 0, 0, 0]
     else:
