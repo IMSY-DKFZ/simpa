@@ -117,8 +117,6 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         assert time_series_sensor_data.ndim == 2, 'Samples must have exactly 2 dimensions. ' \
                                                   'Apply beamforming per wavelength if you have a 3D array. '
 
-        ### ALGORITHM ITSELF ###
-
         # check reconstruction mode - pressure by default
         if Tags.RECONSTRUCTION_MODE in settings:
             mode = settings[Tags.RECONSTRUCTION_MODE]
@@ -138,6 +136,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             time_series_sensor_data = bandpass_filtering(time_series_sensor_data, time_spacing_in_ms=time_spacing_in_ms,
                                                          cutoff_lowpass=cutoff_lowpass, cutoff_highpass=cutoff_highpass,
                                                          tukey_alpha=tukey_alpha, device=device)
+
+        ### ALGORITHM ITSELF ###
 
         ## compute size of beamformed image ##
         xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))
@@ -164,22 +164,9 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
         torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1] - 1)
 
-        # check for apodization method
-        if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings:
-            # hann window
-            if settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HANN:
-                hann = torch.hann_window(n_sensor_elements, device=device)
-                apodization = hann.expand((xdim, ydim, n_sensor_elements))
-            # hamming window
-            elif settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HAMMING:
-                hamming = torch.hamming_window(n_sensor_elements, device=device)
-                apodization = hamming.expand((xdim, ydim, n_sensor_elements))
-            # box window apodization as default
-            else:
-                apodization = torch.ones((xdim, ydim, n_sensor_elements), device=device)
-        else:
-            # box window apodization as default
-            apodization = torch.ones((xdim, ydim, n_sensor_elements), device=device)
+        apodization_method = settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings else None
+        apodization = get_apodization_factor(apodization_method=apodization_method, xdim=xdim, ydim=ydim,
+                                             n_sensor_elements=n_sensor_elements, device=device)
 
         # interpolation of delays
         lower_delays = (torch.floor(delays)).long()
@@ -204,6 +191,40 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             reconstructed = apply_b_mode(reconstructed, method=settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         return reconstructed
+
+
+def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZATION_BOX,
+                           xdim: int = None, ydim: int = None, n_sensor_elements=None,
+                           device: torch.device = 'cpu') -> torch.tensor:
+    """
+    Construct apodization factors according to `apodization_method` [hann, hamming or box apodization (default)] 
+    for given x and y dimensions and `n_sensor_elements`.
+
+    :param apodization_method: (str) Apodization method, one of Tags.RECONSTRUCTION_APODIZATION_HANN, 
+                        Tags.RECONSTRUCTION_APODIZATION_HAMMING and Tags.RECONSTRUCTION_APODIZATION_BOX (default)
+    :param xdim: (int) size of x dimension of reconstructed image
+    :param ydim: (int) size of y dimension of reconstructed image
+    :param n_sensor_elements: (int) number of sensor elements
+    :param device: (torch device) PyTorch tensor device
+    :return: (torch tensor) tensor with apodization factors which can be multipied with DAS values
+    """
+
+    if xdim is None or ydim is None or n_sensor_elements is None:
+        raise AttributeError("xdim, ydim and n_sensor_elements must be specified and not be None")
+
+    # hann window
+    if apodization_method == Tags.RECONSTRUCTION_APODIZATION_HANN:
+        hann = torch.hann_window(n_sensor_elements, device=device)
+        output = hann.expand((xdim, ydim, n_sensor_elements))
+    # hamming window
+    elif apodization_method == Tags.RECONSTRUCTION_APODIZATION_HAMMING:
+        hamming = torch.hamming_window(n_sensor_elements, device=device)
+        output = hamming.expand((xdim, ydim, n_sensor_elements))
+    # box window apodization as default
+    else:
+        output = torch.ones((xdim, ydim, n_sensor_elements), device=device)
+
+    return output
 
 
 def reconstruction_mode_transformation(time_series_sensor_data: torch.tensor = None,
