@@ -48,7 +48,9 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         """
 
         # check for B-mode methods and perform envelope detection on time series data if specified
-        if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in settings and settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION]:
+        if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in settings \
+                and settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION] \
+                and Tags.RECONSTRUCTION_BMODE_METHOD in settings:
             time_series_sensor_data = apply_b_mode(
                 time_series_sensor_data, method=settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
@@ -62,8 +64,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             sound_speed_m = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
         else:
-            raise AttributeError(
-                "Please specify a value for PROPERTY_SPEED_OF_SOUND or WAVELENGTH to obtain the average speed of sound")
+            raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND"
+                                 "or WAVELENGTH to obtain the average speed of sound")
 
         # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
         if Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
@@ -125,25 +127,28 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         time_series_sensor_data = reconstruction_mode_transformation(time_series_sensor_data, mode=mode, device=device)
 
         # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
-        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[
-                Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
+        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings \
+                or settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
 
-            cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(
-                8e6)
-            cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(
-                0.1e6)
+            cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] \
+                if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(8e6)
+            cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] \
+                if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(0.1e6)
             tukey_alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
-            time_series_sensor_data = bandpass_filtering(time_series_sensor_data, time_spacing_in_ms=time_spacing_in_ms,
-                                                         cutoff_lowpass=cutoff_lowpass, cutoff_highpass=cutoff_highpass,
-                                                         tukey_alpha=tukey_alpha, device=device)
+            time_series_sensor_data = bandpass_filtering(time_series_sensor_data,
+                                                         time_spacing_in_ms=time_spacing_in_ms,
+                                                         cutoff_lowpass=cutoff_lowpass,
+                                                         cutoff_highpass=cutoff_highpass,
+                                                         tukey_alpha=tukey_alpha,
+                                                         device=device)
 
         ### ALGORITHM ITSELF ###
 
         ## compute size of beamformed image ##
         xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))
         xdim = int(xdim) + 1  # correction due to subtraction of indices starting at 0
-        ydim = float(
-            time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) / sensor_spacing_in_mm
+        ydim = float(time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) \
+            / sensor_spacing_in_mm
         ydim = int(round(ydim))
         n_sensor_elements = time_series_sensor_data.shape[0]
 
@@ -164,7 +169,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
         torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1] - 1)
 
-        apodization_method = settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings else None
+        apodization_method = settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] \
+            if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings else None
         apodization = get_apodization_factor(apodization_method=apodization_method, xdim=xdim, ydim=ydim,
                                              n_sensor_elements=n_sensor_elements, device=device)
 
@@ -186,8 +192,9 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         reconstructed = np.flipud(output.cpu().numpy())
 
         # check for B-mode methods and perform envelope detection on beamformed image if specified
-        if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in settings and settings[
-                Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:
+        if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in settings \
+                and settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION] \
+                and Tags.RECONSTRUCTION_BMODE_METHOD in settings:
             reconstructed = apply_b_mode(reconstructed, method=settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         return reconstructed
@@ -235,7 +242,8 @@ def reconstruction_mode_transformation(time_series_sensor_data: torch.tensor = N
     Default mode is `Tags.RECONSTRUCTION_MODE_PRESSURE`.
 
     :param time_series_sensor_data: (torch tensor) Time series data to be transformed
-    :param mode: (str) reconstruction mode: Tags.RECONSTRUCTION_MODE_PRESSURE (default) or Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
+    :param mode: (str) reconstruction mode: Tags.RECONSTRUCTION_MODE_PRESSURE (default) 
+                or Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
     :param device: (torch device) PyTorch tensor device
     :return: (torch tensor) potentially transformed tensor
     """
@@ -327,16 +335,18 @@ def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
     return output
 
 
-def reconstruct_DAS_PyTorch(time_series_sensor_data, settings=None, sound_of_speed=1540, time_spacing=2.5e-8, sensor_spacing=0.1):
+def reconstruct_DAS_PyTorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
+                            time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
-    :param time_series_sensor_data: 2D numpy array of sensor data of shape (sensor elements, time steps)
-    :param settings: settings dictionary (by default there is none and the other parameters are used instead,
-    but if parameters are given in the settings those will be used instead of parsed arguments)
-    :param sound_of_speed: speed of sound in medium in meters per second (default: 1540 m/s)
-    :param time_spacing: time between sampling points in seconds (default: 2.5e-8 s which is equal to 40 MHz)
-    :param sensor_spacing: space between sensor elements in millimeters (default: 0.1 mm)
-    :return: reconstructed image as 2D numpy array
+
+    :param time_series_sensor_data: (2D numpy array) sensor data of shape (sensor elements, time steps)
+    :param settings: (dict) settings dictionary: by default there is none and the other parameters are used instead,
+                     but if parameters are given in the settings those will be used instead of parsed arguments)
+    :param sound_of_speed: (int) speed of sound in medium in meters per second (default: 1540 m/s)
+    :param time_spacing: (float) time between sampling points in seconds (default: 2.5e-8 s which is equal to 40 MHz)
+    :param sensor_spacing: (float) space between sensor elements in millimeters (default: 0.1 mm)
+    :return: (2D numpy array) reconstructed image as 2D numpy array
     """
 
     # create settings if they don't exist yet
