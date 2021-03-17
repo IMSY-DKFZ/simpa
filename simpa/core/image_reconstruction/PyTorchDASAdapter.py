@@ -49,17 +49,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         # check for B-mode methods and perform envelope detection on time series data if specified
         if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in settings and settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION]:
-            if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
-                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
-                    # perform envelope detection using hilbert transform
-                    hilbert_transformed = hilbert(time_series_sensor_data, axis=1)
-                    time_series_sensor_data = np.abs(hilbert_transformed)
-
-                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
-                    # perform envelope detection using absolute value
-                    time_series_sensor_data = np.abs(time_series_sensor_data)
-            else:
-                print("You have not specified a B-mode method")
+            time_series_sensor_data = apply_b_mode(
+                time_series_sensor_data, method=settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         ### INPUT CHECKING AND VALIDATION ###
         # check settings dictionary for elements and read them in
@@ -152,28 +143,14 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[
                 Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
 
-            # construct bandpass filter given the cutoff values and time spacing
-            frequencies = np.fft.fftfreq(time_series_sensor_data.shape[1], d=time_spacing_in_ms/1000)
             cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(
                 8e6)
             cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(
                 0.1e6)
-
-            if cutoff_highpass > cutoff_lowpass:
-                raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
-            # find closest indices for frequencies
-            small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
-            large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
-
             tukey_alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
-            win = torch.tensor(tukey(large_index - small_index, alpha=tukey_alpha), device=device)
-            window = torch.zeros(frequencies.shape, device=device)
-            window[small_index:large_index] = win
-
-            # transform data into Fourier space, multiply filter and transform back
-            TIME_SERIES_SENSOR_DATA = torch.fft.fft(time_series_sensor_data)
-            FILTERED = TIME_SERIES_SENSOR_DATA * window.expand_as(TIME_SERIES_SENSOR_DATA)
-            time_series_sensor_data = torch.abs(torch.fft.ifft(FILTERED))
+            time_series_sensor_data = bandpass_filtering(time_series_sensor_data, time_spacing_in_ms=time_spacing_in_ms,
+                                                         cutoff_lowpass=cutoff_lowpass, cutoff_highpass=cutoff_highpass,
+                                                         tukey_alpha=tukey_alpha, device=device)
 
         ## compute size of beamformed image ##
         xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))
@@ -237,19 +214,78 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         # check for B-mode methods and perform envelope detection on beamformed image if specified
         if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in settings and settings[
                 Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:
-            if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
-                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
-                    # perform envelope detection using hilbert transform
-                    hilbert_transformed = hilbert(reconstructed, axis=1)
-                    reconstructed = np.abs(hilbert_transformed)
-
-                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
-                    # perform envelope detection using absolute value
-                    reconstructed = np.abs(reconstructed)
-            else:
-                print("You have not specified a B-mode method")
+            reconstructed = apply_b_mode(reconstructed, method=settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         return reconstructed
+
+
+def bandpass_filtering(data: torch.tensor = None, time_spacing_in_ms: float = None,
+                       cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
+                       tukey_alpha: float = 0.5, device: torch.device = 'cpu') -> torch.tensor:
+    """
+    Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
+
+    :param data: PyTorch tensor with the data to be filtered
+    :param time_spacing_in_ms: Time spacing in milliseconds as a float, e.g. 2.5e-5
+    :param cutoff_lowpass: Signal above this value will be ignored (in MHz)
+    :param cutoff_highpass: Signal below this value will be ignored (in MHz)
+    :param tukey_alpha: Float between 0 (rectangular) and 1 (Hann window)
+    :param device: PyTorch tensor device
+    :return: PyTorch tensor with filtered data
+    """
+    if data is None or time_spacing_in_ms is None:
+        raise AttributeError("data and time spacing must be specified")
+
+    # construct bandpass filter given the cutoff values and time spacing
+    frequencies = np.fft.fftfreq(data.shape[1], d=time_spacing_in_ms/1000)
+
+    if cutoff_highpass > cutoff_lowpass:
+        raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
+
+    # find closest indices for frequencies
+    small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
+    large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
+
+    win = torch.tensor(tukey(large_index - small_index, alpha=tukey_alpha), device=device)
+    window = torch.zeros(frequencies.shape, device=device)
+    window[small_index:large_index] = win
+
+    # transform data into Fourier space, multiply filter and transform back
+    TIME_SERIES_SENSOR_DATA = torch.fft.fft(data)
+    FILTERED = TIME_SERIES_SENSOR_DATA * window.expand_as(TIME_SERIES_SENSOR_DATA)
+    return torch.abs(torch.fft.ifft(FILTERED))
+
+
+def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
+    """
+    Applies B-Mode specified method to data. Method is either
+    envelope detection using hilbert transform (Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM),
+    absolute value (Tags.RECONSTRUCTION_BMODE_METHOD_ABS) or
+    none if nothing is specified is performed.
+    :param data: NumPy array which shall be used for applying B-Mode method
+    :param method: string, Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM or Tags.RECONSTRUCTION_BMODE_METHOD_ABS
+    :return: data with B-Mode method applied
+    """
+    # input checks
+    if data is None:
+        raise AttributeError("data must be specified")
+
+    if method == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
+        # perform envelope detection using hilbert transform
+        hilbert_transformed = hilbert(data, axis=1)
+        output = np.abs(hilbert_transformed)
+    elif method == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
+        # perform envelope detection using absolute value
+        output = np.abs(data)
+    else:
+        print("You have not specified a B-mode method")
+        output = data
+
+    # sanity check that no elements are below zero
+    if output[output < 0].sum() != 0:
+        print("There are still negative values in the data.")
+
+    return output
 
 
 def reconstruct_DAS_PyTorch(time_series_sensor_data, settings=None, sound_of_speed=1540, time_spacing=2.5e-8, sensor_spacing=0.1):
