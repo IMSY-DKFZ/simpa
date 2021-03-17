@@ -71,7 +71,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             sound_speed_m = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
         else:
-            raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND or WAVELENGTH to obtain the average speed of sound")
+            raise AttributeError(
+                "Please specify a value for PROPERTY_SPEED_OF_SOUND or WAVELENGTH to obtain the average speed of sound")
 
         # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
         if Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
@@ -135,27 +136,28 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         # depending on mode use pressure data or its derivative
         if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL:
-            zeros = torch.zeros([time_series_sensor_data.shape[0],1], names=None).to(device)
+            zeros = torch.zeros([time_series_sensor_data.shape[0], 1], names=None).to(device)
             time_vector = torch.arange(0, time_series_sensor_data.shape[1]).to(device)
-            time_derivative_pressure = time_series_sensor_data[:,1:] - time_series_sensor_data[:,0:-1]
+            time_derivative_pressure = time_series_sensor_data[:, 1:] - time_series_sensor_data[:, 0:-1]
             time_derivative_pressure = torch.cat([time_derivative_pressure, zeros], dim=1)
             time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
-            time_series_sensor_data = time_derivative_pressure # use time derivative pressure
+            time_series_sensor_data = time_derivative_pressure  # use time derivative pressure
         elif mode == Tags.RECONSTRUCTION_MODE_PRESSURE:
             pass  # already in pressure format
         else:
             raise AttributeError(
                 "An invalid reconstruction mode was set, only differential and pressure are supported.")
 
-
         # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[
-            Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
+                Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
 
             # construct bandpass filter given the cutoff values and time spacing
             frequencies = np.fft.fftfreq(time_series_sensor_data.shape[1], d=time_spacing_in_ms/1000)
-            cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(8e6)
-            cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(0.1e6)
+            cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(
+                8e6)
+            cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(
+                0.1e6)
 
             if cutoff_highpass > cutoff_lowpass:
                 raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
@@ -164,7 +166,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
 
             tukey_alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
-            win = torch.tensor(tukey(large_index - small_index, alpha = tukey_alpha), device=device)
+            win = torch.tensor(tukey(large_index - small_index, alpha=tukey_alpha), device=device)
             window = torch.zeros(frequencies.shape, device=device)
             window[small_index:large_index] = win
 
@@ -192,7 +194,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         delays = torch.sqrt(((yy - sensor_positions[:, 1][jj]) * sensor_spacing_in_mm) ** 2 +
                             ((xx - torch.abs(sensor_positions[:, 0][jj])) * sensor_spacing_in_mm) ** 2) \
-                 / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
+            / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
 
         # perform index validation
         invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
@@ -215,7 +217,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             # box window apodization as default
             apodization = torch.ones((xdim, ydim, n_sensor_elements), device=device)
 
-        #interpolation of delays
+        # interpolation of delays
         lower_delays = (torch.floor(delays)).long()
         upper_delays = lower_delays + 1
         torch.clip_(upper_delays, min=0, max=time_series_sensor_data.shape[1] - 1)
@@ -234,7 +236,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         # check for B-mode methods and perform envelope detection on beamformed image if specified
         if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in settings and settings[
-            Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:
+                Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:
             if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
                 if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
                     # perform envelope detection using hilbert transform
@@ -250,7 +252,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         return reconstructed
 
 
-def reconstruct_DAS_PyTorch(time_series_sensor_data, settings = None, sound_of_speed=1540, time_spacing=2.5e-8, sensor_spacing=0.1):
+def reconstruct_DAS_PyTorch(time_series_sensor_data, settings=None, sound_of_speed=1540, time_spacing=2.5e-8, sensor_spacing=0.1):
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
     :param time_series_sensor_data: 2D numpy array of sensor data of shape (sensor elements, time steps)
