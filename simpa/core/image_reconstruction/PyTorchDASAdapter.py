@@ -124,20 +124,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             mode = settings[Tags.RECONSTRUCTION_MODE]
         else:
             mode = Tags.RECONSTRUCTION_MODE_PRESSURE
-
-        # depending on mode use pressure data or its derivative
-        if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL:
-            zeros = torch.zeros([time_series_sensor_data.shape[0], 1], names=None).to(device)
-            time_vector = torch.arange(0, time_series_sensor_data.shape[1]).to(device)
-            time_derivative_pressure = time_series_sensor_data[:, 1:] - time_series_sensor_data[:, 0:-1]
-            time_derivative_pressure = torch.cat([time_derivative_pressure, zeros], dim=1)
-            time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
-            time_series_sensor_data = time_derivative_pressure  # use time derivative pressure
-        elif mode == Tags.RECONSTRUCTION_MODE_PRESSURE:
-            pass  # already in pressure format
-        else:
-            raise AttributeError(
-                "An invalid reconstruction mode was set, only differential and pressure are supported.")
+        time_series_sensor_data = reconstruction_mode_transformation(time_series_sensor_data, mode=mode, device=device)
 
         # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[
@@ -219,19 +206,49 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         return reconstructed
 
 
+def reconstruction_mode_transformation(time_series_sensor_data: torch.tensor = None,
+                                       mode: str = Tags.RECONSTRUCTION_MODE_PRESSURE,
+                                       device: torch.device = 'cpu') -> torch.tensor:
+    """
+    Transformes `time_series_sensor_data` for other modes, for example `Tags.RECONSTRUCTION_MODE_DIFFERENTIAL`.
+    Default mode is `Tags.RECONSTRUCTION_MODE_PRESSURE`.
+
+    :param time_series_sensor_data: (torch tensor) Time series data to be transformed
+    :param mode: (str) reconstruction mode: Tags.RECONSTRUCTION_MODE_PRESSURE (default) or Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
+    :param device: (torch device) PyTorch tensor device
+    :return: (torch tensor) potentially transformed tensor
+    """
+
+    # depending on mode use pressure data or its derivative
+    if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL:
+        zeros = torch.zeros([time_series_sensor_data.shape[0], 1], names=None).to(device)
+        time_vector = torch.arange(0, time_series_sensor_data.shape[1]).to(device)
+        time_derivative_pressure = time_series_sensor_data[:, 1:] - time_series_sensor_data[:, 0:-1]
+        time_derivative_pressure = torch.cat([time_derivative_pressure, zeros], dim=1)
+        time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
+        output = time_derivative_pressure  # use time derivative pressure
+    elif mode == Tags.RECONSTRUCTION_MODE_PRESSURE:
+        output = time_series_sensor_data  # already in pressure format
+    else:
+        raise AttributeError(
+            "An invalid reconstruction mode was set, only differential and pressure are supported.")
+    return output
+
+
 def bandpass_filtering(data: torch.tensor = None, time_spacing_in_ms: float = None,
                        cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
                        tukey_alpha: float = 0.5, device: torch.device = 'cpu') -> torch.tensor:
     """
-    Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
+    Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz 
+    and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
 
-    :param data: PyTorch tensor with the data to be filtered
-    :param time_spacing_in_ms: Time spacing in milliseconds as a float, e.g. 2.5e-5
-    :param cutoff_lowpass: Signal above this value will be ignored (in MHz)
-    :param cutoff_highpass: Signal below this value will be ignored (in MHz)
-    :param tukey_alpha: Float between 0 (rectangular) and 1 (Hann window)
-    :param device: PyTorch tensor device
-    :return: PyTorch tensor with filtered data
+    :param data: (torch tensor) data to be filtered
+    :param time_spacing_in_ms: (float) time spacing in milliseconds, e.g. 2.5e-5
+    :param cutoff_lowpass: (int) Signal above this value will be ignored (in MHz)
+    :param cutoff_highpass: (int) Signal below this value will be ignored (in MHz)
+    :param tukey_alpha: (float) transition value between 0 (rectangular) and 1 (Hann window)
+    :param device: (torch device) PyTorch tensor device
+    :return: (torch tensor) filtered data
     """
     if data is None or time_spacing_in_ms is None:
         raise AttributeError("data and time spacing must be specified")
@@ -262,9 +279,10 @@ def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
     envelope detection using hilbert transform (Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM),
     absolute value (Tags.RECONSTRUCTION_BMODE_METHOD_ABS) or
     none if nothing is specified is performed.
-    :param data: NumPy array which shall be used for applying B-Mode method
-    :param method: string, Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM or Tags.RECONSTRUCTION_BMODE_METHOD_ABS
-    :return: data with B-Mode method applied
+
+    :param data: (numpy array) data used for applying B-Mode method
+    :param method: (str) Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM or Tags.RECONSTRUCTION_BMODE_METHOD_ABS
+    :return: (numpy array) data with B-Mode method applied, all 
     """
     # input checks
     if data is None:
