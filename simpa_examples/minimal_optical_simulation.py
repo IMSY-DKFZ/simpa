@@ -131,7 +131,7 @@ settings = {
 
 settings = Settings(settings)
 settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
-settings[Tags.STRUCTURES] = create_example_tissue(settings)
+settings[Tags.STRUCTURES] = create_example_tissue()
 
 print("Simulating ", RANDOM_SEED)
 import time

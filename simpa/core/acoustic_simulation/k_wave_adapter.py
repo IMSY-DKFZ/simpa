@@ -105,23 +105,37 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         detector_positions_voxels = np.round(detector_positions_mm / settings[Tags.SPACING_MM]).astype(int)
 
         print("Number of detector elements:", len(detector_positions_voxels))
-
-        sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
         if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
-            sensor_map[detector_positions_voxels[:, 2], detector_positions_voxels[:, 0]] = 1
+            sensor_map = detector_positions_voxels[:, [0, 2, 0, 2]]#np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
+            sensor_map[:, 0] = sensor_map[:, 0]
+            sensor_map[:, 1] = sensor_map[:, 1]
+            sensor_map[:, 2] = sensor_map[:, 2]
+            sensor_map[:, 3] = sensor_map[:, 3]
         else:
-            half_y_dir_detector_pixels = int(round(0.5*PA_device.detector_element_length_mm/settings[Tags.SPACING_MM]))
-            aranged_voxels = np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1)
-
-            if len(aranged_voxels) < 1:
-                aranged_voxels = [0]
-
-            for pixel in aranged_voxels:
-                sensor_map[detector_positions_voxels[:, 2],
-                           detector_positions_voxels[:, 1] + pixel,
-                           detector_positions_voxels[:, 0]] = 1
-
-        print("Number of ones in sensor_map:", np.sum(sensor_map))
+            sensor_map = detector_positions_voxels[:, [0, 1, 2, 0, 1, 2]]
+            sensor_map[:, 0] = sensor_map[:, 0]
+            sensor_map[:, 1] = sensor_map[:, 1]
+            sensor_map[:, 2] = sensor_map[:, 2]
+            sensor_map[:, 3] = sensor_map[:, 3]
+            sensor_map[:, 4] = sensor_map[:, 4]
+            sensor_map[:, 5] = sensor_map[:, 5]
+        sensor_map = sensor_map.swapaxes(0, 1)
+        print("SENSOR_MAP SHAPE", np.shape(sensor_map))
+        # if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
+        #     sensor_map[detector_positions_voxels[:, 2], detector_positions_voxels[:, 0]] = 1
+        # else:
+        #     half_y_dir_detector_pixels = int(round(0.5*PA_device.detector_element_length_mm/settings[Tags.SPACING_MM]))
+        #     aranged_voxels = np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1)
+        #
+        #     if len(aranged_voxels) < 1:
+        #         aranged_voxels = [0]
+        #
+        #     for pixel in aranged_voxels:
+        #         sensor_map[detector_positions_voxels[:, 2],
+        #                    detector_positions_voxels[:, 1] + pixel,
+        #                    detector_positions_voxels[:, 0]] = 1
+        #
+        # print("Number of ones in sensor_map:", np.sum(sensor_map))
 
         data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
         save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, settings[Tags.SIMPA_OUTPUT_PATH],

@@ -30,6 +30,9 @@ class PAIDeviceBase:
     This class represents a PAI device including the detection and illumination geometry.
     """
 
+    def __init__(self):
+        self.probe_height_mm = 0
+
     @abstractmethod
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         """

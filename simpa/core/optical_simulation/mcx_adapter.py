@@ -139,8 +139,8 @@ class McxAdapter(OpticalForwardAdapterBase):
                 "VolumeFile": settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".bin"
             }}
 
-        if Tags.MCX_SEED in settings:
-            settings_dict["RNGSeed"] = settings[Tags.MCX_SEED]
+        if Tags.RANDOM_SEED in settings:
+            settings_dict["RNGSeed"] = settings[Tags.RANDOM_SEED]
 
         tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".json"
         with open(tmp_json_filename, "w") as json_file:
