@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -24,29 +24,31 @@ from simpa.io_handling import load_hdf5
 from simpa.utils.settings_generator import Settings
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils import Tags
-from simpa.core.device_digital_twins.rsom_device import RSOMExplorerP50
+from simpa.core.device_digital_twins.invision_device import InVision256TF
 from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
 import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter
 import numpy as np
 import time
 
-PATH = "D:/save/LNetOpticalForward_planar_LARGE.hdf5"
-WAVELENGTH = 532
+PATH = "D:/save/InVisionTest_HighRes_4711.hdf5"
+MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
+WAVELENGTH = 700
 
 file = load_hdf5(PATH)
 settings = Settings(file["settings"])
 settings[Tags.WAVELENGTH] = WAVELENGTH
 settings[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_TIME_REVERSAL
-settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
-settings[Tags.RECONSTRUCTION_MODE] = Tags.RECONSTRUCTION_MODE_FULL
-settings[Tags.DIGITAL_DEVICE_POSITION] = [0, 0, 0]
+settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] = MATLAB_PATH
+settings[Tags.RECONSTRUCTION_MODE] = Tags.RECONSTRUCTION_MODE_PRESSURE
+
 acoustic_data_path = generate_dict_path(settings, Tags.TIME_SERIES_DATA,
                                         wavelength=settings[Tags.WAVELENGTH],
                                         upsampled_data=True)
 optical_data_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
                                        wavelength=settings[Tags.WAVELENGTH],
                                        upsampled_data=True)
-device = RSOMExplorerP50()
+device = InVision256TF()
 device.check_settings_prerequisites(settings)
 settings = device.adjust_simulation_volume_and_settings(settings)
 time_series_data = load_hdf5(PATH, acoustic_data_path)[Tags.TIME_SERIES_DATA]
@@ -64,13 +66,18 @@ reconstructed_image_path = generate_dict_path(settings, Tags.RECONSTRUCTED_DATA,
                                               wavelength=settings[Tags.WAVELENGTH], upsampled_data=True)
 
 reconstructed_image = load_hdf5(PATH, reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
+reconstructed_image = np.squeeze(reconstructed_image)
 print(np.shape(reconstructed_image))
 
 if len(np.shape(initial_pressure)) < 3:
     plt.subplot(121)
-    plt.imshow(initial_pressure)
+    plt.title("initial pressure simulation")
+    plt.imshow(initial_pressure, vmin=np.percentile(initial_pressure, 5),
+               vmax=np.percentile(initial_pressure, 99.9))
     plt.subplot(122)
-    plt.imshow(np.abs(reconstructed_image[:, int(np.shape(reconstructed_image)[1]/2), :]))
+    plt.title("reconstructed image")
+    plt.imshow(np.rot90(np.abs(reconstructed_image), 1), vmin=np.percentile(reconstructed_image, 5),
+               vmax=np.percentile(reconstructed_image, 99))
     plt.show()
 else:
     plt.subplot(161)

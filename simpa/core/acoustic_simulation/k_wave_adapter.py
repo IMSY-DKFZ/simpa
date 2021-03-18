@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -77,9 +77,8 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
 
     def forward_model(self, settings) -> np.ndarray:
 
-        optical_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_OUTPUT_NAME,
-                                          wavelength=settings[Tags.WAVELENGTH],
-                                          upsampled_data=True)
+        optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
+                                          wavelength=settings[Tags.WAVELENGTH])
 
         print("OPTICAL_PATH", optical_path)
 
@@ -136,7 +135,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
 
         data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
         save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, settings[Tags.SIMPA_OUTPUT_PATH],
-                  generate_dict_path(settings, Tags.PROPERTY_SENSOR_MASK, upsampled_data=False,
+                  generate_dict_path(Tags.PROPERTY_SENSOR_MASK,
                                      wavelength=settings[Tags.WAVELENGTH]))
 
         try:

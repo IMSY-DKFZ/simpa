@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -33,11 +33,11 @@ MOLECULE = "molecule"
 ABSORPTION_SPECTRUM = "absorption_spectrum"
 
 
-def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/", file_compression: str = None):
+def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_compression: str = None):
     """
-    Saves a dictionary with arbitrary content to an hdf5-file with given filepath.
+    Saves a dictionary with arbitrary content or an item of any kind to an hdf5-file with given filepath.
 
-    :param dictionary: Dictionary to save.
+    :param save_item: Dictionary to save.
     :param file_path: Path of the file to save the dictionary in.
     :param file_dictionary_path: Path in dictionary structure of existing hdf5 file to store the dictionary in.
     :param file_compression: possible file compression for the hdf5 output file. Values are: gzip, lzf and szip.
@@ -63,7 +63,7 @@ def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/",
                 elif isinstance(item, AbsorptionSpectrum):
                     data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/", serializer.serialize(item))
                 else:
-                    if isinstance(item, (bytes, int, np.int, np.int64, np.float, float, str, bool, np.bool, np.bool_)):
+                    if isinstance(item, (bytes, int, np.int64, float, str, bool, np.bool_)):
                         try:
                             h5file[path + key] = item
                         except (OSError, RuntimeError, ValueError):
@@ -103,8 +103,15 @@ def save_hdf5(dictionary: dict, file_path: str, file_dictionary_path: str = "/",
     else:
         writing_mode = "r+"
 
-    with h5py.File(file_path, writing_mode) as h5file:
-        data_grabber(h5file, file_dictionary_path, dictionary)
+    if isinstance(save_item, dict):
+        with h5py.File(file_path, writing_mode) as h5file:
+            data_grabber(h5file, file_dictionary_path, save_item)
+    else:
+        save_key = file_dictionary_path.split("/")[-2]
+        dictionary = {save_key: save_item}
+        file_dictionary_path = "/".join(file_dictionary_path.split("/")[:-2]) + "/"
+        with h5py.File(file_path, writing_mode) as h5file:
+            data_grabber(h5file, file_dictionary_path, dictionary)
 
 
 def load_hdf5(file_path, file_dictionary_path="/"):
@@ -162,7 +169,11 @@ def load_hdf5(file_path, file_dictionary_path="/"):
         return data_grabber(h5file, file_dictionary_path)
 
 
-def load_data_field(file_path, settings, data_field, wavelength=None, upsampled_data=None):
-    dict_path = generate_dict_path(settings, data_field, wavelength, upsampled_data)
-    data = load_hdf5(file_path, dict_path)[data_field]
+def load_data_field(file_path, data_field, wavelength=None):
+    dict_path = generate_dict_path(data_field, wavelength=wavelength)
+    data_field_key = data_field
+    if wavelength is not None:
+        data_field_key = dict_path.split("/")[-2]
+        dict_path = "/".join(dict_path.split("/")[:-2])
+    data = load_hdf5(file_path, dict_path)[data_field_key]
     return data

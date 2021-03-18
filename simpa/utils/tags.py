@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -307,6 +307,12 @@ class Tags:
     DIGITAL_DEVICE_RSOM = "digital_device_rsom"
     """
     Corresponds to the RSOMExplorerP50 device.\n
+    Usage: SIMPA package, naming convention
+    """
+
+    DIGITAL_DEVICE_INVISION = "digital_device_invision"
+    """
+    Corresponds to the InVision 256-TF device.\n
     Usage: SIMPA package, naming convention
     """
 

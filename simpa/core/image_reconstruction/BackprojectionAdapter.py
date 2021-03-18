@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -82,12 +82,6 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         sensor_positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings) / 1000
 
-        print("SOS:", sound_speed_m)
-        print("Target dimensions:", target_dim_m)
-        print("Sensor positions:", np.shape(sensor_positions))
-        print("Target resolution:", resolution_m)
-        print("Sampling frequency:", sampling_frequency)
-
         return self.backprojection3D_torch(time_series_sensor_data, speed_of_sound_m=sound_speed_m,
                                            target_dim_m=target_dim_m, resolution_m=resolution_m,
                                            sensor_positions_m=sensor_positions, sampling_frequency_Hz=sampling_frequency,
@@ -119,8 +113,6 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
 
         time_series_data = torch.from_numpy(time_series_data.copy()).float().to(device)
 
-        print(np.shape(time_series_data))
-
         target_dim_m = torch.from_numpy(target_dim_m.copy()).float().to(device)
         sensor_positions_m = torch.from_numpy(sensor_positions_m.copy()).float().to(device)
 
@@ -134,15 +126,16 @@ class BackprojectionAdapter(ReconstructionAdapterBase):
         sizeT = len(time_vector)
         back_projection = torch.zeros(*target_dim_voxels, names=None).float().to(device)
 
-        edges_m = torch.true_divide(target_dim_voxels, 2) * resolution_m
-        gridsizes_x = torch.linspace(-edges_m[0], edges_m[0], target_dim_voxels[0])
-        gridsizes_y = torch.linspace(-edges_m[1], edges_m[1], target_dim_voxels[1])
-        gridsizes_z = torch.linspace(-edges_m[2], edges_m[2], target_dim_voxels[2])
+        edges_m = target_dim_voxels * resolution_m
+        gridsizes_x = torch.linspace(0, edges_m[0], target_dim_voxels[0])
+        gridsizes_y = torch.linspace(0, edges_m[1], target_dim_voxels[1])
+        gridsizes_z = torch.linspace(0, edges_m[2], target_dim_voxels[2])
         gridsizes = [gridsizes_x, gridsizes_y, gridsizes_z]
 
         zero = torch.zeros([1], names=None).to(device)
         mesh = torch.zeros([3, len(gridsizes[0]), len(gridsizes[1]), len(gridsizes[2])], names=None).to(device)
         torch.stack(torch.meshgrid(*gridsizes), out=mesh)
+        mesh_cpu = mesh.cpu().numpy()
 
         for det_idx in range(num_detectors):
             print(det_idx, "/", num_detectors)
