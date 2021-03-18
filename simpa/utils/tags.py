@@ -394,6 +394,13 @@ class Tags:
     Usage: naming convention
     """
 
+    MCX_SEED = ("mcx_seed", (int, np.integer))
+    """
+    Specific seed for random initialisation in mcx.\n
+    if not set, Tags.RANDOM_SEED will be used instead.
+    Usage: module optical_modelling, adapter mcx_adapter
+    """
+
     ILLUMINATION_TYPE = ("optical_model_illumination_type", str)
     """
     Type of the illumination geometry used in mcx.\n
@@ -851,79 +858,79 @@ class Tags:
     CROP_IMAGE = ("crop_image", bool)
     """
     If True, the PA image cropped in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     CROP_POWER_OF_TWO = ("crop_power_of_two", bool)
     """
     If True, the PA image cropped to the shape as the nearest power of two in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     PERFORM_UPSAMPLING = ("sample", bool)
     """
     If True, the PA image upsampled in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     UPSAMPLING_METHOD = ("upsampling_method", str)
     """
     Choice of the upsampling method used in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     UPSAMPLING_METHOD_DEEP_LEARNING = "deeplearning"
     """
     Corresponds to deep learning as the upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_METHOD_NEAREST_NEIGHBOUR = "nearestneighbour"
     """
     Corresponds to nearest neighbour as the upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_METHOD_BILINEAR = "bilinear"
     """
     Corresponds to the bilinear upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_METHOD_LANCZOS2 = "lanczos2"
     """
     Corresponds to lanczos with kernel size 2 as the upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_METHOD_LANCZOS3 = "lanczos3"
     """
     Corresponds to lanczos with kernel size 3 as the upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_SCRIPT = ("upsampling_script", str)
     """
     Name of the upsampling script used for the lanczos upsampling.\n
-    Usage: module process
+    Usage: module processing
     """
 
     UPSAMPLING_SCRIPT_LOCATION = ("upsampling_script_location", str)
     """
     Absolute path to the upsampling script used for the lanczos upsampling.\n
-    Usage: module process
+    Usage: module processing
     """
 
     UPSCALE_FACTOR = ("upscale_factor", (int, float, np.int_, np.float_))
     """
     Upscale factor of the upsampling in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     DL_MODEL_PATH = ("dl_model_path", str)
     """
     Absolute path to the deep learning model used for the deep learning upsampling.\n
-    Usage: module process
+    Usage: module processing
     """
 
     # physical property volume types

@@ -23,12 +23,12 @@
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
-from simpa_examples.access_saved_PAI_data import visualise_data
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "path/to/save/folder"
-MCX_BINARY_PATH = "/path/to/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
+SAVE_PATH = "D:/mcx-tmp-output/"
+MCX_BINARY_PATH = "C:/mcx-bin/bin/Release/mcx-exe.exe"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30

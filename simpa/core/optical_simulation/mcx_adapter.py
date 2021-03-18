@@ -139,8 +139,11 @@ class McxAdapter(OpticalForwardAdapterBase):
                 "VolumeFile": settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".bin"
             }}
 
-        if Tags.RANDOM_SEED in settings:
-            settings_dict["RNGSeed"] = settings[Tags.RANDOM_SEED]
+        if Tags.MCX_SEED not in settings:
+            if Tags.RANDOM_SEED in settings:
+                settings_dict["RNGSeed"] = settings[Tags.RANDOM_SEED]
+        else:
+            settings_dict["RNGSeed"] = settings[Tags.MCX_SEED]
 
         tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".json"
         with open(tmp_json_filename, "w") as json_file:
@@ -168,8 +171,8 @@ class McxAdapter(OpticalForwardAdapterBase):
         if np.shape(fluence)[3] == 1:
             fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
 
-        #os.remove(tmp_input_path)
-        #os.remove(tmp_output_file+".mc2")
-        #os.remove(tmp_json_filename)
+        os.remove(tmp_input_path)
+        os.remove(tmp_output_file+".mc2")
+        os.remove(tmp_json_filename)
 
         return fluence

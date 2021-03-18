@@ -27,7 +27,7 @@ from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
 import numpy as np
 import time
-from simpa_examples.access_saved_PAI_data import visualise_data
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 
 PATH = "/path/to/time/series/file.hdf5"
 WAVELENGTH = 700
