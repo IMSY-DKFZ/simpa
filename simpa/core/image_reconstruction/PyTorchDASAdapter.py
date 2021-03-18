@@ -197,7 +197,30 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                 and Tags.RECONSTRUCTION_BMODE_METHOD in settings:
             reconstructed = apply_b_mode(reconstructed, method=settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
-        return reconstructed
+        return normalize(reconstructed)
+
+
+def normalize(data: np.ndarray = None) -> np.ndarray:
+    """
+    Normalizes the given data by applying min max normalization.
+    The resulting array has values between 0 and 1 inclusive.
+
+    :param data: (numpy array) data to be normalized
+    :return: (numpy array) normalized array
+    """
+
+    if data is None:
+        raise AttributeError("Data must not be none in order to normalize it.")
+
+    min = data.min()
+    max = data.max()
+    output = (data - min) / (max - min)
+
+    # sanity check
+    if ((0 > output) | (1 < output)).any():
+        raise ValueError("All values should be between 0 and 1 now, but this doesn't seem to be the case.")
+
+    return output
 
 
 def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZATION_BOX,
