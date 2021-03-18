@@ -26,7 +26,7 @@ from simpa.core.optical_simulation.optical_modelling import run_optical_forward_
 from simpa.core.acoustic_simulation.acoustic_modelling import run_acoustic_forward_model
 from simpa.core.noise_simulation.noise_modelling import apply_noise_model_to_time_series_data
 from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
-from simpa.process.sampling import upsample
+from simpa.processing.sampling import upsample
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.settings_generator import Settings
