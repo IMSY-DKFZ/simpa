@@ -21,11 +21,11 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.core.volume_creation.volume_creation import run_volume_creation
+from simpa.core.volume_creation.volume_modelling import run_volume_creation
 from simpa.core.optical_simulation.optical_modelling import run_optical_forward_model
 from simpa.core.acoustic_simulation.acoustic_modelling import run_acoustic_forward_model
 from simpa.core.noise_simulation.noise_modelling import apply_noise_model_to_time_series_data
-from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
+from simpa.core.image_reconstruction.reconstruction_modelling import run_reconstruction_algorithm
 from simpa.processing.sampling import upsample
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
@@ -35,7 +35,7 @@ import os
 import json
 
 
-def simulate(settings):
+def simulate(simulation_pipeline: list, settings: Settings):
     """
     This method constitutes the staring point for the simulation pipeline
     of the SIMPA toolkit. It calls all relevant and wanted simulation modules in the
@@ -56,12 +56,16 @@ def simulate(settings):
 
                 io_handler.save_hdf5(simulation_data, settings)
 
+    :param simulation_pipeline: a list of callable functions
     :param settings: settings dictionary containing the simulation instructions
     :return: list with the save paths of the simulated data within the HDF5 file.
     """
 
     if not isinstance(settings, Settings):
         raise TypeError("Use a Settings instance from simpa.utils.settings_generator as simulation input.")
+
+    if not isinstance(simulation_pipeline, list):
+        raise TypeError("The simulation pipeline must be a list that contains callable functions.")
 
     simpa_output = dict()
     path = settings[Tags.SIMULATION_PATH] + "/"
@@ -94,57 +98,14 @@ def simulate(settings):
             np.random.seed(None)
 
         settings[Tags.WAVELENGTH] = wavelength
-        volume_output_path = run_volume_creation(settings)
 
-        optical_output_path = None
-        acoustic_output_path = None
-
-        if Tags.RUN_OPTICAL_MODEL in settings and settings[Tags.RUN_OPTICAL_MODEL]:
-            optical_output_path = run_optical_forward_model(settings)
-
-        if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
-            if Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW not in settings or settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
-                extract_field_of_view(settings, volume_output_path, optical_output_path, acoustic_output_path)
-
-        if Tags.PERFORM_UPSAMPLING in settings:
-            if settings[Tags.PERFORM_UPSAMPLING]:
-                upsample(settings)
-
-        if Tags.RUN_ACOUSTIC_MODEL in settings:
-            if settings[Tags.RUN_ACOUSTIC_MODEL]:
-                acoustic_output_path = run_acoustic_forward_model(settings)
-                if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
-                    apply_noise_model_to_time_series_data(settings, acoustic_output_path)
-
-        if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings:
-            if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-                perform_reconstruction(settings)
+        for pipeline_element in simulation_pipeline:
+            if isinstance(pipeline_element, tuple):
+                method, args = pipeline_element
+                method(settings, args)
+            else:
+                pipeline_element(settings)
 
     # Quick and dirty fix:
     all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
-    save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH])
-
-
-def extract_field_of_view(settings, volume_path, optical_path, acoustic_path):
-    wavelength = str(settings[Tags.WAVELENGTH])
-    if volume_path is not None:
-        volume_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], volume_path)
-        sizes = np.shape(volume_data[Tags.PROPERTY_ABSORPTION_PER_CM])
-        for key, value in volume_data.items():
-            if key in [Tags.PROPERTY_ABSORPTION_PER_CM, Tags.PROPERTY_SCATTERING_PER_CM, Tags.PROPERTY_ANISOTROPY]:
-                if np.shape(value[wavelength]) == sizes:
-                    volume_data[key][wavelength] = value[:, int(sizes[1] / 2), :]
-            else:
-                if np.shape(value) == sizes:
-                    volume_data[key] = value[:, int(sizes[1] / 2), :]
-
-        save_hdf5(volume_data, settings[Tags.SIMPA_OUTPUT_PATH], volume_path)
-
-    if optical_path is not None:
-        optical_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-        fluence = optical_data['fluence'][wavelength]
-        sizes = np.shape(fluence)
-        optical_data["fluence"][wavelength] = fluence[:, int(sizes[1] / 2), :]
-        optical_data['initial_pressure'][wavelength] = optical_data['initial_pressure'][wavelength][:, int(sizes[1] / 2), :]
-
-        save_hdf5(optical_data, settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
+    save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH], file_compression="gzip")

@@ -27,6 +27,11 @@ from simpa.utils.settings_generator import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 
+from simpa.pipeline_components import run_volume_creation
+from simpa.pipeline_components import run_reconstruction_algorithm
+from simpa.pipeline_components import run_acoustic_forward_model
+from simpa.pipeline_components import run_optical_forward_model
+
 # TODO change these paths to the desired executable and save folder
 SAVE_PATH = "path/to/save/folder"
 MCX_BINARY_PATH = "/path/to/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
@@ -95,6 +100,13 @@ def create_example_tissue():
 np.random.seed(RANDOM_SEED)
 VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 
+SIMUATION_PIPELINE = [
+    run_volume_creation,
+    run_optical_forward_model,
+    run_acoustic_forward_model,
+    run_reconstruction_algorithm
+]
+
 settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: RANDOM_SEED,
@@ -111,7 +123,6 @@ settings = {
             Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
 
             # The following parameters set the optical forward model
-            Tags.RUN_OPTICAL_MODEL: True,
             Tags.WAVELENGTHS: [700],
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
             Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
@@ -121,7 +132,6 @@ settings = {
 
             # The following parameters tell the script that we do not want any extra
             # modelling steps
-            Tags.RUN_ACOUSTIC_MODEL: True,
             Tags.ACOUSTIC_SIMULATION_3D: False,
             Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
             Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
@@ -139,10 +149,8 @@ settings = {
             Tags.MOVIENAME: "visualization_log",
             Tags.ACOUSTIC_LOG_SCALE: True,
 
-            Tags.APPLY_NOISE_MODEL: False,
             Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
 
-            Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
             Tags.TUKEY_WINDOW_ALPHA: 0.5,
@@ -150,7 +158,7 @@ settings = {
             Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
             Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
-            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
+            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
         }
 settings = Settings(settings)
 np.random.seed(RANDOM_SEED)
@@ -159,7 +167,7 @@ settings[Tags.STRUCTURES] = create_example_tissue()
 print("Simulating ", RANDOM_SEED)
 import time
 timer = time.time()
-simulate(settings)
+simulate(SIMUATION_PIPELINE, settings)
 print("Needed", time.time()-timer, "seconds")
 print("Simulating ", RANDOM_SEED, "[Done]")
 

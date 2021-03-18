@@ -24,7 +24,7 @@ from simpa.io_handling import load_hdf5, load_data_field
 from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
-from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
+from simpa.core.image_reconstruction.reconstruction_modelling import run_reconstruction_algorithm
 import numpy as np
 import time
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
@@ -48,7 +48,7 @@ print(Tags.ACOUSTIC_SIMULATION_3D in settings)
 print(settings[Tags.ACOUSTIC_SIMULATION_3D])
 start = time.time()
 
-perform_reconstruction(settings)
+run_reconstruction_algorithm(settings)
 
 print("Took", time.time()-start, "seconds")
 

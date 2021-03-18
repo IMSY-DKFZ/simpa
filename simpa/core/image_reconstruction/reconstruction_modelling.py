@@ -29,7 +29,7 @@ from simpa.core.image_reconstruction.PyTorchDASAdapter import PyTorchDASAdapter
 from simpa.io_handling.io_hdf5 import save_hdf5
 
 
-def perform_reconstruction(settings: dict) -> str:
+def run_reconstruction_algorithm(settings: dict) -> str:
     """
     This method is the main entry point to perform image reconstruction using the SIMPA toolkit.
     All information necessary for the respective reconstruction method must be contained in the
