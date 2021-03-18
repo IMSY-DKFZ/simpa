@@ -26,6 +26,7 @@ from simpa.utils.settings_generator import Settings
 from simpa.core.simulation import simulate
 import os
 from simpa_tests.test_utils import create_test_structure_parameters
+from simpa.pipeline_components import *
 
 
 class TestCreateVolume(unittest.TestCase):
@@ -45,22 +46,23 @@ class TestCreateVolume(unittest.TestCase):
             Tags.RANDOM_SEED: random_seed,
             Tags.VOLUME_NAME: "FlowPhantom_" + str(random_seed).zfill(6),
             Tags.SIMULATION_PATH: ".",
-            Tags.RUN_OPTICAL_MODEL: False,
-            Tags.RUN_ACOUSTIC_MODEL: False,
-            Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
             Tags.SPACING_MM: 0.3,
             Tags.DIM_VOLUME_Z_MM: 5,
             Tags.DIM_VOLUME_X_MM: 4,
             Tags.DIM_VOLUME_Y_MM: 3
         }
+
+        simulation_pipeline = [
+            run_volume_creation
+        ]
+        
         print("Simulating ", random_seed)
         settings = Settings(settings)
         settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
-        simulate(settings)
+        simulate(simulation_pipeline, settings)
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
            os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
-            # Delete the created file
             os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
 
         print("Simulating ", random_seed, "[Done]")

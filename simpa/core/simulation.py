@@ -108,4 +108,4 @@ def simulate(simulation_pipeline: list, settings: Settings):
 
     # Quick and dirty fix:
     all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
-    save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH], file_compression="gzip")
+    save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH])
