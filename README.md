@@ -81,7 +81,7 @@ base.
 
 Please make sure that you have included unit tests for your code and that all previous tests still run through.
 
-There is a regular SIMPA status meeting at 10:00 CET/CEST and you are very welcome to participate and
+There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST and you are very welcome to participate and
 raise any issues or suggest new features. You can join the meeting using the following link:
 
 https://meet.google.com/rze-bxej-cvj
