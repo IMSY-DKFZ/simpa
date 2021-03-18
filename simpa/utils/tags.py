@@ -1230,12 +1230,6 @@ class Tags:
     Usage: naming convention
     """
 
-    CUSTOM_VOLUMES = "custom_volumes"
-    """
-    Tag containing the custom dict of volumes used for simulations.
-    Usage: naming convention
-    """
-
     MINIMUM_REQUIRED_VOLUMES = [PROPERTY_ABSORPTION_PER_CM,
                                 PROPERTY_SCATTERING_PER_CM,
                                 PROPERTY_ANISOTROPY,

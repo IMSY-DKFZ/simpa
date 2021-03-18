@@ -24,7 +24,7 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
-
+from simpa.io_handling.io_hdf5 import load_data_field
 
 import numpy as np
 
@@ -98,7 +98,7 @@ settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    # Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+    Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 
     # Simulation Device
     # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
@@ -121,22 +121,7 @@ settings = {
     Tags.APPLY_NOISE_MODEL: False,
     Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
-    # custom volumes
-    Tags.CUSTOM_VOLUMES: {'700': dict(mua=np.random.rand(int(VOLUME_TRANSDUCER_DIM_IN_MM/SPACING),
-                                                         int(VOLUME_PLANAR_DIM_IN_MM/SPACING),
-                                                         int(VOLUME_HEIGHT_IN_MM/SPACING)),
-                                      mus=np.random.rand(int(VOLUME_TRANSDUCER_DIM_IN_MM / SPACING),
-                                                         int(VOLUME_PLANAR_DIM_IN_MM / SPACING),
-                                                         int(VOLUME_HEIGHT_IN_MM / SPACING)),
-                                      g=0.9*np.ones((int(VOLUME_TRANSDUCER_DIM_IN_MM/SPACING),
-                                                    int(VOLUME_PLANAR_DIM_IN_MM/SPACING),
-                                                    int(VOLUME_HEIGHT_IN_MM/SPACING))),
-                                      gamma=np.ones((int(VOLUME_TRANSDUCER_DIM_IN_MM/SPACING),
-                                                    int(VOLUME_PLANAR_DIM_IN_MM/SPACING),
-                                                    int(VOLUME_HEIGHT_IN_MM/SPACING))))},
 }
-for key in settings[Tags.CUSTOM_VOLUMES]['700']:
-    settings[Tags.CUSTOM_VOLUMES]['700'][key][..., 0] = 0
 
 settings = Settings(settings)
 settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
@@ -166,27 +151,21 @@ if VISUALIZE:
     else:
         WAVELENGTH = 700
 
-    fluence = (file['simulations']['original_data']['optical_forward_model_output']
-    [str(WAVELENGTH)]['fluence'])
+    fluence = load_data_field(PATH, Tags.OPTICAL_MODEL_FLUENCE, wavelength=700)
 
-    dr = (file['simulations']['original_data']['optical_forward_model_output']
-    [str(WAVELENGTH)][Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE])
-    dr_pos = (file['simulations']['original_data']['optical_forward_model_output']
-    [str(WAVELENGTH)][Tags.SURFACE_LAYER_POSITION])
+    dr = load_data_field(PATH, Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE, wavelength=700)
+    dr_pos = file['simulations']['optical_forward_model_output'][Tags.SURFACE_LAYER_POSITION]
     depth_map = np.zeros_like(dr)
     depth_map[dr_pos[0], dr_pos[1]] = dr_pos[2]
 
-    initial_pressure = (file['simulations']['original_data']
-    ['optical_forward_model_output']
-    [str(WAVELENGTH)]['initial_pressure'])
-    absorption = (file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]['mua'])
-    if 'seg' in file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]:
-        segmentation = (file['simulations']['original_data']['simulation_properties'][str(WAVELENGTH)]['seg'])
+    initial_pressure = (file['simulations']['optical_forward_model_output']['initial_pressure'][str(WAVELENGTH)])
+    absorption = (file['simulations']['simulation_properties']['mua'][str(WAVELENGTH)])
+    if 'seg' in file['simulations']['simulation_properties'][str(WAVELENGTH)]:
+        segmentation = (file['simulations']['simulation_properties']['seg'][str(WAVELENGTH)])
     else:
         segmentation = np.zeros_like(fluence)
     values = []
     names = []
-
     for string in SegmentationClasses.__dict__:
         if string[0:2] != "__":
             values.append(SegmentationClasses.__dict__[string])

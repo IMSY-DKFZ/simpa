@@ -33,29 +33,15 @@ from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.utils import create_deformation_settings
 
 
-def run_volume_creation(global_settings: Settings, wavelength: float):
+def run_volume_creation(global_settings: Settings):
     """
     This method is the main entry point of volume creation for the SIMPA framework.
     It uses the Tags.VOLUME_CREATOR tag to determine which of the volume creators
     should be used to create the simulation phantom.
 
     :param global_settings: the settings dictionary that contains the simulation instructions
-    :param wavelength: value of wavelength for volume creation
     """
     print("VOLUME CREATION")
-    if Tags.CUSTOM_VOLUMES in global_settings and Tags.VOLUME_CREATOR in global_settings:
-        raise ValueError(f"Both tags where provided but only one is allowed: "
-                         "Tags.CUSTOM_VOLUMES, Tags.VOLUME_CREATOR")
-    if Tags.CUSTOM_VOLUMES in global_settings:
-        volumes = global_settings[Tags.CUSTOM_VOLUMES][str(wavelength)]
-        check_volumes(volumes)
-        volume_path = save_volumes_to_file(global_settings, volumes)
-        return volume_path
-
-    if Tags.CUSTOM_VOLUMES not in global_settings and Tags.VOLUME_CREATOR not in global_settings:
-        raise AssertionError("Tags.VOLUME_CREATOR nor Tags.CUSTOM_VOLUMES tag were not specified in the settings. "
-                             "Either one is required. Skipping optical modelling.")
-
     model = global_settings[Tags.VOLUME_CREATOR]
 
     if model == Tags.VOLUME_CREATOR_VERSATILE:
