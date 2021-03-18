@@ -24,7 +24,7 @@ import unittest
 from simpa.utils import Tags
 from simpa.utils.settings_generator import Settings
 import numpy as np
-from simpa_tests.test_utils import assert_equals_recursive
+from simpa_tests.utils_tests import assert_equals_recursive
 import os
 
 
