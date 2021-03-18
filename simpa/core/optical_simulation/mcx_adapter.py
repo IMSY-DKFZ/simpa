@@ -24,8 +24,7 @@ import numpy as np
 import struct
 import subprocess
 from simpa.utils import Tags
-from simpa.io_handling.io_hdf5 import load_hdf5
-from simpa.utils.constants import SaveFilePaths
+from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.core.optical_simulation import OpticalForwardAdapterBase
 import json
 import os
@@ -153,21 +152,9 @@ class McxAdapter(OpticalForwardAdapterBase):
         cmd.append(tmp_json_filename)
         cmd.append("-O")
         cmd.append("F")
-        if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
-            volume_path = SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA, str(settings[Tags.WAVELENGTH]))
-            volumes = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], volume_path)
-            zero_layer_present = True
-            no_zero_layer_volumes = []
-            for key in volumes:
-                if not np.all(volumes[key][..., 0] == 0):
-                    zero_layer_present = False
-                    no_zero_layer_volumes.append(key)
-            if no_zero_layer_volumes:
-                raise ValueError("Saving diffuse reflectance was specified but zero layer was not appended to "
-                                 f" volumes with keys: {no_zero_layer_volumes}")
-            if zero_layer_present:
-                cmd.append("-X")
-                cmd.append("1")
+        if settings.get(Tags.SAVE_DIFFUSE_REFLECTANCE):
+            cmd.append("-X")
+            cmd.append("1")
 
         res = subprocess.run(cmd)
 
