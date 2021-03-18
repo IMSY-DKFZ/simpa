@@ -26,7 +26,7 @@ from simpa.core.optical_simulation.optical_modelling import run_optical_forward_
 from simpa.core.acoustic_simulation.acoustic_modelling import run_acoustic_forward_model
 from simpa.core.noise_simulation.noise_modelling import apply_noise_model_to_time_series_data
 from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
-from simpa.process.sampling import upsample
+from simpa.processing.sampling import upsample
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.settings_generator import Settings
@@ -64,10 +64,6 @@ def simulate(settings):
         raise TypeError("Use a Settings instance from simpa.utils.settings_generator as simulation input.")
 
     simpa_output = dict()
-    volume_output_paths = []
-    optical_output_paths = []
-    acoustic_output_paths = []
-    reconstruction_output_paths = []
     path = settings[Tags.SIMULATION_PATH] + "/"
     if not os.path.exists(path):
         os.makedirs(path)
@@ -99,7 +95,6 @@ def simulate(settings):
 
         settings[Tags.WAVELENGTH] = wavelength
         volume_output_path = run_volume_creation(settings)
-        volume_output_paths.append(volume_output_path)
 
         optical_output_path = None
         acoustic_output_path = None
@@ -113,43 +108,43 @@ def simulate(settings):
 
         if Tags.PERFORM_UPSAMPLING in settings:
             if settings[Tags.PERFORM_UPSAMPLING]:
-                optical_output_path = upsample(settings)
+                upsample(settings)
 
         if Tags.RUN_ACOUSTIC_MODEL in settings:
             if settings[Tags.RUN_ACOUSTIC_MODEL]:
                 acoustic_output_path = run_acoustic_forward_model(settings)
                 if (Tags.APPLY_NOISE_MODEL in settings) and settings[Tags.APPLY_NOISE_MODEL]:
-                    acoustic_output_path = apply_noise_model_to_time_series_data(settings, acoustic_output_path)
+                    apply_noise_model_to_time_series_data(settings, acoustic_output_path)
 
         if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings:
             if settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-                reconstruction_output_path = perform_reconstruction(settings)
+                perform_reconstruction(settings)
 
     # Quick and dirty fix:
     all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
     save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH])
 
-    return [volume_output_paths, optical_output_paths, acoustic_output_paths, reconstruction_output_paths]
-
 
 def extract_field_of_view(settings, volume_path, optical_path, acoustic_path):
+    wavelength = str(settings[Tags.WAVELENGTH])
     if volume_path is not None:
         volume_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], volume_path)
         sizes = np.shape(volume_data[Tags.PROPERTY_ABSORPTION_PER_CM])
         for key, value in volume_data.items():
-            if np.shape(value) == sizes:
-                volume_data[key] = value[:, int(sizes[1] / 2), :]
+            if key in [Tags.PROPERTY_ABSORPTION_PER_CM, Tags.PROPERTY_SCATTERING_PER_CM, Tags.PROPERTY_ANISOTROPY]:
+                if np.shape(value[wavelength]) == sizes:
+                    volume_data[key][wavelength] = value[:, int(sizes[1] / 2), :]
+            else:
+                if np.shape(value) == sizes:
+                    volume_data[key] = value[:, int(sizes[1] / 2), :]
 
         save_hdf5(volume_data, settings[Tags.SIMPA_OUTPUT_PATH], volume_path)
 
     if optical_path is not None:
         optical_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-        fluence = optical_data['fluence']
+        fluence = optical_data['fluence'][wavelength]
         sizes = np.shape(fluence)
-        optical_data["fluence"] = fluence[:, int(sizes[1] / 2), :]
-        optical_data['initial_pressure'] = optical_data['initial_pressure'][:, int(sizes[1] / 2), :]
+        optical_data["fluence"][wavelength] = fluence[:, int(sizes[1] / 2), :]
+        optical_data['initial_pressure'][wavelength] = optical_data['initial_pressure'][wavelength][:, int(sizes[1] / 2), :]
 
         save_hdf5(optical_data, settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-
-    if acoustic_path is not None:
-        acoustic_data = np.load(acoustic_path)

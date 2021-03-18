@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags, SaveFilePaths, calculate
+from simpa.utils import Tags, calculate
 from simpa.core.optical_simulation.mcx_adapter import McxAdapter
 from simpa.core.optical_simulation.mcxyz_adapter import McxyzAdapter
 from simpa.core.optical_simulation.test_optical_adapter import TestOpticalAdapter
@@ -54,7 +54,7 @@ def run_optical_forward_model(settings):
 
     optical_properties = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_properties_path)
     absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(settings[Tags.WAVELENGTH])]
-    gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER][str(settings[Tags.WAVELENGTH])]
+    gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
     initial_pressure = absorption * fluence
     if Tags.PERFORM_UPSAMPLING not in settings or not settings[Tags.PERFORM_UPSAMPLING]:
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
@@ -69,9 +69,9 @@ def run_optical_forward_model(settings):
             initial_pressure = absorption * fluence
     else:
         units = Tags.UNITS_ARBITRARY
-        #  TODO: what happens if up-sampling is set to True?
 
     optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
+
     optical_output = {
         Tags.OPTICAL_MODEL_FLUENCE: {settings[Tags.WAVELENGTH]: fluence},
         Tags.OPTICAL_MODEL_INITIAL_PRESSURE: {settings[Tags.WAVELENGTH]: initial_pressure},
@@ -85,6 +85,7 @@ def run_optical_forward_model(settings):
         optical_output[Tags.OPTICAL_MODEL_UNITS] = units
 
     save_hdf5(optical_output, settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
+
     return optical_output_path
 
 

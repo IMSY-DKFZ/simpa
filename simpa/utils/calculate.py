@@ -149,7 +149,7 @@ def rotation_x(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.matrix([[1, 0, 0],
+    return np.array([[1, 0, 0],
                       [0, np.cos(theta), -np.sin(theta)],
                       [0, np.sin(theta), np.cos(theta)]])
 
@@ -161,7 +161,7 @@ def rotation_y(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.matrix([[np.cos(theta), 0, np.sin(theta)],
+    return np.array([[np.cos(theta), 0, np.sin(theta)],
                       [0, 1, 0],
                       [-np.sin(theta), 0, np.cos(theta)]])
 
@@ -173,7 +173,7 @@ def rotation_z(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.matrix([[np.cos(theta), -np.sin(theta), 0],
+    return np.array([[np.cos(theta), -np.sin(theta), 0],
                       [np.sin(theta), np.cos(theta), 0],
                       [0, 0, 1]])
 

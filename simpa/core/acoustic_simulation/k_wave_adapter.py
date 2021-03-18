@@ -84,30 +84,20 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
 
         data_dict = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 
-        if Tags.PERFORM_UPSAMPLING in settings:
-            if settings[Tags.PERFORM_UPSAMPLING]:
-                tmp_ac_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH],
-                                        SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.UPSAMPLED_DATA,
-                                                                                   settings[Tags.WAVELENGTH]))
-            else:
-                tmp_ac_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH],
-                                        SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA,
-                                                                                   settings[Tags.WAVELENGTH]))
-        else:
-            tmp_ac_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH],
-                                    SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA,
-                                                                               settings[Tags.WAVELENGTH]))
+        tmp_ac_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], SaveFilePaths.SIMULATION_PROPERTIES)
 
         if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
             axes = (0, 1)
         else:
             axes = (0, 2)
+        wavelength = str(settings[Tags.WAVELENGTH])
         data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3, axes=axes)
         data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3, axes=axes)
         data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
-        data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE],
-                                                                          axes=axes))
-        data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE], axes=axes))
+        data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(
+            np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength], axes=axes))
+        data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(
+            np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE][wavelength], axes=axes))
 
         PA_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
         PA_device.check_settings_prerequisites(settings)
@@ -203,10 +193,10 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
             raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
 
             if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
-                if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_DAS,
+                if settings[Tags.RECONSTRUCTION_ALGORITHM] in [Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
+                                                               Tags.RECONSTRUCTION_ALGORITHM_DAS,
                                                                Tags.RECONSTRUCTION_ALGORITHM_DMAS,
-                                                               Tags.RECONSTRUCTION_ALGORITHM_SDMAS,
-                                                               Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION]:
+                                                               Tags.RECONSTRUCTION_ALGORITHM_SDMAS]:
                     raw_time_series_data = np.average(raw_time_series_data, axis=1)
 
         settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])

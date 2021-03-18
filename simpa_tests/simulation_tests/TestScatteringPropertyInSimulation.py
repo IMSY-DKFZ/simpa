@@ -21,18 +21,19 @@
 # SOFTWARE.
 
 import unittest
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings, generate_dict_path
 from simpa.core import run_optical_forward_model
+from simpa.io_handling import load_data_field, save_hdf5
 import numpy as np
 import os
 
 
 """
-This Script uses the Lambert-Beer law to simpa_tests mcx or mcxyz for the correct
+This Script uses the Lambert-Beer law to test mcx or mcxyz for the correct
 attenuation of a photon beam passing through a thin absorbing and/or scattering
 slab.
 
-All tests simpa_tests a scenario, where a pencil source in z-dir in the middle 
+All tests test a scenario, where a pencil source in z-dir in the middle 
 of the xy-plane emits photons in a 27x27x100 medium.
 In the middle of the medium is an absorbing and/or scattering slab of 1 pixel in the xy-plane and some distance in z-dir.
 In all tests, the fluence in the middle of the xy-plane and in z-dir the pixels 10 and 90 is measured.
@@ -43,8 +44,8 @@ Usage of this script:
 The script has to be in the same folder as the mcx executable binary.
 If this is met, the script can just be run.
 
-Use the simpa_tests functions to simpa_tests the specific cases that are explained in the respective tests.
-Please read the description of every simpa_tests and run them one after the other.
+Use the test functions to test the specific cases that are explained in the respective tests.
+Please read the description of every test and run them one after the other.
 Be aware that by running multiple tests at once, the previous tests are overwritten.
 """
 
@@ -55,30 +56,35 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
     def setUp(self):
         """
         This is not a completely autonomous simpa_tests case yet.
-        If run on another pc, please adjust the SIMULATION_PATH and MODEL_BINARY_PATH fields.
-        :return:
+        If run on another pc, please adjust the SIMULATION_PATH and MCX_BINARY_PATH.
         """
+
+        SIMULATION_PATH = "/path/to/save/location"
+        MCX_BINARY_PATH = "/path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
+        VOLUME_NAME = "TestVolume"
+
         print("setUp")
         self.settings = {
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
-            Tags.VOLUME_NAME: "TestVolume",
-            Tags.SIMULATION_PATH: "/home/kris/hard_drive/mcx_test/simpa_tests",
+            Tags.VOLUME_NAME: VOLUME_NAME,
+            Tags.SIMULATION_PATH: SIMULATION_PATH,
             Tags.RUN_OPTICAL_MODEL: True,
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e8,
-            Tags.OPTICAL_MODEL_BINARY_PATH: "/home/kris/hard_drive/cami-experimental/PAI/MCX/mcx-master/bin/mcx",
+            Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
             Tags.RUN_ACOUSTIC_MODEL: False,
             Tags.SPACING_MM: 0.5,
+            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL
         }
 
-        self.volume_path = self.settings[Tags.SIMULATION_PATH] + "/"+ self.settings[Tags.VOLUME_NAME] + "/" \
-                           + self.settings[Tags.VOLUME_NAME] + "_" + str(self.settings[Tags.WAVELENGTH]) + ".npz"
+        self.settings = Settings(self.settings)
 
-        folder_name = self.settings[Tags.SIMULATION_PATH] + "/"+ self.settings[Tags.VOLUME_NAME] + "/"
+        folder_name = self.settings[Tags.SIMULATION_PATH]
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
+        self.settings[Tags.SIMPA_OUTPUT_PATH] = folder_name + "/" + self.settings[Tags.VOLUME_NAME] + ".hdf5"
 
         self.xy_dim = 27
         self.z_dim = 100
@@ -91,6 +97,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
     def tearDown(self):
         print("tearDown")
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
 
     def test_both(self):
         """
@@ -150,7 +157,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         """
         self.perform_test(20, 0, np.e ** 2, 1)
 
-    def perform_test(self, distance=10, volume_idx=0, decay_ratio=np.e, volume_value=1.0):
+    def perform_test(self, distance=10, volume_idx: (int, list) = 0, decay_ratio=np.e, volume_value=1.0):
 
         # Define the volume of the thin slab
 
@@ -159,29 +166,30 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
                     volume_idx] = volume_value
         print(int(self.xy_dim/2))
 
+        wavelength = self.settings[Tags.WAVELENGTH]
         # Save the volume
 
-        np.savez(self.volume_path,
-                 mua=self.volume[:, :, :, 0],
-                 mus=self.volume[:, :, :, 1],
-                 g=self.volume[:, :, :, 2],
-                 gamma=self.volume[:, :, :, 3]
-                 )
+        optical_properties = {
+            Tags.PROPERTY_ABSORPTION_PER_CM: {wavelength: self.volume[:, :, :, 0]},
+            Tags.PROPERTY_SCATTERING_PER_CM: {wavelength: self.volume[:, :, :, 1]},
+            Tags.PROPERTY_ANISOTROPY: {wavelength: self.volume[:, :, :, 2]},
+            Tags.PROPERTY_GRUNEISEN_PARAMETER: {wavelength: self.volume[:, :, :, 3]},
+        }
+
+        optical_properties_path = generate_dict_path(Tags.SIMULATION_PROPERTIES, self.settings[Tags.WAVELENGTH])
+
+        save_hdf5(optical_properties, self.settings[Tags.SIMPA_OUTPUT_PATH], optical_properties_path)
 
         self.assertDecayRatio(expected_decay_ratio=decay_ratio)
 
     def assertDecayRatio(self, expected_decay_ratio=np.e):
-        optical_path = run_optical_forward_model(self.settings, self.volume_path)
-        fluence = np.load(optical_path)['fluence']
-        absorption = np.load(self.volume_path)['mua']
+        run_optical_forward_model(self.settings)
+        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_FLUENCE,
+                                  self.settings[Tags.WAVELENGTH])
         half_dim = int(self.xy_dim / 2) - 1
         decay_ratio = np.sum(fluence[half_dim, half_dim, 10]) / np.sum(fluence[half_dim, half_dim, 90])
         print(np.sum(fluence[half_dim, half_dim, 10]))
         print(np.sum(fluence[half_dim, half_dim, 90]))
         print("measured:", decay_ratio, "expected:", expected_decay_ratio)
         print("ratio:", decay_ratio / expected_decay_ratio)
-        self.assertAlmostEqual(decay_ratio, expected_decay_ratio, delta=0.15)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        self.assertAlmostEqual(decay_ratio, expected_decay_ratio, delta=0.2)

@@ -23,7 +23,7 @@
 import numpy as np
 from simpa.utils import Tags, SaveFilePaths
 from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.process import preprocess_images
+from simpa.processing import preprocess_images
 from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from scipy.ndimage import zoom
@@ -37,22 +37,18 @@ def upsample(settings):
     Upsamples all image_data saved in optical path.
 
     :param settings: (dict) Dictionary that describes all simulation parameters.
-    :param optical_path: (str) Path to the .npz file, where the output of the optical forward model is saved.
     :return: Path to the upsampled image data.
     """
 
     print("UPSAMPLE IMAGE")
 
-    optical_path = generate_dict_path(settings, Tags.OPTICAL_MODEL_OUTPUT_NAME,
-                                      wavelength=settings[Tags.WAVELENGTH],
-                                      upsampled_data=False)
+    optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME, wavelength=settings[Tags.WAVELENGTH])
 
     optical_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 
     fluence = np.rot90(
         preprocess_images.preprocess_image(settings, np.rot90(optical_data[Tags.OPTICAL_MODEL_FLUENCE], 3)))
-    # initial_pressure = np.rot90(
-    #     preprocess_images.preprocess_image(settings, np.rot90(optical_data[Tags.OPTICAL_MODEL_INITIAL_PRESSURE], 3)))
+    initial_pressure = None
 
     if Tags.UPSAMPLING_METHOD in settings:
 
@@ -66,7 +62,6 @@ def upsample(settings):
 
             # mua = np.flip(mua)
             if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
-                units = Tags.UNITS_PRESSURE
                 # Initial pressure should be given in units of Pascale
                 conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
                 gruneisen_parameter = props[Tags.PROPERTY_GRUNEISEN_PARAMETER]

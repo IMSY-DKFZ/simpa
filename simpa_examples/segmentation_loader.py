@@ -23,9 +23,7 @@
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags, SegmentationClasses
-import nrrd
 import numpy as np
-from simpa.io_handling import load_hdf5
 from skimage.data import shepp_logan_phantom
 import matplotlib.pyplot as plt
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
@@ -33,6 +31,7 @@ from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
 from scipy.ndimage import zoom
 
+SAVE_FOLDER = "/path/to/save/folder"
 MCX_BINARY_PATH = "/path/to/mcx"
 PATH = "/path/to/output_file.hdf5"
 
@@ -57,6 +56,7 @@ plt.imshow(np.rot90(segmentation_volume_mask[200, :, :], -1))
 plt.subplot(122)
 plt.imshow(np.rot90(segmentation_volume_mask[:, 64, :], -1))
 plt.show()
+
 
 def segmention_class_mapping():
     ret_dict = dict()
@@ -84,7 +84,7 @@ settings = {
 }
 
 settings = Settings(settings)
-settings[Tags.SIMULATION_PATH] = "/media/kris/Extreme SSD/data/simpa_examples"
+settings[Tags.SIMULATION_PATH] = SAVE_FOLDER
 settings[Tags.VOLUME_NAME] = "SegmentationTest"
 settings[Tags.RANDOM_SEED] = 1234
 settings[Tags.WAVELENGTHS] = [700]

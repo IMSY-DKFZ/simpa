@@ -54,9 +54,9 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
     absorption = simulation_properties['mua'][str(wavelength)]
     scattering = simulation_properties['mus'][str(wavelength)]
     anisotropy = simulation_properties['g'][str(wavelength)]
-    segmentation_map = simulation_properties['seg'][str(wavelength)]
-    speed_of_sound = simulation_properties['sos'][str(wavelength)]
-    density = simulation_properties['density'][str(wavelength)]
+    segmentation_map = simulation_properties['seg']
+    speed_of_sound = simulation_properties['sos']
+    density = simulation_properties['density']
 
     if Tags.RUN_OPTICAL_MODEL in settings and settings[Tags.RUN_OPTICAL_MODEL]:
         optical_data = simulation_result_data['optical_forward_model_output']
@@ -64,7 +64,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         initial_pressure = optical_data['initial_pressure'][str(wavelength)]
 
     if Tags.RUN_ACOUSTIC_MODEL in settings and settings[Tags.RUN_ACOUSTIC_MODEL]:
-        time_series_data = simulation_result_data["time_series_data"]["time_series_data"][str(wavelength)]
+        time_series_data = simulation_result_data["time_series_data"][str(wavelength)]
 
     if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
         reconstructed_data = simulation_result_data["reconstructed_data"][str(wavelength)]["reconstructed_data"]
@@ -119,12 +119,12 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         data_to_show.append(time_series_data)
         data_item_names.append("Time Series Data")
         cmaps.append("gray")
-        logscales.append(True and log_scale)
+        logscales.append(False and log_scale)
     if reconstructed_data is not None and show_reconstructed_data:
         data_to_show.append(reconstructed_data)
         data_item_names.append("Reconstruction")
         cmaps.append("viridis")
-        logscales.append(True and log_scale)
+        logscales.append(False and log_scale)
     if segmentation_map is not None and show_segmentation_map:
         data_to_show.append(segmentation_map)
         data_item_names.append("Segmentation Map")
@@ -135,7 +135,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
     for i in range(len(data_to_show)):
         plt.subplot(2, len(data_to_show), i+1)
         plt.title(data_item_names[i])
-        if len(np.shape(data_to_show)) > 2:
+        if len(np.shape(data_to_show[i])) > 2:
             data = np.rot90(data_to_show[i][x_pos, :, :], -1)
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         else:
@@ -145,7 +145,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
 
         plt.subplot(2, len(data_to_show), i + 1 + len(data_to_show))
         plt.title(data_item_names[i])
-        if len(np.shape(data_to_show)) > 2:
+        if len(np.shape(data_to_show[i])) > 2:
             data = np.rot90(data_to_show[i][:, y_pos, :], -1)
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         else:

@@ -59,9 +59,11 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
             if not isinstance(item, (list, dict, type(None))):
 
                 if isinstance(item, Molecule):
-                    data_grabber(file, path + key + "/" + MOLECULE + "/", serializer.serialize(item))
+                    data_grabber(file, path + key + "/" + MOLECULE + "/",
+                                 serializer.serialize(item), file_compression)
                 elif isinstance(item, AbsorptionSpectrum):
-                    data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/", serializer.serialize(item))
+                    data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/",
+                                 serializer.serialize(item), file_compression)
                 else:
                     if isinstance(item, (bytes, int, np.int64, float, str, bool, np.bool_)):
                         try:
@@ -90,28 +92,28 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
                 for i, list_item in enumerate(item):
                     list_dict[str(i)] = list_item
                 try:
-                    data_grabber(file, path + key + "/list/", list_dict)
+                    data_grabber(file, path + key + "/list/", list_dict, file_compression)
                 except TypeError as e:
                     print("The key", key, "was not of the correct typing for HDF5 handling."
                                           "Make sure this key is not a tuple.")
                     raise e
             else:
-                data_grabber(file, path + key + "/", item)
+                data_grabber(file, path + key + "/", item, file_compression)
 
     if file_dictionary_path == "/":
         writing_mode = "w"
     else:
-        writing_mode = "r+"
+        writing_mode = "a"
 
     if isinstance(save_item, dict):
         with h5py.File(file_path, writing_mode) as h5file:
-            data_grabber(h5file, file_dictionary_path, save_item)
+            data_grabber(h5file, file_dictionary_path, save_item, file_compression)
     else:
         save_key = file_dictionary_path.split("/")[-2]
         dictionary = {save_key: save_item}
         file_dictionary_path = "/".join(file_dictionary_path.split("/")[:-2]) + "/"
         with h5py.File(file_path, writing_mode) as h5file:
-            data_grabber(h5file, file_dictionary_path, dictionary)
+            data_grabber(h5file, file_dictionary_path, dictionary, file_compression)
 
 
 def load_hdf5(file_path, file_dictionary_path="/"):
@@ -171,9 +173,7 @@ def load_hdf5(file_path, file_dictionary_path="/"):
 
 def load_data_field(file_path, data_field, wavelength=None):
     dict_path = generate_dict_path(data_field, wavelength=wavelength)
-    data_field_key = data_field
-    if wavelength is not None:
-        data_field_key = dict_path.split("/")[-2]
-        dict_path = "/".join(dict_path.split("/")[:-2])
+    data_field_key = dict_path.split("/")[-2]
+    dict_path = "/".join(dict_path.split("/")[:-2]) + "/"
     data = load_hdf5(file_path, dict_path)[data_field_key]
     return data

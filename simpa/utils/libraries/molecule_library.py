@@ -225,8 +225,8 @@ class MoleculeLibrary(object):
     def water(volume_fraction: float = 1.0):
         return Molecule(name="water",
                         spectrum=SPECTRAL_LIBRARY.WATER,
-                        volume_fraction=volume_fraction, mus500=0.1,
-                        b_mie=0.0, f_ray=0.0, anisotropy=1.0,
+                        volume_fraction=volume_fraction, mus500=StandardProperties.WATER_MUS,
+                        b_mie=0.0, f_ray=0.0, anisotropy=StandardProperties.WATER_G,
                         density=StandardProperties.DENSITY_WATER,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
@@ -374,12 +374,12 @@ class MoleculeLibrary(object):
     @staticmethod
     def heavy_water(volume_fraction: float = 1.0):
         return Molecule(name="heavy_water",
-                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA),
+                        spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.HEAVY_WATER_MUA),
                         volume_fraction=volume_fraction,
-                        mus500=StandardProperties.AIR_MUS,
+                        mus500=StandardProperties.WATER_MUS,
                         b_mie=0.0,
                         f_ray=0.0,
-                        anisotropy=StandardProperties.AIR_G,
+                        anisotropy=StandardProperties.WATER_G,
                         density=StandardProperties.DENSITY_HEAVY_WATER,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_HEAVY_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER

@@ -387,6 +387,13 @@ class Tags:
     Usage: naming convention
     """
 
+    MCX_SEED = ("mcx_seed", (int, np.integer))
+    """
+    Specific seed for random initialisation in mcx.\n
+    if not set, Tags.RANDOM_SEED will be used instead.
+    Usage: module optical_modelling, adapter mcx_adapter
+    """
+
     ILLUMINATION_TYPE = ("optical_model_illumination_type", str)
     """
     Type of the illumination geometry used in mcx.\n
@@ -677,6 +684,12 @@ class Tags:
     Usage: module image_reconstruction, naming convention
     """
 
+    RECONSTRUCTION_ALGORITHM_PYTORCH_DAS = "PyTorch_DAS"
+    """
+    Corresponds to the reconstruction algorithm DAS with the PyTorchDASAdapter.\n
+    Usage: module image_reconstruction, naming convention
+    """
+
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     """
     Corresponds to the reconstruction algorithm Time Reversal with TimeReversalAdapter.\n
@@ -686,12 +699,6 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
     """
     Corresponds to an adapter for testing purposes only.\n
-    Usage: module image_reconstruction, naming convention
-    """
-
-    RECONSTRUCTION_ALGORITHM_BACKPROJECTION = "backprojection"
-    """
-    Corresponds to the reconstruction algorithm Backprojection with BackprojectionAdapter.\n
     Usage: module image_reconstruction, naming convention
     """
 
@@ -729,6 +736,68 @@ class Tags:
     """
     Corresponds to the Hilbert transform as the B-Mode method used in the Mitk Beamforming.\n
     Usage: adapter MitkBeamformingAdapter, naming convention
+    """
+
+    RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION = "Envelope_Detection_before_Reconstruction"
+    """
+    Specifies whether an envelope detection should be performed before reconstruction, default is False
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION = "Envelope_Detection_after_Reconstruction"
+    """
+    Specifies whether an envelope detection should be performed after reconstruction, default is False
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_METHOD = ("reconstruction_apodization_method", str)
+    """
+    Choice of the apodization method used, i.e. window functions .\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    RECONSTRUCTION_APODIZATION_BOX = "BoxApodization"
+    """
+    Corresponds to the box window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_HANN = "HannApodization"
+    """
+    Corresponds to the Hann window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_APODIZATION_HAMMING = "HammingApodization"
+    """
+    Corresponds to the Hamming window function for apodization.\n
+    Usage: adapter PyTorchDASAdapter, naming convention
+    """
+
+    RECONSTRUCTION_PERFORM_BANDPASS_FILTERING = ("reconstruction_perform_bandpass_filtering",
+                                    (bool, np.bool, np.bool_))
+    """
+    Whether bandpass filtering should be applied or not. Default should be True\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float, np.float))
+    """
+    Sets alpha value of Tukey window between 0 (similar to box window) and 1 (similar to Hann window).
+    Default is 0.5\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float, np.float))
+    """
+    Sets the cutoff threshold in MHz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
+    Usage: adapter PyTorchDASAdapter
+    """
+
+    BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", (int, np.integer, float, np.float))
+    """
+    Sets the cutoff threshold in MHz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
+    Usage: adapter PyTorchDASAdapter
     """
 
     RECONSTRUCTED_DATA = "reconstructed_data"
@@ -774,79 +843,79 @@ class Tags:
     CROP_IMAGE = ("crop_image", bool)
     """
     If True, the PA image cropped in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     CROP_POWER_OF_TWO = ("crop_power_of_two", bool)
     """
     If True, the PA image cropped to the shape as the nearest power of two in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     PERFORM_UPSAMPLING = ("sample", bool)
     """
     If True, the PA image upsampled in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     UPSAMPLING_METHOD = ("upsampling_method", str)
     """
     Choice of the upsampling method used in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     UPSAMPLING_METHOD_DEEP_LEARNING = "deeplearning"
     """
     Corresponds to deep learning as the upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_METHOD_NEAREST_NEIGHBOUR = "nearestneighbour"
     """
     Corresponds to nearest neighbour as the upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_METHOD_BILINEAR = "bilinear"
     """
     Corresponds to the bilinear upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_METHOD_LANCZOS2 = "lanczos2"
     """
     Corresponds to lanczos with kernel size 2 as the upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_METHOD_LANCZOS3 = "lanczos3"
     """
     Corresponds to lanczos with kernel size 3 as the upsampling method used in the image processing.\n
-    Usage: module process, naming concention
+    Usage: module processing, naming concention
     """
 
     UPSAMPLING_SCRIPT = ("upsampling_script", str)
     """
     Name of the upsampling script used for the lanczos upsampling.\n
-    Usage: module process
+    Usage: module processing
     """
 
     UPSAMPLING_SCRIPT_LOCATION = ("upsampling_script_location", str)
     """
     Absolute path to the upsampling script used for the lanczos upsampling.\n
-    Usage: module process
+    Usage: module processing
     """
 
     UPSCALE_FACTOR = ("upscale_factor", (int, float, np.int_, np.float_))
     """
     Upscale factor of the upsampling in the image processing.\n
-    Usage: module process
+    Usage: module processing
     """
 
     DL_MODEL_PATH = ("dl_model_path", str)
     """
     Absolute path to the deep learning model used for the deep learning upsampling.\n
-    Usage: module process
+    Usage: module processing
     """
 
     # physical property volume types
@@ -1120,12 +1189,6 @@ class Tags:
     RECTANGULAR_CUBOID_STRUCTURE = "RectangularCuboidStructure"
     """
     Corresponds to the RectangularCuboidStructure in the structure_library.\n
-    Usage: module volume_creation, naming_convention
-    """
-
-    VESSEL_STRUCTURE = "VesselStructure"
-    """
-    Corresponds to the VesselStructure in the structure_library.\n
     Usage: module volume_creation, naming_convention
     """
 

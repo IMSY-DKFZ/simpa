@@ -23,17 +23,17 @@
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
-from simpa_examples.access_saved_PAI_data import visualise_data
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/save/"
-MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
+SAVE_PATH = "D:/mcx-tmp-output/"
+MCX_BINARY_PATH = "C:/mcx-bin/bin/Release/mcx-exe.exe"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
 VOLUME_HEIGHT_IN_MM = 60
-SPACING = 1
+SPACING = 0.5
 RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
 
@@ -41,7 +41,7 @@ VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
 VISUALIZE = True
 
 
-def create_example_tissue(global_settings):
+def create_example_tissue():
     """
     This is a very simple example script of how to create a tissue definition.
     It contains a muscular background, an epidermis layer on top of the muscles
@@ -131,7 +131,7 @@ settings = {
 
 settings = Settings(settings)
 settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
-settings[Tags.STRUCTURES] = create_example_tissue(settings)
+settings[Tags.STRUCTURES] = create_example_tissue()
 
 print("Simulating ", RANDOM_SEED)
 import time

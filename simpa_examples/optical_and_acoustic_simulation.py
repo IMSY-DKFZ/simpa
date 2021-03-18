@@ -24,19 +24,19 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
-from simpa_examples.access_saved_PAI_data import visualise_data
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/save/"
-MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
-MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
-ACOUSTIC_MODEL_SCRIPT = "C:/simpa/simpa/core/acoustic_simulation"
+SAVE_PATH = "path/to/save/folder"
+MCX_BINARY_PATH = "/path/to/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
+MATLAB_PATH = "/path/to/matlab.exe"
+ACOUSTIC_MODEL_SCRIPT = "path/to/simpa/core/acoustic_simulation"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.5
+SPACING = 0.25
 RANDOM_SEED = 4711
 
 # If VISUALIZE is set to True, the simulation result will be plotted
@@ -96,64 +96,63 @@ np.random.seed(RANDOM_SEED)
 VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 
 settings = {
-    # These parameters set the general propeties of the simulated volume
-    Tags.RANDOM_SEED: RANDOM_SEED,
-    Tags.VOLUME_NAME: VOLUME_NAME,
-    Tags.SIMULATION_PATH: SAVE_PATH,
-    Tags.SPACING_MM: SPACING,
-    Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
-    Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
-    Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
-    Tags.SIMULATE_DEFORMED_LAYERS: True,
-    # Tags.DEFORMED_LAYERS_SETTINGS: create_deformation_settings([[0, VOLUME_TRANSDUCER_DIM_IN_MM],
-    #                                                            [0, VOLUME_PLANAR_DIM_IN_MM]],
-    #                                                            maximum_z_elevation_mm=10,
-    #                                                            filter_sigma=0,
-    #                                                            cosine_scaling_factor=1),
+            # These parameters set the general properties of the simulated volume
+            Tags.RANDOM_SEED: RANDOM_SEED,
+            Tags.VOLUME_NAME: "CompletePipelineTestMSOT_" + str(RANDOM_SEED),
+            Tags.SIMULATION_PATH: SAVE_PATH,
+            Tags.SPACING_MM: SPACING,
+            Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
+            Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
+            Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
+            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+            Tags.SIMULATE_DEFORMED_LAYERS: True,
 
-    # Simulation Device
-    Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
+            # Simulation Device
+            Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
 
-    # The following parameters set the optical forward model
-    Tags.RUN_OPTICAL_MODEL: True,
-    Tags.WAVELENGTHS: [700],
-    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-    Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
-    Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
-    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+            # The following parameters set the optical forward model
+            Tags.RUN_OPTICAL_MODEL: True,
+            Tags.WAVELENGTHS: [700],
+            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+            Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
+            Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
+            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
+            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 
-    # The following parameters tell the script that we do not want any extra
-    # modelling steps
-    Tags.RUN_ACOUSTIC_MODEL: True,
-    Tags.ACOUSTIC_SIMULATION_3D: False,
-    Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
-    Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
-    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
-    Tags.GPU: True,
+            # The following parameters tell the script that we do not want any extra
+            # modelling steps
+            Tags.RUN_ACOUSTIC_MODEL: True,
+            Tags.ACOUSTIC_SIMULATION_3D: False,
+            Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
+            Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
+            Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
+            Tags.GPU: True,
 
-    Tags.PROPERTY_ALPHA_POWER: 1.05,
+            Tags.PROPERTY_ALPHA_POWER: 1.05,
 
-    Tags.SENSOR_RECORD: "p",
-    # Tags.SENSOR_DIRECTIVITY_PATTERN: "pressure",
+            Tags.SENSOR_RECORD: "p",
+            Tags.PMLInside: False,
+            Tags.PMLSize: [31, 32],
+            Tags.PMLAlpha: 1.5,
+            Tags.PlotPML: False,
+            Tags.RECORDMOVIE: False,
+            Tags.MOVIENAME: "visualization_log",
+            Tags.ACOUSTIC_LOG_SCALE: True,
 
-    Tags.PMLInside: False,
-    Tags.PMLSize: [31, 32],
-    Tags.PMLAlpha: 1.5,
-    Tags.PlotPML: False,
-    Tags.RECORDMOVIE: False,
-    Tags.MOVIENAME: "visualization_log",
-    Tags.ACOUSTIC_LOG_SCALE: True,
+            Tags.APPLY_NOISE_MODEL: False,
+            Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
 
-    Tags.APPLY_NOISE_MODEL: False,
-    Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
-
-    Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
-    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_BACKPROJECTION
-}
+            Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
+            Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
+            Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
+            Tags.TUKEY_WINDOW_ALPHA: 0.5,
+            Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
+            Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
+            Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+            Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
+            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
+        }
 settings = Settings(settings)
-# global_settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
 np.random.seed(RANDOM_SEED)
 
 settings[Tags.STRUCTURES] = create_example_tissue()
