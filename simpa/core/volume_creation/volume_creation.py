@@ -87,8 +87,35 @@ def run_volume_creation(global_settings: Settings, wavelength: float):
         # TODO extract as settings parameters
 
     volumes = volume_creator_adapter.create_simulation_volume(global_settings)
+    volumes = check_zero_layer_in_volumes(global_settings, volumes)
     volume_path = save_volumes_to_file(global_settings, volumes)
     return volume_path
+
+
+def check_zero_layer_in_volumes(global_settings: Settings, volumes: dict) -> dict:
+    """
+    Checks if top layer of volume is all zeros, if not then it is added when `Tags.SAVE_DIFFUSE_REFLECTANCE` is True in
+    global_settings. If the tags does not exist ot if it is set to False, original volumes are returned.
+    :param global_settings: dictionary containing the settings of the simulations
+    :param volumes: dictionary containing the volumes to be saved
+    :return: dict of volumes
+    """
+    if global_settings.get(Tags.SAVE_DIFFUSE_REFLECTANCE):
+        if not np.all(volumes['mua'][..., 0] == 0):
+            append_z_layer = True
+        else:
+            append_z_layer = False
+        for key in volumes:
+            # append zero layer only if top layer is not 0's
+            if append_z_layer:
+                shapes = list(volumes[key].shape)
+                # add one layer to z-axis
+                shapes[-1] += 1
+                new_volume = np.zeros(shapes)
+                # Top layer of volume has to be 0 to store diffuse reflectance
+                new_volume[..., 1:] = volumes[key]
+                volumes[key] = new_volume
+    return volumes
 
 
 def save_volumes_to_file(global_settings: Settings, volumes: dict) -> str:

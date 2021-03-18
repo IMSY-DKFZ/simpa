@@ -112,21 +112,5 @@ class ModelBasedVolumeCreator(VolumeCreatorBase):
                         added_volume_fraction[added_fraction_greater_than_any_added_fraction & mask]
                 else:
                     volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
-
             global_volume_fractions[mask] += added_volume_fraction[mask]
-        if Tags.SAVE_DIFFUSE_REFLECTANCE in settings and settings[Tags.SAVE_DIFFUSE_REFLECTANCE]:
-            if not np.all(volumes['mua'][..., 0] == 0):
-                append_z_layer = True
-            else:
-                append_z_layer = False
-            for key in volumes:
-                # append zero layer only if top layer is not 0's
-                if append_z_layer:
-                    shapes = list(volumes[key].shape)
-                    # add one layer to z-axis
-                    shapes[-1] += 1
-                    new_volume = np.zeros(shapes)
-                    # Top layer of volume has to be 0 to store diffuse reflectance
-                    new_volume[..., 1:] = volumes[key]
-                    volumes[key] = new_volume
         return volumes
