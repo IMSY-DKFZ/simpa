@@ -87,13 +87,24 @@ def run_volume_creation(global_settings: Settings, wavelength: float):
         # TODO extract as settings parameters
 
     volumes = volume_creator_adapter.create_simulation_volume(global_settings)
+    volume_path = save_volumes_to_file(global_settings, volumes)
+    return volume_path
+
+
+def save_volumes_to_file(global_settings: Settings, volumes: dict) -> str:
+    """
+    Saves volumes to path defined by:
+    `generate_dict_path(Tags.SIMULATION_PROPERTIES, global_settings[Tags.WAVELENGTH])`
+    :param global_settings: dictionary containing the settings of the simulations
+    :param volumes: dictionary containing the volumes to be saved
+    :return: path to saved volumes
+    """
     save_volumes = dict()
     for key, value in volumes.items():
         save_volumes[key] = {global_settings[Tags.WAVELENGTH]: value}
 
     volume_path = generate_dict_path(Tags.SIMULATION_PROPERTIES, global_settings[Tags.WAVELENGTH])
     save_hdf5(save_volumes, global_settings[Tags.SIMPA_OUTPUT_PATH], file_dictionary_path=volume_path)
-
     return volume_path
 
 
