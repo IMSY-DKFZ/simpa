@@ -54,5 +54,7 @@ from simpa.utils.settings_generator import Settings
 
 from simpa.utils.dict_path_manager import generate_dict_path
 
+from simpa.utils.constants import EPS
+
 if __name__ == "__main__":
     view_absorption_spectra()

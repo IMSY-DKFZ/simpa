@@ -36,7 +36,6 @@ def run_reconstruction_algorithm(settings: dict) -> str:
     settings dictionary.
 
     :param settings: a dictionary containing key-value pairs with simulation instructions.
-    :returns: the path to the result data in the written HDF5 file.
 
     """
     reconstruction_method = None
@@ -67,5 +66,3 @@ def run_reconstruction_algorithm(settings: dict) -> str:
 
     save_hdf5({Tags.RECONSTRUCTED_DATA: reconstruction}, settings[Tags.SIMPA_OUTPUT_PATH],
               reconstruction_output_path)
-
-    return reconstruction_output_path

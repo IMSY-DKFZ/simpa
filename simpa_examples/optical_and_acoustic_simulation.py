@@ -31,12 +31,13 @@ from simpa.pipeline_components import run_volume_creation
 from simpa.pipeline_components import run_reconstruction_algorithm
 from simpa.pipeline_components import run_acoustic_forward_model
 from simpa.pipeline_components import run_optical_forward_model
+from simpa.pipeline_components import gaussian_noise
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "path/to/save/folder"
-MCX_BINARY_PATH = "/path/to/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
-MATLAB_PATH = "/path/to/matlab.exe"
-ACOUSTIC_MODEL_SCRIPT = "path/to/simpa/core/acoustic_simulation"
+SAVE_PATH = "D:/save/"
+MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
+MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
+ACOUSTIC_MODEL_SCRIPT = "C:/simpa/simpa/core/acoustic_simulation"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
@@ -100,13 +101,6 @@ def create_example_tissue():
 np.random.seed(RANDOM_SEED)
 VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 
-SIMUATION_PIPELINE = [
-    run_volume_creation,
-    run_optical_forward_model,
-    run_acoustic_forward_model,
-    run_reconstruction_algorithm
-]
-
 settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: RANDOM_SEED,
@@ -132,7 +126,7 @@ settings = {
 
             # The following parameters tell the script that we do not want any extra
             # modelling steps
-            Tags.ACOUSTIC_SIMULATION_3D: False,
+            Tags.ACOUSTIC_SIMULATION_3D: True,
             Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
             Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
             Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
@@ -162,8 +156,27 @@ settings = {
         }
 settings = Settings(settings)
 np.random.seed(RANDOM_SEED)
-
 settings[Tags.STRUCTURES] = create_example_tissue()
+
+noise_settings_multiplicative = {Tags.NOISE_MEAN: 1,
+                                 Tags.NOISE_STD: 0.1,
+                                 Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
+                                 Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+                                 Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True}
+
+noise_settings_time_series = {Tags.NOISE_STD: 3,
+                              Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
+                              Tags.DATA_FIELD: Tags.TIME_SERIES_DATA}
+
+SIMUATION_PIPELINE = [
+    run_volume_creation,
+    run_optical_forward_model,
+    (gaussian_noise, noise_settings_multiplicative),
+    run_acoustic_forward_model,
+    (gaussian_noise, noise_settings_time_series),
+    run_reconstruction_algorithm
+]
+
 print("Simulating ", RANDOM_SEED)
 import time
 timer = time.time()

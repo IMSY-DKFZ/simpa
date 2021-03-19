@@ -177,3 +177,8 @@ def load_data_field(file_path, data_field, wavelength=None):
     dict_path = "/".join(dict_path.split("/")[:-2]) + "/"
     data = load_hdf5(file_path, dict_path)[data_field_key]
     return data
+
+
+def save_data_field(data, file_path, data_field, wavelength=None):
+    dict_path = generate_dict_path(data_field, wavelength=wavelength)
+    save_hdf5(data, file_path, dict_path)

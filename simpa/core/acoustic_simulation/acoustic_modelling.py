@@ -44,7 +44,6 @@ def run_acoustic_forward_model(settings):
         acoustic model.
     :raises AssertionError: an assertion error is raised if the Tags.ACOUSTIC_MODEL tag is not given or
         points to an unknown acoustic forward model.
-    :return: returns the path to the simulated data within the saved HDF5 container.
     """
     adapter = None
 
@@ -64,5 +63,3 @@ def run_acoustic_forward_model(settings):
     acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=settings[Tags.WAVELENGTH])
 
     save_hdf5(data, settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
-
-    return acoustic_output_path

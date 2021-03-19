@@ -1108,41 +1108,51 @@ class Tags:
     Usage: adapter MitkBeamformingAdapter, naming convention
     """
 
+    # Pipelining parameters
+
+    DATA_FIELD = "data_field"
+    """
+    Defines which data field a certain function shall be applied to.\n 
+    Usage: module processing
+    """
+
     # Noise properties
-    APPLY_NOISE_MODEL = ("apply_noise_model", bool)
+
+    NOISE_MEAN = "noise_mean"
     """
-    If True, the simulation will apply a noise model.\n
-    Usage: module core (simulate.py)
+    Mean of a noise model.\n 
+    Usage: module processing.noise_models
     """
 
-    NOISE_MODEL = ("noise_model", str)
+    NOISE_STD = "noise_std"
     """
-    Choice of the noise model.\n 
-    Usage: module noise_simulation
-    """
-
-    NOISE_MODEL_GAUSSIAN = "noise_model_gaussian"
-    """
-    Corresponds to a gaussian noise model.\n 
-    Usage: module noise_simulation
+    Standard deviation of a noise model.\n 
+    Usage: module processing.noise_models
     """
 
-    NOISE_MEAN = ("noise_mean", (int, np.integer, float, np.float))
+    NOISE_MODE = "noise_mode"
     """
-    Mean of the gaussian noise model used in the noise modelling.\n 
-    Usage: module noise_simulation
-    """
-
-    NOISE_STD = ("noise_std", (int, np.integer, float, np.float))
-    """
-    Standard deviation of the gaussian noise model used in the noise modelling.\n 
-    Usage: module noise_simulation
+    The mode tag of a noise model is used to differentiate between\n
+    Tags.NOISE_MODE_ADDITIVE and Tags.NOISE_MODE_MULTIPLICATIVE.\n  
+    Usage: module processing.noise_models
     """
 
-    NOISE_MODEL_PATH = ("noise_model_path", str)
+    NOISE_MODE_ADDITIVE = "noise_mode_additive"
     """
-    Absolute path of a .csv file with an experimentally recorded noise model.\n
-    Usage: module noise_simulation
+    A noise model shall be applied additively s_n = s + n.\n  
+    Usage: module processing.noise_models
+    """
+
+    NOISE_MODE_MULTIPLICATIVE = "noise_mode_multiplicative"
+    """
+    A noise model shall be applied multiplicatively s_n = s * n.\n  
+    Usage: module processing.noise_models
+    """
+
+    NOISE_NON_NEGATIVITY_CONSTRAINT = "noise_non_negativity_constraint"
+    """
+    Defines if after the noise model negative values shall be allowed.\n  
+    Usage: module processing.noise_models
     """
 
     # Structures

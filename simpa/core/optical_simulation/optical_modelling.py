@@ -80,5 +80,3 @@ def run_optical_forward_model(settings):
     }
 
     save_hdf5(optical_output, settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
-
-    return optical_output_path

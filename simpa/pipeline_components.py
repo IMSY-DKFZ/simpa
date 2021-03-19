@@ -22,6 +22,6 @@
 
 from simpa.core.acoustic_simulation.acoustic_modelling import run_acoustic_forward_model
 from simpa.core.optical_simulation.optical_modelling import run_optical_forward_model
-from simpa.core.noise_simulation.noise_modelling import run_noise_model
 from simpa.core.image_reconstruction.reconstruction_modelling import run_reconstruction_algorithm
 from simpa.core.volume_creation.volume_modelling import run_volume_creation
+from simpa.processing.noise_models import gaussian_noise

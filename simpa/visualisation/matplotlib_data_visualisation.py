@@ -58,15 +58,16 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
     speed_of_sound = simulation_properties['sos']
     density = simulation_properties['density']
 
-    if Tags.RUN_OPTICAL_MODEL in settings and settings[Tags.RUN_OPTICAL_MODEL]:
+    if "optical_forward_model_output" in simulation_result_data:
         optical_data = simulation_result_data['optical_forward_model_output']
-        fluence = optical_data['fluence'][str(wavelength)]
-        initial_pressure = optical_data['initial_pressure'][str(wavelength)]
+        if "fluence" in optical_data and "initial_pressure" in optical_data:
+            fluence = optical_data['fluence'][str(wavelength)]
+            initial_pressure = optical_data['initial_pressure'][str(wavelength)]
 
-    if Tags.RUN_ACOUSTIC_MODEL in settings and settings[Tags.RUN_ACOUSTIC_MODEL]:
+    if "time_series_data" in simulation_result_data:
         time_series_data = simulation_result_data["time_series_data"][str(wavelength)]
 
-    if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+    if "time_series_data" in simulation_result_data:
         reconstructed_data = simulation_result_data["reconstructed_data"][str(wavelength)]["reconstructed_data"]
 
     shape = np.shape(absorption)
