@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 from simpa.utils import Tags, calculate
-from simpa.utils.settings_generator import Settings
 from simpa.core.optical_simulation.mcx_adapter import McxAdapter
 from simpa.core.optical_simulation.mcxyz_adapter import McxyzAdapter
 from simpa.core.optical_simulation.test_optical_adapter import TestOpticalAdapter
@@ -90,12 +89,12 @@ def run_optical_forward_model(settings):
     return optical_output_path
 
 
-def extract_diffuse_reflectance(settings: Settings, volumes: dict) -> dict:
+def extract_diffuse_reflectance(settings: dict, volumes: dict) -> dict:
     """
     Extracts the diffuse reflectance layer from fluence volume and stores in a new key inside volumes. Then sets all
     values in volumes where the diffuse reflectance is located to 0.
     :param volumes: dictionary with original volumes
-    :param settings: Settings of simulations, containing at least the WAVELENGTH being simulated
+    :param settings: dictionary containing at least the WAVELENGTH being simulated
     :return: dictionary containing the corrected volumes and the diffuse reflectance
     """
     fluence = volumes[Tags.OPTICAL_MODEL_FLUENCE][settings[Tags.WAVELENGTH]]

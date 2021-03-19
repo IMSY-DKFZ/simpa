@@ -32,11 +32,13 @@ class TestOpticalModelling(unittest.TestCase):
         self.dims = (100, 50, 200)
         self.seed = 1234
         np.random.seed(self.seed)
-        self.volumes = dict(fluence=np.random.random_sample(self.dims),
-                            initial_pressure=np.random.random_sample(self.dims))
+        self.wavelength = 700
+        self.volumes = {Tags.OPTICAL_MODEL_FLUENCE: {self.wavelength: np.random.random_sample(self.dims)},
+                        Tags.OPTICAL_MODEL_INITIAL_PRESSURE: {self.wavelength: np.random.random_sample(self.dims)}}
+        self.settings = {Tags.WAVELENGTH: self.wavelength}
 
     def test_extract_diffuse_reflectance_tag(self):
-        volumes = extract_diffuse_reflectance(self.volumes)
+        volumes = extract_diffuse_reflectance(self.settings, self.volumes)
         self.assertTrue(Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE in volumes, f"Could not find tag in volumes after "
                                                                            f"extracting diffuse reflectance: "
                                                                            f"{Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE}")
@@ -45,22 +47,23 @@ class TestOpticalModelling(unittest.TestCase):
                                                                 f"{Tags.SURFACE_LAYER_POSITION}")
 
     def test_extract_diffuse_reflectance_values(self):
-        volumes = extract_diffuse_reflectance(self.volumes)
-        surf_pos = volumes[Tags.SURFACE_LAYER_POSITION]
-        volumes_to_check = {'fluence': volumes["fluence"], 'initial_pressure': volumes["initial_pressure"]}
+        volumes = extract_diffuse_reflectance(self.settings, self.volumes)
+        surf_pos = volumes[Tags.SURFACE_LAYER_POSITION][self.wavelength]
+        volumes_to_check = {Tags.OPTICAL_MODEL_FLUENCE: volumes[Tags.OPTICAL_MODEL_FLUENCE][self.wavelength],
+                            Tags.OPTICAL_MODEL_INITIAL_PRESSURE: volumes[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][self.wavelength]}
         for key in volumes_to_check:
             volume = volumes_to_check[key]
             surface = volume[surf_pos]
-            all_values_equal = np.all((self.volumes[key][..., 1:] - volume[..., 1:]) == 0)
+            all_values_equal = np.all((self.volumes[key][self.wavelength][..., 1:] - volume[..., 1:]) == 0)
             self.assertTrue(np.all(surface) == 0, "Found non-zero value in surface of volume after extracting diffuse "
                                                   f"reflectance: {key}")
             self.assertTrue(all_values_equal, "Not all values in volume are equal to originals after extracting "
                                               f"diffuse reflectance: {key}")
 
     def test_extract_diffuse_reflectance_shape(self):
-        volumes = extract_diffuse_reflectance(self.volumes)
-        dr_shape = volumes[Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE].shape
-        fluence_surf_shape = volumes["fluence"].shape[:2]
+        volumes = extract_diffuse_reflectance(self.settings, self.volumes)
+        dr_shape = volumes[Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE][self.wavelength].shape
+        fluence_surf_shape = volumes[Tags.OPTICAL_MODEL_FLUENCE][self.wavelength].shape[:2]
         self.assertTrue(dr_shape == fluence_surf_shape)
 
 
