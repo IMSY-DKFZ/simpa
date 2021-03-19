@@ -20,13 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags, TISSUE_LIBRARY
+import numpy as np
+import matplotlib.pyplot as plt
 
+from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
 from simpa.io_handling.io_hdf5 import load_data_field
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 
-import numpy as np
 
 # TODO change these paths to the desired executable and save folder
 SAVE_PATH = "/home/leo/DKFZ/common_files/test_simpa_simulation"
@@ -136,16 +138,7 @@ print("Needed", time.time()-timer, "seconds")
 print("Simulating ", RANDOM_SEED, "[Done]")
 
 if VISUALIZE:
-    from simpa.io_handling.io_hdf5 import load_hdf5
-    from simpa.utils import SegmentationClasses
-    import matplotlib as mpl
-    import matplotlib.pyplot as plt
-
-    PATH = "/home/leo/DKFZ/common_files/test_simpa_simulation/MyVolumeName_471.hdf5"
-
-    file = load_hdf5(PATH)
-    settings = Settings(file["settings"])
-
+    PATH = settings[Tags.SIMPA_OUTPUT_PATH]
     if Tags.WAVELENGTH in settings:
         WAVELENGTH = settings[Tags.WAVELENGTH]
     else:
@@ -154,66 +147,11 @@ if VISUALIZE:
     fluence = load_data_field(PATH, Tags.OPTICAL_MODEL_FLUENCE, wavelength=700)
 
     dr = load_data_field(PATH, Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE, wavelength=700)
-    dr_pos = file['simulations']['optical_forward_model_output'][Tags.SURFACE_LAYER_POSITION]
+    dr_pos = load_data_field(PATH, Tags.SURFACE_LAYER_POSITION, wavelength=700)
     depth_map = np.zeros_like(dr)
     depth_map[dr_pos[0], dr_pos[1]] = dr_pos[2]
 
-    initial_pressure = (file['simulations']['optical_forward_model_output']['initial_pressure'][str(WAVELENGTH)])
-    absorption = (file['simulations']['simulation_properties']['mua'][str(WAVELENGTH)])
-    if 'seg' in file['simulations']['simulation_properties'][str(WAVELENGTH)]:
-        segmentation = (file['simulations']['simulation_properties']['seg'][str(WAVELENGTH)])
-    else:
-        segmentation = np.zeros_like(fluence)
-    values = []
-    names = []
-    for string in SegmentationClasses.__dict__:
-        if string[0:2] != "__":
-            values.append(SegmentationClasses.__dict__[string])
-            names.append(string)
-
-    values = np.asarray(values)
-    names = np.asarray(names)
-    sort_indexes = np.argsort(values)
-    values = values[sort_indexes]
-    names = names[sort_indexes]
-
-    colors = [list(np.random.random(3)) for _ in range(len(names))]
-    cmap = mpl.colors.LinearSegmentedColormap.from_list(
-        'Custom cmap', colors, len(names))
-
-    shape = np.shape(initial_pressure)
-
-    x_pos = int(shape[0] / 2)
-    y_pos = int(shape[1] / 2)
-    z_pos = int(shape[2] / 2)
-    plt.figure()
-    plt.subplot(241)
-    plt.ylabel("X-Z Plane")
-    plt.title("Fluence")
-    plt.imshow(np.rot90(fluence[:, y_pos, :], -1))
-    plt.subplot(242)
-    plt.title("Absorption")
-    plt.imshow(np.rot90(np.log10(absorption[:, y_pos, :]), -1))
-    plt.subplot(243)
-    plt.title("Initial Pressure")
-    plt.imshow(np.rot90(np.log10(initial_pressure[:, y_pos, :]), -1))
-    plt.subplot(244)
-    plt.title("Segmentation")
-    plt.imshow(np.rot90(segmentation[:, y_pos, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-    cbar = plt.colorbar(ticks=values)
-    cbar.ax.set_yticklabels(names)
-    plt.subplot(245)
-    plt.ylabel("Y-Z Plane")
-    plt.imshow(np.rot90((fluence[x_pos, :, :]), -1))
-    plt.subplot(246)
-    plt.imshow(np.rot90(np.log10(absorption[x_pos, :, :]), -1))
-    plt.subplot(247)
-    plt.imshow(np.rot90(np.log10(initial_pressure[x_pos, :, :]), -1))
-    plt.subplot(248)
-    plt.imshow(np.rot90(segmentation[x_pos, :, :], -1), vmin=values[0], vmax=values[-1], cmap=cmap)
-    cbar = plt.colorbar(ticks=values)
-    cbar.ax.set_yticklabels(names)
-    plt.show()
+    visualise_data(PATH, WAVELENGTH)
 
     fig = plt.figure()
     plt.subplot(121)
@@ -223,5 +161,5 @@ if VISUALIZE:
     plt.subplot(122)
     plt.imshow(depth_map)
     plt.colorbar()
-    plt.title("Depth map")
+    plt.title("Surface depth map")
     plt.show()
