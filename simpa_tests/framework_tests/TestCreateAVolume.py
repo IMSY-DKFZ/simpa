@@ -28,7 +28,7 @@ from copy import copy
 from simpa.utils import Tags
 from simpa.utils.settings_generator import Settings
 from simpa.core.simulation import simulate
-from simpa_tests.utils_tests import create_test_structure_parameters
+from simpa_tests.test_utils import create_test_structure_parameters
 from simpa.core.volume_creation.volume_creation import check_volumes
 
 
