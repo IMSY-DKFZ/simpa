@@ -52,7 +52,9 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
                          Tags.TIME_SERIES_DATA,
                          Tags.TIME_SERIES_DATA_NOISE,
                          Tags.RECONSTRUCTED_DATA,
-                         Tags.RECONSTRUCTED_DATA_NOISE]
+                         Tags.RECONSTRUCTED_DATA_NOISE,
+                         Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE,
+                         Tags.SURFACE_LAYER_POSITION]
 
     simulation_ouput_fields = [Tags.OPTICAL_MODEL_OUTPUT_NAME,
                                Tags.SIMULATION_PROPERTIES]
@@ -65,7 +67,8 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     if data_field in wavelength_dependent_properties:
         dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + wl
     elif data_field in simulation_output:
-        if data_field in [Tags.OPTICAL_MODEL_FLUENCE, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS]:
+        if data_field in [Tags.OPTICAL_MODEL_FLUENCE, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS,
+                          Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE, Tags.SURFACE_LAYER_POSITION]:
             dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field + wl
         else:
             dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + wl

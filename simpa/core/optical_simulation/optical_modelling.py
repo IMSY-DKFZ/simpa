@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from simpa.utils import Tags, calculate
+from simpa.utils.settings_generator import Settings
 from simpa.core.optical_simulation.mcx_adapter import McxAdapter
 from simpa.core.optical_simulation.mcxyz_adapter import McxyzAdapter
 from simpa.core.optical_simulation.test_optical_adapter import TestOpticalAdapter
@@ -79,30 +80,31 @@ def run_optical_forward_model(settings):
     }
 
     if settings.get(Tags.SAVE_DIFFUSE_REFLECTANCE):
-        optical_output = {Tags.OPTICAL_MODEL_FLUENCE: fluence,
-                          Tags.OPTICAL_MODEL_INITIAL_PRESSURE: initial_pressure}
-        optical_output = extract_diffuse_reflectance(optical_output)
-        optical_output[Tags.OPTICAL_MODEL_UNITS] = units
+        optical_output = {Tags.OPTICAL_MODEL_FLUENCE: {settings[Tags.WAVELENGTH]: fluence},
+                          Tags.OPTICAL_MODEL_INITIAL_PRESSURE: {settings[Tags.WAVELENGTH]: initial_pressure}}
+        optical_output = extract_diffuse_reflectance(settings, optical_output)
+        optical_output[Tags.OPTICAL_MODEL_UNITS] = {settings[Tags.WAVELENGTH]: units}
 
     save_hdf5(optical_output, settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
 
     return optical_output_path
 
 
-def extract_diffuse_reflectance(volumes: dict) -> dict:
+def extract_diffuse_reflectance(settings: Settings, volumes: dict) -> dict:
     """
     Extracts the diffuse reflectance layer from fluence volume and stores in a new key inside volumes. Then sets all
     values in volumes where the diffuse reflectance is located to 0.
     :param volumes: dictionary with original volumes
+    :param settings: Settings of simulations, containing at least the WAVELENGTH being simulated
     :return: dictionary containing the corrected volumes and the diffuse reflectance
     """
-    fluence = volumes[Tags.OPTICAL_MODEL_FLUENCE]
+    fluence = volumes[Tags.OPTICAL_MODEL_FLUENCE][settings[Tags.WAVELENGTH]]
     dr_layer_pos = calculate.get_surface_from_volume(fluence)
     diffuse_reflectance = fluence[dr_layer_pos]
     diffuse_reflectance = diffuse_reflectance.reshape(fluence.shape[:2])
     for key in volumes:
-        volume = volumes[key]
+        volume = volumes[key][settings[Tags.WAVELENGTH]]
         volume[dr_layer_pos] -= volume[dr_layer_pos]
-    volumes[Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE] = diffuse_reflectance
-    volumes[Tags.SURFACE_LAYER_POSITION] = dr_layer_pos
+    volumes[Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE] = {settings[Tags.WAVELENGTH]: diffuse_reflectance}
+    volumes[Tags.SURFACE_LAYER_POSITION] = {settings[Tags.WAVELENGTH]: dr_layer_pos}
     return volumes
