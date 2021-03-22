@@ -20,4 +20,38 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .file_logger import Logger
+import unittest
+from simpa.log import Logger
+import logging
+import os
+
+
+class TestLogging(unittest.TestCase):
+    def setUp(self):
+        print("[SetUp]")
+        self.path = "logfile.log"
+
+    def tearDown(self):
+        print("[TearDown]")
+        logging.shutdown()
+        if os.path.exists(self.path):
+            os.remove(self.path)
+
+    def testTwoInstancesAreTheSame(self):
+        logger1 = Logger()
+        logger2 = Logger()
+
+        self.assertEqual(logger1, logger2)
+
+    def testLoggingToFile(self):
+
+        logger = Logger(self.path)
+
+        logger.debug("Test")
+        logger.info("Test")
+        logger.warning("Test")
+        logger.error("Test")
+        logger.critical("Test")
+
+        self.assertTrue(os.path.exists(self.path))
+        self.assertTrue(os.stat(self.path).st_size > 0)

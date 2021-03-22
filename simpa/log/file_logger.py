@@ -21,29 +21,61 @@
 # SOFTWARE.
 
 import logging
+from pathlib import Path
 
 
-class Logger():
+class Logger:
+    """
+    The SIMPA Logger.
+    The purpose of this class is to guarantee that the logging Config has been set and that logging strings are written
+    to the same file throughout the entire simulation pipeline.
+    Per default, the log file is
+    """
     _instance = None
+    _simpa_logging_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    _simpa_default_logging_path = str(Path.home())+"/simpa.log"
+    _logger = None
 
-    def __new__(cls):
+    def __new__(cls, path=None):
+        # This pattern can be used to realise a singleton implementation in Python
         if cls._instance is None:
             cls._instance = super(Logger, cls).__new__(cls)
+
+            if path is None:
+                path = cls._simpa_default_logging_path
+
+            cls._logger = logging.getLogger("SIMPA Logger")
+            cls._logger.setLevel(logging.DEBUG)
+
+            console_handler = logging.StreamHandler()
+            file_handler = logging.FileHandler(path)
+
+            console_handler.setLevel(logging.DEBUG)
+            file_handler.setLevel(logging.DEBUG)
+
+            console_handler.setFormatter(cls._simpa_logging_formatter)
+            file_handler.setFormatter(cls._simpa_logging_formatter)
+
+            cls._logger.addHandler(console_handler)
+            cls._logger.addHandler(file_handler)
+
+            cls._logger.debug("##############################")
+            cls._logger.debug("NEW SIMULATION SESSION STARTED")
+            cls._logger.debug("##############################")
+
         return cls._instance
 
-    def __init__(self):
-        logging.basicConfig(filename="simpa.log", level=logging.DEBUG,
-                            format='%(asctime)s - %(levelname)s - %(message)s')
+    def debug(self, msg):
+        self._logger.debug(msg)
 
-    def debug(self, msg, *args):
-        logging.debug(msg, *args)
+    def info(self, msg):
+        self._logger.info(msg)
 
+    def warning(self, msg):
+        self._logger.warning(msg)
 
-if __name__ =="__main__":
-    logger = Logger()
-    logger.debug("Test")
+    def error(self, msg):
+        self._logger.error(msg)
 
-    logger2 = Logger()
-    logger2.debug("Test")
-
-    print(logger is logger2)
+    def critical(self, msg):
+        self._logger.critical(msg)
