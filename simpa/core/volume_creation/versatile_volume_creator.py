@@ -24,6 +24,7 @@ from simpa.core.volume_creation import VolumeCreatorBase
 from simpa.utils.libraries.structure_library import Structures
 from simpa.utils import Tags
 import numpy as np
+from simpa.log import Logger
 
 
 class ModelBasedVolumeCreator(VolumeCreatorBase):
@@ -63,6 +64,7 @@ class ModelBasedVolumeCreator(VolumeCreatorBase):
 
     def __init__(self):
         self.EPS = 1e-4
+        self.logger = Logger()
 
     def create_simulation_volume(self, settings) -> dict:
         """
@@ -83,7 +85,7 @@ class ModelBasedVolumeCreator(VolumeCreatorBase):
         priority_sorted_structures = structure_list.sorted_structures
 
         for structure in priority_sorted_structures:
-            print(type(structure))
+            self.logger.debug(type(structure))
 
             structure_properties = structure.properties_for_wavelength(wavelength)
 

@@ -76,7 +76,6 @@ class TestPipeline(unittest.TestCase):
 
             # Add the volume_creation to be simulated to the tissue
         }
-        print("Simulating ", self.RANDOM_SEED)
         settings = Settings(settings)
         settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
         simulate(settings)
@@ -85,5 +84,3 @@ class TestPipeline(unittest.TestCase):
                 os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
             # Delete the created file
             os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
-
-        print("Simulating ", self.RANDOM_SEED, "[Done]")

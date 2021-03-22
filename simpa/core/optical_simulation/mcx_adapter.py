@@ -160,8 +160,6 @@ class McxAdapter(OpticalForwardAdapterBase):
 
         res = subprocess.run(cmd)
 
-        print("TEST: ", res)
-
         # Read output
 
         with open(tmp_output_file+".mc2", 'rb') as f:

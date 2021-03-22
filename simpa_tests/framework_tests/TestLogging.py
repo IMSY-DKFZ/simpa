@@ -28,24 +28,23 @@ import os
 
 class TestLogging(unittest.TestCase):
     def setUp(self):
-        print("[SetUp]")
         self.path = "logfile.log"
 
     def tearDown(self):
-        print("[TearDown]")
         logging.shutdown()
         if os.path.exists(self.path):
             os.remove(self.path)
 
     def testTwoInstancesAreTheSame(self):
-        logger1 = Logger()
-        logger2 = Logger()
+        logger1 = Logger(self.path)
+        logger2 = Logger(self.path)
+        logger3 = Logger(self.path, force_new_instance=True)
 
         self.assertEqual(logger1, logger2)
+        self.assertNotEqual(logger1, logger3)
 
     def testLoggingToFile(self):
-
-        logger = Logger(self.path)
+        logger = Logger(self.path, force_new_instance=True)
 
         logger.debug("Test")
         logger.info("Test")

@@ -30,12 +30,6 @@ from simpa_tests.test_utils import create_test_structure_parameters
 
 class TestCreateVolume(unittest.TestCase):
 
-    def setUp(self):
-        print("setUp")
-
-    def tearDown(self):
-        print("tearDown")
-
     def test_create_volume(self):
 
         random_seed = 4711
@@ -53,7 +47,6 @@ class TestCreateVolume(unittest.TestCase):
             Tags.DIM_VOLUME_X_MM: 4,
             Tags.DIM_VOLUME_Y_MM: 3
         }
-        print("Simulating ", random_seed)
         settings = Settings(settings)
         settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
         simulate(settings)
@@ -62,5 +55,3 @@ class TestCreateVolume(unittest.TestCase):
            os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
             # Delete the created file
             os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
-
-        print("Simulating ", random_seed, "[Done]")

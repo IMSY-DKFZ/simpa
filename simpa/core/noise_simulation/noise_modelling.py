@@ -23,6 +23,7 @@
 from simpa.utils import Tags, SaveFilePaths
 from simpa.core.noise_simulation import GaussianNoiseModel
 from simpa.io_handling.io_hdf5 import save_hdf5, load_data_field
+from simpa.log import Logger
 
 
 def apply_noise_model_to_time_series_data(settings, acoustic_model_result_path):
@@ -38,7 +39,7 @@ def apply_noise_model_to_time_series_data(settings, acoustic_model_result_path):
     """
 
     if not (Tags.APPLY_NOISE_MODEL in settings and settings[Tags.APPLY_NOISE_MODEL]):
-        print("WARN: No noise model was applied.")
+        Logger().warn("No noise model was applied.")
         return acoustic_model_result_path
 
     noise_model = None

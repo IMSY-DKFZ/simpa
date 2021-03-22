@@ -47,6 +47,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
     """
 
     def __init__(self):
+        super().__init__()
         self.pitch_mm = 0.34
         self.radius_mm = 40
         self.number_detector_elements = 256
@@ -63,13 +64,13 @@ class MSOTAcuityEcho(PAIDeviceBase):
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
             if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + self.mediprene_membrane_height_mm + 1):
-                print("Volume z dimension is too small to encompass MSOT device in simulation!"
+                self.logger.error("Volume z dimension is too small to encompass MSOT device in simulation!"
                                      "Must be at least {} mm but was {} mm"
                                      .format((self.probe_height_mm + self.mediprene_membrane_height_mm + 1),
                                              global_settings[Tags.DIM_VOLUME_Z_MM]))
                 return False
             if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
-                print("Volume x dimension is too small to encompass MSOT device in simulation!"
+                self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
                                      "Must be at least {} mm but was {} mm"
                                      .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
                 return False
@@ -110,7 +111,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
             width_shift_for_structures_mm = 0
 
         for structure_key in global_settings[Tags.STRUCTURES]:
-            print("Adjusting", structure_key)
+            self.logger.debug("Adjusting", structure_key)
             structure_dict = global_settings[Tags.STRUCTURES][structure_key]
             if Tags.STRUCTURE_START_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][0] + width_shift_for_structures_mm
@@ -160,7 +161,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
 
         pitch_angle = self.pitch_mm / self.radius_mm
-        print("pitch angle: ", pitch_angle)
+        self.logger.debug("pitch angle: ", pitch_angle)
         detector_radius = self.radius_mm
 
         # if distortion is not None:
@@ -202,7 +203,6 @@ class MSOTAcuityEcho(PAIDeviceBase):
 
 if __name__ == "__main__":
     device = MSOTAcuityEcho()
-    print(device.probe_width_mm)
     settings = Settings()
     settings[Tags.DIM_VOLUME_X_MM] = 20
     settings[Tags.DIM_VOLUME_Y_MM] = 50
@@ -212,23 +212,16 @@ if __name__ == "__main__":
     settings[Tags.VOLUME_CREATOR] = Tags.VOLUME_CREATOR_VERSATILE
     # settings[Tags.DIGITAL_DEVICE_POSITION] = [50, 50, 50]
     settings = device.adjust_simulation_volume_and_settings(settings)
-    # print(settings[Tags.DIM_VOLUME_Z_MM])
 
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
-    print(x_dim, z_dim)
 
     positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
-    print("Positions in mm:", positions)
     detector_elements = device.get_detector_element_orientations(global_settings=settings)
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
     positions = np.round(positions/settings[Tags.SPACING_MM]).astype(int)
     position_map = np.zeros((x_dim, z_dim))
     position_map[positions[:, 0], positions[:, 2]] = 1
-    print(np.shape(positions[:, 0]))
-    print(np.shape(positions[:, 2]))
-    print(np.shape(detector_elements[:, 0]))
-    print(np.shape(detector_elements[:, 2]))
     import matplotlib.pyplot as plt
     plt.scatter(positions[:, 0], positions[:, 2])
     plt.quiver(positions[:, 0], positions[:, 2], detector_elements[:, 0], detector_elements[:, 2])

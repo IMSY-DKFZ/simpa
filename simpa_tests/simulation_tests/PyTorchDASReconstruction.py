@@ -29,7 +29,7 @@ from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.simulation import simulate
 
 
-class PyTorchDASReconstruction():
+class PyTorchDASReconstruction:
 
     def setUp(self):
         """
@@ -37,8 +37,6 @@ class PyTorchDASReconstruction():
         If run on another pc, please adjust the SAVE_PATH, MCX_BINARY_PATH, ACOUSTIC_MODEL_BINARY_PATH, ACOUSTIC_MODEL_SCRIPT_LOCATION
         :return:
         """
-        print("setUp")
-
         SAVE_PATH = "D:/save/"
         MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"  # On Linux systems, the .exe at the end must be omitted.
         MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
@@ -114,16 +112,10 @@ class PyTorchDASReconstruction():
 
         self.settings[Tags.STRUCTURES] = self.create_example_tissue()
 
-    def tearDown(self):
-        print("tearDown")
-
     def test_reconstruction_of_simulation(self):
-        print("Simulating ", self.RANDOM_SEED)
         import time
         timer = time.time()
         simulate(self.settings)
-        print("Needed", time.time() - timer, "seconds")
-        print("Simulating ", self.RANDOM_SEED, "[Done]")
 
         reconstructed_image_path = generate_dict_path(
             Tags.RECONSTRUCTED_DATA,

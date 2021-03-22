@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.log import Logger
 from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
 
@@ -30,6 +30,9 @@ class ReconstructionAdapterBase:
     """
     TODO
     """
+
+    def __init__(self):
+        self.logger = Logger()
 
     @abstractmethod
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
@@ -48,10 +51,10 @@ class ReconstructionAdapterBase:
         :param settings:
         :return:
         """
-        print("Performing reconstruction...")
+        self.logger.info("Performing reconstruction...")
 
         time_series_sensor_data = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.TIME_SERIES_DATA, settings[Tags.WAVELENGTH])
 
         reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings)
-        print("Performing reconstruction...[Done]")
+        self.logger.info("Performing reconstruction...[Done]")
         return reconstructed_image

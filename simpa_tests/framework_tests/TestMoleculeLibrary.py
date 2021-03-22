@@ -36,20 +36,13 @@ from simpa_tests.test_utils import create_test_structure_of_molecule, create_bac
 
 
 class TestMoleculeLibrary(unittest.TestCase):
-    def setUp(self):
-        print("\n[SetUp]")
-    
-    def tearDown(self):
-        print("\n[TearDown]")
 
     def test_water(self):
-        print("Simulating Water")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
     
         MOLECULE_NAME = 'Water'  
-        print('Molecule: ', MOLECULE_NAME)   
         spectrum = SPECTRAL_LIBRARY.WATER
                 
         #setting1: background of molecule
@@ -70,7 +63,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength)<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength))).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_WATER).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
 
         #setting2: vessel of molecule
@@ -93,7 +85,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength)<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength))).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_WATER).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
 
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -117,18 +108,15 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength)<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength))).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_WATER).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 ################################################
     def test_oxyhemoglobin(self):
-        print("Simulating oxyhemoglobin")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'oxyhemoglobin'
-        print('Molecule: ', MOLECULE_NAME)
         spectrum = SPECTRAL_LIBRARY.OXYHEMOGLOBIN
                 
         #setting1: background of molecule
@@ -150,7 +138,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
 
         #setting2: vessel of molecule
@@ -173,8 +160,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -196,18 +182,15 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 ################################################
     def test_deoxyhemoglobin(self):
-        print("Simulating deoxyhemoglobin")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'deoxyhemoglobin'
-        print('Molecule: ', MOLECULE_NAME)
         spectrum = SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN
 
         #setting1: background of molecule
@@ -228,7 +211,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
-            print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -250,8 +232,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -273,18 +254,15 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 ################################################
     def test_melanin(self):
-        print("Simulating melanin")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'melanin'
-        print('Molecule: ', MOLECULE_NAME)
         spectrum = SPECTRAL_LIBRARY.MELANIN
         
         #setting1: background of molecule
@@ -305,7 +283,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -327,8 +304,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.fat()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -350,17 +326,14 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
     def test_fat(self):
-        print("Simulating fat")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'fat'
-        print('Molecule: ', MOLECULE_NAME)
         spectrum = SPECTRAL_LIBRARY.FAT
                 
         #setting1: background of molecule
@@ -381,7 +354,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_FAT)<confidence_interval*StandardProperties.SPEED_OF_SOUND_FAT).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -403,8 +375,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_FAT)<confidence_interval*StandardProperties.SPEED_OF_SOUND_FAT).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -426,17 +397,14 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_FAT)<confidence_interval*StandardProperties.SPEED_OF_SOUND_FAT).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
     def test_constant_scatterer(self):
-        print("Simulating constant_scatterer")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'constant_scatterer'
-        print('Molecule: ', MOLECULE_NAME)
         spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
 
         #setting1: background of molecule
@@ -457,7 +425,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -479,8 +446,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -502,18 +468,15 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 ################################################
     def test_soft_tissue_scatterer(self):
-        print("Simulating soft_tissue_scatterer")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'soft_tissue_scatterer'
-        print('Molecule: ', MOLECULE_NAME)
         spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
         
         #setting1: background of molecule
@@ -534,7 +497,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -556,8 +518,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3]  - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3]  - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -578,18 +539,15 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3]  - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3]  - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 ################################################
     def test_epidermal_scatterer(self):
-        print("Simulating epidermal_scatterer")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'epidermal_scatterer'
-        print('Molecule: ', MOLECULE_NAME)
         spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
 
         #setting1: background of molecule
@@ -610,7 +568,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -632,8 +589,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -655,18 +611,15 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 ################################################
     def test_dermal_scatterer(self):
-        print("Simulating dermal_scatterer")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'dermal_scatterer'
-        print('Molecule: ', MOLECULE_NAME)        
         spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
             
         #setting1: background of molecule
@@ -686,7 +639,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -708,8 +660,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -731,18 +682,15 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 ################################################
     def test_bone(self):
-        print("Simulating bone")
         settings = set_settings()
         confidence_interval = 0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'bone'
-        print('Molecule: ', MOLECULE_NAME)        
         spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(OpticalTissueProperties.BONE_ABSORPTION)
 
         #setting1: background of molecule
@@ -772,7 +720,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                     confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_BONE) <=
                     confidence_interval*StandardProperties.SPEED_OF_SOUND_BONE).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -799,8 +746,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                     confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg'] == 3] - StandardProperties.SPEED_OF_SOUND_BONE) <
                     confidence_interval*StandardProperties.SPEED_OF_SOUND_BONE).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -827,17 +773,14 @@ class TestMoleculeLibrary(unittest.TestCase):
                     confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg'] == 3] - StandardProperties.SPEED_OF_SOUND_BONE) <
                     confidence_interval*StandardProperties.SPEED_OF_SOUND_BONE).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
     def test_mediprene(self):
-        print("Simulating mediprene")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
         
         MOLECULE_NAME = 'mediprene'
-        print('Molecule: ', MOLECULE_NAME)
         spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10)
         
         #setting1: background of molecule
@@ -858,7 +801,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_GEL_PAD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -880,8 +822,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GEL_PAD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -903,18 +844,15 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GEL_PAD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 ################################################
     def test_heavy_water(self):
-        print("Simulating heavy_water")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'heavy_water'
-        print('Molecule: ', MOLECULE_NAME)        
         spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.HEAVY_WATER_MUA)
         
         #setting1: background of molecule
@@ -935,7 +873,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_HEAVY_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -957,8 +894,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_HEAVY_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -980,18 +916,15 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_HEAVY_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')
 
 
 ################################################
     def test_air(self):
-        print("Simulating air")
         settings = set_settings()
         confidence_interval=0.01
         settings = Settings(settings)
 
         MOLECULE_NAME = 'air'
-        print('Molecule: ', MOLECULE_NAME)    
         spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(StandardProperties.AIR_MUA)
 
         #setting1: background of molecule
@@ -1012,7 +945,6 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 1 (background only) ok ')
 
         #setting2: vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
@@ -1034,8 +966,7 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 2 (vessel on background) ok ')
-    
+
         #setting3: vessel of molecule on top of vessel of molecule
         molecule1 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.water()).get_molecular_composition(SegmentationClasses.MUSCLE)
         molecule2 = MolecularCompositionGenerator().append(MOLECULE_LIBRARY.melanin()).get_molecular_composition(SegmentationClasses.EPIDERMIS)
@@ -1057,4 +988,3 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
             assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()
-        print('molecule ', MOLECULE_NAME, 'in setting 3 (vessel on vessel and background) ok ')

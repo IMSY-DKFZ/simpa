@@ -36,9 +36,9 @@ class Logger:
     _simpa_default_logging_path = str(Path.home())+"/simpa.log"
     _logger = None
 
-    def __new__(cls, path=None):
+    def __new__(cls, path=None, force_new_instance=False):
         # This pattern can be used to realise a singleton implementation in Python
-        if cls._instance is None:
+        if cls._instance is None or force_new_instance:
             cls._instance = super(Logger, cls).__new__(cls)
 
             if path is None:

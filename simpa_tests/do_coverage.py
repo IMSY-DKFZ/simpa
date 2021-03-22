@@ -23,6 +23,9 @@
 import unittest
 from coverage import Coverage
 
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 cov = Coverage(source=['simpa'])
 cov.start()
 

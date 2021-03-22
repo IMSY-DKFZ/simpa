@@ -80,7 +80,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
                                           wavelength=settings[Tags.WAVELENGTH])
 
-        print("OPTICAL_PATH", optical_path)
+        self.logger.debug("OPTICAL_PATH", optical_path)
 
         data_dict = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 
@@ -104,7 +104,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(settings)
         detector_positions_voxels = np.round(detector_positions_mm / settings[Tags.SPACING_MM]).astype(int)
 
-        print("Number of detector elements:", len(detector_positions_voxels))
+        self.logger.debug("Number of detector elements:", len(detector_positions_voxels))
 
         sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
         if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
@@ -121,7 +121,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
                            detector_positions_voxels[:, 1] + pixel,
                            detector_positions_voxels[:, 0]] = 1
 
-        print("Number of ones in sensor_map:", np.sum(sensor_map))
+        self.logger.debug("Number of ones in sensor_map:", np.sum(sensor_map))
 
         data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
         save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, settings[Tags.SIMPA_OUTPUT_PATH],
@@ -132,9 +132,9 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
                                                                   axes=axes)
         except ValueError:
-            print("No directivity_angle specified")
+            self.logger.error("No directivity_angle specified")
         except KeyError:
-            print("No directivity_angle specified")
+            self.logger.error("No directivity_angle specified")
 
         optical_path = settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
@@ -158,10 +158,10 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         sio.savemat(optical_path, data_dict, long_field_names=True)
 
         if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
-            print("Simulating 3D....")
+            self.logger.info("Simulating 3D....")
             simulation_script_path = "simulate_3D"
         else:
-            print("Simulating 2D....")
+            self.logger.info("Simulating 2D....")
             simulation_script_path = "simulate_2D"
 
         cmd = list()
@@ -175,7 +175,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
                    simulation_script_path + "('" + optical_path + "');exit;")
         cur_dir = os.getcwd()
         os.chdir(settings[Tags.SIMULATION_PATH])
-        print(cmd)
+        self.logger.info(cmd)
         subprocess.run(cmd)
 
         raw_time_series_data = sio.loadmat(optical_path)[Tags.TIME_SERIES_DATA]

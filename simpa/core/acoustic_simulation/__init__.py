@@ -22,12 +22,16 @@
 
 from abc import abstractmethod
 import numpy as np
+from simpa.log import Logger
 
 
 class AcousticForwardAdapterBase:
     """
     This class should be used as a base for implementations of acoustic forward models.
     """
+
+    def __init__(self):
+        self.logger = Logger()
 
     @abstractmethod
     def forward_model(self, settings) -> np.ndarray:
@@ -48,9 +52,9 @@ class AcousticForwardAdapterBase:
         :param settings: the settings dictionary containing all simulation parameters.
         :return: a numpy array containing the time series pressure data per detection element
         """
-        print("Simulating the acoustic forward process...")
+        self.logger.info("Simulating the acoustic forward process...")
 
         time_series_pressure_data = self.forward_model(settings=settings)
 
-        print("Simulating the acoustic forward process...[Done]")
+        self.logger.info("Simulating the acoustic forward process...[Done]")
         return time_series_pressure_data

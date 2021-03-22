@@ -41,14 +41,12 @@ label_mask = shepp_logan_phantom()
 
 label_mask = np.digitize(label_mask, bins=np.linspace(0.0, 1.0, 11), right=True)
 
-print(np.shape(label_mask))
 label_mask = np.reshape(label_mask, (400, 1, 400))
 
 input_spacing = 1.0
 segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
 segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
                                          order=0)).astype(int)
-print(np.shape(segmentation_volume_mask))
 
 plt.figure()
 plt.subplot(121)

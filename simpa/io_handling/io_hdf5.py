@@ -27,10 +27,13 @@ from simpa.utils import AbsorptionSpectrum, Molecule
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.dict_path_manager import generate_dict_path
 import numpy as np
+from simpa.log import Logger
 
 MOLECULE_COMPOSITION = Tags.MOLECULE_COMPOSITION[0]
 MOLECULE = "molecule"
 ABSORPTION_SPECTRUM = "absorption_spectrum"
+
+logger = Logger()
 
 
 def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_compression: str = None):
@@ -79,11 +82,12 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
                             try:
                                 h5file.create_dataset(path + key, data=item, compression=compression)
                             except RuntimeError as e:
-                                print("item", item, "of type", type(item), "was not serializable! Full exception:", e)
+                                logger.critical("item " + str(item) + " of type " + str(type(item)) +
+                                                " was not serializable! Full exception: " + str(e))
                                 raise e
                         except TypeError as e:
-                            print("The key", key, "was not of the correct typing for HDF5 handling."
-                                  "Make sure this key is not a tuple.", item, type(item))
+                            logger.critical("The key " + str(key) + " was not of the correct typing for HDF5 handling."
+                                            "Make sure this key is not a tuple. " + str(item) + " " + str(type(item)))
                             raise e
             elif item is None:
                 h5file[path + key] = "None"
@@ -94,8 +98,8 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
                 try:
                     data_grabber(file, path + key + "/list/", list_dict, file_compression)
                 except TypeError as e:
-                    print("The key", key, "was not of the correct typing for HDF5 handling."
-                                          "Make sure this key is not a tuple.")
+                    logger.critical("The key " + str(key) + " was not of the correct typing for HDF5 handling."
+                                    "Make sure this key is not a tuple.")
                     raise e
             else:
                 data_grabber(file, path + key + "/", item, file_compression)

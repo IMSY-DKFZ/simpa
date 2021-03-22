@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-
+from simpa.log import Logger
 
 class Settings(dict):
     """
@@ -32,6 +32,7 @@ class Settings(dict):
 
     def __init__(self, dictionary: dict = None):
         super(Settings, self).__init__()
+        self.logger = Logger()
         if dictionary is None:
             dictionary = {}
         for key, value in dictionary.items():
@@ -40,10 +41,10 @@ class Settings(dict):
     def __setitem__(self, key, value):
         if isinstance(key, str):
             super().__setitem__(key, value)
-            print(TypeError("The key for the Settings dictionary should be a tuple in the form of "
-                            "('{}', (data_type_1, data_type_2, ...)). "
-                            "The tuple of data types specifies all possible types, the value can have.\n"
-                            "The key '{}' has been given the value {}".format(key, key, value)))
+            self.logger.error(TypeError("The key for the Settings dictionary should be a tuple in the form of "
+                                        "('{}', (data_type_1, data_type_2, ...)). "
+                                        "The tuple of data types specifies all possible types, the value can have.\n"
+                                        "The key '{}' has been given the value {}".format(key, key, value)))
             return
         elif not isinstance(key, tuple):
             raise TypeError("The key for the Settings dictionary has to be a tuple in the form of "

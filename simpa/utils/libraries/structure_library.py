@@ -30,6 +30,7 @@ from simpa.utils.libraries.molecule_library import MolecularComposition
 import traceback
 import numpy as np
 from simpa.utils import get_functional_from_deformation_settings
+from simpa.log import Logger
 
 
 class Structures:
@@ -42,11 +43,12 @@ class Structures:
         """
         self.structures = self.from_settings(settings)
         self.sorted_structures = sorted(self.structures, key=operator.attrgetter('priority'), reverse=True)
+        self.logger = Logger()
 
     def from_settings(self, global_settings):
         structures = list()
         if not Tags.STRUCTURES in global_settings:
-            print("Did not find any structure definitions in the settings file!")
+            self.logger.warning("Did not find any structure definitions in the settings file!")
             return structures
         structure_settings = global_settings[Tags.STRUCTURES]
         for struc_tag_name in structure_settings:
@@ -56,10 +58,12 @@ class Structures:
                 structure = structure_class(global_settings, single_structure_settings)
                 structures.append(structure)
             except Exception:
-                print("An exception has occurred while trying to parse ", single_structure_settings[Tags.STRUCTURE_TYPE]," from the dictionary.")
-                print("The structure type was", single_structure_settings[Tags.STRUCTURE_TYPE])
-                print(traceback.format_exc())
-                print("trying to continue as normal...")
+                self.logger.critical("An exception has occurred while trying to parse " +
+                                     str(single_structure_settings[Tags.STRUCTURE_TYPE]) +
+                                     " from the dictionary.")
+                self.logger.critical("The structure type was " + str(single_structure_settings[Tags.STRUCTURE_TYPE]))
+                self.logger.critical(traceback.format_exc())
+                self.logger.critical("trying to continue as normal...")
 
         return structures
 
