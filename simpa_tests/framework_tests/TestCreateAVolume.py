@@ -31,12 +31,6 @@ from simpa.pipeline_components import *
 
 class TestCreateVolume(unittest.TestCase):
 
-    def setUp(self):
-        print("setUp")
-
-    def tearDown(self):
-        print("tearDown")
-
     def test_create_volume(self):
 
         random_seed = 4711
@@ -56,7 +50,6 @@ class TestCreateVolume(unittest.TestCase):
             run_volume_creation
         ]
         
-        print("Simulating ", random_seed)
         settings = Settings(settings)
         settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
         simulate(simulation_pipeline, settings)
@@ -64,5 +57,3 @@ class TestCreateVolume(unittest.TestCase):
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
            os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
             os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
-
-        print("Simulating ", random_seed, "[Done]")

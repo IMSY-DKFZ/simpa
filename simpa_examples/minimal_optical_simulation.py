@@ -133,12 +133,10 @@ settings = Settings(settings)
 settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
 settings[Tags.STRUCTURES] = create_example_tissue()
 
-print("Simulating ", RANDOM_SEED)
 import time
 timer = time.time()
 simulate(settings)
 print("Needed", time.time()-timer, "seconds")
-print("Simulating ", RANDOM_SEED, "[Done]")
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]

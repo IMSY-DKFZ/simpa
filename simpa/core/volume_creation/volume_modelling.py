@@ -29,6 +29,7 @@ from simpa.core.volume_creation.segmentation_based_volume_creator import Segment
 from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 from simpa.utils import create_deformation_settings
+from simpa.log import Logger
 
 
 def run_volume_creation(global_settings: Settings):
@@ -40,7 +41,7 @@ def run_volume_creation(global_settings: Settings):
     :param global_settings: the settings dictionary that contains the simulation instructions
 
     """
-    print("VOLUME CREATION")
+    Logger().info("VOLUME CREATION")
 
     if Tags.VOLUME_CREATOR not in global_settings:
         raise AssertionError("Tags.VOLUME_CREATOR tag was not specified in the settings. Skipping optical modelling.")

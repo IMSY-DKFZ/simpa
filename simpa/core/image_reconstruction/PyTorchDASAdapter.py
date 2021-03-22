@@ -35,6 +35,7 @@ from simpa.utils.settings_generator import Settings
 
 
 class PyTorchDASAdapter(ReconstructionAdapterBase):
+
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
         """
         Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
@@ -59,7 +60,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                     # perform envelope detection using absolute value
                     time_series_sensor_data = np.abs(time_series_sensor_data)
             else:
-                print("You have not specified a B-mode method")
+                self.logger.warn("You have not specified a B-mode method. No B-mode method was applied.")
 
         ### INPUT CHECKING AND VALIDATION ###
         # check settings dictionary for elements and read them in
@@ -181,7 +182,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         ydim = int(round(ydim))
         n_sensor_elements = time_series_sensor_data.shape[0]
 
-        print(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, sensor elements: {n_sensor_elements}')
+        self.logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: '
+                          f'{ydim}, sensor elements: {n_sensor_elements}')
 
         # construct output image
         output = torch.zeros((xdim, ydim), dtype=torch.float32, device=device)
@@ -240,7 +242,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                     # perform envelope detection using absolute value
                     reconstructed = np.abs(reconstructed)
             else:
-                print("You have not specified a B-mode method")
+                self.logger.warn("You have not specified a B-mode method.")
 
         return reconstructed
 

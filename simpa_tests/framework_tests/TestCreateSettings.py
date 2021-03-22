@@ -30,12 +30,6 @@ import os
 
 class TestCreateSettings(unittest.TestCase):
 
-    def setUp(self):
-        print("setUp")
-
-    def tearDown(self):
-        print("tearDown")
-
     def test_create_settings(self):
         settings = Settings()
         settings.add_minimal_meta_information()

@@ -32,12 +32,6 @@ import os
 
 class TestIOHandling(unittest.TestCase):
 
-    def setUp(self):
-        print("setUp")
-
-    def tearDown(self):
-        print("tearDown")
-
     def test_write_and_read_default_dictionary(self):
         save_dictionary = dict()
         settings = Settings()
@@ -72,8 +66,6 @@ class TestIOHandling(unittest.TestCase):
 
         save_dictionary[Tags.STRUCTURES] = structure_settings
 
-        print(save_dictionary)
-
         try:
             save_hdf5(save_dictionary, "test.hdf5")
             read_dictionary = load_hdf5("test.hdf5")
@@ -83,7 +75,5 @@ class TestIOHandling(unittest.TestCase):
             # clean up after test
             if os.path.exists("test.hdf5"):
                 os.remove("test.hdf5")
-
-        print(read_dictionary)
 
         assert_equals_recursive(save_dictionary, read_dictionary)

@@ -46,8 +46,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
     """
 
-    @staticmethod
-    def get_acoustic_properties(global_settings: dict, input_data: dict):
+    def get_acoustic_properties(self, global_settings: dict, input_data: dict):
         """
         This method extracts the acoustic tissue properties from the settings dictionary and
         amends the information to the input_data.
@@ -112,7 +111,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
                 try:
                     input_data[acoustic_property] = np.rot90(volumes[acoustic_property], 3, axes=axes)
                 except ValueError or KeyError:
-                    print("{} not specified.".format(acoustic_property))
+                    self.logger.error("{} not specified.".format(acoustic_property))
 
         return input_data
 
@@ -168,7 +167,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         cur_dir = os.getcwd()
         os.chdir(settings[Tags.SIMULATION_PATH])
-        print(cmd)
+        self.logger.info(cmd)
         subprocess.run(cmd)
 
         reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.RECONSTRUCTED_DATA]

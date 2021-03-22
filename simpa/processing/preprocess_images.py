@@ -21,6 +21,9 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
+from simpa.log import Logger
+
+logger = Logger()
 
 
 def preprocess_image(settings, image_data):
@@ -36,9 +39,9 @@ def preprocess_image(settings, image_data):
         if settings[Tags.CROP_IMAGE]:
             if Tags.CROP_POWER_OF_TWO in settings:
                 if settings[Tags.CROP_POWER_OF_TWO]:
-                    print("Previous sizes: ", image_data.shape)
+                    logger.debug("Previous sizes: " + str(image_data.shape))
                     image_data = top_center_crop_power_two(image_data)
-                    print("New sizes: ", image_data.shape)
+                    logger.debug("New sizes: " + str(image_data.shape))
 
     return image_data
 

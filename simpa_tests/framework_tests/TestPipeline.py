@@ -67,8 +67,6 @@ class TestPipeline(unittest.TestCase):
             # The following parameters tell the script that we do not want any extra
             # modelling steps
             Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_TEST,
-            Tags.APPLY_NOISE_MODEL: True,
-            Tags.NOISE_MODEL: Tags.NOISE_MODEL_GAUSSIAN,
             Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_TEST,
             Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
@@ -82,7 +80,6 @@ class TestPipeline(unittest.TestCase):
             run_acoustic_forward_model
         ]
 
-        print("Simulating ", self.RANDOM_SEED)
         settings = Settings(settings)
         settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
         simulate(simulation_pipeline, settings)
@@ -91,5 +88,3 @@ class TestPipeline(unittest.TestCase):
                 os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
             # Delete the created file
             os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
-
-        print("Simulating ", self.RANDOM_SEED, "[Done]")

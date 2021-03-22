@@ -20,41 +20,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags
-from simpa.log import Logger
-from simpa.io_handling.io_hdf5 import load_data_field
-from abc import abstractmethod
-
-
-class ReconstructionAdapterBase:
-    """
-    TODO
-    """
-
-    def __init__(self):
-        self.logger = Logger()
-
-    @abstractmethod
-    def reconstruction_algorithm(self, time_series_sensor_data, settings):
-        """
-        A deriving class needs to implement this method according to its model.
-
-        :param time_series_sensor_data: the time series sensor data
-        :param settings: Setting dictionary
-        :return: a reconstructed photoacoustic image
-        """
-        pass
-
-    def simulate(self, settings):
-        """
-
-        :param settings:
-        :return:
-        """
-        self.logger.info("Performing reconstruction...")
-
-        time_series_sensor_data = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.TIME_SERIES_DATA, settings[Tags.WAVELENGTH])
-
-        reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings)
-        self.logger.info("Performing reconstruction...[Done]")
-        return reconstructed_image
+from .file_logger import Logger

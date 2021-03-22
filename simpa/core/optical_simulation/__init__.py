@@ -23,12 +23,16 @@
 from simpa.utils import Tags
 from simpa.io_handling.io_hdf5 import load_hdf5
 from abc import abstractmethod
+from simpa.log import Logger
 
 
 class OpticalForwardAdapterBase:
     """
     Use this class as a base for implementations of optical forward models.
     """
+
+    def __init__(self):
+        self.logger = Logger()
 
     @abstractmethod
     def forward_model(self, absorption_cm, scattering_cm, anisotropy, settings):
@@ -57,7 +61,7 @@ class OpticalForwardAdapterBase:
         :param settings:
         :return:
         """
-        print("Simulating the optical forward process...")
+        self.logger.info("Simulating the optical forward process...")
 
         optical_properties = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_properties_path)
         absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(settings[Tags.WAVELENGTH])]
@@ -69,5 +73,5 @@ class OpticalForwardAdapterBase:
                                      anisotropy=anisotropy,
                                      settings=settings)
 
-        print("Simulating the optical forward process...[Done]")
+        self.logger.info("Simulating the optical forward process...[Done]")
         return fluence

@@ -54,6 +54,7 @@ class RSOMExplorerP50(PAIDeviceBase):
     """
 
     def __init__(self, element_spacing_mm=0.02):
+        super().__init__()
         self.center_frequency_Hz = float(50e6)
         self.bandwidth_percent = 100.0
         self.sampling_frequency_MHz = 500.0
@@ -130,16 +131,12 @@ if __name__ == "__main__":
     settings[Tags.STRUCTURES] = {}
     # settings[Tags.DIGITAL_DEVICE_POSITION] = [50, 50, 50]
     settings = device.adjust_simulation_volume_and_settings(settings)
-    # print(settings[Tags.DIM_VOLUME_Z_MM])
 
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
-    print(x_dim, z_dim)
 
     positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
     detector_elements = device.get_detector_element_orientations(global_settings=settings)
-    print(np.shape(positions))
-    print(np.shape(detector_elements))
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
     positions = np.round(positions / device.element_spacing_mm).astype(int)
 

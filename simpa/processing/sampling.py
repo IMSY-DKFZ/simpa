@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 import numpy as np
+from simpa.log import Logger
 from simpa.utils import Tags, SaveFilePaths
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.processing import preprocess_images
@@ -31,6 +32,7 @@ import os
 import subprocess
 import json
 
+logger = Logger()
 
 def upsample(settings):
     """
@@ -40,7 +42,7 @@ def upsample(settings):
     :return: Path to the upsampled image data.
     """
 
-    print("UPSAMPLE IMAGE")
+    logger.info("UPSAMPLE IMAGE")
 
     optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME, wavelength=settings[Tags.WAVELENGTH])
 

@@ -24,6 +24,7 @@ import numpy as np
 from simpa.core.device_digital_twins.pai_devices import PAIDeviceBase
 from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags
+from simpa.log import Logger
 
 
 class InVision256TF(PAIDeviceBase):
@@ -46,6 +47,7 @@ class InVision256TF(PAIDeviceBase):
     """
 
     def __init__(self):
+        super().__init__()
         self.pitch_mm = 0.74
         self.radius_mm = 40
         self.number_detector_elements = 256
@@ -70,7 +72,7 @@ class InVision256TF(PAIDeviceBase):
 
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
         pitch_angle = self.pitch_mm / self.radius_mm
-        print("pitch angle: ", pitch_angle)
+        self.logger.debug("pitch angle: ", pitch_angle)
         detector_radius = self.radius_mm
         detector_positions = np.zeros((self.number_detector_elements, 3))
         # go from -127.5, -126.5, ..., 0, .., 126.5, 177.5 instead of between -128 and 127
@@ -117,15 +119,8 @@ if __name__ == "__main__":
 
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
-    print(x_dim, z_dim)
-
     positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
-    print("Positions in mm:", positions)
     detector_elements = device.get_detector_element_orientations(global_settings=settings)
-    print(np.shape(positions[:, 0]))
-    print(np.shape(positions[:, 2]))
-    print(np.shape(detector_elements[:, 0]))
-    print(np.shape(detector_elements[:, 2]))
     import matplotlib.pyplot as plt
     plt.scatter(positions[:, 0], positions[:, 2])
     plt.quiver(positions[:, 0], positions[:, 2], detector_elements[:, 0], detector_elements[:, 2])

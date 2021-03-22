@@ -83,7 +83,7 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
             xmltodict.unparse(beamforming_dict, xml_write_file, pretty=True, indent="\t")
 
     def reconstruction_algorithm(self, time_series_sensor_data, settings):
-        print("Calling MITK now........")
+        self.logger.info("Calling MITK now........")
 
         tmp_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]
         tmp_input_path = tmp_path + "_input.nrrd"

@@ -20,41 +20,37 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags
+import unittest
 from simpa.log import Logger
-from simpa.io_handling.io_hdf5 import load_data_field
-from abc import abstractmethod
+import logging
+import os
 
 
-class ReconstructionAdapterBase:
-    """
-    TODO
-    """
+class TestLogging(unittest.TestCase):
+    def setUp(self):
+        self.path = "logfile.log"
 
-    def __init__(self):
-        self.logger = Logger()
+    def tearDown(self):
+        logging.shutdown()
+        if os.path.exists(self.path):
+            os.remove(self.path)
 
-    @abstractmethod
-    def reconstruction_algorithm(self, time_series_sensor_data, settings):
-        """
-        A deriving class needs to implement this method according to its model.
+    def testTwoInstancesAreTheSame(self):
+        logger1 = Logger(self.path)
+        logger2 = Logger(self.path)
+        logger3 = Logger(self.path, force_new_instance=True)
 
-        :param time_series_sensor_data: the time series sensor data
-        :param settings: Setting dictionary
-        :return: a reconstructed photoacoustic image
-        """
-        pass
+        self.assertEqual(logger1, logger2)
+        self.assertNotEqual(logger1, logger3)
 
-    def simulate(self, settings):
-        """
+    def testLoggingToFile(self):
+        logger = Logger(self.path, force_new_instance=True)
 
-        :param settings:
-        :return:
-        """
-        self.logger.info("Performing reconstruction...")
+        logger.debug("Test")
+        logger.info("Test")
+        logger.warning("Test")
+        logger.error("Test")
+        logger.critical("Test")
 
-        time_series_sensor_data = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.TIME_SERIES_DATA, settings[Tags.WAVELENGTH])
-
-        reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings)
-        self.logger.info("Performing reconstruction...[Done]")
-        return reconstructed_image
+        self.assertTrue(os.path.exists(self.path))
+        self.assertTrue(os.stat(self.path).st_size > 0)

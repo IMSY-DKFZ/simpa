@@ -23,12 +23,16 @@
 from abc import abstractmethod
 from simpa.utils.settings_generator import Settings
 import numpy as np
+from simpa.log import Logger
 
 
 class PAIDeviceBase:
     """
     This class represents a PAI device including the detection and illumination geometry.
     """
+
+    def __init__(self):
+        self.logger = Logger()
 
     @abstractmethod
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:

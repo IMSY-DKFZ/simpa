@@ -177,12 +177,10 @@ SIMUATION_PIPELINE = [
     run_reconstruction_algorithm
 ]
 
-print("Simulating ", RANDOM_SEED)
 import time
 timer = time.time()
 simulate(SIMUATION_PIPELINE, settings)
 print("Needed", time.time()-timer, "seconds")
-print("Simulating ", RANDOM_SEED, "[Done]")
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]

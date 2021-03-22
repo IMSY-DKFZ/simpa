@@ -44,13 +44,9 @@ settings = device.adjust_simulation_volume_and_settings(settings)
 time_series_data = load_data_field(PATH, Tags.TIME_SERIES_DATA, WAVELENGTH)
 initial_pressure = load_data_field(PATH, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, WAVELENGTH)
 
-print(Tags.ACOUSTIC_SIMULATION_3D in settings)
-print(settings[Tags.ACOUSTIC_SIMULATION_3D])
 start = time.time()
 
 run_reconstruction_algorithm(settings)
-
-print("Took", time.time()-start, "seconds")
 
 reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, WAVELENGTH)
 reconstructed_image = np.squeeze(reconstructed_image)

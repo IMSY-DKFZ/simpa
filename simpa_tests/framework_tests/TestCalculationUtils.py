@@ -31,12 +31,6 @@ import numpy as np
 
 class TestCalculationUtils(unittest.TestCase):
 
-    def setUp(self):
-        print("\n[SetUp]")
-
-    def tearDown(self):
-        print("\n[TearDown]")
-
     def test_oxygenation_calculation(self):
 
         # Neither oxy nor deoxy:
@@ -94,7 +88,6 @@ class TestCalculationUtils(unittest.TestCase):
             random = randomize_uniform(lower, upper)
             assert lower < random, "randomize_uniform produced a value outside the desired range"
             assert upper >= random, "randomize_uniform produced a value outside the desired range"
-
 
     def test_gruneisen_parameter_calculation(self):
         for temperature in range(0, 50, 1):
