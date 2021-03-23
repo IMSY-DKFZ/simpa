@@ -27,11 +27,11 @@ from simpa.utils.settings_generator import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 
-from simpa.core.pipeline_components import run_volume_creation
-from simpa.core.pipeline_components import run_reconstruction_algorithm
-from simpa.core.pipeline_components import run_acoustic_forward_model
-from simpa.core.pipeline_components import run_optical_forward_model
-from simpa.core.pipeline_components import gaussian_noise
+from simpa.core.pipeline_components import *
+
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # TODO change these paths to the desired executable and save folder
 SAVE_PATH = "D:/mcx-tmp-output/"

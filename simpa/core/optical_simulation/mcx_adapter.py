@@ -24,13 +24,13 @@ import numpy as np
 import struct
 import subprocess
 from simpa.utils import Tags
-from simpa.core.optical_simulation import OpticalForwardAdapterBase
+from simpa.core.optical_simulation import OpticalForwardComponentBase
 import json
 import os
 from simpa.core.optical_simulation.illumination_definition import define_illumination
 
 
-class McxAdapter(OpticalForwardAdapterBase):
+class McxComponent(OpticalForwardComponentBase):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA.
     MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue::
@@ -41,7 +41,7 @@ class McxAdapter(OpticalForwardAdapterBase):
 
     """
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy, settings):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
 
         absorption_mm = absorption_cm / 10
         scattering_mm = scattering_cm / 10
@@ -53,24 +53,26 @@ class McxAdapter(OpticalForwardAdapterBase):
 
         optical_properties_list = list(np.reshape(op_array, op_array.size, "F"))
         mcx_input = struct.pack("f" * len(optical_properties_list), *optical_properties_list)
-        tmp_input_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".bin"
+        tmp_input_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
+                         self.global_settings[Tags.VOLUME_NAME]+".bin"
         with open(tmp_input_path, "wb") as input_file:
             input_file.write(mcx_input)
-        tmp_output_file = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+"_output"
+        tmp_output_file = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
+                          self.global_settings[Tags.VOLUME_NAME]+"_output"
 
         # write settings to json
         # time = 1.16e-09
         # dt = 8e-12
-        if Tags.TIME_STEP and Tags.TOTAL_TIME in settings:
-            dt = settings[Tags.TIME_STEP]
-            time = settings[Tags.TOTAL_TIME]
+        if Tags.TIME_STEP and Tags.TOTAL_TIME in self.component_settings:
+            dt = self.component_settings[Tags.TIME_STEP]
+            time = self.component_settings[Tags.TOTAL_TIME]
         else:
             time = 5e-09
             dt = 5e-09
         frames = int(time/dt)
 
-        if Tags.ILLUMINATION_TYPE in settings:
-            source = define_illumination(settings, nx, ny, nz)
+        if Tags.ILLUMINATION_TYPE in self.component_settings:
+            source = define_illumination(self.component_settings, nx, ny, nz)
         else:
             source = {
                   "Pos": [
@@ -83,10 +85,10 @@ class McxAdapter(OpticalForwardAdapterBase):
                   ],
                   "Type": "pasetup",
                   "Param1": [
-                      24.5 / settings[Tags.SPACING_MM],
+                      24.5 / self.global_settings[Tags.SPACING_MM],
                       0,
                       0,
-                      22.8 / settings[Tags.SPACING_MM]
+                      22.8 / self.global_settings[Tags.SPACING_MM]
                   ],
                   "Param2": [
                       0,
@@ -100,7 +102,7 @@ class McxAdapter(OpticalForwardAdapterBase):
             "Session": {
                 "ID": tmp_output_file,
                 "DoAutoThread": 1,
-                "Photons": settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
+                "Photons": self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
                 "DoMismatch": 0
              },
             "Forward": {
@@ -119,7 +121,7 @@ class McxAdapter(OpticalForwardAdapterBase):
             },
             "Domain": {
                 "OriginType": 0,
-                "LengthUnit": settings[Tags.SPACING_MM],
+                "LengthUnit": self.global_settings[Tags.SPACING_MM],
                 "Media": [
                     {
                         "mua": 0,
@@ -136,23 +138,25 @@ class McxAdapter(OpticalForwardAdapterBase):
                 ],
                 "MediaFormat": "muamus_float",
                 "Dim": [nx, ny, nz],
-                "VolumeFile": settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".bin"
+                "VolumeFile": self.global_settings[Tags.SIMULATION_PATH] + "/" +
+                              self.global_settings[Tags.VOLUME_NAME]+".bin"
             }}
 
-        if Tags.MCX_SEED not in settings:
-            if Tags.RANDOM_SEED in settings:
-                settings_dict["RNGSeed"] = settings[Tags.RANDOM_SEED]
+        if Tags.MCX_SEED not in self.component_settings:
+            if Tags.RANDOM_SEED in self.global_settings:
+                settings_dict["RNGSeed"] = self.global_settings[Tags.RANDOM_SEED]
         else:
-            settings_dict["RNGSeed"] = settings[Tags.MCX_SEED]
+            settings_dict["RNGSeed"] = self.component_settings[Tags.MCX_SEED]
 
-        tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".json"
+        tmp_json_filename = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
+                            self.global_settings[Tags.VOLUME_NAME]+".json"
         with open(tmp_json_filename, "w") as json_file:
             json.dump(settings_dict, json_file, indent="\t")
 
         # run the simulation
 
         cmd = list()
-        cmd.append(settings[Tags.OPTICAL_MODEL_BINARY_PATH])
+        cmd.append(self.component_settings[Tags.OPTICAL_MODEL_BINARY_PATH])
         cmd.append("-f")
         cmd.append(tmp_json_filename)
         cmd.append("-O")

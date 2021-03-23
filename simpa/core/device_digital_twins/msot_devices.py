@@ -161,7 +161,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
 
         pitch_angle = self.pitch_mm / self.radius_mm
-        self.logger.debug("pitch angle: ", pitch_angle)
+        self.logger.debug(f"pitch angle: {pitch_angle}")
         detector_radius = self.radius_mm
 
         # if distortion is not None:

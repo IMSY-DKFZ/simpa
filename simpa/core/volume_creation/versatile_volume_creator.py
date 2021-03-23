@@ -20,14 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.volume_creation import VolumeCreatorBase
+from simpa.core.volume_creation import VolumeCreatorComponentBase
 from simpa.utils.libraries.structure_library import Structures
 from simpa.utils import Tags
 import numpy as np
+from simpa.utils import create_deformation_settings
 from simpa.log import Logger
 
 
-class ModelBasedVolumeCreator(VolumeCreatorBase):
+class ModelBasedVolumeCreator(VolumeCreatorComponentBase):
     """
     The model-based volume creator uses a set of rules how to generate structures
     to create a simulation volume.
@@ -62,11 +63,7 @@ class ModelBasedVolumeCreator(VolumeCreatorBase):
 
     """
 
-    def __init__(self):
-        self.EPS = 1e-4
-        self.logger = Logger()
-
-    def create_simulation_volume(self, settings) -> dict:
+    def create_simulation_volume(self) -> dict:
         """
         This method creates a in silico respresentation of a tissue as described in the settings file that is given.
 
@@ -76,12 +73,22 @@ class ModelBasedVolumeCreator(VolumeCreatorBase):
                 numpy arrays.
         """
 
-        volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes(settings)
+        if Tags.SIMULATE_DEFORMED_LAYERS in self.component_settings and self.component_settings[Tags.SIMULATE_DEFORMED_LAYERS]:
+            np.random.seed(self.global_settings[Tags.RANDOM_SEED])
+            self.component_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(
+                bounds_mm=[[0, self.global_settings[Tags.DIM_VOLUME_X_MM]],
+                           [0, self.global_settings[Tags.DIM_VOLUME_Y_MM]]],
+                maximum_z_elevation_mm=3,
+                filter_sigma=0,
+                cosine_scaling_factor=1)
+            # TODO extract as settings parameters
+
+        volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes()
         global_volume_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
         max_added_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
-        wavelength = settings[Tags.WAVELENGTH]
+        wavelength = self.global_settings[Tags.WAVELENGTH]
 
-        structure_list = Structures(settings)
+        structure_list = Structures(self.global_settings, self.component_settings)
         priority_sorted_structures = structure_list.sorted_structures
 
         for structure in priority_sorted_structures:

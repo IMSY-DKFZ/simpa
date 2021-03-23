@@ -42,7 +42,6 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
                    log_scale=True):
 
     file = load_hdf5(path_to_hdf5_file)
-    settings = Settings(file["settings"])
 
     fluence = None
     initial_pressure = None

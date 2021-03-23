@@ -20,14 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.volume_creation import VolumeCreatorBase
+from simpa.core.volume_creation import VolumeCreatorComponentBase
 from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
 
 
-class SegmentationBasedVolumeCreator(VolumeCreatorBase):
+class SegmentationBasedVolumeCreator(VolumeCreatorComponentBase):
     """
     This volume creator expects a np.ndarray to be in the settigs
     under the Tags.INPUT_SEGMENTATION_VOLUME tag and uses this array
@@ -37,11 +37,11 @@ class SegmentationBasedVolumeCreator(VolumeCreatorBase):
     With this, an even greater utility is warranted.
     """
 
-    def create_simulation_volume(self, settings: Settings) -> dict:
-        volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes(settings)
-        wavelength = settings[Tags.WAVELENGTH]
+    def create_simulation_volume(self) -> dict:
+        volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes()
+        wavelength = self.global_settings[Tags.WAVELENGTH]
 
-        segmentation_volume = settings[Tags.INPUT_SEGMENTATION_VOLUME]
+        segmentation_volume = self.component_settings[Tags.INPUT_SEGMENTATION_VOLUME]
         segmentation_classes = np.unique(segmentation_volume, return_counts=False)
         x_dim_seg_px, y_dim_seg_px, z_dim_seg_px = np.shape(segmentation_volume)
 
@@ -55,7 +55,7 @@ class SegmentationBasedVolumeCreator(VolumeCreatorBase):
             raise ValueError("z_dim of volumes and segmentation must perfectly match but was {} and {}"
                              .format(z_dim_px, z_dim_seg_px))
 
-        class_mapping = settings[Tags.SEGMENTATION_CLASS_MAPPING]
+        class_mapping = self.component_settings[Tags.SEGMENTATION_CLASS_MAPPING]
 
         for seg_class in segmentation_classes:
             class_properties = class_mapping[seg_class].get_properties_for_wavelength(wavelength)

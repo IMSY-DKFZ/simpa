@@ -80,7 +80,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
                                           wavelength=settings[Tags.WAVELENGTH])
 
-        self.logger.debug("OPTICAL_PATH", optical_path)
+        self.logger.debug(f"OPTICAL_PATH: {str(optical_path)}")
 
         data_dict = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 
@@ -104,7 +104,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(settings)
         detector_positions_voxels = np.round(detector_positions_mm / settings[Tags.SPACING_MM]).astype(int)
 
-        self.logger.debug("Number of detector elements:", len(detector_positions_voxels))
+        self.logger.debug(f"Number of detector elements: {len(detector_positions_voxels)}")
 
         sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
         if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
@@ -121,7 +121,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
                            detector_positions_voxels[:, 1] + pixel,
                            detector_positions_voxels[:, 0]] = 1
 
-        self.logger.debug("Number of ones in sensor_map:", np.sum(sensor_map))
+        self.logger.debug(f"Number of ones in sensor_map: {np.sum(sensor_map)}")
 
         data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
         save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, settings[Tags.SIMPA_OUTPUT_PATH],

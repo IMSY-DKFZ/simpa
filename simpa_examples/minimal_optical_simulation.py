@@ -100,46 +100,46 @@ def create_example_tissue():
 
 np.random.seed(RANDOM_SEED)
 
-settings = {
+general_settings = {
     # These parameters set the general propeties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
-    Tags.VOLUME_NAME: "MyVolumeName2_"+str(RANDOM_SEED),
+    Tags.VOLUME_NAME: VOLUME_NAME,
     Tags.SIMULATION_PATH: SAVE_PATH,
     Tags.SPACING_MM: SPACING,
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+    Tags.WAVELENGTHS: [700]
 
     # Simulation Device
     # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
+}
 
-    # The following parameters set the optical forward model
-    Tags.RUN_OPTICAL_MODEL: True,
-    Tags.WAVELENGTHS: [700],
+settings = Settings(general_settings)
+
+settings["volume_creator"] = {
+    Tags.SIMULATE_DEFORMED_LAYERS: True,
+    Tags.STRUCTURES: create_example_tissue()
+}
+settings["optical_model"] = {
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
-
-    # The following parameters tell the script that we do not want any extra
-    # modelling steps
-    Tags.RUN_ACOUSTIC_MODEL: False,
-    Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
-    Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
-
-    # Add the volume_creation to be simulated to the tissue
-
+    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+}
+settings["noise_model_1"] = {
+    Tags.NOISE_MEAN: 1,
+    Tags.NOISE_STD: 0.1,
+    Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
+    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
 }
 
-settings = Settings(settings)
-settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
-settings[Tags.STRUCTURES] = create_example_tissue()
-
 pipeline = [
-    run_volume_creation,
-    run_optical_forward_model
+    ModelBasedVolumeCreator(settings, "volume_creator"),
+    McxComponent(settings, "optical_model"),
+    GaussianNoiseModel(settings, "noise_model_1")
 ]
 
 simulate(pipeline, settings)
