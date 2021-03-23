@@ -27,15 +27,15 @@ from simpa.utils.settings_generator import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 
-from simpa.pipeline_components import run_volume_creation
-from simpa.pipeline_components import run_reconstruction_algorithm
-from simpa.pipeline_components import run_acoustic_forward_model
-from simpa.pipeline_components import run_optical_forward_model
-from simpa.pipeline_components import gaussian_noise
+from simpa.core.pipeline_components import run_volume_creation
+from simpa.core.pipeline_components import run_reconstruction_algorithm
+from simpa.core.pipeline_components import run_acoustic_forward_model
+from simpa.core.pipeline_components import run_optical_forward_model
+from simpa.core.pipeline_components import gaussian_noise
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/save/"
-MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
+SAVE_PATH = "D:/mcx-tmp-output/"
+MCX_BINARY_PATH = "C:/mcx-bin/bin/Release/mcx-exe.exe"     # On Linux systems, the .exe at the end must be omitted.
 MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
 ACOUSTIC_MODEL_SCRIPT = "C:/simpa/simpa/core/acoustic_simulation"
 

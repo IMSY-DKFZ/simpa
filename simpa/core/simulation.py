@@ -21,12 +21,15 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
+from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.settings_generator import Settings
+from simpa.log import Logger
+
 import numpy as np
 import os
 import json
+import time
 
 
 def simulate(simulation_pipeline: list, settings: Settings):
@@ -54,11 +57,14 @@ def simulate(simulation_pipeline: list, settings: Settings):
     :param settings: settings dictionary containing the simulation instructions
     :return: list with the save paths of the simulated data within the HDF5 file.
     """
-
+    start_time = time.time()
+    logger = Logger()
     if not isinstance(settings, Settings):
+        logger.critical("The second argument was not a settings instance!")
         raise TypeError("Use a Settings instance from simpa.utils.settings_generator as simulation input.")
 
     if not isinstance(simulation_pipeline, list):
+        logger.critical("The first argument was not a list with pipeline methods!")
         raise TypeError("The simulation pipeline must be a list that contains callable functions.")
 
     simpa_output = dict()
@@ -82,9 +88,13 @@ def simulate(simulation_pipeline: list, settings: Settings):
     settings[Tags.SIMPA_OUTPUT_PATH] = simpa_output_path + ".hdf5"
 
     simpa_output[Tags.SETTINGS] = settings
+
+    logger.debug("Saving settings dictionary...")
     save_hdf5(simpa_output, settings[Tags.SIMPA_OUTPUT_PATH])
+    logger.debug("Saving settings dictionary...[Done]")
 
     for wavelength in settings[Tags.WAVELENGTHS]:
+        logger.debug(f"Running pipeline for wavelength {wavelength}nm...")
 
         if settings[Tags.RANDOM_SEED] is not None:
             np.random.seed(settings[Tags.RANDOM_SEED])
@@ -100,6 +110,6 @@ def simulate(simulation_pipeline: list, settings: Settings):
             else:
                 pipeline_element(settings)
 
-    # Quick and dirty fix:
-    all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
-    save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH])
+        logger.debug(f"Running pipeline for wavelength {wavelength}nm... [Done]")
+
+    logger.info(f"The entire simulation pipeline required {time.time() - start_time} seconds.")

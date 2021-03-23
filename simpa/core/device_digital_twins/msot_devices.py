@@ -111,7 +111,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
             width_shift_for_structures_mm = 0
 
         for structure_key in global_settings[Tags.STRUCTURES]:
-            self.logger.debug("Adjusting", structure_key)
+            self.logger.debug("Adjusting " + str(structure_key))
             structure_dict = global_settings[Tags.STRUCTURES][structure_key]
             if Tags.STRUCTURE_START_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][0] + width_shift_for_structures_mm

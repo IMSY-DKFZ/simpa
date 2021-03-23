@@ -25,6 +25,11 @@ from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
+from simpa.core.pipeline_components import *
+
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # TODO change these paths to the desired executable and save folder
 SAVE_PATH = "D:/mcx-tmp-output/"
@@ -98,7 +103,7 @@ np.random.seed(RANDOM_SEED)
 settings = {
     # These parameters set the general propeties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
-    Tags.VOLUME_NAME: "MyVolumeName_"+str(RANDOM_SEED),
+    Tags.VOLUME_NAME: "MyVolumeName2_"+str(RANDOM_SEED),
     Tags.SIMULATION_PATH: SAVE_PATH,
     Tags.SPACING_MM: SPACING,
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
@@ -121,7 +126,6 @@ settings = {
     # The following parameters tell the script that we do not want any extra
     # modelling steps
     Tags.RUN_ACOUSTIC_MODEL: False,
-    Tags.APPLY_NOISE_MODEL: False,
     Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
     Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
 
@@ -133,10 +137,12 @@ settings = Settings(settings)
 settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
 settings[Tags.STRUCTURES] = create_example_tissue()
 
-import time
-timer = time.time()
-simulate(settings)
-print("Needed", time.time()-timer, "seconds")
+pipeline = [
+    run_volume_creation,
+    run_optical_forward_model
+]
+
+simulate(pipeline, settings)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]

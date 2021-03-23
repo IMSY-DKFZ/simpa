@@ -27,7 +27,7 @@ from simpa.core.simulation import simulate
 import numpy as np
 from simpa_tests.test_utils import create_test_structure_parameters
 import os
-from simpa.pipeline_components import *
+from simpa.core.pipeline_components import *
 
 
 class TestPipeline(unittest.TestCase):
