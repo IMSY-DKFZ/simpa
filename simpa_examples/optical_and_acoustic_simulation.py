@@ -101,7 +101,7 @@ def create_example_tissue():
 np.random.seed(RANDOM_SEED)
 VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 
-settings = {
+general_settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: RANDOM_SEED,
             Tags.VOLUME_NAME: "CompletePipelineTestMSOT_" + str(RANDOM_SEED),
@@ -111,70 +111,75 @@ settings = {
             Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
             Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
-            Tags.SIMULATE_DEFORMED_LAYERS: True,
 
             # Simulation Device
             Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
 
             # The following parameters set the optical forward model
-            Tags.WAVELENGTHS: [700],
-            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-            Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
-            Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
-            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
-
-            # The following parameters tell the script that we do not want any extra
-            # modelling steps
-            Tags.ACOUSTIC_SIMULATION_3D: True,
-            Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
-            Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
-            Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
-            Tags.GPU: True,
-
-            Tags.PROPERTY_ALPHA_POWER: 1.05,
-
-            Tags.SENSOR_RECORD: "p",
-            Tags.PMLInside: False,
-            Tags.PMLSize: [31, 32],
-            Tags.PMLAlpha: 1.5,
-            Tags.PlotPML: False,
-            Tags.RECORDMOVIE: False,
-            Tags.MOVIENAME: "visualization_log",
-            Tags.ACOUSTIC_LOG_SCALE: True,
-
-            Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
-
-            Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
-            Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
-            Tags.TUKEY_WINDOW_ALPHA: 0.5,
-            Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
-            Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
-            Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
-            Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
-            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
+            Tags.WAVELENGTHS: [700]
         }
-settings = Settings(settings)
+settings = Settings(general_settings)
 np.random.seed(RANDOM_SEED)
-settings[Tags.STRUCTURES] = create_example_tissue()
 
-noise_settings_multiplicative = {Tags.NOISE_MEAN: 1,
-                                 Tags.NOISE_STD: 0.1,
-                                 Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
-                                 Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
-                                 Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True}
+settings['volume_creator'] = {
+    Tags.STRUCTURES: create_example_tissue(),
+    Tags.SIMULATE_DEFORMED_LAYERS: True
+}
 
-noise_settings_time_series = {Tags.NOISE_STD: 3,
-                              Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
-                              Tags.DATA_FIELD: Tags.TIME_SERIES_DATA}
+settings["optical_model"] = {
+    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+    Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
+    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
+    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+}
+
+settings['acoustic_model'] = {
+    Tags.ACOUSTIC_SIMULATION_3D: True,
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
+    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
+    Tags.GPU: True,
+    Tags.PROPERTY_ALPHA_POWER: 1.05,
+    Tags.SENSOR_RECORD: "p",
+    Tags.PMLInside: False,
+    Tags.PMLSize: [31, 32],
+    Tags.PMLAlpha: 1.5,
+    Tags.PlotPML: False,
+    Tags.RECORDMOVIE: False,
+    Tags.MOVIENAME: "visualization_log",
+    Tags.ACOUSTIC_LOG_SCALE: True
+}
+
+settings['reconstruction'] = {
+    Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
+    Tags.TUKEY_WINDOW_ALPHA: 0.5,
+    Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
+    Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
+    Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+    Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
+    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
+}
+
+settings["noise_initial_pressure"] = {
+    Tags.NOISE_MEAN: 1,
+    Tags.NOISE_STD: 0.1,
+    Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
+    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
+}
+
+settings["noise_time_series"] = {
+    Tags.NOISE_STD: 3,
+    Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
+    Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
+}
 
 SIMUATION_PIPELINE = [
-    run_volume_creation,
-    run_optical_forward_model,
-    (gaussian_noise, noise_settings_multiplicative),
-    run_acoustic_forward_model,
-    (gaussian_noise, noise_settings_time_series),
-    run_reconstruction_algorithm
+    ModelBasedVolumeCreator(settings, "volume_creator"),
+    McxComponent(settings, "optical_model"),
+    GaussianNoiseModel(settings, "noise_initial_pressure"),
+    KwaveAcousticForwardModel(settings, "acoustic_model"),
+    GaussianNoiseModel(settings, "noise_time_series"),
+    DelayAndSumReconstruction(settings, "reconstruction")
 ]
 
 import time

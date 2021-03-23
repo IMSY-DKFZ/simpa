@@ -33,10 +33,7 @@ def define_illumination(optical_simulation_settings, nx, ny, nz):
         :param ny: number of voxels along the y dimension of the volume
         :param nz: number of voxels along the z dimension of the volume
         """
-    if optical_simulation_settings[Tags.OPTICAL_MODEL] is Tags.OPTICAL_MODEL_MCX:
-        return define_illumination_mcx(optical_simulation_settings, nx, ny, nz)
-    if optical_simulation_settings[Tags.OPTICAL_MODEL] is Tags.OPTICAL_MODEL_MCXYZ:
-        return define_illumination_mcxyz(optical_simulation_settings, nx, ny, nz)
+    return define_illumination_mcx(optical_simulation_settings, nx, ny, nz)
 
 
 def define_illumination_mcx(optical_simulation_settings, nx, ny, nz) -> dict:

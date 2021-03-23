@@ -29,10 +29,10 @@ from simpa.utils.settings_generator import Settings
 import os
 import scipy.io as sio
 from simpa.core.device_digital_twins import DEVICE_MAP
-from simpa.core.acoustic_simulation import AcousticForwardAdapterBase
+from simpa.core.acoustic_simulation import AcousticForwardModelBase
 
 
-class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
+class KwaveAcousticForwardModel(AcousticForwardModelBase):
     """
     The KwaveAcousticForwardModel adapter enables acoustic simulations to be run with the
     k-wave MATLAB toolbox. k-Wave is a free toolbox (http://www.k-wave.org/) developed by Bradley Treeby
@@ -75,22 +75,23 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
 
     """
 
-    def forward_model(self, settings) -> np.ndarray:
+    def forward_model(self) -> np.ndarray:
 
         optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
-                                          wavelength=settings[Tags.WAVELENGTH])
+                                          wavelength=self.global_settings[Tags.WAVELENGTH])
 
         self.logger.debug(f"OPTICAL_PATH: {str(optical_path)}")
 
-        data_dict = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
+        data_dict = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
 
-        tmp_ac_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], SaveFilePaths.SIMULATION_PROPERTIES)
+        tmp_ac_data = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], SaveFilePaths.SIMULATION_PROPERTIES)
 
-        if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
+        if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not \
+                self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
             axes = (0, 1)
         else:
             axes = (0, 2)
-        wavelength = str(settings[Tags.WAVELENGTH])
+        wavelength = str(self.global_settings[Tags.WAVELENGTH])
         data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3, axes=axes)
         data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3, axes=axes)
         data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
@@ -99,18 +100,20 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(
             np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE][wavelength], axes=axes))
 
-        PA_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
-        PA_device.check_settings_prerequisites(settings)
-        detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(settings)
-        detector_positions_voxels = np.round(detector_positions_mm / settings[Tags.SPACING_MM]).astype(int)
+        PA_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+        PA_device.check_settings_prerequisites(self.global_settings)
+        detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
+        detector_positions_voxels = np.round(detector_positions_mm / self.global_settings[Tags.SPACING_MM]).astype(int)
 
         self.logger.debug(f"Number of detector elements: {len(detector_positions_voxels)}")
 
         sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
-        if Tags.ACOUSTIC_SIMULATION_3D not in settings or not settings[Tags.ACOUSTIC_SIMULATION_3D]:
+        if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not \
+                self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
             sensor_map[detector_positions_voxels[:, 2], detector_positions_voxels[:, 0]] = 1
         else:
-            half_y_dir_detector_pixels = int(round(0.5*PA_device.detector_element_length_mm/settings[Tags.SPACING_MM]))
+            half_y_dir_detector_pixels = int(round(0.5*PA_device.detector_element_length_mm /
+                                                   self.global_settings[Tags.SPACING_MM]))
             aranged_voxels = np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1)
 
             if len(aranged_voxels) < 1:
@@ -124,9 +127,9 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         self.logger.debug(f"Number of ones in sensor_map: {np.sum(sensor_map)}")
 
         data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
-        save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, settings[Tags.SIMPA_OUTPUT_PATH],
+        save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
                   generate_dict_path(Tags.PROPERTY_SENSOR_MASK,
-                                     wavelength=settings[Tags.WAVELENGTH]))
+                                     wavelength=self.global_settings[Tags.WAVELENGTH]))
 
         try:
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
@@ -136,7 +139,7 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         except KeyError:
             self.logger.error("No directivity_angle specified")
 
-        optical_path = settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
+        optical_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
         possible_k_wave_parameters = [Tags.PERFORM_UPSAMPLING, Tags.SPACING_MM, Tags.UPSCALE_FACTOR,
                                       Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
@@ -151,13 +154,14 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
         })
 
         for parameter in possible_k_wave_parameters:
-            if parameter in settings:
-                k_wave_settings[parameter] = settings[parameter]
+            if parameter in self.component_settings:
+                k_wave_settings[parameter] = self.component_settings[parameter]
 
         data_dict["settings"] = k_wave_settings
         sio.savemat(optical_path, data_dict, long_field_names=True)
 
-        if Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
+        if Tags.ACOUSTIC_SIMULATION_3D in self.component_settings and \
+                self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
             self.logger.info("Simulating 3D....")
             simulation_script_path = "simulate_3D"
         else:
@@ -165,16 +169,16 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
             simulation_script_path = "simulate_2D"
 
         cmd = list()
-        cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
+        cmd.append(self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
         cmd.append("-nodisplay")
         cmd.append("-nosplash")
         cmd.append("-automation")
         cmd.append("-wait")
         cmd.append("-r")
-        cmd.append("addpath('"+settings[Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION]+"');" +
+        cmd.append("addpath('"+self.component_settings[Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION]+"');" +
                    simulation_script_path + "('" + optical_path + "');exit;")
         cur_dir = os.getcwd()
-        os.chdir(settings[Tags.SIMULATION_PATH])
+        os.chdir(self.global_settings[Tags.SIMULATION_PATH])
         self.logger.info(cmd)
         subprocess.run(cmd)
 
@@ -185,8 +189,9 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
 
         # TODO create a flag in the PA device specification if output should be 2D or
         #  3D also returns the axis of the imaging plane
-        if (Tags.ACOUSTIC_SIMULATION_3D in settings and settings[Tags.ACOUSTIC_SIMULATION_3D] and
-            Tags.DIGITAL_DEVICE in settings and settings[Tags.DIGITAL_DEVICE] == Tags.DIGITAL_DEVICE_MSOT):
+        if (Tags.ACOUSTIC_SIMULATION_3D in self.component_settings and
+                self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] and
+            Tags.DIGITAL_DEVICE in self.global_settings and self.global_settings[Tags.DIGITAL_DEVICE] == Tags.DIGITAL_DEVICE_MSOT):
 
             sensor_mask = data_dict[Tags.PROPERTY_SENSOR_MASK]
             num_imaging_plane_sensors = int(np.sum(sensor_mask[:, detector_positions_voxels[0][1], :]))
@@ -194,10 +199,10 @@ class KwaveAcousticForwardModel(AcousticForwardAdapterBase):
             raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
             raw_time_series_data = np.squeeze(np.average(raw_time_series_data, axis=1))
 
-        settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])
-        settings[Tags.K_WAVE_SPECIFIC_NT] = num_time_steps
+        self.global_settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])
+        self.global_settings[Tags.K_WAVE_SPECIFIC_NT] = num_time_steps
 
-        save_hdf5(settings, settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
+        save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
         os.remove(optical_path)
         os.remove(optical_path + "dt.mat")

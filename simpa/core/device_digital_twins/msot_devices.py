@@ -62,18 +62,18 @@ class MSOTAcuityEcho(PAIDeviceBase):
         self.focus_in_field_of_view_mm = np.array([0, 0, 8])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
-            if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + self.mediprene_membrane_height_mm + 1):
-                self.logger.error("Volume z dimension is too small to encompass MSOT device in simulation!"
-                                     "Must be at least {} mm but was {} mm"
-                                     .format((self.probe_height_mm + self.mediprene_membrane_height_mm + 1),
-                                             global_settings[Tags.DIM_VOLUME_Z_MM]))
-                return False
-            if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
-                self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
-                                     "Must be at least {} mm but was {} mm"
-                                     .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
-                return False
+
+        if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + self.mediprene_membrane_height_mm + 1):
+            self.logger.error("Volume z dimension is too small to encompass MSOT device in simulation!"
+                                 "Must be at least {} mm but was {} mm"
+                                 .format((self.probe_height_mm + self.mediprene_membrane_height_mm + 1),
+                                         global_settings[Tags.DIM_VOLUME_Z_MM]))
+            return False
+        if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
+            self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
+                                 "Must be at least {} mm but was {} mm"
+                                 .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
+            return False
 
         global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
         global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz

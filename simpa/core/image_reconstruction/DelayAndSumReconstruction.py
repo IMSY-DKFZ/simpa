@@ -34,9 +34,9 @@ from scipy.signal.windows import tukey
 from simpa.utils.settings_generator import Settings
 
 
-class PyTorchDASAdapter(ReconstructionAdapterBase):
+class DelayAndSumReconstruction(ReconstructionAdapterBase):
 
-    def reconstruction_algorithm(self, time_series_sensor_data, settings):
+    def reconstruction_algorithm(self, time_series_sensor_data):
         """
         Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
         first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
@@ -49,14 +49,15 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         """
 
         # check for B-mode methods and perform envelope detection on time series data if specified
-        if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in settings and settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION]:
-            if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
-                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
+        if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in self.component_settings\
+            and self.component_settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION]:
+            if Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
+                if self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
                     # perform envelope detection using hilbert transform
                     hilbert_transformed = hilbert(time_series_sensor_data, axis=1)
                     time_series_sensor_data = np.abs(hilbert_transformed)
 
-                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
+                if self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
                     # perform envelope detection using absolute value
                     time_series_sensor_data = np.abs(time_series_sensor_data)
             else:
@@ -66,38 +67,39 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         # check settings dictionary for elements and read them in
 
         # speed of sound: use given speed of sound, otherwise use average from simulation if specified
-        if Tags.PROPERTY_SPEED_OF_SOUND in settings and settings[Tags.PROPERTY_SPEED_OF_SOUND]:
-            speed_of_sound_in_m_per_s = settings[Tags.PROPERTY_SPEED_OF_SOUND]
-        elif Tags.WAVELENGTH in settings and settings[Tags.WAVELENGTH]:
-            sound_speed_m = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
+        if Tags.PROPERTY_SPEED_OF_SOUND in self.component_settings and self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
+            speed_of_sound_in_m_per_s = self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]
+        elif Tags.WAVELENGTH in self.global_settings and self.global_settings[Tags.WAVELENGTH]:
+            sound_speed_m = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
         else:
             raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND or WAVELENGTH to obtain the average speed of sound")
 
         # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
-        if Tags.K_WAVE_SPECIFIC_DT in settings and settings[Tags.K_WAVE_SPECIFIC_DT]:
-            time_spacing_in_ms = settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
-        elif Tags.SENSOR_SAMPLING_RATE_MHZ in settings and settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
-            time_spacing_in_ms = 1.0 / (settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
+        if Tags.K_WAVE_SPECIFIC_DT in self.global_settings and self.global_settings[Tags.K_WAVE_SPECIFIC_DT]:
+            time_spacing_in_ms = self.global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
+        elif Tags.SENSOR_SAMPLING_RATE_MHZ in self.global_settings and self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
+            time_spacing_in_ms = 1.0 / (self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
         else:
             raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
 
         # spacing
-        if Tags.SPACING_MM in settings and settings[Tags.SPACING_MM]:
-            sensor_spacing_in_mm = settings[Tags.SPACING_MM]
+        if Tags.SPACING_MM in self.global_settings and self.global_settings[Tags.SPACING_MM]:
+            sensor_spacing_in_mm = self.global_settings[Tags.SPACING_MM]
         else:
             raise AttributeError("Please specify a value for SPACING_MM")
 
         # get device specific sensor positions
-        device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
-        device.check_settings_prerequisites(settings)
-        device.adjust_simulation_volume_and_settings(settings)
+        device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+        device.check_settings_prerequisites(self.global_settings)
+        device.adjust_simulation_volume_and_settings(self.global_settings)
 
-        settings[Tags.DIGITAL_DEVICE_POSITION] = [settings[Tags.DIM_VOLUME_X_MM]/2,
-                                                  settings[Tags.DIM_VOLUME_Y_MM]/2,
-                                                  device.probe_height_mm]
+        self.global_settings[Tags.DIGITAL_DEVICE_POSITION] = [
+            self.global_settings[Tags.DIM_VOLUME_X_MM]/2,
+            self.global_settings[Tags.DIM_VOLUME_Y_MM]/2,
+            device.probe_height_mm]
 
-        sensor_positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
+        sensor_positions = device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
         sensor_positions = np.round(sensor_positions / sensor_spacing_in_mm).astype(int)
         sensor_positions = np.array(sensor_positions[:, [0, 2]])  # only use x and y positions and ignore z
 
@@ -110,13 +112,13 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                           torch.Tensor), 'The time series sensor data must have been converted to a tensor'
 
         # move tensors to GPU if available, otherwise use CPU
-        if Tags.GPU not in settings:
+        if Tags.GPU not in self.global_settings:
             if torch.cuda.is_available():
                 dev = "cuda"
             else:
                 dev = "cpu"
         else:
-            dev = "cuda" if settings[Tags.GPU] else "cpu"
+            dev = "cuda" if self.global_settings[Tags.GPU] else "cpu"
 
         device = torch.device(dev)
         sensor_positions = sensor_positions.to(device)
@@ -129,8 +131,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         ### ALGORITHM ITSELF ###
 
         # check reconstruction mode - pressure by default
-        if Tags.RECONSTRUCTION_MODE in settings:
-            mode = settings[Tags.RECONSTRUCTION_MODE]
+        if Tags.RECONSTRUCTION_MODE in self.component_settings:
+            mode = self.component_settings[Tags.RECONSTRUCTION_MODE]
         else:
             mode = Tags.RECONSTRUCTION_MODE_PRESSURE
 
@@ -150,13 +152,15 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
 
         # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
-        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings or settings[
+        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in self.component_settings or self.component_settings[
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
 
             # construct bandpass filter given the cutoff values and time spacing
             frequencies = np.fft.fftfreq(time_series_sensor_data.shape[1], d=time_spacing_in_ms/1000)
-            cutoff_lowpass = settings[Tags.BANDPASS_CUTOFF_LOWPASS] if Tags.BANDPASS_CUTOFF_LOWPASS in settings else int(8e6)
-            cutoff_highpass = settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if Tags.BANDPASS_CUTOFF_HIGHPASS in settings else int(0.1e6)
+            cutoff_lowpass = self.component_settings[Tags.BANDPASS_CUTOFF_LOWPASS] if \
+                Tags.BANDPASS_CUTOFF_LOWPASS in self.component_settings else int(8e6)
+            cutoff_highpass = self.component_settings[Tags.BANDPASS_CUTOFF_HIGHPASS] if \
+                Tags.BANDPASS_CUTOFF_HIGHPASS in self.component_settings else int(0.1e6)
 
             if cutoff_highpass > cutoff_lowpass:
                 raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
@@ -164,8 +168,9 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
             large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
 
-            tukey_alpha = settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in settings else 0.5
-            win = torch.tensor(tukey(large_index - small_index, alpha = tukey_alpha), device=device)
+            tukey_alpha = self.component_settings[Tags.TUKEY_WINDOW_ALPHA] if \
+                Tags.TUKEY_WINDOW_ALPHA in self.component_settings else 0.5
+            win = torch.tensor(tukey(large_index - small_index, alpha=tukey_alpha), device=device)
             window = torch.zeros(frequencies.shape, device=device)
             window[small_index:large_index] = win
 
@@ -203,13 +208,13 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         delays[invalid_indices] = 0
 
         # check for apodization method
-        if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings:
+        if Tags.RECONSTRUCTION_APODIZATION_METHOD in self.component_settings:
             # hann window
-            if settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HANN:
+            if self.component_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HANN:
                 hann = torch.hann_window(n_sensor_elements, device=device)
                 apodization = hann.expand((xdim, ydim, n_sensor_elements))
             # hamming window
-            elif settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HAMMING:
+            elif self.component_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] == Tags.RECONSTRUCTION_APODIZATION_HAMMING:
                 hamming = torch.hamming_window(n_sensor_elements, device=device)
                 apodization = hamming.expand((xdim, ydim, n_sensor_elements))
             # box window apodization as default
@@ -230,48 +235,18 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         reconstructed = np.flipud(output.cpu().numpy())
 
         # check for B-mode methods and perform envelope detection on beamformed image if specified
-        if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in settings and settings[
+        if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in self.component_settings and self.component_settings[
             Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:
-            if Tags.RECONSTRUCTION_BMODE_METHOD in settings:
-                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
+            if Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
+                if self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
                     # perform envelope detection using hilbert transform
                     hilbert_transformed = hilbert(reconstructed, axis=1)
                     reconstructed = np.abs(hilbert_transformed)
 
-                if settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
+                if self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD] == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:
                     # perform envelope detection using absolute value
                     reconstructed = np.abs(reconstructed)
             else:
                 self.logger.warn("You have not specified a B-mode method.")
 
         return reconstructed
-
-
-def reconstruct_DAS_PyTorch(time_series_sensor_data, settings = None, sound_of_speed=1540, time_spacing=2.5e-8, sensor_spacing=0.1):
-    """
-    Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
-    :param time_series_sensor_data: 2D numpy array of sensor data of shape (sensor elements, time steps)
-    :param settings: settings dictionary (by default there is none and the other parameters are used instead,
-    but if parameters are given in the settings those will be used instead of parsed arguments)
-    :param sound_of_speed: speed of sound in medium in meters per second (default: 1540 m/s)
-    :param time_spacing: time between sampling points in seconds (default: 2.5e-8 s which is equal to 40 MHz)
-    :param sensor_spacing: space between sensor elements in millimeters (default: 0.1 mm)
-    :return: reconstructed image as 2D numpy array
-    """
-
-    # create settings if they don't exist yet
-    if settings is None:
-        settings = Settings()
-
-    # parse reconstruction settings if they are not given in the settings
-    if Tags.PROPERTY_SPEED_OF_SOUND not in settings or settings[Tags.PROPERTY_SPEED_OF_SOUND] is None:
-        settings[Tags.PROPERTY_SPEED_OF_SOUND] = sound_of_speed
-
-    if Tags.SENSOR_SAMPLING_RATE_MHZ not in settings or settings[Tags.SENSOR_SAMPLING_RATE_MHZ] is None:
-        settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = (1.0 / time_spacing) / 1000000
-
-    if Tags.SPACING_MM not in settings or settings[Tags.SPACING_MM] is None:
-        settings[Tags.SPACING_MM] = sensor_spacing
-
-    adapter = PyTorchDASAdapter()
-    return adapter.reconstruction_algorithm(time_series_sensor_data, settings)

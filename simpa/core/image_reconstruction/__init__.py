@@ -21,40 +21,42 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.log import Logger
 from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
+from simpa.core import SimulationComponent
+from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.io_handling.io_hdf5 import save_hdf5
+import numpy as np
 
 
-class ReconstructionAdapterBase:
+class ReconstructionAdapterBase(SimulationComponent):
     """
-    TODO
+    This class is the main entry point to perform image reconstruction using the SIMPA toolkit.
+    All information necessary for the respective reconstruction method must be contained in the
+    respective settings dictionary.
     """
-
-    def __init__(self):
-        self.logger = Logger()
 
     @abstractmethod
-    def reconstruction_algorithm(self, time_series_sensor_data, settings):
+    def reconstruction_algorithm(self, time_series_sensor_data) -> np.ndarray:
         """
         A deriving class needs to implement this method according to its model.
 
         :param time_series_sensor_data: the time series sensor data
-        :param settings: Setting dictionary
         :return: a reconstructed photoacoustic image
         """
         pass
 
-    def simulate(self, settings):
-        """
-
-        :param settings:
-        :return:
-        """
+    def run(self):
         self.logger.info("Performing reconstruction...")
 
-        time_series_sensor_data = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.TIME_SERIES_DATA, settings[Tags.WAVELENGTH])
+        time_series_sensor_data = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+                                                  Tags.TIME_SERIES_DATA, self.global_settings[Tags.WAVELENGTH])
 
-        reconstructed_image = self.reconstruction_algorithm(time_series_sensor_data, settings)
+        reconstruction = self.reconstruction_algorithm(time_series_sensor_data)
+
+        reconstruction_output_path = generate_dict_path(Tags.RECONSTRUCTED_DATA, self.global_settings[Tags.WAVELENGTH])
+
+        save_hdf5({Tags.RECONSTRUCTED_DATA: reconstruction}, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+                  reconstruction_output_path)
+
         self.logger.info("Performing reconstruction...[Done]")
-        return reconstructed_image

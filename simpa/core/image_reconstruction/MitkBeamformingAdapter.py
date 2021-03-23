@@ -37,9 +37,9 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
     However, there is only support for linear and curved transducers.
     """
 
-    def convert_settings_file(self, file, settings, save_path):
+    def convert_settings_file(self, file, save_path):
 
-        if Tags.DIGITAL_DEVICE in settings and settings[Tags.DIGITAL_DEVICE] == Tags.DIGITAL_DEVICE_MSOT:
+        if Tags.DIGITAL_DEVICE in self.global_settings and self.global_settings[Tags.DIGITAL_DEVICE] == Tags.DIGITAL_DEVICE_MSOT:
             PA_device = MSOTAcuityEcho()
         else:
             # default settings for now
@@ -52,29 +52,27 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@speedOfSoundMeterPerSecond"] = StandardProperties\
             .SPEED_OF_SOUND_GENERIC
 
-        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@algorithm"] = settings[
+        beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@algorithm"] = self.component_settings[
             Tags.RECONSTRUCTION_ALGORITHM]
 
-        if settings[Tags.SENSOR_NUM_USED_ELEMENTS] < PA_device.number_detector_elements:
-            pitch = PA_device.pitch_mm*PA_device.number_detector_elements/settings[Tags.SENSOR_NUM_USED_ELEMENTS]
+        if self.component_settings[Tags.SENSOR_NUM_USED_ELEMENTS] < PA_device.number_detector_elements:
+            pitch = PA_device.pitch_mm*PA_device.number_detector_elements/\
+                    self.component_settings[Tags.SENSOR_NUM_USED_ELEMENTS]
         else:
             pitch = PA_device.pitch_mm
-        del settings[Tags.SENSOR_NUM_USED_ELEMENTS]
+        del self.component_settings[Tags.SENSOR_NUM_USED_ELEMENTS]
         beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@pitchMilliMeter"] = pitch
 
         beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@reconstructionDepthMeter"] = 0.08
 
         beamforming_dict["ProcessingPipeline"]["PA"]["Beamforming"]["@reconstructedXDimension"] = 256
 
-        beamforming_dict["ProcessingPipeline"]["PA"]["BMode"]["@method"] = settings[Tags.RECONSTRUCTION_BMODE_METHOD]
+        beamforming_dict["ProcessingPipeline"]["PA"]["BMode"]["@method"] = self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD]
 
         beamforming_dict["ProcessingPipeline"]["PA"]["Cropping"]["@do"] = 0
 
         beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@do"] = 1
-        spacing = settings[Tags.SPACING_MM]
-        if Tags.PERFORM_UPSAMPLING in settings:
-            if settings[Tags.PERFORM_UPSAMPLING]:
-                spacing = spacing / settings[Tags.UPSCALE_FACTOR]
+        spacing = self.global_settings[Tags.SPACING_MM]
 
         beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@spacing"] = spacing
         beamforming_dict["ProcessingPipeline"]["PA"]["Resampling"]["@dimX"] = PA_device.probe_width_mm / spacing
@@ -82,35 +80,30 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         with open(save_path, "w") as xml_write_file:
             xmltodict.unparse(beamforming_dict, xml_write_file, pretty=True, indent="\t")
 
-    def reconstruction_algorithm(self, time_series_sensor_data, settings):
+    def reconstruction_algorithm(self, time_series_sensor_data):
         self.logger.info("Calling MITK now........")
 
-        tmp_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]
+        tmp_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + self.global_settings[Tags.VOLUME_NAME]
         tmp_input_path = tmp_path + "_input.nrrd"
         tmp_output_path = tmp_path + "_output.nrrd"
         tmp_settings_xml = tmp_path + "_settings.xml"
 
-        settings[Tags.SENSOR_NUM_USED_ELEMENTS] = np.shape(time_series_sensor_data)[0]
+        self.component_settings[Tags.SENSOR_NUM_USED_ELEMENTS] = np.shape(time_series_sensor_data)[0]
 
-        with open(settings[Tags.RECONSTRUCTION_MITK_SETTINGS_XML], "r") as file:
-            self.convert_settings_file(file, settings, tmp_settings_xml)
+        with open(self.component_settings[Tags.RECONSTRUCTION_MITK_SETTINGS_XML], "r") as file:
+            self.convert_settings_file(file, tmp_settings_xml)
 
         time_series_sensor_data = np.atleast_3d(time_series_sensor_data)
 
-        upscale_factor = 1
-        if Tags.PERFORM_UPSAMPLING in settings:
-            if settings[Tags.PERFORM_UPSAMPLING]:
-                upscale_factor = settings[Tags.UPSCALE_FACTOR]
-
         header = dict()
         header['space dimension'] = 3
-        header['space directions'] = [[settings[Tags.SPACING_MM]/upscale_factor, 0, 0],
-                                      [0, settings["dt_acoustic_sim"]*10**6, 0],
+        header['space directions'] = [[self.global_settings[Tags.SPACING_MM], 0, 0],
+                                      [0, self.global_settings["dt_acoustic_sim"]*10**6, 0],
                                       [0, 0, 1]]
         nrrd.write(tmp_input_path, time_series_sensor_data, header)
 
         cmd = list()
-        cmd.append(settings[Tags.RECONSTRUCTION_MITK_BINARY_PATH])
+        cmd.append(self.component_settings[Tags.RECONSTRUCTION_MITK_BINARY_PATH])
         cmd.append("-i")
         cmd.append(tmp_input_path)
         cmd.append("-o")

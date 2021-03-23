@@ -22,19 +22,33 @@
 
 from abc import abstractmethod
 import numpy as np
-from simpa.log import Logger
+from simpa.core import SimulationComponent
+from simpa.utils import Tags
+from simpa.io_handling.io_hdf5 import save_hdf5
+from simpa.utils.dict_path_manager import generate_dict_path
 
 
-class AcousticForwardAdapterBase:
+class AcousticForwardModelBase(SimulationComponent):
     """
-    This class should be used as a base for implementations of acoustic forward models.
-    """
+    This method is the entry method for running an acoustic forward model.
+    It is invoked in the *simpa.core.simulation.simulate* method, but can also be called
+    individually for the purposes of performing acoustic forward modeling only or in a different context.
 
-    def __init__(self):
-        self.logger = Logger()
+    The concrete will be chosen based on the::
+
+        Tags.ACOUSTIC_MODEL
+
+    tag in the settings dictionary.
+
+    :param settings: The settings dictionary containing key-value pairs that determine the simulation.
+        Here, it must contain the Tags.ACOUSTIC_MODEL tag and any tags that might be required by the specific
+        acoustic model.
+    :raises AssertionError: an assertion error is raised if the Tags.ACOUSTIC_MODEL tag is not given or
+        points to an unknown acoustic forward model.
+    """
 
     @abstractmethod
-    def forward_model(self, settings) -> np.ndarray:
+    def forward_model(self) -> np.ndarray:
         """
         This method performs the acoustic forward modeling given the initial pressure
         distribution and the acoustic tissue properties contained in the settings file.
@@ -45,16 +59,20 @@ class AcousticForwardAdapterBase:
         """
         pass
 
-    def simulate(self, settings) -> np.ndarray:
+    def run(self):
         """
         Call this method to invoke the simulation process.
 
         :param settings: the settings dictionary containing all simulation parameters.
         :return: a numpy array containing the time series pressure data per detection element
         """
+
         self.logger.info("Simulating the acoustic forward process...")
 
-        time_series_pressure_data = self.forward_model(settings=settings)
+        time_series_data = self.forward_model()
+
+        acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
+
+        save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
 
         self.logger.info("Simulating the acoustic forward process...[Done]")
-        return time_series_pressure_data
