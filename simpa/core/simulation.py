@@ -104,11 +104,7 @@ def simulate(simulation_pipeline: list, settings: Settings):
         settings[Tags.WAVELENGTH] = wavelength
 
         for pipeline_element in simulation_pipeline:
-            if isinstance(pipeline_element, tuple):
-                method, args = pipeline_element
-                method(settings, **args)
-            else:
-                pipeline_element(settings)
+            pipeline_element.run()
 
         logger.debug(f"Running pipeline for wavelength {wavelength}nm... [Done]")
 

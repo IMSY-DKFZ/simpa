@@ -20,7 +20,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from simpa.log import Logger
+from simpa.utils import Settings
+from abc import abstractmethod
 
+
+class SimulationComponent:
+    """
+    Defines a simulation component that is callable via the SIMPA core.simulation.simulate method.
+    """
+
+    def __init__(self, global_settings: Settings, component_settings_key: str):
+        """
+        Initialises the SimulationComponent given the global settings dictionary.
+         :param global_settings: The SIMPA settings dictionary
+         :param component_settings_key: the key to lookup the specific settings for this Component.
+        """
+        self.logger = Logger()
+        self.global_settings = global_settings
+        self.component_settings = global_settings[component_settings_key]
+
+    @abstractmethod
+    def run(self):
+        """
+        Executes the respective simulation component
+        """
+        pass
 
 
 
