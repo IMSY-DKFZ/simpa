@@ -156,6 +156,12 @@ class KwaveAcousticForwardModel(AcousticForwardModelBase):
         for parameter in possible_k_wave_parameters:
             if parameter in self.component_settings:
                 k_wave_settings[parameter] = self.component_settings[parameter]
+                self.logger.debug(f"Added parameter {parameter} to kWave settings via component_settings")
+            elif parameter in self.global_settings:
+                k_wave_settings[parameter] = self.global_settings[parameter]
+                self.logger.debug(f"Added parameter {parameter} to kWave settings via global_settings")
+            else:
+                self.logger.warning(f"Did not find parameter {parameter} in any settings.")
 
         data_dict["settings"] = k_wave_settings
         sio.savemat(optical_path, data_dict, long_field_names=True)

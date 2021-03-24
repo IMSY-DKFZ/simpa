@@ -25,6 +25,7 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
+from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 import numpy as np
 
 from simpa.core.pipeline_components import *
@@ -93,6 +94,77 @@ def create_example_tissue():
     tissue_dict["epidermis"] = epidermis_dictionary
     tissue_dict["vessel_1"] = vessel_1_dictionary
     return tissue_dict
+
+
+def add_msot_specific_settings(settings, volume_creator_key):
+    volume_creator_settings = settings[volume_creator_key]
+    device = MSOTAcuityEcho()
+    probe_size_mm = device.probe_height_mm
+    mediprene_layer_height_mm = device.mediprene_membrane_height_mm
+    heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+
+    new_volume_height_mm = settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
+                           heavy_water_layer_height_mm
+
+    # adjust the z-dim to msot probe height
+    settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
+
+    # adjust the x-dim to msot probe width
+    # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
+    # of the simulated volume.
+
+    if settings[Tags.DIM_VOLUME_X_MM] < round(device.probe_width_mm) + 1:
+        width_shift_for_structures_mm = (round(device.probe_width_mm) + 1 - settings[Tags.DIM_VOLUME_X_MM]) / 2
+        settings[Tags.DIM_VOLUME_X_MM] = round(device.probe_width_mm) + 1
+    else:
+        width_shift_for_structures_mm = 0
+
+    for structure_key in volume_creator_settings[Tags.STRUCTURES]:
+        device.logger.debug("Adjusting " + str(structure_key))
+        structure_dict = volume_creator_settings[Tags.STRUCTURES][structure_key]
+        if Tags.STRUCTURE_START_MM in structure_dict:
+            structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                             0] + width_shift_for_structures_mm
+            structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                             2] + device.probe_height_mm
+        if Tags.STRUCTURE_END_MM in structure_dict:
+            structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                           0] + width_shift_for_structures_mm
+            structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                           2] + device.probe_height_mm
+
+    if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
+        us_gel_thickness = np.random.normal(0.4, 0.1)
+        us_gel_layer_settings = Settings({
+            Tags.PRIORITY: 5,
+            Tags.STRUCTURE_START_MM: [0, 0,
+                                      heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
+            Tags.CONSIDER_PARTIAL_VOLUME: True,
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
+            Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
+        })
+
+        volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
+    else:
+        us_gel_thickness = 0
+
+    mediprene_layer_settings = Settings({
+        Tags.PRIORITY: 5,
+        Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness],
+        Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+        Tags.CONSIDER_PARTIAL_VOLUME: True,
+        Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
+        Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
+    })
+
+    volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
+
+    background_settings = Settings({
+        Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
+        Tags.STRUCTURE_TYPE: Tags.BACKGROUND
+    })
+    volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
 
 # Seed the numpy random configuration prior to creating the global_settings file in
 # order to ensure that the same volume
@@ -172,6 +244,8 @@ settings["noise_time_series"] = {
     Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
+
+add_msot_specific_settings(settings, "volume_creator")
 
 SIMUATION_PIPELINE = [
     ModelBasedVolumeCreator(settings, "volume_creator"),

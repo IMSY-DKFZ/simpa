@@ -23,24 +23,26 @@
 from simpa.utils import Tags
 
 
-def define_illumination(optical_simulation_settings, nx, ny, nz):
+def define_illumination(global_settings, optical_simulation_settings, nx, ny, nz):
     """
         This method creates a dictionary that represents the illumination geometry in a way
         that it can be used with the respective illumination framework.
 
+        :param global_settings: The top-level settings dictionary
         :param optical_simulation_settings: The settings file containing the simulation instructions
         :param nx: number of voxels along the x dimension of the volume
         :param ny: number of voxels along the y dimension of the volume
         :param nz: number of voxels along the z dimension of the volume
         """
-    return define_illumination_mcx(optical_simulation_settings, nx, ny, nz)
+    return define_illumination_mcx(global_settings, optical_simulation_settings, nx, ny, nz)
 
 
-def define_illumination_mcx(optical_simulation_settings, nx, ny, nz) -> dict:
+def define_illumination_mcx(global_settings, optical_simulation_settings, nx, ny, nz) -> dict:
     """
     This method creates a dictionary that contains tags as they are expected for the
     mcx simulation tool to represent the illumination geometry.
 
+    :param global_settings: The top-level settings dictionary
     :param optical_simulation_settings: The settings file containing the simulation instructions
     :param nx: number of voxels along the x dimension of the volume
     :param ny: number of voxels along the y dimension of the volume
@@ -53,7 +55,7 @@ def define_illumination_mcx(optical_simulation_settings, nx, ny, nz) -> dict:
 
     if optical_simulation_settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
         source_position = [int(nx/2.0) + 0.5,
-                           int(ny / 2.0 - 17.81 / optical_simulation_settings[Tags.SPACING_MM]) + 0.5, 1]
+                           int(ny / 2.0 - 17.81 / global_settings[Tags.SPACING_MM]) + 0.5, 1]
     elif Tags.ILLUMINATION_POSITION not in optical_simulation_settings:
         source_position = [int(nx / 2.0) + 0.5, int(ny / 2.0) + 0.5, 1]
     else:
@@ -67,7 +69,7 @@ def define_illumination_mcx(optical_simulation_settings, nx, ny, nz) -> dict:
         source_direction = optical_simulation_settings[Tags.ILLUMINATION_DIRECTION]
 
     if optical_simulation_settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
-        source_param1 = [30 / optical_simulation_settings[Tags.SPACING_MM], 0, 0, 0]
+        source_param1 = [30 / global_settings[Tags.SPACING_MM], 0, 0, 0]
     elif Tags.ILLUMINATION_PARAM1 not in optical_simulation_settings:
         source_param1 = [0, 0, 0, 0]
     else:
@@ -85,7 +87,3 @@ def define_illumination_mcx(optical_simulation_settings, nx, ny, nz) -> dict:
         "Param1": source_param1,
         "Param2": source_param2
     }
-
-
-def define_illumination_mcxyz(optical_simulation_settings, nx, ny, nz):
-    raise NotImplementedError("not implemented yet - w currently only support mcx..")

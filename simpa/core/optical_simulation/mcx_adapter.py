@@ -72,7 +72,7 @@ class McxComponent(OpticalForwardComponentBase):
         frames = int(time/dt)
 
         if Tags.ILLUMINATION_TYPE in self.component_settings:
-            source = define_illumination(self.component_settings, nx, ny, nz)
+            source = define_illumination(self.global_settings, self.component_settings, nx, ny, nz)
         else:
             source = {
                   "Pos": [

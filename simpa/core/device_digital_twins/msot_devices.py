@@ -82,77 +82,9 @@ class MSOTAcuityEcho(PAIDeviceBase):
         return True
 
     def adjust_simulation_volume_and_settings(self, global_settings: Settings):
-
-        probe_size_mm = self.probe_height_mm
-        mediprene_layer_height_mm = self.mediprene_membrane_height_mm
-        heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
-
         global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
         global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
         global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
-
-        if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
-            return global_settings
-
-        new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
-                               heavy_water_layer_height_mm
-
-        # adjust the z-dim to msot probe height
-        global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
-
-        # adjust the x-dim to msot probe width
-        # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
-        # of the simulated volume.
-
-        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.probe_width_mm) + 1:
-            width_shift_for_structures_mm = (round(self.probe_width_mm) + 1 - global_settings[Tags.DIM_VOLUME_X_MM])/2
-            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.probe_width_mm) + 1
-        else:
-            width_shift_for_structures_mm = 0
-
-        for structure_key in global_settings[Tags.STRUCTURES]:
-            self.logger.debug("Adjusting " + str(structure_key))
-            structure_dict = global_settings[Tags.STRUCTURES][structure_key]
-            if Tags.STRUCTURE_START_MM in structure_dict:
-                structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][0] + width_shift_for_structures_mm
-                structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][2] + self.probe_height_mm
-            if Tags.STRUCTURE_END_MM in structure_dict:
-                structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][0] + width_shift_for_structures_mm
-                structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][2] + self.probe_height_mm
-
-        if Tags.US_GEL in global_settings and global_settings[Tags.US_GEL]:
-            us_gel_thickness = np.random.normal(0.4, 0.1)
-            us_gel_layer_settings = Settings({
-                Tags.PRIORITY: 5,
-                Tags.STRUCTURE_START_MM: [0, 0,
-                                          heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
-                Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
-                Tags.CONSIDER_PARTIAL_VOLUME: True,
-                Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
-                Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
-            })
-
-            global_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
-        else:
-            us_gel_thickness = 0
-
-        mediprene_layer_settings = Settings({
-            Tags.PRIORITY: 5,
-            Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness],
-            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
-            Tags.CONSIDER_PARTIAL_VOLUME: True,
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
-            Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
-        })
-
-        global_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
-
-        background_settings = Settings({
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
-            Tags.STRUCTURE_TYPE: Tags.BACKGROUND
-        })
-        global_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
-
         return global_settings
 
     def get_illuminator_definition(self, global_settings: Settings):
