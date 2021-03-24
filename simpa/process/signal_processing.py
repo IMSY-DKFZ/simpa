@@ -62,7 +62,7 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
 
 def bandpass_filtering(data: torch.tensor = None, time_spacing_in_ms: float = None,
                        cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
-                       tukey_alpha: float = 0.5, device: torch.device = 'cpu') -> torch.tensor:
+                       tukey_alpha: float = 0.5) -> torch.tensor:
     """
     Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz 
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
@@ -72,7 +72,6 @@ def bandpass_filtering(data: torch.tensor = None, time_spacing_in_ms: float = No
     :param cutoff_lowpass: (int) Signal above this value will be ignored (in MHz)
     :param cutoff_highpass: (int) Signal below this value will be ignored (in MHz)
     :param tukey_alpha: (float) transition value between 0 (rectangular) and 1 (Hann window)
-    :param device: (torch device) PyTorch tensor device
     :return: (torch tensor) filtered data
     """
     if data is None or time_spacing_in_ms is None:
@@ -88,8 +87,8 @@ def bandpass_filtering(data: torch.tensor = None, time_spacing_in_ms: float = No
     small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
     large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
 
-    win = torch.tensor(tukey(large_index - small_index, alpha=tukey_alpha), device=device)
-    window = torch.zeros(frequencies.shape, device=device)
+    win = torch.tensor(tukey(large_index - small_index, alpha=tukey_alpha), device=data.device)
+    window = torch.zeros(frequencies.shape, device=data.device)
     window[small_index:large_index] = win
 
     # transform data into Fourier space, multiply filter and transform back
