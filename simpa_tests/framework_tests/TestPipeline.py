@@ -27,8 +27,9 @@ from simpa.core.simulation import simulate
 import numpy as np
 from simpa_tests.test_utils import create_test_structure_parameters
 import os
-from simpa.core.pipeline_components import *
-
+from simpa.core.pipeline_components import ModelBasedVolumeCreator
+from simpa.core.optical_simulation.test_optical_adapter import TestOpticalComponent
+from simpa.core.acoustic_simulation.test_acoustic_adapter import TestAcousticModel
 
 class TestPipeline(unittest.TestCase):
 
@@ -55,32 +56,31 @@ class TestPipeline(unittest.TestCase):
             Tags.DIM_VOLUME_Z_MM: self.VOLUME_HEIGHT_IN_MM,
             Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM,
             Tags.DIM_VOLUME_Y_MM: self.VOLUME_WIDTH_IN_MM,
-            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 
             # The following parameters set the optical forward model
             Tags.WAVELENGTHS: [800],
-            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-            Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_TEST,
-            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+
 
             # The following parameters tell the script that we do not want any extra
             # modelling steps
-            Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_TEST,
-            Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
-            Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_TEST,
-            Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
-
             # Add the volume_creation to be simulated to the tissue
         }
 
+        settings = Settings(settings)
+
+        settings["optical_settings"] = {
+            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+            Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_TEST,
+            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
+            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+        }
+
         simulation_pipeline = [
-            run_volume_creation,
-            run_optical_forward_model,
-            run_acoustic_forward_model
+            ModelBasedVolumeCreator(settings, "optical_settings"),
+            TestOpticalComponent(settings, "optical_settings"),
+            TestAcousticModel(settings, "optical_settings"),
         ]
 
-        settings = Settings(settings)
         settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
         simulate(simulation_pipeline, settings)
 

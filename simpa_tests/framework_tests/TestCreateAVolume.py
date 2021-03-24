@@ -26,7 +26,7 @@ from simpa.utils.settings_generator import Settings
 from simpa.core.simulation import simulate
 import os
 from simpa_tests.test_utils import create_test_structure_parameters
-from simpa.core.pipeline_components import *
+from simpa.core.pipeline_components import ModelBasedVolumeCreator
 
 
 class TestCreateVolume(unittest.TestCase):
@@ -34,9 +34,8 @@ class TestCreateVolume(unittest.TestCase):
     def test_create_volume(self):
 
         random_seed = 4711
-        settings = {
+        basic_settings = {
             Tags.WAVELENGTHS: [800, 801],
-            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.RANDOM_SEED: random_seed,
             Tags.VOLUME_NAME: "FlowPhantom_" + str(random_seed).zfill(6),
             Tags.SIMULATION_PATH: ".",
@@ -46,12 +45,13 @@ class TestCreateVolume(unittest.TestCase):
             Tags.DIM_VOLUME_Y_MM: 3
         }
 
+        settings = Settings(basic_settings)
+        settings["volume_creator_settings"] = {Tags.STRUCTURES: create_test_structure_parameters(settings)}
+
         simulation_pipeline = [
-            run_volume_creation
+            ModelBasedVolumeCreator(settings, "volume_creator_settings")
         ]
-        
-        settings = Settings(settings)
-        settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
+
         simulate(simulation_pipeline, settings)
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and

@@ -68,10 +68,6 @@ class VolumeCreatorComponentBase(SimulationComponent):
             """
         self.logger.info("VOLUME CREATION")
 
-        if Tags.VOLUME_CREATOR not in self.global_settings:
-            raise AssertionError(
-                "Tags.VOLUME_CREATOR tag was not specified in the settings. Skipping optical modelling.")
-
         pa_device = None
         if Tags.DIGITAL_DEVICE in self.global_settings:
             try:
