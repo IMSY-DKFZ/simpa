@@ -28,35 +28,34 @@ from scipy.signal.windows import tukey
 
 
 def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZATION_BOX,
-                           xdim: int = None, ydim: int = None, n_sensor_elements=None,
+                           dimensions: tuple = None, n_sensor_elements=None,
                            device: torch.device = 'cpu') -> torch.tensor:
     """
     Construct apodization factors according to `apodization_method` [hann, hamming or box apodization (default)] 
-    for given x and y dimensions and `n_sensor_elements`.
+    for given dimensions and `n_sensor_elements`.
 
     :param apodization_method: (str) Apodization method, one of Tags.RECONSTRUCTION_APODIZATION_HANN, 
                         Tags.RECONSTRUCTION_APODIZATION_HAMMING and Tags.RECONSTRUCTION_APODIZATION_BOX (default)
-    :param xdim: (int) size of x dimension of reconstructed image
-    :param ydim: (int) size of y dimension of reconstructed image
+    :param dimensions: (tuple) size of each dimension of reconstructed image as int, might have 2 or 3 entries.
     :param n_sensor_elements: (int) number of sensor elements
     :param device: (torch device) PyTorch tensor device
     :return: (torch tensor) tensor with apodization factors which can be multipied with DAS values
     """
 
-    if xdim is None or ydim is None or n_sensor_elements is None:
-        raise AttributeError("xdim, ydim and n_sensor_elements must be specified and not be None")
+    if dimensions is None or n_sensor_elements is None:
+        raise AttributeError("dimensions and n_sensor_elements must be specified and not be None")
 
     # hann window
     if apodization_method == Tags.RECONSTRUCTION_APODIZATION_HANN:
         hann = torch.hann_window(n_sensor_elements, device=device)
-        output = hann.expand((xdim, ydim, n_sensor_elements))
+        output = hann.expand(dimensions + (n_sensor_elements,))
     # hamming window
     elif apodization_method == Tags.RECONSTRUCTION_APODIZATION_HAMMING:
         hamming = torch.hamming_window(n_sensor_elements, device=device)
-        output = hamming.expand((xdim, ydim, n_sensor_elements))
+        output = hamming.expand(dimensions + (n_sensor_elements,))
     # box window apodization as default
     else:
-        output = torch.ones((xdim, ydim, n_sensor_elements), device=device)
+        output = torch.ones(dimensions + (n_sensor_elements,), device=device)
 
     return output
 
@@ -115,7 +114,7 @@ def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
         raise AttributeError("data must be specified")
 
     if method == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
-        # perform envelope detection using hilbert transform
+        # perform envelope detection using hilbert transform in depth direction
         hilbert_transformed = hilbert(data, axis=1)
         output = np.abs(hilbert_transformed)
     elif method == Tags.RECONSTRUCTION_BMODE_METHOD_ABS:

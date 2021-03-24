@@ -90,8 +90,6 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                                                   device.probe_height_mm]
 
         sensor_positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
-        sensor_positions = np.round(sensor_positions / sensor_spacing_in_mm).astype(int)
-        sensor_positions = np.array(sensor_positions[:, [0, 2]])  # only use x and y positions and ignore z
 
         # time series sensor data must be numpy array
         if isinstance(sensor_positions, np.ndarray):
@@ -115,7 +113,9 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         time_series_sensor_data = time_series_sensor_data.to(device)
 
         # array must be of correct dimension
-        assert time_series_sensor_data.ndim == 2, 'Samples must have exactly 2 dimensions. ' \
+        assert time_series_sensor_data.ndim == 2, 'Time series data must have exactly 2 dimensions' \
+                                                  ', one for the sensor elements and one for time. ' \
+                                                  'Stack images and sensor positions for 3D reconstruction' \
                                                   'Apply beamforming per wavelength if you have a 3D array. '
 
         # check reconstruction mode - pressure by default
@@ -144,24 +144,30 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         ### ALGORITHM ITSELF ###
 
         ## compute size of beamformed image ##
-        xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))
+        xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))/sensor_spacing_in_mm
         xdim = int(xdim) + 1  # correction due to subtraction of indices starting at 0
         ydim = float(time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) \
             / sensor_spacing_in_mm
         ydim = int(round(ydim))
-        n_sensor_elements = time_series_sensor_data.shape[0]
+        zdim = (max(sensor_positions[:, 1]) - min(sensor_positions[:, 1]))/sensor_spacing_in_mm
+        zdim = int(zdim) + 1  # correction due to subtraction of indices starting at 0
 
-        print(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, sensor elements: {n_sensor_elements}')
+        n_sensor_elements = sensor_positions.shape[0]
+
+        print(
+            f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim},  sensor elements: {n_sensor_elements}')
 
         # construct output image
-        output = torch.zeros((xdim, ydim), dtype=torch.float32, device=device)
+        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=device)
 
-        xx, yy, jj = torch.meshgrid(torch.arange(xdim, device=device),
-                                    torch.arange(ydim, device=device),
-                                    torch.arange(n_sensor_elements, device=device))
+        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=device),
+                                        torch.arange(ydim, device=device),
+                                        torch.arange(zdim, device=device),
+                                        torch.arange(n_sensor_elements, device=device))
 
-        delays = torch.sqrt(((yy - sensor_positions[:, 1][jj]) * sensor_spacing_in_mm) ** 2 +
-                            ((xx - torch.abs(sensor_positions[:, 0][jj])) * sensor_spacing_in_mm) ** 2) \
+        delays = torch.sqrt(((yy * sensor_spacing_in_mm - sensor_positions[:, 2][jj])) ** 2 +
+                            ((xx * sensor_spacing_in_mm - torch.abs(sensor_positions[:, 0][jj]))) ** 2 +
+                            ((zz * sensor_spacing_in_mm - torch.abs(sensor_positions[:, 1][jj]))) ** 2) \
             / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
 
         # perform index validation
@@ -170,7 +176,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         apodization_method = settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] \
             if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings else None
-        apodization = get_apodization_factor(apodization_method=apodization_method, xdim=xdim, ydim=ydim,
+        apodization = get_apodization_factor(apodization_method=apodization_method, dimensions=(xdim, ydim, zdim),
                                              n_sensor_elements=n_sensor_elements, device=device)
 
         # interpolation of delays
@@ -184,8 +190,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         # set values of invalid indices to 0 so that they don't influence the result
         values[invalid_indices] = 0
-        sum = torch.sum(values, dim=2)
-        counter = torch.count_nonzero(values, dim=2)
+        sum = torch.sum(values, dim=3)
+        counter = torch.count_nonzero(values, dim=3)
         torch.divide(sum, counter, out=output)
 
         reconstructed = np.flipud(output.cpu().numpy())
