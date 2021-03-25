@@ -221,7 +221,7 @@ settings['acoustic_model'] = {
     Tags.ACOUSTIC_LOG_SCALE: True
 }
 
-settings['reconstruction'] = {
+settings['reconstruction_das'] = {
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
@@ -229,6 +229,22 @@ settings['reconstruction'] = {
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
+}
+
+settings['reconstruction_tr'] = {
+    Tags.ACOUSTIC_SIMULATION_3D: True,
+    Tags.GPU: True,
+    Tags.PROPERTY_ALPHA_POWER: 1.05,
+    Tags.SENSOR_RECORD: "p",
+    Tags.PMLInside: False,
+    Tags.PMLSize: [31, 32],
+    Tags.PMLAlpha: 1.5,
+    Tags.PlotPML: False,
+    Tags.RECORDMOVIE: False,
+    Tags.MOVIENAME: "visualization_log",
+    Tags.ACOUSTIC_LOG_SCALE: True,
+    Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/image_reconstruction/",
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH
 }
 
 settings["noise_initial_pressure"] = {
@@ -253,7 +269,7 @@ SIMUATION_PIPELINE = [
     GaussianNoiseModel(settings, "noise_initial_pressure"),
     KwaveAcousticForwardModel(settings, "acoustic_model"),
     GaussianNoiseModel(settings, "noise_time_series"),
-    DelayAndSumReconstruction(settings, "reconstruction")
+    TimeReversalAdapter(settings, "reconstruction_tr")
 ]
 
 import time

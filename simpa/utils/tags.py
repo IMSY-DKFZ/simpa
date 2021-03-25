@@ -75,12 +75,6 @@ class Tags:
     Usage: naming convention
     """
 
-    SIMULATION_EXTRACT_FIELD_OF_VIEW = ("extract_field_of_view", bool)
-    """
-    If True, converts a 3D volume to a 2D volume by extracting the middle slice along the y-axis.\n
-    Usage: SIMPA package
-    """
-
     GPU = ("gpu", (bool, np.bool, np.bool_))
     """
     If True, uses all available gpu options of the used modules.\n
@@ -330,12 +324,6 @@ class Tags:
 
     """
     Optical model settings
-    """
-
-    RUN_OPTICAL_MODEL = ("run_optical_forward_model", bool)
-    """
-    If True, the simulation will run the optical forward model.\n
-    Usage: module core (simulate.py)
     """
 
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
@@ -595,12 +583,6 @@ class Tags:
     Acoustic model settings
     """
 
-    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool, np.bool_))
-    """
-    If True, the simulation will run the acoustic forward model.\n
-    Usage: module core (simulate.py)
-    """
-
     ACOUSTIC_MODEL_BINARY_PATH = ("acoustic_model_binary_path", str)
     """
     Absolute path of the location of the acoustic forward model binary.\n
@@ -641,13 +623,6 @@ class Tags:
     """
     Name of the time series data with applied noise field in the SIMPA output file.\n
     Usage: naming convention
-    """
-
-    # Reconstruction settings
-    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", (bool, np.bool, np.bool_))
-    """
-    If True, the simulation will run the image reconstruction.\n
-    Usage: module core (simulate.py)
     """
 
     RECONSTRUCTION_OUTPUT_NAME = ("reconstruction_result", str)
@@ -834,24 +809,6 @@ class Tags:
 
     """
     Upsampling settings
-    """
-
-    CROP_IMAGE = ("crop_image", bool)
-    """
-    If True, the PA image cropped in the image processing.\n
-    Usage: module processing
-    """
-
-    CROP_POWER_OF_TWO = ("crop_power_of_two", bool)
-    """
-    If True, the PA image cropped to the shape as the nearest power of two in the image processing.\n
-    Usage: module processing
-    """
-
-    PERFORM_UPSAMPLING = ("sample", bool)
-    """
-    If True, the PA image upsampled in the image processing.\n
-    Usage: module processing
     """
 
     UPSAMPLING_METHOD = ("upsampling_method", str)

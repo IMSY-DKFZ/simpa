@@ -32,6 +32,8 @@ from simpa.core.acoustic_simulation.k_wave_adapter import KwaveAcousticForwardMo
 
 # Image reconstruction
 from simpa.core.image_reconstruction.DelayAndSumReconstruction import DelayAndSumReconstruction
+from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
 
 # Noise modelling
 from simpa.processing.noise_models import GaussianNoiseModel
+
