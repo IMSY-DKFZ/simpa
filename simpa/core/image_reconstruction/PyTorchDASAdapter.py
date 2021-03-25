@@ -76,28 +76,28 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         # spacing
         if Tags.SPACING_MM in settings and settings[Tags.SPACING_MM]:
-            sensor_spacing_in_mm = settings[Tags.SPACING_MM]
+            spacing_in_mm = settings[Tags.SPACING_MM]
         else:
             raise AttributeError("Please specify a value for SPACING_MM")
 
         # get device specific sensor positions
-        device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
-        device.check_settings_prerequisites(settings)
-        device.adjust_simulation_volume_and_settings(settings)
+        pa_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
+        pa_device.check_settings_prerequisites(settings)
+        pa_device.adjust_simulation_volume_and_settings(settings)
 
         settings[Tags.DIGITAL_DEVICE_POSITION] = [settings[Tags.DIM_VOLUME_X_MM]/2,
                                                   settings[Tags.DIM_VOLUME_Y_MM]/2,
-                                                  device.probe_height_mm]
+                                                  pa_device.probe_height_mm]
 
-        sensor_positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
+        sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(settings)
 
         # time series sensor data must be numpy array
         if isinstance(sensor_positions, np.ndarray):
             sensor_positions = torch.from_numpy(sensor_positions)
         if isinstance(time_series_sensor_data, np.ndarray):
             time_series_sensor_data = torch.from_numpy(time_series_sensor_data)
-        assert isinstance(time_series_sensor_data,
-                          torch.Tensor), 'The time series sensor data must have been converted to a tensor'
+        assert isinstance(time_series_sensor_data, torch.Tensor), \
+            'The time series sensor data must have been converted to a tensor'
 
         # move tensors to GPU if available, otherwise use CPU
         if Tags.GPU not in settings:
@@ -144,18 +144,17 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         ### ALGORITHM ITSELF ###
 
         ## compute size of beamformed image ##
-        xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0]))/sensor_spacing_in_mm
+        xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0])) / spacing_in_mm
         xdim = int(xdim) + 1  # correction due to subtraction of indices starting at 0
-        ydim = float(time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) \
-            / sensor_spacing_in_mm
+        ydim = float(time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) / spacing_in_mm
         ydim = int(round(ydim))
-        zdim = (max(sensor_positions[:, 1]) - min(sensor_positions[:, 1]))/sensor_spacing_in_mm
+        zdim = (max(sensor_positions[:, 1]) - min(sensor_positions[:, 1]))/spacing_in_mm
         zdim = int(zdim) + 1  # correction due to subtraction of indices starting at 0
 
         n_sensor_elements = time_series_sensor_data.shape[0]
 
-        print(
-            f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim},  sensor elements: {n_sensor_elements}')
+        print(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim}'
+              ',number of sensor elements: {n_sensor_elements}')
 
         # construct output image
         output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=device)
@@ -165,9 +164,9 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                                         torch.arange(zdim, device=device),
                                         torch.arange(n_sensor_elements, device=device))
 
-        delays = torch.sqrt(((yy * sensor_spacing_in_mm - sensor_positions[:, 2][jj])) ** 2 +
-                            ((xx * sensor_spacing_in_mm - torch.abs(sensor_positions[:, 0][jj]))) ** 2 +
-                            ((zz * sensor_spacing_in_mm - torch.abs(sensor_positions[:, 1][jj]))) ** 2) \
+        delays = torch.sqrt(((yy * spacing_in_mm - sensor_positions[:, 2][jj])) ** 2 +
+                            ((xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj]))) ** 2 +
+                            ((zz * spacing_in_mm - torch.abs(sensor_positions[:, 1][jj]))) ** 2) \
             / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
 
         # perform index validation
