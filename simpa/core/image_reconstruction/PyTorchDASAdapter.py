@@ -123,7 +123,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
             mode = settings[Tags.RECONSTRUCTION_MODE]
         else:
             mode = Tags.RECONSTRUCTION_MODE_PRESSURE
-        time_series_sensor_data = reconstruction_mode_transformation(time_series_sensor_data, mode=mode, device=device)
+        time_series_sensor_data = reconstruction_mode_transformation(time_series_sensor_data, mode=mode)
 
         # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in settings \

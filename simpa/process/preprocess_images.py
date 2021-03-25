@@ -137,7 +137,7 @@ def reconstruction_mode_transformation(time_series_sensor_data: torch.tensor = N
     # depending on mode use pressure data or its derivative
     if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL:
         zeros = torch.zeros([time_series_sensor_data.shape[0], 1], names=None).to(time_series_sensor_data.device)
-        time_vector = torch.arange(0, time_series_sensor_data.shape[1]).to(time_series_sensor_data.device)
+        time_vector = torch.arange(1, time_series_sensor_data.shape[1]+1).to(time_series_sensor_data.device)
         time_derivative_pressure = time_series_sensor_data[:, 1:] - time_series_sensor_data[:, 0:-1]
         time_derivative_pressure = torch.cat([time_derivative_pressure, zeros], dim=1)
         time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
