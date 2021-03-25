@@ -152,7 +152,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         zdim = (max(sensor_positions[:, 1]) - min(sensor_positions[:, 1]))/sensor_spacing_in_mm
         zdim = int(zdim) + 1  # correction due to subtraction of indices starting at 0
 
-        n_sensor_elements = sensor_positions.shape[0]
+        n_sensor_elements = time_series_sensor_data.shape[0]
 
         print(
             f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim},  sensor elements: {n_sensor_elements}')
@@ -194,7 +194,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         counter = torch.count_nonzero(values, dim=3)
         torch.divide(sum, counter, out=output)
 
-        reconstructed = np.flipud(output.cpu().numpy())
+        reconstructed = output.cpu().numpy()
 
         # check for B-mode methods and perform envelope detection on beamformed image if specified
         if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in settings \
