@@ -112,6 +112,9 @@ def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
     if data is None:
         raise AttributeError("data must be specified")
 
+    if data.ndim < 2:
+        raise AttributeError("data must have at least two dimensions")
+
     if method == Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM:
         # perform envelope detection using hilbert transform in depth direction
         hilbert_transformed = hilbert(data, axis=1)
