@@ -151,6 +151,10 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         zdim = (max(sensor_positions[:, 1]) - min(sensor_positions[:, 1]))/spacing_in_mm
         zdim = int(zdim) + 1  # correction due to subtraction of indices starting at 0
 
+        if time_series_sensor_data.shape[0] < sensor_positions.shape[0]:
+            print("Warning: The time series data has less sensor element entries than the given sensor positions. "
+                  "This might be due to a low simulated resolution, please increase it.")
+
         n_sensor_elements = time_series_sensor_data.shape[0]
 
         print(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim}'
