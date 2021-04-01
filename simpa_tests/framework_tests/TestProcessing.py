@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 from simpa.process.signal_processing import apply_b_mode, get_apodization_factor
-from simpa.process.preprocess_images import normalize, reconstruction_mode_transformation
+from simpa.process.preprocess_images import min_max_normalization, reconstruction_mode_transformation
 from simpa.utils.tags import Tags
 import unittest
 import numpy as np
@@ -39,9 +39,9 @@ class TestProcessing(unittest.TestCase):
     def tearDown(self):
         print("tearDown")
 
-    def test_normalization(self):
+    def test_min_max_normalization(self):
         print("test normalization")
-        normalized = normalize(self.test_array)
+        normalized = min_max_normalization(self.test_array)
 
         # check input and output sizes
         assert normalized.shape == self.test_array.shape, "shapes have changed"
@@ -106,7 +106,7 @@ class TestProcessing(unittest.TestCase):
 if __name__ == '__main__':
     test = TestProcessing()
     test.setUp()
-    test.test_normalization()
+    test.test_min_max_normalization()
     test.test_reconstruction_mode_transformation()
     test.test_apodization_factors()
     test.test_envelope_detection()

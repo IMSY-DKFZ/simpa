@@ -29,7 +29,7 @@ import torch
 
 
 from simpa.utils.settings_generator import Settings
-from simpa.process.preprocess_images import normalize, reconstruction_mode_transformation
+from simpa.process.preprocess_images import reconstruction_mode_transformation
 from simpa.process.signal_processing import get_apodization_factor, bandpass_filtering, apply_b_mode
 
 
@@ -201,7 +201,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                 and Tags.RECONSTRUCTION_BMODE_METHOD in settings:
             reconstructed = apply_b_mode(reconstructed, method=settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
-        return normalize(reconstructed)
+        return reconstructed
 
 
 def reconstruct_DAS_PyTorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,

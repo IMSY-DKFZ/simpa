@@ -99,7 +99,7 @@ def top_center_crop_power_two(image_data):
     return top_center_crop(image_data, (target_height, target_width))
 
 
-def normalize(data: np.ndarray = None) -> np.ndarray:
+def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
     """
     Normalizes the given data by applying min max normalization.
     The resulting array has values between 0 and 1 inclusive.
@@ -114,10 +114,6 @@ def normalize(data: np.ndarray = None) -> np.ndarray:
     min = data.min()
     max = data.max()
     output = (data - min) / (max - min)
-
-    # sanity check
-    if ((0 > output) | (1 < output)).any():
-        raise ValueError("All values should be between 0 and 1 now, but this doesn't seem to be the case.")
 
     return output
 
