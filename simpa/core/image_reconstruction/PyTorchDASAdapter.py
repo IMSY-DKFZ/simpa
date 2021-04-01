@@ -85,9 +85,11 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         pa_device.check_settings_prerequisites(settings)
         pa_device.adjust_simulation_volume_and_settings(settings)
 
-        settings[Tags.DIGITAL_DEVICE_POSITION] = [settings[Tags.DIM_VOLUME_X_MM]/2,
-                                                  settings[Tags.DIM_VOLUME_Y_MM]/2,
-                                                  pa_device.probe_height_mm]
+        # if device position is not given, sets it to sensible default
+        if Tags.DIGITAL_DEVICE_POSITION not in settings:
+            settings[Tags.DIGITAL_DEVICE_POSITION] = [settings[Tags.DIM_VOLUME_X_MM]/2,
+                                                      settings[Tags.DIM_VOLUME_Y_MM]/2,
+                                                      pa_device.probe_height_mm]
 
         sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(settings)
 
@@ -157,8 +159,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
 
         n_sensor_elements = time_series_sensor_data.shape[0]
 
-        print(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim}'
-              ',number of sensor elements: {n_sensor_elements}')
+        print(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
+              f',number of sensor elements: {n_sensor_elements}')
 
         # construct output image
         output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=device)
@@ -168,19 +170,14 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                                         torch.arange(zdim, device=device),
                                         torch.arange(n_sensor_elements, device=device))
 
-        delays = torch.sqrt(((yy * spacing_in_mm - sensor_positions[:, 2][jj])) ** 2 +
-                            ((xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj]))) ** 2 +
-                            ((zz * spacing_in_mm - torch.abs(sensor_positions[:, 1][jj]))) ** 2) \
+        delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
+                            (xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj])) ** 2 +
+                            (zz * spacing_in_mm - torch.abs(sensor_positions[:, 1][jj])) ** 2) \
             / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
 
         # perform index validation
         invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
         torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1] - 1)
-
-        apodization_method = settings[Tags.RECONSTRUCTION_APODIZATION_METHOD] \
-            if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings else None
-        apodization = get_apodization_factor(apodization_method=apodization_method, dimensions=(xdim, ydim, zdim),
-                                             n_sensor_elements=n_sensor_elements, device=device)
 
         # interpolation of delays
         lower_delays = (torch.floor(delays)).long()
@@ -189,7 +186,13 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         lower_values = time_series_sensor_data[jj, lower_delays]
         upper_values = time_series_sensor_data[jj, upper_delays]
         values = lower_values * (upper_delays - delays) + upper_values * (delays - lower_delays)
-        values = values * apodization
+
+        # perform apodization if specified
+        if Tags.RECONSTRUCTION_APODIZATION_METHOD in settings:
+            apodization = get_apodization_factor(apodization_method=settings[Tags.RECONSTRUCTION_APODIZATION_METHOD],
+                                                 dimensions=(xdim, ydim, zdim), n_sensor_elements=n_sensor_elements,
+                                                 device=device)
+            values = values * apodization
 
         # set values of invalid indices to 0 so that they don't influence the result
         values[invalid_indices] = 0
@@ -208,8 +211,8 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
         return reconstructed.squeeze()
 
 
-def reconstruct_DAS_PyTorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
-                            time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
+def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
+                                      time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
 

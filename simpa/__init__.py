@@ -20,4 +20,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .core.image_reconstruction.PyTorchDASAdapter import reconstruct_DAS_PyTorch
+from .core.image_reconstruction.PyTorchDASAdapter import reconstruct_delay_and_sum_pytorch

@@ -92,9 +92,9 @@ def bandpass_filtering(data: torch.tensor = None, time_spacing_in_ms: float = No
     window[small_index:large_index] = win
 
     # transform data into Fourier space, multiply filter and transform back
-    TIME_SERIES_SENSOR_DATA = torch.fft.fft(data)
-    FILTERED = TIME_SERIES_SENSOR_DATA * window.expand_as(TIME_SERIES_SENSOR_DATA)
-    return torch.abs(torch.fft.ifft(FILTERED))
+    data_in_fourier_space = torch.fft.fft(data)
+    filtered_data_in_fourier_space = data_in_fourier_space * window.expand_as(data_in_fourier_space)
+    return torch.abs(torch.fft.ifft(filtered_data_in_fourier_space))
 
 
 def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
