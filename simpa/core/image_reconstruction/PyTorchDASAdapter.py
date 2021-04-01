@@ -205,7 +205,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                 and Tags.RECONSTRUCTION_BMODE_METHOD in settings:
             reconstructed = apply_b_mode(reconstructed, method=settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
-        return reconstructed
+        return reconstructed.squeeze()
 
 
 def reconstruct_DAS_PyTorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
