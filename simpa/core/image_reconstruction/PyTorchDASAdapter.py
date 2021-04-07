@@ -140,8 +140,7 @@ class PyTorchDASAdapter(ReconstructionAdapterBase):
                                                          time_spacing_in_ms=time_spacing_in_ms,
                                                          cutoff_lowpass=cutoff_lowpass,
                                                          cutoff_highpass=cutoff_highpass,
-                                                         tukey_alpha=tukey_alpha,
-                                                         device=device)
+                                                         tukey_alpha=tukey_alpha)
 
         ### ALGORITHM ITSELF ###
 
