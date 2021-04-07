@@ -523,6 +523,48 @@ class Tags:
     Usage: adapter mcx_adapter, naming convention
     """
 
+    ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION = ("constant_regularization", (bool, np.bool, np.bool_))
+    """
+    If True, the fluence regularization will be constant.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_DOWNSCALING_FACTOR = ("downscaling_factor", (int, np.integer, float, np.float))
+    """
+    Factor by which image is resampled to avoid inverse crime.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER = ("maximum_iteration_number", (int, np.integer))
+    """
+    Maximum number of iterations performed in iterative reconstruction if stopping criterion is not reached.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_NOISE_STD = ("gaussian_noise_std", (int, np.integer, float, np.float))
+    """
+    Standard deviation of gaussian model used as additive noise.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float, np.float))
+    """
+    Sigma value used for constant regularization of fluence.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_STACKING_TO_VOLUME = ("stacking", (bool, np.bool, np.bool_))
+    """
+    If True, indicates that image is stacked to 3-d volume for simulation.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
+    """
+    Ratio (Percentage) of improvement and preceding error at which iteration method stops. 
+    Usage: moduel processing (iterative_qPAI_algorithm.py)
+    """
+
     # Supported optical models
     OPTICAL_MODEL = ("optical_model", str)
     """

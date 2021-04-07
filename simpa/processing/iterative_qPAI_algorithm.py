@@ -20,10 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 import numpy as np
-from simpa.utils import Tags
+from simpa.utils.tags import Tags
 from scipy.ndimage import zoom
 from skimage.restoration import estimate_sigma
+from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
+from simpa.utils.libraries.molecule_library import MolecularComposition
+from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
+from simpa.core.optical_simulation.mcx_adapter import McxAdapter
+from simpa.utils.settings_generator import Settings
+from simpa.io_handling import load_hdf5
 
 
 def preprocess_for_mcx(image_data, settings):
@@ -36,7 +43,10 @@ def preprocess_for_mcx(image_data, settings):
     """
 
     if (settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW] == True) or (len(np.shape(image_data)) == 2):
+        settings[Tags.ITERATIVE_RECONSTRUCTION_STACKING_TO_VOLUME] = True
         image_data = stacking(image_data, settings)
+    else:
+        settings[Tags.ITERATIVE_RECONSTRUCTION_STACKING_TO_VOLUME] = False
 
     image_data = downscaling(image_data, settings)
     image_data = add_gaussian_noise(image_data, settings)
@@ -55,12 +65,11 @@ def stacking(image_data, settings):
 
     num_repeats = 60
 
-    if Tags.DIM_VOLUME_X_MM in settings and Tags.DIM_VOLUME_Y_MM in settings:
+    if (Tags.DIM_VOLUME_X_MM in settings) and (Tags.DIM_VOLUME_Y_MM in settings):
         spacing = settings[Tags.DIM_VOLUME_X_MM] / np.shape(image_data)[0]
         num_repeats = int(settings[Tags.DIM_VOLUME_Y_MM] / spacing)
 
     stacked_image = np.swapaxes(np.dstack([image_data] * num_repeats), axis1=1, axis2=2)
-    # vstack?
 
     return stacked_image
 
@@ -78,11 +87,10 @@ def downscaling(image_data, settings):
     downscaling_method = "nearest"
     scale = 0.73
 
-    if Tags.DOWNSCALING_METHOD_ITERATIVE_RECONSTRUCTION in settings:
-        downscaling_method = settings[Tags.DOWNSCALING_METHOD_ITERATIVE_RECONSTRUCTION]
-
-    if Tags.DOWNSCALE_FACTOR_ITERATIVE_RECONSTRUCTION in settings:
-        scale = float(settings[Tags.DOWNSCALE_FACTOR_ITERATIVE_RECONSTRUCTION])
+    if Tags.ITERATIVE_RECONSTRUCTION_DOWNSCALING_FACTOR in settings:
+        scale = float(settings[Tags.ITERATIVE_RECONSTRUCTION_DOWNSCALING_FACTOR])
+    else:
+        settings[Tags.ITERATIVE_RECONSTRUCTION_DOWNSCALING_FACTOR] = scale
 
     downscaled_image = zoom(image_data, scale, order=1, mode=downscaling_method)
 
@@ -101,12 +109,13 @@ def add_gaussian_noise(image_data, settings):
     mean_noise = 0
     std_noise = 1e-5 * np.max(image_data)
 
-    if Tags.NOISE_MEAN_ITERATIVE_RECONSTRUCTION in settings:
-        mean_noise = float(settings[Tags.NOISE_MEAN_ITERATIVE_RECONSTRUCTION])
-
-    if Tags.NOISE_STD_ITERATIVE_RECONSTRUCTION in settings:
-        factor = float(settings[Tags.NOISE_STD_ITERATIVE_RECONSTRUCTION][str(settings[Tags.WAVELENGTH])])
+    if Tags.ITERATIVE_RECONSTRUCTION_NOISE_STD in settings:
+        factor = float(settings[Tags.ITERATIVE_RECONSTRUCTION_NOISE_STD])
         std_noise = factor * np.max(image_data)
+    else:
+        settings[Tags.ITERATIVE_RECONSTRUCTION_NOISE_STD] = std_noise
+
+    print("Standard deviation of gaussian noise model: ", std_noise)
 
     image_data = image_data + np.random.normal(mean_noise, std_noise, size=np.shape(image_data))
     image_data[image_data <= 0] = 1e-16
@@ -116,7 +125,7 @@ def add_gaussian_noise(image_data, settings):
 
 def model_fluence(absorption, scattering, anisotropy, settings):
     """
-    Simulates photon propagation in 3-d volume and returns simulated fluence map in units of J/m^3.
+    Simulates photon propagation in 3-d volume and returns simulated fluence map in units of J/cm^2.
 
     :param absorption: (numpy array) Absorption coefficients [1/cm] for Monte Carlo Simulation.
     :param scattering: (numpy array) Scattering coefficients [1/cm] for Monte Carlo Simulation.
@@ -136,15 +145,20 @@ def model_fluence(absorption, scattering, anisotropy, settings):
     else:
         raise AssertionError("Tags.OPTICAL_MODEL tag is not OPTICAL_MODEL_MCX.")
 
+    if Tags.SPACING_MM not in settings:
+        raise AssertionError("Tags.SPACING_MM tag was not specified in the settings.")
+
     original_spacing = settings[Tags.SPACING_MM]
 
     if Tags.DIM_VOLUME_X_MM in settings:
         spacing = settings[Tags.DIM_VOLUME_X_MM] / np.shape(absorption)[0]
-
         if settings[Tags.SPACING_MM] != spacing:
             settings[Tags.SPACING_MM] = spacing
     else:
         raise AssertionError("Tags.DIM_VOLUME_X_MM tag was not specified in the settings.")
+
+    if settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW]:
+        settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW] = False
 
     fluence = forward_model_implementation.forward_model(absorption_cm=absorption,
                                                          scattering_cm=scattering,
@@ -169,11 +183,16 @@ def reconstruct_absorption(image_data, fluence, settings, sigma):
     """
 
     if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
-        gamma = settings[Tags.PROPERTY_GRUNEISEN_PARAMETER]
-        correction = 1e6
 
-        denominator = (fluence + sigma) * gamma * (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * correction
+        if Tags.PROPERTY_GRUNEISEN_PARAMETER in settings:
+            gamma = settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
+        else:
+            gamma = calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS)
+            gamma = gamma * np.ones(np.shape(image_data))
+
+        denominator = (fluence + sigma) * gamma * (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
         absorption = np.array(image_data / denominator)
+
     else:
         absorption = image_data / (fluence + sigma)
 
@@ -193,12 +212,18 @@ def log_sum_squared_error(image_data, absorption, fluence, settings, sigma):
     """
 
     if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in settings:
-        gamma = settings[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+
+        if Tags.PROPERTY_GRUNEISEN_PARAMETER in settings:
+            gamma = settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
+        else:
+            gamma = calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS)
+            gamma = gamma * np.ones(np.shape(image_data))
 
         correction_factor = (settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
         predicted_pressure = absorption * (fluence + sigma) * gamma * correction_factor
+
     else:
-        predicted_pressure = pabsorption * (fluence + sigma)
+        predicted_pressure = absorption * (fluence + sigma)
 
     y_pos = int(predicted_pressure.shape[1] / 2)
     sse = np.sum(np.square(image_data[:, y_pos, :] - predicted_pressure[:, y_pos, :]))
@@ -206,7 +231,7 @@ def log_sum_squared_error(image_data, absorption, fluence, settings, sigma):
     return np.log10(sse)
 
 
-def regularization_sigma(input_image):
+def regularization_sigma(input_image, settings):
     """
     Computes spatial or constant regularization parameter sigma.
 
@@ -219,14 +244,17 @@ def regularization_sigma(input_image):
 
     signal_noise_ratio = input_image / noise
 
-    if settings[Tags.CONSTANT_REGULARIZATION_ITERATIVE_ALGORITHM]:
+    if settings[Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION]:
         print("CONSTANT REGULARIZATION")
+        sigma = 1e-2
 
-        if Tags.CONSTANT_REGULARIZATION_ITERATIVE_ALGORITHM_SIGMA in settings:
-            sigma = Tags.CONSTANT_REGULARIZATION_ITERATIVE_ALGORITHM_SIGMA
+        if Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA in settings:
+            sigma = settings[Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA]
         else:
-            sigma = 1e-2
+            settings[Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA] = sigma
     else:
+        settings[Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION] = False
+
         sigma = 1 / signal_noise_ratio
         sigma[sigma > 1e8] = 1e8
         sigma[sigma < 1e-8] = 1e-8
@@ -234,177 +262,168 @@ def regularization_sigma(input_image):
     return sigma
 
 
-def scattering(settings):
-    return None
+def optical_properties(image_data, settings):
+    """
+    Returns scattering coefficients and anisotropy in dictionary of optical properties.
+
+    :param image_data: (numpy array) Measured image data.
+    :param settings: (dict) Settings dictionary that contains the simulation instructions.
+    :return: Dictionary containing optical properties.
+    """
+
+    shape = np.shape(image_data)
+
+    if Tags.PROPERTY_SCATTERING_PER_CM in settings:
+        mus = settings[Tags.PROPERTY_SCATTERING_PER_CM] * np.ones(shape)
+    # elif Tags.WAVELENGTH in settings:
+    #     prop = MolecularComposition.get_properties_for_wavelength(settings[Tags.WAVELENGTH])
+    #     mus = prop[Tags.PROPERTY_SCATTERING_PER_CM] * np.ones(shape)
+    else:
+        mus = OpticalTissueProperties.MUS500_BACKGROUND_TISSUE * np.ones(shape)
+
+    if Tags.PROPERTY_ANISOTROPY in settings:
+        g = settings[Tags.PROPERTY_ANISOTROPY] * np.ones(shape)
+    else:
+        g = OpticalTissueProperties.STANDARD_ANISOTROPY * np.ones(shape)
+
+    optical_properties = {
+        "scattering": mus,
+        "anisotropy": g
+    }
+
+    return optical_properties
+
+
+def stopping_criterion(errors, settings, iteration):
+    """
+    Serves as a stopping criterion for the iterative algorithm. If False the iterative algorithm continues.
+
+    :param errors: (list of floats) List of log (base 10) sum of squared errors.
+    :param settings: (dict) Settings dictionary that contains the simulation instructions.
+    :param iteration: (int) Iteration number.
+    :return: Bool.
+    """
+
+    nmax = 10
+    epsilon = 0.05
+
+    if Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER in settings:
+
+        if settings[Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER] == 0:
+            raise AssertionError("Tags.MAX_NUMBER_ITERATIVE_RECONSTRUCTION tag is invalid (equals 0).")
+
+        nmax = settings[Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER]
+    else:
+        settings[Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER] = nmax
+
+    if Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL in settings:
+        epsilon = settings[Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL]
+    else:
+        settings[Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL] = epsilon
+
+    if (iteration < nmax) and (iteration > 0):
+        share = np.abs(errors[iteration - 1] - errors[iteration]) / errors[iteration - 1]
+        if share <= epsilon:
+            return True
+        else:
+            return False
+
+    elif iteration == nmax:
+        return True
+
+    else:
+        return False
+
+
+def run_iterative_reconstruction(image_data, settings):
+    """
+    Performs quantitative photoacoustic image reconstruction of absorption distribution by use of a iterative method.
+
+    :param image_data: (numpy array) Measured image data (inital pressure) from which is reconstructed.
+    :param settings: (dict) Settings dictionary that contains the simulation instructions.
+    :return: Numpy array of absorption coefficients in 1/cm.
+    """
+
+    if not isinstance(image_data, np.ndarray):
+        raise TypeError("Input data is not a numpy ndarray.")
+    elif image_data.size == 0:
+        raise ValueError("Input data is empty.")
+    elif len(image_data.shape) < 2:
+        raise TypeError("Input data has less than two dimensions. Algorithm needs at least two dimensions.")
+    elif len(image_data.shape) > 3:
+        raise TypeError("Input data has more than three dimension. Algorithm cannot handle more than three dimensions.")
+
+    if not isinstance(settings, Settings):
+        raise TypeError("Use a Settings instance from simpa.utils.settings_generator as simulation input.")
+
+    # preprocessing
+    if Tags.ITERATIVE_RECONSTRUCTION_STACKING_TO_VOLUME not in settings:
+        settings[Tags.ITERATIVE_RECONSTRUCTION_STACKING_TO_VOLUME] = False
+
+    image_data = preprocess_for_mcx(image_data, settings)
+
+    plt.imshow(np.rot90(image_data, -1))
+    plt.show()
+
+    # # get optical properties necessary for simulation
+    # optical_properties_dict = optical_properties(image_data, settings)
+    # scattering = optical_properties_dict["scattering"]
+    # anisotropy = optical_properties_dict["anisotropy"]
+    #
+    # # regularization parameter
+    # sigma = regularization_sigma(image_data, settings)
+    #
+    # # initialization
+    # absorption = 1e-16 * np.ones(np.shape(image_data))
+    # error_list = np.empty([])
+    #
+    # # algorithm
+    # print("Start of iterative method.")
+    #
+    # i = 0
+    # while not stopping_criterion(error_list, settings, iteration=i):
+    #
+    #     print("Iteration: ", i)
+    #
+    #     fluence = model_fluence(absorption, scattering, anisotropy, settings)
+    #     error_list[i] = log_sum_squared_error(image_data, absorption, fluence, settings, sigma)
+    #     print("log (base 10) sum squared error: ", error_list[i])
+    #
+    #     absorption = reconstruct_absorption(image_data, fluence, settings, sigma)
+    #     i += 1
+    #
+    # print("End of iterative method.")
+    #
+    # if settings[Tags.ITERATIVE_RECONSTRUCTION_STACKING_TO_VOLUME]:
+    #     settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW] = True
+    #
+    #     y_pos = int(np.shape(image_data)[1] / 2)
+    #     absorption = absorption[:, y_pos, :]
+
+
+    return None #absorption
+
+
+"""
+Testing
+"""
+
+import matplotlib.pyplot as plt
+PATH = "/home/p253n/Patricia/qPAI_CoxAlgorithm/UNet_qPAI/2D_GAN/Cox_algorithm/raw_data/SemanticForearm_727/Wavelength_700.hdf5"
+
+data = load_hdf5(PATH)
+settings = Settings(data["settings"])
+image = data["simulations"]["original_data"]["optical_forward_model_output"]["700"]["initial_pressure"]
+
+reconstructed_absorption = run_iterative_reconstruction(image_data=image, settings=settings)
+
+#plt.imshow(np.rot90(image, -1))
+#plt.show()
 
 
 
-# import numpy as np
-# import os
-# import fnmatch
-# from scipy.ndimage import zoom
-# from simpa.io_handling import load_hdf5
-# from simpa.utils.settings_generator import Settings
-# from simpa.utils import Tags
-# from mcx_adapter import McxAdapter
-# from skimage.restoration import estimate_sigma
-#
 
-# """
-# set directories/path to data
-# """
-# PATH_TO_DATA = "/home/p253n/Patricia/qPAI_CoxAlgorithm/UNet_qPAI/2D_GAN/Cox_algorithm/raw_data/"
-# SAVE_PATH = "/home/p253n/Patricia/qPAI_CoxAlgorithm/UNet_qPAI/2D_GAN/Cox_algorithm/results/"
-# SIMULATION_PATH = "/home/p253n/Patricia/qPAI_CoxAlgorithm/UNet_qPAI/2D_GAN/Cox_algorithm/results"
-# MCX_BINARY_PATH = "/home/p253n/Patricia/msot_mcx/bin/mcx"
-#
-# NOISE = True
-# CONSTANT_REGULARIZATION = False
-# NUMBER_OF_ITERATIONS = 10
-# # TARGET_SPACING = 0.15625
-# TARGET_SPACING = 0.2
-#
-# pattern = "*.hdf5"
-# print("start")
-#
-# if not os.path.exists(SAVE_PATH):
-#     os.makedirs(SAVE_PATH)
-#
-# detailed_base_dir = dict()
-# subfiles = []
-# for root, dirs, files in os.walk(PATH_TO_DATA):
-#     for file in sorted(files):
-#         if (root.split('/')[-2].startswith('raw')) & (root.split('/')[-1].startswith('SemanticForearm')):
-#             subfiles.append(os.path.join(root, file))
-#     if subfiles:
-#         detailed_base_dir[root] = sorted(fnmatch.filter(subfiles, pattern))
-#         subfiles = []
-#
-# for i, data_id in enumerate(detailed_base_dir):
-#     print(data_id)
-#     for wavelength_idx, name_wavelength in enumerate(detailed_base_dir[data_id]):
-#         numpy_array_dict = load_hdf5(detailed_base_dir[data_id][wavelength_idx])
-#         print(name_wavelength.split('/')[-1])
-#         wavelength = name_wavelength.split('/')[-1][-8:-5]
-#         settings = Settings(numpy_array_dict["settings"])
-#         settings[Tags.SIMULATION_PATH] = SIMULATION_PATH
-#         settings[Tags.OPTICAL_MODEL_BINARY_PATH] = MCX_BINARY_PATH
-#
-#         """
-#         preprocessing
-#         """
-#         SPACING = settings["voxel_spacing_mm"]
-#         if SPACING == TARGET_SPACING:
-#             print("no rescaling needed!")
-#             RESCALING = False
-#             scale = 1.0
-#         else:
-#             print("rescaling needed!")
-#             RESCALING = True
-#             scale = SPACING / TARGET_SPACING
-#             print("scale: ", scale)
-#
-#         ABSORPTION = numpy_array_dict["simulations"]["original_data"]["simulation_properties"][wavelength]["mua"]
-#         FLUENCE = numpy_array_dict["simulations"]["original_data"]["optical_forward_model_output"][wavelength]["fluence"]
-#         initial_pressure = numpy_array_dict["simulations"]["original_data"]["optical_forward_model_output"][wavelength]["initial_pressure"]
-#         scattering = numpy_array_dict["simulations"]["original_data"]["simulation_properties"][wavelength]["mus"]
-#         anisotropy = numpy_array_dict["simulations"]["original_data"]["simulation_properties"][wavelength]["g"]
-#         gamma = numpy_array_dict["simulations"]["original_data"]["simulation_properties"][wavelength]["gamma"]
-#
-#         # ABSORPTION = numpy_array_dict["simulations"]["simulation_properties"]["mua"][wavelength]
-#         # FLUENCE = numpy_array_dict["simulations"]["optical_forward_model_output"]["fluence"][wavelength]
-#         # initial_pressure = numpy_array_dict["simulations"]["optical_forward_model_output"]["initial_pressure"][wavelength]
-#         # scattering = numpy_array_dict["simulations"]["simulation_properties"]["mus"][wavelength]
-#         # anisotropy = numpy_array_dict["simulations"]["simulation_properties"]["g"][wavelength]
-#         # gamma = numpy_array_dict["simulations"]["simulation_properties"]["gamma"]
-#
-#         if (settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW] == True) or (len(ABSORPTION.shape) == 2):
-#             settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW] = False
-#             num_repeats = int(settings[Tags.DIM_VOLUME_Y_MM] / SPACING)
-#             print("2D data is spread out to 3D with repeating factor: ", num_repeats)
-#
-#             ABSORPTION = spread_to_3D(ABSORPTION, num_repeats=num_repeats)
-#             FLUENCE = spread_to_3D(FLUENCE, num_repeats=num_repeats)
-#             initial_pressure = spread_to_3D(initial_pressure, num_repeats=num_repeats)
-#             scattering = spread_to_3D(scattering, num_repeats=num_repeats)
-#             anisotropy = spread_to_3D(anisotropy, num_repeats=num_repeats)
-#             gamma = spread_to_3D(gamma, num_repeats=num_repeats)
-#
-#         anisotropy[:, :, :] = 0.9
-#
-#         if RESCALING:
-#             print("rescaling!")
-#             ABSORPTION = resample(ABSORPTION, scale=scale)
-#             FLUENCE = resample(FLUENCE, scale=scale)
-#             initial_pressure = resample(initial_pressure, scale=scale)
-#             scattering = resample(scattering, scale=scale)
-#             anisotropy = resample(anisotropy, scale=scale)
-#             gamma = resample(gamma, scale=scale)
-#
-#         size_x, size_y, size_z = ABSORPTION.shape
-#         print("volume dimensions: (" + str(size_x) + ", " + str(size_y) + ", " + str(size_z) + ")")
-#
-#         if NOISE:
-#             print("noise is added!")
-#             std = 0.4  #np.max(initial_pressure) * 3e-6
-#             initial_pressure = add_gaussian_noise(initial_pressure, mean=0.0, std=std)
-#             noise = estimate_sigma(initial_pressure)  # noise estimation for spatial dependent regularization
-#             print("Estimated noise level = ", noise)
-#             SNR = initial_pressure / noise
-#
-#         """
-#         iterative algorithm published by Cox et al.
-#         """
-#         # Initialization
-#         image_data = initial_pressure
-#         errors = np.empty([NUMBER_OF_ITERATIONS])
-#
-#         if NOISE:
-#             if CONSTANT_REGULARIZATION:
-#                 sigma = 0.01
-#                 print("constant sigma = ", sigma)
-#             else:
-#                 sigma = 1 / SNR  # Regularization factor sigma - to be chosen proportional to the noise level in the image
-#                 sigma[sigma > 1e8] = 1e8
-#                 sigma[sigma < 1e-8] = 1e-8
-#                 print("spatial dependent sigma (min, mean, max) = (" + str(np.min(sigma)) + ", " + str(np.mean(sigma)) + ", " + str(np.max(sigma)) + ")")
-#         else:
-#             sigma = 0.001
-#             print("constant sigma = ", sigma)
-#
-#         # Iteration
-#         absorption = 1e-16 * np.ones(initial_pressure.shape)
-#         i = 0
-#         while i < NUMBER_OF_ITERATIONS:
-#             print("iteration: ", i)
-#             fluence = np.array(apply_optical_forward_model(absorption=absorption, scattering=scattering, anisotropy=anisotropy, settings=settings, scale=scale))
-#             error = calculate_log10_error(initial_pressure=initial_pressure, absorption=absorption, fluence=fluence, gamma=gamma, sigma=sigma, settings=settings)
-#             errors[i] = error
-#             print("error = ", error)
-#             absorption = calculate_absorption(initial_pressure=initial_pressure, fluence=fluence, gamma=gamma, sigma=sigma, settings=settings)
-#             i += 1
-#
-#         result_array = np.empty([2, size_x, size_y, size_z])
-#         result_array[0], result_array[1] = absorption, fluence
-#
-#         target_array = np.empty([2, size_x, size_y, size_z])
-#         target_array[0], target_array[1] = ABSORPTION, FLUENCE
-#
-#         """
-#         saving
-#         """
-#         OUTPUT_PATH = SAVE_PATH + data_id.split('/')[-1] + "/" + "Wavelength_" + str(wavelength) + "/"
-#         if not os.path.exists(OUTPUT_PATH):
-#             os.makedirs(OUTPUT_PATH)
-#
-#         print("SAVING!")
-#         dst_image = os.path.join(OUTPUT_PATH, "image.npy")
-#         np.save(dst_image, image_data)
-#         dst_target = os.path.join(OUTPUT_PATH, "target.npy")
-#         np.save(dst_target, target_array)
-#         dst_result = os.path.join(OUTPUT_PATH, "result.npy")
-#         np.save(dst_result, result_array)
-#         dst_error = os.path.join(OUTPUT_PATH, "error.npy")
-#         np.save(dst_error, np.array(errors))
-#
-# print("end")
+
+
+
+
