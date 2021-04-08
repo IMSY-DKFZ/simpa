@@ -72,7 +72,8 @@ class TestProcessing(unittest.TestCase):
                                    1.0000000000, 0.9045084715, 0.6545085311, 0.3454914391, 0.0954913795]],
                                  [[0.0000000000, 0.0954914987, 0.3454915285, 0.6545085311, 0.9045085311,
                                    1.0000000000, 0.9045084715, 0.6545085311, 0.3454914391, 0.0954913795]]])
-        assert torch.equal(factors, expected), "computed Hann apodization factors don't match expected ones"
+        assert torch.norm(torch.subtract(factors, expected)) < 1e-5, \
+            "computed Hann apodization factors don't match expected ones"
 
         # Hamming
         factors = get_apodization_factor(Tags.RECONSTRUCTION_APODIZATION_HAMMING,
@@ -81,7 +82,8 @@ class TestProcessing(unittest.TestCase):
                                    1.0000000000, 0.9121478200, 0.6821478605, 0.3978521228, 0.1678520739]],
                                  [[0.0800000131, 0.1678521931, 0.3978522122, 0.6821478605, 0.9121478796,
                                    1.0000000000, 0.9121478200, 0.6821478605, 0.3978521228, 0.1678520739]]])
-        assert torch.equal(factors, expected), "computed Hamm apodization factors don't match expected ones"
+        assert torch.norm(torch.subtract(factors, expected)) < 1e-5, \
+            "computed Hamming apodization factors don't match expected ones"
 
         # Box
         factors = get_apodization_factor(Tags.RECONSTRUCTION_APODIZATION_BOX,
