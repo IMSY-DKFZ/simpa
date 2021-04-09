@@ -46,7 +46,7 @@ device = MSOTAcuityEcho()
 device.check_settings_prerequisites(settings)
 settings = device.adjust_simulation_volume_and_settings(settings)
 
-DelayAndSumAdapter(settings, "reco_settings").run()
+DelayAndSumAdapter(settings).run()
 
 reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)

@@ -25,15 +25,23 @@ from simpa.utils.settings import Settings
 from simpa.utils import Tags, SegmentationClasses
 import numpy as np
 from skimage.data import shepp_logan_phantom
-import matplotlib.pyplot as plt
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from scipy.ndimage import zoom
 
-SAVE_FOLDER = "/path/to/save/folder"
-MCX_BINARY_PATH = "/path/to/mcx"
-PATH = "/path/to/output_file.hdf5"
+from simpa.core import *
+
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+# If VISUALIZE is set to True, the simulation result will be plotted
+VISUALIZE = True
+
+SAVE_FOLDER = "D:/mcx-tmp-output/"
+MCX_BINARY_PATH = "C:/mcx-bin/bin/Release/mcx-exe.exe"
 
 target_spacing = 1.0
 
@@ -43,18 +51,10 @@ label_mask = np.digitize(label_mask, bins=np.linspace(0.0, 1.0, 11), right=True)
 
 label_mask = np.reshape(label_mask, (400, 1, 400))
 
-input_spacing = 1.0
+input_spacing = 0.2
 segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
 segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
                                          order=0)).astype(int)
-
-plt.figure()
-plt.subplot(121)
-plt.imshow(np.rot90(segmentation_volume_mask[200, :, :], -1))
-plt.subplot(122)
-plt.imshow(np.rot90(segmentation_volume_mask[:, 64, :], -1))
-plt.show()
-
 
 def segmention_class_mapping():
     ret_dict = dict()
@@ -81,21 +81,36 @@ settings[Tags.SIMULATION_PATH] = SAVE_FOLDER
 settings[Tags.VOLUME_NAME] = "SegmentationTest"
 settings[Tags.RANDOM_SEED] = 1234
 settings[Tags.WAVELENGTHS] = [700]
-settings[Tags.VOLUME_CREATOR] = Tags.VOLUME_CREATOR_SEGMENTATION_BASED
 settings[Tags.SPACING_MM] = target_spacing
-settings[Tags.DIM_VOLUME_X_MM] = 400
-settings[Tags.DIM_VOLUME_Y_MM] = 128
-settings[Tags.DIM_VOLUME_Z_MM] = 400
-settings[Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW] = True
-settings[Tags.INPUT_SEGMENTATION_VOLUME] = segmentation_volume_mask
-settings[Tags.SEGMENTATION_CLASS_MAPPING] = segmention_class_mapping()
-settings[Tags.RUN_OPTICAL_MODEL] = True
+settings[Tags.DIM_VOLUME_X_MM] = 400 / (target_spacing / input_spacing)
+settings[Tags.DIM_VOLUME_Y_MM] = 128 / (target_spacing / input_spacing)
+settings[Tags.DIM_VOLUME_Z_MM] = 400 / (target_spacing / input_spacing)
 settings[Tags.DIGITAL_DEVICE] = Tags.DIGITAL_DEVICE_MSOT
-settings[Tags.RUN_OPTICAL_MODEL] = True
-settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS] = 1e7
-settings[Tags.OPTICAL_MODEL_BINARY_PATH] = MCX_BINARY_PATH
-settings[Tags.OPTICAL_MODEL] = Tags.OPTICAL_MODEL_MCX
-settings[Tags.ILLUMINATION_TYPE] = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
-settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] = 50
 
-simulate(settings)
+settings.set_volume_creation_settings({
+    Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,
+    Tags.SEGMENTATION_CLASS_MAPPING: segmention_class_mapping(),
+
+})
+
+settings.set_optical_settings({
+    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+    Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
+    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
+    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+})
+
+pipeline = [
+    SegmentationBasedVolumeCreator(settings),
+    McxAdapter(settings)
+]
+
+simulate(pipeline, settings)
+
+if Tags.WAVELENGTH in settings:
+    WAVELENGTH = settings[Tags.WAVELENGTH]
+else:
+    WAVELENGTH = 700
+
+if VISUALIZE:
+    visualise_data(SAVE_FOLDER + "/" + "SegmentationTest" + ".hdf5", WAVELENGTH)
