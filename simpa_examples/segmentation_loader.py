@@ -75,13 +75,8 @@ def segmention_class_mapping():
     ret_dict[10] = TISSUE_LIBRARY.heavy_water()
     return ret_dict
 
-settings = {
-    Tags.RUN_ACOUSTIC_MODEL: False,
-    Tags.APPLY_NOISE_MODEL: False,
-    Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
-}
 
-settings = Settings(settings)
+settings = Settings()
 settings[Tags.SIMULATION_PATH] = SAVE_FOLDER
 settings[Tags.VOLUME_NAME] = "SegmentationTest"
 settings[Tags.RANDOM_SEED] = 1234

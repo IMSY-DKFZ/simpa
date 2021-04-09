@@ -27,7 +27,7 @@ from simpa.core.simulation import simulate
 import numpy as np
 from simpa_tests.test_utils import create_test_structure_parameters
 import os
-from simpa.core.pipeline_components import ModelBasedVolumeCreator
+from simpa.core import ModelBasedVolumeCreator
 from simpa.core.optical_simulation.test_optical_adapter import TestOpticalComponent
 from simpa.core.acoustic_simulation.test_acoustic_adapter import TestAcousticModel
 

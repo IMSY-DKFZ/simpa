@@ -26,7 +26,7 @@ from simpa.utils import Tags
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 import numpy as np
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.core.pipeline_components import DelayAndSumReconstruction
+from simpa.core import DelayAndSumReconstruction
 
 # FIXME temporary workaround for newest Intel architectures
 import os

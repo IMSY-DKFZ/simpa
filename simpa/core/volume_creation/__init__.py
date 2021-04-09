@@ -25,7 +25,7 @@ from simpa.utils.settings_generator import Settings
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
-from simpa.core import SimulationComponent
+from simpa.core.pipeline_components import SimulationComponent
 from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import save_hdf5

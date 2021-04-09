@@ -25,7 +25,7 @@ from simpa.core.simulation import simulate
 from simpa.utils.settings_generator import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
-from simpa.core.pipeline_components import *
+from simpa.core import *
 
 # FIXME temporary workaround for newest Intel architectures
 import os

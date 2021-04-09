@@ -134,7 +134,7 @@ class Settings(dict):
         else:
             self[Tags.DIM_VOLUME_Z_MM] = 20
 
-    def add_minimal_optical_properties(self, run_optical_model: bool = None, wavelengths: list = None,
+    def add_minimal_optical_properties(self, wavelengths: list = None,
                                        optical_model: str = None, photon_number: int = None,
                                        illumination_type: str = None, illumination_position: list = None,
                                        illumination_direction: list = None):
@@ -142,7 +142,6 @@ class Settings(dict):
         Helper function that adds minimal optical properties required for running an optical forward model in SIMPA
         to an existing Settings inplace.
 
-        :param run_optical_model: If True, the simulation will run the optical forward model.
         :param wavelengths: Iterable of all the wavelengths used for the simulation.
         :param optical_model: Choice of the used optical model.
         :param photon_number: Number of photons used in the optical simulation.
@@ -153,11 +152,6 @@ class Settings(dict):
         simulation.
 
         """
-
-        if run_optical_model is not None:
-            self[Tags.RUN_OPTICAL_MODEL] = run_optical_model
-        else:
-            self[Tags.RUN_OPTICAL_MODEL] = True
 
         if wavelengths is not None:
             self[Tags.WAVELENGTHS] = wavelengths
@@ -189,25 +183,19 @@ class Settings(dict):
         else:
             self[Tags.ILLUMINATION_DIRECTION] = [0, 0.5, 0.5]
 
-    def add_acoustic_properties(self, run_acoustic_model: bool = None, acoustic_model: str = None,
+    def add_acoustic_properties(self, acoustic_model: str = None,
                                 acoustic_simulation_3D: bool = None, speed_of_sound: (int, float) = None,
                                 density: (int, float) = None):
         """
         Helper function that adds minimal acoustic properties required for running an optical forward model in SIMPA
         to an existing Settings inplace.
 
-        :param run_acoustic_model: If True, the simulation will run the acoustic forward model.
         :param acoustic_model: Choice of the used acoustic model.
         :param acoustic_simulation_3D: If True, simulates the acoustic forward model in 3D.
         :param speed_of_sound: Speed of sound of the generated volume/structure in m/s.
         :param density: Density of the generated volume/structure in kg/m³.
 
         """
-
-        if run_acoustic_model is not None:
-            self[Tags.RUN_ACOUSTIC_MODEL] = run_acoustic_model
-        else:
-            self[Tags.RUN_ACOUSTIC_MODEL] = True
 
         if acoustic_model is not None:
             self[Tags.ACOUSTIC_MODEL] = acoustic_model
@@ -229,21 +217,14 @@ class Settings(dict):
         else:
             self[Tags.PROPERTY_DENSITY] = 1000
 
-    def add_reconstruction_properties(self, perform_image_reconstruction: bool = None,
-                                      reconstruction_algorithm: str = None):
+    def add_reconstruction_properties(self, reconstruction_algorithm: str = None):
         """
         Helper function that adds minimal reconstruction properties required for running an optical forward model in
         SIMPA to an existing Settings inplace.
 
-        :param perform_image_reconstruction: If True, the simulation will run the image reconstruction.
         :param reconstruction_algorithm: Choice of the used reconstruction algorithm.
 
         """
-
-        if perform_image_reconstruction is not None:
-            self[Tags.PERFORM_IMAGE_RECONSTRUCTION] = perform_image_reconstruction
-        else:
-            self[Tags.PERFORM_IMAGE_RECONSTRUCTION] = True
 
         if reconstruction_algorithm is not None:
             self[Tags.RECONSTRUCTION_ALGORITHM] = reconstruction_algorithm

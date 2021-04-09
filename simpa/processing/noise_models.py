@@ -23,7 +23,7 @@
 from simpa.utils import Tags
 from simpa.utils import EPS
 from simpa.io_handling import load_data_field, save_data_field
-from simpa.core import SimulationComponent
+from simpa.core.pipeline_components import SimulationComponent
 
 import numpy as np
 

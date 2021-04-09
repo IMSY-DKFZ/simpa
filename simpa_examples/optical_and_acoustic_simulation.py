@@ -28,7 +28,7 @@ from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 import numpy as np
 
-from simpa.core.pipeline_components import *
+from simpa.core import *
 
 # FIXME temporary workaround for newest Intel architectures
 import os
