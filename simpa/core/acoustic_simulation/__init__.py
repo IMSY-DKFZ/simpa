@@ -22,7 +22,7 @@
 
 from abc import abstractmethod
 import numpy as np
-from simpa.core.pipeline_components import SimulationComponent
+from simpa.core.simulation_components import SimulationComponent
 from simpa.utils import Tags
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
