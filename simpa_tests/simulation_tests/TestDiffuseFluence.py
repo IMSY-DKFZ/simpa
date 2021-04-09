@@ -22,7 +22,6 @@
 
 import unittest
 from simpa.utils import Tags
-from simpa.core import run_optical_forward_model
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -145,7 +144,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.assertDiffusionTheory(distance)
 
     def assertDiffusionTheory(self, distance):
-        optical_path = run_optical_forward_model(self.settings)
+        optical_path = None#run_optical_forward_model(self.settings)
         fluence = np.load(optical_path)['fluence']
         number_of_measurements = np.arange(1, int(distance/self.settings[Tags.SPACING_MM]) + 1, 1)
         measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]
