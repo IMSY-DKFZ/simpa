@@ -27,6 +27,7 @@ from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 import numpy as np
+from simpa.utils.pathmanager import PathManager
 
 from simpa.core import *
 
@@ -34,17 +35,15 @@ from simpa.core import *
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-# TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/mcx-tmp-output/"
-MCX_BINARY_PATH = "C:/mcx-bin/bin/Release/mcx-exe.exe"     # On Linux systems, the .exe at the end must be omitted.
-MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
-ACOUSTIC_MODEL_SCRIPT = "C:/simpa/simpa/core/acoustic_simulation"
-
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
 SPACING = 0.25
 RANDOM_SEED = 4711
+
+# TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
+#  point to the correct file in the PathManager().
+path_manager = PathManager()
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
@@ -180,7 +179,7 @@ general_settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: RANDOM_SEED,
             Tags.VOLUME_NAME: "CompletePipelineTestMSOT_" + str(RANDOM_SEED),
-            Tags.SIMULATION_PATH: SAVE_PATH,
+            Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
             Tags.SPACING_MM: SPACING,
             Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
             Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
@@ -203,15 +202,15 @@ settings.set_volume_creation_settings({
 
 settings.set_optical_settings({
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-    Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
+    Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 })
 
 settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: True,
-    Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
-    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: path_manager.get_acoustic_script_path(),
     Tags.GPU: True,
     Tags.PROPERTY_ALPHA_POWER: 1.05,
     Tags.SENSOR_RECORD: "p",
@@ -267,7 +266,7 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(SAVE_PATH + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
+    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
                    show_time_series_data=True,
                    show_tissue_density=True,
                    show_reconstructed_data=True,
