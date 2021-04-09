@@ -37,7 +37,6 @@ test_classes = ["simpa_tests.framework_tests.structure_tests.TestLayers",
                 "simpa_tests.framework_tests.structure_tests.TestTubes",
                 "simpa_tests.framework_tests.TestPipeline",
                 "simpa_tests.framework_tests.TestCreateAVolume",
-                "simpa_tests.framework_tests.TestCreateSettings",
                 "simpa_tests.framework_tests.TestIOHandling",
                 "simpa_tests.framework_tests.TestCalculationUtils",
                 "simpa_tests.framework_tests.TestLogging"

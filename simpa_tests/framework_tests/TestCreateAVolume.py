@@ -46,10 +46,10 @@ class TestCreateVolume(unittest.TestCase):
         }
 
         settings = Settings(basic_settings)
-        settings["volume_creator_settings"] = {Tags.STRUCTURES: create_test_structure_parameters(settings)}
+        settings.set_volume_creation_settings({Tags.STRUCTURES: create_test_structure_parameters(settings)})
 
         simulation_pipeline = [
-            ModelBasedVolumeCreator(settings, "volume_creator_settings")
+            ModelBasedVolumeCreator(settings)
         ]
 
         simulate(simulation_pipeline, settings)

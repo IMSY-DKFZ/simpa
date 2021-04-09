@@ -20,29 +20,44 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from simpa.log import Logger
 from simpa.utils import Settings
 
 
-class SimulationComponent:
+class SimulationModule:
     """
-    Defines a simulation component that is callable via the SIMPA core.simulation.simulate method.
+    Defines a simulation module that is callable via the SIMPA core.simulation.simulate method.
     """
 
-    def __init__(self, global_settings: Settings, component_settings_key: str):
+    def __init__(self, global_settings: Settings):
         """
-        Initialises the SimulationComponent given the global settings dictionary.
+        Initialises the SimulationModule given the global settings dictionary.
          :param global_settings: The SIMPA settings dictionary
-         :param component_settings_key: the key to lookup the specific settings for this Component.
         """
         self.logger = Logger()
         self.global_settings = global_settings
-        self.component_settings = global_settings[component_settings_key]
 
     @abstractmethod
     def run(self):
         """
-        Executes the respective simulation component
+        Executes the respective simulation module
+
+        :param global_settings: The global SIMPA settings dictionary
         """
         pass
+
+
+class ProcessingComponent(SimulationModule, ABC):
+    """
+    Defines a simulation component, which can be used to pre- or post-process simulation data.
+    """
+
+    def __init__(self, global_settings, component_settings_key: str):
+        """
+        Initialises the ProcessingComponent.
+
+        :param component_settings_key: The key where the component settings are stored in
+        """
+        super(ProcessingComponent, self).__init__(global_settings=global_settings)
+        self.component_settings = global_settings[component_settings_key]

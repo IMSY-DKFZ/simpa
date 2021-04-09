@@ -117,17 +117,17 @@ general_settings = {
 
 settings = Settings(general_settings)
 
-settings["volume_creator"] = {
+settings.set_volume_creation_settings({
     Tags.SIMULATE_DEFORMED_LAYERS: True,
     Tags.STRUCTURES: create_example_tissue()
-}
-settings["optical_model"] = {
+})
+settings.set_optical_settings({
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
-}
+})
 settings["noise_model_1"] = {
     Tags.NOISE_MEAN: 1,
     Tags.NOISE_STD: 0.1,
@@ -137,8 +137,8 @@ settings["noise_model_1"] = {
 }
 
 pipeline = [
-    ModelBasedVolumeCreator(settings, "volume_creator"),
-    McxComponent(settings, "optical_model"),
+    ModelBasedVolumeCreator(settings),
+    McxAdapter(settings),
     GaussianNoiseModel(settings, "noise_model_1")
 ]
 

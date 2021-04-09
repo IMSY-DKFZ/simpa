@@ -25,7 +25,7 @@ from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
-from simpa.core import SimulationModule
+from simpa.core.simulation_components import SimulationModule
 from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import save_hdf5
@@ -36,6 +36,10 @@ class VolumeCreatorModuleBase(SimulationModule):
     Use this class to define your own volume creation adapter.
 
     """
+
+    def __init__(self, global_settings: Settings):
+        super(VolumeCreatorModuleBase, self).__init__(global_settings=global_settings)
+        self.component_settings = global_settings.get_volume_creation_settings()
 
     def create_empty_volumes(self):
         volumes = dict()

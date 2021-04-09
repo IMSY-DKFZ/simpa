@@ -26,7 +26,7 @@ from simpa.utils import Tags
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 import numpy as np
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.core import DelayAndSumReconstruction
+from simpa.core import DelayAndSumAdapter
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -46,7 +46,7 @@ device = MSOTAcuityEcho()
 device.check_settings_prerequisites(settings)
 settings = device.adjust_simulation_volume_and_settings(settings)
 
-DelayAndSumReconstruction(settings, "reco_settings").run()
+DelayAndSumAdapter(settings, "reco_settings").run()
 
 reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)

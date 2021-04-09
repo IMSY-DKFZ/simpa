@@ -23,10 +23,11 @@
 from simpa.utils import Tags
 from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
-from simpa.core import SimulationModule
+from simpa.core.simulation_components import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
+from simpa.utils import Settings
 
 
 class ReconstructionAdapterBase(SimulationModule):
@@ -35,6 +36,10 @@ class ReconstructionAdapterBase(SimulationModule):
     All information necessary for the respective reconstruction method must be contained in the
     respective settings dictionary.
     """
+
+    def __init__(self, global_settings: Settings):
+        super(ReconstructionAdapterBase, self).__init__(global_settings=global_settings)
+        self.component_settings = global_settings.get_reconstruction_settings()
 
     @abstractmethod
     def reconstruction_algorithm(self, time_series_sensor_data) -> np.ndarray:

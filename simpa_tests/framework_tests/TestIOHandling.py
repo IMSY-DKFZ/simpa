@@ -35,8 +35,7 @@ class TestIOHandling(unittest.TestCase):
     def test_write_and_read_default_dictionary(self):
         save_dictionary = dict()
         settings = Settings()
-        settings.add_minimal_meta_information()
-        settings.add_minimal_optical_properties()
+        settings['Test'] = 'test2'
         save_dictionary[Tags.SETTINGS] = settings
         try:
             save_hdf5(save_dictionary, "test.hdf5")
@@ -53,9 +52,10 @@ class TestIOHandling(unittest.TestCase):
 
         save_dictionary = Settings()
         settings = Settings()
-        settings.add_minimal_meta_information()
-        settings.add_minimal_optical_properties()
-
+        settings[Tags.SPACING_MM] = 0.5
+        settings[Tags.DIM_VOLUME_X_MM] = 10
+        settings[Tags.DIM_VOLUME_Y_MM] = 10
+        settings[Tags.DIM_VOLUME_Z_MM] = 10
         save_dictionary[Tags.SETTINGS] = settings
 
         background_dictionary = Settings()

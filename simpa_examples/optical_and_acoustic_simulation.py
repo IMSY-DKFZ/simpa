@@ -96,8 +96,8 @@ def create_example_tissue():
     return tissue_dict
 
 
-def add_msot_specific_settings(settings, volume_creator_key):
-    volume_creator_settings = settings[volume_creator_key]
+def add_msot_specific_settings(settings: Settings):
+    volume_creator_settings = Settings(settings.get_volume_creation_settings())
     device = MSOTAcuityEcho()
     probe_size_mm = device.probe_height_mm
     mediprene_layer_height_mm = device.mediprene_membrane_height_mm
@@ -116,8 +116,11 @@ def add_msot_specific_settings(settings, volume_creator_key):
     if settings[Tags.DIM_VOLUME_X_MM] < round(device.probe_width_mm) + 1:
         width_shift_for_structures_mm = (round(device.probe_width_mm) + 1 - settings[Tags.DIM_VOLUME_X_MM]) / 2
         settings[Tags.DIM_VOLUME_X_MM] = round(device.probe_width_mm) + 1
+        device.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {settings[Tags.DIM_VOLUME_X_MM]}")
     else:
         width_shift_for_structures_mm = 0
+
+    device.logger.debug(volume_creator_settings)
 
     for structure_key in volume_creator_settings[Tags.STRUCTURES]:
         device.logger.debug("Adjusting " + str(structure_key))
@@ -193,19 +196,19 @@ general_settings = {
 settings = Settings(general_settings)
 np.random.seed(RANDOM_SEED)
 
-settings['volume_creator'] = {
+settings.set_volume_creation_settings({
     Tags.STRUCTURES: create_example_tissue(),
     Tags.SIMULATE_DEFORMED_LAYERS: True
-}
+})
 
-settings["optical_model"] = {
+settings.set_optical_settings({
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
-}
+})
 
-settings['acoustic_model'] = {
+settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: True,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
     Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
@@ -219,9 +222,9 @@ settings['acoustic_model'] = {
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True
-}
+})
 
-settings['reconstruction_das'] = {
+settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
@@ -229,23 +232,7 @@ settings['reconstruction_das'] = {
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
-}
-
-settings['reconstruction_tr'] = {
-    Tags.ACOUSTIC_SIMULATION_3D: True,
-    Tags.GPU: True,
-    Tags.PROPERTY_ALPHA_POWER: 1.05,
-    Tags.SENSOR_RECORD: "p",
-    Tags.PMLInside: False,
-    Tags.PMLSize: [31, 32],
-    Tags.PMLAlpha: 1.5,
-    Tags.PlotPML: False,
-    Tags.RECORDMOVIE: False,
-    Tags.MOVIENAME: "visualization_log",
-    Tags.ACOUSTIC_LOG_SCALE: True,
-    Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/image_reconstruction/",
-    Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH
-}
+})
 
 settings["noise_initial_pressure"] = {
     Tags.NOISE_MEAN: 1,
@@ -261,15 +248,15 @@ settings["noise_time_series"] = {
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
 
-add_msot_specific_settings(settings, "volume_creator")
+add_msot_specific_settings(settings)
 
 SIMUATION_PIPELINE = [
-    ModelBasedVolumeCreator(settings, "volume_creator"),
-    McxComponent(settings, "optical_model"),
+    ModelBasedVolumeCreator(settings),
+    McxAdapter(settings),
     GaussianNoiseModel(settings, "noise_initial_pressure"),
-    KwaveAcousticForwardModelAdapter(settings, "acoustic_model"),
+    KwaveAcousticForwardModelAdapter(settings),
     GaussianNoiseModel(settings, "noise_time_series"),
-    TimeReversalAdapter(settings, "reconstruction_tr")
+    DelayAndSumAdapter(settings)
 ]
 
 simulate(SIMUATION_PIPELINE, settings)

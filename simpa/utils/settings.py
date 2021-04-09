@@ -124,7 +124,7 @@ class Settings(dict):
 
         :param acoustic_settings: a dictionary containing the acoustic model settings
         """
-        self[Tags.VOLUME_CREATION_MODEL_SETTINGS] = acoustic_settings
+        self[Tags.ACOUSTIC_MODEL_SETTINGS] = acoustic_settings
 
     def get_reconstruction_settings(self):
         """"

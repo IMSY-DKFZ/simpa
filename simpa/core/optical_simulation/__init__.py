@@ -20,10 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags
-from simpa.io_handling.io_hdf5 import load_hdf5
+from simpa.utils import Tags, Settings
 from abc import abstractmethod
-from simpa.core import SimulationModule
+from simpa.core.simulation_components import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 
@@ -32,6 +31,10 @@ class OpticalForwardModuleBase(SimulationModule):
     """
     Use this class as a base for implementations of optical forward models.
     """
+
+    def __init__(self, global_settings: Settings):
+        super(OpticalForwardModuleBase, self).__init__(global_settings=global_settings)
+        self.component_settings = self.global_settings.get_optical_settings()
 
     @abstractmethod
     def forward_model(self, absorption_cm, scattering_cm, anisotropy):

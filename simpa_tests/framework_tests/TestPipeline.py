@@ -67,21 +67,30 @@ class TestPipeline(unittest.TestCase):
         }
 
         settings = Settings(settings)
-
-        settings["optical_settings"] = {
+        settings.set_volume_creation_settings(
+            {
+                Tags.STRUCTURES: create_test_structure_parameters(settings)
+            }
+        )
+        settings.set_optical_settings({
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
             Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_TEST,
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
             Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
-        }
+        })
+        settings.set_acoustic_settings({
+                Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+                Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_TEST,
+                Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
+                Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+        })
 
         simulation_pipeline = [
-            ModelBasedVolumeCreator(settings, "optical_settings"),
-            TestOpticalComponent(settings, "optical_settings"),
-            TestAcousticModelAdapter(settings, "optical_settings"),
+            ModelBasedVolumeCreator(settings),
+            TestOpticalComponent(settings),
+            TestAcousticModelAdapter(settings),
         ]
 
-        settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)
         simulate(simulation_pipeline, settings)
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and

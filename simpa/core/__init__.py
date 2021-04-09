@@ -20,48 +20,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.log import Logger
-from simpa.utils import Settings
-from abc import abstractmethod
+# Tissue Generation
+from simpa.core.volume_creation.segmentation_based_volume_creator import SegmentationBasedVolumeCreator
+from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
 
+# Optical forward modelling
+from simpa.core.optical_simulation.mcx_adapter import McxAdapter
 
-class SimulationComponent:
-    """
-    Defines a simulation component that is callable via the SIMPA core.simulation.simulate method.
-    """
+# Acoustic forward modelling
+from simpa.core.acoustic_simulation.k_wave_adapter import KwaveAcousticForwardModelAdapter
 
-    def __init__(self, global_settings: Settings, component_settings_key: str):
-        """
-        Initialises the SimulationComponent given the global settings dictionary.
-         :param global_settings: The SIMPA settings dictionary
-         :param component_settings_key: the key to lookup the specific settings for this Component.
-        """
-        self.logger = Logger()
-        self.global_settings = global_settings
-        self.component_settings = global_settings[component_settings_key]
+# Image reconstruction
+from simpa.core.image_reconstruction.DelayAndSumAdapter import DelayAndSumAdapter
+from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
 
-    @abstractmethod
-    def run(self):
-        """
-        Executes the respective simulation component
-
-        :param global_settings: The global SIMPA settings dictionary
-        """
-        pass
-
-
-class ProcessingComponent(SimulationModule, ABC):
-    """
-    Defines a simulation component, which can be used to pre- or post-process simulation data.
-    """
-
-    def __init__(self, component_settings_key: str):
-        """
-        Initialises the ProcessingComponent.
-
-        :param component_settings_key: The key where the component settings are stored in
-        """
-        super().__init__()
-        self.component_settings_key = component_settings_key
-
-
+# Noise modelling
+from simpa.processing.noise_models import GaussianNoiseModel

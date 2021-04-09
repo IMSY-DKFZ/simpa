@@ -34,7 +34,7 @@ from scipy.signal.windows import tukey
 from simpa.utils.settings import Settings
 
 
-class DelayAndSumReconstruction(ReconstructionAdapterBase):
+class DelayAndSumAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data):
         """
