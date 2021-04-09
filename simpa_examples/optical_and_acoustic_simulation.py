@@ -210,7 +210,6 @@ settings.set_optical_settings({
 settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: True,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: path_manager.get_acoustic_script_path(),
     Tags.GPU: True,
     Tags.PROPERTY_ALPHA_POWER: 1.05,
     Tags.SENSOR_RECORD: "p",

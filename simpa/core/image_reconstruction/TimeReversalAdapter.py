@@ -29,6 +29,7 @@ import numpy as np
 import scipy.io as sio
 import subprocess
 import os
+import inspect
 
 
 class TimeReversalAdapter(ReconstructionAdapterBase):
@@ -154,7 +155,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         else:
             time_reversal_script = "time_reversal_2D"
 
-        path = self.component_settings[Tags.TIME_REVEARSAL_SCRIPT_LOCATION]
+        base_script_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
         cmd = list()
         cmd.append(self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
@@ -163,7 +164,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         cmd.append("-automation")
         cmd.append("-wait")
         cmd.append("-r")
-        cmd.append("addpath('" + path + "');" +
+        cmd.append("addpath('" + base_script_path + "');" +
                    time_reversal_script + "('" + acoustic_path + "');exit;")
 
         cur_dir = os.getcwd()

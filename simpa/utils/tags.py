@@ -568,18 +568,6 @@ class Tags:
     Usage: module acoustic_simulation, naming convention
     """
 
-    ACOUSTIC_MODEL_SCRIPT_LOCATION = ("acoustic_model_script_location", str)
-    """
-    Absolute path of the location of the acoustic_simulation folder in the SIMPA core module.\n
-    Usage: module acoustic_simulation
-    """
-
-    TIME_REVEARSAL_SCRIPT_LOCATION = ("time_revearsal_script_location", str)
-    """
-    Absolute path of the location of the image_reconstruction folder in the SIMPA core module.\n
-    Usage: adapter TimeReversalAdapter
-    """
-
     ACOUSTIC_MODEL_SETTINGS = ("acoustic_model_settings", dict)
     """
     Acoustic model settings.
@@ -857,12 +845,6 @@ class Tags:
     UPSAMPLING_SCRIPT = ("upsampling_script", str)
     """
     Name of the upsampling script used for the lanczos upsampling.\n
-    Usage: module processing
-    """
-
-    UPSAMPLING_SCRIPT_LOCATION = ("upsampling_script_location", str)
-    """
-    Absolute path to the upsampling script used for the lanczos upsampling.\n
     Usage: module processing
     """
 
