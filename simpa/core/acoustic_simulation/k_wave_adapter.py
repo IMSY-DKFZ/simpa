@@ -27,6 +27,7 @@ from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.settings import Settings
 import os
+import inspect
 import scipy.io as sio
 from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.core.acoustic_simulation import AcousticForwardModelBaseAdapter
@@ -175,6 +176,8 @@ class KwaveAcousticForwardModelAdapter(AcousticForwardModelBaseAdapter):
             self.logger.info("Simulating 2D....")
             simulation_script_path = "simulate_2D"
 
+        base_script_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+
         cmd = list()
         cmd.append(self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
         cmd.append("-nodisplay")
@@ -182,7 +185,7 @@ class KwaveAcousticForwardModelAdapter(AcousticForwardModelBaseAdapter):
         cmd.append("-automation")
         cmd.append("-wait")
         cmd.append("-r")
-        cmd.append("addpath('"+self.component_settings[Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION]+"');" +
+        cmd.append("addpath('" + base_script_path + "');" +
                    simulation_script_path + "('" + optical_path + "');exit;")
         cur_dir = os.getcwd()
         os.chdir(self.global_settings[Tags.SIMULATION_PATH])
