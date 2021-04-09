@@ -22,9 +22,8 @@
 import numpy as np
 
 from simpa.core.device_digital_twins.pai_devices import PAIDeviceBase
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils import Tags
-from simpa.log import Logger
 
 
 class InVision256TF(PAIDeviceBase):

@@ -8,7 +8,7 @@ with open('requirements.txt', 'r') as requirements_file:
 
 setuptools.setup(
     name="simpa",
-    version="0.3.0",
+    version="0.3.1",
     author="Computer Assisted Medical Interventions (CAMI), DKFZ",
     description="Simulation and Image Processing for Photoacoustic Imaging",
     long_description=long_description,

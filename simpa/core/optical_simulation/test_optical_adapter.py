@@ -20,13 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.optical_simulation import OpticalForwardAdapterBase
+from simpa.core.optical_simulation import OpticalForwardModuleBase
 
 
-class TestOpticalAdapter(OpticalForwardAdapterBase):
+class TestOpticalComponent(OpticalForwardModuleBase):
     """
     This Adapter was created for tesing purposes and only
     """
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy, settings):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
         return absorption_cm / ((1 - anisotropy) * scattering_cm)

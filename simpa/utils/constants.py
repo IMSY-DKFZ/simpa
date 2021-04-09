@@ -23,6 +23,12 @@
 from simpa.utils import Tags
 
 
+EPS = 1e-20
+"""
+Defines the smallest increment that should be considered by SIMPA.
+"""
+
+
 class SaveFilePaths:
     """
     The save file paths specify the path of a specific data structure in the dictionary of the simpa output hdf5.

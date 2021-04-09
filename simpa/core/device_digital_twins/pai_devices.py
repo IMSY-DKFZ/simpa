@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from abc import abstractmethod
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 import numpy as np
 from simpa.log import Logger
 

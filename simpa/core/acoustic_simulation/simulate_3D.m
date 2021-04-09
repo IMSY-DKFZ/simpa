@@ -22,8 +22,6 @@
 
 function [] = simulate_3D(optical_path)
 
-fprintf("TEST")
-
 %% Read settings file
 
 data = load(optical_path);

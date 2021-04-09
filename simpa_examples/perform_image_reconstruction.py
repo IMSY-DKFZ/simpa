@@ -21,36 +21,37 @@
 # SOFTWARE.
 
 from simpa.io_handling import load_hdf5, load_data_field
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
-from simpa.core.image_reconstruction.reconstruction_modelling import perform_reconstruction
 import numpy as np
-import time
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
+from simpa.core import DelayAndSumAdapter
 
-PATH = "/path/to/time/series/file.hdf5"
-WAVELENGTH = 700
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+PATH = "D:/mcx-tmp-output/CompletePipelineTestMSOT_4711.hdf5"
 
 file = load_hdf5(PATH)
 settings = Settings(file["settings"])
-settings[Tags.WAVELENGTH] = WAVELENGTH
-settings[Tags.RECONSTRUCTION_ALGORITHM] = Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS
-settings[Tags.RECONSTRUCTION_MODE] = Tags.RECONSTRUCTION_MODE_PRESSURE
+settings[Tags.WAVELENGTH] = settings[Tags.WAVELENGTHS][0]
+settings["reco_settings"] = {
+    Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
+    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
+}
 
 device = MSOTAcuityEcho()
 device.check_settings_prerequisites(settings)
 settings = device.adjust_simulation_volume_and_settings(settings)
-time_series_data = load_data_field(PATH, Tags.TIME_SERIES_DATA, WAVELENGTH)
-initial_pressure = load_data_field(PATH, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, WAVELENGTH)
 
-start = time.time()
+DelayAndSumAdapter(settings).run()
 
-perform_reconstruction(settings)
-
-reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, WAVELENGTH)
+reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)
 
-visualise_data(PATH, WAVELENGTH, show_absorption=False,
-               show_initial_pressure=False,
-               show_segmentation_map=False)
+visualise_data(PATH, settings[Tags.WAVELENGTH], show_absorption=False,
+               show_initial_pressure=True,
+               show_segmentation_map=True,
+               log_scale=False)

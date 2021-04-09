@@ -75,12 +75,6 @@ class Tags:
     Usage: naming convention
     """
 
-    SIMULATION_EXTRACT_FIELD_OF_VIEW = ("extract_field_of_view", bool)
-    """
-    If True, converts a 3D volume to a 2D volume by extracting the middle slice along the y-axis.\n
-    Usage: SIMPA package
-    """
-
     GPU = ("gpu", (bool, np.bool, np.bool_))
     """
     If True, uses all available gpu options of the used modules.\n
@@ -328,14 +322,9 @@ class Tags:
     Usage: SIMPA package
     """
 
+    OPTICAL_MODEL_SETTINGS = ("optical_model_settings", dict)
     """
     Optical model settings
-    """
-
-    RUN_OPTICAL_MODEL = ("run_optical_forward_model", bool)
-    """
-    If True, the simulation will run the optical forward model.\n
-    Usage: module core (simulate.py)
     """
 
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
@@ -591,14 +580,9 @@ class Tags:
     Usage: adapter TimeReversalAdapter
     """
 
+    ACOUSTIC_MODEL_SETTINGS = ("acoustic_model_settings", dict)
     """
-    Acoustic model settings
-    """
-
-    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool, np.bool_))
-    """
-    If True, the simulation will run the acoustic forward model.\n
-    Usage: module core (simulate.py)
+    Acoustic model settings.
     """
 
     ACOUSTIC_MODEL_BINARY_PATH = ("acoustic_model_binary_path", str)
@@ -643,11 +627,9 @@ class Tags:
     Usage: naming convention
     """
 
-    # Reconstruction settings
-    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", (bool, np.bool, np.bool_))
-    """
-    If True, the simulation will run the image reconstruction.\n
-    Usage: module core (simulate.py)
+    RECONSTRUCTION_MODEL_SETTINGS = ("reconstruction_model_settings", dict)
+    """"
+    Reconstruction Model Settings
     """
 
     RECONSTRUCTION_OUTPUT_NAME = ("reconstruction_result", str)
@@ -834,24 +816,6 @@ class Tags:
 
     """
     Upsampling settings
-    """
-
-    CROP_IMAGE = ("crop_image", bool)
-    """
-    If True, the PA image cropped in the image processing.\n
-    Usage: module processing
-    """
-
-    CROP_POWER_OF_TWO = ("crop_power_of_two", bool)
-    """
-    If True, the PA image cropped to the shape as the nearest power of two in the image processing.\n
-    Usage: module processing
-    """
-
-    PERFORM_UPSAMPLING = ("sample", bool)
-    """
-    If True, the PA image upsampled in the image processing.\n
-    Usage: module processing
     """
 
     UPSAMPLING_METHOD = ("upsampling_method", str)
@@ -1108,41 +1072,56 @@ class Tags:
     Usage: adapter MitkBeamformingAdapter, naming convention
     """
 
+    # Pipelining parameters
+
+    DATA_FIELD = "data_field"
+    """
+    Defines which data field a certain function shall be applied to.\n 
+    Usage: module processing
+    """
+
     # Noise properties
-    APPLY_NOISE_MODEL = ("apply_noise_model", bool)
+
+    NOISE_MEAN = "noise_mean"
     """
-    If True, the simulation will apply a noise model.\n
-    Usage: module core (simulate.py)
+    Mean of a noise model.\n 
+    Usage: module processing.noise_models
     """
 
-    NOISE_MODEL = ("noise_model", str)
+    NOISE_STD = "noise_std"
     """
-    Choice of the noise model.\n 
-    Usage: module noise_simulation
-    """
-
-    NOISE_MODEL_GAUSSIAN = "noise_model_gaussian"
-    """
-    Corresponds to a gaussian noise model.\n 
-    Usage: module noise_simulation
+    Standard deviation of a noise model.\n 
+    Usage: module processing.noise_models
     """
 
-    NOISE_MEAN = ("noise_mean", (int, np.integer, float, np.float))
+    NOISE_MODE = "noise_mode"
     """
-    Mean of the gaussian noise model used in the noise modelling.\n 
-    Usage: module noise_simulation
-    """
-
-    NOISE_STD = ("noise_std", (int, np.integer, float, np.float))
-    """
-    Standard deviation of the gaussian noise model used in the noise modelling.\n 
-    Usage: module noise_simulation
+    The mode tag of a noise model is used to differentiate between\n
+    Tags.NOISE_MODE_ADDITIVE and Tags.NOISE_MODE_MULTIPLICATIVE.\n  
+    Usage: module processing.noise_models
     """
 
-    NOISE_MODEL_PATH = ("noise_model_path", str)
+    NOISE_MODE_ADDITIVE = "noise_mode_additive"
     """
-    Absolute path of a .csv file with an experimentally recorded noise model.\n
-    Usage: module noise_simulation
+    A noise model shall be applied additively s_n = s + n.\n  
+    Usage: module processing.noise_models
+    """
+
+    NOISE_MODE_MULTIPLICATIVE = "noise_mode_multiplicative"
+    """
+    A noise model shall be applied multiplicatively s_n = s * n.\n  
+    Usage: module processing.noise_models
+    """
+
+    NOISE_NON_NEGATIVITY_CONSTRAINT = "noise_non_negativity_constraint"
+    """
+    Defines if after the noise model negative values shall be allowed.\n  
+    Usage: module processing.noise_models
+    """
+
+    VOLUME_CREATION_MODEL_SETTINGS = ("volume_creation_model_settings", dict)
+    """"
+    Volume Creation Model Settings
     """
 
     # Structures
