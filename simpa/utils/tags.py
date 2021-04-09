@@ -316,6 +316,12 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
+    DIGITAL_DEVICE_SLIT_ILLUMINATION_LINEAR_DETECTOR = "digital_device_slit_illumination_linear_detector"
+    """
+    Corresponds to a PA device with a slit as illumination and a linear array as detection geometry.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
     """
     Position in [x, y, z] coordinates of the device in the generated volume.\n

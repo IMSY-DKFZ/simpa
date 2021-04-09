@@ -24,6 +24,7 @@ from simpa.utils import Tags
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 from simpa.core.device_digital_twins.rsom_device import RSOMExplorerP50
 from simpa.core.device_digital_twins.invision_device import InVision256TF
+from simpa.core.device_digital_twins.slit_illumination_devices import SlitIlluminationLinearDetector
 
 """
 This DEVICE_MAP can be used in order to obtain appropriate device specifications based on
@@ -32,5 +33,6 @@ the desired device design.
 DEVICE_MAP = {
     Tags.DIGITAL_DEVICE_MSOT: MSOTAcuityEcho(),
     Tags.DIGITAL_DEVICE_RSOM: RSOMExplorerP50(),
-    Tags.DIGITAL_DEVICE_INVISION: InVision256TF()
+    Tags.DIGITAL_DEVICE_INVISION: InVision256TF(),
+    Tags.DIGITAL_DEVICE_SLIT_ILLUMINATION_LINEAR_DETECTOR: SlitIlluminationLinearDetector()
 }
