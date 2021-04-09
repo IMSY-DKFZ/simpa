@@ -37,15 +37,15 @@ class PyTorchDASReconstruction:
         If run on another pc, please adjust the SAVE_PATH, MCX_BINARY_PATH, ACOUSTIC_MODEL_BINARY_PATH, ACOUSTIC_MODEL_SCRIPT_LOCATION
         :return:
         """
-        SAVE_PATH = "D:/save/"
-        MCX_BINARY_PATH = "D:/bin/Release/mcx.exe"  # On Linux systems, the .exe at the end must be omitted.
-        MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
-        ACOUSTIC_MODEL_SCRIPT = "C:/simpa/simpa/core/acoustic_simulation"
+        SAVE_PATH = "/home/tom/dev/FP/simpa/simpa_examples"
+        MCX_BINARY_PATH = "/home/tom/dev/FP/simpa/simpa_examples/mcx"  # On Linux systems, the .exe at the end must be omitted.
+        MATLAB_PATH = "/usr/local/MATLAB/R2020b/bin/matlab"
+        ACOUSTIC_MODEL_SCRIPT = "/home/tom/dev/FP/simpa/simpa/core/acoustic_simulation"
 
         self.VOLUME_TRANSDUCER_DIM_IN_MM = 75
         self.VOLUME_PLANAR_DIM_IN_MM = 20
         self.VOLUME_HEIGHT_IN_MM = 25
-        self.SPACING = 0.3 #15
+        self.SPACING = 0.3  # 15
         self.RANDOM_SEED = 4711
         np.random.seed(self.RANDOM_SEED)
 
@@ -98,12 +98,12 @@ class PyTorchDASReconstruction:
 
             Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
-            #Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/image_reconstruction/time_reversal_3D.m",
+            # Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/image_reconstruction/time_reversal_3D.m",
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
             Tags.TUKEY_WINDOW_ALPHA: 0.5,
             Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
             Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
-            #Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+            # Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
             Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
         }
@@ -125,11 +125,12 @@ class PyTorchDASReconstruction:
             self.settings[Tags.SIMPA_OUTPUT_PATH],
             reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
 
-        initial_pressure = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=self.settings[Tags.WAVELENGTH])
+        initial_pressure = load_data_field(
+            self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=self.settings[Tags.WAVELENGTH])
 
         plt.subplot(1, 2, 1)
         plt.title("Reconstructed image")
-        plt.imshow(np.log10(np.abs(reconstructed_image)))
+        plt.imshow(np.flipud(np.log10(np.abs(reconstructed_image))))
         plt.subplot(1, 2, 2)
         plt.title("Initial pressure")
         plt.imshow(np.log10(initial_pressure))

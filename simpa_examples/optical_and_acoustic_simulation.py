@@ -35,10 +35,10 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/mcx-tmp-output/"
-MCX_BINARY_PATH = "C:/mcx-bin/bin/Release/mcx-exe.exe"     # On Linux systems, the .exe at the end must be omitted.
-MATLAB_PATH = "C:/Program Files/MATLAB/R2020b/bin/matlab.exe"
-ACOUSTIC_MODEL_SCRIPT = "C:/simpa/simpa/core/acoustic_simulation"
+SAVE_PATH = "/home/tom/dev/FP/simpa/simpa_examples"
+MCX_BINARY_PATH = "/home/tom/dev/FP/simpa/simpa_examples/mcx"  # On Linux systems, the .exe at the end must be omitted.
+MATLAB_PATH = "/usr/local/MATLAB/R2020b/bin/matlab"
+ACOUSTIC_MODEL_SCRIPT = "/home/tom/dev/FP/simpa/simpa/core/acoustic_simulation"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
@@ -231,7 +231,7 @@ settings.set_reconstruction_settings({
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
-    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
+    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
 })
 
 settings["noise_initial_pressure"] = {
@@ -268,7 +268,9 @@ else:
 
 if VISUALIZE:
     visualise_data(SAVE_PATH + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
-                   show_time_series_data=True,
-                   show_tissue_density=True,
+                   show_time_series_data=False,
+                   show_absorption=False,
+                   show_segmentation_map=False,
+                   show_tissue_density=False,
                    show_reconstructed_data=True,
-                   show_fluence=True)
+                   show_fluence=False)
