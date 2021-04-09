@@ -20,20 +20,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Tissue Generation
-from simpa.core.volume_creation.segmentation_based_volume_creator import SegmentationBasedVolumeCreator
-from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
+from abc import abstractmethod
+from simpa.log import Logger
+from simpa.utils import Settings
 
-# Optical forward modelling
-from simpa.core.optical_simulation.mcx_adapter import McxComponent
 
-# Acoustic forward modelling
-from simpa.core.acoustic_simulation.k_wave_adapter import KwaveAcousticForwardModelAdapter
+class SimulationComponent:
+    """
+    Defines a simulation component that is callable via the SIMPA core.simulation.simulate method.
+    """
 
-# Image reconstruction
-from simpa.core.image_reconstruction.DelayAndSumReconstruction import DelayAndSumReconstruction
-from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
+    def __init__(self, global_settings: Settings, component_settings_key: str):
+        """
+        Initialises the SimulationComponent given the global settings dictionary.
+         :param global_settings: The SIMPA settings dictionary
+         :param component_settings_key: the key to lookup the specific settings for this Component.
+        """
+        self.logger = Logger()
+        self.global_settings = global_settings
+        self.component_settings = global_settings[component_settings_key]
 
-# Noise modelling
-from simpa.processing.noise_models import GaussianNoiseModel
-
+    @abstractmethod
+    def run(self):
+        """
+        Executes the respective simulation component
+        """
+        pass

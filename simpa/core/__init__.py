@@ -22,24 +22,28 @@
 
 from simpa.log import Logger
 from simpa.utils import Settings
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 
 
-class SimulationModule(ABC):
+class SimulationComponent:
     """
-    Defines a simulation module that is callable via the SIMPA core.simulation.simulate method.
+    Defines a simulation component that is callable via the SIMPA core.simulation.simulate method.
     """
 
-    def __init__(self):
+    def __init__(self, global_settings: Settings, component_settings_key: str):
         """
-        Initialises the SimulationModule.
+        Initialises the SimulationComponent given the global settings dictionary.
+         :param global_settings: The SIMPA settings dictionary
+         :param component_settings_key: the key to lookup the specific settings for this Component.
         """
         self.logger = Logger()
+        self.global_settings = global_settings
+        self.component_settings = global_settings[component_settings_key]
 
     @abstractmethod
-    def run(self, global_settings: Settings):
+    def run(self):
         """
-        Executes the respective simulation module
+        Executes the respective simulation component
 
         :param global_settings: The global SIMPA settings dictionary
         """

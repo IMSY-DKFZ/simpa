@@ -55,15 +55,13 @@ class TestCreateSettings(unittest.TestCase):
         assert settings[Tags.DIM_VOLUME_Y_MM] == 231
         assert settings[Tags.DIM_VOLUME_Z_MM] == 321
 
-        settings.add_minimal_optical_properties(run_optical_model=False,
-                                                wavelengths=[123],
+        settings.add_minimal_optical_properties(wavelengths=[123],
                                                 optical_model="test",
                                                 photon_number=12345,
                                                 illumination_type="Test",
                                                 illumination_position=[1, 2, 3],
                                                 illumination_direction=[3, 2, 1])
 
-        assert settings[Tags.RUN_OPTICAL_MODEL] is False
         assert settings[Tags.WAVELENGTHS] == [123]
         assert settings[Tags.OPTICAL_MODEL] == "test"
         assert settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS] == 12345
@@ -71,22 +69,18 @@ class TestCreateSettings(unittest.TestCase):
         assert settings[Tags.ILLUMINATION_POSITION] == [1, 2, 3]
         assert settings[Tags.ILLUMINATION_DIRECTION] == [3, 2, 1]
 
-        settings.add_acoustic_properties(run_acoustic_model=False,
-                                         acoustic_model="test",
+        settings.add_acoustic_properties(acoustic_model="test",
                                          acoustic_simulation_3D=True,
                                          speed_of_sound=1234,
                                          density=123)
 
-        assert settings[Tags.RUN_ACOUSTIC_MODEL] is False
         assert settings[Tags.ACOUSTIC_MODEL] == "test"
         assert settings[Tags.ACOUSTIC_SIMULATION_3D] is True
         assert settings[Tags.PROPERTY_SPEED_OF_SOUND] == 1234
         assert settings[Tags.PROPERTY_DENSITY] == 123
 
-        settings.add_reconstruction_properties(perform_image_reconstruction=False,
-                                               reconstruction_algorithm="Test")
+        settings.add_reconstruction_properties(reconstruction_algorithm="Test")
 
-        assert settings[Tags.PERFORM_IMAGE_RECONSTRUCTION] is False
         assert settings[Tags.RECONSTRUCTION_ALGORITHM] == "Test"
 
     def test_create_settings_with_irregular_tags(self):
