@@ -22,7 +22,6 @@
 
 import unittest
 from simpa.utils import Tags, Settings, generate_dict_path
-from simpa.core import run_optical_forward_model
 from simpa.io_handling import load_data_field, save_hdf5
 import numpy as np
 import os
@@ -180,7 +179,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.assertDecayRatio(expected_decay_ratio=decay_ratio)
 
     def assertDecayRatio(self, expected_decay_ratio=np.e):
-        run_optical_forward_model(self.settings)
+        #run_optical_forward_model(self.settings)
         fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_FLUENCE,
                                   self.settings[Tags.WAVELENGTH])
         half_dim = int(self.xy_dim / 2) - 1
