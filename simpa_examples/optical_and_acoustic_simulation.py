@@ -272,10 +272,7 @@ SIMUATION_PIPELINE = [
     TimeReversalAdapter(settings, "reconstruction_tr")
 ]
 
-import time
-timer = time.time()
 simulate(SIMUATION_PIPELINE, settings)
-print("Needed", time.time()-timer, "seconds")
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]
