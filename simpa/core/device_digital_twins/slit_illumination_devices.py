@@ -34,14 +34,14 @@ class SlitIlluminationLinearDetector(PAIDeviceBase):
 
     def __init__(self):
         super().__init__()
-        self.pitch_mm = 0.01
-        self.number_detector_elements = 256
+        self.pitch_mm = 0.5
+        self.number_detector_elements = 100
         self.detector_element_width_mm = 0.24
         self.detector_element_length_mm = 13
         self.center_frequency_Hz = 3.96e6
         self.bandwidth_percent = 55
         self.sampling_frequency_MHz = 40
-        self.probe_height_mm = 43.2
+        self.probe_height_mm = 0
         self.probe_width_mm = self.number_detector_elements * self.pitch_mm
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
@@ -65,6 +65,38 @@ class SlitIlluminationLinearDetector(PAIDeviceBase):
         return True
 
     def adjust_simulation_volume_and_settings(self, global_settings: Settings):
+
+        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
+        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
+        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
+
+        if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
+            return global_settings
+
+        # adjust the x-dim to msot probe width
+        # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
+        # of the simulated volume.
+
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.probe_width_mm) + 1:
+            width_shift_for_structures_mm = (round(self.probe_width_mm) + 1 - global_settings[Tags.DIM_VOLUME_X_MM]) / 2
+            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.probe_width_mm) + 1
+        else:
+            width_shift_for_structures_mm = 0
+
+        for structure_key in global_settings[Tags.STRUCTURES]:
+            self.logger.debug(f"Adjusting {structure_key}")
+            structure_dict = global_settings[Tags.STRUCTURES][structure_key]
+            if Tags.STRUCTURE_START_MM in structure_dict:
+                structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                                 0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                                 2] + self.probe_height_mm
+            if Tags.STRUCTURE_END_MM in structure_dict:
+                structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                               0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                               2] + self.probe_height_mm
+
         return global_settings
 
     def get_illuminator_definition(self, global_settings: Settings):
@@ -105,10 +137,7 @@ class SlitIlluminationLinearDetector(PAIDeviceBase):
         detector_positions = np.zeros((self.number_detector_elements, 3))
 
         det_elements = np.arange(-int(self.number_detector_elements / 2),
-                                 int(self.number_detector_elements / 2))
-        if self.number_detector_elements % 2 == 0:
-            # eg for 256 elements: go from -127.5, -126.5, ..., 0, .., 126.5, 177.5 instead of between -128 and 127
-            det_elements = np.add(det_elements, 0.5)
+                                 int(self.number_detector_elements / 2)) * self.pitch_mm
 
         detector_positions[:, 0] = det_elements
 
@@ -129,7 +158,8 @@ class SlitIlluminationLinearDetector(PAIDeviceBase):
         return np.add(abstract_element_positions, device_position)
 
     def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
-        detector_orientations = np.zeros((self.number_detector_elements, 3)) - 1
+        detector_orientations = np.zeros((self.number_detector_elements, 3))
+        detector_orientations[:, 2] = -1
         return detector_orientations
 
 
