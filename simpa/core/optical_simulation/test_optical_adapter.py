@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.optical_simulation import OpticalForwardComponentBase
+from simpa.core.optical_simulation import OpticalForwardModuleBase
 
 
-class TestOpticalComponent(OpticalForwardComponentBase):
+class TestOpticalComponent(OpticalForwardModuleBase):
     """
     This Adapter was created for tesing purposes and only
     """

@@ -22,14 +22,14 @@
 
 import unittest
 from simpa.utils import Tags
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.core.simulation import simulate
 import numpy as np
 from simpa_tests.test_utils import create_test_structure_parameters
 import os
 from simpa.core.pipeline_components import ModelBasedVolumeCreator
 from simpa.core.optical_simulation.test_optical_adapter import TestOpticalComponent
-from simpa.core.acoustic_simulation.test_acoustic_adapter import TestAcousticModel
+from simpa.core.acoustic_simulation.test_acoustic_adapter import TestAcousticModelAdapter
 
 class TestPipeline(unittest.TestCase):
 
@@ -78,7 +78,7 @@ class TestPipeline(unittest.TestCase):
         simulation_pipeline = [
             ModelBasedVolumeCreator(settings, "optical_settings"),
             TestOpticalComponent(settings, "optical_settings"),
-            TestAcousticModel(settings, "optical_settings"),
+            TestAcousticModelAdapter(settings, "optical_settings"),
         ]
 
         settings[Tags.STRUCTURES] = create_test_structure_parameters(settings)

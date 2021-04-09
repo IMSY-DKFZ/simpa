@@ -23,13 +23,13 @@
 from simpa.utils import Tags
 from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
-from simpa.core import SimulationComponent
+from simpa.core import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
 
 
-class ReconstructionAdapterBase(SimulationComponent):
+class ReconstructionAdapterBase(SimulationModule):
     """
     This class is the main entry point to perform image reconstruction using the SIMPA toolkit.
     All information necessary for the respective reconstruction method must be contained in the

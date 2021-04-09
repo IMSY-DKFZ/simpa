@@ -322,6 +322,7 @@ class Tags:
     Usage: SIMPA package
     """
 
+    OPTICAL_MODEL_SETTINGS = ("optical_model_settings", dict)
     """
     Optical model settings
     """
@@ -579,8 +580,9 @@ class Tags:
     Usage: adapter TimeReversalAdapter
     """
 
+    ACOUSTIC_MODEL_SETTINGS = ("acoustic_model_settings", dict)
     """
-    Acoustic model settings
+    Acoustic model settings.
     """
 
     ACOUSTIC_MODEL_BINARY_PATH = ("acoustic_model_binary_path", str)
@@ -623,6 +625,11 @@ class Tags:
     """
     Name of the time series data with applied noise field in the SIMPA output file.\n
     Usage: naming convention
+    """
+
+    RECONSTRUCTION_MODEL_SETTINGS = ("reconstruction_model_settings", dict)
+    """"
+    Reconstruction Model Settings
     """
 
     RECONSTRUCTION_OUTPUT_NAME = ("reconstruction_result", str)
@@ -1110,6 +1117,11 @@ class Tags:
     """
     Defines if after the noise model negative values shall be allowed.\n  
     Usage: module processing.noise_models
+    """
+
+    VOLUME_CREATION_MODEL_SETTINGS = ("volume_creation_model_settings", dict)
+    """"
+    Volume Creation Model Settings
     """
 
     # Structures

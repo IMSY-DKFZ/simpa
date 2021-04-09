@@ -23,7 +23,7 @@
 from simpa.utils import Tags, TISSUE_LIBRARY
 
 from simpa.core.simulation import simulate
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 import numpy as np
@@ -267,7 +267,7 @@ SIMUATION_PIPELINE = [
     ModelBasedVolumeCreator(settings, "volume_creator"),
     McxComponent(settings, "optical_model"),
     GaussianNoiseModel(settings, "noise_initial_pressure"),
-    KwaveAcousticForwardModel(settings, "acoustic_model"),
+    KwaveAcousticForwardModelAdapter(settings, "acoustic_model"),
     GaussianNoiseModel(settings, "noise_time_series"),
     TimeReversalAdapter(settings, "reconstruction_tr")
 ]

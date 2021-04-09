@@ -28,7 +28,7 @@ from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolume
 from simpa.core.optical_simulation.mcx_adapter import McxComponent
 
 # Acoustic forward modelling
-from simpa.core.acoustic_simulation.k_wave_adapter import KwaveAcousticForwardModel
+from simpa.core.acoustic_simulation.k_wave_adapter import KwaveAcousticForwardModelAdapter
 
 # Image reconstruction
 from simpa.core.image_reconstruction.DelayAndSumReconstruction import DelayAndSumReconstruction

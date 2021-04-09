@@ -20,14 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.volume_creation import VolumeCreatorComponentBase
-from simpa.utils.settings_generator import Settings
+from simpa.core.volume_creation import VolumeCreatorModuleBase
+from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
 
 
-class SegmentationBasedVolumeCreator(VolumeCreatorComponentBase):
+class SegmentationBasedVolumeCreator(VolumeCreatorModuleBase):
     """
     This volume creator expects a np.ndarray to be in the settigs
     under the Tags.INPUT_SEGMENTATION_VOLUME tag and uses this array

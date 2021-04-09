@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 from simpa.utils import SegmentationClasses, Tags
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 
 
 def visualise_data(path_to_hdf5_file: str, wavelength: int,

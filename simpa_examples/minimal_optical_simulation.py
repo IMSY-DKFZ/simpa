@@ -22,7 +22,7 @@
 
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.core.pipeline_components import *

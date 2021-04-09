@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.volume_creation import VolumeCreatorComponentBase
+from simpa.core.volume_creation import VolumeCreatorModuleBase
 from simpa.utils.libraries.structure_library import Structures
 from simpa.utils import Tags
 import numpy as np
@@ -28,7 +28,7 @@ from simpa.utils import create_deformation_settings
 from simpa.log import Logger
 
 
-class ModelBasedVolumeCreator(VolumeCreatorComponentBase):
+class ModelBasedVolumeCreator(VolumeCreatorModuleBase):
     """
     The model-based volume creator uses a set of rules how to generate structures
     to create a simulation volume.

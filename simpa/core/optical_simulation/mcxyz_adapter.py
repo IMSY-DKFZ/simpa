@@ -25,10 +25,10 @@ import numpy as np
 import subprocess
 from simpa.utils import Tags
 import os
-from simpa.core.optical_simulation import OpticalForwardComponentBase
+from simpa.core.optical_simulation import OpticalForwardModuleBase
 
 
-class McxyzComponent(OpticalForwardComponentBase):
+class McxyzComponent(OpticalForwardModuleBase):
 
     def forward_model(self, absorption_cm, scattering_cm, anisotropy):
 

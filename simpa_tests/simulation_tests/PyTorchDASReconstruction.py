@@ -23,7 +23,7 @@
 from simpa.utils import Tags, TISSUE_LIBRARY
 import numpy as np
 import matplotlib.pyplot as plt
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.simulation import simulate

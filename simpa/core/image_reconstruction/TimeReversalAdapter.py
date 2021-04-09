@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.utils import Tags, SaveFilePaths
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.core.image_reconstruction import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_hdf5
 from simpa.core.device_digital_twins import DEVICE_MAP

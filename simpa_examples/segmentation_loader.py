@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.core.simulation import simulate
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils import Tags, SegmentationClasses
 import numpy as np
 from skimage.data import shepp_logan_phantom

@@ -23,12 +23,12 @@
 from simpa.utils import Tags
 from simpa.utils import EPS
 from simpa.io_handling import load_data_field, save_data_field
-from simpa.core import SimulationComponent
+from simpa.core import SimulationModule
 
 import numpy as np
 
 
-class GaussianNoiseModel(SimulationComponent):
+class GaussianNoiseModel(SimulationModule):
     """
         Applies Gaussian noise to the defined data field.
         The noise will be applied to all wavelengths.

@@ -22,7 +22,7 @@
 
 import unittest
 from simpa.utils import Tags
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 import numpy as np
 from simpa_tests.test_utils import assert_equals_recursive
 import os

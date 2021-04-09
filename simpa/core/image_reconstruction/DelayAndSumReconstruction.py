@@ -31,7 +31,7 @@ import torch.fft
 from scipy.signal import hilbert
 from scipy.signal.windows import tukey
 
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 
 
 class DelayAndSumReconstruction(ReconstructionAdapterBase):

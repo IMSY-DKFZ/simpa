@@ -25,14 +25,14 @@ import subprocess
 from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 import os
 import scipy.io as sio
 from simpa.core.device_digital_twins import DEVICE_MAP
-from simpa.core.acoustic_simulation import AcousticForwardModelBase
+from simpa.core.acoustic_simulation import AcousticForwardModelBaseAdapter
 
 
-class KwaveAcousticForwardModel(AcousticForwardModelBase):
+class KwaveAcousticForwardModelAdapter(AcousticForwardModelBaseAdapter):
     """
     The KwaveAcousticForwardModel adapter enables acoustic simulations to be run with the
     k-wave MATLAB toolbox. k-Wave is a free toolbox (http://www.k-wave.org/) developed by Bradley Treeby

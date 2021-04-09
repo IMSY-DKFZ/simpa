@@ -29,7 +29,7 @@ from simpa.utils import SegmentationClasses
 from simpa.utils import Tags
 from simpa.utils import SPECTRAL_LIBRARY
 import numpy as np
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
 from simpa_tests.test_utils import create_test_structure_of_molecule, create_background_of_molecule, set_settings

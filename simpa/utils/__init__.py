@@ -50,7 +50,7 @@ from simpa.utils.calculate import randomize_uniform
 from simpa.utils.deformation_manager import create_deformation_settings
 from simpa.utils.deformation_manager import get_functional_from_deformation_settings
 
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 
 from simpa.utils.dict_path_manager import generate_dict_path
 

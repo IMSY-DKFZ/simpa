@@ -23,12 +23,12 @@
 from simpa.utils import Tags
 from simpa.io_handling.io_hdf5 import load_hdf5
 from abc import abstractmethod
-from simpa.core import SimulationComponent
+from simpa.core import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 
 
-class OpticalForwardComponentBase(SimulationComponent):
+class OpticalForwardModuleBase(SimulationModule):
     """
     Use this class as a base for implementations of optical forward models.
     """

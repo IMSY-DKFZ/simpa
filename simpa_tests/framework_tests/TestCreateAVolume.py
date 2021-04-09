@@ -22,7 +22,7 @@
 
 import unittest
 from simpa.utils import Tags
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.core.simulation import simulate
 import os
 from simpa_tests.test_utils import create_test_structure_parameters

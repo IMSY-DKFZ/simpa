@@ -22,13 +22,20 @@
 
 from abc import abstractmethod
 import numpy as np
-from simpa.core import SimulationComponent
-from simpa.utils import Tags
+from simpa.core import SimulationModule
+from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
 
+class AcousticFowarwardModel(SimulationModule):
 
-class AcousticForwardModelBase(SimulationComponent):
+    def run(self, global_settings):
+        acoustic_settings = global_settings.get_acoustic_settings()
+
+
+
+
+class AcousticForwardModelBaseAdapter(SimulationModule):
     """
     This method is the entry method for running an acoustic forward model.
     It is invoked in the *simpa.core.simulation.simulate* method, but can also be called
@@ -48,31 +55,32 @@ class AcousticForwardModelBase(SimulationComponent):
     """
 
     @abstractmethod
-    def forward_model(self) -> np.ndarray:
+    def forward_model(self, global_settings, acoustic_settings) -> np.ndarray:
         """
         This method performs the acoustic forward modeling given the initial pressure
         distribution and the acoustic tissue properties contained in the settings file.
         A deriving class needs to implement this method according to its model.
 
-        :param settings: Setting dictionary
+        :param global_settings: Setting dictionary
+        :param acoustic_settings: settings dictionary with the acoustic model settings
         :return: time series pressure data
         """
         pass
 
-    def run(self):
+    def run(self, global_settings: Settings):
         """
         Call this method to invoke the simulation process.
 
-        :param settings: the settings dictionary containing all simulation parameters.
+        :param global_settings: the settings dictionary containing all simulation parameters.
         :return: a numpy array containing the time series pressure data per detection element
         """
 
         self.logger.info("Simulating the acoustic forward process...")
 
-        time_series_data = self.forward_model()
+        time_series_data = self.forward_model(global_settings, global_settings[global_settings.get_acoustic_settings()])
 
-        acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
+        acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=global_settings[Tags.WAVELENGTH])
 
-        save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
+        save_hdf5(time_series_data, global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
 
         self.logger.info("Simulating the acoustic forward process...[Done]")

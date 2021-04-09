@@ -23,7 +23,7 @@
 from simpa.utils import Tags
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.log import Logger
 
 import numpy as np

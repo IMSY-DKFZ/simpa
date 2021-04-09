@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.io_handling import load_hdf5, load_data_field
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 import numpy as np

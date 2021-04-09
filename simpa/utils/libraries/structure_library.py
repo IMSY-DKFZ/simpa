@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from abc import abstractmethod
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils import Tags
 from simpa.utils.calculate import rotation

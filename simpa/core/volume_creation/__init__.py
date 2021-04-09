@@ -21,17 +21,17 @@
 # SOFTWARE.
 
 from abc import abstractmethod
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
-from simpa.core import SimulationComponent
+from simpa.core import SimulationModule
 from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import save_hdf5
 
 
-class VolumeCreatorComponentBase(SimulationComponent):
+class VolumeCreatorModuleBase(SimulationModule):
     """
     Use this class to define your own volume creation adapter.
 
