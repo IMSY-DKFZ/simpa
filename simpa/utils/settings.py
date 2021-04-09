@@ -116,7 +116,7 @@ class Settings(dict):
         """"
         Returns the settings for the acoustic forward model that are saved in this settings dictionary
         """
-        return self[Tags.VOLUME_CREATION_MODEL_SETTINGS]
+        return self[Tags.ACOUSTIC_MODEL_SETTINGS]
 
     def set_acoustic_settings(self, acoustic_settings: dict):
         """
