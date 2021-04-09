@@ -27,6 +27,7 @@ from simpa.utils import Tags
 from simpa.core.optical_simulation import OpticalForwardAdapterBase
 import json
 import os
+from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.core.optical_simulation.illumination_definition import define_illumination
 
 
@@ -69,8 +70,9 @@ class McxAdapter(OpticalForwardAdapterBase):
             dt = 5e-09
         frames = int(time/dt)
 
-        if Tags.ILLUMINATION_TYPE in settings:
-            source = define_illumination(settings, nx, ny, nz)
+        if Tags.DIGITAL_DEVICE in settings:
+            digital_device = DEVICE_MAP[settings[Tags.DIGITAL_DEVICE]]
+            source = digital_device.get_illuminator_definition(settings)
         else:
             source = {
                   "Pos": [

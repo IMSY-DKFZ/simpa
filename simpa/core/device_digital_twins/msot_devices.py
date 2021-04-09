@@ -111,7 +111,7 @@ class MSOTAcuityEcho(PAIDeviceBase):
             width_shift_for_structures_mm = 0
 
         for structure_key in global_settings[Tags.STRUCTURES]:
-            self.logger.debug("Adjusting", structure_key)
+            self.logger.debug(f"Adjusting {structure_key}")
             structure_dict = global_settings[Tags.STRUCTURES][structure_key]
             if Tags.STRUCTURE_START_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][0] + width_shift_for_structures_mm
@@ -156,12 +156,42 @@ class MSOTAcuityEcho(PAIDeviceBase):
         return global_settings
 
     def get_illuminator_definition(self, global_settings: Settings):
-        pass
+        """
+        IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
+        mcx simulation tool to represent the illumination geometry of this device.
+
+        :param global_settings: The global_settings instance containing the simulation instructions
+        :return:
+        """
+        source_type = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
+
+        nx = global_settings[Tags.DIM_VOLUME_X_MM]
+        ny = global_settings[Tags.DIM_VOLUME_Y_MM]
+        nz = global_settings[Tags.DIM_VOLUME_Z_MM]
+        spacing = global_settings[Tags.SPACING_MM]
+
+        source_position = [round(nx / (spacing * 2.0)) + 0.5,
+                           round(ny / (spacing * 2.0) - 17.81 / spacing) + 0.5,
+                           spacing]     # The z-position
+
+        source_direction = [0, 0.381070, 0.9245460]
+
+        source_param1 = [30 / spacing, 0, 0, 0]
+
+        source_param2 = [0, 0, 0, 0]
+
+        return {
+            "Type": source_type,
+            "Pos": source_position,
+            "Dir": source_direction,
+            "Param1": source_param1,
+            "Param2": source_param2
+        }
 
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
 
         pitch_angle = self.pitch_mm / self.radius_mm
-        self.logger.debug("pitch angle: ", pitch_angle)
+        self.logger.debug(f"pitch angle: {pitch_angle}")
         detector_radius = self.radius_mm
 
         # if distortion is not None:
