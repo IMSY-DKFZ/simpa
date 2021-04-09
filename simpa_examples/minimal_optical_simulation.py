@@ -27,13 +27,15 @@ from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.core import *
 
+from simpa.utils.pathmanager import PathManager
+
 # FIXME temporary workaround for newest Intel architectures
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-# TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/mcx-tmp-output/"
-MCX_BINARY_PATH = "C:/mcx-bin/bin/Release/mcx-exe.exe"
+# TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
+#  point to the correct file in the PathManager().
+path_manager = PathManager()
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
@@ -104,7 +106,7 @@ general_settings = {
     # These parameters set the general propeties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
     Tags.VOLUME_NAME: VOLUME_NAME,
-    Tags.SIMULATION_PATH: SAVE_PATH,
+    Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
     Tags.SPACING_MM: SPACING,
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
@@ -123,7 +125,7 @@ settings.set_volume_creation_settings({
 })
 settings.set_optical_settings({
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-    Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
+    Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
@@ -150,4 +152,4 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(SAVE_PATH + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH)
+    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH)

@@ -30,6 +30,7 @@ from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from scipy.ndimage import zoom
+from simpa.utils.pathmanager import PathManager
 
 from simpa.core import *
 
@@ -40,8 +41,9 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
 
-SAVE_FOLDER = "D:/mcx-tmp-output/"
-MCX_BINARY_PATH = "C:/mcx-bin/bin/Release/mcx-exe.exe"
+# TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
+#  point to the correct file in the PathManager().
+path_manager = PathManager()
 
 target_spacing = 1.0
 
@@ -77,7 +79,7 @@ def segmention_class_mapping():
 
 
 settings = Settings()
-settings[Tags.SIMULATION_PATH] = SAVE_FOLDER
+settings[Tags.SIMULATION_PATH] = path_manager.get_hdf5_file_save_path()
 settings[Tags.VOLUME_NAME] = "SegmentationTest"
 settings[Tags.RANDOM_SEED] = 1234
 settings[Tags.WAVELENGTHS] = [700]
@@ -95,7 +97,7 @@ settings.set_volume_creation_settings({
 
 settings.set_optical_settings({
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-    Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
+    Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
 })
@@ -113,4 +115,4 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(SAVE_FOLDER + "/" + "SegmentationTest" + ".hdf5", WAVELENGTH)
+    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5", WAVELENGTH)
