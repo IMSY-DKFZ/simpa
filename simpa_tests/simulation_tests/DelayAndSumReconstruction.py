@@ -25,22 +25,99 @@ import numpy as np
 import matplotlib.pyplot as plt
 from simpa.utils.settings import Settings
 from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.utils.pathmanager import PathManager
 from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.simulation import simulate
+from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
+from simpa.core import *
 
 
-class PyTorchDASReconstruction:
+def add_msot_specific_settings(settings: Settings):
+    volume_creator_settings = Settings(settings.get_volume_creation_settings())
+    device = MSOTAcuityEcho()
+    probe_size_mm = device.probe_height_mm
+    mediprene_layer_height_mm = device.mediprene_membrane_height_mm
+    heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+
+    new_volume_height_mm = settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
+                           heavy_water_layer_height_mm
+
+    # adjust the z-dim to msot probe height
+    settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
+
+    # adjust the x-dim to msot probe width
+    # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
+    # of the simulated volume.
+
+    if settings[Tags.DIM_VOLUME_X_MM] < round(device.probe_width_mm) + 1:
+        width_shift_for_structures_mm = (round(device.probe_width_mm) + 1 - settings[Tags.DIM_VOLUME_X_MM]) / 2
+        settings[Tags.DIM_VOLUME_X_MM] = round(device.probe_width_mm) + 1
+        device.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {settings[Tags.DIM_VOLUME_X_MM]}")
+    else:
+        width_shift_for_structures_mm = 0
+
+    device.logger.debug(volume_creator_settings)
+
+    for structure_key in volume_creator_settings[Tags.STRUCTURES]:
+        device.logger.debug("Adjusting " + str(structure_key))
+        structure_dict = volume_creator_settings[Tags.STRUCTURES][structure_key]
+        if Tags.STRUCTURE_START_MM in structure_dict:
+            structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                             0] + width_shift_for_structures_mm
+            structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                             2] + device.probe_height_mm
+        if Tags.STRUCTURE_END_MM in structure_dict:
+            structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                           0] + width_shift_for_structures_mm
+            structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                           2] + device.probe_height_mm
+
+    if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
+        us_gel_thickness = np.random.normal(0.4, 0.1)
+        us_gel_layer_settings = Settings({
+            Tags.PRIORITY: 5,
+            Tags.STRUCTURE_START_MM: [0, 0,
+                                      heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
+            Tags.CONSIDER_PARTIAL_VOLUME: True,
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
+            Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
+        })
+
+        volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
+    else:
+        us_gel_thickness = 0
+
+    mediprene_layer_settings = Settings({
+        Tags.PRIORITY: 5,
+        Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness],
+        Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+        Tags.CONSIDER_PARTIAL_VOLUME: True,
+        Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
+        Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
+    })
+
+    volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
+
+    background_settings = Settings({
+        Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
+        Tags.STRUCTURE_TYPE: Tags.BACKGROUND
+    })
+    volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
+
+
+
+class DelayAndSumReconstruction:
 
     def setUp(self):
         """
         This is not a completely autonomous simpa_tests case yet.
-        If run on another pc, please adjust the SAVE_PATH, MCX_BINARY_PATH, ACOUSTIC_MODEL_BINARY_PATH, ACOUSTIC_MODEL_SCRIPT_LOCATION
+        Please make sure that a valid path_config.env file is located in your home directory, or that you
+        point to the correct file in the PathManager().
         :return:
         """
-        SAVE_PATH = "/home/tom/dev/FP/simpa/simpa_examples"
-        MCX_BINARY_PATH = "/home/tom/dev/FP/simpa/simpa_examples/mcx"  # On Linux systems, the .exe at the end must be omitted.
-        MATLAB_PATH = "/usr/local/MATLAB/R2020b/bin/matlab"
-        ACOUSTIC_MODEL_SCRIPT = "/home/tom/dev/FP/simpa/simpa/core/acoustic_simulation"
+
+        self.path_manager = PathManager()
 
         self.VOLUME_TRANSDUCER_DIM_IN_MM = 75
         self.VOLUME_PLANAR_DIM_IN_MM = 20
@@ -49,41 +126,42 @@ class PyTorchDASReconstruction:
         self.RANDOM_SEED = 4711
         np.random.seed(self.RANDOM_SEED)
 
-        self.settings = {
+        self.general_settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: self.RANDOM_SEED,
             Tags.VOLUME_NAME: "CompletePipelineTestMSOT_" + str(self.RANDOM_SEED),
-            Tags.SIMULATION_PATH: SAVE_PATH,
+            Tags.SIMULATION_PATH: self.path_manager.get_hdf5_file_save_path(),
             Tags.SPACING_MM: self.SPACING,
             Tags.DIM_VOLUME_Z_MM: self.VOLUME_HEIGHT_IN_MM,
             Tags.DIM_VOLUME_X_MM: self.VOLUME_TRANSDUCER_DIM_IN_MM,
             Tags.DIM_VOLUME_Y_MM: self.VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
-            Tags.SIMULATE_DEFORMED_LAYERS: True,
 
             # Simulation Device
             Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
 
             # The following parameters set the optical forward model
-            Tags.RUN_OPTICAL_MODEL: True,
-            Tags.WAVELENGTHS: [700],
+            Tags.WAVELENGTHS: [700]
+        }
+        self.settings = Settings(self.general_settings)
+
+        self.settings.set_volume_creation_settings({
+            Tags.STRUCTURES: self.create_example_tissue(),
+            Tags.SIMULATE_DEFORMED_LAYERS: True
+        })
+
+        self.settings.set_optical_settings({
             Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-            Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
-            Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
+            Tags.OPTICAL_MODEL_BINARY_PATH: self.path_manager.get_mcx_binary_path(),
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
             Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+        })
 
-            # The following parameters tell the script that we do not want any extra
-            # modelling steps
-            Tags.RUN_ACOUSTIC_MODEL: True,
-            Tags.ACOUSTIC_SIMULATION_3D: False,
-            Tags.ACOUSTIC_MODEL: Tags.ACOUSTIC_MODEL_K_WAVE,
-            Tags.ACOUSTIC_MODEL_BINARY_PATH: MATLAB_PATH,
-            Tags.ACOUSTIC_MODEL_SCRIPT_LOCATION: ACOUSTIC_MODEL_SCRIPT,
+        self.settings.set_acoustic_settings({
+            Tags.ACOUSTIC_SIMULATION_3D: True,
+            Tags.ACOUSTIC_MODEL_BINARY_PATH: self.path_manager.get_matlab_binary_path(),
             Tags.GPU: True,
-
             Tags.PROPERTY_ALPHA_POWER: 1.05,
-
             Tags.SENSOR_RECORD: "p",
             Tags.PMLInside: False,
             Tags.PMLSize: [31, 32],
@@ -91,31 +169,48 @@ class PyTorchDASReconstruction:
             Tags.PlotPML: False,
             Tags.RECORDMOVIE: False,
             Tags.MOVIENAME: "visualization_log",
-            Tags.ACOUSTIC_LOG_SCALE: True,
+            Tags.ACOUSTIC_LOG_SCALE: True
+        })
 
-            Tags.APPLY_NOISE_MODEL: False,
-            Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: True,
-
-            Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
-            Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
-            # Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/image_reconstruction/time_reversal_3D.m",
+        self.settings.set_reconstruction_settings({
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
             Tags.TUKEY_WINDOW_ALPHA: 0.5,
             Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
             Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
-            # Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+            Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+            Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
             Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
-        }
-        self.settings = Settings(self.settings)
-        np.random.seed(self.RANDOM_SEED)
+        })
 
-        self.settings[Tags.STRUCTURES] = self.create_example_tissue()
+        self.settings["noise_initial_pressure"] = {
+            Tags.NOISE_MEAN: 1,
+            Tags.NOISE_STD: 0.1,
+            Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
+            Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+            Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
+        }
+
+        self.settings["noise_time_series"] = {
+            Tags.NOISE_STD: 3,
+            Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
+            Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
+        }
+
 
     def test_reconstruction_of_simulation(self):
-        import time
-        timer = time.time()
-        simulate(self.settings)
+        add_msot_specific_settings(self.settings)
+        SIMUATION_PIPELINE = [
+            ModelBasedVolumeCreator(self.settings),
+            McxAdapter(self.settings),
+            GaussianNoiseModel(self.settings, "noise_initial_pressure"),
+            KwaveAcousticForwardModelAdapter(self.settings),
+            #GaussianNoiseModel(self.settings, "noise_time_series"),
+            DelayAndSumAdapter(self.settings)
+        ]
+
+        simulate(SIMUATION_PIPELINE, self.settings)
+
 
         reconstructed_image_path = generate_dict_path(
             Tags.RECONSTRUCTED_DATA,
@@ -128,12 +223,15 @@ class PyTorchDASReconstruction:
         initial_pressure = load_data_field(
             self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=self.settings[Tags.WAVELENGTH])
 
+        print("Initial",initial_pressure.shape)
+        print("Reconstructed", reconstructed_image.shape)
+
         plt.subplot(1, 2, 1)
         plt.title("Reconstructed image")
-        plt.imshow(np.flipud(np.log10(np.abs(reconstructed_image))))
+        plt.imshow(np.flipud(np.rot90(reconstructed_image, -1)))
         plt.subplot(1, 2, 2)
         plt.title("Initial pressure")
-        plt.imshow(np.log10(initial_pressure))
+        plt.imshow(np.rot90(initial_pressure[:,20,:]))
         plt.show()
 
     def create_example_tissue(self):
@@ -199,6 +297,6 @@ class PyTorchDASReconstruction:
 
 
 if __name__ == '__main__':
-    test = PyTorchDASReconstruction()
+    test = DelayAndSumReconstruction()
     test.setUp()
     test.test_reconstruction_of_simulation()
