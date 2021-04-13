@@ -103,13 +103,3 @@ class TestProcessing(unittest.TestCase):
         hilbert = apply_b_mode(self.test_image, method=Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM)
         expected_hilbert = np.array([[1.2, 0.], [3., 255.]])
         assert np.equal(hilbert, expected_hilbert).all(), "computed hilbert transform array and expected don't match"
-
-
-if __name__ == '__main__':
-    test = TestProcessing()
-    test.setUp()
-    test.test_min_max_normalization()
-    test.test_reconstruction_mode_transformation()
-    test.test_apodization_factors()
-    test.test_envelope_detection()
-    test.tearDown()
