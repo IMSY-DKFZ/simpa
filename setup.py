@@ -12,6 +12,6 @@ setuptools.setup(
     author="Computer Assisted Medical Interventions (CAMI), DKFZ",
     description="Simulation and Image Processing for Photoacoustic Imaging",
     long_description=long_description,
-    packages=setuptools.find_packages(),
+    packages=['simpa'],
     install_requires=requirements
 )
