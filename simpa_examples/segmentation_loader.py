@@ -30,7 +30,7 @@ from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from scipy.ndimage import zoom
-from simpa.utils.pathmanager import PathManager
+from simpa.utils.path_manager import PathManager
 
 from simpa.core import *
 

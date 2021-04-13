@@ -27,7 +27,7 @@ from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.core import *
 
-from simpa.utils.pathmanager import PathManager
+from simpa.utils.path_manager import PathManager
 
 # FIXME temporary workaround for newest Intel architectures
 import os

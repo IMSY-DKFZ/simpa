@@ -27,7 +27,7 @@ from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
 import numpy as np
-from simpa.utils.pathmanager import PathManager
+from simpa.utils.path_manager import PathManager
 
 from simpa.core import *
 
