@@ -28,9 +28,16 @@ from simpa.log import Logger
 
 class PathManager:
     """
-    The path manager is in charge of setting the simulation paths, such as the executables of the forward models.
+    As a pipelining tool that serves as a communication layer between different numerical forward models and
+    processing tools, SIMPA needs to be configured with the paths to these tools on your local hard drive.
+    To this end, we have implemented the `PathManager` class that you can import to your project using
+    `from simpa.utils import PathManager`. The PathManager looks for a `path_config.env` file (just like the
+    one we provided in the `simpa_examples`) in the following places in this order:
 
-    Per default, the config with the environment variables is located in /HOME/path_config.env
+        1. The optional path you give the PathManager
+        2. Your $HOME$ directory
+        3. The current working directory
+        4. The SIMPA home directory path
     """
     def __init__(self, environment_path=None):
         """
