@@ -141,9 +141,9 @@ class McxAdapter(OpticalForwardAdapterBase):
 
         if Tags.MCX_SEED not in settings:
             if Tags.RANDOM_SEED in settings:
-                settings_dict["RNGSeed"] = settings[Tags.RANDOM_SEED]
+                settings_dict["RNGSeed"] = int(settings[Tags.RANDOM_SEED])
         else:
-            settings_dict["RNGSeed"] = settings[Tags.MCX_SEED]
+            settings_dict["RNGSeed"] = int(settings[Tags.MCX_SEED])
 
         tmp_json_filename = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]+".json"
         with open(tmp_json_filename, "w") as json_file:
