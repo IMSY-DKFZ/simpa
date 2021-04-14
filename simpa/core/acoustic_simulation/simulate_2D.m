@@ -95,7 +95,7 @@ kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 if isfield(data, 'sensor_mask') == true
     sensor.mask = data.sensor_mask;
     % add 2 pixel "gel" to reduce Fourier artifact
-    sensor.mask = padarray(sensor.mask, [GEL_LAYER_HEIGHT 0], 0, 'pre');
+    % sensor.mask = padarray(sensor.mask, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 else
     num_elements = double(settings.sensor_num_elements);
     element_spacing = Ny / num_elements;
@@ -118,9 +118,9 @@ end
 % define the frequency response of the sensor elements, gaussian shape with
 % FWHM = bandwidth*center_freq
 
-center_freq = double(settings.sensor_center_frequency); % [Hz]
-bandwidth = double(settings.sensor_bandwidth); % [%]
-sensor.frequency_response = [center_freq, bandwidth];
+% center_freq = double(settings.sensor_center_frequency); % [Hz]
+% bandwidth = double(settings.sensor_bandwidth); % [%]
+% sensor.frequency_response = [center_freq, bandwidth];
 
 %% Computation settings
 
@@ -142,6 +142,17 @@ if settings.gpu == true
 else
     time_series_data = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
 end
+
+center_freq = double(settings.sensor_center_frequency); % [Hz]
+bandwidth = double(settings.sensor_bandwidth); % [%]
+num_elements = size(time_series_data, 2);
+num_samples = size(time_series_data(1).p, 4);
+ts_array = zeros(num_elements, num_samples);
+for i = 1:num_elements
+   ts_array(i, :) = time_series_data(i).p;
+end
+time_series_data = gaussianFilter(ts_array, 1/kgrid.dt, center_freq, bandwidth);
+%time_series_data = time_series_data.';
 
 %% Write data to mat array
 save(optical_path, 'time_series_data')%, '-v7.3')

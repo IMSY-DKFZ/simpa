@@ -33,6 +33,7 @@ class PAIDeviceBase:
 
     def __init__(self):
         self.logger = Logger()
+        self.probe_height_mm = 0
 
     @abstractmethod
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:

@@ -109,24 +109,13 @@ class KwaveAcousticForwardModelAdapter(AcousticForwardModelBaseAdapter):
 
         self.logger.debug(f"Number of detector elements: {len(detector_positions_voxels)}")
 
-        sensor_map = np.zeros(np.shape(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]))
-        if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not \
-                self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
-            sensor_map[detector_positions_voxels[:, 2], detector_positions_voxels[:, 0]] = 1
+        if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
+            sensor_map = detector_positions_voxels[:, [0, 2, 0, 2]]
         else:
-            half_y_dir_detector_pixels = int(round(0.5*PA_device.detector_element_length_mm /
-                                                   self.global_settings[Tags.SPACING_MM]))
-            aranged_voxels = np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1)
+            sensor_map = detector_positions_voxels[:, [2, 1, 0, 2, 1, 0]]
+        sensor_map = sensor_map.swapaxes(0, 1)
 
-            if len(aranged_voxels) < 1:
-                aranged_voxels = [0]
-
-            for pixel in aranged_voxels:
-                sensor_map[detector_positions_voxels[:, 2],
-                           detector_positions_voxels[:, 1] + pixel,
-                           detector_positions_voxels[:, 0]] = 1
-
-        self.logger.debug(f"Number of ones in sensor_map: {np.sum(sensor_map)}")
+        self.logger.debug(f"SENSOR_MAP SHAPE: {np.shape(sensor_map)}")
 
         data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
         save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
@@ -199,15 +188,15 @@ class KwaveAcousticForwardModelAdapter(AcousticForwardModelBaseAdapter):
 
         # TODO create a flag in the PA device specification if output should be 2D or
         #  3D also returns the axis of the imaging plane
-        if (Tags.ACOUSTIC_SIMULATION_3D in self.component_settings and
-                self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] and
-            Tags.DIGITAL_DEVICE in self.global_settings and self.global_settings[Tags.DIGITAL_DEVICE] == Tags.DIGITAL_DEVICE_MSOT):
-
-            sensor_mask = data_dict[Tags.PROPERTY_SENSOR_MASK]
-            num_imaging_plane_sensors = int(np.sum(sensor_mask[:, detector_positions_voxels[0][1], :]))
-
-            raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
-            raw_time_series_data = np.squeeze(np.average(raw_time_series_data, axis=1))
+        # if (Tags.ACOUSTIC_SIMULATION_3D in self.component_settings and
+        #         self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] and
+        #     Tags.DIGITAL_DEVICE in self.global_settings and self.global_settings[Tags.DIGITAL_DEVICE] == Tags.DIGITAL_DEVICE_MSOT):
+        #
+        #     sensor_mask = data_dict[Tags.PROPERTY_SENSOR_MASK]
+        #     num_imaging_plane_sensors = int(np.sum(sensor_mask[:, detector_positions_voxels[0][1], :]))
+        #
+        #     raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
+        #     raw_time_series_data = np.squeeze(np.average(raw_time_series_data, axis=1))
 
         self.global_settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])
         self.global_settings[Tags.K_WAVE_SPECIFIC_NT] = num_time_steps

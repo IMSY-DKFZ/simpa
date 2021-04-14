@@ -1,3 +1,4 @@
+
 # The MIT License (MIT)
 #
 # Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
@@ -64,6 +65,7 @@ class InVision256TF(PAIDeviceBase):
         global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
         global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
         global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
+        self.probe_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] / 2
         return global_settings
 
     def get_illuminator_definition(self, global_settings: Settings):
@@ -106,6 +108,8 @@ class InVision256TF(PAIDeviceBase):
 
 
 if __name__ == "__main__":
+    import os
+    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
     device = InVision256TF()
     settings = Settings()
     settings[Tags.DIM_VOLUME_X_MM] = 100

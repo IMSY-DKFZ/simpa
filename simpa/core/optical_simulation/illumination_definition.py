@@ -54,8 +54,9 @@ def define_illumination_mcx(global_settings, optical_simulation_settings, nx, ny
         source_type = optical_simulation_settings[Tags.ILLUMINATION_TYPE]
 
     if optical_simulation_settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
-        source_position = [int(nx/2.0) + 0.5,
-                           int(ny / 2.0 - 17.81 / global_settings[Tags.SPACING_MM]) + 0.5, 1]
+        source_position = [int(nx/2.0) + 0.5, int(ny/2.0 - 17.81/global_settings[Tags.SPACING_MM]) + 0.5, 1]
+    elif optical_simulation_settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_INVISION:
+        source_position = [int(nx / 2.0) + 0.5, int(ny / 2.0) + 0.5, int(nz / 2.0) + 0.5]
     elif Tags.ILLUMINATION_POSITION not in optical_simulation_settings:
         source_position = [int(nx / 2.0) + 0.5, int(ny / 2.0) + 0.5, 1]
     else:
@@ -70,6 +71,8 @@ def define_illumination_mcx(global_settings, optical_simulation_settings, nx, ny
 
     if optical_simulation_settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO:
         source_param1 = [30 / global_settings[Tags.SPACING_MM], 0, 0, 0]
+    elif optical_simulation_settings[Tags.ILLUMINATION_TYPE] == Tags.ILLUMINATION_TYPE_MSOT_INVISION:
+        source_param1 = [global_settings[Tags.SPACING_MM], 0, 0, 0]
     elif Tags.ILLUMINATION_PARAM1 not in optical_simulation_settings:
         source_param1 = [0, 0, 0, 0]
     else:
