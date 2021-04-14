@@ -85,11 +85,6 @@ class DelayAndSumAdapter(ReconstructionAdapterBase):
         pa_device.check_settings_prerequisites(self.global_settings)
         pa_device.adjust_simulation_volume_and_settings(self.global_settings)
 
-        self.global_settings[Tags.DIGITAL_DEVICE_POSITION] = [
-            self.global_settings[Tags.DIM_VOLUME_X_MM]/2,
-            self.global_settings[Tags.DIM_VOLUME_Y_MM]/2,
-            pa_device.probe_height_mm]
-
         sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
 
         # time series sensor data must be numpy array
@@ -151,12 +146,14 @@ class DelayAndSumAdapter(ReconstructionAdapterBase):
         zdim = (max(sensor_positions[:, 1]) - min(sensor_positions[:, 1]))/spacing_in_mm
         zdim = int(zdim) + 1  # correction due to subtraction of indices starting at 0
 
+        if zdim == 1:
+            sensor_positions[:, 1] = 0  # Assume imaging plane
+
         if time_series_sensor_data.shape[0] < sensor_positions.shape[0]:
             self.logger.warning("Warning: The time series data has less sensor element entries than the given sensor positions. "
                   "This might be due to a low simulated resolution, please increase it.")
 
         n_sensor_elements = time_series_sensor_data.shape[0]
-
 
         self.logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
               f',number of sensor elements: {n_sensor_elements}')
