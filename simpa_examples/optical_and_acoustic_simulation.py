@@ -25,7 +25,7 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
+from simpa.core.device_digital_twins.msot_device import MSOTAcuityEcho
 import numpy as np
 from simpa.utils.path_manager import PathManager
 
@@ -185,6 +185,7 @@ general_settings = {
             Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
             Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+            Tags.GPU: True,
 
             # Simulation Device
             Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT_ACUITY,
@@ -210,7 +211,6 @@ settings.set_optical_settings({
 settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: True,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.GPU: True,
     Tags.PROPERTY_ALPHA_POWER: 1.05,
     Tags.SENSOR_RECORD: "p",
     Tags.PMLInside: False,
@@ -226,12 +226,21 @@ settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.ACOUSTIC_SIMULATION_3D: True,
+    Tags.PROPERTY_ALPHA_POWER: 1.05,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
-    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
+    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL,
+    Tags.SENSOR_RECORD: "p",
+    Tags.PMLInside: False,
+    Tags.PMLSize: [31, 32],
+    Tags.PMLAlpha: 1.5,
+    Tags.PlotPML: False,
+    Tags.RECORDMOVIE: False,
+    Tags.MOVIENAME: "visualization_log",
+    Tags.ACOUSTIC_LOG_SCALE: True
 })
 
 settings["noise_initial_pressure"] = {
@@ -243,7 +252,7 @@ settings["noise_initial_pressure"] = {
 }
 
 settings["noise_time_series"] = {
-    Tags.NOISE_STD: 3,
+    Tags.NOISE_STD: 1,
     Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
@@ -256,7 +265,7 @@ SIMUATION_PIPELINE = [
     GaussianNoiseModel(settings, "noise_initial_pressure"),
     KwaveAcousticForwardModelAdapter(settings),
     GaussianNoiseModel(settings, "noise_time_series"),
-    TimeReversalAdapter(settings)
+    DelayAndSumAdapter(settings)
 ]
 
 simulate(SIMUATION_PIPELINE, settings)

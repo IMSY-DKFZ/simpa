@@ -85,14 +85,6 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         else:
             sizes = (volume_z_dim, volume_y_dim, volume_x_dim)
             sensor_map = np.zeros(sizes)
-            # half_y_dir_detector_pixels = int(
-            #     round(0.5 * pa_device.detector_element_length_mm / voxel_spacing))
-            # aranged_voxels = np.arange(- half_y_dir_detector_pixels, half_y_dir_detector_pixels, 1)
-            #
-            # if len(aranged_voxels) < 1:
-            #     aranged_voxels = [0]
-            #
-            # for pixel in aranged_voxels:
             sensor_map[detector_positions_voxels[:, 2],
                        detector_positions_voxels[:, 1],
                        detector_positions_voxels[:, 0]] = 1
@@ -116,6 +108,13 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data):
         input_data = dict()
+
+        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+        detector_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(
+            self.global_settings)
+        index_array = np.argsort(detector_positions[:, 0])
+        time_series_sensor_data = time_series_sensor_data[index_array]
+
         input_data[Tags.TIME_SERIES_DATA] = time_series_sensor_data
         input_data = self.get_acoustic_properties(input_data)
         acoustic_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
@@ -124,7 +123,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
                                       Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
-        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
             Tags.SENSOR_DIRECTIVITY_SIZE_M: pa_device.detector_element_width_mm / 1000,
