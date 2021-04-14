@@ -109,3 +109,10 @@ class PAIDeviceBase:
 
         """
         pass
+
+    @abstractmethod
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        """
+        Returns the default probe position in case none was given in the Settings dict.
+        """
+        pass
