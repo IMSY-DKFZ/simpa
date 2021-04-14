@@ -557,7 +557,7 @@ class Tags:
     ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
     """
     Ratio (Percentage) of improvement and preceding error at which iteration method stops. 
-    Usage: moduel processing (iterative_qPAI_algorithm.py)
+    Usage: module processing (iterative_qPAI_algorithm.py)
     """
 
     # Supported optical models

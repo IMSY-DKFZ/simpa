@@ -145,11 +145,10 @@ def add_gaussian_noise(image_data, settings):
     """
 
     mean_noise = 0
-    std_noise = 0.4 #5e-6 * np.max(image_data)
+    std_noise = 5e-6 * np.max(image_data)  # 0.4
 
     if Tags.ITERATIVE_RECONSTRUCTION_NOISE_STD in settings:
         std_noise = float(settings[Tags.ITERATIVE_RECONSTRUCTION_NOISE_STD])
-
     #print("Standard deviation of gaussian noise model: ", round(std_noise, 6))
 
     image_data = image_data + np.random.normal(mean_noise, std_noise, size=np.shape(image_data))
@@ -158,7 +157,7 @@ def add_gaussian_noise(image_data, settings):
     return image_data
 
 
-def mc_model_fluence(absorption, scattering, anisotropy, settings):
+def forward_model_fluence(absorption, scattering, anisotropy, settings):
     """
     Simulates photon propagation in 3-d volume and returns simulated fluence map in units of J/cm^2.
 
@@ -173,7 +172,6 @@ def mc_model_fluence(absorption, scattering, anisotropy, settings):
     :return: Numpy array of same shape as input arrays: Fluence map.
     :raises: AssertionError: if Tags.OPTICAL_MODEL tag was not or incorrectly defined in settings.
     """
-
     if Tags.OPTICAL_MODEL not in settings:
         raise AssertionError("Tags.OPTICAL_MODEL tag was not specified in the settings.")
 
@@ -181,6 +179,7 @@ def mc_model_fluence(absorption, scattering, anisotropy, settings):
 
     if model == Tags.OPTICAL_MODEL_MCX:
         forward_model_implementation = McxAdapter()
+        settings[Tags.OPTICAL_MODEL] = Tags.OPTICAL_MODEL_MCX  # for define_illumination()
     else:
         raise AssertionError("Tags.OPTICAL_MODEL tag must be Tags.OPTICAL_MODEL_MCX.")
 
@@ -397,18 +396,16 @@ def iterative_method(image_data, scattering, settings):
     if not os.path.exists(settings[Tags.SIMULATION_PATH]):
         print("Tags.SIMULATION_PATH tag in settings is invalid.")
         settings[Tags.SIMULATION_PATH] = input("Please enter a valid simulation path: ")
-
         if not os.path.exists(settings[Tags.SIMULATION_PATH]):
             raise FileNotFoundError("Tags.SIMULATION_PATH tag in settings is invalid.")
 
     if not os.path.exists(settings[Tags.OPTICAL_MODEL_BINARY_PATH]):
         print("Tags.OPTICAL_MODEL_BINARY_PATH tag in settings is invalid.")
         settings[Tags.OPTICAL_MODEL_BINARY_PATH] = input("Please enter a valid optical model binary path: ")
-
         if not os.path.exists(settings[Tags.OPTICAL_MODEL_BINARY_PATH]):
             raise FileNotFoundError("Tags.OPTICAL_MODEL_BINARY_PATH tag in settings is invalid.")
 
-    # preprocessing for mcx adapter
+    # preprocessing for mcx_adapter
     image_data, scattering, stacking_to_volume = preprocessing(image_data, scattering, settings)
 
     # get optical properties necessary for simulation
@@ -435,7 +432,7 @@ def iterative_method(image_data, scattering, settings):
     i = 0
     while i < nmax:
         print("ITERATION: ", i)
-        fluence = mc_model_fluence(absorption, scattering, anisotropy, settings)
+        fluence = forward_model_fluence(absorption, scattering, anisotropy, settings)
         error_list.append(log_sum_squared_error(image_data, absorption, fluence, settings, sigma))
         #print("log (base 10) sum squared error: ", round(error_list[i], 6))
         absorption = reconstruct_absorption(image_data, fluence, settings, sigma)
@@ -444,7 +441,7 @@ def iterative_method(image_data, scattering, settings):
         i += 1
 
     print("...End of iterative method.")
-    print("--- %s seconds/iteration ---" % round((time.time() - start_time)/i, 4))
+    print("--- %s seconds/iteration ---" % round((time.time() - start_time) / (i + 1), 4))
 
     # extracting field of view if necessary
     if stacking_to_volume:
@@ -499,7 +496,7 @@ Testing
 """
 import matplotlib.pyplot as plt
 
-PATH = "/home/p253n/Patricia/qPAI_CoxAlgorithm/Testing_for_SIMPA/literature_based_forearm/Forearm_6032/Wavelength_700.hdf5"
+PATH = "/home/p253n/Patricia/qPAI_CoxAlgorithm/Testing_for_SIMPA/simple_volume_data/Volume_99/Wavelength_700.hdf5"
 SIM_PATH = "/home/p253n/Patricia/qPAI_CoxAlgorithm/Testing_for_SIMPA"
 OPT_PATH = "/home/p253n/Patricia/msot_mcx/bin/mcx"
 
