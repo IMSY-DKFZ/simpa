@@ -292,7 +292,7 @@ class Tags:
     Usage: SIMPA package
     """
 
-    DIGITAL_DEVICE_MSOT = "digital_device_msot"
+    DIGITAL_DEVICE_MSOT_ACUITY = "digital_device_msot"
     """
     Corresponds to the MSOTAcuityEcho device.\n
     Usage: SIMPA package, naming convention
@@ -304,7 +304,7 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
-    DIGITAL_DEVICE_INVISION = "digital_device_invision"
+    DIGITAL_DEVICE_MSOT_INVISION = "digital_device_invision"
     """
     Corresponds to the InVision 256-TF device.\n
     Usage: SIMPA package, naming convention

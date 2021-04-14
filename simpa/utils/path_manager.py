@@ -39,6 +39,7 @@ class PathManager:
         3. The current working directory
         4. The SIMPA home directory path
     """
+
     def __init__(self, environment_path=None):
         """
 

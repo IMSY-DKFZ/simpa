@@ -108,11 +108,6 @@ end
 
 %sensor.directivity_pattern = settings.sensor_directivity_pattern;
 
-% define the frequency response of the sensor elements, gaussian shape with
-center_freq = double(settings.sensor_center_frequency); % in units of [Hz]
-bandwidth = double(settings.sensor_bandwidth); % in units of [%]
-sensor.frequency_response = [center_freq, bandwidth];
-
 %% Computation settings
 
 if settings.gpu == true
@@ -133,6 +128,18 @@ if settings.gpu == true
 else
     time_series_data = kspaceFirstOrder3D(kgrid, medium, source, sensor, input_args{:});
 end
+
+% define the frequency response of the sensor elements, gaussian shape with
+center_freq = double(settings.sensor_center_frequency); % in units of [Hz]
+bandwidth = double(settings.sensor_bandwidth); % in units of [%]
+num_elements = size(time_series_data, 2);
+num_samples = size(time_series_data(1).p, 4);
+ts_array = zeros(num_elements, num_samples);
+for i = 1:num_elements
+   ts_array(i, :) = time_series_data(i).p;
+end
+time_series_data = gaussianFilter(ts_array, 1/kgrid.dt, center_freq, bandwidth);
+%time_series_data = time_series_data.';
 
 %% Write data to mat array
 save(strcat(optical_path), 'time_series_data')

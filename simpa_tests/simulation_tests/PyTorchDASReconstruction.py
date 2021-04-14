@@ -62,7 +62,7 @@ class PyTorchDASReconstruction:
             Tags.SIMULATE_DEFORMED_LAYERS: True,
 
             # Simulation Device
-            Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
+            Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT_ACUITY,
 
             # The following parameters set the optical forward model
             Tags.RUN_OPTICAL_MODEL: True,

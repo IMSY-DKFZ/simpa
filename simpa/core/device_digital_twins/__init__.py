@@ -30,7 +30,7 @@ This DEVICE_MAP can be used in order to obtain appropriate device specifications
 the desired device design.
 """
 DEVICE_MAP = {
-    Tags.DIGITAL_DEVICE_MSOT: MSOTAcuityEcho(),
+    Tags.DIGITAL_DEVICE_MSOT_ACUITY: MSOTAcuityEcho(),
     Tags.DIGITAL_DEVICE_RSOM: RSOMExplorerP50(),
-    Tags.DIGITAL_DEVICE_INVISION: InVision256TF()
+    Tags.DIGITAL_DEVICE_MSOT_INVISION: InVision256TF()
 }

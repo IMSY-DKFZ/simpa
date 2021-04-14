@@ -87,7 +87,7 @@ settings[Tags.SPACING_MM] = target_spacing
 settings[Tags.DIM_VOLUME_X_MM] = 400 / (target_spacing / input_spacing)
 settings[Tags.DIM_VOLUME_Y_MM] = 128 / (target_spacing / input_spacing)
 settings[Tags.DIM_VOLUME_Z_MM] = 400 / (target_spacing / input_spacing)
-settings[Tags.DIGITAL_DEVICE] = Tags.DIGITAL_DEVICE_MSOT
+settings[Tags.DIGITAL_DEVICE] = Tags.DIGITAL_DEVICE_MSOT_ACUITY
 
 settings.set_volume_creation_settings({
     Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,

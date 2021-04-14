@@ -187,7 +187,7 @@ general_settings = {
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 
             # Simulation Device
-            Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
+            Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT_ACUITY,
 
             # The following parameters set the optical forward model
             Tags.WAVELENGTHS: [700]
@@ -224,6 +224,8 @@ settings.set_acoustic_settings({
 
 settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+    Tags.ACOUSTIC_SIMULATION_3D: True,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
@@ -254,7 +256,7 @@ SIMUATION_PIPELINE = [
     GaussianNoiseModel(settings, "noise_initial_pressure"),
     KwaveAcousticForwardModelAdapter(settings),
     GaussianNoiseModel(settings, "noise_time_series"),
-    DelayAndSumAdapter(settings)
+    TimeReversalAdapter(settings)
 ]
 
 simulate(SIMUATION_PIPELINE, settings)
