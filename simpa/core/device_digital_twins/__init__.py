@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.core.device_digital_twins.msot_devices import MSOTAcuityEcho
+from simpa.core.device_digital_twins.msot_device import MSOTAcuityEcho
 from simpa.core.device_digital_twins.rsom_device import RSOMExplorerP50
 from simpa.core.device_digital_twins.invision_device import InVision256TF
 

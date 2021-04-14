@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.device_digital_twins.pai_devices import PAIDeviceBase
+from simpa.core.device_digital_twins.pai_device_base import PAIDeviceBase
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
@@ -110,20 +110,6 @@ class MSOTAcuityEcho(PAIDeviceBase):
 
         return detector_positions
 
-    def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings) -> np.ndarray:
-        abstract_element_positions = self.get_detector_element_positions_base_mm()
-
-        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
-                               global_settings[Tags.DIM_VOLUME_Y_MM],
-                               global_settings[Tags.DIM_VOLUME_Z_MM]])
-
-        if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
-            device_position = np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
-        else:
-            device_position = np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
-
-        return np.add(abstract_element_positions, device_position)
-
     def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
         detector_positions = self.get_detector_element_positions_base_mm()
         detector_orientations = np.subtract(self.focus_in_field_of_view_mm, detector_positions)
@@ -131,6 +117,12 @@ class MSOTAcuityEcho(PAIDeviceBase):
         for dim in range(3):
             detector_orientations[:, dim] = detector_orientations[:, dim]/norm
         return detector_orientations
+
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
+                               global_settings[Tags.DIM_VOLUME_Y_MM],
+                               global_settings[Tags.DIM_VOLUME_Z_MM]])
+        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
 
 
 if __name__ == "__main__":

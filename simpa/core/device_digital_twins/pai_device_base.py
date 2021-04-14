@@ -24,6 +24,7 @@ from abc import abstractmethod
 from simpa.utils.settings import Settings
 import numpy as np
 from simpa.log import Logger
+from simpa.utils import Tags
 
 
 class PAIDeviceBase:
@@ -94,7 +95,14 @@ class PAIDeviceBase:
         :returns: A numpy array containing the coordinates of the detection elements
 
         """
-        pass
+        detector_element_positions_mm = self.get_detector_element_positions_base_mm()
+
+        if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
+            device_position = np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
+        else:
+            device_position = self.get_default_probe_position(global_settings)
+
+        return np.add(detector_element_positions_mm, device_position)
 
     @abstractmethod
     def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:

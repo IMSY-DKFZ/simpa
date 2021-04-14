@@ -114,6 +114,7 @@ class KwaveAcousticForwardModelAdapter(AcousticForwardModelBaseAdapter):
         else:
             sensor_map = detector_positions_voxels[:, [2, 1, 0, 2, 1, 0]]
         sensor_map = sensor_map.swapaxes(0, 1)
+        self.logger.debug(f"Simulated sensor map bounding box coordinates: {str(sensor_map)}")
 
         self.logger.debug(f"SENSOR_MAP SHAPE: {np.shape(sensor_map)}")
 
