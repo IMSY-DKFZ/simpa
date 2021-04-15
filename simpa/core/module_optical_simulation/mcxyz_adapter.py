@@ -25,7 +25,7 @@ import numpy as np
 import subprocess
 from simpa.utils import Tags
 import os
-from simpa.core.optical_simulation import OpticalForwardModuleBase
+from simpa.core.module_optical_simulation import OpticalForwardModuleBase
 
 
 class McxyzComponent(OpticalForwardModuleBase):

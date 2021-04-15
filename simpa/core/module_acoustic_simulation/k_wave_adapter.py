@@ -30,7 +30,7 @@ import os
 import inspect
 import scipy.io as sio
 from simpa.core.device_digital_twins import DEVICE_MAP
-from simpa.core.acoustic_simulation import AcousticForwardModelBaseAdapter
+from simpa.core.module_acoustic_simulation import AcousticForwardModelBaseAdapter
 
 
 class KwaveAcousticForwardModelAdapter(AcousticForwardModelBaseAdapter):

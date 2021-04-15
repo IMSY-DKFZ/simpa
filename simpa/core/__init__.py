@@ -21,18 +21,18 @@
 # SOFTWARE.
 
 # Tissue Generation
-from simpa.core.volume_creation.segmentation_based_volume_creator import SegmentationBasedVolumeCreator
-from simpa.core.volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
+from simpa.core.module_volume_creation.segmentation_based_volume_creator import SegmentationBasedVolumeCreator
+from simpa.core.module_volume_creation.versatile_volume_creator import ModelBasedVolumeCreator
 
 # Optical forward modelling
-from simpa.core.optical_simulation.mcx_adapter import McxAdapter
+from simpa.core.module_optical_simulation.mcx_adapter import McxAdapter
 
 # Acoustic forward modelling
-from simpa.core.acoustic_simulation.k_wave_adapter import KwaveAcousticForwardModelAdapter
+from simpa.core.module_acoustic_simulation.k_wave_adapter import KwaveAcousticForwardModelAdapter
 
 # Image reconstruction
-from simpa.core.image_reconstruction.DelayAndSumAdapter import DelayAndSumAdapter
-from simpa.core.image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
+from simpa.core.module_image_reconstruction.DelayAndSumAdapter import DelayAndSumAdapter
+from simpa.core.module_image_reconstruction.TimeReversalAdapter import TimeReversalAdapter
 
 # Noise modelling
 from simpa.processing.noise_models import GaussianNoiseModel

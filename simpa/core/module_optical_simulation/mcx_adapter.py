@@ -24,10 +24,10 @@ import numpy as np
 import struct
 import subprocess
 from simpa.utils import Tags
-from simpa.core.optical_simulation import OpticalForwardModuleBase
+from simpa.core.module_optical_simulation import OpticalForwardModuleBase
 import json
 import os
-from simpa.core.optical_simulation.illumination_definition import define_illumination
+from simpa.core.module_optical_simulation.illumination_definition import define_illumination
 
 
 class McxAdapter(OpticalForwardModuleBase):

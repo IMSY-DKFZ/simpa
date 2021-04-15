@@ -20,10 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.image_reconstruction import ReconstructionAdapterBase
+import numpy as np
+from simpa.utils import Tags
+from simpa.core.module_acoustic_simulation import AcousticForwardModelBaseAdapter
 
 
-class TestReconstructionAdapter(ReconstructionAdapterBase):
+class TestAcousticModelAdapter(AcousticForwardModelBaseAdapter):
 
-    def reconstruction_algorithm(self, time_series_sensor_data):
-        return time_series_sensor_data / 10 + 5
+    def forward_model(self) -> np.ndarray:
+
+        if Tags.ACOUSTIC_SIMULATION_3D in self.component_settings \
+                and self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
+            return np.random.random((128, 128, 3000))
+        else:
+            return np.random.random((128, 3000))

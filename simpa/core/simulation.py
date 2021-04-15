@@ -42,13 +42,13 @@ def simulate(simulation_pipeline: list, settings: Settings):
             for wavelength in settings[Tags.WAVELENGTHS]:
 
                 simulation_data = volume_creator.create_simulation_volumes(settings)
-                if optical_simulation in settings:
+                if module_optical_simulation in settings:
                     optical_model.simulate(simulation_data, settings)
-                if acoustic_simulation in settings:
+                if module_acoustic_simulation in settings:
                     acoustic_model.simulate(simulation_data, settings)
                 if noise_simulation in settings:
                     noise_model.simulate(simulation_data, settings)
-                if image_reconstruction in settings:
+                if module_image_reconstruction in settings:
                     reconstruction_model.simulate(simulation_data, settings)
 
                 io_handler.save_hdf5(simulation_data, settings)

@@ -20,17 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import numpy as np
-from simpa.utils import Tags
-from simpa.core.acoustic_simulation import AcousticForwardModelBaseAdapter
+from simpa.core.module_optical_simulation import OpticalForwardModuleBase
 
 
-class TestAcousticModelAdapter(AcousticForwardModelBaseAdapter):
+class TestOpticalComponent(OpticalForwardModuleBase):
+    """
+    This Adapter was created for tesing purposes and only
+    """
 
-    def forward_model(self) -> np.ndarray:
-
-        if Tags.ACOUSTIC_SIMULATION_3D in self.component_settings \
-                and self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
-            return np.random.random((128, 128, 3000))
-        else:
-            return np.random.random((128, 3000))
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
+        return absorption_cm / ((1 - anisotropy) * scattering_cm)

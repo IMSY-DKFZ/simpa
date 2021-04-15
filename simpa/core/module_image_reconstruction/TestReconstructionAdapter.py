@@ -20,13 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.optical_simulation import OpticalForwardModuleBase
+from simpa.core.module_image_reconstruction import ReconstructionAdapterBase
 
 
-class TestOpticalComponent(OpticalForwardModuleBase):
-    """
-    This Adapter was created for tesing purposes and only
-    """
+class TestReconstructionAdapter(ReconstructionAdapterBase):
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
-        return absorption_cm / ((1 - anisotropy) * scattering_cm)
+    def reconstruction_algorithm(self, time_series_sensor_data):
+        return time_series_sensor_data / 10 + 5
