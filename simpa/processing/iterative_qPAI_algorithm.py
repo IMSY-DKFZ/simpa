@@ -31,7 +31,7 @@ from simpa.utils.libraries.literature_values import OpticalTissueProperties, Sta
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
 from simpa.core.optical_simulation.mcx_adapter import McxAdapter
-from simpa.utils.settings_generator import Settings
+from simpa.utils import Settings
 from simpa.io_handling import load_hdf5
 from simpa.utils import TISSUE_LIBRARY
 
