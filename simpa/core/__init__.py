@@ -19,17 +19,3 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-# Tissue Generation
-from simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter import VolumeCreationModuleSegmentationBasedAdapter
-from simpa.core.volume_creation_module.volume_creation_module_model_based_adapter import VolumeCreationModelModelBasedAdapter
-
-# Optical forward modelling
-from simpa.core.optical_simulation_module.mcx_adapter import McxAdapter
-
-# Acoustic forward modelling
-from simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import AcousticForwardModelKWaveAdapter
-
-# Image reconstruction
-from simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter import ImageReconstructionModuleDelayAndSumAdapter
-from simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter import ReconstructionModuleTimeReversalAdapter

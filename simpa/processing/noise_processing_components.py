@@ -28,7 +28,7 @@ from simpa.core.simulation_components import ProcessingComponent
 import numpy as np
 
 
-class GaussianNoiseModel(ProcessingComponent):
+class GaussianNoiseProcessingComponent(ProcessingComponent):
     """
         Applies Gaussian noise to the defined data field.
         The noise will be applied to all wavelengths.

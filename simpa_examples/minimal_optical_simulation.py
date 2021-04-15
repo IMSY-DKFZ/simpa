@@ -25,7 +25,7 @@ from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
-from simpa.core import *
+from simpa.simulation_components import *
 
 from simpa.utils.path_manager import PathManager
 
@@ -141,7 +141,7 @@ settings["noise_model_1"] = {
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
     McxAdapter(settings),
-    GaussianNoiseModel(settings, "noise_model_1")
+    GaussianNoiseProcessingComponent(settings, "noise_model_1")
 ]
 
 simulate(pipeline, settings)
