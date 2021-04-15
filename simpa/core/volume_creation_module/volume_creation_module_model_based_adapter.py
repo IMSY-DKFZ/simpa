@@ -28,7 +28,7 @@ from simpa.utils import create_deformation_settings
 from simpa.log import Logger
 
 
-class ModelBasedVolumeCreator(VolumeCreatorModuleBase):
+class VolumeCreationModelModelBasedAdapter(VolumeCreatorModuleBase):
     """
     The model-based volume creator uses a set of rules how to generate structures
     to create a simulation volume.

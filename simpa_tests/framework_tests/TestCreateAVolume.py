@@ -26,7 +26,7 @@ from simpa.utils.settings import Settings
 from simpa.core.simulation import simulate
 import os
 from simpa_tests.test_utils import create_test_structure_parameters
-from simpa.core import ModelBasedVolumeCreator
+from simpa.core import VolumeCreationModelModelBasedAdapter
 
 
 class TestCreateVolume(unittest.TestCase):
@@ -49,7 +49,7 @@ class TestCreateVolume(unittest.TestCase):
         settings.set_volume_creation_settings({Tags.STRUCTURES: create_test_structure_parameters(settings)})
 
         simulation_pipeline = [
-            ModelBasedVolumeCreator(settings)
+            VolumeCreationModelModelBasedAdapter(settings)
         ]
 
         simulate(simulation_pipeline, settings)

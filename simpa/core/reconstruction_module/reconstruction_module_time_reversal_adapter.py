@@ -22,7 +22,7 @@
 
 from simpa.utils import Tags, SaveFilePaths
 from simpa.utils.settings import Settings
-from simpa.core.image_reconstruction_module import ReconstructionAdapterBase
+from simpa.core.reconstruction_module import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_hdf5
 from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
@@ -32,7 +32,7 @@ import os
 import inspect
 
 
-class TimeReversalAdapter(ReconstructionAdapterBase):
+class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
     """
     The time reversal adapter includes the time reversal reconstruction
     algorithm implemented by the k-Wave toolkit into SIMPA.

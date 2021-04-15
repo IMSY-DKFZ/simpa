@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.core.image_reconstruction_module import ReconstructionAdapterBase
+from simpa.core.reconstruction_module import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
@@ -31,7 +31,7 @@ from simpa.processing.preprocess_images import reconstruction_mode_transformatio
 from simpa.processing.signal_processing import get_apodization_factor, bandpass_filtering, apply_b_mode
 
 
-class DelayAndSumAdapter(ReconstructionAdapterBase):
+class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data):
         """
@@ -236,5 +236,5 @@ def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray, setti
     if Tags.SPACING_MM not in settings or settings[Tags.SPACING_MM] is None:
         settings[Tags.SPACING_MM] = sensor_spacing
 
-    adapter = DelayAndSumAdapter()
+    adapter = ImageReconstructionModuleDelayAndSumAdapter()
     return adapter.reconstruction_algorithm(time_series_sensor_data, settings)

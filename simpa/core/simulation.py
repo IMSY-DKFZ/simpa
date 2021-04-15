@@ -48,7 +48,7 @@ def simulate(simulation_pipeline: list, settings: Settings):
                     acoustic_model.simulate(simulation_data, settings)
                 if noise_simulation in settings:
                     noise_model.simulate(simulation_data, settings)
-                if image_reconstruction_module in settings:
+                if reconstruction_module in settings:
                     reconstruction_model.simulate(simulation_data, settings)
 
                 io_handler.save_hdf5(simulation_data, settings)

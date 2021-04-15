@@ -98,7 +98,7 @@ class PyTorchDASReconstruction:
 
             Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
-            # Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/image_reconstruction_module/time_reversal_3D.m",
+            # Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/reconstruction_module/time_reversal_3D.m",
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
             Tags.TUKEY_WINDOW_ALPHA: 0.5,
             Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),

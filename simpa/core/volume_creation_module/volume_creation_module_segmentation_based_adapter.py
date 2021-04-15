@@ -27,7 +27,7 @@ from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
 
 
-class SegmentationBasedVolumeCreator(VolumeCreatorModuleBase):
+class VolumeCreationModuleSegmentationBasedAdapter(VolumeCreatorModuleBase):
     """
     This volume creator expects a np.ndarray to be in the settigs
     under the Tags.INPUT_SEGMENTATION_VOLUME tag and uses this array

@@ -648,43 +648,43 @@ class Tags:
     RECONSTRUCTION_ALGORITHM = ("reconstruction_algorithm", str)
     """
     Choice of the used reconstruction algorithm.\n
-    Usage: module image_reconstruction_module
+    Usage: module reconstruction_module
     """
 
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
     """
     Corresponds to the reconstruction algorithm DAS with the MitkBeamformingAdapter.\n
-    Usage: module image_reconstruction_module, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
     """
     Corresponds to the reconstruction algorithm DMAS with the MitkBeamformingAdapter.\n
-    Usage: module image_reconstruction_module, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
     """
     Corresponds to the reconstruction algorithm sDMAS with the MitkBeamformingAdapter.\n
-    Usage: module image_reconstruction_module, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_PYTORCH_DAS = "PyTorch_DAS"
     """
     Corresponds to the reconstruction algorithm DAS with the PyTorchDASAdapter.\n
-    Usage: module image_reconstruction_module, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     """
     Corresponds to the reconstruction algorithm Time Reversal with TimeReversalAdapter.\n
-    Usage: module image_reconstruction_module, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
     """
     Corresponds to an adapter for testing purposes only.\n
-    Usage: module image_reconstruction_module, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool, np.bool_))

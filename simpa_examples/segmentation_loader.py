@@ -103,7 +103,7 @@ settings.set_optical_settings({
 })
 
 pipeline = [
-    SegmentationBasedVolumeCreator(settings),
+    VolumeCreationModuleSegmentationBasedAdapter(settings),
     McxAdapter(settings)
 ]
 

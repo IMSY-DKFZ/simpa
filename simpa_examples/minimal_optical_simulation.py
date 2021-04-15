@@ -139,7 +139,7 @@ settings["noise_model_1"] = {
 }
 
 pipeline = [
-    ModelBasedVolumeCreator(settings),
+    VolumeCreationModelModelBasedAdapter(settings),
     McxAdapter(settings),
     GaussianNoiseModel(settings, "noise_model_1")
 ]
