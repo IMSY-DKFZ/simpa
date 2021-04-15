@@ -263,7 +263,7 @@ SIMUATION_PIPELINE = [
     ModelBasedVolumeCreator(settings),
     McxAdapter(settings),
     GaussianNoiseModel(settings, "noise_initial_pressure"),
-    KwaveAcousticForwardModelAdapter(settings),
+    AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseModel(settings, "noise_time_series"),
     DelayAndSumAdapter(settings)
 ]

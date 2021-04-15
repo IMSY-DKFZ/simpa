@@ -30,10 +30,10 @@ import os
 import inspect
 import scipy.io as sio
 from simpa.core.device_digital_twins import DEVICE_MAP
-from simpa.core.module_acoustic_simulation import AcousticForwardModelBaseAdapter
+from simpa.core.acoustic_forward_module import AcousticForwardModelBaseAdapter
 
 
-class KwaveAcousticForwardModelAdapter(AcousticForwardModelBaseAdapter):
+class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
     """
     The KwaveAcousticForwardModel adapter enables acoustic simulations to be run with the
     k-wave MATLAB toolbox. k-Wave is a free toolbox (http://www.k-wave.org/) developed by Bradley Treeby

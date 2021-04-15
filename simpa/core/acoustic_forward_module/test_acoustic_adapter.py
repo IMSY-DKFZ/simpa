@@ -22,10 +22,10 @@
 
 import numpy as np
 from simpa.utils import Tags
-from simpa.core.module_acoustic_simulation import AcousticForwardModelBaseAdapter
+from simpa.core.acoustic_forward_module import AcousticForwardModelBaseAdapter
 
 
-class TestAcousticModelAdapter(AcousticForwardModelBaseAdapter):
+class AcousticForwardModelTestAdapter(AcousticForwardModelBaseAdapter):
 
     def forward_model(self) -> np.ndarray:
 

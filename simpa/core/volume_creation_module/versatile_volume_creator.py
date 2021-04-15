@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.module_volume_creation import VolumeCreatorModuleBase
+from simpa.core.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils.libraries.structure_library import Structures
 from simpa.utils import Tags
 import numpy as np

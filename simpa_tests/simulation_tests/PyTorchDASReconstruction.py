@@ -40,7 +40,7 @@ class PyTorchDASReconstruction:
         SAVE_PATH = "/home/tom/dev/FP/simpa/simpa_examples"
         MCX_BINARY_PATH = "/home/tom/dev/FP/simpa/simpa_examples/mcx"  # On Linux systems, the .exe at the end must be omitted.
         MATLAB_PATH = "/usr/local/MATLAB/R2020b/bin/matlab"
-        ACOUSTIC_MODEL_SCRIPT = "/home/tom/dev/FP/simpa/simpa/core/module_acoustic_simulation"
+        ACOUSTIC_MODEL_SCRIPT = "/home/tom/dev/FP/simpa/simpa/core/acoustic_forward_module"
 
         self.VOLUME_TRANSDUCER_DIM_IN_MM = 75
         self.VOLUME_PLANAR_DIM_IN_MM = 20
@@ -98,7 +98,7 @@ class PyTorchDASReconstruction:
 
             Tags.PERFORM_IMAGE_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_ALGORITHM: Tags.RECONSTRUCTION_ALGORITHM_PYTORCH_DAS,
-            # Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/module_image_reconstruction/time_reversal_3D.m",
+            # Tags.TIME_REVEARSAL_SCRIPT_LOCATION: "C:/simpa/simpa/core/image_reconstruction_module/time_reversal_3D.m",
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
             Tags.TUKEY_WINDOW_ALPHA: 0.5,
             Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),

@@ -28,8 +28,8 @@ import numpy as np
 from simpa_tests.test_utils import create_test_structure_parameters
 import os
 from simpa.core import ModelBasedVolumeCreator
-from simpa.core.module_optical_simulation.test_optical_adapter import TestOpticalComponent
-from simpa.core.module_acoustic_simulation.test_acoustic_adapter import TestAcousticModelAdapter
+from simpa.core.optical_simulation_module.test_optical_adapter import TestOpticalComponent
+from simpa.core.acoustic_forward_module.test_acoustic_adapter import AcousticForwardModelTestAdapter
 
 class TestPipeline(unittest.TestCase):
 
@@ -63,7 +63,7 @@ class TestPipeline(unittest.TestCase):
 
             # The following parameters tell the script that we do not want any extra
             # modelling steps
-            # Add the module_volume_creation to be simulated to the tissue
+            # Add the volume_creation_module to be simulated to the tissue
         }
 
         settings = Settings(settings)
@@ -88,7 +88,7 @@ class TestPipeline(unittest.TestCase):
         simulation_pipeline = [
             ModelBasedVolumeCreator(settings),
             TestOpticalComponent(settings),
-            TestAcousticModelAdapter(settings),
+            AcousticForwardModelTestAdapter(settings),
         ]
 
         simulate(simulation_pipeline, settings)

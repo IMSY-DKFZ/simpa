@@ -20,5 +20,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .core.module_image_reconstruction.DelayAndSumAdapter import reconstruct_delay_and_sum_pytorch
+from .core.image_reconstruction_module.DelayAndSumAdapter import reconstruct_delay_and_sum_pytorch
 

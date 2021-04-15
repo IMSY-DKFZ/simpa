@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.module_optical_simulation import OpticalForwardModuleBase
+from simpa.core.optical_simulation_module import OpticalForwardModuleBase
 
 
 class TestOpticalComponent(OpticalForwardModuleBase):

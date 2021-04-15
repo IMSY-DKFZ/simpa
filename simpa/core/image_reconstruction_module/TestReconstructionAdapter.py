@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.module_image_reconstruction import ReconstructionAdapterBase
+from simpa.core.image_reconstruction_module import ReconstructionAdapterBase
 
 
 class TestReconstructionAdapter(ReconstructionAdapterBase):
