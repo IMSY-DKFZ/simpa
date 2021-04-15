@@ -106,14 +106,36 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         return input_data
 
-    def reconstruction_algorithm(self, time_series_sensor_data):
-        input_data = dict()
+    def reorder_time_series_data(self, time_series_sensor_data):
+        """
+        Reorders the time series data to match the order that is assumed by kwave
+        during image reconstruction with TimeReversal.
 
+        The main issue here is, that, while forward modelling allows for the definition of
+        3D cuboid bounding boxes for the detector elements, TimeReversal does not implement
+        this feature.
+        Instead, a binary mask is given and these are indexed in a column-row-wise manner in
+        the output.
+        The default np.argsort() method does not yield the same result as expected by
+        k-Wave. Hence, this workaround.
+        """
+        def sort_order(positions):
+            _sort_order = np.zeros((len(positions)))
+            for i in range(len(_sort_order)):
+                _sort_order[i] = (positions[i, 0] * 100000000000 +
+                                  positions[i, 1] * 100000 +
+                                  positions[i, 2])
+            return _sort_order
         pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
         detector_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(
             self.global_settings)
-        index_array = np.argsort(detector_positions[:, 0])
-        time_series_sensor_data = time_series_sensor_data[index_array]
+        index_array = np.argsort(sort_order(detector_positions))
+        return time_series_sensor_data[index_array]
+
+    def reconstruction_algorithm(self, time_series_sensor_data):
+        input_data = dict()
+
+        time_series_sensor_data = self.reorder_time_series_data(time_series_sensor_data)
 
         input_data[Tags.TIME_SERIES_DATA] = time_series_sensor_data
         input_data = self.get_acoustic_properties(input_data)
@@ -124,6 +146,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
 
+        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
             Tags.SENSOR_DIRECTIVITY_SIZE_M: pa_device.detector_element_width_mm / 1000,
