@@ -26,7 +26,7 @@ from simpa.utils.settings import Settings
 from simpa.core.simulation import simulate
 import os
 from simpa_tests.test_utils import create_test_structure_parameters
-from simpa.core import VolumeCreationModelModelBasedAdapter
+from simpa.simulation_components import VolumeCreationModelModelBasedAdapter
 
 
 class TestCreateVolume(unittest.TestCase):
