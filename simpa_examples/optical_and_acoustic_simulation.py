@@ -277,7 +277,7 @@ else:
 
 if VISUALIZE:
     visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
-                   show_time_series_data=False,
+                   show_time_series_data=True,
                    show_absorption=False,
                    show_segmentation_map=False,
                    show_tissue_density=False,
