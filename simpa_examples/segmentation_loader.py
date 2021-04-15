@@ -32,7 +32,7 @@ from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from scipy.ndimage import zoom
 from simpa.utils.path_manager import PathManager
 
-from simpa.core import *
+from simpa.simulation_components import *
 
 # FIXME temporary workaround for newest Intel architectures
 import os

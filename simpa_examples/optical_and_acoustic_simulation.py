@@ -29,7 +29,7 @@ from simpa.core.device_digital_twins.msot_device import MSOTAcuityEcho
 import numpy as np
 from simpa.utils.path_manager import PathManager
 
-from simpa.core import *
+from simpa.simulation_components import *
 
 # FIXME temporary workaround for newest Intel architectures
 import os
