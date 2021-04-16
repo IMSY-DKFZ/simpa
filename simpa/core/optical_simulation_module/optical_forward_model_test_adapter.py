@@ -23,7 +23,7 @@
 from simpa.core.optical_simulation_module import OpticalForwardModuleBase
 
 
-class TestOpticalComponent(OpticalForwardModuleBase):
+class OpticalForwardModelTestAdapter(OpticalForwardModuleBase):
     """
     This Adapter was created for tesing purposes and only
     """

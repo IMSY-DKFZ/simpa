@@ -104,7 +104,7 @@ settings.set_optical_settings({
 
 pipeline = [
     VolumeCreationModuleSegmentationBasedAdapter(settings),
-    McxAdapter(settings)
+    OpticalForwardModelMcxAdapter(settings)
 ]
 
 simulate(pipeline, settings)

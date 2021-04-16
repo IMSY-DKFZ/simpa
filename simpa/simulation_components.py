@@ -30,7 +30,7 @@ from simpa.core.volume_creation_module.volume_creation_module_segmentation_based
 from simpa.core.volume_creation_module.volume_creation_module_model_based_adapter import VolumeCreationModelModelBasedAdapter
 
 # Optical forward modelling
-from simpa.core.optical_simulation_module.mcx_adapter import McxAdapter
+from simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter import OpticalForwardModelMcxAdapter
 
 # Acoustic forward modelling
 from simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import AcousticForwardModelKWaveAdapter

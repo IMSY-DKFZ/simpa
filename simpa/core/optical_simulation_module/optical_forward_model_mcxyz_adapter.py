@@ -28,7 +28,7 @@ import os
 from simpa.core.optical_simulation_module import OpticalForwardModuleBase
 
 
-class McxyzComponent(OpticalForwardModuleBase):
+class OpticalForwardModelMcxyzAdapter(OpticalForwardModuleBase):
 
     def forward_model(self, absorption_cm, scattering_cm, anisotropy):
 

@@ -140,7 +140,7 @@ settings["noise_model_1"] = {
 
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
-    McxAdapter(settings),
+    OpticalForwardModelMcxAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_model_1")
 ]
 

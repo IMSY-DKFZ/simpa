@@ -30,7 +30,7 @@ import os
 from simpa.core.optical_simulation_module.illumination_definition import define_illumination
 
 
-class McxAdapter(OpticalForwardModuleBase):
+class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA.
     MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue::

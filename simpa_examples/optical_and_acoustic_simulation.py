@@ -261,10 +261,10 @@ add_msot_specific_settings(settings)
 
 SIMUATION_PIPELINE = [
     VolumeCreationModelModelBasedAdapter(settings),
-    McxAdapter(settings),
-    GaussianNoiseModel(settings, "noise_initial_pressure"),
+    OpticalForwardModelMcxAdapter(settings),
+    GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
-    GaussianNoiseModel(settings, "noise_time_series"),
+    GaussianNoiseProcessingComponent(settings, "noise_time_series"),
     ImageReconstructionModuleDelayAndSumAdapter(settings)
 ]
 
