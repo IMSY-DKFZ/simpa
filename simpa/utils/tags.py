@@ -1241,10 +1241,10 @@ class Tags:
     Usage: module processing (iterative_qPAI_algorithm.py)
     """
 
-    ITERATIVE_RECONSTRUCTION_DOWNSCALING_FACTOR = ("downscaling_factor", (int, np.integer, float, np.float))
+    DOWNSCALE_FACTOR = ("downscale_factor", (int, float, np.int_, np.float_))
     """
-    Factor by which image is resampled to avoid inverse crime.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Downscale factor of the resampling in the qPAI reconstruction\n
+    Usage: module processing
     """
 
     ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER = ("maximum_iteration_number", (int, np.integer))
