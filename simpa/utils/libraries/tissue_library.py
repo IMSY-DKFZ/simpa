@@ -54,18 +54,19 @@ class TissueLibrary(object):
     TODO
     """
 
-    def get_blood_volume_fractions(self, total_blood_volume_fraction, oxygenation):
+    def get_blood_volume_fractions(self, total_blood_volume_fraction=1e-10, oxygenation=1e-10):
         """
         TODO
         """
         return [total_blood_volume_fraction*oxygenation, total_blood_volume_fraction*(1-oxygenation)]
 
-    def constant(self, mua, mus, g):
+    def constant(self, mua=1e-10, mus=1e-10, g=1e-10):
         """
         TODO
         """
-        return (MolecularCompositionGenerator().append(Molecule(name="constant_absorber",
-                                                                spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(mua),
+        return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
+                                                                spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(
+                                                                    mua),
                                                                 volume_fraction=1.0,
                                                                 mus500=mus, b_mie=0.0, f_ray=0.0,
                                                                 anisotropy=g))
