@@ -21,9 +21,9 @@
 # SOFTWARE.
 
 from abc import ABC, abstractmethod
-from simpa.core.device_digital_twins.digital_devices import DigitalDeviceBase
-from simpa.core.device_digital_twins.illumination_geometries import IlluminationGeometryBase
-from simpa.core.device_digital_twins.detection_geometries import DetectionGeometryBase
+from simpa.core.device_digital_twins.digital_device_base import DigitalDeviceBase
+from simpa.core.device_digital_twins.illumination_geometry_base import IlluminationGeometryBase
+from simpa.core.device_digital_twins.detection_geometry_base import DetectionGeometryBase
 import numpy as np
 from simpa.log import Logger
 from simpa.utils import Tags, Settings

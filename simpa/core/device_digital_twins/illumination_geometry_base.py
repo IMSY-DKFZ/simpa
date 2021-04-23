@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from abc import abstractmethod, ABC
-from simpa.core.device_digital_twins.digital_devices import DigitalDeviceBase
+from simpa.core.device_digital_twins.digital_device_base import DigitalDeviceBase
 from simpa.utils import Settings, Tags
 import numpy as np
 
