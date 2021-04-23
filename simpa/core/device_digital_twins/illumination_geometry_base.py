@@ -82,7 +82,8 @@ class SlitIlluminationGeometry(IlluminationGeometryBase, ABC):
 
         source_direction = [0, 0, 1]
 
-        source_param1 = [10 / spacing, 0, 0, 0]
+        source_param1 = [self.slit_vector_mm[0]/spacing, self.slit_vector_mm[1]/spacing,
+                         self.slit_vector_mm[2]/spacing, 0]
 
         source_param2 = [0, 0, 0, 0]
 
