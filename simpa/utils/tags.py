@@ -1249,3 +1249,43 @@ class Tags:
     Name of the simulation outputs as original data in the SIMPA output file.\n
     Usage: naming convention
     """
+
+    """
+    Iterative qPAI Reconstruction
+    """
+
+    ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION = ("constant_regularization", (bool, np.bool, np.bool_))
+    """
+    If True, the fluence regularization will be constant.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    DOWNSCALE_FACTOR = ("downscale_factor", (int, float, np.int_, np.float_))
+    """
+    Downscale factor of the resampling in the qPAI reconstruction\n
+    Usage: module processing
+    """
+
+    ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER = ("maximum_iteration_number", (int, np.integer))
+    """
+    Maximum number of iterations performed in iterative reconstruction if stopping criterion is not reached.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_NOISE_STD = ("gaussian_noise_std", (int, np.integer, float, np.float))
+    """
+    Standard deviation of gaussian model used as additive noise.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float, np.float))
+    """
+    Sigma value used for constant regularization of fluence.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
+    """
+    Ratio (Percentage) of improvement and preceding error at which iteration method stops. 
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
