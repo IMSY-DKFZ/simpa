@@ -153,11 +153,11 @@ class DelayAndSumReconstruction:
             self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=self.settings[Tags.WAVELENGTH])
 
         plt.subplot(1, 2, 1)
+        plt.title("Initial pressure")
+        plt.imshow(np.flipud(np.rot90(initial_pressure[:, 20, :])))
+        plt.subplot(1, 2, 2)
         plt.title("Reconstructed image")
         plt.imshow(np.rot90(reconstructed_image, -1))
-        plt.subplot(1, 2, 2)
-        plt.title("Initial pressure")
-        plt.imshow(np.flipud(np.rot90(initial_pressure[:,20,:])))
         plt.show()
 
     def create_example_tissue(self):
