@@ -1292,12 +1292,6 @@ class Tags:
     Usage: module processing (iterative_qPAI_algorithm.py)
     """
 
-    ITERATIVE_RECONSTRUCTION_NOISE_STD = ("gaussian_noise_std", (int, np.integer, float, np.float))
-    """
-    Standard deviation of gaussian model used as additive noise.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
-    """
-
     ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float, np.float))
     """
     Sigma value used for constant regularization of fluence.\n

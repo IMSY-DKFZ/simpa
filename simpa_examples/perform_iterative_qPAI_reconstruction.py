@@ -27,7 +27,8 @@ from simpa.utils.settings import Settings
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
-from simpa.core import *
+from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, GaussianNoiseProcessingComponent
+from simpa.processing.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
 from simpa.utils.path_manager import PathManager
 
 
@@ -124,10 +125,16 @@ settings.set_optical_settings({
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
 })
+settings["noise_model"] = {
+    Tags.NOISE_MEAN: 0.0,
+    Tags.NOISE_STD: 0.4,
+    Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
+    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
+}
 settings["iterative_qPAI_reconstruction"] = {
     # These parameters set the properties of the iterative reconstruction
     Tags.DOWNSCALE_FACTOR: 0.73,
-    Tags.NOISE_STD: 0.4,
     Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION: False,
     # the following tag has no effect, since the regularization is chosen to be SNR dependent, not constant
     Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA: 0.01,
@@ -137,9 +144,10 @@ settings["iterative_qPAI_reconstruction"] = {
 
 # run pipeline including iterative qPAI method
 pipeline = [
-    ModelBasedVolumeCreator(settings),
-    McxAdapter(settings),
-    IterativeqPAI(settings, "iterative_qPAI_reconstruction")
+    VolumeCreationModelModelBasedAdapter(settings),
+    OpticalForwardModelMcxAdapter(settings),
+    GaussianNoiseProcessingComponent(settings, "noise_model"),
+    IterativeqPAIProcessingComponent(settings, "iterative_qPAI_reconstruction")
 ]
 
 simulate(pipeline, settings)
