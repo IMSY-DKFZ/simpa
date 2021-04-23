@@ -23,16 +23,19 @@ base.
 
 Please make sure that you have included unit tests for your code and that all previous tests still run through.
 
-There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST and you are very welcome to participate and
+There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST and you are
+very welcome to participate and
 raise any issues or suggest new features. You can join the meeting using the following link:
 
 https://meet.google.com/rze-bxej-cvj
 
-Please see the github guidelines for creating pull requests: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests
+Please see the github guidelines for creating pull requests:
+https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests
 
 ## Coding style
 
-When writing code for SIMPA, please use the PEP 8 python coding conventions (https://www.python.org/dev/peps/pep-0008/) and consider to use the following structures in your code in order to make a new
+When writing code for SIMPA, please use the PEP 8 python coding conventions (https://www.python.org/dev/peps/pep-0008/)
+and consider using the following structures in your code in order to make a new
 developer or someone external always know exactly what to expect.
 
 - Classnames are written in camel-case notation `ClassName`

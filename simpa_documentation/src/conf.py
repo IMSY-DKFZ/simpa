@@ -45,7 +45,7 @@ author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
 
 # The full version
 # SIMPA syntax: RELEASE.MAJOR.MINOR
-version = '0.3.0'
+version = '0.3.1'
 
 
 # -- General configuration ---------------------------------------------------

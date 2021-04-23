@@ -1,3 +1,4 @@
+
 # The MIT License (MIT)
 #
 # Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
@@ -21,10 +22,9 @@
 # SOFTWARE.
 import numpy as np
 
-from simpa.core.device_digital_twins.pai_devices import PAIDeviceBase
-from simpa.utils.settings_generator import Settings
+from simpa.core.device_digital_twins.pai_device_base import PAIDeviceBase
+from simpa.utils.settings import Settings
 from simpa.utils import Tags
-from simpa.log import Logger
 
 
 class InVision256TF(PAIDeviceBase):
@@ -65,6 +65,7 @@ class InVision256TF(PAIDeviceBase):
         global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
         global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
         global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
+        self.probe_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] / 2
         return global_settings
 
     def get_illuminator_definition(self, global_settings: Settings):
@@ -72,7 +73,7 @@ class InVision256TF(PAIDeviceBase):
 
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
         pitch_angle = self.pitch_mm / self.radius_mm
-        self.logger.debug("pitch angle: ", pitch_angle)
+        self.logger.debug(f"pitch angle: {pitch_angle}")
         detector_radius = self.radius_mm
         detector_positions = np.zeros((self.number_detector_elements, 3))
         # go from -127.5, -126.5, ..., 0, .., 126.5, 177.5 instead of between -128 and 127
@@ -83,19 +84,11 @@ class InVision256TF(PAIDeviceBase):
 
         return detector_positions
 
-    def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings) -> np.ndarray:
-        abstract_element_positions = self.get_detector_element_positions_base_mm()
-
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
         sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
                                global_settings[Tags.DIM_VOLUME_Y_MM],
                                global_settings[Tags.DIM_VOLUME_Z_MM]])
-
-        if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
-            device_position = np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
-        else:
-            device_position = np.asarray([sizes_mm[0] / 2, sizes_mm[1] / 2, sizes_mm[2] / 2])
-
-        return np.add(abstract_element_positions, device_position)
+        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, sizes_mm[2] / 2])
 
     def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
         detector_positions = self.get_detector_element_positions_base_mm()
@@ -107,6 +100,8 @@ class InVision256TF(PAIDeviceBase):
 
 
 if __name__ == "__main__":
+    import os
+    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
     device = InVision256TF()
     settings = Settings()
     settings[Tags.DIM_VOLUME_X_MM] = 100

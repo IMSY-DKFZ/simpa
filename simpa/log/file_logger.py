@@ -22,6 +22,7 @@
 
 import logging
 from pathlib import Path
+import sys
 
 
 class Logger:
@@ -55,8 +56,8 @@ class Logger:
             cls._logger = logging.getLogger("SIMPA Logger")
             cls._logger.setLevel(logging.DEBUG)
 
-            console_handler = logging.StreamHandler()
-            file_handler = logging.FileHandler(path)
+            console_handler = logging.StreamHandler(stream=sys.stdout)
+            file_handler = logging.FileHandler(path, mode="w")
 
             console_handler.setLevel(logging.DEBUG)
             file_handler.setLevel(logging.DEBUG)

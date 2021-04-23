@@ -22,13 +22,20 @@
 
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
+from simpa.simulation_components import *
 
-# TODO change these paths to the desired executable and save folder
-SAVE_PATH = "D:/mcx-tmp-output/"
-MCX_BINARY_PATH = "C:/mcx-bin/bin/Release/mcx-exe.exe"
+from simpa.utils.path_manager import PathManager
+
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+# TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
+#  point to the correct file in the PathManager().
+path_manager = PathManager()
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
@@ -95,48 +102,49 @@ def create_example_tissue():
 
 np.random.seed(RANDOM_SEED)
 
-settings = {
+general_settings = {
     # These parameters set the general propeties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
-    Tags.VOLUME_NAME: "MyVolumeName_"+str(RANDOM_SEED),
-    Tags.SIMULATION_PATH: SAVE_PATH,
+    Tags.VOLUME_NAME: VOLUME_NAME,
+    Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
     Tags.SPACING_MM: SPACING,
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+    Tags.WAVELENGTHS: [798]
 
     # Simulation Device
     # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
-
-    # The following parameters set the optical forward model
-    Tags.RUN_OPTICAL_MODEL: True,
-    Tags.WAVELENGTHS: [700],
-    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-    Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
-    Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
-
-    # The following parameters tell the script that we do not want any extra
-    # modelling steps
-    Tags.RUN_ACOUSTIC_MODEL: False,
-    Tags.APPLY_NOISE_MODEL: False,
-    Tags.PERFORM_IMAGE_RECONSTRUCTION: False,
-    Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
-
-    # Add the volume_creation to be simulated to the tissue
-
 }
 
-settings = Settings(settings)
-settings[Tags.SIMULATE_DEFORMED_LAYERS] = True
-settings[Tags.STRUCTURES] = create_example_tissue()
+settings = Settings(general_settings)
 
-import time
-timer = time.time()
-simulate(settings)
-print("Needed", time.time()-timer, "seconds")
+settings.set_volume_creation_settings({
+    Tags.SIMULATE_DEFORMED_LAYERS: True,
+    Tags.STRUCTURES: create_example_tissue()
+})
+settings.set_optical_settings({
+    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+    Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
+    Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
+    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
+    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+})
+settings["noise_model_1"] = {
+    Tags.NOISE_MEAN: 1,
+    Tags.NOISE_STD: 0.1,
+    Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
+    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
+}
+
+pipeline = [
+    VolumeCreationModelModelBasedAdapter(settings),
+    OpticalForwardModelMcxAdapter(settings),
+    GaussianNoiseProcessingComponent(settings, "noise_model_1")
+]
+
+simulate(pipeline, settings)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]
@@ -144,4 +152,5 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(SAVE_PATH + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH)
+    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
+                   log_scale=False)

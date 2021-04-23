@@ -182,7 +182,7 @@ class TissueLibrary(object):
         """
 
         # Get water volume fraction
-        water_volume_fraction = OpticalTissueProperties.BLOOD_PLASMA_FRACTION
+        water_volume_fraction = 0.0
 
         # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
         if oxygenation is None:
@@ -203,7 +203,7 @@ class TissueLibrary(object):
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
         # Get water volume fraction
-        water_volume_fraction = OpticalTissueProperties.BLOOD_PLASMA_FRACTION
+        water_volume_fraction = 0.0
 
         oxygenation = randomize_uniform(0.8, 1.0)
 
@@ -223,7 +223,7 @@ class TissueLibrary(object):
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
         # Get water volume fraction
-        water_volume_fraction = OpticalTissueProperties.BLOOD_PLASMA_FRACTION
+        water_volume_fraction = 0.0
 
         oxygenation = randomize_uniform(0.0, 0.8)
 

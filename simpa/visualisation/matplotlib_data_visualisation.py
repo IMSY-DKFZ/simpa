@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 from simpa.utils import SegmentationClasses, Tags
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 
 
 def visualise_data(path_to_hdf5_file: str, wavelength: int,
@@ -39,10 +39,10 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
                    show_time_series_data=True,
                    show_reconstructed_data=True,
                    show_segmentation_map=True,
-                   log_scale=True):
+                   log_scale=True,
+                   show_xz_only=False):
 
     file = load_hdf5(path_to_hdf5_file)
-    settings = Settings(file["settings"])
 
     fluence = None
     initial_pressure = None
@@ -58,20 +58,22 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
     speed_of_sound = simulation_properties['sos']
     density = simulation_properties['density']
 
-    if Tags.RUN_OPTICAL_MODEL in settings and settings[Tags.RUN_OPTICAL_MODEL]:
+    if "optical_forward_model_output" in simulation_result_data:
         optical_data = simulation_result_data['optical_forward_model_output']
-        fluence = optical_data['fluence'][str(wavelength)]
-        initial_pressure = optical_data['initial_pressure'][str(wavelength)]
+        if "fluence" in optical_data and "initial_pressure" in optical_data:
+            fluence = optical_data['fluence'][str(wavelength)]
+            initial_pressure = optical_data['initial_pressure'][str(wavelength)]
 
-    if Tags.RUN_ACOUSTIC_MODEL in settings and settings[Tags.RUN_ACOUSTIC_MODEL]:
+    if "time_series_data" in simulation_result_data:
         time_series_data = simulation_result_data["time_series_data"][str(wavelength)]
 
-    if Tags.PERFORM_IMAGE_RECONSTRUCTION in settings and settings[Tags.PERFORM_IMAGE_RECONSTRUCTION]:
+    if "time_series_data" in simulation_result_data:
         reconstructed_data = simulation_result_data["reconstructed_data"][str(wavelength)]["reconstructed_data"]
 
     shape = np.shape(absorption)
-    x_pos = int(shape[0]/2)
-    y_pos = int(shape[1]/2)
+    x_pos = int(shape[0] / 2)
+    y_pos = int(shape[1] / 2)
+    z_pos = int(shape[2] / 2)
 
     cmap_label_names, cmap_label_values, cmap = get_segmentation_colormap()
 
@@ -131,19 +133,15 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         cmaps.append(cmap)
         logscales.append(False)
 
+    if show_xz_only:
+        num_rows = 1
+    else:
+        num_rows = 2
+
     plt.figure()
     for i in range(len(data_to_show)):
-        plt.subplot(2, len(data_to_show), i+1)
-        plt.title(data_item_names[i])
-        if len(np.shape(data_to_show[i])) > 2:
-            data = np.rot90(data_to_show[i][x_pos, :, :], -1)
-            plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
-        else:
-            data = np.rot90(data_to_show[i][:, :], -1)
-            plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
-        plt.colorbar()
 
-        plt.subplot(2, len(data_to_show), i + 1 + len(data_to_show))
+        plt.subplot(num_rows, len(data_to_show), i+1)
         plt.title(data_item_names[i])
         if len(np.shape(data_to_show[i])) > 2:
             data = np.rot90(data_to_show[i][:, y_pos, :], -1)
@@ -152,6 +150,18 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
             data = np.rot90(data_to_show[i][:, :], -1)
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         plt.colorbar()
+
+        if not show_xz_only:
+            plt.subplot(num_rows, len(data_to_show), i + 1 + len(data_to_show))
+            plt.title(data_item_names[i])
+            if len(np.shape(data_to_show[i])) > 2:
+                data = np.rot90(data_to_show[i][x_pos, :, :], -1)
+                plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
+            else:
+                data = np.rot90(data_to_show[i][:, :], -1)
+                plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
+            plt.colorbar()
+
     plt.tight_layout()
     plt.show()
     plt.close()
@@ -177,3 +187,4 @@ def get_segmentation_colormap():
         'Custom cmap', colors, len(names))
 
     return names, values, cmap
+
