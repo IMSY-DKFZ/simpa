@@ -57,8 +57,8 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         # check settings dictionary for elements and read them in
 
         # speed of sound: use given speed of sound, otherwise use average from simulation if specified
-        if Tags.PROPERTY_SPEED_OF_SOUND in self.component_settings and self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
-            speed_of_sound_in_m_per_s = self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]
+        if Tags.PROPERTY_SPEED_OF_SOUND in self.global_settings and self.global_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
+            speed_of_sound_in_m_per_s = self.global_settings[Tags.PROPERTY_SPEED_OF_SOUND]
         elif Tags.WAVELENGTH in self.global_settings and self.global_settings[Tags.WAVELENGTH]:
             sound_speed_m = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
@@ -236,5 +236,5 @@ def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray, setti
     if Tags.SPACING_MM not in settings or settings[Tags.SPACING_MM] is None:
         settings[Tags.SPACING_MM] = sensor_spacing
 
-    adapter = ImageReconstructionModuleDelayAndSumAdapter()
-    return adapter.reconstruction_algorithm(time_series_sensor_data, settings)
+    adapter = ImageReconstructionModuleDelayAndSumAdapter(settings)
+    return adapter.reconstruction_algorithm(time_series_sensor_data)
