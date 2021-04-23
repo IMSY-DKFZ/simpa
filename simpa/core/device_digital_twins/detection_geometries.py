@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from abc import abstractmethod
-from simpa.utils.settings_generator import Settings
+from simpa.utils import Settings
 import numpy as np
 
 

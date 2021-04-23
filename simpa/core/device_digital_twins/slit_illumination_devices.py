@@ -20,9 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.device_digital_twins.pai_devices import PAIDeviceBase
-from simpa.utils.settings_generator import Settings
-from simpa.utils import Tags
+from simpa.core.device_digital_twins.pai_device_base import PAIDeviceBase
+from simpa.utils import Settings, Tags
 import numpy as np
 
 
@@ -161,6 +160,9 @@ class SlitIlluminationLinearDetector(PAIDeviceBase):
         detector_orientations = np.zeros((self.number_detector_elements, 3))
         detector_orientations[:, 2] = -1
         return detector_orientations
+
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        return np.array(0)
 
 
 if __name__ == "__main__":

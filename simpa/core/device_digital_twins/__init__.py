@@ -33,6 +33,6 @@ the desired device design.
 DEVICE_MAP = {
     Tags.DIGITAL_DEVICE_MSOT_ACUITY: MSOTAcuityEcho(),
     Tags.DIGITAL_DEVICE_RSOM: RSOMExplorerP50(),
-    Tags.DIGITAL_DEVICE_INVISION: InVision256TF(),
+    Tags.DIGITAL_DEVICE_MSOT_INVISION: InVision256TF(),
     Tags.DIGITAL_DEVICE_SLIT_ILLUMINATION_LINEAR_DETECTOR: SlitIlluminationLinearDetector()
 }

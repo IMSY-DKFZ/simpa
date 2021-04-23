@@ -56,7 +56,6 @@ class PAIDeviceBase(DigitalDeviceBase, ABC):
         """
         pass
 
-    @abstractmethod
     def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings) -> np.ndarray:
         """
         Similar to::
