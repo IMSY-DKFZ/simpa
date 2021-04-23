@@ -98,7 +98,7 @@ class TestqPAIReconstruction:
         # set component settings of the iterative method
         # if tags are not defined the default is chosen for reconstruction
         component_settings = {
-            Tags.NOISE_STD: 0.2,
+            Tags.NOISE_STD: 0.3,
             Tags.DOWNSCALE_FACTOR: 0.76,
             Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION: False,
             Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER: 8,
