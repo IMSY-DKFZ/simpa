@@ -20,25 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from abc import ABC, abstractmethod
-from simpa.core.device_digital_twins.digital_devices import DigitalDeviceBase
-from simpa.core.device_digital_twins.illumination_geometries import IlluminationGeometryBase
-from simpa.core.device_digital_twins.detection_geometries import DetectionGeometryBase
+from abc import abstractmethod
 from simpa.utils.settings_generator import Settings
 import numpy as np
 
 
-class PAIDeviceBase(DigitalDeviceBase, ABC):
+class DetectionGeometryBase:
     """
-    This class represents a PAI device including the detection and illumination geometry.
+    This class represents an illumination geometry
     """
-
-    @abstractmethod
-    def get_illuminator_definition(self, global_settings: Settings):
-        """
-        Defines the illumination geometry of the device in the settings dictionary.
-        """
-        pass
 
     @abstractmethod
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
