@@ -103,10 +103,11 @@ class MSOTAcuityEcho(PAIDeviceBase):
         spacing = global_settings[Tags.SPACING_MM]
 
         source_position = [round(nx / (spacing * 2.0)) + 0.5,
-                           round(ny / (spacing * 2.0) - 17.81 / spacing) + 0.5,
-                           spacing]     # The z-position
+                           round(ny / (spacing * 2.0) - 16.46 / spacing) + 0.5,
+                           spacing+5]     # The z-position
 
-        source_direction = [0, 0.381070, 0.9245460]
+        # source_direction = [0, 0.381070, 0.9245460]       earlier calculation
+        source_direction = [0, 0.356091613, 0.934451049]       # new calculation TODO: Check for correctness
 
         source_param1 = [30 / spacing, 0, 0, 0]
 

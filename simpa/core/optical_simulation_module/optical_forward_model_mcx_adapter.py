@@ -73,8 +73,8 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
         frames = int(time/dt)
 
         if Tags.DIGITAL_DEVICE in self.component_settings:
-            digital_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
-            source = digital_device.get_illuminator_definition(settings)
+            digital_device = DEVICE_MAP[self.component_settings[Tags.DIGITAL_DEVICE]]
+            source = digital_device.get_illuminator_definition(self.global_settings)
         else:
             source = {
                   "Pos": [

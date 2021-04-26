@@ -24,12 +24,15 @@ from abc import abstractmethod, ABC
 from simpa.core.device_digital_twins.digital_device_base import DigitalDeviceBase
 from simpa.utils import Settings, Tags
 import numpy as np
+from simpa.log import Logger
 
 
 class IlluminationGeometryBase(DigitalDeviceBase):
     """
     This class represents an illumination geometry.
     """
+    def __init__(self):
+        super().__init__()
 
     @abstractmethod
     def get_illuminator_definition(self, global_settings: Settings) -> dict:

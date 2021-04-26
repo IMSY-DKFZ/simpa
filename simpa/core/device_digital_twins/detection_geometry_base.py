@@ -21,14 +21,17 @@
 # SOFTWARE.
 
 from abc import abstractmethod
-from simpa.utils import Settings
+from simpa.utils import Settings, Tags
+from simpa.core.device_digital_twins.digital_device_base import DigitalDeviceBase
 import numpy as np
 
 
-class DetectionGeometryBase:
+class DetectionGeometryBase(DigitalDeviceBase):
     """
     This class represents an illumination geometry
     """
+    def __init__(self):
+        super().__init__()
 
     @abstractmethod
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
@@ -75,3 +78,110 @@ class DetectionGeometryBase:
 
         """
         pass
+
+
+class LinearDetector(DetectionGeometryBase):
+    """
+    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
+
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.pitch_mm = 0.5
+        self.number_detector_elements = 100
+        self.detector_element_width_mm = 0.24
+        self.detector_element_length_mm = 13
+        self.center_frequency_Hz = 3.96e6
+        self.bandwidth_percent = 55
+        self.sampling_frequency_MHz = 40
+        self.probe_height_mm = 0
+        self.probe_width_mm = self.number_detector_elements * self.pitch_mm
+
+    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
+        if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
+            if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + 1):
+                self.logger.error("Volume z dimension is too small to encompass the device in simulation!"
+                                  "Must be at least {} mm but was {} mm"
+                                  .format((self.probe_height_mm + 1),
+                                          global_settings[Tags.DIM_VOLUME_Z_MM]))
+                return False
+            if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
+                self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
+                                  "Must be at least {} mm but was {} mm"
+                                  .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
+                return False
+
+        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
+        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
+        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
+
+        return True
+
+    def adjust_simulation_volume_and_settings(self, global_settings: Settings):
+
+        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
+        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
+        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
+
+        if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
+            return global_settings
+
+        # adjust the x-dim to msot probe width
+        # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
+        # of the simulated volume.
+
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.probe_width_mm) + 1:
+            width_shift_for_structures_mm = (round(self.probe_width_mm) + 1 - global_settings[Tags.DIM_VOLUME_X_MM]) / 2
+            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.probe_width_mm) + 1
+        else:
+            width_shift_for_structures_mm = 0
+
+        for structure_key in global_settings[Tags.STRUCTURES]:
+            self.logger.debug(f"Adjusting {structure_key}")
+            structure_dict = global_settings[Tags.STRUCTURES][structure_key]
+            if Tags.STRUCTURE_START_MM in structure_dict:
+                structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                                 0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                                 2] + self.probe_height_mm
+            if Tags.STRUCTURE_END_MM in structure_dict:
+                structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                               0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                               2] + self.probe_height_mm
+
+        return global_settings
+
+    def get_detector_element_positions_base_mm(self) -> np.ndarray:
+
+        detector_positions = np.zeros((self.number_detector_elements, 3))
+
+        det_elements = np.arange(-int(self.number_detector_elements / 2),
+                                 int(self.number_detector_elements / 2)) * self.pitch_mm
+
+        detector_positions[:, 0] = det_elements
+
+        return detector_positions
+
+    def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings) -> np.ndarray:
+        abstract_element_positions = self.get_detector_element_positions_base_mm()
+
+        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
+                               global_settings[Tags.DIM_VOLUME_Y_MM],
+                               global_settings[Tags.DIM_VOLUME_Z_MM]])
+
+        if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
+            device_position = np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
+        else:
+            device_position = np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
+
+        return np.add(abstract_element_positions, device_position)
+
+    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
+        detector_orientations = np.zeros((self.number_detector_elements, 3))
+        detector_orientations[:, 2] = -1
+        return detector_orientations
+
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        return np.array(0)
