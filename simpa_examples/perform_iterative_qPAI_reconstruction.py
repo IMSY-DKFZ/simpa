@@ -139,6 +139,8 @@ settings["iterative_qPAI_reconstruction"] = {
     # the following tag has no effect, since the regularization is chosen to be SNR dependent, not constant
     Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA: 0.01,
     Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER: 10,
+    # for this example, we are not interested in all absorption updates
+    Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS: False,
     Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL: 0.03,
 }
 
@@ -154,11 +156,11 @@ simulate(pipeline, settings)
 
 # visualize reconstruction results
 if VISUALIZE:
-    # get simulation results
+    # get simulation output
     data_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
     gt = load_hdf5(data_path)
 
-    # get reconstruction results
+    # get reconstruction result
     reconstruction_path = path_manager.get_hdf5_file_save_path() + "/Reconstructed_absorption_" + VOLUME_NAME + ".npy"
     absorption_reconstruction = np.load(reconstruction_path)
 
@@ -167,7 +169,7 @@ if VISUALIZE:
     wavelength = settings[Tags.WAVELENGTHS][0]
     absorption_gt = gt["simulations"]["simulation_properties"]["mua"][str(wavelength)]
 
-    # rescale ground truth to same dimension as reconstruction
+    # rescale ground truth to same dimension as reconstruction (necessary due to resampling in iterative algorithm)
     scale = np.shape(absorption_reconstruction)[0] / np.shape(absorption_gt)[0]  # same as Tags.DOWNSCALE_FACTOR
     absorption_gt = zoom(absorption_gt, scale, order=1, mode="nearest")
 
@@ -195,7 +197,8 @@ if VISUALIZE:
     results_x_z = [absorption_gt[:, y_pos, :], absorption_reconstruction[:, y_pos, :], difference[:, y_pos, :]]
     results_y_z = [absorption_gt[x_pos, :, :], absorption_reconstruction[x_pos, :, :], difference[x_pos, :, :]]
 
-    label = ["Absorption coefficients $\hat\mu_a$", "Reconstruction $\mu_a$", "Difference $\hat\mu_a - \mu_a$"]
+    label = ["Absorption coefficients: ${\mu_a}^{gt}$", "Reconstruction: ${\mu_a}^{reconstr.}$",
+             "Difference: ${\mu_a}^{gt} - {\mu_a}^{reconstr.}$"]
 
     plt.figure(figsize=(20, 15))
     plt.subplots_adjust(hspace=0.5)
@@ -232,4 +235,3 @@ if VISUALIZE:
 
     plt.show()
     plt.close()
-

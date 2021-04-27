@@ -22,8 +22,8 @@
 
 from simpa.utils.path_manager import PathManager
 import numpy as np
+import os
 import matplotlib.pyplot as plt
-import math
 from scipy.ndimage import zoom
 from simpa.io_handling import load_hdf5
 from simpa.core.simulation import simulate
@@ -98,7 +98,7 @@ class TestqPAIReconstruction:
 
     def test_qPAI_reconstruction(self):
         """
-        Runs iterative qPAI reconstruction on test volume by accessing the settings dictionaries.
+        Runs iterative qPAI reconstruction on test volume by accessing the settings dictionaries in a hdf5 file.
         """
 
         # set component settings of the iterative method
@@ -106,7 +106,9 @@ class TestqPAIReconstruction:
         component_settings = {
             Tags.DOWNSCALE_FACTOR: 0.76,
             Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION: False,
-            Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER: 8,
+            Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER: 10,
+            # for testing, we are interested in all intermediate absorption updates
+            Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS: True,
             Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL: 1e-5
         }
 
@@ -126,7 +128,22 @@ class TestqPAIReconstruction:
         # run the qPAI reconstruction
         IterativeqPAIProcessingComponent(self.settings, "iterative_reconstruction").run()
 
-    def visualize_test_results(self):
+        # get reconstructed absorptions (2-d middle slices) at each iteration step and last iteration result (3-d)
+        hdf5_path = self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5"
+        list_reconstructions_result_path = self.path_manager.get_hdf5_file_save_path() + \
+                                "/List_reconstructed_qPAI_absorptions_" + self.VOLUME_NAME + ".npy"
+        last_iteration_result_path = self.path_manager.get_hdf5_file_save_path() + \
+                                "/Reconstructed_qPAI_absorption_" + self.VOLUME_NAME + ".npy"
+
+        self.list_2d_reconstructed_absorptions = np.load(list_reconstructions_result_path)
+        self.reconstructed_absorption = np.load(last_iteration_result_path)
+
+        # clean up files after test
+        os.remove(hdf5_path)
+        os.remove(list_reconstructions_result_path)
+        os.remove(last_iteration_result_path)
+
+    def visualize_qPAI_test_results(self):
         """
         Performs visualization of reconstruction results to allow for evaluation.
         The resulting figure displays the ground truth absorption coefficients, the corresponding reconstruction
@@ -134,40 +151,36 @@ class TestqPAIReconstruction:
         reconstruction results at each iteration step in x-z direction.
         """
 
-        # get reconstructed absorptions at each iteration step
-        data_path = self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5"
-        reconstruction_path = self.path_manager.get_hdf5_file_save_path() + \
-                                "/List_reconstructed_absorptions_" + self.VOLUME_NAME + ".npy"
-        list_reconstructed_absorptions = np.load(reconstruction_path)
+        # compute absolute differences
+        difference_absorption = self.absorption_gt - self.reconstructed_absorption
 
-        difference_absorption = self.absorption_gt - list_reconstructed_absorptions[-1]
-
-        if np.min(self.absorption_gt) > np.min(list_reconstructed_absorptions[-1]):
-            cmin = np.min(list_reconstructed_absorptions[-1])
+        if np.min(self.absorption_gt) > np.min(self.reconstructed_absorption):
+            cmin = np.min(self.reconstructed_absorption)
         else:
             cmin = np.min(self.absorption_gt)
 
-        if np.max(self.absorption_gt) > np.max(list_reconstructed_absorptions[-1]):
+        if np.max(self.absorption_gt) > np.max(self.reconstructed_absorption):
             cmax = np.max(self.absorption_gt)
         else:
-            cmax = np.max(list_reconstructed_absorptions[-1])
+            cmax = np.max(self.reconstructed_absorption)
 
         x_pos = int(np.shape(self.absorption_gt)[0] / 2)
         y_pos = int(np.shape(self.absorption_gt)[1] / 2)
 
-        results_x_z = [self.absorption_gt[:, y_pos, :], list_reconstructed_absorptions[-1][:, y_pos, :],
+        results_x_z = [self.absorption_gt[:, y_pos, :], self.reconstructed_absorption[:, y_pos, :],
                        difference_absorption[:, y_pos, :]]
-        results_y_z = [self.absorption_gt[x_pos, :, :], list_reconstructed_absorptions[-1][x_pos, :, :],
+        results_y_z = [self.absorption_gt[x_pos, :, :], self.reconstructed_absorption[x_pos, :, :],
                        difference_absorption[x_pos, :, :]]
 
-        label = ["Absorption coefficients $\hat\mu_a$", "Reconstruction $\mu_a$", "Difference $\hat\mu_a - \mu_a$"]
+        label = ["Absorption coefficients: ${\mu_a}^{gt}$", "Reconstruction: ${\mu_a}^{reconstr.}$",
+             "Difference: ${\mu_a}^{gt} - {\mu_a}^{reconstr.}$"]
 
         plt.figure(figsize=(20, 15))
         plt.subplots_adjust(hspace=0.5, wspace=0.1)
         plt.suptitle("Iterative qPAI Reconstruction")
 
         for i, quantity in enumerate(results_y_z):
-            plt.subplot(4, math.ceil(len(list_reconstructed_absorptions) / 2), i + 1)
+            plt.subplot(4, int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)), i + 1)
             if i == 0:
                 plt.ylabel("y-z", fontsize=10)
             plt.imshow(np.rot90(quantity, -1))
@@ -181,8 +194,8 @@ class TestqPAIReconstruction:
                 plt.clim(np.min(difference_absorption), np.max(difference_absorption))
 
         for i, quantity in enumerate(results_x_z):
-            plt.subplot(4, math.ceil(len(list_reconstructed_absorptions) / 2),
-                        i + math.ceil(len(list_reconstructed_absorptions) / 2) + 1)
+            plt.subplot(4, int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)),
+                        i + int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)) + 1)
             if i == 0:
                 plt.ylabel("x-z", fontsize=10)
             plt.imshow(np.rot90(quantity, -1))
@@ -195,11 +208,11 @@ class TestqPAIReconstruction:
             else:
                 plt.clim(np.min(difference_absorption), np.max(difference_absorption))
 
-        for i, quantity in enumerate(list_reconstructed_absorptions):
-            plt.subplot(4, math.ceil(len(list_reconstructed_absorptions) / 2),
-                        i + 2*math.ceil(len(list_reconstructed_absorptions) / 2) + 1)
+        for i, quantity in enumerate(self.list_2d_reconstructed_absorptions):
+            plt.subplot(4, int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)),
+                        i + 2 * int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)) + 1)
             plt.title("Iteration step: " + str(i + 1), fontsize=8)
-            plt.imshow(np.rot90(quantity[:, y_pos, :], -1))
+            plt.imshow(np.rot90(quantity, -1))  # absorption maps in list are already 2-d
             plt.colorbar()
             plt.clim(cmin, cmax)
             plt.axis('off')
@@ -263,17 +276,4 @@ if __name__ == '__main__':
     test = TestqPAIReconstruction()
     test.setUp()
     test.test_qPAI_reconstruction()
-    test.visualize_test_results()
-
-
-
-
-
-
-
-
-
-
-
-
-
+    test.visualize_qPAI_test_results()

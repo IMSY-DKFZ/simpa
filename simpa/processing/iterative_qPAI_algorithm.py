@@ -26,6 +26,7 @@ import os
 from scipy.ndimage import zoom
 from skimage.restoration import estimate_sigma
 import time
+from typing import Tuple
 from simpa.utils import Tags
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils.libraries.molecule_library import MolecularComposition
@@ -40,14 +41,17 @@ from simpa.core.simulation_components import ProcessingComponent
 class IterativeqPAIProcessingComponent(ProcessingComponent):
     """
         Applies iterative qPAI Algorithm [1] on simulated initial pressure map and saves the
-        reconstruction results in numpy files.
+        reconstruction results in numpy files. If a 2-d map of initial_pressure is passed the algorithm saves
+        the reconstructed absorption coefficients as a 2-d map, else a 3-d absorption reconstruction is
+        saved.
         The SAVE_PATH entry in path_config.env specifies the location the numpy files are saved at.
         To run the reconstruction the scattering coefficients must be known a priori.
         :param kwargs:
            **Tags.DOWNSCALE_FACTOR (default: 0.73)
            **Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION (default: False)
-           **Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA (default: 0.01)
            **Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER (default: 10)
+           **Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA (default: 0.01)
+           **Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS (default: False)
            **Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL (default: 0.03)
            **settings (required)
            **component_settings_key (required)
@@ -59,7 +63,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
     def __init__(self, global_settings, component_settings_key: str):
         super(ProcessingComponent, self).__init__(global_settings=global_settings)
 
-        self.settings = global_settings
+        self.global_settings = global_settings
         self.optical_settings = global_settings.get_optical_settings()
         self.iterative_method_settings = Settings(global_settings[component_settings_key])
 
@@ -67,10 +71,10 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         self.logger.info("Reconstructing absorption using iterative qPAI method...")
 
         # check if simulation_path and optical_model_binary_path exist
-        self.logger.debug(f"Simulation path: {self.settings[Tags.SIMULATION_PATH]}")
+        self.logger.debug(f"Simulation path: {self.global_settings[Tags.SIMULATION_PATH]}")
         self.logger.debug(f"Optical model binary path: {self.optical_settings[Tags.OPTICAL_MODEL_BINARY_PATH]}")
 
-        if not os.path.exists(self.settings[Tags.SIMULATION_PATH]):
+        if not os.path.exists(self.global_settings[Tags.SIMULATION_PATH]):
             print("Tags.SIMULATION_PATH tag in settings cannot be found.")
 
         if not os.path.exists(self.optical_settings[Tags.OPTICAL_MODEL_BINARY_PATH]):
@@ -101,54 +105,41 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         else:
             self.logger.debug("Maximum number of iterations: 10")
 
-        # run reconstruction
-        # only extract last iteration results - not list of all iteration results
-        reconstructed_absorption, list_reconstructed_absorptions = self.run_iterative_reconstruction()
+        if Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS in self.iterative_method_settings:
+            self.logger.debug(f"Save intermediate absorptions:"
+                    f" {self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS]}")
+        else:
+            self.logger.debug("Save intermediate absorptions: False")
 
-        # save reconstruction results
-        dst = self.settings[Tags.SIMULATION_PATH] + "/Reconstructed_absorption_"
-        np.save(dst + self.settings[Tags.VOLUME_NAME] + ".npy", reconstructed_absorption)
-        dst = self.settings[Tags.SIMULATION_PATH] + "/List_reconstructed_absorptions_"
-        np.save(dst + self.settings[Tags.VOLUME_NAME] + ".npy", list_reconstructed_absorptions)
+        # run reconstruction
+        reconstructed_absorption, list_of_intermediate_absorptions = self.iterative_absorption_reconstruction()
+
+        # save absorption update of last iteration step
+        dst = self.global_settings[Tags.SIMULATION_PATH] + "/Reconstructed_qPAI_absorption_"
+        np.save(dst + self.global_settings[Tags.VOLUME_NAME] + ".npy", reconstructed_absorption)
+
+        # save a list of all intermediate absorption (2-d only) updates if intended (e.g. for testing algorithm)
+        if Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS in self.iterative_method_settings:
+            if self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS]:
+                dst = self.global_settings[Tags.SIMULATION_PATH] + "/List_reconstructed_qPAI_absorptions_"
+                np.save(dst + self.global_settings[Tags.VOLUME_NAME] + ".npy", list_of_intermediate_absorptions)
 
         self.logger.info("Reconstructing absorption using iterative qPAI method...[Done]")
 
-    def run_iterative_reconstruction(self) -> {np.ndarray, list}:
+    def iterative_absorption_reconstruction(self) -> Tuple[np.ndarray, list]:
         """
-        Extract necessary information - initial pressure and scattering coefficients -
-        from settings dictionaries. The setting dictionaries can be extracted from a hdf5 file.
+        Performs quantitative photoacoustic image reconstruction of absorption distribution by use of an
+        iterative method. The distribution of scattering coefficients must be known a priori.
 
-        :return: Reconstructed absorption coefficients in 1/cm.
-        """
-
-        # get simulation output which contains initial pressure and scattering
-        file = load_hdf5(self.settings[Tags.SIMPA_OUTPUT_PATH])
-        wavelength = self.settings[Tags.WAVELENGTH]
-
-        # get initial pressure and scattering
-        image = file["simulations"]["optical_forward_model_output"]["initial_pressure"][str(wavelength)]
-        mus = file["simulations"]["simulation_properties"]["mus"][str(wavelength)]
-
-        # run reconstruction
-        absorption, absorption_list = self.iterative_core_method(image_data=image, scattering=mus)
-
-        # function returns the last iteration result as a numpy array and all iteration results in a list
-        return absorption, absorption_list
-
-    def iterative_core_method(self, image_data: np.ndarray,
-                              scattering: np.ndarray) -> {np.ndarray, list}:
-        """
-        Performs quantitative photoacoustic image reconstruction of absorption distribution by use of an iterative method.
-        The distribution of scattering coefficients must be known a priori.
-
-        :param image_data: Measured image data (initial pressure distribution), should be 2- or 3-d.
-        :param scattering: A priori-known scattering distribution, should have same dimensions as image_data.
         :return: Reconstructed absorption coefficients in 1/cm.
         :raises: TypeError: if input data are not passed as a certain type
                  ValueError: if input data cannot be used for reconstruction due to shape or value
                  FileNotFoundError: if paths stored in settings cannot be accessed
                  AssertionError: is Tags.MAX_NUMBER_ITERATIVE_RECONSTRUCTION tag is zero
         """
+
+        # extract "measured" initial pressure and a priori scattering data
+        image_data, scattering = self.extract_initial_data_from_hdf5()
 
         # checking input data
         if not isinstance(image_data, np.ndarray):
@@ -163,11 +154,12 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         elif scattering.shape != image_data.shape:
             raise ValueError("Shape of scattering data is invalid. Scattering must have the same shape as image_data.")
 
-        # preprocessing for mcx_adapter
-        image_data, scattering, stacking_to_volume = self.preprocessing(image_data=image_data, scattering=scattering)
+        # preprocessing for iterative qPAI method and mcx_adapter
+        image_data, scattering, stacked_to_volume = self.preprocessing_for_iterative_qPAI(image_data=image_data,
+                                                                                           scattering=scattering)
 
         # get optical properties necessary for simulation
-        optical_properties_dict = self.optical_properties(image_data)
+        optical_properties_dict = self.standard_optical_properties(image_data)
         anisotropy = optical_properties_dict["anisotropy"]
 
         # regularization parameter sigma
@@ -175,7 +167,8 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         # initialization
         absorption = 1e-16 * np.ones(np.shape(image_data))
-        absorption_list = []
+        y_pos = int(np.shape(absorption)[1] / 2)  # to extract middle slice
+        list_of_intermediate_absorptions = []  # if intentional all intermediate iteration updates can be returned
         error_list = []
 
         nmax = 10
@@ -184,35 +177,61 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
                 raise AssertionError("Tags.MAX_NUMBER_ITERATIVE_RECONSTRUCTION tag is invalid (equals zero).")
             nmax = int(self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER])
 
-        # algorithm
+        # run algorithm
         start_time = time.time()
 
         i = 0
         while i < nmax:
             print("Iteration: ", i)
+            # core method
             fluence = self.forward_model_fluence(absorption, scattering, anisotropy)
             error_list.append(self.log_sum_squared_error(image_data, absorption, fluence, sigma))
-            absorption = self.reconstruct_absorption(image_data, fluence, sigma)
-            absorption_list.append(absorption)
+            absorption = self.update_absorption_estimate(image_data, fluence, sigma)
 
-            if self.stopping_criterion(error_list, iteration=i):
+            # only store middle slice (2-d image instead of 3-d volume) in iteration list for better performance
+            list_of_intermediate_absorptions.append(absorption[:, y_pos, :])
+
+            # check if current error did not change significantly in comparison to preceding error
+            if self.convergence_stopping_criterion(error_list, iteration=i):
                 break
             i += 1
 
         print("--- %s seconds/iteration ---" % round((time.time() - start_time) / (i + 1), 2))
 
-        # extracting field of view if necessary
-        if stacking_to_volume:
-            y_pos = int(absorption.shape[1] / 2)
+        # extracting field of view if input initial pressure was passed as a 2-d array
+        if stacked_to_volume:
             absorption = absorption[:, y_pos, :]
 
         # function returns the last iteration result as a numpy array and all iteration results in a list
-        return absorption, absorption_list
+        return absorption, list_of_intermediate_absorptions
 
-    def preprocessing(self, image_data: np.ndarray,
-                      scattering: np.ndarray) -> {np.ndarray, np.ndarray, bool}:
+    def extract_initial_data_from_hdf5(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Extract necessary information - initial pressure and scattering coefficients -
+        from settings dictionaries. The setting dictionaries is extracted from a hdf5 file.
+
+        :return: Initial pressure and a priori known scattering coefficients.
+        """
+
+        # get simulation output which contains initial pressure and scattering
+        file = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH])
+        wavelength = self.global_settings[Tags.WAVELENGTH]
+
+        # get initial pressure and scattering
+        image = file["simulations"]["optical_forward_model_output"]["initial_pressure"][str(wavelength)]
+        mus = file["simulations"]["simulation_properties"]["mus"][str(wavelength)]
+
+        # function returns the last iteration result as a numpy array and all iteration results in a list
+        return image, mus
+
+    def preprocessing_for_iterative_qPAI(self, image_data: np.ndarray,
+                                         scattering: np.ndarray) -> Tuple[np.ndarray, np.ndarray, bool]:
         """
         Preprocesses image data and scattering distribution for iterative algorithm using mcx.
+        The preprocessing step includes:
+        1. Stacking the input data from 2-d to 3-d if necessary, since the mcx adapter can only perform
+           a Monte Carlo Simulation of fluence given 3-d volumes of absorption, scattering, and anisotropy
+        2. Resampling the input data to mitigate the inverse crime
 
         :param image_data: Raw input image of initial pressure.
         :param scattering: Map of scattering coefficients known a priori.
@@ -221,35 +240,36 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         """
 
         if len(np.shape(image_data)) == 2:
-            stacking_to_volume = True
-            image_data, scattering = self.stacking(image_data, scattering)
+            stacked_to_volume = True
+            image_data = self.stacking_to_3d(image_data)
         else:
-            stacking_to_volume = False
+            stacked_to_volume = False
+        if len(np.shape(scattering)) == 2:
+            scattering = self.stacking_to_3d(scattering)
 
-        image_data, scattering = self.downscaling(image_data, scattering)
+        image_data, scattering = self.resampling_for_iterative_qPAI(image_data, scattering)
 
-        return image_data, scattering, stacking_to_volume
+        return image_data, scattering, stacked_to_volume
 
-    def stacking(self, image_data: np.ndarray, scattering: np.ndarray) -> {np.ndarray, np.ndarray}:
+    def stacking_to_3d(self, input_data: np.ndarray) -> np.ndarray:
         """
-        Stacks the image and scattering map in sequence along axis=1 to build 3-d volumes.
+        Stacks the input map in sequence along axis=1 to build 3-d volume.
 
-        :param image_data: 2-d image data of initial pressure.
-        :param scattering: 2-d map of scattering coefficients.
-        :return: Volumes of stacked input image and scattering.
+        :param input_data: 2-d image data.
+        :return: Volume of stacked input image.
         """
 
-        spacing = self.settings[Tags.DIM_VOLUME_X_MM] / np.shape(image_data)[0]
-        num_repeats = int(self.settings[Tags.DIM_VOLUME_Y_MM] / spacing)
+        spacing = self.global_settings[Tags.DIM_VOLUME_X_MM] / np.shape(input_data)[0]
+        num_repeats = int(self.global_settings[Tags.DIM_VOLUME_Y_MM] / spacing)
 
-        stacked_image = np.stack([image_data] * num_repeats, axis=1)
-        stacked_scattering = np.stack([scattering] * num_repeats, axis=1)
+        stacked_volume = np.stack([input_data] * num_repeats, axis=1)
 
-        return stacked_image, stacked_scattering
+        return stacked_volume
 
-    def downscaling(self, image_data: np.ndarray, scattering: np.ndarray) -> {np.ndarray, np.ndarray}:
+    def resampling_for_iterative_qPAI(self, image_data: np.ndarray,
+                                      scattering: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Downscales the input image and scattering map by a given scale.
+        Downscales the input image and scattering map by a given scale to avoid inverse crime.
 
         :param image_data: Raw input image of initial pressure.
         :param scattering: Map of scattering coefficients.
@@ -265,22 +285,22 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         downscaled_image = zoom(image_data, scale, order=1, mode=downscaling_method)
         downscaled_scattering = zoom(scattering, scale, order=1, mode=downscaling_method)
 
-        new_spacing = self.settings[Tags.SPACING_MM] / scale
+        new_spacing = self.global_settings[Tags.SPACING_MM] / scale
 
-        if self.settings[Tags.SPACING_MM] != new_spacing:
-            self.settings[Tags.SPACING_MM] = new_spacing
+        if self.global_settings[Tags.SPACING_MM] != new_spacing:
+            self.global_settings[Tags.SPACING_MM] = new_spacing
 
-        if Tags.ILLUMINATION_POSITION in self.settings[Tags.OPTICAL_MODEL_SETTINGS]:
-            pos = [(elem * scale) for elem in self.settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION]]
-            self.settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION] = pos
+        if Tags.ILLUMINATION_POSITION in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+            pos = [(elem * scale) for elem in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION]]
+            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION] = pos
 
-        if Tags.ILLUMINATION_PARAM1 in self.settings[Tags.OPTICAL_MODEL_SETTINGS]:
-            param1 = [(elem * scale) for elem in self.settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1]]
-            self.settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1] = param1
+        if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+            param1 = [(elem * scale) for elem in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1]]
+            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1] = param1
 
-        if Tags.ILLUMINATION_PARAM1 in self.settings[Tags.OPTICAL_MODEL_SETTINGS]:
-            param2 = [(elem * scale) for elem in self.settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2]]
-            self.settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2] = param2
+        if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+            param2 = [(elem * scale) for elem in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2]]
+            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2] = param2
 
         return downscaled_image, downscaled_scattering
 
@@ -315,7 +335,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         return sigma
 
-    def optical_properties(self, image_data: np.ndarray) -> dict:
+    def standard_optical_properties(self, image_data: np.ndarray) -> dict:
         """
         Returns a optical properties dictionary containing scattering coefficients and anisotropy.
 
@@ -326,15 +346,15 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         shape = np.shape(image_data)
 
         # scattering must be known a priori at the moment.
-        if Tags.PROPERTY_SCATTERING_PER_CM in self.settings:
-            mus = float(self.settings[Tags.PROPERTY_SCATTERING_PER_CM]) * np.ones(shape)
+        if Tags.PROPERTY_SCATTERING_PER_CM in self.global_settings:
+            mus = float(self.global_settings[Tags.PROPERTY_SCATTERING_PER_CM]) * np.ones(shape)
         else:
             background_dict = TISSUE_LIBRARY.muscle()
             mus = float(MolecularComposition.get_properties_for_wavelength(background_dict, wavelength=800)["mus"])
             mus = mus * np.ones(shape)
 
-        if Tags.PROPERTY_ANISOTROPY in self.settings:
-            g = float(self.settings[Tags.PROPERTY_ANISOTROPY]) * np.ones(shape)
+        if Tags.PROPERTY_ANISOTROPY in self.global_settings:
+            g = float(self.global_settings[Tags.PROPERTY_ANISOTROPY]) * np.ones(shape)
             g[:, :, :] = 0.9  # anisotropy is always 0.9 when simulating
         else:
             g = float(OpticalTissueProperties.STANDARD_ANISOTROPY) * np.ones(shape)
@@ -358,12 +378,12 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         :raises: AssertionError: if Tags.OPTICAL_MODEL tag was not or incorrectly defined in settings.
         """
 
-        if Tags.OPTICAL_MODEL not in self.settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.OPTICAL_MODEL not in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
             raise AssertionError("Tags.OPTICAL_MODEL tag was not specified in the settings.")
-        model = self.settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.OPTICAL_MODEL]
+        model = self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.OPTICAL_MODEL]
 
         if model == Tags.OPTICAL_MODEL_MCX:
-            forward_model_implementation = OpticalForwardModelMcxAdapter(self.settings)
+            forward_model_implementation = OpticalForwardModelMcxAdapter(self.global_settings)
         else:
             raise AssertionError("Tags.OPTICAL_MODEL tag must be Tags.OPTICAL_MODEL_MCX.")
 
@@ -375,8 +395,8 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         return fluence
 
-    def reconstruct_absorption(self, image_data: np.ndarray, fluence: np.ndarray,
-                               sigma: [np.ndarray, int, float]) -> np.ndarray:
+    def update_absorption_estimate(self, image_data: np.ndarray, fluence: np.ndarray,
+                                   sigma: [np.ndarray, int, float]) -> np.ndarray:
         """
         Reconstructs map of absorption coefficients in 1/cm given measured data and simulated fluence.
 
@@ -386,13 +406,13 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         :return: Reconstructed absorption.
         """
 
-        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.settings[Tags.OPTICAL_MODEL_SETTINGS]:
-            if Tags.PROPERTY_GRUNEISEN_PARAMETER in self.settings:
-                gamma = self.settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
+        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+            if Tags.PROPERTY_GRUNEISEN_PARAMETER in self.global_settings:
+                gamma = self.global_settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
             else:
                 gamma = calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS)
                 gamma = gamma * np.ones(np.shape(image_data))
-            factor = (self.settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
+            factor = (self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
             absorption = np.array(image_data / ((fluence + sigma) * gamma * factor))
         else:
             absorption = image_data / (fluence + sigma)
@@ -411,13 +431,13 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         :return: sse error.
         """
 
-        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.settings[Tags.OPTICAL_MODEL_SETTINGS]:
-            if Tags.PROPERTY_GRUNEISEN_PARAMETER in self.settings:
-                gamma = self.settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
+        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+            if Tags.PROPERTY_GRUNEISEN_PARAMETER in self.global_settings:
+                gamma = self.global_settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
             else:
                 gamma = calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS)
                 gamma = gamma * np.ones(np.shape(image_data))
-            factor = (self.settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
+            factor = (self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
             predicted_pressure = absorption * (fluence + sigma) * gamma * factor
         else:
             predicted_pressure = absorption * (fluence + sigma)
@@ -427,7 +447,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         return np.log10(sse)
 
-    def stopping_criterion(self, errors: list, iteration: int) -> bool:
+    def convergence_stopping_criterion(self, errors: list, iteration: int) -> bool:
         """
         Serves as a stopping criterion for the iterative algorithm. If False the iterative algorithm continues.
 
