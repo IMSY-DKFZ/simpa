@@ -1249,3 +1249,25 @@ class Tags:
     Name of the simulation outputs as original data in the SIMPA output file.\n
     Usage: naming convention
     """
+
+    """
+    Image processing
+    """
+
+    IMAGE_PROCESSING = "image_processing"
+    """
+    Location of the image processing outputs in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
+    ITERATIVE_qPAI_RESULT = "iterative_qpai_result"
+    """
+    Name of the data field in which the iterative qPAI result will be stored.\n
+    Usage: naming convention
+    """
+
+    LINEAR_UNMIXING_RESULT = "linear_unmixing_result"
+    """
+    Name of the data field in which the linear unmixing result will be stored.\n
+    Usage: naming convention
+    """

@@ -20,7 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os, inspect
+import os
+import inspect
 from dotenv import load_dotenv
 from pathlib import Path
 from simpa.log import Logger
