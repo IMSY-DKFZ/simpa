@@ -1298,8 +1298,14 @@ class Tags:
     Usage: module processing (iterative_qPAI_algorithm.py)
     """
 
+    ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS = ("save_intermediate_results", (bool, np.bool, np.bool_))
+    """
+    If True, a list of all intermediate absorption updates (middle slices only) will be saved in a numpy file.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
     ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
     """
-    Ratio (Percentage) of improvement and preceding error at which iteration method stops. 
+    Ratio of improvement and preceding error at which iteration method stops. 
     Usage: module processing (iterative_qPAI_algorithm.py)
     """
