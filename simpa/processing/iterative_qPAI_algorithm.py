@@ -33,7 +33,7 @@ from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
 from simpa.simulation_components import OpticalForwardModelMcxAdapter
 from simpa.utils import Settings
-from simpa.io_handling import load_hdf5
+from simpa.io_handling import save_data_field, load_data_field
 from simpa.utils import TISSUE_LIBRARY
 from simpa.core.simulation_components import ProcessingComponent
 
@@ -41,10 +41,12 @@ from simpa.core.simulation_components import ProcessingComponent
 class IterativeqPAIProcessingComponent(ProcessingComponent):
     """
         Applies iterative qPAI Algorithm [1] on simulated initial pressure map and saves the
-        reconstruction results in numpy files. If a 2-d map of initial_pressure is passed the algorithm saves
+        reconstruction result in the hdf5 output file. If a 2-d map of initial_pressure is passed the algorithm saves
         the reconstructed absorption coefficients as a 2-d map, else a 3-d absorption reconstruction is
         saved.
-        The SAVE_PATH entry in path_config.env specifies the location the numpy files are saved at.
+        The reconstruction result is saved as an image processing entry "iterative_qpai_result" in the hdf5 output file.
+        If intended (e.g. for testing) a list of intermediate iteration updates (only 2-d middle slices) can be saved
+        as a npy file.
         To run the reconstruction the scattering coefficients must be known a priori.
         :param kwargs:
            **Tags.DOWNSCALE_FACTOR (default: 0.73)
@@ -114,14 +116,18 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         # run reconstruction
         reconstructed_absorption, list_of_intermediate_absorptions = self.iterative_absorption_reconstruction()
 
-        # save absorption update of last iteration step
-        dst = self.global_settings[Tags.SIMULATION_PATH] + "/Reconstructed_qPAI_absorption_"
-        np.save(dst + self.global_settings[Tags.VOLUME_NAME] + ".npy", reconstructed_absorption)
+        # save absorption update of last iteration step in hdf5 data field
+        wavelength = self.global_settings[Tags.WAVELENGTH]
+        data_field = Tags.ITERATIVE_qPAI_RESULT
+        save_data_field(reconstructed_absorption, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+                        data_field, wavelength)
 
-        # save a list of all intermediate absorption (2-d only) updates if intended (e.g. for testing algorithm)
+        # save a list of all intermediate absorption (2-d only) updates in npy file if intended
+        # (e.g. for testing algorithm)
         if Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS in self.iterative_method_settings:
             if self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS]:
-                dst = self.global_settings[Tags.SIMULATION_PATH] + "/List_reconstructed_qPAI_absorptions_"
+                dst = self.global_settings[Tags.SIMULATION_PATH] + "/List_reconstructed_qpai_absorptions_" \
+                      + str(wavelength) + "_"
                 np.save(dst + self.global_settings[Tags.VOLUME_NAME] + ".npy", list_of_intermediate_absorptions)
 
         self.logger.info("Reconstructing absorption using iterative qPAI method...[Done]")
@@ -155,7 +161,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
             raise ValueError("Shape of scattering data is invalid. Scattering must have the same shape as image_data.")
 
         # preprocessing for iterative qPAI method and mcx_adapter
-        image_data, scattering, stacked_to_volume = self.preprocessing_for_iterative_qPAI(image_data=image_data,
+        image_data, scattering, stacked_to_volume = self.preprocessing_for_iterative_qpai(image_data=image_data,
                                                                                            scattering=scattering)
 
         # get optical properties necessary for simulation
@@ -214,17 +220,18 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         """
 
         # get simulation output which contains initial pressure and scattering
-        file = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH])
         wavelength = self.global_settings[Tags.WAVELENGTH]
 
         # get initial pressure and scattering
-        image = file["simulations"]["optical_forward_model_output"]["initial_pressure"][str(wavelength)]
-        mus = file["simulations"]["simulation_properties"]["mus"][str(wavelength)]
+        image = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+                                wavelength)
+        mus = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SCATTERING_PER_CM,
+                              wavelength)
 
         # function returns the last iteration result as a numpy array and all iteration results in a list
         return image, mus
 
-    def preprocessing_for_iterative_qPAI(self, image_data: np.ndarray,
+    def preprocessing_for_iterative_qpai(self, image_data: np.ndarray,
                                          scattering: np.ndarray) -> Tuple[np.ndarray, np.ndarray, bool]:
         """
         Preprocesses image data and scattering distribution for iterative algorithm using mcx.
@@ -247,7 +254,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         if len(np.shape(scattering)) == 2:
             scattering = self.stacking_to_3d(scattering)
 
-        image_data, scattering = self.resampling_for_iterative_qPAI(image_data, scattering)
+        image_data, scattering = self.resampling_for_iterative_qpai(image_data, scattering)
 
         return image_data, scattering, stacked_to_volume
 
@@ -266,7 +273,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         return stacked_volume
 
-    def resampling_for_iterative_qPAI(self, image_data: np.ndarray,
+    def resampling_for_iterative_qpai(self, image_data: np.ndarray,
                                       scattering: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         Downscales the input image and scattering map by a given scale to avoid inverse crime.

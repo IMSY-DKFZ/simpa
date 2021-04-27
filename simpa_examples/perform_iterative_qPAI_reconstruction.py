@@ -22,7 +22,7 @@
 
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
-from simpa.io_handling import load_hdf5
+from simpa.io_handling import load_hdf5, load_data_field
 from simpa.utils.settings import Settings
 import numpy as np
 import matplotlib.pyplot as plt
@@ -132,7 +132,7 @@ settings["noise_model"] = {
     Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
     Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
 }
-settings["iterative_qPAI_reconstruction"] = {
+settings["iterative_qpai_reconstruction"] = {
     # These parameters set the properties of the iterative reconstruction
     Tags.DOWNSCALE_FACTOR: 0.73,
     Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION: False,
@@ -149,7 +149,7 @@ pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
     OpticalForwardModelMcxAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_model"),
-    IterativeqPAIProcessingComponent(settings, "iterative_qPAI_reconstruction")
+    IterativeqPAIProcessingComponent(settings, "iterative_qpai_reconstruction")
 ]
 
 simulate(pipeline, settings)
@@ -158,16 +158,15 @@ simulate(pipeline, settings)
 if VISUALIZE:
     # get simulation output
     data_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
-    gt = load_hdf5(data_path)
+    file = load_hdf5(data_path)
+    settings = Settings(file["settings"])
+    wavelength = settings[Tags.WAVELENGTHS][0]
 
     # get reconstruction result
-    reconstruction_path = path_manager.get_hdf5_file_save_path() + "/Reconstructed_absorption_" + VOLUME_NAME + ".npy"
-    absorption_reconstruction = np.load(reconstruction_path)
+    absorption_reconstruction = load_data_field(data_path, Tags.ITERATIVE_qPAI_RESULT, wavelength)
 
     # get ground truth absorption coefficients
-    settings = Settings(gt["settings"])
-    wavelength = settings[Tags.WAVELENGTHS][0]
-    absorption_gt = gt["simulations"]["simulation_properties"]["mua"][str(wavelength)]
+    absorption_gt = load_data_field(data_path, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
 
     # rescale ground truth to same dimension as reconstruction (necessary due to resampling in iterative algorithm)
     scale = np.shape(absorption_reconstruction)[0] / np.shape(absorption_gt)[0]  # same as Tags.DOWNSCALE_FACTOR

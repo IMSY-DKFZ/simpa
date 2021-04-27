@@ -25,7 +25,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
-from simpa.io_handling import load_hdf5
+from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, GaussianNoiseProcessingComponent
@@ -96,7 +96,7 @@ class TestqPAIReconstruction:
         ]
         simulate(pipeline, self.settings)
 
-    def test_qPAI_reconstruction(self):
+    def test_qpai_reconstruction(self):
         """
         Runs iterative qPAI reconstruction on test volume by accessing the settings dictionaries in a hdf5 file.
         """
@@ -112,11 +112,11 @@ class TestqPAIReconstruction:
             Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL: 1e-5
         }
 
-        self.settings["iterative_reconstruction"] = component_settings
+        self.settings["iterative_qpai_reconstruction"] = component_settings
 
-        file = load_hdf5(self.settings[Tags.SIMPA_OUTPUT_PATH])
         self.wavelength = self.settings[Tags.WAVELENGTH]
-        absorption_gt = file["simulations"]["simulation_properties"]["mua"][str(self.wavelength)]
+        absorption_gt = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
+                                        self.wavelength)
 
         # if the initial pressure is resampled the ground truth has to be resampled to allow for comparison
         if Tags.DOWNSCALE_FACTOR in component_settings:
@@ -126,24 +126,22 @@ class TestqPAIReconstruction:
             self.absorption_gt = zoom(absorption_gt, 0.73, order=1, mode="nearest")  # the default scale is 0.73
 
         # run the qPAI reconstruction
-        IterativeqPAIProcessingComponent(self.settings, "iterative_reconstruction").run()
+        IterativeqPAIProcessingComponent(self.settings, "iterative_qpai_reconstruction").run()
 
-        # get reconstructed absorptions (2-d middle slices) at each iteration step and last iteration result (3-d)
+        # get last iteration result (3-d)
         hdf5_path = self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5"
-        list_reconstructions_result_path = self.path_manager.get_hdf5_file_save_path() + \
-                                "/List_reconstructed_qPAI_absorptions_" + self.VOLUME_NAME + ".npy"
-        last_iteration_result_path = self.path_manager.get_hdf5_file_save_path() + \
-                                "/Reconstructed_qPAI_absorption_" + self.VOLUME_NAME + ".npy"
+        self.reconstructed_absorption = load_data_field(hdf5_path, Tags.ITERATIVE_qPAI_RESULT, self.wavelength)
 
+        # get reconstructed absorptions (2-d middle slices) at each iteration step
+        list_reconstructions_result_path = self.path_manager.get_hdf5_file_save_path() + \
+                        "/List_reconstructed_qpai_absorptions_" + str(self.wavelength) + "_" + self.VOLUME_NAME + ".npy"
         self.list_2d_reconstructed_absorptions = np.load(list_reconstructions_result_path)
-        self.reconstructed_absorption = np.load(last_iteration_result_path)
 
         # clean up files after test
         os.remove(hdf5_path)
         os.remove(list_reconstructions_result_path)
-        os.remove(last_iteration_result_path)
 
-    def visualize_qPAI_test_results(self):
+    def visualize_qpai_test_results(self):
         """
         Performs visualization of reconstruction results to allow for evaluation.
         The resulting figure displays the ground truth absorption coefficients, the corresponding reconstruction
@@ -275,5 +273,5 @@ class TestqPAIReconstruction:
 if __name__ == '__main__':
     test = TestqPAIReconstruction()
     test.setUp()
-    test.test_qPAI_reconstruction()
-    test.visualize_qPAI_test_results()
+    test.test_qpai_reconstruction()
+    test.visualize_qpai_test_results()
