@@ -69,6 +69,13 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         self.optical_settings = global_settings.get_optical_settings()
         self.iterative_method_settings = Settings(global_settings[component_settings_key])
 
+        # must be extracted due to resampling
+        self.original_spacing = global_settings[Tags.SPACING_MM]
+        if Tags.DOWNSCALE_FACTOR in self.iterative_method_settings:
+            self.downscale_factor = self.iterative_method_settings[Tags.DOWNSCALE_FACTOR]
+        else:
+            self.downscale_factor = 0.73
+
     def run(self):
         self.logger.info("Reconstructing absorption using iterative qPAI method...")
 
@@ -83,10 +90,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
             print("Tags.OPTICAL_MODEL_BINARY_PATH tag in settings cannot be found.")
 
         # debug reconstruction settings
-        if Tags.DOWNSCALE_FACTOR in self.iterative_method_settings:
-            self.logger.debug(f"Resampling factor: {self.iterative_method_settings[Tags.DOWNSCALE_FACTOR]}")
-        else:
-            self.logger.debug("Resampling factor: 0.73")
+        self.logger.debug(f"Resampling factor: {self.downscale_factor}")
 
         if Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION in self.iterative_method_settings:
             if self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION]:
@@ -115,6 +119,25 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         # run reconstruction
         reconstructed_absorption, list_of_intermediate_absorptions = self.iterative_absorption_reconstruction()
+
+        # make sure that settings are not changed due to resampling
+        if self.global_settings[Tags.SPACING_MM] != self.original_spacing:
+            self.global_settings[Tags.SPACING_MM] = self.original_spacing
+
+        if Tags.ILLUMINATION_POSITION in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+            pos = [(elem / self.downscale_factor) for elem in
+                   self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION]]
+            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION] = pos
+
+        if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+            param1 = [(elem / self.downscale_factor) for elem in
+                      self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1]]
+            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1] = param1
+
+        if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+            param2 = [(elem / self.downscale_factor) for elem in
+                      self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2]]
+            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2] = param2
 
         # save absorption update of last iteration step in hdf5 data field
         wavelength = self.global_settings[Tags.WAVELENGTH]
@@ -162,7 +185,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         # preprocessing for iterative qPAI method and mcx_adapter
         image_data, scattering, stacked_to_volume = self.preprocessing_for_iterative_qpai(image_data=image_data,
-                                                                                           scattering=scattering)
+                                                                                          scattering=scattering)
 
         # get optical properties necessary for simulation
         optical_properties_dict = self.standard_optical_properties(image_data)
@@ -276,7 +299,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
     def resampling_for_iterative_qpai(self, image_data: np.ndarray,
                                       scattering: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Downscales the input image and scattering map by a given scale to avoid inverse crime.
+        Downscales the input image and scattering map by a given scale (downscale factor) to avoid inverse crime.
 
         :param image_data: Raw input image of initial pressure.
         :param scattering: Map of scattering coefficients.
@@ -284,29 +307,28 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         """
 
         downscaling_method = "nearest"
-        scale = 0.73
 
-        if Tags.DOWNSCALE_FACTOR in self.iterative_method_settings:
-            scale = float(self.iterative_method_settings[Tags.DOWNSCALE_FACTOR])
+        downscaled_image = zoom(image_data, self.downscale_factor, order=1, mode=downscaling_method)
+        downscaled_scattering = zoom(scattering, self.downscale_factor, order=1, mode=downscaling_method)
 
-        downscaled_image = zoom(image_data, scale, order=1, mode=downscaling_method)
-        downscaled_scattering = zoom(scattering, scale, order=1, mode=downscaling_method)
-
-        new_spacing = self.global_settings[Tags.SPACING_MM] / scale
+        new_spacing = self.global_settings[Tags.SPACING_MM] / self.downscale_factor
 
         if self.global_settings[Tags.SPACING_MM] != new_spacing:
             self.global_settings[Tags.SPACING_MM] = new_spacing
 
         if Tags.ILLUMINATION_POSITION in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
-            pos = [(elem * scale) for elem in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION]]
+            pos = [(elem * self.downscale_factor) for elem in
+                   self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION]]
             self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION] = pos
 
         if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
-            param1 = [(elem * scale) for elem in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1]]
+            param1 = [(elem * self.downscale_factor) for elem in
+                      self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1]]
             self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1] = param1
 
         if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
-            param2 = [(elem * scale) for elem in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2]]
+            param2 = [(elem * self.downscale_factor) for elem in
+                      self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2]]
             self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2] = param2
 
         return downscaled_image, downscaled_scattering

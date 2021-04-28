@@ -146,7 +146,8 @@ class TestqPAIReconstruction:
         Performs visualization of reconstruction results to allow for evaluation.
         The resulting figure displays the ground truth absorption coefficients, the corresponding reconstruction
         results and the difference between both for the middle plane in y-z and x-z direction, as well as the
-        reconstruction results at each iteration step in x-z direction.
+        reconstruction results at each iteration step in x-z direction. The number of iteration should be larger
+        than four to enable visualization.
         """
 
         # compute absolute differences
