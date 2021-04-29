@@ -31,6 +31,7 @@ import inspect
 import scipy.io as sio
 from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.core.acoustic_forward_module import AcousticForwardModelBaseAdapter
+import gc
 
 
 class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
@@ -98,8 +99,17 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
         data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(
             np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength], axes=axes))
-        data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(
-            np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE][wavelength], axes=axes))
+
+        try:
+            data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
+                                                                  axes=axes)
+        except ValueError:
+            self.logger.error("No directivity_angle specified")
+        except KeyError:
+            self.logger.error("No directivity_angle specified")
+
+        del tmp_ac_data
+        gc.collect()
 
         PA_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
         PA_device.check_settings_prerequisites(self.global_settings)
@@ -122,14 +132,6 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
                   generate_dict_path(Tags.PROPERTY_SENSOR_MASK,
                                      wavelength=self.global_settings[Tags.WAVELENGTH]))
-
-        try:
-            data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
-                                                                  axes=axes)
-        except ValueError:
-            self.logger.error("No directivity_angle specified")
-        except KeyError:
-            self.logger.error("No directivity_angle specified")
 
         optical_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
@@ -157,6 +159,9 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
         data_dict["settings"] = k_wave_settings
         sio.savemat(optical_path, data_dict, long_field_names=True)
+
+        del data_dict, k_wave_settings, sensor_map, detector_positions_voxels, detector_positions_mm, PA_device
+        gc.collect()
 
         if Tags.ACOUSTIC_SIMULATION_3D in self.component_settings and \
                 self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] is True:

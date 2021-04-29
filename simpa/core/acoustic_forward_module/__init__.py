@@ -26,6 +26,7 @@ from simpa.core.simulation_components import SimulationModule
 from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
+import gc
 
 
 class AcousticForwardModelBaseAdapter(SimulationModule):
@@ -77,5 +78,6 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 
         save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
-
+        del time_series_data
+        gc.collect()
         self.logger.info("Simulating the acoustic forward process...[Done]")
