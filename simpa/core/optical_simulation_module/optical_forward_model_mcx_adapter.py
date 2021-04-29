@@ -64,6 +64,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
             input_file.write(mcx_input)
 
         del mcx_input, input_file
+        struct._clearcache()
         gc.collect()
 
         tmp_output_file = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
@@ -181,6 +182,8 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
         fluence = np.asarray(data).reshape([nx, ny, nz, frames], order='F')
         if np.shape(fluence)[3] == 1:
             fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
+
+        struct._clearcache()
 
         os.remove(tmp_input_path)
         os.remove(tmp_output_file+".mc2")
