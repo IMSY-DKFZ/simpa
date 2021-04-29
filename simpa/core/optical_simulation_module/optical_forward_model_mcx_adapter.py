@@ -28,6 +28,7 @@ from simpa.core.optical_simulation_module import OpticalForwardModuleBase
 import json
 import os
 from simpa.core.optical_simulation_module.illumination_definition import define_illumination
+import gc
 
 
 class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
@@ -52,11 +53,19 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
         # create a binary of the volume
 
         optical_properties_list = list(np.reshape(op_array, op_array.size, "F"))
+        del absorption_cm, absorption_mm, scattering_cm, scattering_mm, op_array
+        gc.collect()
         mcx_input = struct.pack("f" * len(optical_properties_list), *optical_properties_list)
+        del optical_properties_list
+        gc.collect()
         tmp_input_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
                          self.global_settings[Tags.VOLUME_NAME]+".bin"
         with open(tmp_input_path, "wb") as input_file:
             input_file.write(mcx_input)
+
+        del mcx_input, input_file
+        gc.collect()
+
         tmp_output_file = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
                           self.global_settings[Tags.VOLUME_NAME]+"_output"
 
