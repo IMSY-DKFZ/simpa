@@ -25,7 +25,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
-from simpa.io_handling import load_data_field
+from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.simulation import simulate
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, GaussianNoiseProcessingComponent
