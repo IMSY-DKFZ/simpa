@@ -36,7 +36,7 @@ from simpa.utils import Settings
 from simpa.io_handling import save_data_field, load_data_field
 from simpa.utils import TISSUE_LIBRARY
 from simpa.core.simulation_components import ProcessingComponent
-
+import matplotlib.pyplot as plt
 
 class IterativeqPAIProcessingComponent(ProcessingComponent):
     """
@@ -91,19 +91,6 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         # debug reconstruction settings
         self.logger.debug(f"Resampling factor: {self.downscale_factor}")
-
-        if Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION in self.iterative_method_settings:
-            if self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION]:
-                self.logger.debug("Regularization: constant")
-                if Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA in self.iterative_method_settings:
-                    self.logger.debug(f"Regularization parameter:"
-                            f" {self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA]}")
-                else:
-                    self.logger.debug("Regularization parameter: 0.01")
-            else:
-                self.logger.debug("Regularization: SNR/spatially dependent")
-        else:
-            self.logger.debug("Regularization: SNR/spatially dependent")
 
         if Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER in self.iterative_method_settings:
             self.logger.debug(f"Maximum number of iterations:"
@@ -192,7 +179,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         anisotropy = optical_properties_dict["anisotropy"]
 
         # regularization parameter sigma
-        sigma = self.regularization_sigma(image_data)
+        sigma = self.regularization_sigma(image_data, stacked_to_volume)
 
         # initialization
         absorption = 1e-16 * np.ones(np.shape(image_data))
@@ -270,12 +257,19 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         """
 
         if len(np.shape(image_data)) == 2:
+            light_source = self.optical_settings[Tags.ILLUMINATION_TYPE]
+            if Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA in self.iterative_method_settings:
+                sigma = self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA]
+            else:
+                sigma = 1e-2
+            self.logger.critical("Input data is 2 dimensional and will be stacked to 3 dimensions. "
+                                 "Algorithm is attempted with a %s illumination source and a "
+                                 "constant sigma of %s. User caution is advised!" %(light_source, sigma))
             stacked_to_volume = True
             image_data = self.stacking_to_3d(image_data)
+            scattering = self.stacking_to_3d(scattering)
         else:
             stacked_to_volume = False
-        if len(np.shape(scattering)) == 2:
-            scattering = self.stacking_to_3d(scattering)
 
         image_data, scattering = self.resampling_for_iterative_qpai(image_data, scattering)
 
@@ -293,7 +287,6 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         num_repeats = int(self.global_settings[Tags.DIM_VOLUME_Y_MM] / spacing)
 
         stacked_volume = np.stack([input_data] * num_repeats, axis=1)
-
         return stacked_volume
 
     def resampling_for_iterative_qpai(self, image_data: np.ndarray,
@@ -333,14 +326,16 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         return downscaled_image, downscaled_scattering
 
-    def regularization_sigma(self, input_image: np.ndarray) -> [np.ndarray, int, float]:
+    def regularization_sigma(self, input_image: np.ndarray, stacked_to_volume) -> [np.ndarray, int, float]:
         """
         Computes spatial (same shape as input image) or constant regularization parameter sigma.
 
         :param input_image: Noisy input image.
+        :param stacked_to_volume: If True input data was 2 dimensional and a constant sigma should be used.
         :return: Regularization parameter.
         :raises: ValueError: if estimated noise is zero, so SNR cannot be computed.
         """
+
         noise = float(estimate_sigma(input_image))
 
         if noise == 0.0:
@@ -353,11 +348,24 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
                 sigma = 1e-2
                 if Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA in self.iterative_method_settings:
                     sigma = self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA]
+                self.logger.debug(f"Regularization parameter: {sigma}")
+            elif stacked_to_volume:
+                sigma = 1e-2
+                if Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA in self.iterative_method_settings:
+                    sigma = self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA]
+                self.logger.debug(f"Regularization parameter: {sigma}")
             else:
+                self.logger.debug("Regularization: SNR/spatially dependent")
                 sigma = 1 / signal_noise_ratio
                 sigma[sigma > 1e8] = 1e8
                 sigma[sigma < 1e-8] = 1e-8
+        elif stacked_to_volume:
+            sigma = 1e-2
+            if Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA in self.iterative_method_settings:
+                sigma = self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA]
+            self.logger.debug(f"Regularization parameter: {sigma}")
         else:
+            self.logger.debug("Regularization: SNR/spatially dependent")
             sigma = 1 / signal_noise_ratio
             sigma[sigma > 1e8] = 1e8
             sigma[sigma < 1e-8] = 1e-8
