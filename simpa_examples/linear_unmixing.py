@@ -37,14 +37,15 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
-path_manager = PathManager()
+path_manager = PathManager("/home/p253n/Patricia/simpa/path_config.env")
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
 VOLUME_HEIGHT_IN_MM = 60
-SPACING = 0.5
+SPACING = 5
 RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
+LU_WAVELENGTHS = [750, 800, 850]
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
@@ -113,7 +114,7 @@ general_settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.WAVELENGTHS: [750, 850]
+    Tags.WAVELENGTHS: LU_WAVELENGTHS
 
     # Simulation Device
     # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
@@ -135,16 +136,20 @@ settings.set_optical_settings({
 
 settings["linear_unmixing"] = {
     Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
-    Tags.WAVELENGTHS: [750, 850]
+    Tags.LINEAR_UNMIXING_CHROMOPHORE_DICT: {  # Replace by tags of every present absorber in spectra_library
+        "oxy": LU_WAVELENGTHS,
+        "deoxy": [750, 850]#LU_WAVELENGTHS
+    },
+    Tags.WAVELENGTHS: LU_WAVELENGTHS
 }
 
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
-    OpticalForwardModelMcxAdapter(settings),
-    lsu.LinearUnmixingProcessingComponent(settings, "linear_unmixing")
+    OpticalForwardModelMcxAdapter(settings)
 ]
-
 simulate(pipeline, settings)
+
+lsu.LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]

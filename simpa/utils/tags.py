@@ -1271,3 +1271,11 @@ class Tags:
     Name of the data field in which the linear unmixing result will be stored.\n
     Usage: naming convention
     """
+
+
+
+    LINEAR_UNMIXING_CHROMOPHORE_DICT = "chromophore_dict"
+    """
+    List of wavelengths for oxy and deoxy chromophores.\n
+    Usage: processing
+    """

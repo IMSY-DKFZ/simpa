@@ -25,6 +25,7 @@ from simpa.utils import Tags
 from simpa.utils import EPS
 from simpa.io_handling import load_data_field, save_data_field
 from simpa.core.simulation_components import ProcessingComponent
+from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -51,9 +52,44 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
             raise KeyError(f"The field {Tags.DATA_FIELD} must be set in order to use the gaussian_noise field.")
 
         data_field = self.component_settings[Tags.DATA_FIELD]
-        wavelength = self.global_settings[Tags.WAVELENGTH]
-        #data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+        wavelengths = self.global_settings[Tags.WAVELENGTHS]
+        chromo_dict = self.component_settings[Tags.LINEAR_UNMIXING_CHROMOPHORE_DICT]
 
+        spacing = self.global_settings[Tags.SPACING_MM]
+        x_dim = int(self.global_settings[Tags.DIM_VOLUME_X_MM] / spacing)
+        y_dim = int(self.global_settings[Tags.DIM_VOLUME_Y_MM] / spacing)
+        z_dim = int(self.global_settings[Tags.DIM_VOLUME_Z_MM] / spacing)
+
+        data_array = np.empty((len(wavelengths), x_dim, y_dim, z_dim))
+        for i in range(len(wavelengths)):
+            data_array[i, :, :, :] = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelengths[i])
+
+        print("Wavelengths:", wavelengths)
+        print("Chromo_dict:", chromo_dict)
+
+        ### TODO: except when wavelength is larger/smaller than allowed
+        chromo_absorption_dict = {}
+        for chromophore in chromo_dict.keys():
+            if chromophore == "oxy":
+                spectra = SPECTRAL_LIBRARY.get_spectrum_by_name("Oxyhemoglobin")
+                chromo_absorption_dict["oxy"] = [spectra.get_absorption_for_wavelength(wavelength) for wavelength in chromo_dict[chromophore]]
+            elif chromophore == "deoxy":
+                spectra = SPECTRAL_LIBRARY.get_spectrum_by_name("Deoxyhemoglobin")
+                chromo_absorption_dict["deoxy"] = [spectra.get_absorption_for_wavelength(wavelength) for wavelength in chromo_dict[chromophore]]
+
+        print("Abs_dict:", chromo_absorption_dict)
+
+        pinv = create_piv_absorption_matrix(chromo_dict, wavelengths, chromo_absorption_dict)
+        print("shape pinv:", np.shape(pinv))
+        unmixing_result = flupai(pinv, data_array)
+        print("shape un result:", np.shape(unmixing_result))
+
+        result = unmixing_result[0][:, :, 4] / (unmixing_result[0][:, :, 4] + unmixing_result[1][:, :, 4])
+        print("shape result:", np.shape(result))
+        plt.imshow(result)
+        plt.colorbar()
+        plt.show()
+g
         # testing
         #print('Shape data_array: ', np.shape(data_array))
 
@@ -67,7 +103,7 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
 # +++++ COPIED FROM CMD TOOLS
 
 
-def create_piv_absorption_matrix(xmlFile, spec='iTheraSpectrum.'):
+def create_piv_absorption_matrix(chromo_dict, wavelengths, chromo_absorption_dict):
     """ Method that returns a str list of choosen chromophores, which are read out of a xml file as well as the
     pseudo inverse of the  absorption (endmember) matrix.
 
@@ -78,43 +114,21 @@ def create_piv_absorption_matrix(xmlFile, spec='iTheraSpectrum.'):
     :return: pseudo inverse, str. list of chromophores in 'correct' order
     """
     # read spectrum and xml file
-    settings = su_xml_reader(xmlFile)
-    try:
-        spectrum = pd.read_pickle('gratzerSpectrum.pkl')
-    except Exception as e:
-        print(e)
-        print('Spectrum not found at the script path.')
-        sys.exit(1)
-    wavelengths = np.array(get_wavelengths_ordered(xmlFile).split(' ')).astype(int)
-    chromophores = []
-    chromoWaves = []
     numberWavelengths = len(wavelengths)
-    print('Wavelengths: ', wavelengths)
 
-    # search for valid chromophores and append a name and wavelength list for each chromophore
-    for key, value in zip(settings.keys(), settings.values()):
-        if type(value) != bool:
-            chromophores.append(key)
-            chromoWaves.append(np.array(value).astype(int))
-
-    numberChromophores = len(chromophores)
+    numberChromophores = len(chromo_dict.keys())
     endmemberMatrix = np.zeros((numberWavelengths, numberChromophores))
 
     # write absorption data fpr each chromophore and the corresponding wavelength into an array (matrix)
-    for chrom in range(numberChromophores):
-        # cw is a counter to ensure that not selected wavelengths of a chromophore lead to a 0 as entry in the
-        # absorption matrix. Cw therefor can be seen as matching number between all wavelengths and the selected ones.
-        cw = 0
+    for index, key in enumerate(chromo_dict.keys()):
         for wave in range(numberWavelengths):
-            if wavelengths[wave] == chromoWaves[chrom][cw]:
-                endmemberMatrix[wave][chrom] = spectrum[chromophores[chrom]][chromoWaves[chrom][cw]]
-                cw += 1
-            if cw == len(chromoWaves[chrom]):
-                break
-    #print('EndmemberMatrix: ', endmemberMatrix)
+            if wavelengths[wave] in chromo_dict[key]:
+                endmemberMatrix[wave][index] = chromo_absorption_dict[key][chromo_dict[key].index(wavelengths[wave])]
+
+    print('EndmemberMatrix: ', endmemberMatrix)
     #print('Chromophores: ', chromophores)
     # returns the peusdo inverse of the absorption (endmember) matrix and the str list of chromophores.
-    return linalg.pinv(endmemberMatrix), chromophores
+    return linalg.pinv(endmemberMatrix)
 
 
 def flupai(pseudo_inverse_absorption_matrix, data):
@@ -132,12 +146,15 @@ def flupai(pseudo_inverse_absorption_matrix, data):
     """
     # reshape image data to [number of wavelength, number of pixel]
     # swap x and z axis (x,y,z--> z,y,x) because z contains the wavelength information
-    dims = np.shape(data)
     try:
-        reshapedData = np.reshape(np.swapaxes(data, axis1=0, axis2=2), (dims[2], -1))
+        dims_raw = np.shape(data)
+        print("dims_raw:", dims_raw)
+        reshapedData = np.reshape(data, (dims_raw[0], -1))
+        dims_post = np.shape(reshapedData)
+        print("dims_post", dims_post)
     except:
         print('FLUPAI failed probably caused by wrong input dimensions of the input data.')
-        print('Input dimension: ', dims)
+        print('Input dimension: ', dims_raw)
         print('FLUPAI expects a 3 dimensional numpy array, where first and second dimension are'
               'representing a single wavelength PA image, and the third dimension represents the wavelengths.')
         sys.exit('Reshaping input data failed!!!')
@@ -148,7 +165,7 @@ def flupai(pseudo_inverse_absorption_matrix, data):
         output = np.matmul(pseudo_inverse_absorption_matrix, reshapedData)
     except Exception as e:
         print('Matrix multiplication "PI * b" failed. Pseudo inverse (PI) and input data (b) have matching sizes.')
-        print('Input data z-dimension: ', dims(2))
+        print('Input data z-dimension: ', dims_raw[0])
         print('Pseudo Inverse number of wavelengths: ', len(pseudo_inverse_absorption_matrix[0]))
         print(e)
         sys.exit('Matrix multiplication failed!!!')
@@ -158,5 +175,5 @@ def flupai(pseudo_inverse_absorption_matrix, data):
     chromophores = []
     for chromophore in range(numberChromophores):
         # swap "x" and "y" axis (y,x --> x,y) to undo previous change
-        chromophores.append(np.swapaxes(np.reshape(output[chromophore, :], (dims[1], dims[0], 1)), axis1=0, axis2=1))
+        chromophores.append(np.reshape(output[chromophore, :], (dims_raw[1], dims_raw[2], dims_raw[3])))
     return chromophores
