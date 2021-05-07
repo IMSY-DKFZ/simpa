@@ -36,7 +36,7 @@ from simpa.core.reconstruction_module.reconstruction_module_signed_delay_multipl
 from simpa.core.volume_creation_module.volume_creation_module_model_based_adapter import \
     VolumeCreationModelModelBasedAdapter
 from simpa.processing.noise_processing_components import GaussianNoiseProcessingComponent
-
+from simpa import reconstruct_signed_delay_multiply_and_sum_pytorch
 
 class SignedDelayMultiplyAndSumReconstruction:
     """
@@ -126,40 +126,6 @@ class SignedDelayMultiplyAndSumReconstruction:
             Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
         }
 
-
-    def test_reconstruction_of_simulation(self):
-
-        self.add_msot_specific_settings()
-
-        SIMUATION_PIPELINE = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
-            OpticalForwardModelMcxAdapter(self.settings),
-            GaussianNoiseProcessingComponent(self.settings, "noise_initial_pressure"),
-            AcousticForwardModelKWaveAdapter(self.settings),
-            ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(self.settings)
-        ]
-
-        simulate(SIMUATION_PIPELINE, self.settings)
-
-
-        reconstructed_image_path = generate_dict_path(
-            Tags.RECONSTRUCTED_DATA,
-            wavelength=self.settings[Tags.WAVELENGTH])
-
-        reconstructed_image = load_hdf5(
-            self.settings[Tags.SIMPA_OUTPUT_PATH],
-            reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
-
-        initial_pressure = load_data_field(
-            self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=self.settings[Tags.WAVELENGTH])
-
-        plt.subplot(1, 2, 1)
-        plt.title("Initial pressure")
-        plt.imshow(np.flipud(np.rot90(initial_pressure[:, 20, :])))
-        plt.subplot(1, 2, 2)
-        plt.title("Reconstructed image")
-        plt.imshow(np.rot90(reconstructed_image, -1))
-        plt.show()
 
     def create_example_tissue(self):
         """
@@ -295,7 +261,57 @@ class SignedDelayMultiplyAndSumReconstruction:
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
 
 
+    def test_reconstruction_of_simulation(self):
+
+        self.add_msot_specific_settings()
+
+        SIMUATION_PIPELINE = [
+            VolumeCreationModelModelBasedAdapter(self.settings),
+            OpticalForwardModelMcxAdapter(self.settings),
+            GaussianNoiseProcessingComponent(self.settings, "noise_initial_pressure"),
+            AcousticForwardModelKWaveAdapter(self.settings),
+            ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(self.settings)
+        ]
+
+        simulate(SIMUATION_PIPELINE, self.settings)
+
+
+        reconstructed_image_path = generate_dict_path(
+            Tags.RECONSTRUCTED_DATA,
+            wavelength=self.settings[Tags.WAVELENGTH])
+
+        reconstructed_image = load_hdf5(
+            self.settings[Tags.SIMPA_OUTPUT_PATH],
+            reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
+
+        self.plot_reconstruction_compared_with_initial_pressure(reconstructed_image, "Reconstructed image using adapter")
+
+    def test_convenience_function(self):
+        # Load simulated time series data
+        time_series_sensor_data = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
+                                                  Tags.TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
+
+        # reconstruct image using convenience function
+        reconstructed_image = reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data, self.settings)
+
+        self.plot_reconstruction_compared_with_initial_pressure(reconstructed_image, "Reconstructed image using convenience function")
+
+    def plot_reconstruction_compared_with_initial_pressure(self, reconstructed_image, reconstructed_title):
+        initial_pressure = load_data_field(
+            self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+            wavelength=self.settings[Tags.WAVELENGTH])
+
+        plt.subplot(1, 2, 1)
+        plt.title("Initial pressure")
+        plt.imshow(np.flipud(np.rot90(initial_pressure[:, 20, :])))
+        plt.subplot(1, 2, 2)
+        plt.title(reconstructed_title)
+        plt.imshow(np.rot90(reconstructed_image, -1))
+        plt.show()
+
+
 if __name__ == '__main__':
     test = SignedDelayMultiplyAndSumReconstruction()
     test.setUp()
     test.test_reconstruction_of_simulation()
+    test.test_convenience_function()
