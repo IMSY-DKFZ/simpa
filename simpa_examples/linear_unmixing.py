@@ -113,7 +113,7 @@ general_settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.WAVELENGTHS: [798]
+    Tags.WAVELENGTHS: [750, 850]
 
     # Simulation Device
     # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
@@ -132,17 +132,16 @@ settings.set_optical_settings({
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
 })
-settings["noise_model_1"] = {
-    Tags.NOISE_MEAN: 1,
-    Tags.NOISE_STD: 0.1,
-    Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
+
+settings["linear_unmixing"] = {
     Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
-    Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
+    Tags.WAVELENGTHS: [750, 850]
 }
 
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
-    lsu.LinearUnmixingProcessingComponent(settings, "noise_model_1")
+    OpticalForwardModelMcxAdapter(settings),
+    lsu.LinearUnmixingProcessingComponent(settings, "linear_unmixing")
 ]
 
 simulate(pipeline, settings)
