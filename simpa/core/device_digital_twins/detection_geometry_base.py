@@ -112,7 +112,7 @@ class LinearDetector(DetectionGeometryBase):
         super().__init__(pitch_mm=0.5,
                          number_detector_elements=100,
                          detector_element_width_mm=0.24,
-                         detector_element_length_mm=13,
+                         detector_element_length_mm=0.5,
                          center_frequency_hz=3.96e6,
                          bandwidth_percent=55,
                          sampling_frequency_mhz=40,

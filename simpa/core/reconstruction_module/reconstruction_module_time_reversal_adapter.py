@@ -67,7 +67,6 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
 
         pa_device = detection_geometry
         pa_device.check_settings_prerequisites(self.global_settings)
-        pa_device.adjust_simulation_volume_and_settings(self.global_settings)
         detector_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
         detector_positions_voxels = np.round(detector_positions / self.global_settings[Tags.SPACING_MM]).astype(int)
 
@@ -80,13 +79,13 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
                 self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
             sizes = (volume_z_dim, volume_x_dim)
             sensor_map = np.zeros(sizes)
-            sensor_map[detector_positions_voxels[:, 2], detector_positions_voxels[:, 0]] = 1
+            sensor_map[detector_positions_voxels[:, 2]+1, detector_positions_voxels[:, 0]+1] = 1
         else:
             sizes = (volume_z_dim, volume_y_dim, volume_x_dim)
             sensor_map = np.zeros(sizes)
-            sensor_map[detector_positions_voxels[:, 2],
-                       detector_positions_voxels[:, 1],
-                       detector_positions_voxels[:, 0]] = 1
+            sensor_map[detector_positions_voxels[:, 2]+1,
+                       detector_positions_voxels[:, 1]+1,
+                       detector_positions_voxels[:, 0]+1] = 1
 
         possible_acoustic_properties = [Tags.PROPERTY_SPEED_OF_SOUND,
                                         Tags.PROPERTY_DENSITY,

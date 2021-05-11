@@ -104,7 +104,8 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         PA_device.check_settings_prerequisites(self.global_settings)
         detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(
             self.global_settings)
-        detector_positions_voxels = np.round(detector_positions_mm / self.global_settings[Tags.SPACING_MM]).astype(int)
+        # Matlab indexes start at 1
+        detector_positions_voxels = np.round(detector_positions_mm / self.global_settings[Tags.SPACING_MM]).astype(int) + 1
 
         self.logger.debug(f"Number of detector elements: {len(detector_positions_voxels)}")
 

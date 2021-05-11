@@ -25,5 +25,5 @@ from simpa.core.reconstruction_module import ReconstructionAdapterBase
 
 class ReconstructionModuleTestAdapter(ReconstructionAdapterBase):
 
-    def reconstruction_algorithm(self, time_series_sensor_data):
+    def reconstruction_algorithm(self, time_series_sensor_data, device):
         return time_series_sensor_data / 10 + 5
