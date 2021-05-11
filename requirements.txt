@@ -1,16 +1,16 @@
-matplotlib
-numpy
-scipy
-pynrrd
-scikit-image
-xmltodict
-h5py
-pandas
-sphinx==2.4.4
-rst2pdf
-m2r
-mistune==0.8.4
-coverage
-deprecated
-torch
-python-dotenv
+matplotlib==3.3.2       # Uses PSF-License (MIT compatible)
+numpy==1.19.2           # Uses BSD-License (MIT compatible)
+scipy==1.5.2            # Uses BSD-like-License (MIT compatible)
+pynrrd==0.4.2           # Uses MIT-License (MIT compatible)
+scikit-image==0.17.2    # Uses BSD-License (MIT compatible)
+xmltodict==0.12.0       # Uses MIT-License (MIT compatible)
+h5py==2.10.0            # Uses BSD-License (MIT compatible)
+pandas==1.1.3           # Uses BSD-License (MIT compatible)
+sphinx==2.4.4           # Uses BSD-License (MIT compatible)
+rst2pdf==0.98           # Uses MIT-License (MIT compatible)
+m2r==0.2.1              # Uses MIT-License (MIT compatible)
+mistune==0.8.4          # Uses BSD-License (MIT compatible)
+coverage==5.4           # Uses Apache 2.0-License (MIT compatible)
+deprecated==1.2.11      # Uses MIT-License (MIT compatible)
+torch==1.7.1            # Uses BSD-License (MIT compatible)
+python-dotenv==0.17.0   # Uses BSD-License (MIT compatible)
