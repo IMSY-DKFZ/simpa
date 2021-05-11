@@ -22,12 +22,12 @@
 # SOFTWARE.
 import numpy as np
 
-from simpa.core.device_digital_twins.pai_device_base import PAIDeviceBase
+from simpa.core.device_digital_twins.digital_device_base import PhotoacousticDevice
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 
 
-class InVision256TF(PAIDeviceBase):
+class InVision256TF(PhotoacousticDevice):
     """
     This class represents a digital twin of the InVision 256-TF, manufactured by iThera Medical, Munich, Germany
     (https://www.ithera-medical.com/products/msot-invision/). It is based on the real specifications of the device, but

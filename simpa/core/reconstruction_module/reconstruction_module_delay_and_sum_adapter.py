@@ -23,7 +23,6 @@
 from simpa.utils import Tags
 from simpa.core.reconstruction_module import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_data_field
-from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import torch
 from simpa.utils.settings import Settings

@@ -25,6 +25,7 @@ from abc import abstractmethod
 from simpa.core.simulation_components import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
+from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
 
 
 class OpticalForwardModuleBase(SimulationModule):
@@ -37,18 +38,19 @@ class OpticalForwardModuleBase(SimulationModule):
         self.component_settings = self.global_settings.get_optical_settings()
 
     @abstractmethod
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry):
         """
         A deriving class needs to implement this method according to its model.
 
         :param absorption_cm: Absorption in units of per centimeter
         :param scattering_cm: Scattering in units of per centimeter
         :param anisotropy: Dimensionless scattering anisotropy
+        :param illumination_geometry: A device that represents a detection geometry
         :return: Fluence in units of J/cm^2
         """
         pass
 
-    def run(self):
+    def run(self, device):
         """
         Call this method to invoke the simulation process.
 
@@ -72,9 +74,33 @@ class OpticalForwardModuleBase(SimulationModule):
         scattering = optical_properties[Tags.PROPERTY_SCATTERING_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
         anisotropy = optical_properties[Tags.PROPERTY_ANISOTROPY][str(self.global_settings[Tags.WAVELENGTH])]
 
-        fluence = self.forward_model(absorption_cm=absorption,
-                                     scattering_cm=scattering,
-                                     anisotropy=anisotropy)
+        _device = None
+        if isinstance(device, IlluminationGeometryBase):
+            _device = device
+        elif isinstance(device, PhotoacousticDevice):
+            _device = device.get_illumination_geometry()
+        else:
+            raise TypeError(f"The optical forward modelling does not support devices of type {type(device)}")
+
+        if isinstance(_device, list):
+            # per convention this now has at least two elements
+            fluence = self.forward_model(absorption_cm=absorption,
+                                         scattering_cm=scattering,
+                                         anisotropy=anisotropy,
+                                         illumination_geometry=_device[0])
+            for idx in range(len(_device)):
+                fluence += self.forward_model(absorption_cm=absorption,
+                                             scattering_cm=scattering,
+                                             anisotropy=anisotropy,
+                                             illumination_geometry=_device[idx+1])
+
+            fluence = fluence / len(_device)
+
+        else:
+            fluence = self.forward_model(absorption_cm=absorption,
+                                         scattering_cm=scattering,
+                                         anisotropy=anisotropy,
+                                         illumination_geometry=_device)
 
         optical_properties = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], properties_path)
         absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]

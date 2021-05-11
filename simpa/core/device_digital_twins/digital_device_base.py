@@ -23,6 +23,7 @@
 from abc import abstractmethod, ABC
 from simpa.log import Logger
 from simpa.utils import Settings
+import numpy as np
 
 
 class DigitalDeviceTwinBase:
@@ -47,11 +48,9 @@ class DigitalDeviceTwinBase:
         """
         pass
 
-    @abstractmethod
-    def adjust_simulation_volume_and_settings(self, global_settings: Settings) -> Settings:
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
         """
-        In case that the PAI device needs space for the arrangement of detectors or illuminators in the volume,
-        this method will update the volume accordingly.
+        Defines the default position of this probe in the volume in mm
         """
         pass
 
@@ -86,4 +85,20 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
 
         return self.illumination_geometries
 
+    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
+        _result = True
+        if self.detection_geometry is not None \
+                and not self.detection_geometry.check_settings_prerequisites(global_settings):
+            _result = False
+        for illumination_geometry in self.illumination_geometries:
+            if illumination_geometry is not None \
+                    and not illumination_geometry.check_settings_prerequisites(global_settings):
+                _result = False
+        return _result
 
+    @abstractmethod
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        """
+        Returns the default probe position in case none was given in the Settings dict.
+        """
+        pass

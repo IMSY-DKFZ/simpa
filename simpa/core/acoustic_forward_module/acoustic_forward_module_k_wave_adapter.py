@@ -29,7 +29,6 @@ from simpa.utils.settings import Settings
 import os
 import inspect
 import scipy.io as sio
-from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.core.acoustic_forward_module import AcousticForwardModelBaseAdapter
 
 
@@ -76,7 +75,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
     """
 
-    def forward_model(self) -> np.ndarray:
+    def forward_model(self, detection_geometry) -> np.ndarray:
 
         optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
                                           wavelength=self.global_settings[Tags.WAVELENGTH])
@@ -101,7 +100,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         data_dict[Tags.OPTICAL_MODEL_FLUENCE] = np.flip(
             np.rot90(data_dict[Tags.OPTICAL_MODEL_FLUENCE][wavelength], axes=axes))
 
-        PA_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+        PA_device = detection_geometry
         PA_device.check_settings_prerequisites(self.global_settings)
         detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(
             self.global_settings)

@@ -35,31 +35,7 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
         super().__init__()
 
     @abstractmethod
-    def get_illuminator_definition(self, global_settings: Settings) -> dict:
-        """
-        Defines the illumination geometry of the device in the settings dictionary.
-        """
-        pass
-
-
-class SlitIlluminationGeometry(IlluminationGeometryBase, ABC):
-    """
-    This class represents a slit illumination geometry.
-    The device position is defined as the middle of the slit.
-    """
-    def __init__(self, slit_vector_mm: np.ndarray, direction: np.ndarray):
-        """
-        Initializes a slit illumination source.
-        :param slit_vector_mm: Defines the slit in vector form. For example a slit along the x-axis with length 5mm
-        would be defined as np.array([5, 0, 0])
-        :param direction: Direction vector in which the slit illuminates.
-        """
-        super().__init__()
-
-        self.slit_vector_mm = slit_vector_mm
-        self.direction = direction / np.linalg.norm(direction)
-
-    def get_illuminator_definition(self, global_settings: Settings) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings: Settings) -> dict:
         """
         IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
         mcx simulation tool to represent the illumination geometry of this device.
@@ -67,6 +43,43 @@ class SlitIlluminationGeometry(IlluminationGeometryBase, ABC):
         :param global_settings: The global_settings instance containing the simulation instructions
         :return: Dictionary that includes all parameters needed for mcx.
         """
+        pass
+
+    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
+        return True
+
+    def adjust_simulation_volume_and_settings(self, global_settings: Settings) -> Settings:
+        return global_settings
+
+
+class SlitIlluminationGeometry(IlluminationGeometryBase):
+    """
+    This class represents a slit illumination geometry.
+    The device position is defined as the middle of the slit.
+    """
+    def __init__(self, slit_vector_mm: list = None, direction_vector_mm: list = None):
+        """
+        Initializes a slit illumination source.
+        :param slit_vector_mm: Defines the slit in vector form. For example a slit along the x-axis with length 5mm
+            would be defined as [5, 0, 0]
+        :param direction_vector_mm: Direction vector in which the slit illuminates.
+            Defined analogous to the slit vector.
+        """
+        super().__init__()
+
+        if slit_vector_mm is None:
+            slit_vector_mm = [5, 0, 0]
+
+        if direction_vector_mm is None:
+            direction_vector_mm = [0, 0, 1]
+
+        self.slit_vector_mm = slit_vector_mm
+        direction_vector_mm[0] = direction_vector_mm[0] / np.linalg.norm(direction_vector_mm)
+        direction_vector_mm[1] = direction_vector_mm[1] / np.linalg.norm(direction_vector_mm)
+        direction_vector_mm[2] = direction_vector_mm[2] / np.linalg.norm(direction_vector_mm)
+        self.direction_vector_norm = direction_vector_mm
+
+    def get_mcx_illuminator_definition(self, global_settings: Settings) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_SLIT
 
         nx = global_settings[Tags.DIM_VOLUME_X_MM]
@@ -81,9 +94,11 @@ class SlitIlluminationGeometry(IlluminationGeometryBase, ABC):
                                round(ny / (spacing * 2.0)) + 0.5,
                                spacing]  # The z-position
 
-        device_position = np.subtract(device_position, 0.5*self.slit_vector_mm)
+        device_position[0] = device_position[0] - 0.5 * self.slit_vector_mm[0]
+        device_position[1] = device_position[1] - 0.5 * self.slit_vector_mm[1]
+        device_position[2] = device_position[2] - 0.5 * self.slit_vector_mm[2]
 
-        source_direction = [0, 0, 1]
+        source_direction = self.direction_vector_norm
 
         source_param1 = [self.slit_vector_mm[0]/spacing, self.slit_vector_mm[1]/spacing,
                          self.slit_vector_mm[2]/spacing, 0]

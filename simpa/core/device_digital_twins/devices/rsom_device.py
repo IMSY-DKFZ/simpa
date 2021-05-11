@@ -20,13 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.device_digital_twins.pai_device_base import PAIDeviceBase
+from simpa.core.device_digital_twins.digital_device_base import PhotoacousticDevice
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 import numpy as np
 
 
-class RSOMExplorerP50(PAIDeviceBase):
+class RSOMExplorerP50(PhotoacousticDevice):
     """
     This class represents an approximation of the Raster-scanning Optoacoustic Mesoscopy (RSOM) device
     built by iThera Medical (Munich, Germany). Please refer to the companie's website for more information

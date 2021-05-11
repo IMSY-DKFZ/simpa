@@ -24,7 +24,6 @@ from simpa.utils import Tags, SaveFilePaths
 from simpa.utils.settings import Settings
 from simpa.core.reconstruction_module import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_hdf5
-from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import scipy.io as sio
 import subprocess
@@ -47,7 +46,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
 
     """
 
-    def get_acoustic_properties(self, input_data: dict):
+    def get_acoustic_properties(self, input_data: dict, detection_geometry):
         """
         This method extracts the acoustic tissue properties from the settings dictionary and
         amends the information to the input_data.
@@ -66,7 +65,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
         else:
             axes = (0, 2)
 
-        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+        pa_device = detection_geometry
         pa_device.check_settings_prerequisites(self.global_settings)
         pa_device.adjust_simulation_volume_and_settings(self.global_settings)
         detector_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
@@ -106,7 +105,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
 
         return input_data
 
-    def reorder_time_series_data(self, time_series_sensor_data):
+    def reorder_time_series_data(self, time_series_sensor_data, detection_geometry):
         """
         Reorders the time series data to match the order that is assumed by kwave
         during image reconstruction with TimeReversal.
@@ -126,19 +125,19 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
                                   positions[i, 1] * 100000 +
                                   positions[i, 2])
             return _sort_order
-        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+        pa_device = detection_geometry
         detector_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(
             self.global_settings)
         index_array = np.argsort(sort_order(detector_positions))
         return time_series_sensor_data[index_array]
 
-    def reconstruction_algorithm(self, time_series_sensor_data):
+    def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry):
         input_data = dict()
 
-        time_series_sensor_data = self.reorder_time_series_data(time_series_sensor_data)
+        time_series_sensor_data = self.reorder_time_series_data(time_series_sensor_data, detection_geometry)
 
         input_data[Tags.TIME_SERIES_DATA] = time_series_sensor_data
-        input_data = self.get_acoustic_properties(input_data)
+        input_data = self.get_acoustic_properties(input_data, detection_geometry)
         acoustic_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
         possible_k_wave_parameters = [Tags.SPACING_MM, Tags.UPSCALE_FACTOR,
@@ -146,7 +145,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
 
-        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+        pa_device = detection_geometry
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
             Tags.SENSOR_DIRECTIVITY_SIZE_M: pa_device.detector_element_width_mm / 1000,

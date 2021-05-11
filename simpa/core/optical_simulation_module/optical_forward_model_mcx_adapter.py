@@ -27,7 +27,6 @@ from simpa.utils import Tags
 from simpa.core.optical_simulation_module import OpticalForwardModuleBase
 import json
 import os
-from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.core.optical_simulation_module.illumination_definition import define_illumination
 
 
@@ -42,7 +41,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
 
     """
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry):
 
         absorption_mm = absorption_cm / 10
         scattering_mm = scattering_cm / 10
@@ -72,33 +71,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
             dt = 5e-09
         frames = int(time/dt)
 
-        if Tags.DIGITAL_DEVICE in self.component_settings:
-            digital_device = DEVICE_MAP[self.component_settings[Tags.DIGITAL_DEVICE]]
-            source = digital_device.get_illuminator_definition(self.global_settings)
-        else:
-            source = {
-                  "Pos": [
-                      int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
-                  ],
-                  "Dir": [
-                      0,
-                      0.342027,
-                      0.93969
-                  ],
-                  "Type": "pasetup",
-                  "Param1": [
-                      24.5 / self.global_settings[Tags.SPACING_MM],
-                      0,
-                      0,
-                      22.8 / self.global_settings[Tags.SPACING_MM]
-                  ],
-                  "Param2": [
-                      0,
-                      0,
-                      0,
-                      0
-                  ]
-              }
+        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings)
 
         settings_dict = {
             "Session": {
@@ -112,12 +85,6 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
                 "T1": time,
                 "Dt": dt
             },
-            # "Optode": {
-            # 	"Source": {
-            # 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
-            # 		"Dir": [0,0,1]
-            # 	}
-            # },
             "Optode": {
               "Source": source
             },

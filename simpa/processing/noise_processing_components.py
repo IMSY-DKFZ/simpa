@@ -40,7 +40,7 @@ class GaussianNoiseProcessingComponent(ProcessingComponent):
            **data_field (required)
         """
 
-    def run(self):
+    def run(self, device):
         self.logger.info("Applying Gaussian Noise Model...")
         mean = 0
         std = 1
