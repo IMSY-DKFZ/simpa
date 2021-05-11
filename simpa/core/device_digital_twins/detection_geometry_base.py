@@ -22,16 +22,27 @@
 
 from abc import abstractmethod
 from simpa.utils import Settings, Tags
-from simpa.core.device_digital_twins.digital_device_base import DigitalDeviceBase
+from simpa.core.device_digital_twins.digital_device_base import DigitalDeviceTwinBase
 import numpy as np
 
 
-class DetectionGeometryBase(DigitalDeviceBase):
+class DetectionGeometryBase(DigitalDeviceTwinBase):
     """
     This class represents an illumination geometry
     """
-    def __init__(self):
+    def __init__(self, pitch_mm, number_detector_elements, detector_element_width_mm,
+                 detector_element_length_mm, center_frequency_hz, bandwidth_percent,
+                 sampling_frequency_mhz, probe_height_mm):
         super().__init__()
+        self.pitch_mm = pitch_mm
+        self.number_detector_elements = number_detector_elements
+        self.detector_element_width_mm = detector_element_width_mm
+        self.detector_element_length_mm = detector_element_length_mm
+        self.center_frequency_Hz = center_frequency_hz
+        self.bandwidth_percent = bandwidth_percent
+        self.sampling_frequency_MHz = sampling_frequency_mhz
+        self.probe_height_mm = probe_height_mm
+        self.probe_width_mm = self.number_detector_elements * self.pitch_mm
 
     @abstractmethod
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
@@ -87,16 +98,14 @@ class LinearDetector(DetectionGeometryBase):
     """
 
     def __init__(self):
-        super().__init__()
-        self.pitch_mm = 0.5
-        self.number_detector_elements = 100
-        self.detector_element_width_mm = 0.24
-        self.detector_element_length_mm = 13
-        self.center_frequency_Hz = 3.96e6
-        self.bandwidth_percent = 55
-        self.sampling_frequency_MHz = 40
-        self.probe_height_mm = 0
-        self.probe_width_mm = self.number_detector_elements * self.pitch_mm
+        super().__init__(pitch_mm=0.5,
+                         number_detector_elements=100,
+                         detector_element_width_mm=0.24,
+                         detector_element_length_mm=13,
+                         center_frequency_hz=3.96e6,
+                         bandwidth_percent=55,
+                         sampling_frequency_mhz=40,
+                         probe_height_mm=0)
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:

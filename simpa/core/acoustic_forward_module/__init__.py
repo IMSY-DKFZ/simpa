@@ -62,17 +62,17 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         """
         pass
 
-    def run(self):
+    def run(self, digital_device_twin):
         """
         Call this method to invoke the simulation process.
 
-        :param global_settings: the settings dictionary containing all simulation parameters.
+        :param digital_device_twin:
         :return: a numpy array containing the time series pressure data per detection element
         """
 
         self.logger.info("Simulating the acoustic forward process...")
 
-        time_series_data = self.forward_model()
+        time_series_data = self.forward_model(digital_device_twin.get_acoustic_)
 
         acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 

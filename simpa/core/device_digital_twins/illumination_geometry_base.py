@@ -21,13 +21,13 @@
 # SOFTWARE.
 
 from abc import abstractmethod, ABC
-from simpa.core.device_digital_twins.digital_device_base import DigitalDeviceBase
+from simpa.core.device_digital_twins.digital_device_base import DigitalDeviceTwinBase
 from simpa.utils import Settings, Tags
 import numpy as np
 from simpa.log import Logger
 
 
-class IlluminationGeometryBase(DigitalDeviceBase):
+class IlluminationGeometryBase(DigitalDeviceTwinBase):
     """
     This class represents an illumination geometry.
     """

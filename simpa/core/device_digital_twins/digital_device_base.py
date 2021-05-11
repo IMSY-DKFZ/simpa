@@ -20,12 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from simpa.log import Logger
 from simpa.utils import Settings
 
 
-class DigitalDeviceBase:
+class DigitalDeviceTwinBase:
     """
     This class represents a device that can be used for illumination, detection or both.
     """
@@ -54,4 +54,36 @@ class DigitalDeviceBase:
         this method will update the volume accordingly.
         """
         pass
+
+
+class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
+
+    def __init__(self):
+        super(PhotoacousticDevice, self).__init__()
+        self.detection_geometry = None
+        self.illumination_geometries = []
+
+    def set_detection_geometry(self, detection_geometry):
+        self.detection_geometry = detection_geometry
+
+    def add_illumination_geometry(self, illumination_geometry):
+        self.illumination_geometries.append(illumination_geometry)
+
+    def get_detection_geometry(self):
+        return self.detection_geometry
+
+    def get_illumination_geometry(self):
+        """
+        :return: None, if no illumination geometry was defined,
+            an instance of IlluminationGeometryBase if exactly one geometry was defined,
+            a list of IlluminationGeometryBase instances if more than one device was defined.
+        """
+        if len(self.illumination_geometries) == 0:
+            return None
+
+        if len(self.illumination_geometries) == 1:
+            return self.illumination_geometries[0]
+
+        return self.illumination_geometries
+
 
