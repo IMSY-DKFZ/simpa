@@ -30,15 +30,15 @@ import numpy as np
 
 class GaussianNoiseProcessingComponent(ProcessingComponent):
     """
-        Applies Gaussian noise to the defined data field.
-        The noise will be applied to all wavelengths.
-        :param kwargs:
-           **Tags.NOISE_MEAN (default: 0)
-           **Tags.NOISE_STD (default: 1)
-           **Tags.NOISE_MODE (default: Tags.NOISE_MODE_ADDITIVE)
-           **Tags.NOISE_NON_NEGATIVITY_CONSTRAINT (default: False)
-           **data_field (required)
-        """
+    Applies Gaussian noise to the defined data field.
+    The noise will be applied to all wavelengths.
+    Component Settings:
+       **Tags.NOISE_MEAN (default: 0)
+       **Tags.NOISE_STD (default: 1)
+       **Tags.NOISE_MODE (default: Tags.NOISE_MODE_ADDITIVE)
+       **Tags.NOISE_NON_NEGATIVITY_CONSTRAINT (default: False)
+       **data_field (required)
+    """
 
     def run(self, device):
         self.logger.info("Applying Gaussian Noise Model...")

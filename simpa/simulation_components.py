@@ -44,3 +44,4 @@ from simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapte
 ###################################################
 
 from simpa.processing.noise_processing_components import GaussianNoiseProcessingComponent
+from simpa.processing.field_of_view_cropping import FieldOfViewCroppingProcessingComponent
