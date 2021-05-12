@@ -88,7 +88,11 @@ class Settings(dict):
         """"
         Returns the settings for the optical forward model that are saved in this settings dictionary
         """
-        return self[Tags.OPTICAL_MODEL_SETTINGS]
+        optical_settings = self[Tags.OPTICAL_MODEL_SETTINGS]
+        if isinstance(optical_settings, Settings):
+            return optical_settings
+        else:
+            return Settings(optical_settings)
 
     def set_optical_settings(self, optical_settings: dict):
         """
@@ -96,13 +100,17 @@ class Settings(dict):
 
         :param optical_settings: a dictionary containing the optical settings
         """
-        self[Tags.OPTICAL_MODEL_SETTINGS] = optical_settings
+        self[Tags.OPTICAL_MODEL_SETTINGS] = Settings(optical_settings)
 
     def get_volume_creation_settings(self):
         """"
         Returns the settings for the optical forward model that are saved in this settings dictionary
         """
-        return self[Tags.VOLUME_CREATION_MODEL_SETTINGS]
+        volume_creation_settings = self[Tags.VOLUME_CREATION_MODEL_SETTINGS]
+        if isinstance(volume_creation_settings, Settings):
+            return volume_creation_settings
+        else:
+            return Settings(volume_creation_settings)
 
     def set_volume_creation_settings(self, volume_settings: dict):
         """
@@ -110,13 +118,17 @@ class Settings(dict):
 
         :param volume_settings: a dictionary containing the volume creator settings
         """
-        self[Tags.VOLUME_CREATION_MODEL_SETTINGS] = volume_settings
+        self[Tags.VOLUME_CREATION_MODEL_SETTINGS] = Settings(volume_settings)
 
     def get_acoustic_settings(self):
         """"
         Returns the settings for the acoustic forward model that are saved in this settings dictionary
         """
-        return self[Tags.ACOUSTIC_MODEL_SETTINGS]
+        acoustic_settings = self[Tags.ACOUSTIC_MODEL_SETTINGS]
+        if isinstance(acoustic_settings, Settings):
+            return acoustic_settings
+        else:
+            return Settings(acoustic_settings)
 
     def set_acoustic_settings(self, acoustic_settings: dict):
         """
@@ -124,13 +136,17 @@ class Settings(dict):
 
         :param acoustic_settings: a dictionary containing the acoustic model settings
         """
-        self[Tags.ACOUSTIC_MODEL_SETTINGS] = acoustic_settings
+        self[Tags.ACOUSTIC_MODEL_SETTINGS] = Settings(acoustic_settings)
 
     def get_reconstruction_settings(self):
         """"
         Returns the settings for the reconstruction model that are saved in this settings dictionary
         """
-        return self[Tags.RECONSTRUCTION_MODEL_SETTINGS]
+        reconstruction_settings = self[Tags.RECONSTRUCTION_MODEL_SETTINGS]
+        if isinstance(reconstruction_settings, Settings):
+            return reconstruction_settings
+        else:
+            return Settings(reconstruction_settings)
 
     def set_reconstruction_settings(self, reconstruction_settings: dict):
         """
@@ -138,7 +154,7 @@ class Settings(dict):
 
         :param reconstruction_settings: a dictionary containing the reconstruction model settings
         """
-        self[Tags.RECONSTRUCTION_MODEL_SETTINGS] = reconstruction_settings
+        self[Tags.RECONSTRUCTION_MODEL_SETTINGS] = Settings(reconstruction_settings)
 
     def save(self, path):
         from simpa.io_handling.io_hdf5 import save_hdf5
