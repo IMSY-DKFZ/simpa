@@ -38,7 +38,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.15
+SPACING = 0.25
 RANDOM_SEED = 4711
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -55,12 +55,12 @@ def create_example_tissue():
     and a blood vessel.
     """
     background_dictionary = Settings()
-    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-10, 1e-10, 1.0)
     background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
     muscle_dictionary = Settings()
     muscle_dictionary[Tags.PRIORITY] = 1
-    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 3]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
@@ -79,8 +79,8 @@ def create_example_tissue():
 
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
-    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1]
+    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 3]
+    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 3.5]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
@@ -112,9 +112,6 @@ general_settings = {
             Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.GPU: True,
-
-            # Simulation Device
-            Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT_ACUITY,
 
             # The following parameters set the optical forward model
             Tags.WAVELENGTHS: [700]
@@ -183,7 +180,9 @@ settings["noise_time_series"] = {
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
 
-device = MSOTAcuityEcho()
+device = RSOMExplorerP50(element_spacing_mm=SPACING,
+                         number_elements_x=140,
+                         number_elements_y=40)
 
 device.update_settings_for_use_of_model_based_volume_creator(settings)
 
@@ -193,7 +192,7 @@ SIMUATION_PIPELINE = [
     GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    ImageReconstructionModuleDelayAndSumAdapter(settings)
+    ReconstructionModuleTimeReversalAdapter(settings)
 ]
 
 simulate(SIMUATION_PIPELINE, settings, device)
@@ -210,4 +209,5 @@ if VISUALIZE:
                    show_segmentation_map=False,
                    show_tissue_density=False,
                    show_reconstructed_data=True,
-                   show_fluence=False)
+                   show_fluence=False,
+                   log_scale=False)

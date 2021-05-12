@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.core.device_digital_twins import PhotoacousticDevice, \
-    CurvedArrayDetectionGeometry, MSOTInVisionIlluminationGeometry
+    CurvedArrayDetectionGeometry, MSOTAcuityIlluminationGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
@@ -64,26 +64,14 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
         self.set_detection_geometry(detection_geometry)
 
-        illumination_geometry = MSOTInVisionIlluminationGeometry()
+        illumination_geometry = MSOTAcuityIlluminationGeometry()
 
         self.add_illumination_geometry(illumination_geometry)
 
         self.mediprene_membrane_height_mm = 1
 
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
-            if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.detection_geometry.probe_height_mm + self.mediprene_membrane_height_mm + 1):
-                self.logger.error("Volume z dimension is too small to encompass MSOT device in simulation!"
-                                     "Must be at least {} mm but was {} mm"
-                                     .format((self.detection_geometry.probe_height_mm + self.mediprene_membrane_height_mm + 1),
-                                             global_settings[Tags.DIM_VOLUME_Z_MM]))
-                return False
-            if global_settings[Tags.DIM_VOLUME_X_MM] <= self.detection_geometry.probe_width_mm:
-                self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
-                                     "Must be at least {} mm but was {} mm"
-                                     .format(self.detection_geometry.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
-                return False
-        return True
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        return self.detection_geometry.get_default_probe_position(global_settings)
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         try:
@@ -94,9 +82,8 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                 "settings dictionary.")
             return
 
-        device = MSOTAcuityEcho()
-        probe_size_mm = device.detection_geometry.probe_height_mm
-        mediprene_layer_height_mm = device.mediprene_membrane_height_mm
+        probe_size_mm = self.detection_geometry.probe_height_mm
+        mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
 
         new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
@@ -109,28 +96,28 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
         # of the simulated volume.
 
-        if global_settings[Tags.DIM_VOLUME_X_MM] < round(device.detection_geometry.probe_width_mm) + 1:
-            width_shift_for_structures_mm = (round(device.detection_geometry.probe_width_mm) + 1 - global_settings[Tags.DIM_VOLUME_X_MM]) / 2
-            global_settings[Tags.DIM_VOLUME_X_MM] = round(device.detection_geometry.probe_width_mm) + 1
-            device.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + 1:
+            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) + 1 - global_settings[Tags.DIM_VOLUME_X_MM]) / 2
+            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + 1
+            self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
         else:
             width_shift_for_structures_mm = 0
 
-        device.logger.debug(volume_creator_settings)
+        self.logger.debug(volume_creator_settings)
 
         for structure_key in volume_creator_settings[Tags.STRUCTURES]:
-            device.logger.debug("Adjusting " + str(structure_key))
+            self.logger.debug("Adjusting " + str(structure_key))
             structure_dict = volume_creator_settings[Tags.STRUCTURES][structure_key]
             if Tags.STRUCTURE_START_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
                                                                  0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                                 2] + device.detection_geometry.probe_height_mm
+                                                                 2] + self.detection_geometry.probe_height_mm
             if Tags.STRUCTURE_END_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
                                                                0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                               2] + device.detection_geometry.probe_height_mm
+                                                               2] + self.detection_geometry.probe_height_mm
 
         if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
             us_gel_thickness = np.random.normal(0.4, 0.1)

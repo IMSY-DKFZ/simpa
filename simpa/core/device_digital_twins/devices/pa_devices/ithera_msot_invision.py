@@ -64,9 +64,6 @@ class InVision256TF(PhotoacousticDevice):
         for i in range(10):
             self.add_illumination_geometry(MSOTInVisionIlluminationGeometry(i))
 
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        return True
-
     def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
         sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
                                global_settings[Tags.DIM_VOLUME_Y_MM],

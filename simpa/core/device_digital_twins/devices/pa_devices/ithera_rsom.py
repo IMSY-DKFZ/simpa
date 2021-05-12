@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.device_digital_twins.digital_device_twin_base import PhotoacousticDevice
+from simpa.core.device_digital_twins import PhotoacousticDevice, PlanarArrayDetectionGeometry, \
+    PencilArrayIlluminationGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
-import numpy as np
 
 
 class RSOMExplorerP50(PhotoacousticDevice):
@@ -53,83 +53,49 @@ class RSOMExplorerP50(PhotoacousticDevice):
 
     """
 
-    def __init__(self, element_spacing_mm=0.02):
-        super().__init__()
-        self.center_frequency_Hz = float(50e6)
-        self.bandwidth_percent = 100.0
-        self.sampling_frequency_MHz = 500.0
-        self.detector_element_length_mm = 1
-        self.detector_element_width_mm = 1
-        self.number_detector_elements = 1
-        self.num_elements_x = 0
-        self.num_elements_y = 0
-        self.element_spacing_mm = element_spacing_mm
+    def __init__(self, element_spacing_mm=0.02,
+                 number_elements_x=10,
+                 number_elements_y=10):
+        super(RSOMExplorerP50, self).__init__()
 
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        return True  # Realistically, every volume can be imaged with the RSOM system.
+        detection_geometry = PlanarArrayDetectionGeometry(pitch_mm=element_spacing_mm,
+                                                          number_detector_elements_x=number_elements_x,
+                                                          number_detector_elements_y=number_elements_y,
+                                                          center_frequency_hz=float(50e6),
+                                                          bandwidth_percent=100.0,
+                                                          sampling_frequency_mhz=500.0,
+                                                          detector_element_width_mm=1,
+                                                          detector_element_length_mm=1)
 
-    def adjust_simulation_volume_and_settings(self, global_settings: Settings):
-        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
-        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
-        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
-        self.detector_element_length_mm = global_settings[Tags.SPACING_MM]
-        self.detector_element_width_mm = global_settings[Tags.SPACING_MM]
-        if self.element_spacing_mm < global_settings[Tags.SPACING_MM]:
-            self.element_spacing_mm = global_settings[Tags.SPACING_MM]
+        self.set_detection_geometry(detection_geometry)
 
-        self.num_elements_x = np.round(global_settings[Tags.DIM_VOLUME_X_MM] / self.element_spacing_mm).astype(int)
-        self.num_elements_y = np.round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.element_spacing_mm).astype(int)
-        self.number_detector_elements = self.num_elements_x * self.num_elements_y
+        illumination_geometry = PencilArrayIlluminationGeometry(pitch_mm=element_spacing_mm,
+                                                                number_illuminators_x=number_elements_x,
+                                                                number_illuminators_y=number_elements_y)
 
-        return global_settings
-
-    def get_illuminator_definition(self, global_settings: Settings):
-        pass
-
-    def get_detector_element_positions_base_mm(self):
-        detector_element_positions_mm = np.zeros((self.number_detector_elements, 3))
-        for x in range(self.num_elements_x):
-            for y in range(self.num_elements_y):
-                detector_element_positions_mm[x + y*self.num_elements_x] = \
-                    [(x - self.num_elements_x/2) * self.element_spacing_mm,
-                     (y - self.num_elements_y/2) * self.element_spacing_mm,
-                     0]
-        return detector_element_positions_mm
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
-                               global_settings[Tags.DIM_VOLUME_Y_MM],
-                               global_settings[Tags.DIM_VOLUME_Z_MM]])
-        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, 0])
-
-    def get_detector_element_orientations(self, global_settings: Settings):
-        detector_element_orientations = np.zeros((self.number_detector_elements, 3))
-
-        for x in range(self.num_elements_x):
-            for y in range(self.num_elements_y):
-                detector_element_orientations[x + y * self.num_elements_x] = [0, 0, 1]
-
-        return detector_element_orientations
+        self.add_illumination_geometry(illumination_geometry)
 
 
 if __name__ == "__main__":
-    device = RSOMExplorerP50()
+    import os
+    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+    device = RSOMExplorerP50(element_spacing_mm=0.5,
+                             number_elements_y=9,
+                             number_elements_x=9)
     settings = Settings()
     settings[Tags.DIM_VOLUME_X_MM] = 12
     settings[Tags.DIM_VOLUME_Y_MM] = 12
     settings[Tags.DIM_VOLUME_Z_MM] = 2.8
     settings[Tags.SPACING_MM] = 0.02
     settings[Tags.STRUCTURES] = {}
-    # settings[Tags.DIGITAL_DEVICE_POSITION] = [50, 50, 50]
-    settings = device.adjust_simulation_volume_and_settings(settings)
 
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
 
-    positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
-    detector_elements = device.get_detector_element_orientations(global_settings=settings)
+    positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(settings)
+    detector_elements = device.detection_geometry.get_detector_element_orientations(global_settings=settings)
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
-    positions = np.round(positions / device.element_spacing_mm).astype(int)
+    # positions = np.round(positions / settings[Tags.SPACING_MM]).astype(int)
 
     import matplotlib.pyplot as plt
     plt.scatter(positions[:, 0], positions[:, 1], marker='x')

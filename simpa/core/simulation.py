@@ -42,6 +42,8 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     :param settings: settings dictionary containing the simulation instructions
     :param digital_device_twin: a digital device twin of an imaging device as specified by the DigitalDeviceTwinBase
         class.
+    :raises TypeError: if one of the given parameters is not of the correct type
+    :raises AssertionError: if the digital device twin is not able to simulate the settings specification
     :return: list with the save paths of the simulated data within the HDF5 file.
     """
     start_time = time.time()
@@ -53,6 +55,12 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     if not isinstance(simulation_pipeline, list):
         logger.critical("The first argument was not a list with pipeline methods!")
         raise TypeError("The simulation pipeline must be a list that contains callable functions.")
+
+    if not digital_device_twin.check_settings_prerequisites(settings):
+        msg = ("The simulation settings do not work with the digital device twin chosen."
+               "Please check the log for details.")
+        logger.critical(msg)
+        raise AssertionError(msg)
 
     simpa_output = dict()
     path = settings[Tags.SIMULATION_PATH] + "/"

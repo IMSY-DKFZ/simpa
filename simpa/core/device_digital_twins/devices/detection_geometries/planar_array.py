@@ -19,85 +19,71 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 import numpy as np
 
 from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils import Settings, Tags
 
 
-class CurvedArrayDetectionGeometry(DetectionGeometryBase):
+class PlanarArrayDetectionGeometry(DetectionGeometryBase):
     """
     This class represents a digital twin of a ultrasound detection device
-    with a curved detection geometry
+    with a linear detection geometry.
+
     """
 
     def __init__(self, pitch_mm=0.5,
-                 radius_mm=40,
-                 focus_in_field_of_view_mm=None,
-                 number_detector_elements=256,
+                 number_detector_elements_x=100,
+                 number_detector_elements_y=100,
                  detector_element_width_mm=0.24,
-                 detector_element_length_mm=13,
+                 detector_element_length_mm=0.5,
                  center_frequency_hz=3.96e6,
                  bandwidth_percent=55,
                  sampling_frequency_mhz=40,
-                 probe_height_mm=43.2,
-                 angular_origin_offset=np.pi):
-
-        super().__init__(number_detector_elements=number_detector_elements,
+                 probe_height_mm=0):
+        super().__init__(number_detector_elements=number_detector_elements_x * number_detector_elements_y,
                          detector_element_width_mm=detector_element_width_mm,
                          detector_element_length_mm=detector_element_length_mm,
                          center_frequency_hz=center_frequency_hz,
                          bandwidth_percent=bandwidth_percent,
                          sampling_frequency_mhz=sampling_frequency_mhz,
                          probe_height_mm=probe_height_mm,
-                         probe_width_mm=2 * np.sin(pitch_mm / radius_mm * 128) * radius_mm)
-
+                         probe_width_mm=number_detector_elements_x * pitch_mm)
         self.pitch_mm = pitch_mm
-        self.radius_mm = radius_mm
-        self.angular_origin_offset = angular_origin_offset
-
-        if focus_in_field_of_view_mm is None:
-            focus_in_field_of_view_mm = np.array([0, 0, 8])
-        self.focus_in_field_of_view_mm = focus_in_field_of_view_mm
+        self.number_detector_elements_x = number_detector_elements_x
+        self.number_detector_elements_y = number_detector_elements_y
+        self.probe_depth_mm = number_detector_elements_y * pitch_mm
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + 1):
-            self.logger.error("Volume z dimension is too small to encompass the device in simulation!"
-                              "Must be at least {} mm but was {} mm"
-                              .format((self.probe_height_mm + 1),
-                                      global_settings[Tags.DIM_VOLUME_Z_MM]))
-            return False
         if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
-            self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
-                              "Must be at least {} mm but was {} mm"
-                              .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
+            self.logger.error(f"Volume x dimension is too small to encompass RSOM device in simulation!"
+                              f"Must be at least {self.probe_width_mm} mm but "
+                              f"was {global_settings[Tags.DIM_VOLUME_X_MM]} mm")
+            return False
+        if global_settings[Tags.DIM_VOLUME_Y_MM] <= self.probe_depth_mm:
+            self.logger.error(f"Volume y dimension is too small to encompass RSOM device in simulation!"
+                              f"Must be at least {self.probe_depth_mm} mm but "
+                              f"was {global_settings[Tags.DIM_VOLUME_X_MM]} mm")
             return False
         return True
 
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
-
-        pitch_angle = self.pitch_mm / self.radius_mm
-        self.logger.debug(f"pitch angle: {pitch_angle}")
-        detector_radius = self.radius_mm
-        detector_positions = np.zeros((self.number_detector_elements, 3))
-        det_elements = np.arange(-int(self.number_detector_elements / 2) + 0.5,
-                                 int(self.number_detector_elements / 2) + 0.5)
-        detector_positions[:, 0] = np.sin(pitch_angle * det_elements - self.angular_origin_offset) * detector_radius
-        detector_positions[:, 2] = np.cos(pitch_angle * det_elements - self.angular_origin_offset) * detector_radius
-
-        return detector_positions
+        detector_element_positions_mm = np.zeros((self.number_detector_elements, 3))
+        for x in range(self.number_detector_elements_x):
+            for y in range(self.number_detector_elements_y):
+                detector_element_positions_mm[x + y*self.number_detector_elements_x] = \
+                    [(x - self.number_detector_elements_x/2) * self.pitch_mm,
+                     (y - self.number_detector_elements_y/2) * self.pitch_mm,
+                     0]
+        return detector_element_positions_mm
 
     def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
-        detector_positions = self.get_detector_element_positions_base_mm()
-        detector_orientations = np.subtract(self.focus_in_field_of_view_mm, detector_positions)
-        norm = np.linalg.norm(detector_orientations, axis=-1)
-        for dim in range(3):
-            detector_orientations[:, dim] = detector_orientations[:, dim] / norm
-        return detector_orientations
+        detector_element_orientations = np.zeros((self.number_detector_elements, 3))
+        detector_element_orientations[:, 2] = 1
+        return detector_element_orientations
 
     def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
         sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
                                global_settings[Tags.DIM_VOLUME_Y_MM],
                                global_settings[Tags.DIM_VOLUME_Z_MM]])
-        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
+        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, 0])
