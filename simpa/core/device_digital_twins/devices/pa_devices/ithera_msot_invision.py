@@ -70,6 +70,11 @@ class InVision256TF(PhotoacousticDevice):
                                global_settings[Tags.DIM_VOLUME_Z_MM]])
         return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, sizes_mm[2] / 2])
 
+    def get_field_of_view_extent_mm(self) -> np.ndarray:
+        return np.asarray([-20, 20,
+                           0, 0,
+                           -20, 20])
+
 
 if __name__ == "__main__":
     import os

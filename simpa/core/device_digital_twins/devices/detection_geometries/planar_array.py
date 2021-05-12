@@ -54,6 +54,13 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
         self.number_detector_elements_y = number_detector_elements_y
         self.probe_depth_mm = number_detector_elements_y * pitch_mm
 
+    def get_field_of_view_extent_mm(self) -> np.ndarray:
+        return np.asarray([-self.number_detector_elements_x*self.pitch_mm/2,
+                           self.number_detector_elements_x*self.pitch_mm/2,
+                           -self.number_detector_elements_y * self.pitch_mm / 2,
+                           self.number_detector_elements_y * self.pitch_mm / 2,
+                           0, 100])
+
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
             self.logger.error(f"Volume x dimension is too small to encompass RSOM device in simulation!"

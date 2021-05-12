@@ -30,7 +30,7 @@ from simpa.core.optical_simulation_module import OpticalForwardModuleBase
 
 class OpticalForwardModelMcxyzAdapter(OpticalForwardModuleBase):
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
 
         shape = np.shape(absorption_cm)
         mcxyz_input = np.zeros((shape[0], shape[1], shape[2], 3))

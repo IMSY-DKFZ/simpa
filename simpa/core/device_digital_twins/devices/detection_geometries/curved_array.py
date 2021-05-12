@@ -61,6 +61,12 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
             focus_in_field_of_view_mm = np.array([0, 0, 8])
         self.focus_in_field_of_view_mm = focus_in_field_of_view_mm
 
+    def get_field_of_view_extent_mm(self) -> np.ndarray:
+        return np.asarray([-self.probe_width_mm/2,
+                           self.probe_width_mm/2,
+                           0, 0,
+                           0, 100])
+
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + 1):
             self.logger.error("Volume z dimension is too small to encompass the device in simulation!"

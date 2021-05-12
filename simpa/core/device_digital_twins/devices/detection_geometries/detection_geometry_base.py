@@ -73,7 +73,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
         """
         abstract_element_positions = self.get_detector_element_positions_base_mm()
-        device_position = self.get_probe_position(global_settings)
+        device_position = self.get_probe_position_mm(global_settings)
         return np.add(abstract_element_positions, device_position)
 
     @abstractmethod

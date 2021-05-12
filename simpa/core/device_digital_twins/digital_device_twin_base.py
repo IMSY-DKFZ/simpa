@@ -49,13 +49,42 @@ class DigitalDeviceTwinBase:
         """
         pass
 
+    @abstractmethod
+    def get_field_of_view_extent_mm(self) -> np.ndarray:
+        """
+        Returns the field of view extent of this imaging device.
+        It is defined as a numpy array of the shape [xs, xe, ys, ye, zs, ze],
+        where x, y, and z denote the coordinate axes and s and e denote the start and end
+        positions. These coordinates are defined relatively to the probe position.
+        """
+        pass
+
+    def get_field_of_view_mm(self, global_settings: Settings) -> np.ndarray:
+        """
+        returns the absolute field of view in mm where the probe position is already
+        accounted for.
+        It is defined as a numpy array of the shape [xs, xe, ys, ye, zs, ze],
+        where x, y, and z denote the coordinate axes and s and e denote the start and end
+        positions.
+        """
+        position = self.get_probe_position_mm(global_settings)
+        field_of_view_extent = self.get_field_of_view_extent_mm()
+
+        return np.asarray([position[0] + field_of_view_extent[0],
+                           position[0] + field_of_view_extent[1],
+                           position[1] + field_of_view_extent[2],
+                           position[1] + field_of_view_extent[3],
+                           position[2] + field_of_view_extent[4],
+                           position[2] + field_of_view_extent[5]
+                           ])
+
     def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
         """
         Defines the default position of this probe in the volume in mm
         """
-        pass
+        return np.asarray([0, 0, 0])
 
-    def get_probe_position(self, global_settings: Settings) -> np.ndarray:
+    def get_probe_position_mm(self, global_settings: Settings) -> np.ndarray:
         """
         returns the probe position in the volume
         """
@@ -94,6 +123,9 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
             return self.illumination_geometries[0]
 
         return self.illumination_geometries
+
+    def get_field_of_view_extent_mm(self) -> np.ndarray:
+        return self.detection_geometry.get_field_of_view_extent_mm()
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         _result = True

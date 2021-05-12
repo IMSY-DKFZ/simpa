@@ -37,6 +37,9 @@ class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
         """
         super().__init__()
 
+    def get_field_of_view_extent_mm(self) -> np.ndarray:
+        pass
+
     def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm):
 
         source_type = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
