@@ -22,7 +22,7 @@
 
 from simpa.utils import Tags
 from simpa.core.device_digital_twins.detection_geometry_base import DetectionGeometryBase
-from simpa.core.device_digital_twins.digital_device_base import PhotoacousticDevice
+from simpa.core.device_digital_twins.digital_device_twin_base import PhotoacousticDevice
 from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
 from simpa.core.simulation_components import SimulationModule

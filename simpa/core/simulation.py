@@ -25,7 +25,7 @@ from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.settings import Settings
 from simpa.log import Logger
-from .device_digital_twins.digital_device_base import DigitalDeviceTwinBase
+from .device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 
 import numpy as np
 import os

@@ -23,7 +23,7 @@
 from abc import abstractmethod, ABC
 from simpa.log import Logger
 from simpa.utils import Settings
-from .device_digital_twins.digital_device_base import DigitalDeviceTwinBase
+from .device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 
 
 class SimulationModule:

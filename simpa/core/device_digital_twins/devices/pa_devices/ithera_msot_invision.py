@@ -1,4 +1,3 @@
-
 # The MIT License (MIT)
 #
 # Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
@@ -22,7 +21,7 @@
 # SOFTWARE.
 import numpy as np
 
-from simpa.core.device_digital_twins.digital_device_base import PhotoacousticDevice
+from simpa.core.device_digital_twins.digital_device_twin_base import PhotoacousticDevice
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 

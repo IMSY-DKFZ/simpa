@@ -19,16 +19,3 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-from .digital_device_twin_base import PhotoacousticDevice
-from .digital_device_twin_base import DigitalDeviceTwinBase
-from .detection_geometry_base import DetectionGeometryBase
-from .illumination_geometry_base import IlluminationGeometryBase
-from .devices.detection_geometries.curved_array import CurvedArrayDetectionGeometry
-from .devices.detection_geometries.linear_array import LinearArrayDetectionGeometry
-from .devices.illumination_geometries.slit_illumination import SlitIlluminationGeometry
-from .devices.illumination_geometries.ithera_msot_acuity_illumination import MSOTAcuityIlluminationGeometry
-from .devices.pa_devices.ithera_msot_invision import InVision256TF
-from .devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
-from .devices.pa_devices.ithera_rsom import RSOMExplorerP50
-

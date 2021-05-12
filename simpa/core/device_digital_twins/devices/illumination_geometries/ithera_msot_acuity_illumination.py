@@ -20,31 +20,53 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from abc import abstractmethod
-from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
-from simpa.utils import Settings
+import numpy as np
+
+from simpa.core.device_digital_twins import IlluminationGeometryBase
+from simpa.utils import Settings, Tags
 
 
-class IlluminationGeometryBase(DigitalDeviceTwinBase):
+class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
     """
-    This class represents an illumination geometry.
+    This class represents the illumination geometry of the MSOT Acuity (Echo) photoacoustic device.
     """
+
     def __init__(self):
+        """
+        Initializes the illumination source.
+        """
         super().__init__()
 
-    @abstractmethod
-    def get_mcx_illuminator_definition(self, global_settings: Settings) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings: Settings):
         """
         IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
         mcx simulation tool to represent the illumination geometry of this device.
 
         :param global_settings: The global_settings instance containing the simulation instructions
-        :return: Dictionary that includes all parameters needed for mcx.
+        :return:
         """
-        pass
+        source_type = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
 
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        return True
+        nx = global_settings[Tags.DIM_VOLUME_X_MM]
+        ny = global_settings[Tags.DIM_VOLUME_Y_MM]
+        nz = global_settings[Tags.DIM_VOLUME_Z_MM]
+        spacing = global_settings[Tags.SPACING_MM]
 
-    def adjust_simulation_volume_and_settings(self, global_settings: Settings) -> Settings:
-        return global_settings
+        source_position = [round(nx / (spacing * 2.0)) + 0.5,
+                           round(ny / (spacing * 2.0) - 16.46 / spacing) + 0.5,
+                           spacing+5]     # The z-position
+
+        # source_direction = [0, 0.381070, 0.9245460]       earlier calculation
+        source_direction = [0, 0.356091613, 0.934451049]       # new calculation TODO: Check for correctness
+
+        source_param1 = [30 / spacing, 0, 0, 0]
+
+        source_param2 = [0, 0, 0, 0]
+
+        return {
+            "Type": source_type,
+            "Pos": source_position,
+            "Dir": source_direction,
+            "Param1": source_param1,
+            "Param2": source_param2
+        }

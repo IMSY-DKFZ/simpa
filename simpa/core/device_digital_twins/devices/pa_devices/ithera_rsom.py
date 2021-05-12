@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.device_digital_twins.digital_device_base import PhotoacousticDevice
+from simpa.core.device_digital_twins.digital_device_twin_base import PhotoacousticDevice
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 import numpy as np

@@ -22,7 +22,7 @@
 
 from abc import abstractmethod
 from simpa.utils import Settings, Tags
-from simpa.core.device_digital_twins.digital_device_base import DigitalDeviceTwinBase
+from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 import numpy as np
 
 
@@ -30,11 +30,10 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
     """
     This class represents an illumination geometry
     """
-    def __init__(self, pitch_mm, number_detector_elements, detector_element_width_mm,
+    def __init__(self, number_detector_elements, detector_element_width_mm,
                  detector_element_length_mm, center_frequency_hz, bandwidth_percent,
-                 sampling_frequency_mhz, probe_height_mm):
+                 sampling_frequency_mhz, probe_height_mm, probe_width_mm):
         super().__init__()
-        self.pitch_mm = pitch_mm
         self.number_detector_elements = number_detector_elements
         self.detector_element_width_mm = detector_element_width_mm
         self.detector_element_length_mm = detector_element_length_mm
@@ -42,7 +41,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         self.bandwidth_percent = bandwidth_percent
         self.sampling_frequency_MHz = sampling_frequency_mhz
         self.probe_height_mm = probe_height_mm
-        self.probe_width_mm = self.number_detector_elements * self.pitch_mm
+        self.probe_width_mm = probe_width_mm
 
     @abstractmethod
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
@@ -59,7 +58,6 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         """
         pass
 
-    @abstractmethod
     def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings) -> np.ndarray:
         """
         Similar to::
@@ -76,14 +74,10 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         """
         abstract_element_positions = self.get_detector_element_positions_base_mm()
 
-        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
-                               global_settings[Tags.DIM_VOLUME_Y_MM],
-                               global_settings[Tags.DIM_VOLUME_Z_MM]])
-
         if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
             device_position = np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
         else:
-            device_position = np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
+            device_position = self.get_default_probe_position(global_settings)
 
         return np.add(abstract_element_positions, device_position)
 
@@ -102,57 +96,3 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         pass
 
 
-class LinearDetector(DetectionGeometryBase):
-    """
-    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
-
-    """
-
-    def __init__(self):
-        super().__init__(pitch_mm=0.5,
-                         number_detector_elements=100,
-                         detector_element_width_mm=0.24,
-                         detector_element_length_mm=0.5,
-                         center_frequency_hz=3.96e6,
-                         bandwidth_percent=55,
-                         sampling_frequency_mhz=40,
-                         probe_height_mm=0)
-
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
-            if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + 1):
-                self.logger.error("Volume z dimension is too small to encompass the device in simulation!"
-                                  "Must be at least {} mm but was {} mm"
-                                  .format((self.probe_height_mm + 1),
-                                          global_settings[Tags.DIM_VOLUME_Z_MM]))
-                return False
-            if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
-                self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
-                                  "Must be at least {} mm but was {} mm"
-                                  .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
-                return False
-
-        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
-        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
-        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
-
-        return True
-
-    def get_detector_element_positions_base_mm(self) -> np.ndarray:
-
-        detector_positions = np.zeros((self.number_detector_elements, 3))
-
-        det_elements = np.arange(-int(self.number_detector_elements / 2),
-                                 int(self.number_detector_elements / 2)) * self.pitch_mm
-
-        detector_positions[:, 0] = det_elements
-
-        return detector_positions
-
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
-        detector_orientations = np.zeros((self.number_detector_elements, 3))
-        detector_orientations[:, 2] = -1
-        return detector_orientations
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        return np.array(0, 0, 0)
