@@ -51,19 +51,7 @@ class OpticalForwardModuleBase(SimulationModule):
         pass
 
     def run(self, device):
-        """
-        Call this method to invoke the simulation process.
 
-        A adapter that implements the forward_model method, will take optical properties of absorption, scattering,
-        and scattering anisotropy as input and return the light fluence as output.
-
-        :param optical_properties_path: path to a .npz file that contains the following tags:
-            Tags.PROPERTY_ABSORPTION_PER_CM -> contains the optical absorptions in units of one per centimeter
-            Tags.PROPERTY_SCATTERING_PER_CM -> contains the optical scattering in units of one per centimeter
-            Tags.PROPERTY_ANISOTROPY -> contains the dimensionless optical scattering anisotropy
-        :param settings:
-        :return:
-        """
         self.logger.info("Simulating the optical forward process...")
 
         properties_path = generate_dict_path(Tags.SIMULATION_PROPERTIES,

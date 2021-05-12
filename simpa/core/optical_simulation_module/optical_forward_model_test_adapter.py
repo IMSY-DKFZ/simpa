@@ -28,5 +28,5 @@ class OpticalForwardModelTestAdapter(OpticalForwardModuleBase):
     This Adapter was created for tesing purposes and only
     """
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry):
         return absorption_cm / ((1 - anisotropy) * scattering_cm)

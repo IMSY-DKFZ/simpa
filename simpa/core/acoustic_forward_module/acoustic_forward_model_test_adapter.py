@@ -27,7 +27,7 @@ from simpa.core.acoustic_forward_module import AcousticForwardModelBaseAdapter
 
 class AcousticForwardModelTestAdapter(AcousticForwardModelBaseAdapter):
 
-    def forward_model(self) -> np.ndarray:
+    def forward_model(self, device) -> np.ndarray:
 
         if Tags.ACOUSTIC_SIMULATION_3D in self.component_settings \
                 and self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
