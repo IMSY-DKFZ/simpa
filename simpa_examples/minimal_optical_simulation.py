@@ -60,7 +60,7 @@ class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
 
     def __init__(self):
         super().__init__()
-        self.set_detection_geometry(LinearDetector())
+        self.set_detection_geometry(LinearArrayDetectionGeometry())
         self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
                                                                 direction_vector_mm=[0, 0, 5]))
 
@@ -128,7 +128,10 @@ general_settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.WAVELENGTHS: [798]
+    Tags.WAVELENGTHS: [798],
+    Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                   VOLUME_PLANAR_DIM_IN_MM/2,
+                                   0]
 }
 
 settings = Settings(general_settings)

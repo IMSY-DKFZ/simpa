@@ -46,22 +46,12 @@ class PencilArrayIlluminationGeometry(IlluminationGeometryBase):
         self.number_illuminators_x = number_illuminators_x
         self.number_illuminators_y = number_illuminators_y
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_PENCILARRAY
 
-        nx = global_settings[Tags.DIM_VOLUME_X_MM]
-        ny = global_settings[Tags.DIM_VOLUME_Y_MM]
-        nz = global_settings[Tags.DIM_VOLUME_Z_MM]
         spacing = global_settings[Tags.SPACING_MM]
 
-        if Tags.DIGITAL_DEVICE_POSITION in global_settings:
-            device_position = global_settings[Tags.DIGITAL_DEVICE_POSITION]
-        else:
-            device_position = [round(nx / (spacing * 2.0)) + 0.5 -
-                               ((self.number_illuminators_x * self.pitch_mm / 2) / spacing),
-                               round(ny / (spacing * 2.0)) + 0.5 -
-                               ((self.number_illuminators_y * self.pitch_mm / 2) / spacing),
-                               1]  # The z-position
+        device_position = probe_position_mm / spacing + 0.5
 
         source_direction = [0, 0, 1]
 

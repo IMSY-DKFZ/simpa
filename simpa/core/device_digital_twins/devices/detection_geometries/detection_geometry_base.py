@@ -73,12 +73,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
         """
         abstract_element_positions = self.get_detector_element_positions_base_mm()
-
-        if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
-            device_position = np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
-        else:
-            device_position = self.get_default_probe_position(global_settings)
-
+        device_position = self.get_probe_position(global_settings)
         return np.add(abstract_element_positions, device_position)
 
     @abstractmethod

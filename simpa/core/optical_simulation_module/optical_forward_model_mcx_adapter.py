@@ -41,7 +41,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
 
     """
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
 
         absorption_mm = absorption_cm / 10
         scattering_mm = scattering_cm / 10
@@ -71,7 +71,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
             dt = 5e-09
         frames = int(time/dt)
 
-        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings)
+        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings, probe_position_mm)
 
         settings_dict = {
             "Session": {

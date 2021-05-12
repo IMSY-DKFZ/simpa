@@ -24,6 +24,7 @@ from simpa.core.device_digital_twins import PhotoacousticDevice, PlanarArrayDete
     PencilArrayIlluminationGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
+import numpy as np
 
 
 class RSOMExplorerP50(PhotoacousticDevice):
@@ -74,6 +75,12 @@ class RSOMExplorerP50(PhotoacousticDevice):
                                                                 number_illuminators_y=number_elements_y)
 
         self.add_illumination_geometry(illumination_geometry)
+
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
+                               global_settings[Tags.DIM_VOLUME_Y_MM],
+                               global_settings[Tags.DIM_VOLUME_Z_MM]])
+        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, 0])
 
 
 if __name__ == "__main__":

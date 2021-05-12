@@ -37,24 +37,13 @@ class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
         """
         super().__init__()
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings):
-        """
-        IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
-        mcx simulation tool to represent the illumination geometry of this device.
+    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm):
 
-        :param global_settings: The global_settings instance containing the simulation instructions
-        :return:
-        """
         source_type = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
-
-        nx = global_settings[Tags.DIM_VOLUME_X_MM]
-        ny = global_settings[Tags.DIM_VOLUME_Y_MM]
-        nz = global_settings[Tags.DIM_VOLUME_Z_MM]
         spacing = global_settings[Tags.SPACING_MM]
-
-        source_position = [round(nx / (spacing * 2.0)) + 0.5,
-                           round(ny / (spacing * 2.0) - 16.46 / spacing) + 0.5,
-                           spacing+5]     # The z-position
+        source_position = [probe_position_mm[0]/spacing + 0.5,
+                           probe_position_mm[1]/spacing + 0.5,
+                           probe_position_mm[2]/spacing + 0.5]
 
         # source_direction = [0, 0.381070, 0.9245460]       earlier calculation
         source_direction = [0, 0.356091613, 0.934451049]       # new calculation TODO: Check for correctness

@@ -23,6 +23,7 @@
 from abc import abstractmethod, ABC
 from simpa.log import Logger
 from simpa.utils import Settings
+from simpa.utils import Tags
 import numpy as np
 
 
@@ -53,6 +54,15 @@ class DigitalDeviceTwinBase:
         Defines the default position of this probe in the volume in mm
         """
         pass
+
+    def get_probe_position(self, global_settings: Settings) -> np.ndarray:
+        """
+        returns the probe position in the volume
+        """
+        if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
+            return np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
+
+        return self.get_default_probe_position(global_settings)
 
 
 class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):

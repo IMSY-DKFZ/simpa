@@ -53,28 +53,22 @@ class SlitIlluminationGeometry(IlluminationGeometryBase):
         direction_vector_mm[2] = direction_vector_mm[2] / np.linalg.norm(direction_vector_mm)
         self.direction_vector_norm = direction_vector_mm
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_SLIT
 
-        nx = global_settings[Tags.DIM_VOLUME_X_MM]
-        ny = global_settings[Tags.DIM_VOLUME_Y_MM]
-        nz = global_settings[Tags.DIM_VOLUME_Z_MM]
         spacing = global_settings[Tags.SPACING_MM]
 
-        if Tags.DIGITAL_DEVICE_POSITION in global_settings:
-            device_position = global_settings[Tags.DIGITAL_DEVICE_POSITION]
-        else:
-            device_position = [round(nx / (spacing * 2.0)) + 0.5,
-                               round(ny / (spacing * 2.0)) + 0.5,
-                               spacing]  # The z-position
+        device_position = [0, 0, 0]
+        device_position[0] = (probe_position_mm[0]/spacing) + 0.5 - 0.5 * self.slit_vector_mm[0]/spacing
+        device_position[1] = (probe_position_mm[1]/spacing) + 0.5 - 0.5 * self.slit_vector_mm[1]/spacing
+        device_position[2] = (probe_position_mm[2]/spacing) + 0.5 - 0.5 * self.slit_vector_mm[2]/spacing
 
-        device_position[0] = device_position[0] - 0.5 * self.slit_vector_mm[0]
-        device_position[1] = device_position[1] - 0.5 * self.slit_vector_mm[1]
-        device_position[2] = device_position[2] - 0.5 * self.slit_vector_mm[2]
+        self.logger.debug(device_position)
 
         source_direction = self.direction_vector_norm
 
-        source_param1 = [self.slit_vector_mm[0]/spacing, self.slit_vector_mm[1]/spacing,
+        source_param1 = [self.slit_vector_mm[0]/spacing,
+                         self.slit_vector_mm[1]/spacing,
                          self.slit_vector_mm[2]/spacing, 0]
 
         source_param2 = [0, 0, 0, 0]

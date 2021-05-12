@@ -38,19 +38,10 @@ class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
         super().__init__()
         self.geometry_id = geometry_id
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings):
-        """
-        IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
-        mcx simulation tool to represent the illumination geometry of this device.
-
-        :param global_settings: The global_settings instance containing the simulation instructions
-        :return:
-        """
+    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm: np.ndarray):
+        self.logger.debug(probe_position_mm)
         source_type = Tags.ILLUMINATION_TYPE_MSOT_INVISION
 
-        nx = global_settings[Tags.DIM_VOLUME_X_MM]
-        ny = global_settings[Tags.DIM_VOLUME_Y_MM]
-        nz = global_settings[Tags.DIM_VOLUME_Z_MM]
         spacing = global_settings[Tags.SPACING_MM]
 
         angle = 0.0
@@ -89,9 +80,9 @@ class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
             det_sep_half = -det_sep_half
             illumination_angle = -illumination_angle
 
-        source_position = [round(nx / (spacing * 2.0)) + 0.5 + np.sin(angle) * detector_iso_distance,
-                           round(ny / (spacing * 2.0)) + 0.5 + det_sep_half,
-                           round(nz / (spacing * 2.0)) + 0.5 + np.cos(angle) * detector_iso_distance]
+        source_position = [probe_position_mm[0]/spacing + 1 + np.sin(angle) * detector_iso_distance,
+                           probe_position_mm[1]/spacing + 1 + det_sep_half,
+                           probe_position_mm[2]/spacing + 1 + np.cos(angle) * detector_iso_distance]
 
         length = np.sqrt(np.sin(angle) ** 2 + np.sin(illumination_angle) ** 2 + np.cos(angle) ** 2)
         source_direction = [-np.sin(angle) / length,

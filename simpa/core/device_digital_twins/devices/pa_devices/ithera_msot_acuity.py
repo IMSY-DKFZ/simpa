@@ -71,7 +71,10 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         self.mediprene_membrane_height_mm = 1
 
     def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        return self.detection_geometry.get_default_probe_position(global_settings)
+        nx = global_settings[Tags.DIM_VOLUME_X_MM]
+        ny = global_settings[Tags.DIM_VOLUME_Y_MM]
+        spacing = global_settings[Tags.SPACING_MM]
+        return np.asarray([nx / 2.0, ny / 2.0 - 16.46, 5*spacing])
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         try:

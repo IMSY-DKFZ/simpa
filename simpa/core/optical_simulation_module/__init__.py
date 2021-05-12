@@ -38,7 +38,7 @@ class OpticalForwardModuleBase(SimulationModule):
         self.component_settings = self.global_settings.get_optical_settings()
 
     @abstractmethod
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
         """
         A deriving class needs to implement this method according to its model.
 
@@ -71,17 +71,19 @@ class OpticalForwardModuleBase(SimulationModule):
             raise TypeError(f"The optical forward modelling does not support devices of type {type(device)}")
 
         if isinstance(_device, list):
-            # per convention this now has at least two elements
+            # per convention this list has at least two elements
             fluence = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device[0])
+                                         illumination_geometry=_device[0],
+                                         probe_position_mm=device.get_probe_position(self.global_settings))
             for idx in range(len(_device)-1):
                 # we already looked at the 0th element, so go from 1 to n-1
                 fluence += self.forward_model(absorption_cm=absorption,
-                                             scattering_cm=scattering,
-                                             anisotropy=anisotropy,
-                                             illumination_geometry=_device[idx+1])
+                                              scattering_cm=scattering,
+                                              anisotropy=anisotropy,
+                                              illumination_geometry=_device[idx+1],
+                                              probe_position_mm=device.get_probe_position(self.global_settings))
 
             fluence = fluence / len(_device)
 
@@ -89,7 +91,9 @@ class OpticalForwardModuleBase(SimulationModule):
             fluence = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device)
+                                         illumination_geometry=_device,
+                                         probe_position_mm=device.get_probe_position(self.global_settings)
+            )
 
         optical_properties = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], properties_path)
         absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
