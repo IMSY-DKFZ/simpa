@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.io_handling.io_hdf5 import save_hdf5
+from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.settings import Settings
 from simpa.log import Logger
@@ -103,5 +103,9 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
             pipeline_element.run(digital_device_twin)
 
         logger.debug(f"Running pipeline for wavelength {wavelength}nm... [Done]")
+
+    if Tags.MINIMISE_FILE_SIZE not in settings or settings[Tags.MINIMISE_FILE_SIZE]:
+        all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
+        save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH])
 
     logger.info(f"The entire simulation pipeline required {time.time() - start_time} seconds.")
