@@ -20,7 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.core.device_digital_twins.digital_device_twin_base import PhotoacousticDevice
+from simpa.core.device_digital_twins import PhotoacousticDevice, \
+    CurvedArrayDetectionGeometry, MSOTAcuityIlluminationGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
@@ -47,139 +48,146 @@ class MSOTAcuityEcho(PhotoacousticDevice):
     """
 
     def __init__(self):
-        super().__init__()
-        self.pitch_mm = 0.34
-        self.radius_mm = 40
-        self.number_detector_elements = 256
-        self.detector_element_width_mm = 0.24
-        self.detector_element_length_mm = 13
-        self.center_frequency_Hz = 3.96e6
-        self.bandwidth_percent = 55
-        self.sampling_frequency_MHz = 40
-        self.probe_height_mm = 43.2
-        self.probe_width_mm = 2*np.sin(self.pitch_mm/self.radius_mm * 128)*self.radius_mm
+        super(MSOTAcuityEcho, self).__init__()
+
+        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.5,
+                                                          radius_mm=40,
+                                                          focus_in_field_of_view_mm=np.array([0, 0, 8]),
+                                                          number_detector_elements=256,
+                                                          detector_element_width_mm=0.24,
+                                                          detector_element_length_mm=13,
+                                                          center_frequency_hz=3.96e6,
+                                                          bandwidth_percent=55,
+                                                          sampling_frequency_mhz=40,
+                                                          probe_height_mm=43.2)
+
+        self.set_detection_geometry(detection_geometry)
+
+        illumination_geometry = MSOTAcuityIlluminationGeometry()
+
+        self.add_illumination_geometry(illumination_geometry)
+
         self.mediprene_membrane_height_mm = 1
-        self.focus_in_field_of_view_mm = np.array([0, 0, 8])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.VOLUME_CREATOR] != Tags.VOLUME_CREATOR_VERSATILE:
-            if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + self.mediprene_membrane_height_mm + 1):
+            if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.detection_geometry.probe_height_mm + self.mediprene_membrane_height_mm + 1):
                 self.logger.error("Volume z dimension is too small to encompass MSOT device in simulation!"
                                      "Must be at least {} mm but was {} mm"
-                                     .format((self.probe_height_mm + self.mediprene_membrane_height_mm + 1),
+                                     .format((self.detection_geometry.probe_height_mm + self.mediprene_membrane_height_mm + 1),
                                              global_settings[Tags.DIM_VOLUME_Z_MM]))
                 return False
-            if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
+            if global_settings[Tags.DIM_VOLUME_X_MM] <= self.detection_geometry.probe_width_mm:
                 self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
                                      "Must be at least {} mm but was {} mm"
-                                     .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
+                                     .format(self.detection_geometry.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
                 return False
-
-        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
-        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
-        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
-
         return True
 
-    def adjust_simulation_volume_and_settings(self, global_settings: Settings):
-        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
-        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
-        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
-        return global_settings
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
+        try:
+            volume_creator_settings = Settings(global_settings.get_volume_creation_settings())
+        except KeyError as e:
+            self.logger.warning("You called the update_settings_for_use_of_model_based_volume_creator method "
+                                "even though there are no volume creation settings defined in the "
+                                "settings dictionary.")
+            return
 
-    def get_illuminator_definition(self, global_settings: Settings):
-        """
-        IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
-        mcx simulation tool to represent the illumination geometry of this device.
+        device = MSOTAcuityEcho()
+        probe_size_mm = device.detection_geometry.probe_height_mm
+        mediprene_layer_height_mm = device.mediprene_membrane_height_mm
+        heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
 
-        :param global_settings: The global_settings instance containing the simulation instructions
-        :return:
-        """
-        source_type = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
+        new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
+                               heavy_water_layer_height_mm
 
-        nx = global_settings[Tags.DIM_VOLUME_X_MM]
-        ny = global_settings[Tags.DIM_VOLUME_Y_MM]
-        nz = global_settings[Tags.DIM_VOLUME_Z_MM]
-        spacing = global_settings[Tags.SPACING_MM]
+        # adjust the z-dim to msot probe height
+        global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
 
-        source_position = [round(nx / (spacing * 2.0)) + 0.5,
-                           round(ny / (spacing * 2.0) - 16.46 / spacing) + 0.5,
-                           spacing+5]     # The z-position
+        # adjust the x-dim to msot probe width
+        # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
+        # of the simulated volume.
 
-        # source_direction = [0, 0.381070, 0.9245460]       earlier calculation
-        source_direction = [0, 0.356091613, 0.934451049]       # new calculation TODO: Check for correctness
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(device.detection_geometry.probe_width_mm) + 1:
+            width_shift_for_structures_mm = (round(device.detection_geometry.probe_width_mm) + 1 - global_settings[Tags.DIM_VOLUME_X_MM]) / 2
+            global_settings[Tags.DIM_VOLUME_X_MM] = round(device.detection_geometry.probe_width_mm) + 1
+            device.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
+        else:
+            width_shift_for_structures_mm = 0
 
-        source_param1 = [30 / spacing, 0, 0, 0]
+        device.logger.debug(volume_creator_settings)
 
-        source_param2 = [0, 0, 0, 0]
+        for structure_key in volume_creator_settings[Tags.STRUCTURES]:
+            device.logger.debug("Adjusting " + str(structure_key))
+            structure_dict = volume_creator_settings[Tags.STRUCTURES][structure_key]
+            if Tags.STRUCTURE_START_MM in structure_dict:
+                structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                                 0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                                 2] + device.detection_geometry.probe_height_mm
+            if Tags.STRUCTURE_END_MM in structure_dict:
+                structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                               0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                               2] + device.detection_geometry.probe_height_mm
 
-        return {
-            "Type": source_type,
-            "Pos": source_position,
-            "Dir": source_direction,
-            "Param1": source_param1,
-            "Param2": source_param2
-        }
+        if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
+            us_gel_thickness = np.random.normal(0.4, 0.1)
+            us_gel_layer_settings = Settings({
+                Tags.PRIORITY: 5,
+                Tags.STRUCTURE_START_MM: [0, 0,
+                                          heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+                Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
+                Tags.CONSIDER_PARTIAL_VOLUME: True,
+                Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
+                Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
+            })
 
-    def get_detector_element_positions_base_mm(self) -> np.ndarray:
+            volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
+        else:
+            us_gel_thickness = 0
 
-        pitch_angle = self.pitch_mm / self.radius_mm
-        self.logger.debug(f"pitch angle: {pitch_angle}")
-        detector_radius = self.radius_mm
+        mediprene_layer_settings = Settings({
+            Tags.PRIORITY: 5,
+            Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness],
+            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+            Tags.CONSIDER_PARTIAL_VOLUME: True,
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
+            Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
+        })
 
-        # if distortion is not None:
-        #     focus[0] -= np.round(distortion[1] / (2 * global_settings[Tags.SPACING_MM]))
+        volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
 
-        detector_positions = np.zeros((self.number_detector_elements, 3))
-        # go from -127.5, -126.5, ..., 0, .., 126.5, 177.5 instead of between -128 and 127
-        det_elements = np.arange(-int(self.number_detector_elements / 2) + 0.5,
-                                 int(self.number_detector_elements / 2) + 0.5)
-        detector_positions[:, 0] = self.focus_in_field_of_view_mm[0] \
-            + np.sin(pitch_angle * det_elements) * detector_radius
-        detector_positions[:, 2] = self.focus_in_field_of_view_mm[2] \
-            - np.sqrt(detector_radius ** 2 - (np.sin(pitch_angle*det_elements) * detector_radius) ** 2)
-
-        return detector_positions
-
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
-        detector_positions = self.get_detector_element_positions_base_mm()
-        detector_orientations = np.subtract(self.focus_in_field_of_view_mm, detector_positions)
-        norm = np.linalg.norm(detector_orientations, axis=-1)
-        for dim in range(3):
-            detector_orientations[:, dim] = detector_orientations[:, dim]/norm
-        return detector_orientations
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
-                               global_settings[Tags.DIM_VOLUME_Y_MM],
-                               global_settings[Tags.DIM_VOLUME_Z_MM]])
-        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])
+        background_settings = Settings({
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
+            Tags.STRUCTURE_TYPE: Tags.BACKGROUND
+        })
+        volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
 
 
 if __name__ == "__main__":
     device = MSOTAcuityEcho()
     settings = Settings()
-    settings[Tags.DIM_VOLUME_X_MM] = 20
+    settings[Tags.DIM_VOLUME_X_MM] = 100
     settings[Tags.DIM_VOLUME_Y_MM] = 50
-    settings[Tags.DIM_VOLUME_Z_MM] = 20
+    settings[Tags.DIM_VOLUME_Z_MM] = 100
     settings[Tags.SPACING_MM] = 0.5
     settings[Tags.STRUCTURES] = {}
-    settings[Tags.VOLUME_CREATOR] = Tags.VOLUME_CREATOR_VERSATILE
     # settings[Tags.DIGITAL_DEVICE_POSITION] = [50, 50, 50]
-    settings = device.adjust_simulation_volume_and_settings(settings)
+    device.update_settings_for_use_of_model_based_volume_creator(settings)
 
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
 
-    positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
-    detector_elements = device.get_detector_element_orientations(global_settings=settings)
+    detector_positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(settings)
+    detector_orientations = device.detection_geometry.get_detector_element_orientations(settings)
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
-    positions = np.round(positions/settings[Tags.SPACING_MM]).astype(int)
-    position_map = np.zeros((x_dim, z_dim))
-    position_map[positions[:, 0], positions[:, 2]] = 1
+    detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
+    # position_map = np.zeros((x_dim, z_dim))
+    # position_map[detector_positions[:, 0], detector_positions[:, 2]] = 1
     import matplotlib.pyplot as plt
-    plt.scatter(positions[:, 0], positions[:, 2])
-    plt.quiver(positions[:, 0], positions[:, 2], detector_elements[:, 0], detector_elements[:, 2])
+    plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
+    plt.quiver(detector_positions[:, 0], detector_positions[:, 2], detector_orientations[:, 0], detector_orientations[:, 2])
     plt.show()
     # plt.imshow(map)
     # plt.show()

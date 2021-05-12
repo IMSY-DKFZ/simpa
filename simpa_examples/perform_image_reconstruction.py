@@ -23,7 +23,7 @@
 from simpa.io_handling import load_hdf5, load_data_field
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
-from simpa.core.device_digital_twins.devices.msot_device import MSOTAcuityEcho
+from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 import numpy as np
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter

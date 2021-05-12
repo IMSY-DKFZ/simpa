@@ -25,7 +25,6 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.core.device_digital_twins.devices.msot_device import MSOTAcuityEcho
 import numpy as np
 from simpa.utils.path_manager import PathManager
 from simpa.core.device_digital_twins import *
@@ -39,7 +38,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.25
+SPACING = 0.15
 RANDOM_SEED = 4711
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -48,23 +47,6 @@ path_manager = PathManager()
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
-
-
-class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
-    """
-    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
-
-    """
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        return np.asarray([0, 0, 0])
-
-    def __init__(self):
-        super().__init__()
-        self.set_detection_geometry(LinearDetector())
-        self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
-                                                                direction_vector_mm=[0, 0, 5]))
-
 
 def create_example_tissue():
     """
@@ -111,79 +93,6 @@ def create_example_tissue():
     tissue_dict["vessel_1"] = vessel_1_dictionary
     return tissue_dict
 
-
-def add_msot_specific_settings(settings: Settings):
-    volume_creator_settings = Settings(settings.get_volume_creation_settings())
-    device = MSOTAcuityEcho()
-    probe_size_mm = device.probe_height_mm
-    mediprene_layer_height_mm = device.mediprene_membrane_height_mm
-    heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
-
-    new_volume_height_mm = settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
-                           heavy_water_layer_height_mm
-
-    # adjust the z-dim to msot probe height
-    settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
-
-    # adjust the x-dim to msot probe width
-    # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
-    # of the simulated volume.
-
-    if settings[Tags.DIM_VOLUME_X_MM] < round(device.probe_width_mm) + 1:
-        width_shift_for_structures_mm = (round(device.probe_width_mm) + 1 - settings[Tags.DIM_VOLUME_X_MM]) / 2
-        settings[Tags.DIM_VOLUME_X_MM] = round(device.probe_width_mm) + 1
-        device.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {settings[Tags.DIM_VOLUME_X_MM]}")
-    else:
-        width_shift_for_structures_mm = 0
-
-    device.logger.debug(volume_creator_settings)
-
-    for structure_key in volume_creator_settings[Tags.STRUCTURES]:
-        device.logger.debug("Adjusting " + str(structure_key))
-        structure_dict = volume_creator_settings[Tags.STRUCTURES][structure_key]
-        if Tags.STRUCTURE_START_MM in structure_dict:
-            structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                             0] + width_shift_for_structures_mm
-            structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                             2] + device.probe_height_mm
-        if Tags.STRUCTURE_END_MM in structure_dict:
-            structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                           0] + width_shift_for_structures_mm
-            structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                           2] + device.probe_height_mm
-
-    if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
-        us_gel_thickness = np.random.normal(0.4, 0.1)
-        us_gel_layer_settings = Settings({
-            Tags.PRIORITY: 5,
-            Tags.STRUCTURE_START_MM: [0, 0,
-                                      heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
-            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
-            Tags.CONSIDER_PARTIAL_VOLUME: True,
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
-            Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
-        })
-
-        volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
-    else:
-        us_gel_thickness = 0
-
-    mediprene_layer_settings = Settings({
-        Tags.PRIORITY: 5,
-        Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness],
-        Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
-        Tags.CONSIDER_PARTIAL_VOLUME: True,
-        Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
-        Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
-    })
-
-    volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
-
-    background_settings = Settings({
-        Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
-        Tags.STRUCTURE_TYPE: Tags.BACKGROUND
-    })
-    volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
 
 # Seed the numpy random configuration prior to creating the global_settings file in
 # order to ensure that the same volume
@@ -274,7 +183,9 @@ settings["noise_time_series"] = {
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
 
-add_msot_specific_settings(settings)
+device = MSOTAcuityEcho()
+
+device.update_settings_for_use_of_model_based_volume_creator(settings)
 
 SIMUATION_PIPELINE = [
     VolumeCreationModelModelBasedAdapter(settings),
@@ -285,7 +196,7 @@ SIMUATION_PIPELINE = [
     ImageReconstructionModuleDelayAndSumAdapter(settings)
 ]
 
-simulate(SIMUATION_PIPELINE, settings, ExampleDeviceSlitIlluminationLinearDetector())
+simulate(SIMUATION_PIPELINE, settings, device)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]

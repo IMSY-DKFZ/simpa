@@ -22,9 +22,9 @@
 # FIXME temporary workaround for newest Intel architectures
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-from simpa.core.device_digital_twins.digital_device_base import PhotoacousticDevice
-from simpa.core.device_digital_twins.illumination_geometry_base import SlitIlluminationGeometry
-from simpa.core.device_digital_twins.detection_geometry_base import LinearDetector
+from simpa.core.device_digital_twins.digital_device_twin_base import PhotoacousticDevice
+from simpa.core.device_digital_twins.devices.illumination_geometries.slit_illumination import SlitIlluminationGeometry
+from simpa.core.device_digital_twins.devices.detection_geometries.linear_array import LinearArrayDetectionGeometry
 
 from simpa.utils import Settings, Tags
 import numpy as np
@@ -41,7 +41,7 @@ class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
 
     def __init__(self):
         super().__init__()
-        self.set_detection_geometry(LinearDetector())
+        self.set_detection_geometry(LinearArrayDetectionGeometry())
         self.add_illumination_geometry(SlitIlluminationGeometry())
 
 
