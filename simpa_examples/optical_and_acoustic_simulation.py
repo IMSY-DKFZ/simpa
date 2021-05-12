@@ -180,9 +180,7 @@ settings["noise_time_series"] = {
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
 
-device = RSOMExplorerP50(element_spacing_mm=SPACING,
-                         number_elements_x=140,
-                         number_elements_y=40)
+device = MSOTAcuityEcho()
 
 device.update_settings_for_use_of_model_based_volume_creator(settings)
 
@@ -192,7 +190,7 @@ SIMUATION_PIPELINE = [
     GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    ReconstructionModuleTimeReversalAdapter(settings)
+    ImageReconstructionModuleDelayAndSumAdapter(settings)
 ]
 
 simulate(SIMUATION_PIPELINE, settings, device)
