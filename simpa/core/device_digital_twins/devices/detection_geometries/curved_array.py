@@ -29,20 +29,21 @@ from simpa.utils import Settings, Tags
 class CurvedArrayDetectionGeometry(DetectionGeometryBase):
     """
     This class represents a digital twin of a ultrasound detection device
-    with a curved detection geometry.
+    with a curved detection geometry
 
     """
 
     def __init__(self, pitch_mm=0.5,
                  radius_mm=40,
-                 focus_in_field_of_view_mm = None,
+                 focus_in_field_of_view_mm=None,
                  number_detector_elements=256,
                  detector_element_width_mm=0.24,
                  detector_element_length_mm=13,
                  center_frequency_hz=3.96e6,
                  bandwidth_percent=55,
                  sampling_frequency_mhz=40,
-                 probe_height_mm=43.2):
+                 probe_height_mm=43.2,
+                 angular_origin_offset=np.pi):
 
         super().__init__(number_detector_elements=number_detector_elements,
                          detector_element_width_mm=detector_element_width_mm,
@@ -55,9 +56,10 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
 
         self.pitch_mm = pitch_mm
         self.radius_mm = radius_mm
+        self.angular_origin_offset = angular_origin_offset
+
         if focus_in_field_of_view_mm is None:
             focus_in_field_of_view_mm = np.array([0, 0, 8])
-
         self.focus_in_field_of_view_mm = focus_in_field_of_view_mm
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
@@ -85,19 +87,11 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         pitch_angle = self.pitch_mm / self.radius_mm
         self.logger.debug(f"pitch angle: {pitch_angle}")
         detector_radius = self.radius_mm
-
-        # if distortion is not None:
-        #     focus[0] -= np.round(distortion[1] / (2 * global_settings[Tags.SPACING_MM]))
-
         detector_positions = np.zeros((self.number_detector_elements, 3))
-        # go from -127.5, -126.5, ..., 0, .., 126.5, 177.5 instead of between -128 and 127
         det_elements = np.arange(-int(self.number_detector_elements / 2) + 0.5,
                                  int(self.number_detector_elements / 2) + 0.5)
-        detector_positions[:, 0] = self.focus_in_field_of_view_mm[0] \
-                                   + np.sin(pitch_angle * det_elements) * detector_radius
-        detector_positions[:, 2] = self.focus_in_field_of_view_mm[2] \
-                                   - np.sqrt(
-            detector_radius ** 2 - (np.sin(pitch_angle * det_elements) * detector_radius) ** 2)
+        detector_positions[:, 0] = np.sin(pitch_angle * det_elements - self.angular_origin_offset) * detector_radius
+        detector_positions[:, 2] = np.cos(pitch_angle * det_elements - self.angular_origin_offset) * detector_radius
 
         return detector_positions
 

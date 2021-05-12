@@ -88,7 +88,8 @@ class OpticalForwardModuleBase(SimulationModule):
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
                                          illumination_geometry=_device[0])
-            for idx in range(len(_device)):
+            for idx in range(len(_device)-1):
+                # we already looked at the 0th element, so go from 1 to n-1
                 fluence += self.forward_model(absorption_cm=absorption,
                                              scattering_cm=scattering,
                                              anisotropy=anisotropy,

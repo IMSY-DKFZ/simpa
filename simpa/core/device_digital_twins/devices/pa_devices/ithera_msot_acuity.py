@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simpa.core.device_digital_twins import PhotoacousticDevice, \
-    CurvedArrayDetectionGeometry, MSOTAcuityIlluminationGeometry
+    CurvedArrayDetectionGeometry, MSOTInVisionIlluminationGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
@@ -59,11 +59,12 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           center_frequency_hz=3.96e6,
                                                           bandwidth_percent=55,
                                                           sampling_frequency_mhz=40,
-                                                          probe_height_mm=43.2)
+                                                          probe_height_mm=43.2,
+                                                          angular_origin_offset=np.pi)
 
         self.set_detection_geometry(detection_geometry)
 
-        illumination_geometry = MSOTAcuityIlluminationGeometry()
+        illumination_geometry = MSOTInVisionIlluminationGeometry()
 
         self.add_illumination_geometry(illumination_geometry)
 
@@ -166,6 +167,8 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
 
 if __name__ == "__main__":
+    import os
+    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
     device = MSOTAcuityEcho()
     settings = Settings()
     settings[Tags.DIM_VOLUME_X_MM] = 100
