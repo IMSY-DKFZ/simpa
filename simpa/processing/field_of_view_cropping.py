@@ -32,6 +32,7 @@ class FieldOfViewCroppingProcessingComponent(ProcessingComponent):
 
     def __init__(self, global_settings, settings_key=None):
         if settings_key is None:
+            # TODO Extract from global settings all the fields that should be cropped
             global_settings["FieldOfViewCroppingProcessingComponent"] = Settings({
                       Tags.DATA_FIELD: TissueProperties.property_tags +
                                            [Tags.OPTICAL_MODEL_FLUENCE,
@@ -84,9 +85,9 @@ class FieldOfViewCroppingProcessingComponent(ProcessingComponent):
                 continue
 
             # crop
-            data_array = np.squeeze(data_array[field_of_view_voxels[0]:field_of_view_voxels[1]+1,
-                                    field_of_view_voxels[2]:field_of_view_voxels[3]+1,
-                                    field_of_view_voxels[4]:field_of_view_voxels[5]+1])
+            data_array = np.squeeze(data_array[field_of_view_voxels[0]:field_of_view_voxels[1],
+                                    field_of_view_voxels[2]:field_of_view_voxels[3],
+                                    field_of_view_voxels[4]:field_of_view_voxels[5]])
 
             self.logger.debug(f"data array shape after cropping: {np.shape(data_array)}")
             # save

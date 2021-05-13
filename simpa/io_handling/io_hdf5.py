@@ -36,7 +36,7 @@ ABSORPTION_SPECTRUM = "absorption_spectrum"
 logger = Logger()
 
 
-def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_compression: str = "gzip"):
+def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_compression: str = None):
     """
     Saves a dictionary with arbitrary content or an item of any kind to an hdf5-file with given filepath.
 

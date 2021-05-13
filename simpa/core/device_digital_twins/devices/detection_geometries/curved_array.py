@@ -43,6 +43,9 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
                  sampling_frequency_mhz=40,
                  probe_height_mm=43.2,
                  angular_origin_offset=np.pi):
+        """
+        :param angular_origin_offset: TODO
+        """
 
         super().__init__(number_detector_elements=number_detector_elements,
                          detector_element_width_mm=detector_element_width_mm,

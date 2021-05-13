@@ -79,6 +79,3 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
         detector_orientations = np.zeros((self.number_detector_elements, 3))
         detector_orientations[:, 2] = -1
         return detector_orientations
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        return np.array(0, 0, 0)

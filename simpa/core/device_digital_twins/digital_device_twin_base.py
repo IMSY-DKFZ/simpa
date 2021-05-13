@@ -125,6 +125,7 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
         return self.illumination_geometries
 
     def get_field_of_view_extent_mm(self) -> np.ndarray:
+        # TODO also integrate the illumination bounds -> maximum extent, smallest for start, biggest for end
         return self.detection_geometry.get_field_of_view_extent_mm()
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:

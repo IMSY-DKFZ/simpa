@@ -45,8 +45,8 @@ class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
         source_type = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
         spacing = global_settings[Tags.SPACING_MM]
         source_position = [probe_position_mm[0]/spacing + 0.5,
-                           probe_position_mm[1]/spacing + 0.5,
-                           probe_position_mm[2]/spacing + 0.5]
+                           probe_position_mm[1]/spacing + 0.5 - 16.46 / spacing,
+                           probe_position_mm[2]/spacing + 0.5 + 5] # FIXME: This seems to be a bug
 
         # source_direction = [0, 0.381070, 0.9245460]       earlier calculation
         source_direction = [0, 0.356091613, 0.934451049]       # new calculation TODO: Check for correctness

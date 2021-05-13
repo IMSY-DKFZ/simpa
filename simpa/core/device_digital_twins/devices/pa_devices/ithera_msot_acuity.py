@@ -74,7 +74,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         nx = global_settings[Tags.DIM_VOLUME_X_MM]
         ny = global_settings[Tags.DIM_VOLUME_Y_MM]
         spacing = global_settings[Tags.SPACING_MM]
-        return np.asarray([nx / 2.0, ny / 2.0 - 16.46, 5*spacing])
+        return np.asarray([nx / 2.0, ny / 2.0, spacing])
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         try:

@@ -92,8 +92,7 @@ class OpticalForwardModuleBase(SimulationModule):
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
                                          illumination_geometry=_device,
-                                         probe_position_mm=device.get_probe_position_mm(self.global_settings)
-            )
+                                         probe_position_mm=device.get_probe_position_mm(self.global_settings))
 
         optical_properties = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], properties_path)
         absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
