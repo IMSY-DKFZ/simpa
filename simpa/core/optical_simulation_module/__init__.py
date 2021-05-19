@@ -25,6 +25,7 @@ from abc import abstractmethod
 from simpa.core.simulation_components import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
+import gc
 
 
 class OpticalForwardModuleBase(SimulationModule):
@@ -71,14 +72,13 @@ class OpticalForwardModuleBase(SimulationModule):
         absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
         scattering = optical_properties[Tags.PROPERTY_SCATTERING_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
         anisotropy = optical_properties[Tags.PROPERTY_ANISOTROPY][str(self.global_settings[Tags.WAVELENGTH])]
+        gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+        del optical_properties
+        gc.collect()
 
         fluence = self.forward_model(absorption_cm=absorption,
                                      scattering_cm=scattering,
                                      anisotropy=anisotropy)
-
-        optical_properties = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], properties_path)
-        absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
-        gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
 
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.component_settings:
             units = Tags.UNITS_PRESSURE
