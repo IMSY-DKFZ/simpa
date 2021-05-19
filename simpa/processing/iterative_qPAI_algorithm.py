@@ -104,6 +104,12 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         else:
             self.logger.debug("Save intermediate absorptions: False")
 
+        # bypass JSON-dump error by manually caching seeds as int()
+        if Tags.RANDOM_SEED in self.global_settings:
+            self.global_settings[Tags.RANDOM_SEED] = int(self.global_settings[Tags.RANDOM_SEED])
+        if Tags.MCX_SEED in self.optical_settings:
+            self.global_settings[Tags.MCX_SEED] = int(self.global_settings[Tags.MCX_SEED])
+
         # run reconstruction
         reconstructed_absorption, list_of_intermediate_absorptions = self.iterative_absorption_reconstruction()
 
@@ -111,23 +117,27 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         if self.global_settings[Tags.SPACING_MM] != self.original_spacing:
             self.global_settings[Tags.SPACING_MM] = self.original_spacing
 
-        if Tags.ILLUMINATION_POSITION in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.ILLUMINATION_POSITION in self.optical_settings:
             pos = [(elem / self.downscale_factor) for elem in
-                   self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION]]
-            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION] = pos
+                   self.optical_settings[Tags.ILLUMINATION_POSITION]]
+            self.optical_settings[Tags.ILLUMINATION_POSITION] = pos
 
-        if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.ILLUMINATION_PARAM1 in self.optical_settings:
             param1 = [(elem / self.downscale_factor) for elem in
-                      self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1]]
-            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1] = param1
+                      self.optical_settings[Tags.ILLUMINATION_PARAM1]]
+            self.optical_settings[Tags.ILLUMINATION_PARAM1] = param1
 
-        if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.ILLUMINATION_PARAM2 in self.optical_settings:
             param2 = [(elem / self.downscale_factor) for elem in
-                      self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2]]
-            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2] = param2
+                      self.optical_settings[Tags.ILLUMINATION_PARAM2]]
+            self.optical_settings[Tags.ILLUMINATION_PARAM2] = param2
 
         # save absorption update of last iteration step in hdf5 data field
-        wavelength = self.global_settings[Tags.WAVELENGTH]
+        # bypass wavelength error resulting from loading settings from existing hdf5 file
+        if Tags.WAVELENGTH in self.global_settings:
+            wavelength = self.global_settings[Tags.WAVELENGTH]
+        else:
+            wavelength = self.global_settings[Tags.WAVELENGTHS][0]
         data_field = Tags.ITERATIVE_qPAI_RESULT
         save_data_field(reconstructed_absorption, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
                         data_field, wavelength)
@@ -230,8 +240,12 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         """
 
         # get simulation output which contains initial pressure and scattering
-        wavelength = self.global_settings[Tags.WAVELENGTH]
-
+        # bypass wavelength error resulting from loading settings from existing hdf5 file
+        if Tags.WAVELENGTH in self.global_settings:
+            wavelength = self.global_settings[Tags.WAVELENGTH]
+        else:
+            wavelength = self.global_settings[Tags.WAVELENGTHS][0]
+        self.logger.debug(f"Wavelength: {wavelength}")
         # get initial pressure and scattering
         image = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
                                 wavelength)
@@ -309,20 +323,20 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         if self.global_settings[Tags.SPACING_MM] != new_spacing:
             self.global_settings[Tags.SPACING_MM] = new_spacing
 
-        if Tags.ILLUMINATION_POSITION in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.ILLUMINATION_POSITION in self.optical_settings:
             pos = [(elem * self.downscale_factor) for elem in
-                   self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION]]
-            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_POSITION] = pos
+                   self.optical_settings[Tags.ILLUMINATION_POSITION]]
+            self.optical_settings[Tags.ILLUMINATION_POSITION] = pos
 
-        if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.ILLUMINATION_PARAM1 in self.optical_settings:
             param1 = [(elem * self.downscale_factor) for elem in
-                      self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1]]
-            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM1] = param1
+                      self.optical_settings[Tags.ILLUMINATION_PARAM1]]
+            self.optical_settings[Tags.ILLUMINATION_PARAM1] = param1
 
-        if Tags.ILLUMINATION_PARAM1 in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.ILLUMINATION_PARAM2 in self.optical_settings:
             param2 = [(elem * self.downscale_factor) for elem in
-                      self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2]]
-            self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.ILLUMINATION_PARAM2] = param2
+                      self.optical_settings[Tags.ILLUMINATION_PARAM2]]
+            self.optical_settings[Tags.ILLUMINATION_PARAM2] = param2
 
         return downscaled_image, downscaled_scattering
 
@@ -415,9 +429,9 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         :raises: AssertionError: if Tags.OPTICAL_MODEL tag was not or incorrectly defined in settings.
         """
 
-        if Tags.OPTICAL_MODEL not in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.OPTICAL_MODEL not in self.optical_settings:
             raise AssertionError("Tags.OPTICAL_MODEL tag was not specified in the settings.")
-        model = self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.OPTICAL_MODEL]
+        model = self.optical_settings[Tags.OPTICAL_MODEL]
 
         if model == Tags.OPTICAL_MODEL_MCX:
             forward_model_implementation = OpticalForwardModelMcxAdapter(self.global_settings)
@@ -443,13 +457,13 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         :return: Reconstructed absorption.
         """
 
-        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.optical_settings:
             if Tags.PROPERTY_GRUNEISEN_PARAMETER in self.global_settings:
                 gamma = self.global_settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
             else:
                 gamma = calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS)
                 gamma = gamma * np.ones(np.shape(image_data))
-            factor = (self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
+            factor = (self.optical_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
             absorption = np.array(image_data / ((fluence + sigma) * gamma * factor))
         else:
             absorption = image_data / (fluence + sigma)
@@ -468,13 +482,13 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         :return: sse error.
         """
 
-        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.global_settings[Tags.OPTICAL_MODEL_SETTINGS]:
+        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.optical_settings:
             if Tags.PROPERTY_GRUNEISEN_PARAMETER in self.global_settings:
                 gamma = self.global_settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
             else:
                 gamma = calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS)
                 gamma = gamma * np.ones(np.shape(image_data))
-            factor = (self.global_settings[Tags.OPTICAL_MODEL_SETTINGS][Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
+            factor = (self.optical_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000) * 1e6
             predicted_pressure = absorption * (fluence + sigma) * gamma * factor
         else:
             predicted_pressure = absorption * (fluence + sigma)
