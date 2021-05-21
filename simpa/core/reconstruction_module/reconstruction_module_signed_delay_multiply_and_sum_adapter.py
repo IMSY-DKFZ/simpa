@@ -30,12 +30,11 @@ from simpa.utils.settings import Settings
 from simpa.processing.preprocess_images import reconstruction_mode_transformation
 from simpa.processing.signal_processing import get_apodization_factor, bandpass_filtering, apply_b_mode
 
-
-class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
+class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data):
         """
-        Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
+        Applies the signed Delay Multiply and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
         first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
         beamforming settings (dictionary).
         A reconstructed image (2D numpy array) is returned.
@@ -192,10 +191,20 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
         # set values of invalid indices to 0 so that they don't influence the result
         values[invalid_indices] = 0
-        sum = torch.sum(values, dim=3)
-        counter = torch.count_nonzero(values, dim=3)
-        torch.divide(sum, counter, out=output)
+        DAS = torch.sum(values, dim=3)
 
+        del delays # free memory of delays
+
+        for x in range(xdim):
+            yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=device),
+                                            torch.arange(zdim, device=device),
+                                            torch.arange(n_sensor_elements, device=device),
+                                            torch.arange(n_sensor_elements, device=device))
+            M = values[x,yy,zz,nn] * values[x,yy,zz,mm]
+            M = torch.sign(M) * torch.sqrt(torch.abs(M))
+            # only take upper triangle without diagonal and sum up along n and m axis (last two)
+            output[x] = torch.triu(M, diagonal=1).sum(dim=(-1,-2))
+        output = torch.sign(DAS) * output
         reconstructed = output.cpu().numpy()
 
         # check for B-mode methods and perform envelope detection on beamformed image if specified
@@ -208,7 +217,7 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         return reconstructed.squeeze()
 
 
-def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
+def reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
                                       time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
@@ -236,5 +245,5 @@ def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray, setti
     if Tags.SPACING_MM not in settings or settings[Tags.SPACING_MM] is None:
         settings[Tags.SPACING_MM] = sensor_spacing
 
-    adapter = ImageReconstructionModuleDelayAndSumAdapter(settings)
+    adapter = ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(settings)
     return adapter.reconstruction_algorithm(time_series_sensor_data)
