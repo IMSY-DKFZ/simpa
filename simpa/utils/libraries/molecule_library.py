@@ -334,13 +334,13 @@ class MoleculeLibrary(object):
     @staticmethod
     def dermal_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="dermal_scatterer",
-                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        absorption_spectrum=SPECTRAL_LIBRARY.SKIN_BASELINE,
                         volume_fraction=volume_fraction,
                         mus500=OpticalTissueProperties.MUS500_DERMIS,
                         b_mie=OpticalTissueProperties.BMIE_DERMIS,
                         f_ray=OpticalTissueProperties.FRAY_DERMIS,
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY),
+                            OpticalTissueProperties.DERMIS_ANISOTROPY),
                         density=StandardProperties.DENSITY_SKIN,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN

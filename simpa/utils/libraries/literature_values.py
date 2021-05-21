@@ -169,12 +169,12 @@ class OpticalTissueProperties:
     FRAY_BACKGROUND_TISSUE = 0.153  # Table 2: Average over all other soft tissue
     BMIE_BACKGROUND_TISSUE = 1.091  # Table 2: Average over all other soft tissue
 
-    MUS500_EPIDERMIS = 93.01  # Bashkatov et al. 2011 but adjusted for EPIDERMIS_ANISOTROPY
+    MUS500_EPIDERMIS = 93.01  # Bashkatov et al. 2011 but adjusted for epidermis anisotropy
     FRAY_EPIDERMIS = 0.29  # Table 1; Salomatina et al 2006; One value for epidermis
     BMIE_EPIDERMIS = 2.8  # Table 1; Salomatina et al 2006; One value for epidermis
-    MUS500_DERMIS = 436.0  # Table 1; Salomatina et al 2006; One value for dermis
-    FRAY_DERMIS = 0.41  # Table 1; Salomatina et al 2006; One value for dermis
-    BMIE_DERMIS = 0.69  # Table 1; Salomatina et al 2006; One value for dermis
+    MUS500_DERMIS = 175.0  # Bashkatov et al. 2011 but adjusted for DERMIS_ANISOTROPY
+    FRAY_DERMIS = 0.1  # Table 1; Salomatina et al 2006; One value for dermis
+    BMIE_DERMIS = 3.5  # Table 1; Salomatina et al 2006; One value for dermis
     MUS500_FAT = 193.0  # Table 2 average fatty tissue
     FRAY_FAT = 0.174  # Table 2 average fatty tissue
     BMIE_FAT = 0.447  # Table 2 average fatty tissue
@@ -185,6 +185,7 @@ class OpticalTissueProperties:
     FRAY_BONE = 0.022  # Table 2 Mean for bone
     BMIE_BONE = 0.326  # Table 2 Mean for bone
     STANDARD_ANISOTROPY = 0.9  # Average anisotropy of measured values presented in paper
+    DERMIS_ANISOTROPY = 0.715
 
     # Water content of bone:
     # @article{timmins1977bone,

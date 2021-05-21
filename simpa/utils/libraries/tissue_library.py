@@ -25,6 +25,7 @@ from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
 from simpa.utils.libraries.molecule_library import MolecularComposition
+from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary
 from simpa.utils.calculate import randomize_uniform
 
 
@@ -69,7 +70,7 @@ class TissueLibrary(object):
                                                                     mua),
                                                                 volume_fraction=1.0,
                                                                 mus500=mus, b_mie=0.0, f_ray=0.0,
-                                                                anisotropy_spectrum=g))
+                                                                anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(g)))
                                                .get_molecular_composition(SegmentationClasses.GENERIC))
 
     def muscle(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
@@ -123,30 +124,31 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.EPIDERMIS))
 
-    def dermis(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
+    def dermis(self, background_oxy=None, blood_volume_fraction=None):
         """
 
         :return: a settings dictionary containing all min and max parameters fitting for dermis tissue.
         """
 
-        # Get water volume fraction
-        water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
-
         # Determine muscle oxygenation
-        oxy = randomize_uniform(background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
-                                background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
+        if background_oxy is None:
+            oxy = 0.5
+        else:
+            oxy = background_oxy
+
+        if blood_volume_fraction is None:
+            bvf = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE
+        else:
+            bvf = blood_volume_fraction
 
         # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(
-            OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE, oxy)
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(bvf, oxy)
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.dermal_scatterer(
-                                                       1-OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
+                .append(MOLECULE_LIBRARY.dermal_scatterer(1.0 - bvf))
                 .get_molecular_composition(SegmentationClasses.DERMIS))
 
     def subcutaneous_fat(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):

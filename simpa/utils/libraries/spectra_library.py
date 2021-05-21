@@ -106,6 +106,8 @@ class AbsorptionSpectrumLibrary(object):
     CONSTANT_ABSORBER_ZERO = Spectrum("Constant Absorber (0)", np.asarray([450, 1000]), np.asarray([1e-10, 1e-10]))
     CONSTANT_ABSORBER_ONE = Spectrum("Constant Absorber (1)", np.asarray([450, 1000]), np.asarray([1, 1]))
     CONSTANT_ABSORBER_TEN = Spectrum("Constant Absorber (10)", np.asarray([450, 1000]), np.asarray([10, 10]))
+    SKIN_BASELINE = Spectrum("Skin Baseline", np.arange(450, 1001, 1),
+                             np.asarray([0.244 + 85.3 * np.e**(-(nm - 154)/66.2) for nm in np.arange(450, 1001, 1)]))
 
     @staticmethod
     def CONSTANT_ABSORBER_ARBITRARY(absorption_coefficient: float = 1):

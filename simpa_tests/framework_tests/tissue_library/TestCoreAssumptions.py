@@ -34,7 +34,8 @@ class TestCoreAssumptions(unittest.TestCase):
             total_volume_fraction = 0
             for molecule in method(TISSUE_LIBRARY):
                 total_volume_fraction += molecule.volume_fraction
-            self.assertLessEqual(total_volume_fraction, 1.0, f"Volume fraction was greater than 1.0 for {method_name}")
+            self.assertAlmostEqual(total_volume_fraction, 1.0, 3,
+                                   f"Volume fraction not 1.0 +/- 0.001 for {method_name}")
 
     @staticmethod
     def get_all_tissue_library_methods():
