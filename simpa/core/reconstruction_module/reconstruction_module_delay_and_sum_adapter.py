@@ -103,9 +103,9 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         else:
             dev = "cuda" if self.global_settings[Tags.GPU] else "cpu"
 
-        device = torch.device(dev)
-        sensor_positions = sensor_positions.to(device)
-        time_series_sensor_data = time_series_sensor_data.to(device)
+        torch_device = torch.device(dev)
+        sensor_positions = sensor_positions.to(torch_device)
+        time_series_sensor_data = time_series_sensor_data.to(torch_device)
 
         # array must be of correct dimension
         assert time_series_sensor_data.ndim == 2, 'Time series data must have exactly 2 dimensions' \
@@ -156,12 +156,12 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
                           f',number of sensor elements: {n_sensor_elements}')
 
         # construct output image
-        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=device)
+        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=torch_device)
 
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=device),
-                                        torch.arange(ydim, device=device),
-                                        torch.arange(zdim, device=device),
-                                        torch.arange(n_sensor_elements, device=device))
+        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=torch_device),
+                                        torch.arange(ydim, device=torch_device),
+                                        torch.arange(zdim, device=torch_device),
+                                        torch.arange(n_sensor_elements, device=torch_device))
 
         delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
                             (xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj])) ** 2 +
@@ -184,7 +184,7 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         if Tags.RECONSTRUCTION_APODIZATION_METHOD in self.component_settings:
             apodization = get_apodization_factor(apodization_method=self.component_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD],
                                                  dimensions=(xdim, ydim, zdim), n_sensor_elements=n_sensor_elements,
-                                                 device=device)
+                                                 device=torch_device)
             values = values * apodization
 
         # set values of invalid indices to 0 so that they don't influence the result
