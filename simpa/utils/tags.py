@@ -1272,10 +1272,69 @@ class Tags:
     Usage: naming convention
     """
 
-
-
-    LINEAR_UNMIXING_CHROMOPHORE_DICT = "chromophore_dict"
+    LINEAR_UNMIXING_OXYHEMOGLOBIN = "linear_unmixing_oxyhemoglobin"
     """
-    List of wavelengths for oxy and deoxy chromophores.\n
+    List of wavelengths used in linear unmixing for oxyhemoglobin chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_DEOXYHEMOGLOBIN = "linear_unmixing_deoxyhemoglobin"
+    """
+    List of wavelengths used in linear unmixing for deoxyhemoglobin chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_WATER = "linear_unmixing_water"
+    """
+    List of wavelengths used in linear unmixing for water chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_FAT = "linear_unmixing_fat"
+    """
+    List of wavelengths used in linear unmixing for fat chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_MELANIN = "linear_unmixing_melanin"
+    """
+    List of wavelengths used in linear unmixing for melanin chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_NICKEL_SULPHIDE = "linear_unmixing_nickel_sulphide"
+    """
+    List of wavelengths used in linear unmixing for nickel sulphide chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_COPPER_SULPHIDE = "linear_unmixing_copper_sulphide"
+    """
+    List of wavelengths used in linear unmixing for copper sulphide chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO = "linear_unmixing_constant_zero"
+    """
+    List of wavelengths used in linear unmixing for constant absorber (zero) chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE = "linear_unmixing_constant_one"
+    """
+    List of wavelengths used in linear unmixing for constant absorber (one) chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN = "linear_unmixing_constant_ten"
+    """
+    List of wavelengths used in linear unmixing for constant absorber (ten) chromophore.\n
+    Usage: processing
+    """
+
+    LINEAR_UNMIXING_COMPUTE_SO2 = ("linear_unmixing_compute_so2", (bool, np.bool, np.bool_))
+    """
+    If True the blood oxygen saturation is calculated and saved. This is only possible \n
+    if the tags LINEAR_UNMIXING_OXYHEMOGLOBIN and LINEAR_UNMIXING_DEOXYHEMOGLOBIN are set.\n
     Usage: processing
     """

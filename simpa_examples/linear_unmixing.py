@@ -23,21 +23,16 @@
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
-from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.processing import linear_unmixing as lsu
-
+from simpa.processing import linear_unmixing as lu
 import numpy as np
 from simpa.simulation_components import *
-
 from simpa.utils.path_manager import PathManager
+from simpa.io_handling import load_data_field
 
-# FIXME temporary workaround for newest Intel architectures
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
-path_manager = PathManager("/home/p253n/Patricia/simpa/path_config.env")
+path_manager = PathManager()
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
@@ -45,10 +40,7 @@ VOLUME_HEIGHT_IN_MM = 60
 SPACING = 5
 RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
-LU_WAVELENGTHS = [750, 800, 850]
-
-# If VISUALIZE is set to True, the simulation result will be plotted
-VISUALIZE = True
+WAVELENGTHS = [750, 800, 850]
 
 
 def create_example_tissue():
@@ -102,9 +94,10 @@ def create_example_tissue():
 # Seed the numpy random configuration prior to creating the global_settings file in
 # order to ensure that the same volume
 # is generated with the same random seed every time.
-
 np.random.seed(RANDOM_SEED)
 
+# Initialize global settings and prepare for simulation pipeline including
+# volume creation and optical forward simulation
 general_settings = {
     # These parameters set the general propeties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
@@ -114,14 +107,9 @@ general_settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.WAVELENGTHS: LU_WAVELENGTHS
-
-    # Simulation Device
-    # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
+    Tags.WAVELENGTHS: WAVELENGTHS
 }
-
 settings = Settings(general_settings)
-
 settings.set_volume_creation_settings({
     Tags.SIMULATE_DEFORMED_LAYERS: True,
     Tags.STRUCTURES: create_example_tissue()
@@ -134,28 +122,27 @@ settings.set_optical_settings({
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
 })
 
+# Set component settings for linear unmixing.
+# Performs linear spectral unmixing on the defined data field.
 settings["linear_unmixing"] = {
     Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
-    Tags.LINEAR_UNMIXING_CHROMOPHORE_DICT: {  # Replace by tags of every present absorber in spectra_library
-        "oxy": LU_WAVELENGTHS,
-        "deoxy": [750, 850]#LU_WAVELENGTHS
-    },
-    Tags.WAVELENGTHS: LU_WAVELENGTHS
+    Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN: WAVELENGTHS,
+    Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN: WAVELENGTHS,
+    Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
 }
 
+# Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
     OpticalForwardModelMcxAdapter(settings)
 ]
 simulate(pipeline, settings)
 
-lsu.LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
+# Run linear unmixing component with above specified settings
+lu.LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
 
-if Tags.WAVELENGTH in settings:
-    WAVELENGTH = settings[Tags.WAVELENGTH]
-else:
-    WAVELENGTH = 700
+# load linear unmixing results
+lu_results = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+                             Tags.LINEAR_UNMIXING_RESULT)
+print(lu_results.keys())
 
-if VISUALIZE:
-    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
-                   log_scale=False)
