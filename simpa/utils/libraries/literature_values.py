@@ -169,6 +169,10 @@ class OpticalTissueProperties:
     FRAY_BACKGROUND_TISSUE = 0.153  # Table 2: Average over all other soft tissue
     BMIE_BACKGROUND_TISSUE = 1.091  # Table 2: Average over all other soft tissue
 
+    MUS500_MUSCLE_TISSUE = 101.0  # Table 2: Average over all other soft tissue
+    FRAY_MUSCLE_TISSUE = 0.21  # Table 2: Average over all other soft tissue
+    BMIE_MUSCLE_TISSUE = 1.5  # Table 2: Average over all other soft tissue
+
     MUS500_EPIDERMIS = 93.01  # Bashkatov et al. 2011 but adjusted for epidermis anisotropy
     FRAY_EPIDERMIS = 0.29  # Table 1; Salomatina et al 2006; One value for epidermis
     BMIE_EPIDERMIS = 2.8  # Table 1; Salomatina et al 2006; One value for epidermis

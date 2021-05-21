@@ -368,9 +368,9 @@ def get_muscle_reference_dictionary():
     values650nm[Tags.PROPERTY_ANISOTROPY] = 0.9
     values650nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values650nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.MUSCLE
-    values650nm[Tags.PROPERTY_OXYGENATION] = 0.5
-    values650nm[Tags.PROPERTY_DENSITY] = 1000
-    values650nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values650nm[Tags.PROPERTY_OXYGENATION] = 0.175
+    values650nm[Tags.PROPERTY_DENSITY] = 1090.4
+    values650nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1588.4
     values650nm[Tags.PROPERTY_ALPHA_COEFF] = 1.09
 
     values700nm = TissueProperties()
@@ -379,9 +379,9 @@ def get_muscle_reference_dictionary():
     values700nm[Tags.PROPERTY_ANISOTROPY] = 0.9
     values700nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values700nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.MUSCLE
-    values700nm[Tags.PROPERTY_OXYGENATION] = 0.5
-    values700nm[Tags.PROPERTY_DENSITY] = 1000
-    values700nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values700nm[Tags.PROPERTY_OXYGENATION] = 0.175
+    values700nm[Tags.PROPERTY_DENSITY] = 1090.4
+    values700nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1588.4
     values700nm[Tags.PROPERTY_ALPHA_COEFF] = 1.09
 
     values750nm = TissueProperties()
@@ -390,9 +390,9 @@ def get_muscle_reference_dictionary():
     values750nm[Tags.PROPERTY_ANISOTROPY] = 0.9
     values750nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values750nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.MUSCLE
-    values750nm[Tags.PROPERTY_OXYGENATION] = 0.5
-    values750nm[Tags.PROPERTY_DENSITY] = 1000
-    values750nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values750nm[Tags.PROPERTY_OXYGENATION] = 0.175
+    values750nm[Tags.PROPERTY_DENSITY] = 1090.4
+    values750nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1588.4
     values750nm[Tags.PROPERTY_ALPHA_COEFF] = 1.09
 
     values800nm = TissueProperties()
@@ -401,9 +401,9 @@ def get_muscle_reference_dictionary():
     values800nm[Tags.PROPERTY_ANISOTROPY] = 0.9
     values800nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values800nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.MUSCLE
-    values800nm[Tags.PROPERTY_OXYGENATION] = 0.5
-    values800nm[Tags.PROPERTY_DENSITY] = 1000
-    values800nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values800nm[Tags.PROPERTY_OXYGENATION] = 0.175
+    values800nm[Tags.PROPERTY_DENSITY] = 1090.4
+    values800nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1588.4
     values800nm[Tags.PROPERTY_ALPHA_COEFF] = 1.09
 
     values850nm = TissueProperties()
@@ -412,9 +412,9 @@ def get_muscle_reference_dictionary():
     values850nm[Tags.PROPERTY_ANISOTROPY] = 0.9
     values850nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values850nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.MUSCLE
-    values850nm[Tags.PROPERTY_OXYGENATION] = 0.5
-    values850nm[Tags.PROPERTY_DENSITY] = 1000
-    values850nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values850nm[Tags.PROPERTY_OXYGENATION] = 0.175
+    values850nm[Tags.PROPERTY_DENSITY] = 1090.4
+    values850nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1588.4
     values850nm[Tags.PROPERTY_ALPHA_COEFF] = 1.09
 
     values900nm = TissueProperties()
@@ -423,9 +423,9 @@ def get_muscle_reference_dictionary():
     values900nm[Tags.PROPERTY_ANISOTROPY] = 0.9
     values900nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values900nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.MUSCLE
-    values900nm[Tags.PROPERTY_OXYGENATION] = 0.5
-    values900nm[Tags.PROPERTY_DENSITY] = 1000
-    values900nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values900nm[Tags.PROPERTY_OXYGENATION] = 0.175
+    values900nm[Tags.PROPERTY_DENSITY] = 1090.4
+    values900nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1588.4
     values900nm[Tags.PROPERTY_ALPHA_COEFF] = 1.09
 
     values950nm = TissueProperties()
@@ -434,9 +434,9 @@ def get_muscle_reference_dictionary():
     values950nm[Tags.PROPERTY_ANISOTROPY] = 0.9
     values950nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values950nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.MUSCLE
-    values950nm[Tags.PROPERTY_OXYGENATION] = 0.5
-    values950nm[Tags.PROPERTY_DENSITY] = 1000
-    values950nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values950nm[Tags.PROPERTY_OXYGENATION] = 0.175
+    values950nm[Tags.PROPERTY_DENSITY] = 1090.4
+    values950nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1588.4
     values950nm[Tags.PROPERTY_ALPHA_COEFF] = 1.09
 
     reference_dict[650] = values650nm
@@ -769,23 +769,22 @@ if __name__ == "__main__":
     #                                                       expected_values=get_epidermis_reference_dictionary(),
     #                                                       visualise_values=True,
     #                                                       title="Epidermis ")
+    # compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood_generic(1.0),
+    #                                                       expected_values=get_fully_oxygenated_blood_reference_dictionary(),
+    #                                                       visualise_values=True,
+    #                                                       title="100% sO2 Blood ")
+    #
+    # compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood_generic(0.0),
+    #                                                       expected_values=get_fully_deoxygenated_blood_reference_dictionary(),
+    #                                                       visualise_values=True,
+    #                                                       title="0% sO2 Blood ")
+    #
+    # compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.dermis(0.5, 0.002),
+    #                                                       expected_values=get_dermis_reference_dictionary(),
+    #                                                       visualise_values=True,
+    #                                                       title="Dermis ")
 
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood_generic(1.0),
-                                                          expected_values=get_fully_oxygenated_blood_reference_dictionary(),
-                                                          visualise_values=True,
-                                                          title="100% sO2 Blood ")
-
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood_generic(0.0),
-                                                          expected_values=get_fully_deoxygenated_blood_reference_dictionary(),
-                                                          visualise_values=True,
-                                                          title="0% sO2 Blood ")
-
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.dermis(0.5, 0.002),
-                                                          expected_values=get_dermis_reference_dictionary(),
-                                                          visualise_values=True,
-                                                          title="Dermis ")
-
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.muscle(0.5),
+    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.muscle(0.175, 0.06),
                                                           expected_values=get_muscle_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="Muscle ")

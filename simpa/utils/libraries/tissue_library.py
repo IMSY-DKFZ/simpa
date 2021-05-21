@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import OpticalTissueProperties, SegmentationClasses
+from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties
 from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
@@ -73,31 +73,48 @@ class TissueLibrary(object):
                                                                 anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(g)))
                                                .get_molecular_composition(SegmentationClasses.GENERIC))
 
-    def muscle(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
+    def muscle(self, background_oxy=None, blood_volume_fraction=None):
         """
 
         :return: a settings dictionary containing all min and max parameters fitting for generic background tissue.
         """
 
         # Determine muscle oxygenation
-        oxy = randomize_uniform(background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
-                                background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
+        if background_oxy is None:
+            oxy = randomize_uniform(0.5 - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
+                                    0.5 + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
+        else:
+            oxy = background_oxy
 
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(
-            OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE, oxy)
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        if blood_volume_fraction is None:
+            bvf = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE
+        else:
+            bvf = blood_volume_fraction
+
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(bvf, oxy)
 
         # Get the water volume fraction
-        water_volume_fraction = randomize_uniform(0.64, 0.72)
+        water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
+
+        custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
+        custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                            OpticalTissueProperties.STANDARD_ANISOTROPY)
+        custom_water.alpha_coefficient = 1.6
+        custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_MUSCLE
+        custom_water.density = StandardProperties.DENSITY_MUSCLE
+        custom_water.mus500 = OpticalTissueProperties.MUS500_MUSCLE_TISSUE
+        custom_water.b_mie = OpticalTissueProperties.BMIE_MUSCLE_TISSUE
+        custom_water.f_ray = OpticalTissueProperties.FRAY_MUSCLE_TISSUE
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(value=MOLECULE_LIBRARY.soft_tissue_scatterer(
-                        volume_fraction=1-fraction_oxy - fraction_deoxy - water_volume_fraction),
-                        key="background_scatterers")
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
+                .append(value=MOLECULE_LIBRARY.muscle_scatterer(
+                        volume_fraction=1 - fraction_oxy - fraction_deoxy - water_volume_fraction),
+                        key="muscle_scatterers")
+                .append(custom_water)
                 .get_molecular_composition(SegmentationClasses.MUSCLE))
 
     def epidermis(self, melanosom_volume_fraction=None):

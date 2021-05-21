@@ -318,6 +318,21 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
+    def muscle_scatterer(volume_fraction: float = 1.0):
+        return Molecule(name="muscle_scatterer",
+                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        volume_fraction=volume_fraction,
+                        mus500=OpticalTissueProperties.MUS500_MUSCLE_TISSUE,
+                        b_mie=OpticalTissueProperties.BMIE_MUSCLE_TISSUE,
+                        f_ray=OpticalTissueProperties.FRAY_MUSCLE_TISSUE,
+                        anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                            OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        density=StandardProperties.DENSITY_GENERIC,
+                        speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
+                        )
+
+    @staticmethod
     def epidermal_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="epidermal_scatterer",
                         absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
