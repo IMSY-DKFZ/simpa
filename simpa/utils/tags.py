@@ -1067,6 +1067,13 @@ class Tags:
     Usage: module acoustic_forward_module, naming convention
     """
 
+    SENSOR_ELEMENT_POSITIONS = "sensor_element_positions"
+    """
+    Number of detector elements that fit into the generated volume if the dimensions and/or spacing of the generated 
+    volume were not highly resolved enough to be sufficient for the selected PA device.\n
+    Usage: module acoustic_forward_module, naming convention
+    """
+
     SENSOR_CONCAVE = "concave"
     """
     Indicates that the geometry of the used PA device in the Mitk Beamforming is concave.\n
@@ -1081,8 +1088,14 @@ class Tags:
 
     SENSOR_RADIUS_MM = "sensor_radius_mm"
     """
-    Radius of a concave geometry of the used PA device in the Mitk Beamforming.\n
-    Usage: adapter MitkBeamformingAdapter, naming convention
+    Radius of a concave geometry of the used PA device.\n
+    Usage: adapter AcousticForwardModelKWaveAdapter, naming convention
+    """
+
+    SENSOR_PITCH_MM = "sensor_pitch_mm"
+    """
+    Pitch of detector elements of the used PA device.\n
+    Usage: adapter AcousticForwardModelKWaveAdapter, naming convention
     """
 
     # Pipelining parameters

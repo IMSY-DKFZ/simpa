@@ -102,7 +102,13 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
         PA_device = detection_geometry
         PA_device.check_settings_prerequisites(self.global_settings)
-        detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(
+        if not self.component_settings.get(Tags.ACOUSTIC_SIMULATION_3D):
+            detector_positions_mm = PA_device.get_detector_element_positions_base_mm()
+            data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = np.array([detector_positions_mm[:, 2], detector_positions_mm[:, 0]])
+            data_dict[Tags.SENSOR_RADIUS_MM] = PA_device.radius_mm
+            data_dict[Tags.SENSOR_PITCH_MM] = PA_device.pitch_mm
+        else:
+            detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(
             self.global_settings)
         # Matlab indexes start at 1
         detector_positions_voxels = np.round(detector_positions_mm / self.global_settings[Tags.SPACING_MM]).astype(int) + 1
@@ -204,8 +210,8 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
         save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
-        os.remove(optical_path)
-        os.remove(optical_path + "dt.mat")
-        os.chdir(cur_dir)
+        # os.remove(optical_path)
+        # os.remove(optical_path + "dt.mat")
+        # os.chdir(cur_dir)
 
         return raw_time_series_data

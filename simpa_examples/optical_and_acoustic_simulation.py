@@ -132,7 +132,7 @@ settings.set_optical_settings({
 })
 
 settings.set_acoustic_settings({
-    Tags.ACOUSTIC_SIMULATION_3D: True,
+    Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.PROPERTY_ALPHA_POWER: 1.05,
     Tags.SENSOR_RECORD: "p",
@@ -153,6 +153,7 @@ settings.set_reconstruction_settings({
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
+    Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL,
@@ -188,6 +189,7 @@ SIMUATION_PIPELINE = [
     VolumeCreationModelModelBasedAdapter(settings),
     OpticalForwardModelMcxAdapter(settings),
     #GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
+    FieldOfViewCroppingProcessingComponent(settings),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
     ImageReconstructionModuleDelayAndSumAdapter(settings)
@@ -203,9 +205,19 @@ else:
 if VISUALIZE:
     visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
                    show_time_series_data=True,
+                   show_initial_pressure=True,
                    show_absorption=False,
                    show_segmentation_map=False,
                    show_tissue_density=False,
                    show_reconstructed_data=True,
                    show_fluence=False,
                    log_scale=False)
+
+# from simpa.io_handling import load_data_field
+# import matplotlib.pyplot as plt
+#
+# time_series = load_data_field("/home/kris/Work/Data/Test/CompletePipelineTestMSOT_4711.hdf5", Tags.TIME_SERIES_DATA, wavelength=700)
+# print("hi")
+# plt.imshow(time_series)
+# plt.show()
+

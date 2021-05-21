@@ -50,7 +50,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
     def __init__(self):
         super(MSOTAcuityEcho, self).__init__()
 
-        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.5,
+        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.34,
                                                           radius_mm=40,
                                                           focus_in_field_of_view_mm=np.array([0, 0, 8]),
                                                           number_detector_elements=256,
@@ -175,11 +175,13 @@ if __name__ == "__main__":
     detector_positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(settings)
     detector_orientations = device.detection_geometry.get_detector_element_orientations(settings)
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
-    detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
+    # detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
     # position_map = np.zeros((x_dim, z_dim))
     # position_map[detector_positions[:, 0], detector_positions[:, 2]] = 1
+    middle_point = int(detector_positions.shape[0]/2)
     import matplotlib.pyplot as plt
     plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
+    plt.scatter(detector_positions[middle_point, 0], detector_positions[middle_point, 2] + device.detection_geometry.radius_mm)
     plt.quiver(detector_positions[:, 0], detector_positions[:, 2], detector_orientations[:, 0], detector_orientations[:, 2])
     plt.show()
     # plt.imshow(map)
