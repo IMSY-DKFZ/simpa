@@ -108,7 +108,7 @@ class StandardProperties:
     ALPHA_COEFF_MUSCLE = 0.6175
     ALPHA_COEFF_BONE = 4.7385  # Cortical bone
     ALPHA_COEFF_BLOOD = 0.2056
-    ALPHA_COEFF_SKIN = 1.8378
+    ALPHA_COEFF_SKIN = 0.35
     ALPHA_COEFF_FAT = 0.3785
     ALPHA_COEFF_GEL_PAD = 0.277
     ALPHA_COEFF_WATER = 2.1976e-3
@@ -169,9 +169,9 @@ class OpticalTissueProperties:
     FRAY_BACKGROUND_TISSUE = 0.153  # Table 2: Average over all other soft tissue
     BMIE_BACKGROUND_TISSUE = 1.091  # Table 2: Average over all other soft tissue
 
-    MUS500_EPIDERMIS = 667.0  # Table 1; Salomatina et al 2006; One value for epidermis
+    MUS500_EPIDERMIS = 93.01  # Bashkatov et al. 2011 but adjusted for EPIDERMIS_ANISOTROPY
     FRAY_EPIDERMIS = 0.29  # Table 1; Salomatina et al 2006; One value for epidermis
-    BMIE_EPIDERMIS = 0.689  # Table 1; Salomatina et al 2006; One value for epidermis
+    BMIE_EPIDERMIS = 2.8  # Table 1; Salomatina et al 2006; One value for epidermis
     MUS500_DERMIS = 436.0  # Table 1; Salomatina et al 2006; One value for dermis
     FRAY_DERMIS = 0.41  # Table 1; Salomatina et al 2006; One value for dermis
     BMIE_DERMIS = 0.69  # Table 1; Salomatina et al 2006; One value for dermis
@@ -243,7 +243,7 @@ class OpticalTissueProperties:
     #   publisher={Wiley Online Library}
     # }
 
-    MELANIN_VOLUME_FRACTION_MEAN = 0.011
+    MELANIN_VOLUME_FRACTION_MEAN = 0.014
     MELANIN_VOLUME_FRACTION_STD = 0.003
 
     # Approximated mean of figure 3

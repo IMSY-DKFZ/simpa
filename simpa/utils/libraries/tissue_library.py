@@ -65,11 +65,11 @@ class TissueLibrary(object):
         TODO
         """
         return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
-                                                                spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(
+                                                                absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(
                                                                     mua),
                                                                 volume_fraction=1.0,
                                                                 mus500=mus, b_mie=0.0, f_ray=0.0,
-                                                                anisotropy=g))
+                                                                anisotropy_spectrum=g))
                                                .get_molecular_composition(SegmentationClasses.GENERIC))
 
     def muscle(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
@@ -99,19 +99,22 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.MUSCLE))
 
-    def epidermis(self):
+    def epidermis(self, melanosom_volume_fraction=None):
         """
 
         :return: a settings dictionary containing all min and max parameters fitting for epidermis tissue.
         """
         # Get water volume fraction
-        water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
+        water_volume_fraction = 0.0#OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
 
         # Get melanin volume fraction
-        melanin_volume_fraction = randomize_uniform(OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN -
-                                                    OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
-                                                    OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN +
-                                                    OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD)
+        if melanosom_volume_fraction is None:
+            melanin_volume_fraction = randomize_uniform(OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN -
+                                                        OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
+                                                        OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN +
+                                                        OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD)
+        else:
+            melanin_volume_fraction = melanosom_volume_fraction
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
