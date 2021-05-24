@@ -4,6 +4,9 @@ simpa_documentation/.doctrees/*
 simpa_documentation/test_coverage
 simpa_documentation/test_coverage/*
 
+*.orig
+*/*.orig
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
