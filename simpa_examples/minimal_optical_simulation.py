@@ -153,4 +153,4 @@ else:
 
 if VISUALIZE:
     visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
-                   log_scale=False)
+                   log_scale=True)
