@@ -58,7 +58,7 @@ def create_background(global_settings):
 def create_vessel(global_settings):
     tubular_structure_dictionary = dict()
     tubular_structure_dictionary[Tags.PRIORITY] = 2
-    tubular_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+    tubular_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
     tubular_structure_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     tubular_structure_dictionary[Tags.STRUCTURE_END_MM] = [10, 10, 10]
     tubular_structure_dictionary[Tags.STRUCTURE_RADIUS_MM] = 4

@@ -239,7 +239,7 @@ class MoleculeLibrary(object):
                         b_mie=OpticalTissueProperties.BMIE_BLOOD,
                         f_ray=OpticalTissueProperties.FRAY_BLOOD,
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY),
+                            OpticalTissueProperties.BLOOD_ANISOTROPY),
                         density=StandardProperties.DENSITY_BLOOD,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_BLOOD,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_BLOOD
@@ -254,7 +254,7 @@ class MoleculeLibrary(object):
                         b_mie=OpticalTissueProperties.BMIE_BLOOD,
                         f_ray=OpticalTissueProperties.FRAY_BLOOD,
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY),
+                            OpticalTissueProperties.BLOOD_ANISOTROPY),
                         density=StandardProperties.DENSITY_BLOOD,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_BLOOD,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_BLOOD

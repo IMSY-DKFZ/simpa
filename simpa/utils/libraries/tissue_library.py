@@ -81,14 +81,13 @@ class TissueLibrary(object):
 
         # Determine muscle oxygenation
         if background_oxy is None:
-            oxy = randomize_uniform(0.5 - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
-                                    0.5 + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
+            oxy = 0.175
         else:
             oxy = background_oxy
 
         # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         if blood_volume_fraction is None:
-            bvf = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE
+            bvf = 0.06
         else:
             bvf = blood_volume_fraction
 
@@ -99,10 +98,10 @@ class TissueLibrary(object):
 
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY)
-        custom_water.alpha_coefficient = 1.6
-        custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_MUSCLE
-        custom_water.density = StandardProperties.DENSITY_MUSCLE
+                            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
+        custom_water.alpha_coefficient = 1.58
+        custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_MUSCLE + 16
+        custom_water.density = StandardProperties.DENSITY_MUSCLE + 41
         custom_water.mus500 = OpticalTissueProperties.MUS500_MUSCLE_TISSUE
         custom_water.b_mie = OpticalTissueProperties.BMIE_MUSCLE_TISSUE
         custom_water.f_ray = OpticalTissueProperties.FRAY_MUSCLE_TISSUE
@@ -122,23 +121,17 @@ class TissueLibrary(object):
 
         :return: a settings dictionary containing all min and max parameters fitting for epidermis tissue.
         """
-        # Get water volume fraction
-        water_volume_fraction = 0.0#OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
 
         # Get melanin volume fraction
         if melanosom_volume_fraction is None:
-            melanin_volume_fraction = randomize_uniform(OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN -
-                                                        OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD,
-                                                        OpticalTissueProperties.MELANIN_VOLUME_FRACTION_MEAN +
-                                                        OpticalTissueProperties.MELANIN_VOLUME_FRACTION_STD)
+            melanin_volume_fraction = 0.014
         else:
             melanin_volume_fraction = melanosom_volume_fraction
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.melanin(melanin_volume_fraction))
-                .append(MOLECULE_LIBRARY.epidermal_scatterer(1 - melanin_volume_fraction - water_volume_fraction))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
+                .append(MOLECULE_LIBRARY.epidermal_scatterer(1 - melanin_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.EPIDERMIS))
 
     def dermis(self, background_oxy=None, blood_volume_fraction=None):
@@ -154,7 +147,7 @@ class TissueLibrary(object):
             oxy = background_oxy
 
         if blood_volume_fraction is None:
-            bvf = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE
+            bvf = 0.002
         else:
             bvf = blood_volume_fraction
 
@@ -198,66 +191,22 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.FAT))
 
-    def blood_generic(self, oxygenation=None):
+    def blood(self, oxygenation=None):
         """
 
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
-
-        # Get water volume fraction
-        water_volume_fraction = 0.0
 
         # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
         if oxygenation is None:
             oxygenation = randomize_uniform(0.0, 1.0)
 
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(1-water_volume_fraction, oxygenation)
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(1.0, oxygenation)
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
-                .get_molecular_composition(SegmentationClasses.BLOOD))
-
-    def blood_arterial(self):
-        """
-
-        :return: a settings dictionary containing all min and max parameters fitting for full blood.
-        """
-        # Get water volume fraction
-        water_volume_fraction = 0.0
-
-        oxygenation = randomize_uniform(0.8, 1.0)
-
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(1-water_volume_fraction, oxygenation)
-
-        # generate the tissue dictionary
-        return (MolecularCompositionGenerator()
-                .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
-                .get_molecular_composition(SegmentationClasses.BLOOD))
-
-    def blood_venous(self):
-        """
-
-        :return: a settings dictionary containing all min and max parameters fitting for full blood.
-        """
-        # Get water volume fraction
-        water_volume_fraction = 0.0
-
-        oxygenation = randomize_uniform(0.0, 0.8)
-
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(1.0 - water_volume_fraction, oxygenation)
-
-        # generate the tissue dictionary
-        return (MolecularCompositionGenerator()
-                .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.BLOOD))
 
     def bone(self):

@@ -39,33 +39,38 @@ class TestEpidermis(unittest.TestCase):
         compare_molecular_composition_against_expected_values(
             molecular_composition=TISSUE_LIBRARY.epidermis(0.014),
             expected_values=get_epidermis_reference_dictionary(),
-            visualise_values=False
+            visualise_values=False,
+            title="EPIDERMIS"
         )
 
-    # def test_dermis_parameters(self):
-    #     compare_molecular_composition_against_expected_values(
-    #         molecular_composition=TISSUE_LIBRARY.epidermis(),
-    #         expected_values=get_dermis_reference_dictionary(),
-    #         visualise_values=False
-    #     )
-    #
-    # def test_muscle_parameters(self):
-    #     compare_molecular_composition_against_expected_values(
-    #         molecular_composition=TISSUE_LIBRARY.epidermis(),
-    #         expected_values=get_muscle_reference_dictionary(),
-    #         visualise_values=False
-    #     )
-    #
-    # def test_blood_oxy_parameters(self):
-    #     compare_molecular_composition_against_expected_values(
-    #         molecular_composition=TISSUE_LIBRARY.blood_generic(1.0),
-    #         expected_values=get_fully_oxygenated_blood_reference_dictionary(),
-    #         visualise_values=False
-    #     )
-    #
-    # def test_blood_deoxy_parameters(self):
-    #     compare_molecular_composition_against_expected_values(
-    #         molecular_composition=TISSUE_LIBRARY.blood_generic(0.0),
-    #         expected_values=get_fully_deoxygenated_blood_reference_dictionary(),
-    #         visualise_values=False
-    #     )
+    def test_dermis_parameters(self):
+        compare_molecular_composition_against_expected_values(
+            molecular_composition=TISSUE_LIBRARY.dermis(),
+            expected_values=get_dermis_reference_dictionary(),
+            visualise_values=False,
+            title="DERMIS"
+        )
+
+    def test_muscle_parameters(self):
+        compare_molecular_composition_against_expected_values(
+            molecular_composition=TISSUE_LIBRARY.muscle(),
+            expected_values=get_muscle_reference_dictionary(),
+            visualise_values=False,
+            title="MUSCLE"
+        )
+
+    def test_blood_oxy_parameters(self):
+        compare_molecular_composition_against_expected_values(
+            molecular_composition=TISSUE_LIBRARY.blood(1.0),
+            expected_values=get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=True),
+            visualise_values=False,
+            title="OXY BLOOD"
+        )
+
+    def test_blood_deoxy_parameters(self):
+        compare_molecular_composition_against_expected_values(
+            molecular_composition=TISSUE_LIBRARY.blood(0.0),
+            expected_values=get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=True),
+            visualise_values=False,
+            title="DEOXY BLOOD"
+        )

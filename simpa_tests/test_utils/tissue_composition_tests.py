@@ -77,9 +77,6 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
                 ax.scatter(x=wavelength, y=expected_properties[tag], c="green")
         else:
             for tag in TissueProperties.property_tags:
-                print(tag)
-                print(composition_properties[tag])
-                print(expected_properties[tag])
                 if (not (composition_properties[tag] is None and expected_properties[tag] is None)) and \
                     ((np.abs(composition_properties[tag] - expected_properties[tag]) /
                      expected_properties[tag]) > tolerated_margin_in_percent):
@@ -450,9 +447,9 @@ def get_muscle_reference_dictionary():
     return reference_dict
 
 
-def get_fully_oxygenated_blood_reference_dictionary():
+def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     """
-    The values were compiled from the following ressources:
+    The values were compiled from the following resources:
 
         https://omlc.org/news/jan98/skinoptics.html
 
@@ -478,8 +475,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values450nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values450nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values450nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values450nm[Tags.PROPERTY_DENSITY] = 1000
-    values450nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values450nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values450nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values450nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values500nm = TissueProperties()
@@ -489,8 +486,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values500nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values500nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values500nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values500nm[Tags.PROPERTY_DENSITY] = 1000
-    values500nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values500nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values500nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values500nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values550nm = TissueProperties()
@@ -500,8 +497,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values550nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values550nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values550nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values550nm[Tags.PROPERTY_DENSITY] = 1000
-    values550nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values550nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values550nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values550nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values600nm = TissueProperties()
@@ -511,8 +508,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values600nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values600nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values600nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values600nm[Tags.PROPERTY_DENSITY] = 1000
-    values600nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values600nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values600nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values600nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values650nm = TissueProperties()
@@ -522,8 +519,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values650nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values650nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values650nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values650nm[Tags.PROPERTY_DENSITY] = 1000
-    values650nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values650nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values650nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values650nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values700nm = TissueProperties()
@@ -533,8 +530,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values700nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values700nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values700nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values700nm[Tags.PROPERTY_DENSITY] = 1000
-    values700nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values700nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values700nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values700nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values750nm = TissueProperties()
@@ -544,8 +541,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values750nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values750nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values750nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values750nm[Tags.PROPERTY_DENSITY] = 1000
-    values750nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values750nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values750nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values750nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values800nm = TissueProperties()
@@ -555,8 +552,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values800nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values800nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values800nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values800nm[Tags.PROPERTY_DENSITY] = 1000
-    values800nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values800nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values800nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values800nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values850nm = TissueProperties()
@@ -566,8 +563,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values850nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values850nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values850nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values850nm[Tags.PROPERTY_DENSITY] = 1000
-    values850nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values850nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values850nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values850nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values900nm = TissueProperties()
@@ -577,8 +574,8 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values900nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values900nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values900nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values900nm[Tags.PROPERTY_DENSITY] = 1000
-    values900nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values900nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values900nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values900nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values950nm = TissueProperties()
@@ -588,14 +585,15 @@ def get_fully_oxygenated_blood_reference_dictionary():
     values950nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values950nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
     values950nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values950nm[Tags.PROPERTY_DENSITY] = 1000
-    values950nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values950nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values950nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values950nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
-    reference_dict[450] = values450nm
-    reference_dict[500] = values500nm
-    reference_dict[550] = values550nm
-    reference_dict[600] = values600nm
+    if not only_use_NIR_values:
+        reference_dict[450] = values450nm
+        reference_dict[500] = values500nm
+        reference_dict[550] = values550nm
+        reference_dict[600] = values600nm
     reference_dict[650] = values650nm
     reference_dict[700] = values700nm
     reference_dict[750] = values750nm
@@ -607,9 +605,9 @@ def get_fully_oxygenated_blood_reference_dictionary():
     return reference_dict
 
 
-def get_fully_deoxygenated_blood_reference_dictionary():
+def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     """
-    The values were compiled from the following ressources:
+    The values were compiled from the following resources:
 
         https://omlc.org/news/jan98/skinoptics.html
 
@@ -634,9 +632,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values450nm[Tags.PROPERTY_ANISOTROPY] = 0.9447
     values450nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values450nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values450nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values450nm[Tags.PROPERTY_DENSITY] = 1000
-    values450nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values450nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values450nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values450nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values450nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values500nm = TissueProperties()
@@ -645,9 +643,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values500nm[Tags.PROPERTY_ANISOTROPY] = 0.9761
     values500nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values500nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values500nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values500nm[Tags.PROPERTY_DENSITY] = 1000
-    values500nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values500nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values500nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values500nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values500nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values550nm = TissueProperties()
@@ -656,9 +654,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values550nm[Tags.PROPERTY_ANISOTROPY] = 0.9642
     values550nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values550nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values550nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values550nm[Tags.PROPERTY_DENSITY] = 1000
-    values550nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values550nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values550nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values550nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values550nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values600nm = TissueProperties()
@@ -667,9 +665,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values600nm[Tags.PROPERTY_ANISOTROPY] = 0.9794
     values600nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values600nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values600nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values600nm[Tags.PROPERTY_DENSITY] = 1000
-    values600nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values600nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values600nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values600nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values600nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values650nm = TissueProperties()
@@ -678,9 +676,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values650nm[Tags.PROPERTY_ANISOTROPY] = 0.9825
     values650nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values650nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values650nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values650nm[Tags.PROPERTY_DENSITY] = 1000
-    values650nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values650nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values650nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values650nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values650nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values700nm = TissueProperties()
@@ -689,9 +687,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values700nm[Tags.PROPERTY_ANISOTROPY] = 0.9836
     values700nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values700nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values700nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values700nm[Tags.PROPERTY_DENSITY] = 1000
-    values700nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values700nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values700nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values700nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values700nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values750nm = TissueProperties()
@@ -700,9 +698,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values750nm[Tags.PROPERTY_ANISOTROPY] = 0.9837
     values750nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values750nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values750nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values750nm[Tags.PROPERTY_DENSITY] = 1000
-    values750nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values750nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values750nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values750nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values750nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values800nm = TissueProperties()
@@ -711,9 +709,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values800nm[Tags.PROPERTY_ANISOTROPY] = 0.9833
     values800nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values800nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values800nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values800nm[Tags.PROPERTY_DENSITY] = 1000
-    values800nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values800nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values800nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values800nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values800nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values850nm = TissueProperties()
@@ -722,9 +720,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values850nm[Tags.PROPERTY_ANISOTROPY] = 0.9832
     values850nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values850nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values850nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values850nm[Tags.PROPERTY_DENSITY] = 1000
-    values850nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values850nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values850nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values850nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values850nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values900nm = TissueProperties()
@@ -733,9 +731,9 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values900nm[Tags.PROPERTY_ANISOTROPY] = 0.9824
     values900nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values900nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values900nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values900nm[Tags.PROPERTY_DENSITY] = 1000
-    values900nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values900nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values900nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values900nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values900nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
     values950nm = TissueProperties()
@@ -744,15 +742,16 @@ def get_fully_deoxygenated_blood_reference_dictionary():
     values950nm[Tags.PROPERTY_ANISOTROPY] = 0.9808
     values950nm[Tags.PROPERTY_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values950nm[Tags.PROPERTY_SEGMENTATION] = SegmentationClasses.BLOOD
-    values950nm[Tags.PROPERTY_OXYGENATION] = 1.0
-    values950nm[Tags.PROPERTY_DENSITY] = 1000
-    values950nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1500
+    values950nm[Tags.PROPERTY_OXYGENATION] = 0.0
+    values950nm[Tags.PROPERTY_DENSITY] = 1049.75
+    values950nm[Tags.PROPERTY_SPEED_OF_SOUND] = 1578.2
     values950nm[Tags.PROPERTY_ALPHA_COEFF] = 0.2
 
-    reference_dict[450] = values450nm
-    reference_dict[500] = values500nm
-    reference_dict[550] = values550nm
-    reference_dict[600] = values600nm
+    if not only_use_NIR_values:
+        reference_dict[450] = values450nm
+        reference_dict[500] = values500nm
+        reference_dict[550] = values550nm
+        reference_dict[600] = values600nm
     reference_dict[650] = values650nm
     reference_dict[700] = values700nm
     reference_dict[750] = values750nm
@@ -765,26 +764,28 @@ def get_fully_deoxygenated_blood_reference_dictionary():
 
 
 if __name__ == "__main__":
-    # compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.epidermis(0.014),
-    #                                                       expected_values=get_epidermis_reference_dictionary(),
-    #                                                       visualise_values=True,
-    #                                                       title="Epidermis ")
-    # compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood_generic(1.0),
-    #                                                       expected_values=get_fully_oxygenated_blood_reference_dictionary(),
-    #                                                       visualise_values=True,
-    #                                                       title="100% sO2 Blood ")
-    #
-    # compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood_generic(0.0),
-    #                                                       expected_values=get_fully_deoxygenated_blood_reference_dictionary(),
-    #                                                       visualise_values=True,
-    #                                                       title="0% sO2 Blood ")
-    #
-    # compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.dermis(0.5, 0.002),
-    #                                                       expected_values=get_dermis_reference_dictionary(),
-    #                                                       visualise_values=True,
-    #                                                       title="Dermis ")
 
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.muscle(0.175, 0.06),
+    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.epidermis(),
+                                                          expected_values=get_epidermis_reference_dictionary(),
+                                                          visualise_values=True,
+                                                          title="Epidermis ")
+
+    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(1.0),
+                                                          expected_values=get_fully_oxygenated_blood_reference_dictionary(),
+                                                          visualise_values=True,
+                                                          title="100% sO2 Blood ")
+
+    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(0.0),
+                                                          expected_values=get_fully_deoxygenated_blood_reference_dictionary(),
+                                                          visualise_values=True,
+                                                          title="0% sO2 Blood ")
+
+    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.dermis(),
+                                                          expected_values=get_dermis_reference_dictionary(),
+                                                          visualise_values=True,
+                                                          title="Dermis ")
+
+    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.muscle(),
                                                           expected_values=get_muscle_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="Muscle ")
