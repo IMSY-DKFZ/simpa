@@ -83,7 +83,8 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         pa_device = device
         pa_device.check_settings_prerequisites(self.global_settings)
 
-        sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
+        sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(
+            self.global_settings)
 
         # time series sensor data must be numpy array
         if isinstance(sensor_positions, np.ndarray):
@@ -102,9 +103,9 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         else:
             dev = "cuda" if self.global_settings[Tags.GPU] else "cpu"
 
-        device = torch.device(dev)
-        sensor_positions = sensor_positions.to(device)
-        time_series_sensor_data = time_series_sensor_data.to(device)
+        torch_device = torch.device(dev)
+        sensor_positions = sensor_positions.to(torch_device)
+        time_series_sensor_data = time_series_sensor_data.to(torch_device)
 
         # array must be of correct dimension
         assert time_series_sensor_data.ndim == 2, 'Time series data must have exactly 2 dimensions' \
@@ -136,33 +137,31 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
         ### ALGORITHM ITSELF ###
 
-        ## compute size of beamformed image ##
-        xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0])) / spacing_in_mm
-        xdim = int(xdim) + 1  # correction due to subtraction of indices starting at 0
-        ydim = float(time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) / spacing_in_mm
-        ydim = int(round(ydim))
-        zdim = (max(sensor_positions[:, 1]) - min(sensor_positions[:, 1]))/spacing_in_mm
-        zdim = int(zdim) + 1  # correction due to subtraction of indices starting at 0
+        ## compute size of beamformed image from field of view ##
+        field_of_view = pa_device.get_field_of_view_extent_mm()
+        xdim = int(np.abs(field_of_view[0] - field_of_view[1]) / spacing_in_mm) + 1
+        zdim = int(np.abs(field_of_view[2] - field_of_view[3]) / spacing_in_mm) + 1
+        ydim = int(np.abs(field_of_view[4] - field_of_view[5]) / spacing_in_mm) + 1
 
         if zdim == 1:
             sensor_positions[:, 1] = 0  # Assume imaging plane
 
         if time_series_sensor_data.shape[0] < sensor_positions.shape[0]:
             self.logger.warning("Warning: The time series data has less sensor element entries than the given sensor positions. "
-                  "This might be due to a low simulated resolution, please increase it.")
+                                "This might be due to a low simulated resolution, please increase it.")
 
         n_sensor_elements = time_series_sensor_data.shape[0]
 
         self.logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
-              f',number of sensor elements: {n_sensor_elements}')
+                          f',number of sensor elements: {n_sensor_elements}')
 
         # construct output image
-        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=device)
+        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=torch_device)
 
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=device),
-                                        torch.arange(ydim, device=device),
-                                        torch.arange(zdim, device=device),
-                                        torch.arange(n_sensor_elements, device=device))
+        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=torch_device),
+                                        torch.arange(ydim, device=torch_device),
+                                        torch.arange(zdim, device=torch_device),
+                                        torch.arange(n_sensor_elements, device=torch_device))
 
         delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
                             (xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj])) ** 2 +
@@ -185,7 +184,7 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         if Tags.RECONSTRUCTION_APODIZATION_METHOD in self.component_settings:
             apodization = get_apodization_factor(apodization_method=self.component_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD],
                                                  dimensions=(xdim, ydim, zdim), n_sensor_elements=n_sensor_elements,
-                                                 device=device)
+                                                 device=torch_device)
             values = values * apodization
 
         # set values of invalid indices to 0 so that they don't influence the result
@@ -201,7 +200,8 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in self.component_settings \
                 and self.component_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION] \
                 and Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
-            reconstructed = apply_b_mode(reconstructed, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
+            reconstructed = apply_b_mode(
+                reconstructed, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         return reconstructed.squeeze()
 

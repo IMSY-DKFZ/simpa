@@ -64,6 +64,11 @@ class FieldOfViewCroppingProcessingComponent(ProcessingComponent):
         field_of_view_mm = device.get_field_of_view_mm(self.global_settings)
         field_of_view_voxels = (field_of_view_mm / self.global_settings[Tags.SPACING_MM]).astype(np.int)
 
+        # In case it should be cropped from A to A, then crop from A to A+1
+        x_offset_correct = 1 if field_of_view_voxels[1] - field_of_view_voxels[0] < 1 else 0
+        y_offset_correct = 1 if field_of_view_voxels[3] - field_of_view_voxels[2] < 1 else 0
+        z_offset_correct = 1 if field_of_view_voxels[5] - field_of_view_voxels[4] < 1 else 0
+
         self.logger.debug(f"field of view to crop: {field_of_view_voxels}")
 
         for data_field in data_fields:
@@ -85,9 +90,9 @@ class FieldOfViewCroppingProcessingComponent(ProcessingComponent):
                 continue
 
             # crop
-            data_array = np.squeeze(data_array[field_of_view_voxels[0]:field_of_view_voxels[1],
-                                    field_of_view_voxels[2]:field_of_view_voxels[3],
-                                    field_of_view_voxels[4]:field_of_view_voxels[5]])
+            data_array = np.squeeze(data_array[field_of_view_voxels[0]:field_of_view_voxels[1] + x_offset_correct,
+                                    field_of_view_voxels[2]:field_of_view_voxels[3] + y_offset_correct,
+                                    field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
 
             self.logger.debug(f"data array shape after cropping: {np.shape(data_array)}")
             # save
