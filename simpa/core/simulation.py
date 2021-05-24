@@ -21,10 +21,11 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
-from simpa.io_handling.io_hdf5 import save_hdf5
+from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from simpa.utils.settings import Settings
 from simpa.log import Logger
+from .device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 
 import numpy as np
 import os
@@ -32,29 +33,17 @@ import json
 import time
 
 
-def simulate(simulation_pipeline: list, settings: Settings):
+def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin: DigitalDeviceTwinBase):
     """
     This method constitutes the staring point for the simulation pipeline
-    of the SIMPA toolkit. It calls all relevant and wanted simulation modules in the
-    following pre-determined order::
-
-        def simulation(settings):
-            for wavelength in settings[Tags.WAVELENGTHS]:
-
-                simulation_data = volume_creator.create_simulation_volumes(settings)
-                if optical_simulation_module in settings:
-                    optical_model.simulate(simulation_data, settings)
-                if acoustic_forward_module in settings:
-                    acoustic_model.simulate(simulation_data, settings)
-                if noise_simulation in settings:
-                    noise_model.simulate(simulation_data, settings)
-                if reconstruction_module in settings:
-                    reconstruction_model.simulate(simulation_data, settings)
-
-                io_handler.save_hdf5(simulation_data, settings)
+    of the SIMPA toolkit.
 
     :param simulation_pipeline: a list of callable functions
     :param settings: settings dictionary containing the simulation instructions
+    :param digital_device_twin: a digital device twin of an imaging device as specified by the DigitalDeviceTwinBase
+        class.
+    :raises TypeError: if one of the given parameters is not of the correct type
+    :raises AssertionError: if the digital device twin is not able to simulate the settings specification
     :return: list with the save paths of the simulated data within the HDF5 file.
     """
     start_time = time.time()
@@ -66,6 +55,12 @@ def simulate(simulation_pipeline: list, settings: Settings):
     if not isinstance(simulation_pipeline, list):
         logger.critical("The first argument was not a list with pipeline methods!")
         raise TypeError("The simulation pipeline must be a list that contains callable functions.")
+
+    if not digital_device_twin.check_settings_prerequisites(settings):
+        msg = ("The simulation settings do not work with the digital device twin chosen."
+               "Please check the log for details.")
+        logger.critical(msg)
+        raise AssertionError(msg)
 
     simpa_output = dict()
     path = settings[Tags.SIMULATION_PATH] + "/"
@@ -104,8 +99,14 @@ def simulate(simulation_pipeline: list, settings: Settings):
         settings[Tags.WAVELENGTH] = wavelength
 
         for pipeline_element in simulation_pipeline:
-            pipeline_element.run()
+            logger.debug(f"Running {type(pipeline_element)}")
+            pipeline_element.run(digital_device_twin)
 
         logger.debug(f"Running pipeline for wavelength {wavelength}nm... [Done]")
+
+    if Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE not in settings or \
+            settings[Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE]:
+        all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
+        save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH], file_compression="gzip")
 
     logger.info(f"The entire simulation pipeline required {time.time() - start_time} seconds.")

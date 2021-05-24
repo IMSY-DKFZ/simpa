@@ -26,6 +26,7 @@ from simpa.core.simulation_components import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 import gc
+from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
 
 
 class OpticalForwardModuleBase(SimulationModule):
@@ -38,31 +39,20 @@ class OpticalForwardModuleBase(SimulationModule):
         self.component_settings = self.global_settings.get_optical_settings()
 
     @abstractmethod
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
         """
         A deriving class needs to implement this method according to its model.
 
         :param absorption_cm: Absorption in units of per centimeter
         :param scattering_cm: Scattering in units of per centimeter
         :param anisotropy: Dimensionless scattering anisotropy
+        :param illumination_geometry: A device that represents a detection geometry
         :return: Fluence in units of J/cm^2
         """
         pass
 
-    def run(self):
-        """
-        Call this method to invoke the simulation process.
+    def run(self, device):
 
-        A adapter that implements the forward_model method, will take optical properties of absorption, scattering,
-        and scattering anisotropy as input and return the light fluence as output.
-
-        :param optical_properties_path: path to a .npz file that contains the following tags:
-            Tags.PROPERTY_ABSORPTION_PER_CM -> contains the optical absorptions in units of one per centimeter
-            Tags.PROPERTY_SCATTERING_PER_CM -> contains the optical scattering in units of one per centimeter
-            Tags.PROPERTY_ANISOTROPY -> contains the dimensionless optical scattering anisotropy
-        :param settings:
-        :return:
-        """
         self.logger.info("Simulating the optical forward process...")
 
         properties_path = generate_dict_path(Tags.SIMULATION_PROPERTIES,
@@ -76,9 +66,37 @@ class OpticalForwardModuleBase(SimulationModule):
         del optical_properties
         gc.collect()
 
-        fluence = self.forward_model(absorption_cm=absorption,
-                                     scattering_cm=scattering,
-                                     anisotropy=anisotropy)
+        _device = None
+        if isinstance(device, IlluminationGeometryBase):
+            _device = device
+        elif isinstance(device, PhotoacousticDevice):
+            _device = device.get_illumination_geometry()
+        else:
+            raise TypeError(f"The optical forward modelling does not support devices of type {type(device)}")
+
+        if isinstance(_device, list):
+            # per convention this list has at least two elements
+            fluence = self.forward_model(absorption_cm=absorption,
+                                         scattering_cm=scattering,
+                                         anisotropy=anisotropy,
+                                         illumination_geometry=_device[0],
+                                         probe_position_mm=device.get_probe_position_mm(self.global_settings))
+            for idx in range(len(_device)-1):
+                # we already looked at the 0th element, so go from 1 to n-1
+                fluence += self.forward_model(absorption_cm=absorption,
+                                              scattering_cm=scattering,
+                                              anisotropy=anisotropy,
+                                              illumination_geometry=_device[idx+1],
+                                              probe_position_mm=device.get_probe_position_mm(self.global_settings))
+
+            fluence = fluence / len(_device)
+
+        else:
+            fluence = self.forward_model(absorption_cm=absorption,
+                                         scattering_cm=scattering,
+                                         anisotropy=anisotropy,
+                                         illumination_geometry=_device,
+                                         probe_position_mm=device.get_probe_position_mm(self.global_settings))
 
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.component_settings:
             units = Tags.UNITS_PRESSURE

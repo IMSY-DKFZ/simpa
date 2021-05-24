@@ -29,7 +29,6 @@ from simpa.utils.settings import Settings
 import os
 import inspect
 import scipy.io as sio
-from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.core.acoustic_forward_module import AcousticForwardModelBaseAdapter
 import gc
 
@@ -77,7 +76,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
     """
 
-    def forward_model(self) -> np.ndarray:
+    def forward_model(self, detection_geometry) -> np.ndarray:
 
         optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
                                           wavelength=self.global_settings[Tags.WAVELENGTH])
@@ -111,11 +110,12 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         del tmp_ac_data
         gc.collect()
 
-        PA_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+        PA_device = detection_geometry
         PA_device.check_settings_prerequisites(self.global_settings)
         detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(
             self.global_settings)
-        detector_positions_voxels = np.round(detector_positions_mm / self.global_settings[Tags.SPACING_MM]).astype(int)
+        # Matlab indexes start at 1
+        detector_positions_voxels = np.round(detector_positions_mm / self.global_settings[Tags.SPACING_MM]).astype(int) + 1
 
         self.logger.debug(f"Number of detector elements: {len(detector_positions_voxels)}")
 

@@ -23,7 +23,6 @@
 from simpa.utils import Tags
 from simpa.core.reconstruction_module import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_data_field
-from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import torch
 from simpa.utils.settings import Settings
@@ -33,7 +32,7 @@ from simpa.processing.signal_processing import get_apodization_factor, bandpass_
 
 class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
-    def reconstruction_algorithm(self, time_series_sensor_data):
+    def reconstruction_algorithm(self, time_series_sensor_data, device):
         """
         Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
         first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
@@ -81,9 +80,8 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
             raise AttributeError("Please specify a value for SPACING_MM")
 
         # get device specific sensor positions
-        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
+        pa_device = device
         pa_device.check_settings_prerequisites(self.global_settings)
-        pa_device.adjust_simulation_volume_and_settings(self.global_settings)
 
         sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
 

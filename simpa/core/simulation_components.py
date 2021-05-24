@@ -23,6 +23,7 @@
 from abc import abstractmethod, ABC
 from simpa.log import Logger
 from simpa.utils import Settings
+from .device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 
 
 class SimulationModule:
@@ -39,11 +40,11 @@ class SimulationModule:
         self.global_settings = global_settings
 
     @abstractmethod
-    def run(self):
+    def run(self, digital_device_twin: DigitalDeviceTwinBase):
         """
         Executes the respective simulation module
 
-        :param global_settings: The global SIMPA settings dictionary
+        :param digital_device_twin: The digital twin that can be used by the digital device_twin.
         """
         pass
 

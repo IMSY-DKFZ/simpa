@@ -1,4 +1,3 @@
-
 # The MIT License (MIT)
 #
 # Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
@@ -22,12 +21,13 @@
 # SOFTWARE.
 import numpy as np
 
-from simpa.core.device_digital_twins.pai_device_base import PAIDeviceBase
+from simpa.core.device_digital_twins import PhotoacousticDevice, CurvedArrayDetectionGeometry, \
+    MSOTInVisionIlluminationGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 
 
-class InVision256TF(PAIDeviceBase):
+class InVision256TF(PhotoacousticDevice):
     """
     This class represents a digital twin of the InVision 256-TF, manufactured by iThera Medical, Munich, Germany
     (https://www.ithera-medical.com/products/msot-invision/). It is based on the real specifications of the device, but
@@ -47,42 +47,22 @@ class InVision256TF(PAIDeviceBase):
     """
 
     def __init__(self):
-        super().__init__()
-        self.pitch_mm = 0.74
-        self.radius_mm = 40
-        self.number_detector_elements = 256
-        self.detector_element_width_mm = 0.64
-        self.detector_element_length_mm = 15
-        self.center_frequency_Hz = 5e6
-        self.bandwidth_percent = 55
-        self.sampling_frequency_MHz = 40
-        self.focus_in_field_of_view_mm = np.array([0, 0, 4])
+        super(InVision256TF, self).__init__()
 
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        pass
+        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.74,
+                                                          radius_mm=40,
+                                                          number_detector_elements=256,
+                                                          detector_element_width_mm=0.64,
+                                                          detector_element_length_mm=15,
+                                                          center_frequency_hz=5e6,
+                                                          bandwidth_percent=55,
+                                                          sampling_frequency_mhz=40,
+                                                          focus_in_field_of_view_mm=np.array([0, 0, 4]),
+                                                          angular_origin_offset=0)
 
-    def adjust_simulation_volume_and_settings(self, global_settings: Settings) -> Settings:
-        global_settings[Tags.SENSOR_CENTER_FREQUENCY_HZ] = self.center_frequency_Hz
-        global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = self.sampling_frequency_MHz
-        global_settings[Tags.SENSOR_BANDWIDTH_PERCENT] = self.bandwidth_percent
-        self.probe_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] / 2
-        return global_settings
-
-    def get_illuminator_definition(self, global_settings: Settings):
-        pass
-
-    def get_detector_element_positions_base_mm(self) -> np.ndarray:
-        pitch_angle = self.pitch_mm / self.radius_mm
-        self.logger.debug(f"pitch angle: {pitch_angle}")
-        detector_radius = self.radius_mm
-        detector_positions = np.zeros((self.number_detector_elements, 3))
-        # go from -127.5, -126.5, ..., 0, .., 126.5, 177.5 instead of between -128 and 127
-        det_elements = np.arange(-int(self.number_detector_elements / 2) + 0.5,
-                                 int(self.number_detector_elements / 2) + 0.5)
-        detector_positions[:, 0] = np.sin(pitch_angle * det_elements - np.pi/2) * detector_radius
-        detector_positions[:, 2] = np.cos(pitch_angle * det_elements - np.pi/2) * detector_radius
-
-        return detector_positions
+        self.set_detection_geometry(detection_geometry)
+        for i in range(10):
+            self.add_illumination_geometry(MSOTInVisionIlluminationGeometry(i))
 
     def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
         sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
@@ -90,13 +70,10 @@ class InVision256TF(PAIDeviceBase):
                                global_settings[Tags.DIM_VOLUME_Z_MM]])
         return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, sizes_mm[2] / 2])
 
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
-        detector_positions = self.get_detector_element_positions_base_mm()
-        detector_orientations = np.subtract(self.focus_in_field_of_view_mm, detector_positions)
-        norm = np.linalg.norm(detector_orientations, axis=-1)
-        for dim in range(3):
-            detector_orientations[:, dim] = detector_orientations[:, dim] / norm
-        return detector_orientations
+    def get_field_of_view_extent_mm(self) -> np.ndarray:
+        return np.asarray([-20, 20,
+                           0, 0,
+                           -20, 20])
 
 
 if __name__ == "__main__":
@@ -109,13 +86,11 @@ if __name__ == "__main__":
     settings[Tags.DIM_VOLUME_Z_MM] = 100
     settings[Tags.SPACING_MM] = 0.5
     settings[Tags.STRUCTURES] = {}
-    settings[Tags.VOLUME_CREATOR] = Tags.VOLUME_CREATOR_VERSATILE
-    settings = device.adjust_simulation_volume_and_settings(settings)
 
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
-    positions = device.get_detector_element_positions_accounting_for_device_position_mm(settings)
-    detector_elements = device.get_detector_element_orientations(global_settings=settings)
+    positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(settings)
+    detector_elements = device.detection_geometry.get_detector_element_orientations(global_settings=settings)
     import matplotlib.pyplot as plt
     plt.scatter(positions[:, 0], positions[:, 2])
     plt.quiver(positions[:, 0], positions[:, 2], detector_elements[:, 0], detector_elements[:, 2])

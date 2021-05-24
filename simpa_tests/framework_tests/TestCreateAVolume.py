@@ -27,6 +27,7 @@ from simpa.core.simulation import simulate
 import os
 from simpa_tests.test_utils import create_test_structure_parameters
 from simpa.simulation_components import VolumeCreationModelModelBasedAdapter
+from simpa.core.device_digital_twins import RSOMExplorerP50
 
 
 class TestCreateVolume(unittest.TestCase):
@@ -52,7 +53,7 @@ class TestCreateVolume(unittest.TestCase):
             VolumeCreationModelModelBasedAdapter(settings)
         ]
 
-        simulate(simulation_pipeline, settings)
+        simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
            os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):

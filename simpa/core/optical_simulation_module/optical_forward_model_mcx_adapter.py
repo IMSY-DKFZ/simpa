@@ -42,7 +42,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
 
     """
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
 
         MCX_ASSUMED_ANISOTROPY = 0.9
 
@@ -91,32 +91,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
             dt = 5e-09
         frames = int(time/dt)
 
-        if Tags.ILLUMINATION_TYPE in self.component_settings:
-            source = define_illumination(self.global_settings, self.component_settings, nx, ny, nz)
-        else:
-            source = {
-                  "Pos": [
-                      int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
-                  ],
-                  "Dir": [
-                      0,
-                      0.342027,
-                      0.93969
-                  ],
-                  "Type": "pasetup",
-                  "Param1": [
-                      24.5 / self.global_settings[Tags.SPACING_MM],
-                      0,
-                      0,
-                      22.8 / self.global_settings[Tags.SPACING_MM]
-                  ],
-                  "Param2": [
-                      0,
-                      0,
-                      0,
-                      0
-                  ]
-              }
+        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings, probe_position_mm)
 
         settings_dict = {
             "Session": {
@@ -130,12 +105,6 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
                 "T1": time,
                 "Dt": dt
             },
-            # "Optode": {
-            # 	"Source": {
-            # 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
-            # 		"Dir": [0,0,1]
-            # 	}
-            # },
             "Optode": {
               "Source": source
             },

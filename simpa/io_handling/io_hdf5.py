@@ -63,10 +63,10 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
 
                 if isinstance(item, Molecule):
                     data_grabber(file, path + key + "/" + MOLECULE + "/",
-                                 serializer.serialize(item), file_compression)
+                                 serializer.serialize(item), compression)
                 elif isinstance(item, Spectrum):
                     data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/",
-                                 serializer.serialize(item), file_compression)
+                                 serializer.serialize(item), compression)
                 else:
                     if isinstance(item, (bytes, int, np.int64, float, str, bool, np.bool_)):
                         try:
@@ -75,12 +75,16 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
                             del h5file[path + key]
                             h5file[path + key] = item
                     else:
+                        c = None
+                        if isinstance(item, np.ndarray):
+                            c = compression
+
                         try:
-                            h5file.create_dataset(path + key, data=item, compression=compression)
+                            h5file.create_dataset(path + key, data=item, compression=c)
                         except (OSError, RuntimeError, ValueError):
                             del h5file[path + key]
                             try:
-                                h5file.create_dataset(path + key, data=item, compression=compression)
+                                h5file.create_dataset(path + key, data=item, compression=c)
                             except RuntimeError as e:
                                 logger.critical("item " + str(item) + " of type " + str(type(item)) +
                                                 " was not serializable! Full exception: " + str(e))

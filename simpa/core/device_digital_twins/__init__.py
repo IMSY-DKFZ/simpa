@@ -20,17 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simpa.utils import Tags
-from simpa.core.device_digital_twins.msot_device import MSOTAcuityEcho
-from simpa.core.device_digital_twins.rsom_device import RSOMExplorerP50
-from simpa.core.device_digital_twins.invision_device import InVision256TF
+from .digital_device_twin_base import PhotoacousticDevice
+from .digital_device_twin_base import DigitalDeviceTwinBase
+from simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base import DetectionGeometryBase
+from simpa.core.device_digital_twins.devices.illumination_geometries.illumination_geometry_base import IlluminationGeometryBase
+from .devices.detection_geometries.curved_array import CurvedArrayDetectionGeometry
+from .devices.detection_geometries.linear_array import LinearArrayDetectionGeometry
+from .devices.detection_geometries.planar_array import PlanarArrayDetectionGeometry
+from .devices.illumination_geometries.slit_illumination import SlitIlluminationGeometry
+from .devices.illumination_geometries.pencil_array_illumination import PencilArrayIlluminationGeometry
+from .devices.illumination_geometries.ithera_msot_acuity_illumination import MSOTAcuityIlluminationGeometry
+from .devices.illumination_geometries.ithera_msot_invision_illumination import MSOTInVisionIlluminationGeometry
+from .devices.pa_devices.ithera_msot_invision import InVision256TF
+from .devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
+from .devices.pa_devices.ithera_rsom import RSOMExplorerP50
 
-"""
-This DEVICE_MAP can be used in order to obtain appropriate device specifications based on
-the desired device design.
-"""
-DEVICE_MAP = {
-    Tags.DIGITAL_DEVICE_MSOT_ACUITY: MSOTAcuityEcho(),
-    Tags.DIGITAL_DEVICE_RSOM: RSOMExplorerP50(),
-    Tags.DIGITAL_DEVICE_MSOT_INVISION: InVision256TF()
-}

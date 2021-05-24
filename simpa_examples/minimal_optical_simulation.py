@@ -24,6 +24,7 @@ from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
+from simpa.core.device_digital_twins import *
 import numpy as np
 from simpa.simulation_components import *
 
@@ -46,6 +47,22 @@ VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
+
+
+class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
+    """
+    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
+
+    """
+
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        return np.asarray([0, 0, 0])
+
+    def __init__(self):
+        super().__init__()
+        self.set_detection_geometry(LinearArrayDetectionGeometry())
+        self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
+                                                                direction_vector_mm=[0, 0, 5]))
 
 
 def create_example_tissue():
@@ -111,10 +128,10 @@ general_settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.WAVELENGTHS: [798]
-
-    # Simulation Device
-    # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
+    Tags.WAVELENGTHS: [798],
+    Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                   VOLUME_PLANAR_DIM_IN_MM/2,
+                                   0]
 }
 
 settings = Settings(general_settings)
@@ -144,7 +161,9 @@ pipeline = [
     GaussianNoiseProcessingComponent(settings, "noise_model_1")
 ]
 
-simulate(pipeline, settings)
+device = ExampleDeviceSlitIlluminationLinearDetector()
+
+simulate(pipeline, settings, device)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]

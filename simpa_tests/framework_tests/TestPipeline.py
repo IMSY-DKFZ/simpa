@@ -30,6 +30,7 @@ import os
 from simpa.simulation_components import VolumeCreationModelModelBasedAdapter
 from simpa.core.optical_simulation_module.optical_forward_model_test_adapter import OpticalForwardModelTestAdapter
 from simpa.core.acoustic_forward_module.acoustic_forward_model_test_adapter import AcousticForwardModelTestAdapter
+from simpa.core.device_digital_twins import RSOMExplorerP50
 
 class TestPipeline(unittest.TestCase):
 
@@ -91,7 +92,7 @@ class TestPipeline(unittest.TestCase):
             AcousticForwardModelTestAdapter(settings),
         ]
 
-        simulate(simulation_pipeline, settings)
+        simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
                 os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):

@@ -93,6 +93,12 @@ class Tags:
     Usage: module noise_simulation
     """
 
+    LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE = ("minimize_file_size", (bool, np.bool, np.bool_))
+    """
+    If not set to False, the HDF5 file will be optimised after the simulations are done.
+    Usage: simpa.core.simulation.simulate
+    """
+
     """
     Volume Creation Settings
     """
@@ -307,6 +313,12 @@ class Tags:
     DIGITAL_DEVICE_MSOT_INVISION = "digital_device_invision"
     """
     Corresponds to the InVision 256-TF device.\n
+    Usage: SIMPA package, naming convention
+    """
+
+    DIGITAL_DEVICE_SLIT_ILLUMINATION_LINEAR_DETECTOR = "digital_device_slit_illumination_linear_detector"
+    """
+    Corresponds to a PA device with a slit as illumination and a linear array as detection geometry.\n
     Usage: SIMPA package, naming convention
     """
 

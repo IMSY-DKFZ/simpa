@@ -70,11 +70,6 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
     if "time_series_data" in simulation_result_data:
         reconstructed_data = simulation_result_data["reconstructed_data"][str(wavelength)]["reconstructed_data"]
 
-    shape = np.shape(absorption)
-    x_pos = int(shape[0] / 2)
-    y_pos = int(shape[1] / 2)
-    z_pos = int(shape[2] / 2)
-
     cmap_label_names, cmap_label_values, cmap = get_segmentation_colormap()
 
     data_to_show = []
@@ -144,7 +139,8 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         plt.subplot(num_rows, len(data_to_show), i+1)
         plt.title(data_item_names[i])
         if len(np.shape(data_to_show[i])) > 2:
-            data = np.rot90(data_to_show[i][:, y_pos, :], -1)
+            pos = int(np.shape(data_to_show[i])[1] / 2)
+            data = np.rot90(data_to_show[i][:, pos, :], -1)
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         else:
             data = np.rot90(data_to_show[i][:, :], -1)
@@ -155,7 +151,8 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
             plt.subplot(num_rows, len(data_to_show), i + 1 + len(data_to_show))
             plt.title(data_item_names[i])
             if len(np.shape(data_to_show[i])) > 2:
-                data = np.rot90(data_to_show[i][x_pos, :, :], -1)
+                pos = int(np.shape(data_to_show[i])[0] / 2)
+                data = np.rot90(data_to_show[i][pos, :, :], -1)
                 plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
             else:
                 data = np.rot90(data_to_show[i][:, :], -1)

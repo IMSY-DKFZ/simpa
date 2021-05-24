@@ -26,7 +26,6 @@ from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
 from simpa.core.simulation_components import SimulationModule
-from simpa.core.device_digital_twins import DEVICE_MAP
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import save_hdf5
 
@@ -61,28 +60,8 @@ class VolumeCreatorModuleBase(SimulationModule):
         """
         pass
 
-    def run(self):
-        """
-            This method is the main entry point of volume creation for the SIMPA framework.
-            It uses the Tags.VOLUME_CREATOR tag to determine which of the volume creators
-            should be used to create the simulation phantom.
-
-            :param global_settings: the settings dictionary that contains the simulation instructions
-
-            """
+    def run(self, device):
         self.logger.info("VOLUME CREATION")
-
-        pa_device = None
-        if Tags.DIGITAL_DEVICE in self.global_settings:
-            try:
-                pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
-                pa_device.check_settings_prerequisites(self.global_settings)
-            except KeyError as e:
-                self.logger.warning(f"Intercepted exception during creation of PADevice instance: {str(e)}")
-                pa_device = None
-
-        if pa_device is not None:
-            self.global_settings = pa_device.adjust_simulation_volume_and_settings(self.global_settings)
 
         volumes = self.create_simulation_volume()
         save_volumes = dict()

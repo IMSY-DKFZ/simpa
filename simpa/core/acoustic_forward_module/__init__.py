@@ -26,6 +26,7 @@ from simpa.core.simulation_components import SimulationModule
 from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.core.device_digital_twins import PhotoacousticDevice, DetectionGeometryBase
 
 
 class AcousticForwardModelBaseAdapter(SimulationModule):
@@ -52,7 +53,7 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         self.component_settings = global_settings.get_acoustic_settings()
 
     @abstractmethod
-    def forward_model(self) -> np.ndarray:
+    def forward_model(self, detection_geometry) -> np.ndarray:
         """
         This method performs the acoustic forward modeling given the initial pressure
         distribution and the acoustic tissue properties contained in the settings file.
@@ -62,17 +63,25 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         """
         pass
 
-    def run(self):
+    def run(self, digital_device_twin):
         """
         Call this method to invoke the simulation process.
 
-        :param global_settings: the settings dictionary containing all simulation parameters.
+        :param digital_device_twin:
         :return: a numpy array containing the time series pressure data per detection element
         """
 
         self.logger.info("Simulating the acoustic forward process...")
 
-        time_series_data = self.forward_model()
+        _device = None
+        if isinstance(digital_device_twin, DetectionGeometryBase):
+            _device = digital_device_twin
+        elif isinstance(digital_device_twin, PhotoacousticDevice):
+            _device = digital_device_twin.get_detection_geometry()
+        else:
+            raise TypeError(f"The optical forward modelling does not support devices of type {type(digital_device_twin)}")
+
+        time_series_data = self.forward_model(_device)
 
         acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 

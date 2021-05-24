@@ -27,7 +27,7 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.simulation import simulate
-from simpa.core.device_digital_twins.msot_device import MSOTAcuityEcho
+from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 from simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import AcousticForwardModelKWaveAdapter
 from simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter import OpticalForwardModelMcxAdapter
 from simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \

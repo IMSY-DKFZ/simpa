@@ -19,11 +19,3 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-from simpa.core.reconstruction_module import ReconstructionAdapterBase
-
-
-class ReconstructionModuleTestAdapter(ReconstructionAdapterBase):
-
-    def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry):
-        return time_series_sensor_data / 10 + 5
