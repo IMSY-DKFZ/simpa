@@ -55,6 +55,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
         #   This will lead to errors, especially in the quasi-ballistic regime.
 
         scattering_mm = (scattering_mm * (1 - anisotropy)) / (1 - MCX_ASSUMED_ANISOTROPY)  # FIXME
+        scattering_mm[scattering_mm < 1e-10] = 1e-10
 
         op_array = np.asarray([absorption_mm, scattering_mm])
 

@@ -187,6 +187,7 @@ device.update_settings_for_use_of_model_based_volume_creator(settings)
 SIMUATION_PIPELINE = [
     VolumeCreationModelModelBasedAdapter(settings),
     OpticalForwardModelMcxAdapter(settings),
+    FieldOfViewCroppingProcessingComponent(settings),
     #GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
