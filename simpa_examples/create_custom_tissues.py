@@ -23,27 +23,27 @@
 from simpa.utils import MolecularCompositionGenerator
 from simpa.utils import MOLECULE_LIBRARY
 from simpa.utils import Molecule
-from simpa.utils import AbsorptionSpectrum
+from simpa.utils import Spectrum
 import numpy as np
 
 
 def create_custom_absorber():
     wavelengths = np.linspace(200, 1500, 100)
-    absorber = AbsorptionSpectrum(spectrum_name="random absorber",
-                                  wavelengths=wavelengths,
-                                  absorption_per_centimeter=np.random.random(
+    absorber = Spectrum(spectrum_name="random absorber",
+                        wavelengths=wavelengths,
+                        values=np.random.random(
                                       np.shape(wavelengths)))
     return absorber
 
 
 def create_custom_chromophore(volume_fraction: float = 1.0):
     chromophore = Molecule(
-            spectrum=create_custom_absorber(),
+            absorption_spectrum=create_custom_absorber(),
             volume_fraction=volume_fraction,
             mus500=40.0,
             b_mie=1.1,
             f_ray=0.9,
-            anisotropy=0.9
+            anisotropy_spectrum=0.9
         )
     return chromophore
 

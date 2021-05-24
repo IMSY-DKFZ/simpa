@@ -24,7 +24,7 @@ import unittest
 from simpa.utils.libraries.tissue_library import MolecularComposition, MolecularCompositionGenerator
 from simpa.utils.libraries.literature_values import StandardProperties, OpticalTissueProperties
 from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
-from simpa.utils.libraries.spectra_library import AbsorptionSpectrum
+from simpa.utils.libraries.spectra_library import Spectrum
 from simpa.utils import SegmentationClasses
 from simpa.utils import Tags
 from simpa.utils import SPECTRAL_LIBRARY
@@ -62,7 +62,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength)<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength))).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength) < confidence_interval * spectrum.get_value_for_wavelength(wavelength))).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_WATER).all()
 
 
@@ -84,7 +84,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength)<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength))).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength) < confidence_interval * spectrum.get_value_for_wavelength(wavelength))).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_WATER).all()
 
 
@@ -107,7 +107,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength)<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength))).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength) < confidence_interval * spectrum.get_value_for_wavelength(wavelength))).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_WATER).all()
 
 
@@ -137,7 +137,8 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval *
+                    spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
 
 
@@ -159,7 +160,8 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) <
+                    confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -181,7 +183,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
 
 
@@ -210,7 +212,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
 
         #setting2: vessel of molecule
@@ -231,7 +233,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -253,7 +255,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_BLOOD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_BLOOD).all()
 
 
@@ -282,7 +284,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
 
         #setting2: vessel of molecule
@@ -303,7 +305,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -325,7 +327,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
 
 
@@ -353,7 +355,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_FAT)<confidence_interval*StandardProperties.SPEED_OF_SOUND_FAT).all()
 
         #setting2: vessel of molecule
@@ -374,7 +376,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_FAT)<confidence_interval*StandardProperties.SPEED_OF_SOUND_FAT).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -396,7 +398,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_FAT)<confidence_interval*StandardProperties.SPEED_OF_SOUND_FAT).all()
 
 
@@ -424,7 +426,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
 
         #setting2: vessel of molecule
@@ -445,7 +447,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -467,7 +469,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
 
 
@@ -496,7 +498,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
 
         #setting2: vessel of molecule
@@ -517,7 +519,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3]  - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3]  - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3]  - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -538,7 +540,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['g'][volume['seg']==3]  - OpticalTissueProperties.STANDARD_ANISOTROPY)<confidence_interval*OpticalTissueProperties.STANDARD_ANISOTROPY).all()
             assert (np.abs(volume['gamma'][volume['seg']==3]  - calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3]  - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3]  - StandardProperties.SPEED_OF_SOUND_GENERIC)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GENERIC).all()
 
 
@@ -567,7 +569,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
 
         #setting2: vessel of molecule
@@ -588,7 +590,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -610,7 +612,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
 
 
@@ -638,7 +640,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
 
         #setting2: vessel of molecule
@@ -659,7 +661,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -681,7 +683,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_SKIN)<confidence_interval*StandardProperties.SPEED_OF_SOUND_SKIN).all()
 
 
@@ -717,8 +719,8 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)) <=
                     confidence_interval*calculate_gruneisen_parameter_from_temperature(
                     StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength)) <=
-                    confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) <=
+                    confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_BONE) <=
                     confidence_interval*StandardProperties.SPEED_OF_SOUND_BONE).all()
 
@@ -743,8 +745,8 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)) <
                     confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg'] == 3] - spectrum.get_absorption_for_wavelength(wavelength)) <
-                    confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg'] == 3] - spectrum.get_value_for_wavelength(wavelength)) <
+                    confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg'] == 3] - StandardProperties.SPEED_OF_SOUND_BONE) <
                     confidence_interval*StandardProperties.SPEED_OF_SOUND_BONE).all()
 
@@ -770,8 +772,8 @@ class TestMoleculeLibrary(unittest.TestCase):
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)) <
                     confidence_interval*calculate_gruneisen_parameter_from_temperature(
                     StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg'] == 3] - spectrum.get_absorption_for_wavelength(wavelength)) <
-                    confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg'] == 3] - spectrum.get_value_for_wavelength(wavelength)) <
+                    confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg'] == 3] - StandardProperties.SPEED_OF_SOUND_BONE) <
                     confidence_interval*StandardProperties.SPEED_OF_SOUND_BONE).all()
 
@@ -800,7 +802,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_GEL_PAD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
 
         #setting2: vessel of molecule
@@ -821,7 +823,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GEL_PAD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -843,7 +845,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_GEL_PAD)<confidence_interval*StandardProperties.SPEED_OF_SOUND_GEL_PAD).all()
 
 
@@ -872,7 +874,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_HEAVY_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
 
         #setting2: vessel of molecule
@@ -893,7 +895,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_HEAVY_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -915,7 +917,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_HEAVY_WATER)<confidence_interval*StandardProperties.SPEED_OF_SOUND_HEAVY_WATER).all()
 
 
@@ -944,7 +946,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()
 
         #setting2: vessel of molecule
@@ -965,7 +967,7 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()
 
         #setting3: vessel of molecule on top of vessel of molecule
@@ -987,5 +989,5 @@ class TestMoleculeLibrary(unittest.TestCase):
             assert (np.abs(volume['gamma'][volume['seg']==3] - calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS))<confidence_interval*calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)).all()
-            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_absorption_for_wavelength(wavelength))<confidence_interval*spectrum.get_absorption_for_wavelength(wavelength)).all()
+            assert (np.abs(volume['mua'][volume['seg']==3] - spectrum.get_value_for_wavelength(wavelength)) < confidence_interval * spectrum.get_value_for_wavelength(wavelength)).all()
             assert (np.abs(volume['sos'][volume['seg']==3] - StandardProperties.SPEED_OF_SOUND_AIR)<confidence_interval*StandardProperties.SPEED_OF_SOUND_AIR).all()

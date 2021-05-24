@@ -107,8 +107,8 @@ class StandardProperties:
     ALPHA_COEFF_AIR = 3.3875e-3
     ALPHA_COEFF_MUSCLE = 0.6175
     ALPHA_COEFF_BONE = 4.7385  # Cortical bone
-    ALPHA_COEFF_BLOOD = 0.2056
-    ALPHA_COEFF_SKIN = 1.8378
+    ALPHA_COEFF_BLOOD = 0.20
+    ALPHA_COEFF_SKIN = 0.35
     ALPHA_COEFF_FAT = 0.3785
     ALPHA_COEFF_GEL_PAD = 0.277
     ALPHA_COEFF_WATER = 2.1976e-3
@@ -169,22 +169,28 @@ class OpticalTissueProperties:
     FRAY_BACKGROUND_TISSUE = 0.153  # Table 2: Average over all other soft tissue
     BMIE_BACKGROUND_TISSUE = 1.091  # Table 2: Average over all other soft tissue
 
-    MUS500_EPIDERMIS = 667.0  # Table 1; Salomatina et al 2006; One value for epidermis
+    MUS500_MUSCLE_TISSUE = 161.0  # Table 2: Average over all other soft tissue
+    FRAY_MUSCLE_TISSUE = 0.21  # Table 2: Average over all other soft tissue
+    BMIE_MUSCLE_TISSUE = 1.5  # Table 2: Average over all other soft tissue
+
+    MUS500_EPIDERMIS = 93.01  # Bashkatov et al. 2011 but adjusted for epidermis anisotropy
     FRAY_EPIDERMIS = 0.29  # Table 1; Salomatina et al 2006; One value for epidermis
-    BMIE_EPIDERMIS = 0.689  # Table 1; Salomatina et al 2006; One value for epidermis
-    MUS500_DERMIS = 436.0  # Table 1; Salomatina et al 2006; One value for dermis
-    FRAY_DERMIS = 0.41  # Table 1; Salomatina et al 2006; One value for dermis
-    BMIE_DERMIS = 0.69  # Table 1; Salomatina et al 2006; One value for dermis
+    BMIE_EPIDERMIS = 2.8  # Table 1; Salomatina et al 2006; One value for epidermis
+    MUS500_DERMIS = 175.0  # Bashkatov et al. 2011 but adjusted for DERMIS_ANISOTROPY
+    FRAY_DERMIS = 0.1  # Table 1; Salomatina et al 2006; One value for dermis
+    BMIE_DERMIS = 3.5  # Table 1; Salomatina et al 2006; One value for dermis
     MUS500_FAT = 193.0  # Table 2 average fatty tissue
     FRAY_FAT = 0.174  # Table 2 average fatty tissue
     BMIE_FAT = 0.447  # Table 2 average fatty tissue
-    MUS500_BLOOD = 220.0  # Table 1 Alexandrakis et al 2005
-    FRAY_BLOOD = 0.66  # Table 1 Alexandrakis et al 2005
-    BMIE_BLOOD = 0.0  # Table 1 Alexandrakis et al 2005
+    MUS500_BLOOD = 1170  # Table 1 Alexandrakis et al 2005
+    FRAY_BLOOD = 0.0  # Table 1 Alexandrakis et al 2005
+    BMIE_BLOOD = 0.93  # Table 1 Alexandrakis et al 2005
     MUS500_BONE = 153.0  # Table 2 Mean for bone
     FRAY_BONE = 0.022  # Table 2 Mean for bone
     BMIE_BONE = 0.326  # Table 2 Mean for bone
     STANDARD_ANISOTROPY = 0.9  # Average anisotropy of measured values presented in paper
+    DERMIS_ANISOTROPY = 0.715
+    BLOOD_ANISOTROPY = 0.98
 
     # Water content of bone:
     # @article{timmins1977bone,
@@ -243,7 +249,7 @@ class OpticalTissueProperties:
     #   publisher={Wiley Online Library}
     # }
 
-    MELANIN_VOLUME_FRACTION_MEAN = 0.011
+    MELANIN_VOLUME_FRACTION_MEAN = 0.014
     MELANIN_VOLUME_FRACTION_STD = 0.003
 
     # Approximated mean of figure 3

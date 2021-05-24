@@ -61,7 +61,7 @@ segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacin
 def segmention_class_mapping():
     ret_dict = dict()
     ret_dict[0] = TISSUE_LIBRARY.heavy_water()
-    ret_dict[1] = TISSUE_LIBRARY.blood_generic()
+    ret_dict[1] = TISSUE_LIBRARY.blood()
     ret_dict[2] = TISSUE_LIBRARY.epidermis()
     ret_dict[3] = TISSUE_LIBRARY.muscle()
     ret_dict[4] = TISSUE_LIBRARY.mediprene()

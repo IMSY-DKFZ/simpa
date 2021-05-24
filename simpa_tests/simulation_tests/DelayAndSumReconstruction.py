@@ -186,7 +186,7 @@ class DelayAndSumReconstruction:
         vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 10]
         vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
         vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -198,7 +198,7 @@ class DelayAndSumReconstruction:
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 5]
         vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
         vessel_2_dictionary[Tags.STRUCTURE_ECCENTRICITY] = 0.9
-        vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+        vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
         vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
 
@@ -208,7 +208,7 @@ class DelayAndSumReconstruction:
         vessel_3_dictionary[Tags.STRUCTURE_X_EXTENT_MM] = 8
         vessel_3_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = 10
         vessel_3_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = 16
-        vessel_3_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+        vessel_3_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
         vessel_3_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_3_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
 

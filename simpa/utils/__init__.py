@@ -31,7 +31,7 @@ from .constants import SaveFilePaths, SegmentationClasses
 # If there are import errors in the tests, it is probably due to an incorrect
 # initialization order
 from .libraries.spectra_library import AbsorptionSpectrumLibrary
-from .libraries.spectra_library import AbsorptionSpectrum
+from .libraries.spectra_library import Spectrum
 from .libraries.spectra_library import SPECTRAL_LIBRARY
 from .libraries.spectra_library import view_absorption_spectra
 

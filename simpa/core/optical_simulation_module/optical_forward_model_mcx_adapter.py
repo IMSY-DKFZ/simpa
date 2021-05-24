@@ -44,8 +44,18 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
 
     def forward_model(self, absorption_cm, scattering_cm, anisotropy):
 
+        MCX_ASSUMED_ANISOTROPY = 0.9
+
         absorption_mm = absorption_cm / 10
         scattering_mm = scattering_cm / 10
+
+        # FIXME Currently, mcx only accepts a single value for the anisotropy.
+        #   In order to use the correct reduced scattering coefficient throughout the simulation,
+        #   we adjust the scattering parameter to be more accurate in the diffuse regime.
+        #   This will lead to errors, especially in the quasi-ballistic regime.
+
+        scattering_mm = (scattering_mm * (1 - anisotropy)) / (1 - MCX_ASSUMED_ANISOTROPY)  # FIXME
+
         op_array = np.asarray([absorption_mm, scattering_mm])
 
         [_, nx, ny, nz] = np.shape(op_array)
@@ -142,7 +152,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
                     {
                         "mua": 1,
                         "mus": 1,
-                        "g": 0.9,
+                        "g": MCX_ASSUMED_ANISOTROPY,
                         "n": 1
                     }
                 ],

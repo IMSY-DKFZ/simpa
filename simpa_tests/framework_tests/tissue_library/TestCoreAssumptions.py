@@ -20,58 +20,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from json import JSONEncoder
-from simpa.utils import Spectrum, Molecule
-import numpy as np
+import unittest
+from simpa.utils import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
+from simpa.utils.libraries.molecule_library import MolecularComposition
+import inspect
 
 
-class SIMPASerializer(object):
-    """
-    TODO
-    """
+class TestCoreAssumptions(unittest.TestCase):
 
-    def serialize(self, _object: object):
-        """
+    def test_volume_fractions_sum_to_less_or_equal_one(self):
+        for (method_name, method) in self.get_all_tissue_library_methods():
+            total_volume_fraction = 0
+            for molecule in method(TISSUE_LIBRARY):
+                total_volume_fraction += molecule.volume_fraction
+            self.assertAlmostEqual(total_volume_fraction, 1.0, 3,
+                                   f"Volume fraction not 1.0 +/- 0.001 for {method_name}")
 
-        """
-        if isinstance(_object, Molecule):
-            return _object.__dict__
-
-        if isinstance(_object, Spectrum):
-            return _object.__dict__
-
-        return _object
-
-
-class SIMPAJSONSerializer(JSONEncoder):
-    """
-    TODO
-    """
-
-    def __init__(self):
-        """
-        TODO
-        """
-        super().__init__()
-        self._serializer = SIMPASerializer()
-
-    def default(self, _object: object):
-        """
-        TODO
-        """
-
-        serialized_object = self._serializer.serialize(_object)
-
-        if serialized_object is not None:
-            return serialized_object
-
-        if isinstance(_object, np.ndarray):
-            return list(_object)
-
-        if isinstance(_object, (np.int, np.int16, np.int32, np.int64)):
-            return int(_object)
-
-        if isinstance(_object, (np.float, np.float16, np.float32, np.float64)):
-            return float(_object)
-
-        return super().default(_object)
+    @staticmethod
+    def get_all_tissue_library_methods():
+        methods = []
+        for method in inspect.getmembers(TissueLibrary, predicate=inspect.isfunction):
+            if isinstance(method[1](TISSUE_LIBRARY), MolecularComposition):
+                methods.append(method)
+        return methods

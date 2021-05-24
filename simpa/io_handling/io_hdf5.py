@@ -23,7 +23,7 @@
 from simpa.utils import Tags
 import h5py
 from simpa.io_handling.serialization import SIMPASerializer
-from simpa.utils import AbsorptionSpectrum, Molecule
+from simpa.utils import Spectrum, Molecule
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.dict_path_manager import generate_dict_path
 import numpy as np
@@ -64,7 +64,7 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
                 if isinstance(item, Molecule):
                     data_grabber(file, path + key + "/" + MOLECULE + "/",
                                  serializer.serialize(item), file_compression)
-                elif isinstance(item, AbsorptionSpectrum):
+                elif isinstance(item, Spectrum):
                     data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/",
                                  serializer.serialize(item), file_compression)
                 else:
@@ -166,7 +166,7 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                     dictionary = Molecule.from_settings(data)
                 elif key == ABSORPTION_SPECTRUM:
                     data = data_grabber(file, path + key + "/")
-                    dictionary = AbsorptionSpectrum.from_settings(data)
+                    dictionary = Spectrum.from_settings(data)
                 else:
                     dictionary[key] = data_grabber(file, path + key + "/")
         return dictionary
