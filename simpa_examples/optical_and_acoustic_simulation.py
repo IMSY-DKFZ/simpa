@@ -132,7 +132,6 @@ settings.set_optical_settings({
 })
 
 settings.set_acoustic_settings({
-    Tags.ACOUSTIC_SIMULATION_3D: True,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.PROPERTY_ALPHA_POWER: 1.05,
     Tags.SENSOR_RECORD: "p",

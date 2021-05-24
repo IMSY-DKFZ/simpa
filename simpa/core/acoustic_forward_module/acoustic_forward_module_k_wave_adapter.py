@@ -87,17 +87,21 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
         tmp_ac_data = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], SaveFilePaths.SIMULATION_PROPERTIES)
 
-        if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not \
-                self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
-            axes = (0, 1)
-        else:
-            axes = (0, 2)
         wavelength = str(self.global_settings[Tags.WAVELENGTH])
+        initial_pressure = data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength]
+
+        simulate_3d = (len(np.shape(initial_pressure)) == 3)
+
+        if simulate_3d:
+            axes = (0, 2)
+        else:
+            axes = (0, 1)
+
         data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND], 3, axes=axes)
         data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY], 3, axes=axes)
         data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF], 3, axes=axes)
         data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(
-            np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength], axes=axes))
+            np.rot90(initial_pressure, axes=axes))
 
         try:
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
@@ -163,8 +167,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         del data_dict, k_wave_settings, sensor_map, detector_positions_voxels, detector_positions_mm, PA_device
         gc.collect()
 
-        if Tags.ACOUSTIC_SIMULATION_3D in self.component_settings and \
-                self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
+        if simulate_3d:
             self.logger.info("Simulating 3D....")
             simulation_script_path = "simulate_3D"
         else:
