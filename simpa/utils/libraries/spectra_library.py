@@ -22,6 +22,7 @@
 
 import numpy as np
 import matplotlib.pylab as plt
+from simpa.utils.libraries.literature_values import OpticalTissueProperties
 
 
 class Spectrum(object):
@@ -80,7 +81,7 @@ class Spectrum(object):
     def from_settings(absorption_spectrum_settings: dict):
         return Spectrum(spectrum_name=absorption_spectrum_settings["spectrum_name"],
                         wavelengths=absorption_spectrum_settings["wavelengths"],
-                        values=absorption_spectrum_settings["absorption_per_centimeter"])
+                        values=absorption_spectrum_settings["values"])
 
 
 class AnisotropySpectrumLibrary(object):
@@ -92,6 +93,45 @@ class AnisotropySpectrumLibrary(object):
     def CONSTANT_ANISOTROPY_ARBITRARY(anisotropy: float = 1):
         return Spectrum("Constant Anisotropy (arb)", np.asarray([450, 1000]),
                         np.asarray([anisotropy, anisotropy]))
+
+
+def SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY(name: str, mus_at_500_nm: float = 1.0, fraction_rayleigh_scattering: float = 0.0,
+                                            mie_power_law_coefficient: float = 0.0):
+    wavelengths = np.arange(450, 1001, 1)
+    scattering = (mus_at_500_nm * (fraction_rayleigh_scattering * (wavelengths / 500) ** 1e-4 +
+                  (1 - fraction_rayleigh_scattering) * (wavelengths / 500) ** -mie_power_law_coefficient))
+    return Spectrum(name, wavelengths, scattering)
+
+class ScatteringSpectrumLibrary(object):
+    EPIDERMIS = SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY("epidermis scattering",
+                                                        OpticalTissueProperties.MUS500_EPIDERMIS,
+                                                        OpticalTissueProperties.FRAY_EPIDERMIS,
+                                                        OpticalTissueProperties.BMIE_EPIDERMIS)
+    BLOOD = SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY("blood scattering", OpticalTissueProperties.MUS500_BLOOD,
+                                                    OpticalTissueProperties.FRAY_BLOOD,
+                                                    OpticalTissueProperties.BMIE_BLOOD)
+    MUSCLE = SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY("muscle scattering", OpticalTissueProperties.MUS500_MUSCLE_TISSUE,
+                                                     OpticalTissueProperties.FRAY_MUSCLE_TISSUE,
+                                                     OpticalTissueProperties.BMIE_MUSCLE_TISSUE)
+    DERMIS = SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY("epidermis scattering", OpticalTissueProperties.MUS500_DERMIS,
+                                                     OpticalTissueProperties.FRAY_DERMIS,
+                                                     OpticalTissueProperties.BMIE_DERMIS)
+    BONE = SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY("bone", OpticalTissueProperties.MUS500_BONE,
+                                                   OpticalTissueProperties.FRAY_BONE,
+                                                   OpticalTissueProperties.BMIE_BONE)
+    BACKGROUND = SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY("background", OpticalTissueProperties.MUS500_BACKGROUND_TISSUE,
+                                                         OpticalTissueProperties.FRAY_BACKGROUND_TISSUE,
+                                                         OpticalTissueProperties.BMIE_BACKGROUND_TISSUE)
+    SUBCUTANEOUS_FAT = SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY("fat",
+                                                               OpticalTissueProperties.MUS500_FAT,
+                                                               OpticalTissueProperties.FRAY_FAT,
+                                                               OpticalTissueProperties.BMIE_FAT)
+
+    @staticmethod
+    def CONSTANT_SCATTERING_ARBITRARY(scattering: float = 1):
+        return Spectrum("Constant Scattering (arb)", np.asarray([450, 1000]),
+                        np.asarray([scattering, scattering]))
+
 
 class AbsorptionSpectrumLibrary(object):
 

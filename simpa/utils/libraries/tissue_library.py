@@ -25,7 +25,7 @@ from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
 from simpa.utils.libraries.molecule_library import MolecularComposition
-from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary
+from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils.calculate import randomize_uniform
 
 
@@ -66,11 +66,15 @@ class TissueLibrary(object):
         TODO
         """
         return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
-                                                                absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(
-                                                                    mua),
+                                                                absorption_spectrum=
+                                                                SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(mua),
                                                                 volume_fraction=1.0,
-                                                                mus500=mus, b_mie=0.0, f_ray=0.0,
-                                                                anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(g)))
+                                                                scattering_spectrum=
+                                                                ScatteringSpectrumLibrary.
+                                                                CONSTANT_SCATTERING_ARBITRARY(mus),
+                                                                anisotropy_spectrum=
+                                                                AnisotropySpectrumLibrary.
+                                                                CONSTANT_ANISOTROPY_ARBITRARY(g)))
                                                .get_molecular_composition(SegmentationClasses.GENERIC))
 
     def muscle(self, background_oxy=None, blood_volume_fraction=None):
