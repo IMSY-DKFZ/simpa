@@ -30,6 +30,7 @@ from simpa.utils.settings import Settings
 from simpa.processing.preprocess_images import reconstruction_mode_transformation
 from simpa.processing.signal_processing import get_apodization_factor, bandpass_filtering, apply_b_mode
 
+
 class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data):
@@ -56,8 +57,8 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
         # check settings dictionary for elements and read them in
 
         # speed of sound: use given speed of sound, otherwise use average from simulation if specified
-        if Tags.PROPERTY_SPEED_OF_SOUND in self.global_settings and self.global_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
-            speed_of_sound_in_m_per_s = self.global_settings[Tags.PROPERTY_SPEED_OF_SOUND]
+        if Tags.PROPERTY_SPEED_OF_SOUND in self.component_settings and self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
+            speed_of_sound_in_m_per_s = self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]
         elif Tags.WAVELENGTH in self.global_settings and self.global_settings[Tags.WAVELENGTH]:
             sound_speed_m = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
@@ -84,7 +85,8 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
         pa_device.check_settings_prerequisites(self.global_settings)
         pa_device.adjust_simulation_volume_and_settings(self.global_settings)
 
-        sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
+        sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(
+            self.global_settings)
 
         # time series sensor data must be numpy array
         if isinstance(sensor_positions, np.ndarray):
@@ -150,12 +152,12 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
 
         if time_series_sensor_data.shape[0] < sensor_positions.shape[0]:
             self.logger.warning("Warning: The time series data has less sensor element entries than the given sensor positions. "
-                  "This might be due to a low simulated resolution, please increase it.")
+                                "This might be due to a low simulated resolution, please increase it.")
 
         n_sensor_elements = time_series_sensor_data.shape[0]
 
         self.logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
-              f',number of sensor elements: {n_sensor_elements}')
+                          f',number of sensor elements: {n_sensor_elements}')
 
         # construct output image
         output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=device)
@@ -193,17 +195,17 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
         values[invalid_indices] = 0
         DAS = torch.sum(values, dim=3)
 
-        del delays # free memory of delays
+        del delays  # free memory of delays
 
         for x in range(xdim):
             yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=device),
                                             torch.arange(zdim, device=device),
                                             torch.arange(n_sensor_elements, device=device),
                                             torch.arange(n_sensor_elements, device=device))
-            M = values[x,yy,zz,nn] * values[x,yy,zz,mm]
+            M = values[x, yy, zz, nn] * values[x, yy, zz, mm]
             M = torch.sign(M) * torch.sqrt(torch.abs(M))
             # only take upper triangle without diagonal and sum up along n and m axis (last two)
-            output[x] = torch.triu(M, diagonal=1).sum(dim=(-1,-2))
+            output[x] = torch.triu(M, diagonal=1).sum(dim=(-1, -2))
         output = torch.sign(DAS) * output
         reconstructed = output.cpu().numpy()
 
@@ -212,13 +214,14 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
         if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in self.component_settings \
                 and self.component_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION] \
                 and Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
-            reconstructed = apply_b_mode(reconstructed, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
+            reconstructed = apply_b_mode(
+                reconstructed, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         return reconstructed.squeeze()
 
 
 def reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
-                                      time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
+                                                      time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
 
