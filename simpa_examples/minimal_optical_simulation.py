@@ -132,7 +132,7 @@ settings.set_optical_settings({
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
 })
 settings["noise_model_1"] = {
-    Tags.NOISE_MEAN: 1,
+    Tags.NOISE_MEAN: 1.0,
     Tags.NOISE_STD: 0.1,
     Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
     Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,

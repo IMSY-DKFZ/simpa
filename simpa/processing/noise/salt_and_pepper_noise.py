@@ -62,9 +62,11 @@ class SaltAndPepperNoiseProcessingComponent(ProcessingComponent):
         self.logger.debug(f"Noise model max: {max_noise}")
         self.logger.debug(f"Noise model frequency: {noise_frequency}")
 
-        num_data_points = int(np.round(np.mult(np.shape(data_array)) * noise_frequency / 2))
-        coords_min = np.random.choice(data_array, num_data_points)
-        coords_max = np.random.choice(data_array, num_data_points)
+        shape = np.shape(data_array)
+        num_data_points = int(np.round(np.prod(shape) * noise_frequency / 2))
+
+        coords_min = tuple([np.random.randint(0, i - 1, int(num_data_points)) for i in shape])
+        coords_max = tuple([np.random.randint(0, i - 1, int(num_data_points)) for i in shape])
 
         data_array[coords_min] = min_noise
         data_array[coords_max] = max_noise
