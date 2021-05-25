@@ -29,6 +29,7 @@ import torch
 from simpa.utils.settings import Settings
 from simpa.processing.preprocess_images import reconstruction_mode_transformation
 from simpa.processing.signal_processing import get_apodization_factor, bandpass_filtering, apply_b_mode
+import gc
 
 
 class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
@@ -183,6 +184,13 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         lower_values = time_series_sensor_data[jj, lower_delays]
         upper_values = time_series_sensor_data[jj, upper_delays]
         values = lower_values * (upper_delays - delays) + upper_values * (delays - lower_delays)
+
+        del delays  # free memory of delays
+        del lower_delays
+        del upper_delays
+        del lower_values
+        del upper_values
+        gc.collect()
 
         # perform apodization if specified
         if Tags.RECONSTRUCTION_APODIZATION_METHOD in self.component_settings:

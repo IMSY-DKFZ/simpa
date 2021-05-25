@@ -29,6 +29,7 @@ import torch
 from simpa.utils.settings import Settings
 from simpa.processing.preprocess_images import reconstruction_mode_transformation
 from simpa.processing.signal_processing import get_apodization_factor, bandpass_filtering, apply_b_mode
+import gc
 
 
 class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
@@ -195,6 +196,11 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
         values[invalid_indices] = 0
 
         del delays  # free memory of delays
+        del lower_delays
+        del upper_delays
+        del lower_values
+        del upper_values
+        gc.collect()
 
         for x in range(xdim):
             yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=device),
