@@ -341,12 +341,6 @@ class Tags:
     Usage: module optical_simulation_module
     """
 
-    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = ("optical_model_illumination_geometry_xml_file", str)
-    """
-    Absolute path of the location of the optical forward model illumination geometry.\n
-    Usage: module optical_simulation_module
-    """
-
     OPTICAL_MODEL_ILLUMINATION_GEOMETRY_JSON_FILE = ("optical_model_illumination_geometry_json_file", str)
     """
     Absolute path of the location of the JSON file containing the IPASC-formatted optical forward 
@@ -532,12 +526,6 @@ class Tags:
     """
     Choice of the used optical model.\n
     Usage: module optical_simulation_module
-    """
-
-    OPTICAL_MODEL_MCXYZ = "mcxyz"
-    """
-    Corresponds to the mcxyz simulation.\n
-    Usage: module optical_simulation_module, naming convention
     """
 
     OPTICAL_MODEL_MCX = "mcx"
