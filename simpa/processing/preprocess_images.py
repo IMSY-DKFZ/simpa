@@ -11,27 +11,6 @@ import numpy as np
 import torch
 
 
-
-def preprocess_image(settings, image_data):
-    """
-    Preprocess a photoacoustic image depending on the properties defined by the settings.
-
-    :param settings: (dict) Dictionary that describes all simulation parameters.
-    :param image_data: (numpy array) Image to be preprocessed.
-    :return: Preprocessed image.
-    """
-
-    if Tags.CROP_IMAGE in settings:
-        if settings[Tags.CROP_IMAGE]:
-            if Tags.CROP_POWER_OF_TWO in settings:
-                if settings[Tags.CROP_POWER_OF_TWO]:
-                    logger.debug("Previous sizes: " + str(image_data.shape))
-                    image_data = top_center_crop_power_two(image_data)
-                    logger.debug("New sizes: " + str(image_data.shape))
-
-    return image_data
-
-
 def crop(image_data, height_start, width_start, target_height, target_width):
     """
     crop the given image.

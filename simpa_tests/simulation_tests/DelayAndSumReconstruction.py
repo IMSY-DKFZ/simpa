@@ -19,7 +19,7 @@ from simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapte
     ImageReconstructionModuleDelayAndSumAdapter
 from simpa.core.volume_creation_module.volume_creation_module_model_based_adapter import \
     VolumeCreationModelModelBasedAdapter
-from simpa.processing.noise_processing_components import GaussianNoiseProcessingComponent
+from simpa.processing.noise.gaussian_noise import GaussianNoiseProcessingComponent
 
 
 class DelayAndSumReconstruction:

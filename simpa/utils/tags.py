@@ -1067,41 +1067,71 @@ class Tags:
 
     # Noise properties
 
+    NOISE_SHAPE = "noise_shape"
+    """
+    Shape of a noise model.\n 
+    Usage: module processing.noise
+    """
+
+    NOISE_SCALE = "noise_scale"
+    """
+    Scale of a noise model.\n 
+    Usage: module processing.noise
+    """
+
+    NOISE_FREQUENCY = "noise_frequency"
+    """
+    Frequency of the noise model.\n 
+    Usage: module processing.noise
+    """
+
+    NOISE_MIN = "noise_min"
+    """
+    Min of a noise model.\n 
+    Usage: module processing.noise
+    """
+
+    NOISE_MAX = "noise_max"
+    """
+    Max of a noise model.\n 
+    Usage: module processing.noise
+    """
+
     NOISE_MEAN = "noise_mean"
     """
     Mean of a noise model.\n 
-    Usage: module processing.noise_models
+    Usage: module processing.noise
     """
 
     NOISE_STD = "noise_std"
     """
     Standard deviation of a noise model.\n 
-    Usage: module processing.noise_models
+    Usage: module processing.noise
     """
 
     NOISE_MODE = "noise_mode"
     """
     The mode tag of a noise model is used to differentiate between\n
     Tags.NOISE_MODE_ADDITIVE and Tags.NOISE_MODE_MULTIPLICATIVE.\n  
-    Usage: module processing.noise_models
+    Usage: module processing.noise
     """
 
     NOISE_MODE_ADDITIVE = "noise_mode_additive"
     """
     A noise model shall be applied additively s_n = s + n.\n  
-    Usage: module processing.noise_models
+    Usage: module processing.noise
     """
 
     NOISE_MODE_MULTIPLICATIVE = "noise_mode_multiplicative"
     """
     A noise model shall be applied multiplicatively s_n = s * n.\n  
-    Usage: module processing.noise_models
+    Usage: module processing.noise
     """
 
     NOISE_NON_NEGATIVITY_CONSTRAINT = "noise_non_negativity_constraint"
     """
     Defines if after the noise model negative values shall be allowed.\n  
-    Usage: module processing.noise_models
+    Usage: module processing.noise
     """
 
     VOLUME_CREATION_MODEL_SETTINGS = ("volume_creation_model_settings", dict)
