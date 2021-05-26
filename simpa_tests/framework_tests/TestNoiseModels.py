@@ -328,8 +328,7 @@ class TestNoiseModels(unittest.TestCase):
             Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
             Tags.NOISE_MIN: 0,
             Tags.NOISE_MAX: 2,
-            Tags.NOISE_FREQUENCY: 0.1,
-            Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE
+            Tags.NOISE_FREQUENCY: 0.1
         }
 
         self.validate_noise_model_results(noise_model=noise_model,
@@ -344,3 +343,57 @@ class TestNoiseModels(unittest.TestCase):
                                           expected_mean=1.0,
                                           expected_std=np.sqrt((0.9 * 1 ** 2 + 0.05 * 2 ** 2 + 0.05 * 0 ** 2) - 1.0**2))
 
+    @unittest.expectedFailure
+    def test_uniform_noise_no_data_field(self):
+        noise_model = UniformNoiseProcessingComponent
+
+        # Test fails without set data field
+        settings = {}
+        self.validate_noise_model_results(noise_model=noise_model,
+                                          noise_model_settings=settings,
+                                          background_value=2.0,
+                                          expected_mean=2,
+                                          expected_std=1)
+
+    def test_uniform_noise_correct_mean_and_standard_deviations(self):
+        noise_model = UniformNoiseProcessingComponent
+
+        # Test additive version
+        settings = {
+            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.NOISE_MIN: 5,
+            Tags.NOISE_MAX: 12,
+            Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE
+        }
+
+        self.validate_noise_model_results(noise_model=noise_model,
+                                          noise_model_settings=settings,
+                                          background_value=0.0,
+                                          expected_mean=8.5,
+                                          expected_std=np.sqrt(1/12 * (12 - 5) ** 2))
+
+        self.validate_noise_model_results(noise_model=noise_model,
+                                          noise_model_settings=settings,
+                                          background_value=1.0,
+                                          expected_mean=9.5,
+                                          expected_std=np.sqrt(1/12 * (12 - 5) ** 2))
+
+        # Test multiplicative version
+        settings = {
+            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.NOISE_MIN: 1,
+            Tags.NOISE_MAX: 3,
+            Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE
+        }
+
+        self.validate_noise_model_results(noise_model=noise_model,
+                                          noise_model_settings=settings,
+                                          background_value=0.0,
+                                          expected_mean=0.0,
+                                          expected_std=0.0)
+
+        self.validate_noise_model_results(noise_model=noise_model,
+                                          noise_model_settings=settings,
+                                          background_value=1.0,
+                                          expected_mean=2.0,
+                                          expected_std=np.sqrt(1 / 12 * (3 - 1) ** 2))

@@ -29,7 +29,6 @@ class SaltAndPepperNoiseProcessingComponent(ProcessingComponent):
 
     def run(self, device):
         self.logger.info("Applying Salt And Pepper Noise Model...")
-        mode = Tags.NOISE_MODE_ADDITIVE
 
         if Tags.DATA_FIELD not in self.component_settings.keys():
             msg = f"The field {Tags.DATA_FIELD} must be set in order to use the" \
@@ -55,10 +54,6 @@ class SaltAndPepperNoiseProcessingComponent(ProcessingComponent):
         if Tags.NOISE_MAX in self.component_settings.keys():
             max_noise = self.component_settings[Tags.NOISE_MAX]
 
-        if Tags.NOISE_MODE in self.component_settings.keys():
-            mode = self.component_settings[Tags.NOISE_MODE]
-
-        self.logger.debug(f"Noise model mode: {mode}")
         self.logger.debug(f"Noise model min: {min_noise}")
         self.logger.debug(f"Noise model max: {max_noise}")
         self.logger.debug(f"Noise model frequency: {noise_frequency}")

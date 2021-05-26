@@ -56,9 +56,9 @@ class UniformNoiseProcessingComponent(ProcessingComponent):
         data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
 
         if mode == Tags.NOISE_MODE_ADDITIVE:
-            data_array = data_array + np.random.random(size=np.shape(data_array)) * (max_noise-min_noise) + min_noise
+            data_array = data_array + (np.random.random(size=np.shape(data_array)) * (max_noise-min_noise) + min_noise)
         elif mode == Tags.NOISE_MODE_MULTIPLICATIVE:
-            data_array = data_array * np.random.random(size=np.shape(data_array)) * (max_noise-min_noise) + min_noise
+            data_array = data_array * (np.random.random(size=np.shape(data_array)) * (max_noise-min_noise) + min_noise)
 
         save_data_field(data_array, self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
 
