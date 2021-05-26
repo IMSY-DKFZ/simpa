@@ -29,8 +29,9 @@ class PoissonNoiseProcessingComponent(ProcessingComponent):
         mode = Tags.NOISE_MODE_ADDITIVE
 
         if Tags.DATA_FIELD not in self.component_settings.keys():
-            self.logger.critical()
-            raise KeyError(f"The field {Tags.DATA_FIELD} must be set in order to use the poisson_noise field.")
+            msg = f"The field {Tags.DATA_FIELD} must be set in order to use the poisson_noise field."
+            self.logger.critical(msg)
+            raise KeyError(msg)
 
         data_field = self.component_settings[Tags.DATA_FIELD]
 

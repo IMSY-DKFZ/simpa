@@ -33,8 +33,9 @@ class UniformNoiseProcessingComponent(ProcessingComponent):
         mode = Tags.NOISE_MODE_ADDITIVE
 
         if Tags.DATA_FIELD not in self.component_settings.keys():
-            self.logger.critical()
-            raise KeyError(f"The field {Tags.DATA_FIELD} must be set in order to use the uniform_noise component.")
+            msg = f"The field {Tags.DATA_FIELD} must be set in order to use the uniform_noise component."
+            self.logger.critical(msg)
+            raise KeyError(msg)
 
         data_field = self.component_settings[Tags.DATA_FIELD]
 

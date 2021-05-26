@@ -27,7 +27,8 @@ test_classes = ["simpa_tests.framework_tests.structure_tests.TestLayers",
                 "simpa_tests.framework_tests.TestLogging",
                 "simpa_tests.framework_tests.TestPathManager",
                 "simpa_tests.framework_tests.tissue_library.TestCoreAssumptions",
-                "simpa_tests.framework_tests.tissue_library.TestTissueLibraryAgainstLiteratureValues"
+                "simpa_tests.framework_tests.tissue_library.TestTissueLibraryAgainstLiteratureValues",
+                "simpa_tests.framework_tests.TestNoiseModels",
                 ]
 
 suite = unittest.TestSuite()
