@@ -76,14 +76,14 @@ class OpticalForwardModuleBase(SimulationModule):
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
                                          illumination_geometry=_device[0],
-                                         probe_position_mm=device.get_probe_position_mm(self.global_settings))
+                                         probe_position_mm=device.device_position_mm)
             for idx in range(len(_device)-1):
                 # we already looked at the 0th element, so go from 1 to n-1
                 fluence += self.forward_model(absorption_cm=absorption,
                                               scattering_cm=scattering,
                                               anisotropy=anisotropy,
                                               illumination_geometry=_device[idx+1],
-                                              probe_position_mm=device.get_probe_position_mm(self.global_settings))
+                                              probe_position_mm=device.device_position_mm)
 
             fluence = fluence / len(_device)
 
@@ -92,7 +92,7 @@ class OpticalForwardModuleBase(SimulationModule):
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
                                          illumination_geometry=_device,
-                                         probe_position_mm=device.get_probe_position_mm(self.global_settings))
+                                         probe_position_mm=device.device_position_mm)
 
         optical_properties = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], properties_path)
         absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]

@@ -1,4 +1,4 @@
-%% The MIT License (MIT)
+ %% The MIT License (MIT)
 %%
 %% Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 %%
@@ -106,11 +106,14 @@ kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 karray = kWaveArray;
 
 elem_pos = data.sensor_element_positions/1000;
-elem_pos(1, :) = elem_pos(1, :) + 0.01;
+%elem_pos(1, :) = elem_pos(1, :) + 0.01;
+elem_pos(1, :) = elem_pos(1, :) - 0.5*kgrid.x_size;
+elem_pos(2, :) = elem_pos(2, :) - 0.5*kgrid.y_size;
 num_elements = size(elem_pos, 2);
 
 radius_of_curv = double(data.sensor_radius_mm)/1000;
 diameter       = double(data.sensor_pitch_mm)/1000;
+angles = data.directivity_angle;
 
 % orient all elements towards the centre of the grid
 %focus_pos = [40.5e-3, 46e-3];
@@ -120,6 +123,9 @@ focus_pos = [0, 0];
 for ind = 1:num_elements
     karray.addArcElement(elem_pos(:, ind), radius_of_curv, diameter, focus_pos);
 end
+%for ind = 1:num_elements
+%    karray.addRectElement(elem_pos(:, ind), 0.00034, 0.002, [angles(1, ind)]);
+%end
 
 % if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
 %if isfield(data, 'directivity_angle') == true

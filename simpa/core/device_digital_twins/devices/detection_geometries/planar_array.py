@@ -40,15 +40,15 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
                  center_frequency_hz=3.96e6,
                  bandwidth_percent=55,
                  sampling_frequency_mhz=40,
-                 probe_height_mm=0):
+                 device_position_mm: np.ndarray = None):
         super().__init__(number_detector_elements=number_detector_elements_x * number_detector_elements_y,
                          detector_element_width_mm=detector_element_width_mm,
                          detector_element_length_mm=detector_element_length_mm,
                          center_frequency_hz=center_frequency_hz,
                          bandwidth_percent=bandwidth_percent,
                          sampling_frequency_mhz=sampling_frequency_mhz,
-                         probe_height_mm=probe_height_mm,
-                         probe_width_mm=number_detector_elements_x * pitch_mm)
+                         probe_width_mm=number_detector_elements_x * pitch_mm,
+                         device_position_mm=device_position_mm)
         self.pitch_mm = pitch_mm
         self.number_detector_elements_x = number_detector_elements_x
         self.number_detector_elements_y = number_detector_elements_y
@@ -88,9 +88,3 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
         detector_element_orientations = np.zeros((self.number_detector_elements, 3))
         detector_element_orientations[:, 2] = 1
         return detector_element_orientations
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
-                               global_settings[Tags.DIM_VOLUME_Y_MM],
-                               global_settings[Tags.DIM_VOLUME_Z_MM]])
-        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, 0])
