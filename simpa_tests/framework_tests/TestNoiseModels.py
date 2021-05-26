@@ -344,5 +344,5 @@ class TestNoiseModels(unittest.TestCase):
                                           noise_model_settings=settings,
                                           background_value=1.0,
                                           expected_mean=1.0,
-                                          expected_std=np.sqrt((0.9*1 ** 2+0.05*2 ** 2 + 0.05 * 1 ** 2) - 1.0**2))
+                                          expected_std=np.sqrt((0.9 * 1 ** 2 + 0.05 * 2 ** 2 + 0.05 * 0 ** 2) - 1.0**2))
 
