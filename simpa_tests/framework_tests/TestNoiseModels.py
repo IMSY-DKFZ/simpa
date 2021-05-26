@@ -67,27 +67,25 @@ class TestNoiseModels(unittest.TestCase):
             noise_model(settings, "noise_model_settings")
         ]
 
-        simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
+        try:
+            simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
 
-        absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_PATH],
-                                     data_field=Tags.PROPERTY_ABSORPTION_PER_CM,
-                                     wavelength=800)
-
-        actual_mean = np.mean(absorption)
-        actual_std = np.std(absorption)
-
-        self.assertTrue(np.abs(actual_mean - expected_mean) < 1e-10 or
-                        np.abs(actual_mean - expected_mean) / expected_mean < error_margin,
-                        f"The mean was not as expected. Expected {expected_mean} but was {actual_mean}")
-
-        self.assertTrue(np.abs(actual_std - expected_std) < 1e-10 or
-                        np.abs(actual_std - expected_std) / expected_std < error_margin,
-                        f"The mean was not as expected. Expected {expected_std} but was {actual_std}")
-
-        if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
-                os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
-            # Delete the created file
-            os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
+            absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_PATH],
+                                         data_field=Tags.PROPERTY_ABSORPTION_PER_CM,
+                                         wavelength=800)
+            actual_mean = np.mean(absorption)
+            actual_std = np.std(absorption)
+            self.assertTrue(np.abs(actual_mean - expected_mean) < 1e-10 or
+                            np.abs(actual_mean - expected_mean) / expected_mean < error_margin,
+                            f"The mean was not as expected. Expected {expected_mean} but was {actual_mean}")
+            self.assertTrue(np.abs(actual_std - expected_std) < 1e-10 or
+                            np.abs(actual_std - expected_std) / expected_std < error_margin,
+                            f"The mean was not as expected. Expected {expected_std} but was {actual_std}")
+        finally:
+            if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
+                    os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
+                # Delete the created file
+                os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
 
     def setUp(self):
 
