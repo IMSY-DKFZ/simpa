@@ -1,8 +1,24 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# The MIT License (MIT)
+#
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated simpa_documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 from simpa.utils import Tags, TISSUE_LIBRARY
 import numpy as np
@@ -12,17 +28,17 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.simulation import simulate
-from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
+from simpa.core.device_digital_twins.msot_device import MSOTAcuityEcho
 from simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import AcousticForwardModelKWaveAdapter
 from simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter import OpticalForwardModelMcxAdapter
-from simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \
-    ImageReconstructionModuleDelayAndSumAdapter
+from simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter import \
+    ImageReconstructionModuleDelayMultiplyAndSumAdapter
 from simpa.core.volume_creation_module.volume_creation_module_model_based_adapter import \
     VolumeCreationModelModelBasedAdapter
-from simpa.processing.noise.gaussian_noise import GaussianNoiseProcessingComponent
-from simpa import reconstruct_delay_and_sum_pytorch
+from simpa.processing.noise_processing_components import GaussianNoiseProcessingComponent
+from simpa import reconstruct_delay_multiply_and_sum_pytorch
 
-class DelayAndSumReconstruction:
+class DelayMultiplyAndSumReconstruction:
     """
     This test runs a simulation creating an example volume of geometric shapes and reconstructs it with the Delay and
     Sum algorithm. To verify that the test was successful a user has to evaluate the displayed reconstruction.
@@ -136,7 +152,7 @@ class DelayAndSumReconstruction:
         vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 10]
         vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
         vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -148,7 +164,7 @@ class DelayAndSumReconstruction:
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 5]
         vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
         vessel_2_dictionary[Tags.STRUCTURE_ECCENTRICITY] = 0.9
-        vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
         vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
 
@@ -158,7 +174,7 @@ class DelayAndSumReconstruction:
         vessel_3_dictionary[Tags.STRUCTURE_X_EXTENT_MM] = 8
         vessel_3_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = 10
         vessel_3_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = 16
-        vessel_3_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        vessel_3_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
         vessel_3_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_3_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
 
@@ -170,6 +186,79 @@ class DelayAndSumReconstruction:
         tissue_dict["vessel_3"] = vessel_3_dictionary
         return tissue_dict
 
+    def add_msot_specific_settings(self):
+        volume_creator_settings = Settings(self.settings.get_volume_creation_settings())
+        device = MSOTAcuityEcho()
+        probe_size_mm = device.probe_height_mm
+        mediprene_layer_height_mm = device.mediprene_membrane_height_mm
+        heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+
+        new_volume_height_mm = self.settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
+                               heavy_water_layer_height_mm
+
+        # adjust the z-dim to msot probe height
+        self.settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
+
+        # adjust the x-dim to msot probe width
+        # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
+        # of the simulated volume.
+
+        if self.settings[Tags.DIM_VOLUME_X_MM] < round(device.probe_width_mm) + 1:
+            width_shift_for_structures_mm = (round(device.probe_width_mm) + 1 - self.settings[Tags.DIM_VOLUME_X_MM]) / 2
+            self.settings[Tags.DIM_VOLUME_X_MM] = round(device.probe_width_mm) + 1
+            device.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {self.settings[Tags.DIM_VOLUME_X_MM]}")
+        else:
+            width_shift_for_structures_mm = 0
+
+        device.logger.debug(volume_creator_settings)
+
+        for structure_key in volume_creator_settings[Tags.STRUCTURES]:
+            device.logger.debug("Adjusting " + str(structure_key))
+            structure_dict = volume_creator_settings[Tags.STRUCTURES][structure_key]
+            if Tags.STRUCTURE_START_MM in structure_dict:
+                structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                                 0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
+                                                                 2] + device.probe_height_mm
+            if Tags.STRUCTURE_END_MM in structure_dict:
+                structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                               0] + width_shift_for_structures_mm
+                structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
+                                                               2] + device.probe_height_mm
+
+        if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
+            us_gel_thickness = np.random.normal(0.4, 0.1)
+            us_gel_layer_settings = Settings({
+                Tags.PRIORITY: 5,
+                Tags.STRUCTURE_START_MM: [0, 0,
+                                          heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+                Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
+                Tags.CONSIDER_PARTIAL_VOLUME: True,
+                Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
+                Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
+            })
+
+            volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
+        else:
+            us_gel_thickness = 0
+
+        mediprene_layer_settings = Settings({
+            Tags.PRIORITY: 5,
+            Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness],
+            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+            Tags.CONSIDER_PARTIAL_VOLUME: True,
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
+            Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
+        })
+
+        volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
+
+        background_settings = Settings({
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
+            Tags.STRUCTURE_TYPE: Tags.BACKGROUND
+        })
+        volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
+
     def test_reconstruction_of_simulation(self):
 
         self.add_msot_specific_settings()
@@ -179,7 +268,7 @@ class DelayAndSumReconstruction:
             OpticalForwardModelMcxAdapter(self.settings),
             GaussianNoiseProcessingComponent(self.settings, "noise_initial_pressure"),
             AcousticForwardModelKWaveAdapter(self.settings),
-            ImageReconstructionModuleDelayAndSumAdapter(self.settings)
+            ImageReconstructionModuleDelayMultiplyAndSumAdapter(self.settings)
         ]
 
         simulate(SIMUATION_PIPELINE, self.settings)
@@ -201,7 +290,7 @@ class DelayAndSumReconstruction:
                                                   Tags.TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
 
         # reconstruct image using convenience function
-        reconstructed_image = reconstruct_delay_and_sum_pytorch(time_series_sensor_data, self.settings)
+        reconstructed_image = reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data, self.settings)
 
         self.plot_reconstruction_compared_with_initial_pressure(reconstructed_image, "Reconstructed image using convenience function")
 
@@ -218,9 +307,8 @@ class DelayAndSumReconstruction:
         plt.imshow(np.rot90(reconstructed_image, -1))
         plt.show()
 
-
 if __name__ == '__main__':
-    test = DelayAndSumReconstruction()
+    test = DelayMultiplyAndSumReconstruction()
     test.setUp()
     test.test_reconstruction_of_simulation()
     test.test_convenience_function()
