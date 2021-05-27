@@ -49,6 +49,8 @@ following mcx Github fork:
 https://www.github.com/jgroehl/mcx
 
 For the installation, please follow the instructions from the original repository.
+Please note that there might be compatiblity issues using mcx-cl with the MCX Adapter as this use case is not 
+being tested and supported by the SIMPA developers.
 
 ### k-Wave (Acoustic Forward Model)
 
