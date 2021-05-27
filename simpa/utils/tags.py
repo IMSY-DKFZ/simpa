@@ -1285,3 +1285,43 @@ class Tags:
     Name of the data field in which the linear unmixing result will be stored.\n
     Usage: naming convention
     """
+
+    """
+    Iterative qPAI Reconstruction
+    """
+
+    ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION = ("constant_regularization", (bool, np.bool, np.bool_))
+    """
+    If True, the fluence regularization will be constant.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    DOWNSCALE_FACTOR = ("downscale_factor", (int, float, np.int_, np.float_))
+    """
+    Downscale factor of the resampling in the qPAI reconstruction\n
+    Usage: module processing
+    """
+
+    ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER = ("maximum_iteration_number", (int, np.integer))
+    """
+    Maximum number of iterations performed in iterative reconstruction if stopping criterion is not reached.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float, np.float))
+    """
+    Sigma value used for constant regularization of fluence.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS = ("save_intermediate_results", (bool, np.bool, np.bool_))
+    """
+    If True, a list of all intermediate absorption updates (middle slices only) will be saved in a numpy file.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
+    """
+    Ratio of improvement and preceding error at which iteration method stops. 
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
