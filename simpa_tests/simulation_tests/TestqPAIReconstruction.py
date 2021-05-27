@@ -93,7 +93,9 @@ class TestqPAIReconstruction:
             Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
         }
 
-        self.device = RSOMExplorerP50(element_spacing_mm=1.0)
+        self.device = RSOMExplorerP50(element_spacing_mm=0.5,
+                                      number_elements_x=30,
+                                      number_elements_y=30)
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
@@ -233,14 +235,14 @@ class TestqPAIReconstruction:
         and two blood vessels. It is used for volume creation.
         """
         background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
         epidermis_structure = Settings()
         epidermis_structure[Tags.PRIORITY] = 1
         epidermis_structure[Tags.STRUCTURE_START_MM] = [0, 0, 2]
         epidermis_structure[Tags.STRUCTURE_END_MM] = [0, 0, 2.5]
-        epidermis_structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+        epidermis_structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(2.2, 100.0, 0.9)
         epidermis_structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
         epidermis_structure[Tags.ADHERE_TO_DEFORMATION] = True
         epidermis_structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
@@ -253,7 +255,7 @@ class TestqPAIReconstruction:
                                                      self.VOLUME_PLANAR_DIM_IN_MM, self.VOLUME_HEIGHT_IN_MM / 2]
         vessel_structure_1[Tags.STRUCTURE_RADIUS_MM] = 1.75
         vessel_structure_1[Tags.STRUCTURE_ECCENTRICITY] = 0.85
-        vessel_structure_1[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(1.0)
+        vessel_structure_1[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(5.2, 100.0, 0.9)
         vessel_structure_1[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_structure_1[Tags.ADHERE_TO_DEFORMATION] = True
         vessel_structure_1[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
@@ -265,7 +267,7 @@ class TestqPAIReconstruction:
         vessel_structure_2[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
                                                      self.VOLUME_PLANAR_DIM_IN_MM, self.VOLUME_HEIGHT_IN_MM / 3]
         vessel_structure_2[Tags.STRUCTURE_RADIUS_MM] = 0.75
-        vessel_structure_2[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(0.5)
+        vessel_structure_2[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(3.0, 100.0, 0.9)
         vessel_structure_2[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_structure_2[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
