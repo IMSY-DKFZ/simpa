@@ -14,7 +14,7 @@ from simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_s
     ImageReconstructionModuleDelayMultiplyAndSumAdapter
 from simpa.core.volume_creation_module.volume_creation_module_model_based_adapter import \
     VolumeCreationModelModelBasedAdapter
-from simpa.processing.noise import GaussianNoiseProcessingComponent
+from simpa.core.processing_components.noise import GaussianNoiseProcessingComponent
 from simpa import reconstruct_delay_multiply_and_sum_pytorch
 from simpa_tests.simulation_tests import ReconstructionAlgorithmTestBaseClass
 

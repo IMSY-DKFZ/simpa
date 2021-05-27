@@ -8,13 +8,14 @@ import unittest
 import os
 import numpy as np
 
-from simpa.simulation_components import *
+from simpa.core.processing_components.noise import *
 from simpa.utils import Tags, Settings
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.core.simulation import simulate
 from simpa.utils import TISSUE_LIBRARY
 from simpa.utils.libraries.structure_library import Background
 from simpa.io_handling import load_data_field
+from simpa.core import VolumeCreationModelModelBasedAdapter
 
 
 class TestNoiseModels(unittest.TestCase):

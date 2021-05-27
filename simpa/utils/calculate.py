@@ -169,3 +169,22 @@ def rotation(angles):
     :return: rotation matrix
     """
     return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])
+
+
+def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
+    """
+    Normalizes the given data by applying min max normalization.
+    The resulting array has values between 0 and 1 inclusive.
+
+    :param data: (numpy array) data to be normalized
+    :return: (numpy array) normalized array
+    """
+
+    if data is None:
+        raise AttributeError("Data must not be none in order to normalize it.")
+
+    min = data.min()
+    max = data.max()
+    output = (data - min) / (max - min)
+
+    return output

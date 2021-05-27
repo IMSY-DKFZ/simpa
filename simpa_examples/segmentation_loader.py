@@ -16,8 +16,7 @@ from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from scipy.ndimage import zoom
 from simpa.utils.path_manager import PathManager
 from simpa.core.device_digital_twins import RSOMExplorerP50
-
-from simpa.simulation_components import *
+from simpa.core import VolumeCreationModuleSegmentationBasedAdapter, OpticalForwardModelMcxAdapter
 
 # FIXME temporary workaround for newest Intel architectures
 import os

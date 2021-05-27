@@ -10,7 +10,7 @@ from simpa.utils import Tags
 from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 import numpy as np
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter
+from simpa.core import ImageReconstructionModuleDelayAndSumAdapter
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -20,8 +20,7 @@ PATH = "/home/tom/dev/FP/simpa/simpa_examples/CompletePipelineTestMSOT_4711.hdf5
 
 file = load_hdf5(PATH)
 settings = Settings(file["settings"])
-print(settings)
-#settings[Tags.WAVELENGTH] = settings[Tags.WAVELENGTHS][0]
+settings[Tags.WAVELENGTH] = settings[Tags.WAVELENGTHS][0]
 
 settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
@@ -34,10 +33,8 @@ settings.set_reconstruction_settings({
 })
 
 device = MSOTAcuityEcho()
-device.check_settings_prerequisites(settings)
-settings = device.adjust_simulation_volume_and_settings(settings)
 
-ImageReconstructionModuleDelayAndSumAdapter(settings).run()
+ImageReconstructionModuleDelayAndSumAdapter(settings).run(device)
 
 reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)

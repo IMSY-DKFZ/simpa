@@ -9,7 +9,7 @@ from simpa.core.device_digital_twins.devices.detection_geometries.detection_geom
 from simpa.core.device_digital_twins.digital_device_twin_base import PhotoacousticDevice
 from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
-from simpa.core.simulation_components import SimulationModule
+from simpa.core import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np

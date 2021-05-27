@@ -10,7 +10,7 @@ from simpa.utils.settings import Settings
 from simpa.core.simulation import simulate
 import os
 from simpa_tests.test_utils import create_test_structure_parameters
-from simpa.simulation_components import VolumeCreationModelModelBasedAdapter
+from simpa.core import VolumeCreationModelModelBasedAdapter
 from simpa.core.device_digital_twins import RSOMExplorerP50
 
 

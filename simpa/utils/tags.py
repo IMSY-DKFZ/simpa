@@ -805,64 +805,6 @@ class Tags:
     Usage: adapter BackprojectionAdapter, naming_convention
     """
 
-    """
-    Upsampling settings
-    """
-
-    UPSAMPLING_METHOD = ("upsampling_method", str)
-    """
-    Choice of the upsampling method used in the image processing.\n
-    Usage: module processing
-    """
-
-    UPSAMPLING_METHOD_DEEP_LEARNING = "deeplearning"
-    """
-    Corresponds to deep learning as the upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_METHOD_NEAREST_NEIGHBOUR = "nearestneighbour"
-    """
-    Corresponds to nearest neighbour as the upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_METHOD_BILINEAR = "bilinear"
-    """
-    Corresponds to the bilinear upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_METHOD_LANCZOS2 = "lanczos2"
-    """
-    Corresponds to lanczos with kernel size 2 as the upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_METHOD_LANCZOS3 = "lanczos3"
-    """
-    Corresponds to lanczos with kernel size 3 as the upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_SCRIPT = ("upsampling_script", str)
-    """
-    Name of the upsampling script used for the lanczos upsampling.\n
-    Usage: module processing
-    """
-
-    UPSCALE_FACTOR = ("upscale_factor", (int, float, np.int_, np.float_))
-    """
-    Upscale factor of the upsampling in the image processing.\n
-    Usage: module processing
-    """
-
-    DL_MODEL_PATH = ("dl_model_path", str)
-    """
-    Absolute path to the deep learning model used for the deep learning upsampling.\n
-    Usage: module processing
-    """
-
     # physical property volume types
     PROPERTY_ABSORPTION_PER_CM = "mua"
     """
@@ -1062,7 +1004,7 @@ class Tags:
     DATA_FIELD = "data_field"
     """
     Defines which data field a certain function shall be applied to.\n 
-    Usage: module processing
+    Usage: module core.processing_components
     """
 
     # Noise properties
@@ -1070,68 +1012,68 @@ class Tags:
     NOISE_SHAPE = "noise_shape"
     """
     Shape of a noise model.\n 
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_SCALE = "noise_scale"
     """
     Scale of a noise model.\n 
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_FREQUENCY = "noise_frequency"
     """
     Frequency of the noise model.\n 
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_MIN = "noise_min"
     """
     Min of a noise model.\n 
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_MAX = "noise_max"
     """
     Max of a noise model.\n 
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_MEAN = "noise_mean"
     """
     Mean of a noise model.\n 
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_STD = "noise_std"
     """
     Standard deviation of a noise model.\n 
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_MODE = "noise_mode"
     """
     The mode tag of a noise model is used to differentiate between\n
     Tags.NOISE_MODE_ADDITIVE and Tags.NOISE_MODE_MULTIPLICATIVE.\n  
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_MODE_ADDITIVE = "noise_mode_additive"
     """
     A noise model shall be applied additively s_n = s + n.\n  
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_MODE_MULTIPLICATIVE = "noise_mode_multiplicative"
     """
     A noise model shall be applied multiplicatively s_n = s * n.\n  
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     NOISE_NON_NEGATIVITY_CONSTRAINT = "noise_non_negativity_constraint"
     """
     Defines if after the noise model negative values shall be allowed.\n  
-    Usage: module processing.noise
+    Usage: module core.processing_components.noise
     """
 
     VOLUME_CREATION_MODEL_SETTINGS = ("volume_creation_model_settings", dict)
@@ -1265,12 +1207,12 @@ class Tags:
     """
 
     """
-    Image processing
+    Image Processing
     """
 
     IMAGE_PROCESSING = "image_processing"
     """
-    Location of the image processing outputs in the SIMPA output file.\n
+    Location of the image algorithms outputs in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -1293,35 +1235,35 @@ class Tags:
     ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION = ("constant_regularization", (bool, np.bool, np.bool_))
     """
     If True, the fluence regularization will be constant.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     DOWNSCALE_FACTOR = ("downscale_factor", (int, float, np.int_, np.float_))
     """
     Downscale factor of the resampling in the qPAI reconstruction\n
-    Usage: module processing
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER = ("maximum_iteration_number", (int, np.integer))
     """
     Maximum number of iterations performed in iterative reconstruction if stopping criterion is not reached.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float, np.float))
     """
     Sigma value used for constant regularization of fluence.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS = ("save_intermediate_results", (bool, np.bool, np.bool_))
     """
     If True, a list of all intermediate absorption updates (middle slices only) will be saved in a numpy file.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
     """
     Ratio of improvement and preceding error at which iteration method stops. 
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """

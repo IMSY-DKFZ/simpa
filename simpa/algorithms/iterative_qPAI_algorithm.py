@@ -17,7 +17,7 @@ from simpa.simulation_components import OpticalForwardModelMcxAdapter
 from simpa.utils import Settings
 from simpa.io_handling import save_data_field, load_data_field
 from simpa.utils import TISSUE_LIBRARY
-from simpa.core.simulation_components import ProcessingComponent
+from simpa.core.processing_components import ProcessingComponent
 import os
 
 

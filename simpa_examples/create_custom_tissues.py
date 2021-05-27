@@ -8,6 +8,7 @@ from simpa.utils import MolecularCompositionGenerator
 from simpa.utils import MOLECULE_LIBRARY
 from simpa.utils import Molecule
 from simpa.utils import Spectrum
+from simpa.utils.libraries.spectra_library import ScatteringSpectrumLibrary, AnisotropySpectrumLibrary
 import numpy as np
 
 
@@ -24,10 +25,8 @@ def create_custom_chromophore(volume_fraction: float = 1.0):
     chromophore = Molecule(
             absorption_spectrum=create_custom_absorber(),
             volume_fraction=volume_fraction,
-            mus500=40.0,
-            b_mie=1.1,
-            f_ray=0.9,
-            anisotropy_spectrum=0.9
+            scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(40.0),
+            anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9)
         )
     return chromophore
 

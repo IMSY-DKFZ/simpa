@@ -11,9 +11,11 @@ from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.utils.path_manager import PathManager
-from simpa.core.device_digital_twins import *
+from simpa.core import ImageReconstructionModuleDelayAndSumAdapter, GaussianNoiseProcessingComponent, \
+    OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
+    FieldOfViewCroppingProcessingComponent
+from simpa.core.device_digital_twins import MSOTAcuityEcho
 
-from simpa.simulation_components import *
 
 # FIXME temporary workaround for newest Intel architectures
 import os

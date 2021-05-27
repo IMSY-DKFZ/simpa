@@ -10,7 +10,8 @@ from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa.core.device_digital_twins import *
 import numpy as np
-from simpa.simulation_components import *
+from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
+    GaussianNoiseProcessingComponent
 
 from simpa.utils.path_manager import PathManager
 

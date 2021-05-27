@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from abc import abstractmethod
 import numpy as np
-from simpa.core.simulation_components import SimulationModule
+from simpa.core import SimulationModule
 from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path

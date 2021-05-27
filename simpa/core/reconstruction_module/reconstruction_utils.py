@@ -116,3 +116,31 @@ def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
         print("There are still negative values in the data.")
 
     return output
+
+
+def reconstruction_mode_transformation(time_series_sensor_data: torch.tensor = None,
+                                       mode: str = Tags.RECONSTRUCTION_MODE_PRESSURE) -> torch.tensor:
+    """
+    Transformes `time_series_sensor_data` for other modes, for example `Tags.RECONSTRUCTION_MODE_DIFFERENTIAL`.
+    Default mode is `Tags.RECONSTRUCTION_MODE_PRESSURE`.
+
+    :param time_series_sensor_data: (torch tensor) Time series data to be transformed
+    :param mode: (str) reconstruction mode: Tags.RECONSTRUCTION_MODE_PRESSURE (default)
+                or Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
+    :return: (torch tensor) potentially transformed tensor
+    """
+
+    # depending on mode use pressure data or its derivative
+    if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL:
+        zeros = torch.zeros([time_series_sensor_data.shape[0], 1], names=None).to(time_series_sensor_data.device)
+        time_vector = torch.arange(1, time_series_sensor_data.shape[1]+1).to(time_series_sensor_data.device)
+        time_derivative_pressure = time_series_sensor_data[:, 1:] - time_series_sensor_data[:, 0:-1]
+        time_derivative_pressure = torch.cat([time_derivative_pressure, zeros], dim=1)
+        time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
+        output = time_derivative_pressure  # use time derivative pressure
+    elif mode == Tags.RECONSTRUCTION_MODE_PRESSURE:
+        output = time_series_sensor_data  # already in pressure format
+    else:
+        raise AttributeError(
+            "An invalid reconstruction mode was set, only differential and pressure are supported.")
+    return output

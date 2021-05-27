@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from simpa.utils import Tags, Settings
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.io_handling import load_data_field, save_data_field
-from simpa.core.simulation_components import ProcessingComponent
+from simpa.core.processing_components import ProcessingComponent
 from simpa.core.device_digital_twins import DigitalDeviceTwinBase
 import numpy as np
 

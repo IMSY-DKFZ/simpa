@@ -9,7 +9,7 @@ from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
-from simpa.core.simulation_components import SimulationModule
+from simpa.core import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import save_hdf5
 
