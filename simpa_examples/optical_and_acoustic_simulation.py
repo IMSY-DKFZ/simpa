@@ -61,7 +61,7 @@ def create_example_tissue():
 
     muscle_dictionary = Settings()
     muscle_dictionary[Tags.PRIORITY] = 1
-    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 3]
+    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
@@ -70,27 +70,27 @@ def create_example_tissue():
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 + 10,
                                                     0, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10]
+    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 + 10, VOLUME_PLANAR_DIM_IN_MM, 10]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
-    epidermis_dictionary = Settings()
-    epidermis_dictionary[Tags.PRIORITY] = 8
-    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 3]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 3.5]
-    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
-    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+    # epidermis_dictionary = Settings()
+    # epidermis_dictionary[Tags.PRIORITY] = 8
+    # epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    # epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 0.5]
+    # epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+    # epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    # epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    # epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     tissue_dict = Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
     tissue_dict["muscle"] = muscle_dictionary
-    tissue_dict["epidermis"] = epidermis_dictionary
+    # tissue_dict["epidermis"] = epidermis_dictionary
     tissue_dict["vessel_1"] = vessel_1_dictionary
     return tissue_dict
 
@@ -182,28 +182,29 @@ settings["noise_time_series"] = {
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
 
-device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                     VOLUME_PLANAR_DIM_IN_MM/2,
-                                                     0]))
-
-device.update_settings_for_use_of_model_based_volume_creator(settings)
-# class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
-#     """
-#     This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
-#
-#     """
-#
-#     def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-#         return np.asarray([0, 0, 0])
-#
-#     def __init__(self, device_position_mm):
-#         super().__init__()
-#         self.set_detection_geometry(LinearArrayDetectionGeometry())
-#         self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=device_position_mm))
-#
-# device = ExampleDeviceSlitIlluminationLinearDetector(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+# device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
 #                                                      VOLUME_PLANAR_DIM_IN_MM/2,
 #                                                      0]))
+#
+# device.update_settings_for_use_of_model_based_volume_creator(settings)
+class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
+    """
+    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
+
+    """
+
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        return np.asarray([0, 0, 0])
+
+    def __init__(self, device_position_mm):
+        super().__init__()
+        self.device_position_mm = device_position_mm
+        self.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=self.device_position_mm))
+        self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0]))
+
+device = ExampleDeviceSlitIlluminationLinearDetector(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                     VOLUME_PLANAR_DIM_IN_MM/2,
+                                                     0]))
 
 SIMUATION_PIPELINE = [
     VolumeCreationModelModelBasedAdapter(settings),

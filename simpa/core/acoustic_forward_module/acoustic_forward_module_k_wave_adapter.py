@@ -26,6 +26,8 @@ from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.settings import Settings
+from simpa.core.device_digital_twins import LinearArrayDetectionGeometry, PlanarArrayDetectionGeometry, \
+    CurvedArrayDetectionGeometry
 import os
 import inspect
 import scipy.io as sio
@@ -118,12 +120,9 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength][slice], axes=axes))
 
         if simulate_2d:
-            # detector_positions_mm = PA_device.get_detector_element_positions_base_mm()
-            # detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(
-            #     self.global_settings)
-            data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = np.array([detector_positions_mm[:, 2], detector_positions_mm[:, 0]])
-            data_dict[Tags.SENSOR_RADIUS_MM] = PA_device.radius_mm
-            data_dict[Tags.SENSOR_PITCH_MM] = PA_device.pitch_mm
+            detector_positions_mm_2d = np.delete(detector_positions_mm, 1, axis=1)
+            detector_positions_mm_2d = np.moveaxis(detector_positions_mm_2d, 1, 0)
+            data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = detector_positions_mm_2d[[1, 0]]
             orientations = PA_device.get_detector_element_orientations(self.global_settings)
             angles = np.arccos(np.dot(orientations, np.array([1, 0, 0])))
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles[::-1]
@@ -166,10 +165,12 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: PA_device.number_detector_elements,
-            Tags.SENSOR_DIRECTIVITY_SIZE_M: PA_device.detector_element_width_mm/1000,
+            Tags.DETECTOR_ELEMENT_WIDTH_MM: PA_device.detector_element_width_mm,
             Tags.SENSOR_CENTER_FREQUENCY_HZ: PA_device.center_frequency_Hz,
             Tags.SENSOR_BANDWIDTH_PERCENT: PA_device.bandwidth_percent
         })
+        if isinstance(PA_device, CurvedArrayDetectionGeometry):
+            k_wave_settings[Tags.SENSOR_RADIUS_MM] = PA_device.radius_mm
 
         for parameter in possible_k_wave_parameters:
             if parameter in self.component_settings:

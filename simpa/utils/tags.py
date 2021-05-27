@@ -1074,6 +1074,12 @@ class Tags:
     Usage: module acoustic_forward_module, naming convention
     """
 
+    DETECTOR_ELEMENT_WIDTH_MM = "detector_element_width_mm"
+    """
+    Width of a detector element. Corresponds to the pitch - the distance between two detector element borders.\n
+    Usage: module acoustic_forward_module, naming convention
+    """
+
     SENSOR_CONCAVE = "concave"
     """
     Indicates that the geometry of the used PA device in the Mitk Beamforming is concave.\n
