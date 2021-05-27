@@ -23,7 +23,7 @@
 from simpa.utils import Tags
 from simpa.core.reconstruction_module import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_data_field
-from simpa.core.device_digital_twins import DEVICE_MAP
+from simpa.core.device_digital_twins import DetectionGeometryBase
 import numpy as np
 import torch
 from simpa.utils.settings import Settings
@@ -32,7 +32,7 @@ from simpa.processing.signal_processing import get_apodization_factor, bandpass_
 
 class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
 
-    def reconstruction_algorithm(self, time_series_sensor_data):
+    def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry: DetectionGeometryBase):
         """
         Applies the Delay Multiply and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
         first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
@@ -80,11 +80,9 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
             raise AttributeError("Please specify a value for SPACING_MM")
 
         # get device specific sensor positions
-        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
-        pa_device.check_settings_prerequisites(self.global_settings)
-        pa_device.adjust_simulation_volume_and_settings(self.global_settings)
+        detection_geometry.check_settings_prerequisites(self.global_settings)
 
-        sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
+        sensor_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
 
         # time series sensor data must be numpy array
         if isinstance(sensor_positions, np.ndarray):
@@ -103,9 +101,9 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
         else:
             dev = "cuda" if self.global_settings[Tags.GPU] else "cpu"
 
-        device = torch.device(dev)
-        sensor_positions = sensor_positions.to(device)
-        time_series_sensor_data = time_series_sensor_data.to(device)
+        torch_device = torch.device(dev)
+        sensor_positions = sensor_positions.to(torch_device)
+        time_series_sensor_data = time_series_sensor_data.to(torch_device)
 
         # array must be of correct dimension
         assert time_series_sensor_data.ndim == 2, 'Time series data must have exactly 2 dimensions' \
@@ -158,12 +156,12 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
               f',number of sensor elements: {n_sensor_elements}')
 
         # construct output image
-        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=device)
+        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=torch_device)
 
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=device),
-                                        torch.arange(ydim, device=device),
-                                        torch.arange(zdim, device=device),
-                                        torch.arange(n_sensor_elements, device=device))
+        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=torch_device),
+                                        torch.arange(ydim, device=torch_device),
+                                        torch.arange(zdim, device=torch_device),
+                                        torch.arange(n_sensor_elements, device=torch_device))
 
         delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
                             (xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj])) ** 2 +
@@ -186,7 +184,7 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
         if Tags.RECONSTRUCTION_APODIZATION_METHOD in self.component_settings:
             apodization = get_apodization_factor(apodization_method=self.component_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD],
                                                  dimensions=(xdim, ydim, zdim), n_sensor_elements=n_sensor_elements,
-                                                 device=device)
+                                                 device=torch_device)
             values = values * apodization
 
         # set values of invalid indices to 0 so that they don't influence the result
@@ -195,10 +193,10 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
         del delays # free memory of delays
 
         for x in range(xdim):
-            yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=device),
-                                            torch.arange(zdim, device=device),
-                                            torch.arange(n_sensor_elements, device=device),
-                                            torch.arange(n_sensor_elements, device=device))
+            yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=torch_device),
+                                            torch.arange(zdim, device=torch_device),
+                                            torch.arange(n_sensor_elements, device=torch_device),
+                                            torch.arange(n_sensor_elements, device=torch_device))
             M = values[x,yy,zz,nn] * values[x,yy,zz,mm]
             M = torch.sign(M) * torch.sqrt(torch.abs(M))
             # only take upper triangle without diagonal and sum up along n and m axis (last two)
@@ -216,12 +214,17 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
         return reconstructed.squeeze()
 
 
-def reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
-                                      time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
+def reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarray,
+                                               detection_geometry: DetectionGeometryBase,
+                                               settings: dict = None,
+                                               sound_of_speed: int = 1540,
+                                               time_spacing: float = 2.5e-8,
+                                               sensor_spacing: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
 
     :param time_series_sensor_data: (2D numpy array) sensor data of shape (sensor elements, time steps)
+    :param detection_geometry: The DetectioNGeometryBase to use for the reconstruction of the given time series data
     :param settings: (dict) settings dictionary: by default there is none and the other parameters are used instead,
                      but if parameters are given in the settings those will be used instead of parsed arguments)
     :param sound_of_speed: (int) speed of sound in medium in meters per second (default: 1540 m/s)
@@ -245,4 +248,4 @@ def reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarr
         settings[Tags.SPACING_MM] = sensor_spacing
 
     adapter = ImageReconstructionModuleDelayMultiplyAndSumAdapter(settings)
-    return adapter.reconstruction_algorithm(time_series_sensor_data)
+    return adapter.reconstruction_algorithm(time_series_sensor_data, detection_geometry)

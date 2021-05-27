@@ -28,7 +28,8 @@ class ReconstructionAdapterBase(SimulationModule):
         self.component_settings = global_settings.get_reconstruction_settings()
 
     @abstractmethod
-    def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry) -> np.ndarray:
+    def reconstruction_algorithm(self, time_series_sensor_data,
+                                 detection_geometry: DetectionGeometryBase) -> np.ndarray:
         """
         A deriving class needs to implement this method according to its model.
 

@@ -12,11 +12,12 @@ import torch
 from simpa.utils.settings import Settings
 from simpa.processing.preprocess_images import reconstruction_mode_transformation
 from simpa.processing.signal_processing import get_apodization_factor, bandpass_filtering, apply_b_mode
+from simpa.core.device_digital_twins import DetectionGeometryBase
 
 
 class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
-    def reconstruction_algorithm(self, time_series_sensor_data, device):
+    def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry: DetectionGeometryBase):
         """
         Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
         first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
@@ -64,10 +65,9 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
             raise AttributeError("Please specify a value for SPACING_MM")
 
         # get device specific sensor positions
-        pa_device = device
-        pa_device.check_settings_prerequisites(self.global_settings)
+        detection_geometry.check_settings_prerequisites(self.global_settings)
 
-        sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(
+        sensor_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(
             self.global_settings)
 
         # time series sensor data must be numpy array
@@ -122,7 +122,7 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         ### ALGORITHM ITSELF ###
 
         ## compute size of beamformed image from field of view ##
-        field_of_view = pa_device.get_field_of_view_extent_mm()
+        field_of_view = detection_geometry.get_field_of_view_extent_mm()
         xdim = int(np.abs(field_of_view[0] - field_of_view[1]) / spacing_in_mm) + 1
         zdim = int(np.abs(field_of_view[2] - field_of_view[3]) / spacing_in_mm) + 1
         ydim = int(np.abs(field_of_view[4] - field_of_view[5]) / spacing_in_mm) + 1
@@ -190,12 +190,17 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         return reconstructed.squeeze()
 
 
-def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
-                                      time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
+def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray,
+                                      detection_geometry: DetectionGeometryBase,
+                                      settings: dict = None,
+                                      sound_of_speed: int = 1540,
+                                      time_spacing: float = 2.5e-8,
+                                      sensor_spacing: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
 
     :param time_series_sensor_data: (2D numpy array) sensor data of shape (sensor elements, time steps)
+    :param detection_geometry: The DetectionGeometryBase that should be used to reconstruct the given time series data
     :param settings: (dict) settings dictionary: by default there is none and the other parameters are used instead,
                      but if parameters are given in the settings those will be used instead of parsed arguments)
     :param sound_of_speed: (int) speed of sound in medium in meters per second (default: 1540 m/s)
@@ -219,4 +224,4 @@ def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray, setti
         settings[Tags.SPACING_MM] = sensor_spacing
 
     adapter = ImageReconstructionModuleDelayAndSumAdapter(settings)
-    return adapter.reconstruction_algorithm(time_series_sensor_data)
+    return adapter.reconstruction_algorithm(time_series_sensor_data, detection_geometry)

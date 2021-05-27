@@ -28,15 +28,19 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.simulation import simulate
-from simpa.core.device_digital_twins.msot_device import MSOTAcuityEcho
+from simpa.core.device_digital_twins import MSOTAcuityEcho
 from simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import AcousticForwardModelKWaveAdapter
 from simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter import OpticalForwardModelMcxAdapter
 from simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter import \
     ImageReconstructionModuleDelayMultiplyAndSumAdapter
 from simpa.core.volume_creation_module.volume_creation_module_model_based_adapter import \
     VolumeCreationModelModelBasedAdapter
-from simpa.processing.noise_processing_components import GaussianNoiseProcessingComponent
+from simpa.processing.noise import GaussianNoiseProcessingComponent
 from simpa import reconstruct_delay_multiply_and_sum_pytorch
+
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 class DelayMultiplyAndSumReconstruction:
     """
@@ -44,7 +48,7 @@ class DelayMultiplyAndSumReconstruction:
     Sum algorithm. To verify that the test was successful a user has to evaluate the displayed reconstruction.
     """
 
-    def setUp(self):
+    def __init__(self):
         """
         This is not a completely autonomous simpa_tests case yet.
         Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -60,6 +64,7 @@ class DelayMultiplyAndSumReconstruction:
         self.SPACING = 0.3  # 15
         self.RANDOM_SEED = 4711
         np.random.seed(self.RANDOM_SEED)
+        self.device = MSOTAcuityEcho()
 
         self.general_settings = {
             # These parameters set the general properties of the simulated volume
@@ -186,82 +191,9 @@ class DelayMultiplyAndSumReconstruction:
         tissue_dict["vessel_3"] = vessel_3_dictionary
         return tissue_dict
 
-    def add_msot_specific_settings(self):
-        volume_creator_settings = Settings(self.settings.get_volume_creation_settings())
-        device = MSOTAcuityEcho()
-        probe_size_mm = device.probe_height_mm
-        mediprene_layer_height_mm = device.mediprene_membrane_height_mm
-        heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
-
-        new_volume_height_mm = self.settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
-                               heavy_water_layer_height_mm
-
-        # adjust the z-dim to msot probe height
-        self.settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
-
-        # adjust the x-dim to msot probe width
-        # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
-        # of the simulated volume.
-
-        if self.settings[Tags.DIM_VOLUME_X_MM] < round(device.probe_width_mm) + 1:
-            width_shift_for_structures_mm = (round(device.probe_width_mm) + 1 - self.settings[Tags.DIM_VOLUME_X_MM]) / 2
-            self.settings[Tags.DIM_VOLUME_X_MM] = round(device.probe_width_mm) + 1
-            device.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {self.settings[Tags.DIM_VOLUME_X_MM]}")
-        else:
-            width_shift_for_structures_mm = 0
-
-        device.logger.debug(volume_creator_settings)
-
-        for structure_key in volume_creator_settings[Tags.STRUCTURES]:
-            device.logger.debug("Adjusting " + str(structure_key))
-            structure_dict = volume_creator_settings[Tags.STRUCTURES][structure_key]
-            if Tags.STRUCTURE_START_MM in structure_dict:
-                structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                                 0] + width_shift_for_structures_mm
-                structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                                 2] + device.probe_height_mm
-            if Tags.STRUCTURE_END_MM in structure_dict:
-                structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                               0] + width_shift_for_structures_mm
-                structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                               2] + device.probe_height_mm
-
-        if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
-            us_gel_thickness = np.random.normal(0.4, 0.1)
-            us_gel_layer_settings = Settings({
-                Tags.PRIORITY: 5,
-                Tags.STRUCTURE_START_MM: [0, 0,
-                                          heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
-                Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
-                Tags.CONSIDER_PARTIAL_VOLUME: True,
-                Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
-                Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
-            })
-
-            volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
-        else:
-            us_gel_thickness = 0
-
-        mediprene_layer_settings = Settings({
-            Tags.PRIORITY: 5,
-            Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness],
-            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
-            Tags.CONSIDER_PARTIAL_VOLUME: True,
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
-            Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
-        })
-
-        volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
-
-        background_settings = Settings({
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
-            Tags.STRUCTURE_TYPE: Tags.BACKGROUND
-        })
-        volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
-
     def test_reconstruction_of_simulation(self):
 
-        self.add_msot_specific_settings()
+        self.device.update_settings_for_use_of_model_based_volume_creator(self.settings)
 
         SIMUATION_PIPELINE = [
             VolumeCreationModelModelBasedAdapter(self.settings),
@@ -271,7 +203,7 @@ class DelayMultiplyAndSumReconstruction:
             ImageReconstructionModuleDelayMultiplyAndSumAdapter(self.settings)
         ]
 
-        simulate(SIMUATION_PIPELINE, self.settings)
+        simulate(SIMUATION_PIPELINE, self.settings, self.device)
 
 
         reconstructed_image_path = generate_dict_path(
@@ -290,7 +222,9 @@ class DelayMultiplyAndSumReconstruction:
                                                   Tags.TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
 
         # reconstruct image using convenience function
-        reconstructed_image = reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data, self.settings)
+        reconstructed_image = reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data,
+                                                                         self.device.get_detection_geometry(),
+                                                                         self.settings)
 
         self.plot_reconstruction_compared_with_initial_pressure(reconstructed_image, "Reconstructed image using convenience function")
 
@@ -307,8 +241,8 @@ class DelayMultiplyAndSumReconstruction:
         plt.imshow(np.rot90(reconstructed_image, -1))
         plt.show()
 
+
 if __name__ == '__main__':
     test = DelayMultiplyAndSumReconstruction()
-    test.setUp()
     test.test_reconstruction_of_simulation()
     test.test_convenience_function()

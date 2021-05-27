@@ -22,13 +22,18 @@ from simpa.core.volume_creation_module.volume_creation_module_model_based_adapte
 from simpa.processing.noise.gaussian_noise import GaussianNoiseProcessingComponent
 from simpa import reconstruct_delay_and_sum_pytorch
 
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+
 class DelayAndSumReconstruction:
     """
     This test runs a simulation creating an example volume of geometric shapes and reconstructs it with the Delay and
     Sum algorithm. To verify that the test was successful a user has to evaluate the displayed reconstruction.
     """
 
-    def setUp(self):
+    def __init__(self):
         """
         This is not a completely autonomous simpa_tests case yet.
         Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -44,6 +49,7 @@ class DelayAndSumReconstruction:
         self.SPACING = 0.3  # 15
         self.RANDOM_SEED = 4711
         np.random.seed(self.RANDOM_SEED)
+        self.device = MSOTAcuityEcho()
 
         self.general_settings = {
             # These parameters set the general properties of the simulated volume
@@ -172,7 +178,7 @@ class DelayAndSumReconstruction:
 
     def test_reconstruction_of_simulation(self):
 
-        self.add_msot_specific_settings()
+        self.device.update_settings_for_use_of_model_based_volume_creator(self.settings)
 
         SIMUATION_PIPELINE = [
             VolumeCreationModelModelBasedAdapter(self.settings),
@@ -182,8 +188,7 @@ class DelayAndSumReconstruction:
             ImageReconstructionModuleDelayAndSumAdapter(self.settings)
         ]
 
-        simulate(SIMUATION_PIPELINE, self.settings)
-
+        simulate(SIMUATION_PIPELINE, self.settings, self.device)
 
         reconstructed_image_path = generate_dict_path(
             Tags.RECONSTRUCTED_DATA,
@@ -201,7 +206,9 @@ class DelayAndSumReconstruction:
                                                   Tags.TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
 
         # reconstruct image using convenience function
-        reconstructed_image = reconstruct_delay_and_sum_pytorch(time_series_sensor_data, self.settings)
+        reconstructed_image = reconstruct_delay_and_sum_pytorch(time_series_sensor_data,
+                                                                self.device.get_detection_geometry(),
+                                                                self.settings)
 
         self.plot_reconstruction_compared_with_initial_pressure(reconstructed_image, "Reconstructed image using convenience function")
 
@@ -221,6 +228,5 @@ class DelayAndSumReconstruction:
 
 if __name__ == '__main__':
     test = DelayAndSumReconstruction()
-    test.setUp()
     test.test_reconstruction_of_simulation()
     test.test_convenience_function()

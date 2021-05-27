@@ -23,7 +23,7 @@
 from simpa.utils import Tags
 from simpa.core.reconstruction_module import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_data_field
-from simpa.core.device_digital_twins import DEVICE_MAP
+from simpa.core.device_digital_twins import DetectionGeometryBase
 import numpy as np
 import torch
 from simpa.utils.settings import Settings
@@ -32,9 +32,10 @@ from simpa.processing.signal_processing import get_apodization_factor, bandpass_
 
 class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
 
-    def reconstruction_algorithm(self, time_series_sensor_data):
+    def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry: DetectionGeometryBase):
         """
-        Applies the signed Delay Multiply and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
+        Applies the signed Delay Multiply and Sum beamforming algorithm [1] to the time series sensor data
+        (2D numpy array where the
         first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
         beamforming settings (dictionary).
         A reconstructed image (2D numpy array) is returned.
@@ -68,7 +69,8 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
         # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
         if Tags.K_WAVE_SPECIFIC_DT in self.global_settings and self.global_settings[Tags.K_WAVE_SPECIFIC_DT]:
             time_spacing_in_ms = self.global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
-        elif Tags.SENSOR_SAMPLING_RATE_MHZ in self.global_settings and self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
+        elif Tags.SENSOR_SAMPLING_RATE_MHZ in self.global_settings and self.global_settings[
+            Tags.SENSOR_SAMPLING_RATE_MHZ]:
             time_spacing_in_ms = 1.0 / (self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
         else:
             raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
@@ -80,11 +82,10 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
             raise AttributeError("Please specify a value for SPACING_MM")
 
         # get device specific sensor positions
-        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
-        pa_device.check_settings_prerequisites(self.global_settings)
-        pa_device.adjust_simulation_volume_and_settings(self.global_settings)
+        detection_geometry.check_settings_prerequisites(self.global_settings)
 
-        sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
+        sensor_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(
+            self.global_settings)
 
         # time series sensor data must be numpy array
         if isinstance(sensor_positions, np.ndarray):
@@ -128,7 +129,8 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
                 if Tags.BANDPASS_CUTOFF_LOWPASS in self.component_settings else int(8e6)
             cutoff_highpass = self.component_settings[Tags.BANDPASS_CUTOFF_HIGHPASS] \
                 if Tags.BANDPASS_CUTOFF_HIGHPASS in self.component_settings else int(0.1e6)
-            tukey_alpha = self.component_settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in self.component_settings else 0.5
+            tukey_alpha = self.component_settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in \
+                self.component_settings else 0.5
             time_series_sensor_data = bandpass_filtering(time_series_sensor_data,
                                                          time_spacing_in_ms=time_spacing_in_ms,
                                                          cutoff_lowpass=cutoff_lowpass,
@@ -149,8 +151,9 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
             sensor_positions[:, 1] = 0  # Assume imaging plane
 
         if time_series_sensor_data.shape[0] < sensor_positions.shape[0]:
-            self.logger.warning("Warning: The time series data has less sensor element entries than the given sensor positions. "
-                  "This might be due to a low simulated resolution, please increase it.")
+            self.logger.warning("Warning: The time series data has less sensor element entries than the given "
+                                "sensor positions. "
+                                "This might be due to a low simulated resolution, please increase it.")
 
         n_sensor_elements = time_series_sensor_data.shape[0]
 
@@ -184,7 +187,8 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
 
         # perform apodization if specified
         if Tags.RECONSTRUCTION_APODIZATION_METHOD in self.component_settings:
-            apodization = get_apodization_factor(apodization_method=self.component_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD],
+            apodization = get_apodization_factor(apodization_method=self.component_settings[
+                Tags.RECONSTRUCTION_APODIZATION_METHOD],
                                                  dimensions=(xdim, ydim, zdim), n_sensor_elements=n_sensor_elements,
                                                  device=device)
             values = values * apodization
@@ -212,12 +216,16 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
         if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in self.component_settings \
                 and self.component_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION] \
                 and Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
-            reconstructed = apply_b_mode(reconstructed, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
+            reconstructed = apply_b_mode(reconstructed,
+                                         method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         return reconstructed.squeeze()
 
 
-def reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
+def reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarray,
+                                                      detection_geometry: DetectionGeometryBase,
+                                                      settings: dict = None,
+                                                      sound_of_speed: int = 1540,
                                       time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
@@ -246,4 +254,4 @@ def reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data: n
         settings[Tags.SPACING_MM] = sensor_spacing
 
     adapter = ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(settings)
-    return adapter.reconstruction_algorithm(time_series_sensor_data)
+    return adapter.reconstruction_algorithm(time_series_sensor_data, detection_geometry)
