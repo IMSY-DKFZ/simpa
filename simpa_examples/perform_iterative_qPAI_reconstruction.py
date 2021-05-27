@@ -15,9 +15,9 @@ from simpa.utils.settings import Settings
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
-from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
+from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
     GaussianNoiseProcessingComponent
-from simpa.processing.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
+from simpa.algorithms.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
 from simpa.utils.path_manager import PathManager
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry, MSOTAcuityEcho, \
     PencilArrayIlluminationGeometry
