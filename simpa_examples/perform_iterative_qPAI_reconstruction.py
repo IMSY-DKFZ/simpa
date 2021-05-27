@@ -1,24 +1,12 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
+
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
@@ -27,9 +15,11 @@ from simpa.utils.settings import Settings
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
-from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, GaussianNoiseProcessingComponent
+from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
+    GaussianNoiseProcessingComponent
 from simpa.processing.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
 from simpa.utils.path_manager import PathManager
+from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry, MSOTAcuityEcho
 
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -73,7 +63,7 @@ def create_example_tissue():
                                                  VOLUME_HEIGHT_IN_MM / 2]
     vessel_structure_1[Tags.STRUCTURE_RADIUS_MM] = 2
     vessel_structure_1[Tags.STRUCTURE_ECCENTRICITY] = 0.75
-    vessel_structure_1[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_arterial()
+    vessel_structure_1[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(0.9)
     vessel_structure_1[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_structure_1[Tags.ADHERE_TO_DEFORMATION] = True
     vessel_structure_1[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
@@ -84,7 +74,7 @@ def create_example_tissue():
     vessel_structure_2[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2, VOLUME_PLANAR_DIM_IN_MM,
                                                  VOLUME_HEIGHT_IN_MM / 3]
     vessel_structure_2[Tags.STRUCTURE_RADIUS_MM] = 0.75
-    vessel_structure_2[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+    vessel_structure_2[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
     vessel_structure_2[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_structure_2[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -122,7 +112,6 @@ settings.set_optical_settings({
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
 })
 settings["noise_model"] = {
@@ -138,10 +127,10 @@ settings["iterative_qpai_reconstruction"] = {
     Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION: False,
     # the following tag has no effect, since the regularization is chosen to be SNR dependent, not constant
     Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA: 0.01,
-    Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER: 10,
+    Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER: 20,
     # for this example, we are not interested in all absorption updates
     Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS: False,
-    Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL: 0.03,
+    Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL: 0.03
 }
 
 # run pipeline including iterative qPAI method
@@ -152,7 +141,23 @@ pipeline = [
     IterativeqPAIProcessingComponent(settings, "iterative_qpai_reconstruction")
 ]
 
-simulate(pipeline, settings)
+
+class CustomDevice(PhotoacousticDevice):
+
+    def __init__(self):
+        super(CustomDevice, self).__init__()
+        self.add_illumination_geometry(PencilBeamIlluminationGeometry())
+
+    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+        return np.asarray([global_settings[Tags.DIM_VOLUME_X_MM]/2,
+                           global_settings[Tags.DIM_VOLUME_Y_MM]/2, 0])
+
+
+device = CustomDevice()
+
+device.update_settings_for_use_of_model_based_volume_creator(settings)
+
+simulate(pipeline, settings, device)
 
 # visualize reconstruction results
 if VISUALIZE:

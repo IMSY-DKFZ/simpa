@@ -20,16 +20,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 from simpa.utils.path_manager import PathManager
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
-from simpa.io_handling import load_data_field, load_hdf5
+from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
-from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, GaussianNoiseProcessingComponent
+from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, \
+    GaussianNoiseProcessingComponent
 from simpa.processing.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
+from simpa.core.device_digital_twins import RSOMExplorerP50
 
 
 class TestqPAIReconstruction:
@@ -88,13 +93,15 @@ class TestqPAIReconstruction:
             Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
         }
 
+        self.device = RSOMExplorerP50(element_spacing_mm=1.0)
+
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
             VolumeCreationModelModelBasedAdapter(self.settings),
             OpticalForwardModelMcxAdapter(self.settings),
             GaussianNoiseProcessingComponent(self.settings, "noise_model")
         ]
-        simulate(pipeline, self.settings)
+        simulate(pipeline, self.settings, self.device)
 
     def test_qpai_reconstruction(self):
         """
@@ -126,7 +133,7 @@ class TestqPAIReconstruction:
             self.absorption_gt = zoom(absorption_gt, 0.73, order=1, mode="nearest")  # the default scale is 0.73
 
         # run the qPAI reconstruction
-        IterativeqPAIProcessingComponent(self.settings, "iterative_qpai_reconstruction").run()
+        IterativeqPAIProcessingComponent(self.settings, "iterative_qpai_reconstruction").run(self.device)
 
         # get last iteration result (3-d)
         hdf5_path = self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5"
@@ -246,7 +253,7 @@ class TestqPAIReconstruction:
                                                      self.VOLUME_PLANAR_DIM_IN_MM, self.VOLUME_HEIGHT_IN_MM / 2]
         vessel_structure_1[Tags.STRUCTURE_RADIUS_MM] = 1.75
         vessel_structure_1[Tags.STRUCTURE_ECCENTRICITY] = 0.85
-        vessel_structure_1[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_arterial()
+        vessel_structure_1[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(1.0)
         vessel_structure_1[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_structure_1[Tags.ADHERE_TO_DEFORMATION] = True
         vessel_structure_1[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
@@ -258,7 +265,7 @@ class TestqPAIReconstruction:
         vessel_structure_2[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
                                                      self.VOLUME_PLANAR_DIM_IN_MM, self.VOLUME_HEIGHT_IN_MM / 3]
         vessel_structure_2[Tags.STRUCTURE_RADIUS_MM] = 0.75
-        vessel_structure_2[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+        vessel_structure_2[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(0.5)
         vessel_structure_2[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_structure_2[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 

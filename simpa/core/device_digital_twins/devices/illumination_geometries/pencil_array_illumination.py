@@ -52,7 +52,7 @@ class PencilArrayIlluminationGeometry(IlluminationGeometryBase):
 
         return {
             "Type": source_type,
-            "Pos": device_position,
+            "Pos": list(device_position),
             "Dir": source_direction,
             "Param1": source_param1,
             "Param2": source_param2

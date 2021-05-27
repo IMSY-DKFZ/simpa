@@ -1,28 +1,10 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 import numpy as np
-import os
 from scipy.ndimage import zoom
 from skimage.restoration import estimate_sigma
 import time
@@ -36,6 +18,7 @@ from simpa.utils import Settings
 from simpa.io_handling import save_data_field, load_data_field
 from simpa.utils import TISSUE_LIBRARY
 from simpa.core.simulation_components import ProcessingComponent
+import os
 
 
 class IterativeqPAIProcessingComponent(ProcessingComponent):
@@ -76,7 +59,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         else:
             self.downscale_factor = 0.73
 
-    def run(self):
+    def run(self, pa_device):
         self.logger.info("Reconstructing absorption using iterative qPAI method...")
 
         # check if simulation_path and optical_model_binary_path exist
@@ -111,26 +94,11 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
             self.global_settings[Tags.MCX_SEED] = int(self.global_settings[Tags.MCX_SEED])
 
         # run reconstruction
-        reconstructed_absorption, list_of_intermediate_absorptions = self.iterative_absorption_reconstruction()
+        reconstructed_absorption, list_of_intermediate_absorptions = self.iterative_absorption_reconstruction(pa_device)
 
         # make sure that settings are not changed due to resampling
         if self.global_settings[Tags.SPACING_MM] != self.original_spacing:
             self.global_settings[Tags.SPACING_MM] = self.original_spacing
-
-        if Tags.ILLUMINATION_POSITION in self.optical_settings:
-            pos = [(elem / self.downscale_factor) for elem in
-                   self.optical_settings[Tags.ILLUMINATION_POSITION]]
-            self.optical_settings[Tags.ILLUMINATION_POSITION] = pos
-
-        if Tags.ILLUMINATION_PARAM1 in self.optical_settings:
-            param1 = [(elem / self.downscale_factor) for elem in
-                      self.optical_settings[Tags.ILLUMINATION_PARAM1]]
-            self.optical_settings[Tags.ILLUMINATION_PARAM1] = param1
-
-        if Tags.ILLUMINATION_PARAM2 in self.optical_settings:
-            param2 = [(elem / self.downscale_factor) for elem in
-                      self.optical_settings[Tags.ILLUMINATION_PARAM2]]
-            self.optical_settings[Tags.ILLUMINATION_PARAM2] = param2
 
         # save absorption update of last iteration step in hdf5 data field
         # bypass wavelength error resulting from loading settings from existing hdf5 file
@@ -152,7 +120,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         self.logger.info("Reconstructing absorption using iterative qPAI method...[Done]")
 
-    def iterative_absorption_reconstruction(self) -> Tuple[np.ndarray, list]:
+    def iterative_absorption_reconstruction(self, pa_device) -> Tuple[np.ndarray, list]:
         """
         Performs quantitative photoacoustic image reconstruction of absorption distribution by use of an
         iterative method. The distribution of scattering coefficients must be known a priori.
@@ -181,8 +149,9 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
             raise ValueError("Shape of scattering data is invalid. Scattering must have the same shape as image_data.")
 
         # preprocessing for iterative qPAI method and mcx_adapter
-        image_data, scattering, stacked_to_volume = self.preprocessing_for_iterative_qpai(image_data=image_data,
-                                                                                          scattering=scattering)
+        image_data, scattering, stacked_to_volume = self.preprocessing_for_iterative_qpai(
+            intial_pressure=image_data,
+            scattering=scattering)
 
         # get optical properties necessary for simulation
         optical_properties_dict = self.standard_optical_properties(image_data)
@@ -210,7 +179,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         while i < nmax:
             print("Iteration: ", i)
             # core method
-            fluence = self.forward_model_fluence(absorption, scattering, anisotropy)
+            fluence = self.forward_model_fluence(absorption, scattering, anisotropy, pa_device)
             error_list.append(self.log_sum_squared_error(image_data, absorption, fluence, sigma))
             absorption = self.update_absorption_estimate(image_data, fluence, sigma)
 
@@ -255,7 +224,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         # function returns the last iteration result as a numpy array and all iteration results in a list
         return image, mus
 
-    def preprocessing_for_iterative_qpai(self, image_data: np.ndarray,
+    def preprocessing_for_iterative_qpai(self, intial_pressure: np.ndarray,
                                          scattering: np.ndarray) -> Tuple[np.ndarray, np.ndarray, bool]:
         """
         Preprocesses image data and scattering distribution for iterative algorithm using mcx.
@@ -264,13 +233,13 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
            a Monte Carlo Simulation of fluence given 3-d volumes of absorption, scattering, and anisotropy
         2. Resampling the input data to mitigate the inverse crime
 
-        :param image_data: Raw input image of initial pressure.
+        :param intial_pressure: Raw input image of initial pressure.
         :param scattering: Map of scattering coefficients known a priori.
         :return: Resampled and (if necessary) stacked volume of noisy
                  initial pressure, scattering and bool indicating if image had to be stacked to 3-d.
         """
 
-        if len(np.shape(image_data)) == 2:
+        if len(np.shape(intial_pressure)) == 2:
             light_source = self.optical_settings[Tags.ILLUMINATION_TYPE]
             if Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA in self.iterative_method_settings:
                 sigma = self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA]
@@ -280,14 +249,14 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
                                  "Algorithm is attempted with a %s illumination source and a "
                                  "constant sigma of %s. User caution is advised!" %(light_source, sigma))
             stacked_to_volume = True
-            image_data = self.stacking_to_3d(image_data)
+            intial_pressure = self.stacking_to_3d(intial_pressure)
             scattering = self.stacking_to_3d(scattering)
         else:
             stacked_to_volume = False
 
-        image_data, scattering = self.resampling_for_iterative_qpai(image_data, scattering)
+        intial_pressure, scattering = self.resampling_for_iterative_qpai(intial_pressure, scattering)
 
-        return image_data, scattering, stacked_to_volume
+        return intial_pressure, scattering, stacked_to_volume
 
     def stacking_to_3d(self, input_data: np.ndarray) -> np.ndarray:
         """
@@ -303,42 +272,25 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         stacked_volume = np.stack([input_data] * num_repeats, axis=1)
         return stacked_volume
 
-    def resampling_for_iterative_qpai(self, image_data: np.ndarray,
+    def resampling_for_iterative_qpai(self, initial_pressure: np.ndarray,
                                       scattering: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         Downscales the input image and scattering map by a given scale (downscale factor) to avoid inverse crime.
 
-        :param image_data: Raw input image of initial pressure.
+        :param initial_pressure: Raw input image of initial pressure.
         :param scattering: Map of scattering coefficients.
         :return: Downscaled image and scattering map.
         """
 
         downscaling_method = "nearest"
 
-        downscaled_image = zoom(image_data, self.downscale_factor, order=1, mode=downscaling_method)
+        downscaled_initial_pressure = zoom(initial_pressure, self.downscale_factor, order=1, mode=downscaling_method)
         downscaled_scattering = zoom(scattering, self.downscale_factor, order=1, mode=downscaling_method)
 
         new_spacing = self.global_settings[Tags.SPACING_MM] / self.downscale_factor
+        self.global_settings[Tags.SPACING_MM] = new_spacing
 
-        if self.global_settings[Tags.SPACING_MM] != new_spacing:
-            self.global_settings[Tags.SPACING_MM] = new_spacing
-
-        if Tags.ILLUMINATION_POSITION in self.optical_settings:
-            pos = [(elem * self.downscale_factor) for elem in
-                   self.optical_settings[Tags.ILLUMINATION_POSITION]]
-            self.optical_settings[Tags.ILLUMINATION_POSITION] = pos
-
-        if Tags.ILLUMINATION_PARAM1 in self.optical_settings:
-            param1 = [(elem * self.downscale_factor) for elem in
-                      self.optical_settings[Tags.ILLUMINATION_PARAM1]]
-            self.optical_settings[Tags.ILLUMINATION_PARAM1] = param1
-
-        if Tags.ILLUMINATION_PARAM2 in self.optical_settings:
-            param2 = [(elem * self.downscale_factor) for elem in
-                      self.optical_settings[Tags.ILLUMINATION_PARAM2]]
-            self.optical_settings[Tags.ILLUMINATION_PARAM2] = param2
-
-        return downscaled_image, downscaled_scattering
+        return downscaled_initial_pressure, downscaled_scattering
 
     def regularization_sigma(self, input_image: np.ndarray, stacked_to_volume) -> [np.ndarray, int, float]:
         """
@@ -418,7 +370,8 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         return optical_properties
 
     def forward_model_fluence(self, absorption: np.ndarray,
-                              scattering: np.ndarray, anisotropy: np.ndarray) -> np.ndarray:
+                              scattering: np.ndarray, anisotropy: np.ndarray,
+                              pa_device) -> np.ndarray:
         """
         Simulates photon propagation in 3-d volume and returns simulated fluence map in units of J/cm^2.
 
@@ -438,9 +391,34 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         else:
             raise AssertionError("Tags.OPTICAL_MODEL tag must be Tags.OPTICAL_MODEL_MCX.")
 
-        fluence = forward_model_implementation.forward_model(absorption_cm=absorption,
-                                                             scattering_cm=scattering,
-                                                             anisotropy=anisotropy)
+        _device = pa_device.get_illumination_geometry()
+
+        if isinstance(_device, list):
+            # per convention this list has at least two elements
+            fluence = forward_model_implementation.forward_model(absorption_cm=absorption,
+                                                                 scattering_cm=scattering,
+                                                                 anisotropy=anisotropy,
+                                                                 illumination_geometry=_device[0],
+                                                                 probe_position_mm=pa_device.get_probe_position_mm(
+                                                                     self.global_settings))
+            for idx in range(len(_device) - 1):
+                # we already looked at the 0th element, so go from 1 to n-1
+                fluence += forward_model_implementation.forward_model(absorption_cm=absorption,
+                                                                      scattering_cm=scattering,
+                                                                      anisotropy=anisotropy,
+                                                                      illumination_geometry=_device[idx + 1],
+                                                                      probe_position_mm=pa_device.get_probe_position_mm(
+                                                                          self.global_settings))
+
+            fluence = fluence / len(_device)
+
+        else:
+            fluence = forward_model_implementation.forward_model(absorption_cm=absorption,
+                                                                 scattering_cm=scattering,
+                                                                 anisotropy=anisotropy,
+                                                                 illumination_geometry=_device,
+                                                                 probe_position_mm=pa_device.get_probe_position_mm(
+                                                                     self.global_settings))
 
         print("Simulating the optical forward process...[Done]")
 
