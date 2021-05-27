@@ -22,6 +22,9 @@
 
 function [] = simulate_2D(optical_path)
 
+%% In case of an error, make sure the matlab scripts exits anyway
+clean_up = onCleanup(@exit);
+
 %% Read settings file
 
 data = load(optical_path);
