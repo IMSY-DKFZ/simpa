@@ -98,19 +98,19 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             self.global_settings)
         detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
         detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
-        if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
-            simulate_2d = True
-            axes = (0, 1)
-            if detectors_are_aligned_along_y_axis:
-                transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM])))
-                slice = np.s_[transducer_plane, :, :]
-            else:
-                transducer_plane = int(round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM])))
-                slice = np.s_[:, transducer_plane, :]
-        else:
-            simulate_2d = False
-            axes = (0, 2)
-            slice = np.s_[:]
+        # if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
+        #     simulate_2d = True
+        #     axes = (0, 1)
+        #     if detectors_are_aligned_along_y_axis:
+        #         transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM])))
+        #         slice = np.s_[transducer_plane, :, :]
+        #     else:
+        #         transducer_plane = int(round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM])))
+        #         slice = np.s_[:, transducer_plane, :]
+        # else:
+        simulate_2d = False
+        axes = (0, 2)
+        slice = np.s_[:]
 
         wavelength = str(self.global_settings[Tags.WAVELENGTH])
         data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND][slice], 3, axes=axes)
@@ -127,8 +127,14 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             angles = np.arccos(np.dot(orientations, np.array([1, 0, 0])))
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles[::-1]
         else:
-            detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(
-            self.global_settings)
+            detector_positions_mm = np.moveaxis(detector_positions_mm, 1, 0)
+            data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = detector_positions_mm[[2, 1, 0]]
+            orientations = PA_device.get_detector_element_orientations(self.global_settings)
+            x_angles = np.arccos(np.dot(orientations, np.array([1, 0, 0]))) * 360 / (2*np.pi)
+            y_angles = np.arccos(np.dot(orientations, np.array([0, 1, 0]))) * 360 / (2*np.pi)
+            z_angles = np.arccos(np.dot(orientations, np.array([0, 0, 1]))) * 360 / (2*np.pi)
+            angles = np.array([z_angles[::-1], y_angles[::-1], x_angles[::-1]])
+            data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles
         # Matlab indexes start at 1
         detector_positions_voxels = np.round(detector_positions_mm / self.global_settings[Tags.SPACING_MM]).astype(int) + 1
 
@@ -185,8 +191,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         data_dict["settings"] = k_wave_settings
         sio.savemat(optical_path, data_dict, long_field_names=True)
 
-        if Tags.ACOUSTIC_SIMULATION_3D in self.component_settings and \
-                self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] is True:
+        if not simulate_2d:
             self.logger.info("Simulating 3D....")
             simulation_script_path = "simulate_3D"
         else:

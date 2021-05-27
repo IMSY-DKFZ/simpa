@@ -83,9 +83,6 @@ else
     medium.density = 1000*ones(Nx, Ny, Nz);
 end
 
-%sound_speed_ref = min(min(medium.sound_speed));
-%kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
-%kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / sound_speed_ref) / kgrid.dt);
 kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 % CFL number of 0.3 (advised by manual)
 % Using makeTime, dt = CFL*dx/medium.sound_speed and the total
@@ -94,22 +91,76 @@ kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 
 %% Define sensor
 
-% if a field of the struct "data" is given which describes the sensor mask, the array is loaded and is used as sensor.mask
-if isfield(data, 'sensor_mask')
-    sensor.mask = data.sensor_mask;
-    fprintf("Number of elements in sensor mask: %d", sum(sensor.mask,'all'))
+% create empty array
+karray = kWaveArray;
+
+elem_pos = data.sensor_element_positions/1000;
+
+% In case some detectors are defined at zeros or with negative values out
+% of bounds, correct all of them with minimum need correction 0.0001.
+
+min_x_pos = find(elem_pos(1, :) <= 0);
+min_y_pos = find(elem_pos(2, :) <= 0);
+min_z_pos = find(elem_pos(3, :) <= 0);
+x_correction = 0;
+y_correction = 0;
+z_correction = 0;
+if size(min_x_pos) > 0
+   x_correction = 0.0001;
 end
 
-% if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
-if isfield(data, 'directivity_angle')
-    sensor.directivity_angle = data.directivity_angle;
+if size(min_y_pos) > 0
+   y_correction = 0.0001;
 end
 
-if isfield(data, 'directivity_size')
-    sensor.directivity_size = double(settings.sensor_directivity_size);
+if size(min_z_pos) > 0
+   z_correction = 0.0001;
 end
 
-%sensor.directivity_pattern = settings.sensor_directivity_pattern;
+
+elem_pos(1, :) = elem_pos(1, :) - 0.5*kgrid.x_size + x_correction;
+elem_pos(2, :) = elem_pos(2, :) - 0.5*kgrid.y_size + y_correction;
+elem_pos(3, :) = elem_pos(3, :) - 0.5*kgrid.z_size + z_correction;
+num_elements = size(elem_pos, 2);
+
+element_width = double(settings.detector_element_width_mm)/1000;
+angles = data.directivity_angle;
+
+if isfield(settings, 'sensor_radius_mm') == true
+    radius_of_curv = double(settings.sensor_radius_mm)/1000;
+end
+
+% For addArcElement orient all elements towards the focus
+% For the iThera MSOT Acuity Echo, it is [0.008, 0]
+
+%focus_pos = [0.008, 0];
+
+% add elements to the array
+
+%for ind = 1:num_elements
+%    karray.addArcElement(elem_pos(:, ind), radius_of_curv, element_width, focus_pos);
+%end
+for ind = 1:num_elements
+  x = elem_pos(1, ind);
+  y = elem_pos(2, ind);
+  z = elem_pos(3, ind);
+  alpha_x = angles(1, ind);
+  alpha_y = angles(2, ind);
+  alpha_z = angles(3, ind);
+%  x2=x+0.5*(element_width*sin(alpha));
+%  y2=y+0.5*(element_width*cos(alpha));
+  x = x - 0.5*(element_width*sin(alpha_x));
+  y = y - 0.5*(element_width*sin(alpha_y));
+  z = z - 0.5*(element_width*sin(alpha_z));
+  karray.addRectElement([x, y, z], element_width, 0.00001, [alpha_x, alpha_y, alpha_z]);
+%  karray.addLineElement([x, y], [x2, y2]);
+end
+
+% assign binary mask from karray to the sensor mask
+sensor.mask = karray.getArrayBinaryMask(kgrid);
+center_freq = double(settings.sensor_center_frequency); % [Hz]
+bandwidth = double(settings.sensor_bandwidth); % [%]
+sensor.frequency_response = [center_freq, bandwidth];
 
 %% Computation settings
 
@@ -118,7 +169,6 @@ if settings.gpu == true
 else
     datacast = 'single';
 end
-% max_pressure = max(max(initial_pressure));
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', double(settings.pml_alpha), 'PMLSize', 'auto', ...
@@ -132,20 +182,11 @@ else
     time_series_data = kspaceFirstOrder3D(kgrid, medium, source, sensor, input_args{:});
 end
 
-% define the frequency response of the sensor elements, gaussian shape with
-center_freq = double(settings.sensor_center_frequency); % in units of [Hz]
-bandwidth = double(settings.sensor_bandwidth); % in units of [%]
-num_elements = size(time_series_data, 2);
-num_samples = size(time_series_data(1).p, 4);
-ts_array = zeros(num_elements, num_samples);
-for i = 1:num_elements
-   ts_array(i, :) = time_series_data(i).p;
-end
-time_series_data = gaussianFilter(ts_array, 1/kgrid.dt, center_freq, bandwidth);
-%time_series_data = time_series_data.';
+% combine data to give one trace per physical array element
+time_series_data = karray.combineSensorData(kgrid, time_series_data);
 
 %% Write data to mat array
-save(strcat(optical_path), 'time_series_data')
+save(optical_path, 'time_series_data')%, '-v7.3')
 time_step = kgrid.dt;
 number_time_steps = kgrid.Nt;
 save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');

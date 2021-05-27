@@ -182,29 +182,29 @@ settings["noise_time_series"] = {
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
 
-# device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                      VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                      0]))
-#
-# device.update_settings_for_use_of_model_based_volume_creator(settings)
-class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
-    """
-    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
-
-    """
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        return np.asarray([0, 0, 0])
-
-    def __init__(self, device_position_mm):
-        super().__init__()
-        self.device_position_mm = device_position_mm
-        self.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=self.device_position_mm))
-        self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0]))
-
-device = ExampleDeviceSlitIlluminationLinearDetector(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                      VOLUME_PLANAR_DIM_IN_MM/2,
                                                      0]))
+
+device.update_settings_for_use_of_model_based_volume_creator(settings)
+# class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
+#     """
+#     This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
+#
+#     """
+#
+#     def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+#         return np.asarray([0, 0, 0])
+#
+#     def __init__(self, device_position_mm):
+#         super().__init__()
+#         self.device_position_mm = device_position_mm
+#         self.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=self.device_position_mm))
+#         self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0]))
+#
+# device = ExampleDeviceSlitIlluminationLinearDetector(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+#                                                      VOLUME_PLANAR_DIM_IN_MM/2,
+#                                                      0]))
 
 SIMUATION_PIPELINE = [
     VolumeCreationModelModelBasedAdapter(settings),

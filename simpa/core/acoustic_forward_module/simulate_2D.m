@@ -144,16 +144,11 @@ for ind = 1:num_elements
 %  karray.addLineElement([x, y], [x2, y2]);
 end
 
-% if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
-%if isfield(data, 'directivity_angle') == true
-%    sensor.directivity_angle = data.directivity_angle;
-%    % add 2 pixel "gel" to reduce Fourier artifact
-%    sensor.directivity_angle = padarray(sensor.directivity_angle, [GEL_LAYER_HEIGHT 0], 0, 'pre');
-%end
-%
-%if isfield(data, 'directivity_size')
-%    sensor.directivity_size = settings.sensor_directivity_size;
-%end
+% assign binary mask from karray to the sensor mask
+sensor.mask = karray.getArrayBinaryMask(kgrid);
+center_freq = double(settings.sensor_center_frequency); % [Hz]
+bandwidth = double(settings.sensor_bandwidth); % [%]
+sensor.frequency_response = [center_freq, bandwidth];
 
 %% Computation settings
 
@@ -167,12 +162,6 @@ input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
               'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale};
-
-% assign binary mask from karray to the sensor mask
-sensor.mask = karray.getArrayBinaryMask(kgrid);
-center_freq = double(settings.sensor_center_frequency); % [Hz]
-bandwidth = double(settings.sensor_bandwidth); % [%]
-sensor.frequency_response = [center_freq, bandwidth];
 
 if settings.gpu == true
     time_series_data = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
