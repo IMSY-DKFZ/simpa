@@ -115,7 +115,8 @@ general_settings = {
     Tags.WAVELENGTHS: [798],
     Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                    VOLUME_PLANAR_DIM_IN_MM/2,
-                                   0]
+                                   0],
+    Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
 }
 
 settings = Settings(general_settings)

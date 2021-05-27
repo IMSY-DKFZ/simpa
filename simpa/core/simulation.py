@@ -88,7 +88,7 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
 
         logger.debug(f"Running pipeline for wavelength {wavelength}nm... [Done]")
 
-    if Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE not in settings or \
+    if Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE in settings and \
             settings[Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE]:
         all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
         save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH], file_compression="gzip")
