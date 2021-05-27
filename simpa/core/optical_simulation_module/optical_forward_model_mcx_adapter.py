@@ -11,7 +11,6 @@ from simpa.utils import Tags
 from simpa.core.optical_simulation_module import OpticalForwardModuleBase
 import json
 import os
-from simpa.core.optical_simulation_module.illumination_definition import define_illumination
 import gc
 
 
