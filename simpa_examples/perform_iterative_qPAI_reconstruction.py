@@ -19,7 +19,8 @@ from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, Op
     GaussianNoiseProcessingComponent
 from simpa.processing.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
 from simpa.utils.path_manager import PathManager
-from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry, MSOTAcuityEcho
+from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry, MSOTAcuityEcho, \
+    PencilArrayIlluminationGeometry
 
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -115,9 +116,9 @@ settings.set_optical_settings({
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
 })
 settings["noise_model"] = {
-    Tags.NOISE_MEAN: 0.0,
-    Tags.NOISE_STD: 0.4,
-    Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
+    Tags.NOISE_MEAN: 1.0,
+    Tags.NOISE_STD: 0.01,
+    Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
     Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
     Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
 }

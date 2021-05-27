@@ -133,35 +133,40 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         """
 
         # extract "measured" initial pressure and a priori scattering data
-        image_data, scattering = self.extract_initial_data_from_hdf5()
+        target_intial_pressure, scattering, anisotropy = self.extract_initial_data_from_hdf5()
 
         # checking input data
-        if not isinstance(image_data, np.ndarray):
+        if not isinstance(target_intial_pressure, np.ndarray):
             raise TypeError("Image data is not a numpy ndarray.")
-        elif image_data.size == 0:
+        elif target_intial_pressure.size == 0:
             raise ValueError("Image data is empty.")
-        elif (len(image_data.shape) < 2) or (len(image_data.shape) > 3):
+        elif (len(target_intial_pressure.shape) < 2) or (len(target_intial_pressure.shape) > 3):
             raise ValueError("Image data is invalid. Data must be two or three dimensional.")
 
         if not isinstance(scattering, np.ndarray):
             raise TypeError("Scattering input is not a numpy ndarray.")
-        elif scattering.shape != image_data.shape:
+        elif scattering.shape != target_intial_pressure.shape:
             raise ValueError("Shape of scattering data is invalid. Scattering must have the same shape as image_data.")
 
-        # preprocessing for iterative qPAI method and mcx_adapter
-        image_data, scattering, stacked_to_volume = self.preprocessing_for_iterative_qpai(
-            intial_pressure=image_data,
-            scattering=scattering)
-
         # get optical properties necessary for simulation
-        optical_properties_dict = self.standard_optical_properties(image_data)
-        anisotropy = optical_properties_dict["anisotropy"]
+        optical_properties_dict = self.standard_optical_properties(target_intial_pressure)
+        if scattering is None:
+            scattering = optical_properties_dict["scattering"]
+        if anisotropy is None:
+            anisotropy = optical_properties_dict["anisotropy"]
+
+        # preprocessing for iterative qPAI method and mcx_adapter
+        target_intial_pressure, scattering, anisotropy, stacked_to_volume = self.preprocessing_for_iterative_qpai(
+            intial_pressure=target_intial_pressure,
+            scattering=scattering,
+            anisotropy=anisotropy)
+
 
         # regularization parameter sigma
-        sigma = self.regularization_sigma(image_data, stacked_to_volume)
+        sigma = self.regularization_sigma(target_intial_pressure, stacked_to_volume)
 
         # initialization
-        absorption = 1e-16 * np.ones(np.shape(image_data))
+        absorption = 1e-16 * np.ones(np.shape(target_intial_pressure))
         y_pos = int(np.shape(absorption)[1] / 2)  # to extract middle slice
         list_of_intermediate_absorptions = []  # if intentional all intermediate iteration updates can be returned
         error_list = []
@@ -180,8 +185,10 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
             print("Iteration: ", i)
             # core method
             fluence = self.forward_model_fluence(absorption, scattering, anisotropy, pa_device)
-            error_list.append(self.log_sum_squared_error(image_data, absorption, fluence, sigma))
-            absorption = self.update_absorption_estimate(image_data, fluence, sigma)
+            error_list.append(self.log_sum_squared_error(target_intial_pressure, absorption, fluence, sigma))
+            absorption = self.update_absorption_estimate(target_intial_pressure, fluence, sigma)
+
+            est_p0 = absorption * fluence
 
             # only store middle slice (2-d image instead of 3-d volume) in iteration list for better performance
             list_of_intermediate_absorptions.append(absorption[:, y_pos, :])
@@ -200,7 +207,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         # function returns the last iteration result as a numpy array and all iteration results in a list
         return absorption, list_of_intermediate_absorptions
 
-    def extract_initial_data_from_hdf5(self) -> Tuple[np.ndarray, np.ndarray]:
+    def extract_initial_data_from_hdf5(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Extract necessary information - initial pressure and scattering coefficients -
         from settings dictionaries. The setting dictionaries is extracted from a hdf5 file.
@@ -216,16 +223,21 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
             wavelength = self.global_settings[Tags.WAVELENGTHS][0]
         self.logger.debug(f"Wavelength: {wavelength}")
         # get initial pressure and scattering
-        image = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
-                                wavelength)
-        mus = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SCATTERING_PER_CM,
+        initial_pressure = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+                                           Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+                                           wavelength)
+        scattering = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SCATTERING_PER_CM,
                               wavelength)
 
+        anisotropy = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ANISOTROPY,
+                            wavelength)
+
         # function returns the last iteration result as a numpy array and all iteration results in a list
-        return image, mus
+        return initial_pressure, scattering, anisotropy
 
     def preprocessing_for_iterative_qpai(self, intial_pressure: np.ndarray,
-                                         scattering: np.ndarray) -> Tuple[np.ndarray, np.ndarray, bool]:
+                                         scattering: np.ndarray,
+                                         anisotropy: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
         """
         Preprocesses image data and scattering distribution for iterative algorithm using mcx.
         The preprocessing step includes:
@@ -240,23 +252,23 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         """
 
         if len(np.shape(intial_pressure)) == 2:
-            light_source = self.optical_settings[Tags.ILLUMINATION_TYPE]
             if Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA in self.iterative_method_settings:
                 sigma = self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA]
             else:
                 sigma = 1e-2
-            self.logger.critical("Input data is 2 dimensional and will be stacked to 3 dimensions. "
-                                 "Algorithm is attempted with a %s illumination source and a "
-                                 "constant sigma of %s. User caution is advised!" %(light_source, sigma))
+            self.logger.warning("Input data is 2 dimensional and will be stacked to 3 dimensions. "
+                                "Algorithm is attempted with a %s illumination source and a "
+                                f"constant sigma of {sigma}. User caution is advised!")
             stacked_to_volume = True
             intial_pressure = self.stacking_to_3d(intial_pressure)
             scattering = self.stacking_to_3d(scattering)
         else:
             stacked_to_volume = False
 
-        intial_pressure, scattering = self.resampling_for_iterative_qpai(intial_pressure, scattering)
+        intial_pressure, scattering, anisotropy = self.resampling_for_iterative_qpai(intial_pressure, scattering,
+                                                                                     anisotropy)
 
-        return intial_pressure, scattering, stacked_to_volume
+        return intial_pressure, scattering, anisotropy, stacked_to_volume
 
     def stacking_to_3d(self, input_data: np.ndarray) -> np.ndarray:
         """
@@ -273,12 +285,14 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         return stacked_volume
 
     def resampling_for_iterative_qpai(self, initial_pressure: np.ndarray,
-                                      scattering: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+                                      scattering: np.ndarray,
+                                      anisotropy: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Downscales the input image and scattering map by a given scale (downscale factor) to avoid inverse crime.
 
         :param initial_pressure: Raw input image of initial pressure.
         :param scattering: Map of scattering coefficients.
+        :param anisotropy: Map of anisotropies.
         :return: Downscaled image and scattering map.
         """
 
@@ -286,11 +300,12 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         downscaled_initial_pressure = zoom(initial_pressure, self.downscale_factor, order=1, mode=downscaling_method)
         downscaled_scattering = zoom(scattering, self.downscale_factor, order=1, mode=downscaling_method)
+        downscaled_anisotropy = zoom(anisotropy, self.downscale_factor, order=1, mode=downscaling_method)
 
         new_spacing = self.global_settings[Tags.SPACING_MM] / self.downscale_factor
         self.global_settings[Tags.SPACING_MM] = new_spacing
 
-        return downscaled_initial_pressure, downscaled_scattering
+        return downscaled_initial_pressure, downscaled_scattering, downscaled_anisotropy
 
     def regularization_sigma(self, input_image: np.ndarray, stacked_to_volume) -> [np.ndarray, int, float]:
         """
@@ -350,21 +365,21 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         # scattering must be known a priori at the moment.
         if Tags.PROPERTY_SCATTERING_PER_CM in self.global_settings:
-            mus = float(self.global_settings[Tags.PROPERTY_SCATTERING_PER_CM]) * np.ones(shape)
+            scattering = float(self.global_settings[Tags.PROPERTY_SCATTERING_PER_CM]) * np.ones(shape)
         else:
             background_dict = TISSUE_LIBRARY.muscle()
-            mus = float(MolecularComposition.get_properties_for_wavelength(background_dict, wavelength=800)["mus"])
-            mus = mus * np.ones(shape)
+            scattering = float(MolecularComposition.get_properties_for_wavelength(background_dict,
+                                                                                  wavelength=800)["mus"])
+            scattering = scattering * np.ones(shape)
 
         if Tags.PROPERTY_ANISOTROPY in self.global_settings:
-            g = float(self.global_settings[Tags.PROPERTY_ANISOTROPY]) * np.ones(shape)
-            g[:, :, :] = 0.9  # anisotropy is always 0.9 when simulating
+            anisotropy = float(self.global_settings[Tags.PROPERTY_ANISOTROPY]) * np.ones(shape)
         else:
-            g = float(OpticalTissueProperties.STANDARD_ANISOTROPY) * np.ones(shape)
+            anisotropy = float(OpticalTissueProperties.STANDARD_ANISOTROPY) * np.ones(shape)
 
         optical_properties = {
-            "scattering": mus,
-            "anisotropy": g
+            "scattering": scattering,
+            "anisotropy": anisotropy
         }
 
         return optical_properties
@@ -378,6 +393,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         :param absorption: Volume of absorption coefficients in 1/cm for Monte Carlo Simulation.
         :param scattering: Volume of scattering coefficients in 1/cm for Monte Carlo Simulation.
         :param anisotropy: Volume of anisotropy data for Monte Carlo Simulation.
+        :param pa_device: The simulation device.
         :return: Fluence map.
         :raises: AssertionError: if Tags.OPTICAL_MODEL tag was not or incorrectly defined in settings.
         """
