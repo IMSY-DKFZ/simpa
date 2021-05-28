@@ -119,7 +119,6 @@ class TestInifinitesimalSlabExperiment():
     def test_both(self):
         """
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
-        The spacing is 0.5, so that the slab is 20 voxels long.
         We expect a decay ratio of e^1.
         """
         self.perform_test(distance=10, expected_decay_ratio=np.e ** 1, scattering_value=0.5, absorption_value=0.5,
@@ -128,7 +127,6 @@ class TestInifinitesimalSlabExperiment():
     def test_both_double_width(self):
         """
         Here, the slab is 20 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
-        The spacing is 0.5, so that the slab is 40 voxels long.
         We expect a decay ratio of e^2.
         """
         self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=0.5, absorption_value=0.5,
@@ -137,7 +135,6 @@ class TestInifinitesimalSlabExperiment():
     def test_isotropic_scattering(self):
         """
         Here, the slab is 10 mm long, only mus is used with a value of 0.1 mm^-1.
-        The spacing is 0.5, so that the slab is 20 voxels long.
         We expect a decay ratio of e^1.
         """
         self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.0)
@@ -145,7 +142,6 @@ class TestInifinitesimalSlabExperiment():
     def test_isotropic_scattering_double_width(self):
         """
         Here, the slab is 20 mm long, only mus is used with a value of 0.1 mm^-1.
-        The spacing is 0.5, so that the slab is 40 voxels long.
         We expect a decay ratio of e^2.
         """
         self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=1, anisotropy_value=0.0)
@@ -153,7 +149,6 @@ class TestInifinitesimalSlabExperiment():
     def test_anisotropic_scattering(self):
         """
         Here, the slab is 10 mm long, only mus is used with a value of 0.1 mm^-1.
-        The spacing is 0.5, so that the slab is 20 voxels long.
         The anisotropy of the scattering is 0.9.
         We expect a decay ratio of e^1.
         """
@@ -162,7 +157,6 @@ class TestInifinitesimalSlabExperiment():
     def test_absorption(self):
         """
         Here, the slab is 10 mm long, only mua is used with a value of 0.1 mm^-1.
-        The spacing is 0.5, so that the slab is 20 voxels long.
         We expect a decay ratio of e^1.
         """
         self.perform_test(distance=10, expected_decay_ratio=np.e, absorption_value=1)
@@ -170,7 +164,6 @@ class TestInifinitesimalSlabExperiment():
     def test_absorption_double_width(self):
         """
         Here, the slab is 20 mm long, only mua is used with a value of 0.1 mm^-1.
-        The spacing is 0.5, so that the slab is 40 voxels long.
         We expect a decay ratio of e^2.
         """
         self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, absorption_value=1)
@@ -210,15 +203,20 @@ class TestInifinitesimalSlabExperiment():
                       fluence[half_dim, half_dim, int(90/self.settings[Tags.SPACING_MM])]
         print("Expected", expected_decay_ratio, "and was", decay_ratio)
 
-        plt.figure()
+        plt.figure(figsize=(12, 3))
         plt.subplot(1, 4, 1)
+        plt.title("Fluence [log]")
         plt.imshow(np.log10(fluence[:, half_dim, :]))
         plt.subplot(1, 4, 2)
+        plt.title("Absorption")
         plt.imshow(absorption[:, half_dim, :])
         plt.subplot(1, 4, 3)
+        plt.title("Scattering")
         plt.imshow(scattering[:, half_dim, :])
         plt.subplot(1, 4, 4)
+        plt.title("Anisotropy")
         plt.imshow(anisotropy[:, half_dim, :])
+        plt.tight_layout()
         plt.show()
         plt.close()
 
@@ -227,9 +225,9 @@ if __name__ == '__main__':
     test = TestInifinitesimalSlabExperiment()
     test.setUp()
     test.test_both()
-    test.test_absorption()
-    test.test_isotropic_scattering()
-    test.test_anisotropic_scattering()
-    test.test_both_double_width()
-    test.test_absorption_double_width()
-    test.test_isotropic_scattering_double_width()
+    # test.test_absorption()
+    # test.test_isotropic_scattering()
+    # test.test_anisotropic_scattering()
+    # test.test_both_double_width()
+    # test.test_absorption_double_width()
+    # test.test_isotropic_scattering_double_width()
