@@ -2,21 +2,12 @@
 SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT
-"""
 
-import unittest
-from simpa.utils import Tags, Settings, generate_dict_path
-from simpa.io_handling import load_data_field, save_hdf5
-import numpy as np
-import os
-
-
-"""
 This Script uses the Lambert-Beer law to test mcx or mcxyz for the correct
 attenuation of a photon beam passing through a thin absorbing and/or scattering
 slab.
 
-All tests test a scenario, where a pencil source in z-dir in the middle 
+All tests test a scenario, where a pencil source in z-dir in the middle
 of the xy-plane emits photons in a 27x27x100 medium.
 In the middle of the medium is an absorbing and/or scattering slab of 1 pixel in the xy-plane and some distance in z-dir.
 In all tests, the fluence in the middle of the xy-plane and in z-dir the pixels 10 and 90 is measured.
@@ -32,50 +23,95 @@ Please read the description of every test and run them one after the other.
 Be aware that by running multiple tests at once, the previous tests are overwritten.
 """
 
+from simpa.utils import Tags, Settings, PathManager, TISSUE_LIBRARY
+from simpa.io_handling import load_data_field
+from simpa.core import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter
+from simpa.core.simulation import simulate
+from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-#@unittest.skip("skipping local simulation tests")
-class TestInifinitesimalSlabExperiment(unittest.TestCase):
+
+class TestInifinitesimalSlabExperiment():
+
+    def create_example_tissue(self, slab_width, scattering_value=1e-30, absorption_value=1e-30, anisotropy_value=0.0):
+        """
+        This is a very simple example script of how to create a tissue definition.
+        It contains a muscular background, an epidermis layer on top of the muscles
+        and two blood vessels. It is used for volume creation.
+        """
+        background_dictionary = Settings()
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(self.mua, self.mus, self.g)
+        background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+
+        slab_dictionary = Settings()
+        slab_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(absorption_value, scattering_value,
+                                                                             anisotropy_value)
+        slab_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
+        slab_dictionary[Tags.PRIORITY] = 9
+        slab_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 50-slab_width/2]
+        slab_dictionary[Tags.STRUCTURE_X_EXTENT_MM] = 27
+        slab_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = 27
+        slab_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = slab_width
+        slab_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
+        slab_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
+
+        tissue_dict = Settings()
+        tissue_dict[Tags.BACKGROUND] = background_dictionary
+        tissue_dict["slab"] = slab_dictionary
+
+        return tissue_dict
 
     def setUp(self):
         """
         This is not a completely autonomous simpa_tests case yet.
-        If run on another pc, please adjust the SIMULATION_PATH and MCX_BINARY_PATH.
+        If run on another pc, please adjust the SIMULATION_PATH and MODEL_BINARY_PATH fields.
+        :return:
         """
 
-        SIMULATION_PATH = "/path/to/save/location"
-        MCX_BINARY_PATH = "/path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
-        VOLUME_NAME = "TestVolume"
+        path_manager = PathManager()
+        self.z_dim = 100
+        self.xy_dim = 27
 
-        self.settings = {
+        self.settings = Settings({
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
-            Tags.VOLUME_NAME: VOLUME_NAME,
-            Tags.SIMULATION_PATH: SIMULATION_PATH,
-            Tags.RUN_OPTICAL_MODEL: True,
-            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e8,
-            Tags.OPTICAL_MODEL_BINARY_PATH: MCX_BINARY_PATH,
-            Tags.RUN_ACOUSTIC_MODEL: False,
+            Tags.VOLUME_NAME: "DiffuseFluenceTest",
+            Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
             Tags.SPACING_MM: 0.5,
-            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+            Tags.DIM_VOLUME_X_MM: self.xy_dim,
+            Tags.DIM_VOLUME_Y_MM: self.xy_dim,
+            Tags.DIM_VOLUME_Z_MM: self.z_dim,
+            Tags.RANDOM_SEED: 4711
+        })
+
+        self.mua = 1e-30
+        self.mus = 1e-30
+        self.g = 1.0
+
+        self.settings.set_optical_settings({
+            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+            Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
             Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL
-        }
+            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
+            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+        })
 
-        self.settings = Settings(self.settings)
+        class CustomDevice(PhotoacousticDevice):
 
-        folder_name = self.settings[Tags.SIMULATION_PATH]
-        if not os.path.exists(folder_name):
-            os.makedirs(folder_name)
-        self.settings[Tags.SIMPA_OUTPUT_PATH] = folder_name + "/" + self.settings[Tags.VOLUME_NAME] + ".hdf5"
+            def __init__(self):
+                super(CustomDevice, self).__init__()
+                self.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
-        self.xy_dim = 27
-        self.z_dim = 100
-        self.volume = np.zeros((self.xy_dim, self.xy_dim, self.z_dim, 4))
+            def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
+                return np.asarray([global_settings[Tags.DIM_VOLUME_X_MM] / 2,
+                                   global_settings[Tags.DIM_VOLUME_Y_MM] / 2, 0])
 
-        self.volume[:, :, :, 0] = 1e-10  # Background values for mua
-        self.volume[:, :, :, 1] = 1e-10  # Background values for mua
-        self.volume[:, :, :, 2] = 0
-        self.volume[:, :, :, 3] = 1  # Pseudo Gruneisen parameter
+        self.device = CustomDevice()
 
     def tearDown(self):
         os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
@@ -86,7 +122,8 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         The spacing is 0.5, so that the slab is 20 voxels long.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(10, [0, 1], np.e, 0.5)
+        self.perform_test(distance=10, expected_decay_ratio=np.e ** 1, scattering_value=0.5, absorption_value=0.5,
+                          anisotropy_value=0.0)
 
     def test_both_double_width(self):
         """
@@ -94,7 +131,8 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         The spacing is 0.5, so that the slab is 40 voxels long.
         We expect a decay ratio of e^2.
         """
-        self.perform_test(20, [0, 1], np.e ** 2, 0.5)
+        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=0.5, absorption_value=0.5,
+                          anisotropy_value=0.0)
 
     def test_isotropic_scattering(self):
         """
@@ -102,7 +140,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         The spacing is 0.5, so that the slab is 20 voxels long.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(10, 1, np.e, 1)
+        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.0)
 
     def test_isotropic_scattering_double_width(self):
         """
@@ -110,7 +148,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         The spacing is 0.5, so that the slab is 40 voxels long.
         We expect a decay ratio of e^2.
         """
-        self.perform_test(20, 1, np.e ** 2, 1)
+        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=1, anisotropy_value=0.0)
 
     def test_anisotropic_scattering(self):
         """
@@ -119,8 +157,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         The anisotropy of the scattering is 0.9.
         We expect a decay ratio of e^1.
         """
-        self.volume[:, :, :, 2] = 0.9
-        self.perform_test(10, 1, np.e, 1)
+        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=10, anisotropy_value=0.9)
 
     def test_absorption(self):
         """
@@ -128,7 +165,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         The spacing is 0.5, so that the slab is 20 voxels long.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(10, 0, np.e, 1)
+        self.perform_test(distance=10, expected_decay_ratio=np.e, absorption_value=1)
 
     def test_absorption_double_width(self):
         """
@@ -136,36 +173,63 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         The spacing is 0.5, so that the slab is 40 voxels long.
         We expect a decay ratio of e^2.
         """
-        self.perform_test(20, 0, np.e ** 2, 1)
+        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, absorption_value=1)
 
-    def perform_test(self, distance=10, volume_idx: (int, list) = 0, decay_ratio=np.e, volume_value=1.0):
+    def perform_test(self, distance=10, expected_decay_ratio=np.e, scattering_value=1e-30,
+                     absorption_value=1e-30, anisotropy_value=1.0):
 
         # Define the volume of the thin slab
 
-        self.volume[int(self.xy_dim / 2) - 1, int(self.xy_dim / 2) - 1,
-                    int((self.z_dim / 2) - distance):int((self.z_dim / 2) + distance),
-                    volume_idx] = volume_value
+        self.settings.set_volume_creation_settings({
+            Tags.SIMULATE_DEFORMED_LAYERS: True,
+            Tags.STRUCTURES: self.create_example_tissue(distance, absorption_value=absorption_value,
+                                                        scattering_value=scattering_value,
+                                                        anisotropy_value=anisotropy_value)
+        })
 
-        wavelength = self.settings[Tags.WAVELENGTH]
-        # Save the volume
+        pipeline = [
+            VolumeCreationModelModelBasedAdapter(self.settings),
+            OpticalForwardModelMcxAdapter(self.settings)
+        ]
 
-        optical_properties = {
-            Tags.PROPERTY_ABSORPTION_PER_CM: {wavelength: self.volume[:, :, :, 0]},
-            Tags.PROPERTY_SCATTERING_PER_CM: {wavelength: self.volume[:, :, :, 1]},
-            Tags.PROPERTY_ANISOTROPY: {wavelength: self.volume[:, :, :, 2]},
-            Tags.PROPERTY_GRUNEISEN_PARAMETER: {wavelength: self.volume[:, :, :, 3]},
-        }
+        simulate(pipeline, self.settings, self.device)
 
-        optical_properties_path = generate_dict_path(Tags.SIMULATION_PROPERTIES, self.settings[Tags.WAVELENGTH])
-
-        save_hdf5(optical_properties, self.settings[Tags.SIMPA_OUTPUT_PATH], optical_properties_path)
-
-        self.assertDecayRatio(expected_decay_ratio=decay_ratio)
-
-    def assertDecayRatio(self, expected_decay_ratio=np.e):
-        #run_optical_forward_model(self.settings)
+        # run_optical_forward_model(self.settings)
         fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_FLUENCE,
                                   self.settings[Tags.WAVELENGTH])
-        half_dim = int(self.xy_dim / 2) - 1
-        decay_ratio = np.sum(fluence[half_dim, half_dim, 10]) / np.sum(fluence[half_dim, half_dim, 90])
-        self.assertAlmostEqual(decay_ratio, expected_decay_ratio, delta=0.2)
+        absorption = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
+                                 self.settings[Tags.WAVELENGTH])
+        scattering = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SCATTERING_PER_CM,
+                                 self.settings[Tags.WAVELENGTH])
+        anisotropy = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ANISOTROPY,
+                                     self.settings[Tags.WAVELENGTH])
+        half_dim = int((self.xy_dim / 2) / self.settings[Tags.SPACING_MM])-1
+        print("early fluence", fluence[half_dim, half_dim, int(10/self.settings[Tags.SPACING_MM])])
+        print("late fluence", fluence[half_dim, half_dim, int(90/self.settings[Tags.SPACING_MM])])
+        decay_ratio = fluence[half_dim, half_dim, int(10/self.settings[Tags.SPACING_MM])] / \
+                      fluence[half_dim, half_dim, int(90/self.settings[Tags.SPACING_MM])]
+        print("Expected", expected_decay_ratio, "and was", decay_ratio)
+
+        plt.figure()
+        plt.subplot(1, 4, 1)
+        plt.imshow(np.log10(fluence[:, half_dim, :]))
+        plt.subplot(1, 4, 2)
+        plt.imshow(absorption[:, half_dim, :])
+        plt.subplot(1, 4, 3)
+        plt.imshow(scattering[:, half_dim, :])
+        plt.subplot(1, 4, 4)
+        plt.imshow(anisotropy[:, half_dim, :])
+        plt.show()
+        plt.close()
+
+
+if __name__ == '__main__':
+    test = TestInifinitesimalSlabExperiment()
+    test.setUp()
+    test.test_both()
+    test.test_absorption()
+    test.test_isotropic_scattering()
+    test.test_anisotropic_scattering()
+    test.test_both_double_width()
+    test.test_absorption_double_width()
+    test.test_isotropic_scattering_double_width()
