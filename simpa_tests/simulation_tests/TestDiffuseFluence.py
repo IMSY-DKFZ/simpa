@@ -86,16 +86,16 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.device = CustomDevice()
 
     def test_fluence(self):
-        self.perform_test(distance=self.dim, spacing=1)
+        self.perform_test(distance=self.dim/2, spacing=1)
 
     def test_spacing_short(self):
-        self.perform_test(distance=self.dim, spacing=0.333333)
+        self.perform_test(distance=self.dim/2, spacing=0.333333)
 
     def test_spacing_middle(self):
-        self.perform_test(distance=self.dim, spacing=0.5)
+        self.perform_test(distance=self.dim/2, spacing=0.5)
 
     def test_spacing_long(self):
-        self.perform_test(distance=self.dim, spacing=2)
+        self.perform_test(distance=self.dim/2, spacing=2)
 
     def diff_theory_fluence(self, r):
         """
@@ -151,9 +151,9 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         number_of_measurements = np.arange(0, int(distance/self.settings[Tags.SPACING_MM]), 1)
         print(number_of_measurements)
         measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]
-        fluence_measurements = fluence[int((self.dim/spacing)/2), int((self.dim/spacing)/2), number_of_measurements]
+        fluence_measurements = fluence[int((self.dim/spacing)/2), int((self.dim/spacing)/2) + number_of_measurements, 0]
 
-        fluence_measurements = fluence_measurements / 1000
+        fluence_measurements = fluence_measurements / 100
 
         diffusion_approx = self.diff_theory_fluence(measurement_distances + 1)
 
