@@ -37,7 +37,7 @@ source.p0 = data.initial_pressure;
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
-GEL_LAYER_HEIGHT = 2;
+GEL_LAYER_HEIGHT = 0;
 
 source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 [Nx, Ny] = size(source.p0);
@@ -97,18 +97,19 @@ karray = kWaveArray;
 elem_pos = data.sensor_element_positions/1000;
 
 % In case some detectors are defined at zeros or with negative values out
-% of bounds, correct all of them with minimum need correction 0.0001.
+% of bounds, correct all of them with minimum needed correction of
+% spacing dx.
 
 min_x_pos = find(elem_pos(1, :) <= 0);
 min_y_pos = find(elem_pos(2, :) <= 0);
 x_correction = 0;
 y_correction = 0;
 if size(min_x_pos) > 0
-   x_correction = 0.0001;
+   x_correction = dx;
 end
 
 if size(min_y_pos) > 0
-   y_correction = 0.0001;
+   y_correction = dx;
 end
 
 elem_pos(1, :) = elem_pos(1, :) - 0.5*kgrid.x_size + x_correction;
