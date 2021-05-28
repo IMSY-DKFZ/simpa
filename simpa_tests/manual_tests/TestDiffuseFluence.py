@@ -4,22 +4,19 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-import unittest
 from simpa.utils import Tags, PathManager, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 from simpa.io_handling import load_data_field
 import numpy as np
-import os
 import matplotlib.pyplot as plt
 # FIXME temporary workaround for newest Intel architectures
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-#@unittest.skip("skipping local simulation tests")
-class TestInifinitesimalSlabExperiment(unittest.TestCase):
+class TestInifinitesimalSlabExperiment():
 
     def create_example_tissue(self):
         """
@@ -172,3 +169,12 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         ax.set_yscale("log")
         plt.legend(handles, labels)
         plt.show()
+
+
+if __name__ == '__main__':
+    test = TestInifinitesimalSlabExperiment()
+    test.setUp()
+    test.test_spacing_short()
+    test.test_spacing_middle()
+    test.test_fluence()
+    test.test_spacing_long()

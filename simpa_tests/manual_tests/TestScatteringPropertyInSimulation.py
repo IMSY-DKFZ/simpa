@@ -33,7 +33,7 @@ Be aware that by running multiple tests at once, the previous tests are overwrit
 """
 
 
-@unittest.skip("skipping local simulation tests")
+#@unittest.skip("skipping local simulation tests")
 class TestInifinitesimalSlabExperiment(unittest.TestCase):
 
     def setUp(self):
