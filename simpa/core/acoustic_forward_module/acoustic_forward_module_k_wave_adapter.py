@@ -211,28 +211,19 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
         raw_time_series_data = sio.loadmat(optical_path)[Tags.TIME_SERIES_DATA]
 
+        # reverse the order of detector elements from matlab to python order
+        raw_time_series_data = raw_time_series_data[::-1, :]
+
         time_grid = sio.loadmat(optical_path + "dt.mat")
         num_time_steps = int(np.round(time_grid["number_time_steps"]))
-
-        # TODO create a flag in the PA device specification if output should be 2D or
-        #  3D also returns the axis of the imaging plane
-        # if (Tags.ACOUSTIC_SIMULATION_3D in self.component_settings and
-        #         self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] and
-        #     Tags.DIGITAL_DEVICE in self.global_settings and self.global_settings[Tags.DIGITAL_DEVICE] == Tags.DIGITAL_DEVICE_MSOT):
-        #
-        #     sensor_mask = data_dict[Tags.PROPERTY_SENSOR_MASK]
-        #     num_imaging_plane_sensors = int(np.sum(sensor_mask[:, detector_positions_voxels[0][1], :]))
-        #
-        #     raw_time_series_data = np.reshape(raw_time_series_data, [num_imaging_plane_sensors, -1, num_time_steps])
-        #     raw_time_series_data = np.squeeze(np.average(raw_time_series_data, axis=1))
 
         self.global_settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])
         self.global_settings[Tags.K_WAVE_SPECIFIC_NT] = num_time_steps
 
         save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
-        # os.remove(optical_path)
-        # os.remove(optical_path + "dt.mat")
-        # os.chdir(cur_dir)
+        os.remove(optical_path)
+        os.remove(optical_path + "dt.mat")
+        os.chdir(cur_dir)
 
         return raw_time_series_data

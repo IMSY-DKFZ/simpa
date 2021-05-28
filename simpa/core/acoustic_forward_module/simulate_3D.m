@@ -144,7 +144,7 @@ end
 %end
 for ind = 1:num_elements
   elem_pos(:, ind) = elem_pos(:, ind) - 0.5*(element_width*sind(orientation_angles(:, ind)));
-  karray.addRectElement(elem_pos(:, ind), element_width, 0.01, euler_angles(ind, :));
+  karray.addRectElement(elem_pos(:, ind), element_width, 0.0001, euler_angles(ind, :));
 end
 
 % assign binary mask from karray to the sensor mask
