@@ -97,7 +97,8 @@ karray = kWaveArray;
 elem_pos = data.sensor_element_positions/1000;
 
 % In case some detectors are defined at zeros or with negative values out
-% of bounds, correct all of them with minimum need correction 0.0001.
+% of bounds, correct all of them with minimum needed correction of the
+% spacing dx.
 
 min_x_pos = find(elem_pos(1, :) <= 0);
 min_y_pos = find(elem_pos(2, :) <= 0);
@@ -106,15 +107,15 @@ x_correction = 0;
 y_correction = 0;
 z_correction = 0;
 if size(min_x_pos) > 0
-   x_correction = 0.0001;
+   x_correction = dx;
 end
 
 if size(min_y_pos) > 0
-   y_correction = 0.0001;
+   y_correction = dx;
 end
 
 if size(min_z_pos) > 0
-   z_correction = 0.0001;
+   z_correction = dx;
 end
 
 
@@ -124,7 +125,8 @@ elem_pos(3, :) = elem_pos(3, :) - 0.5*kgrid.z_size + z_correction;
 num_elements = size(elem_pos, 2);
 
 element_width = double(settings.detector_element_width_mm)/1000;
-angles = data.directivity_angle;
+orientation_angles = data.directivity_angle;
+euler_angles = data.intrinsic_euler_angle;
 
 if isfield(settings, 'sensor_radius_mm') == true
     radius_of_curv = double(settings.sensor_radius_mm)/1000;
@@ -141,19 +143,8 @@ end
 %    karray.addArcElement(elem_pos(:, ind), radius_of_curv, element_width, focus_pos);
 %end
 for ind = 1:num_elements
-  x = elem_pos(1, ind);
-  y = elem_pos(2, ind);
-  z = elem_pos(3, ind);
-  alpha_x = angles(1, ind);
-  alpha_y = angles(2, ind);
-  alpha_z = angles(3, ind);
-%  x2=x+0.5*(element_width*sin(alpha));
-%  y2=y+0.5*(element_width*cos(alpha));
-  x = x - 0.5*(element_width*sin(alpha_x));
-  y = y - 0.5*(element_width*sin(alpha_y));
-  z = z - 0.5*(element_width*sin(alpha_z));
-  karray.addRectElement([x, y, z], element_width, 0.00001, [alpha_x, alpha_y, alpha_z]);
-%  karray.addLineElement([x, y], [x2, y2]);
+  elem_pos(:, ind) = elem_pos(:, ind) - 0.5*(element_width*sind(orientation_angles(:, ind)));
+  karray.addRectElement(elem_pos(:, ind), element_width, 0.01, euler_angles(ind, :));
 end
 
 % assign binary mask from karray to the sensor mask

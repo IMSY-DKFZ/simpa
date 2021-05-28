@@ -78,19 +78,19 @@ def create_example_tissue():
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
-    # epidermis_dictionary = Settings()
-    # epidermis_dictionary[Tags.PRIORITY] = 8
-    # epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-    # epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 0.5]
-    # epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
-    # epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    # epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    # epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+    epidermis_dictionary = Settings()
+    epidermis_dictionary[Tags.PRIORITY] = 8
+    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 0.5]
+    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     tissue_dict = Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
     tissue_dict["muscle"] = muscle_dictionary
-    # tissue_dict["epidermis"] = epidermis_dictionary
+    tissue_dict["epidermis"] = epidermis_dictionary
     tissue_dict["vessel_1"] = vessel_1_dictionary
     return tissue_dict
 

@@ -961,6 +961,13 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
+    PROPERTY_INTRINSIC_EULER_ANGLE = "intrinsic_euler_angle"
+    """
+    Intrinsic euler angles of the detector elements in the kWaveArray.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
+
     PROPERTY_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float, np.float))
     """
     Exponent of the exponential acoustic attenuation law of kwave.\n

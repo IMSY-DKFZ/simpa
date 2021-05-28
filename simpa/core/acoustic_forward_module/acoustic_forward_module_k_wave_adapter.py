@@ -26,11 +26,13 @@ from simpa.utils import Tags, SaveFilePaths
 from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.settings import Settings
+from simpa.utils.calculate import rotation_matrix_between_vectors
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry, PlanarArrayDetectionGeometry, \
     CurvedArrayDetectionGeometry
 import os
 import inspect
 import scipy.io as sio
+from scipy.spatial.transform import Rotation
 from simpa.core.acoustic_forward_module import AcousticForwardModelBaseAdapter
 import gc
 
@@ -96,28 +98,34 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         field_of_view_extent = PA_device.get_field_of_view_extent_mm()
         detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm(
             self.global_settings)
-        detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
-        detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
-        # if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
-        #     simulate_2d = True
-        #     axes = (0, 1)
-        #     if detectors_are_aligned_along_y_axis:
-        #         transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM])))
-        #         slice = np.s_[transducer_plane, :, :]
-        #     else:
-        #         transducer_plane = int(round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM])))
-        #         slice = np.s_[:, transducer_plane, :]
-        # else:
-        simulate_2d = False
-        axes = (0, 2)
-        slice = np.s_[:]
+
+        if not self.component_settings.get(Tags.ACOUSTIC_SIMULATION_3D):
+            detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
+            detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
+            if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
+                simulate_2d = True
+                axes = (0, 1)
+                if detectors_are_aligned_along_y_axis:
+                    transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM])))
+                    image_slice = np.s_[transducer_plane, :, :]
+                else:
+                    transducer_plane = int(round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM])))
+                    image_slice = np.s_[:, transducer_plane, :]
+            else:
+                simulate_2d = False
+                axes = (0, 2)
+                image_slice = np.s_[:]
+        else:
+            simulate_2d = False
+            axes = (0, 2)
+            image_slice = np.s_[:]
 
         wavelength = str(self.global_settings[Tags.WAVELENGTH])
-        data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND][slice], 3, axes=axes)
-        data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY][slice], 3, axes=axes)
-        data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF][slice], 3, axes=axes)
+        data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND][image_slice], 3, axes=axes)
+        data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY][image_slice], 3, axes=axes)
+        data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF][image_slice], 3, axes=axes)
         data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(
-            np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength][slice], axes=axes))
+            np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength][image_slice], axes=axes))
 
         if simulate_2d:
             detector_positions_mm_2d = np.delete(detector_positions_mm, 1, axis=1)
@@ -133,34 +141,21 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             x_angles = np.arccos(np.dot(orientations, np.array([1, 0, 0]))) * 360 / (2*np.pi)
             y_angles = np.arccos(np.dot(orientations, np.array([0, 1, 0]))) * 360 / (2*np.pi)
             z_angles = np.arccos(np.dot(orientations, np.array([0, 0, 1]))) * 360 / (2*np.pi)
+            intrinsic_euler_angles = list()
+            for orientation_vector in orientations:
+
+                mat = rotation_matrix_between_vectors(orientation_vector, np.array([0, 0, 1]))
+                rot = Rotation.from_matrix(mat)
+                euler_angles = rot.as_euler("XYZ", degrees=True)
+                intrinsic_euler_angles.append(euler_angles)
+            intrinsic_euler_angles.reverse()
             angles = np.array([z_angles[::-1], y_angles[::-1], x_angles[::-1]])
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles
+            data_dict[Tags.PROPERTY_INTRINSIC_EULER_ANGLE] = intrinsic_euler_angles
         # Matlab indexes start at 1
         detector_positions_voxels = np.round(detector_positions_mm / self.global_settings[Tags.SPACING_MM]).astype(int) + 1
 
         self.logger.debug(f"Number of detector elements: {len(detector_positions_voxels)}")
-
-        if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
-            sensor_map = detector_positions_voxels[:, [0, 2, 0, 2]]
-        else:
-            sensor_map = detector_positions_voxels[:, [2, 1, 0, 2, 1, 0]]
-        sensor_map = sensor_map.swapaxes(0, 1)
-        self.logger.debug(f"Simulated sensor map bounding box coordinates: {str(sensor_map)}")
-
-        self.logger.debug(f"SENSOR_MAP SHAPE: {np.shape(sensor_map)}")
-
-        data_dict[Tags.PROPERTY_SENSOR_MASK] = sensor_map
-        save_hdf5({Tags.PROPERTY_SENSOR_MASK: sensor_map}, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
-                  generate_dict_path(Tags.PROPERTY_SENSOR_MASK,
-                                     wavelength=self.global_settings[Tags.WAVELENGTH]))
-
-        try:
-            data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = np.rot90(tmp_ac_data[Tags.PROPERTY_DIRECTIVITY_ANGLE], 3,
-                                                                  axes=axes)
-        except ValueError:
-            self.logger.error("No directivity_angle specified")
-        except KeyError:
-            self.logger.error("No directivity_angle specified")
 
         optical_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
