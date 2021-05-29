@@ -48,7 +48,10 @@ phantoms. This feature is represented by the volume_creation module, that two ma
 .. automodule:: simpa.core.volume_creation
     :members:
 
-.. automodule:: simpa.core.volume_creation.volume_creation
+.. automodule:: simpa.core.volume_creation.segmentation_based_volume_creator
+    :members:
+
+.. automodule:: simpa.core.volume_creation.versatile_volume_creator
     :members:
 
 Model-based volume creation
@@ -66,9 +69,6 @@ Segmentation-based volume creation
 Optical forward modeling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: simpa.core.optical_simulation.optical_modelling
-    :members:
-
 .. automodule:: simpa.core.optical_simulation
     :members:
 
@@ -83,9 +83,6 @@ mcx integration
 
 Acoustic forward modeling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: simpa.core.acoustic_simulation.acoustic_modelling
-    :members:
 
 .. automodule:: simpa.core.acoustic_simulation
     :members:
@@ -165,7 +162,10 @@ that have to be used for the keys and values of the settings dictionary.
 .. automodule:: simpa.utils.dict_path_manager
     :members:
 
-.. automodule:: simpa.utils.settings_generator
+.. automodule:: simpa.utils.path_manager
+    :members:
+
+.. automodule:: simpa.utils.settings
     :members:
 
 .. automodule:: simpa.utils.calculate

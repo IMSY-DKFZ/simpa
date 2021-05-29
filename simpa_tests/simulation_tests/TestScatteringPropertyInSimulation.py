@@ -22,7 +22,6 @@
 
 import unittest
 from simpa.utils import Tags, Settings, generate_dict_path
-from simpa.core import run_optical_forward_model
 from simpa.io_handling import load_data_field, save_hdf5
 import numpy as np
 import os
@@ -63,7 +62,6 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         MCX_BINARY_PATH = "/path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
         VOLUME_NAME = "TestVolume"
 
-        print("setUp")
         self.settings = {
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
@@ -96,7 +94,6 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.volume[:, :, :, 3] = 1  # Pseudo Gruneisen parameter
 
     def tearDown(self):
-        print("tearDown")
         os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
 
     def test_both(self):
@@ -164,7 +161,6 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.volume[int(self.xy_dim / 2) - 1, int(self.xy_dim / 2) - 1,
                     int((self.z_dim / 2) - distance):int((self.z_dim / 2) + distance),
                     volume_idx] = volume_value
-        print(int(self.xy_dim/2))
 
         wavelength = self.settings[Tags.WAVELENGTH]
         # Save the volume
@@ -183,13 +179,9 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.assertDecayRatio(expected_decay_ratio=decay_ratio)
 
     def assertDecayRatio(self, expected_decay_ratio=np.e):
-        run_optical_forward_model(self.settings)
+        #run_optical_forward_model(self.settings)
         fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_FLUENCE,
                                   self.settings[Tags.WAVELENGTH])
         half_dim = int(self.xy_dim / 2) - 1
         decay_ratio = np.sum(fluence[half_dim, half_dim, 10]) / np.sum(fluence[half_dim, half_dim, 90])
-        print(np.sum(fluence[half_dim, half_dim, 10]))
-        print(np.sum(fluence[half_dim, half_dim, 90]))
-        print("measured:", decay_ratio, "expected:", expected_decay_ratio)
-        print("ratio:", decay_ratio / expected_decay_ratio)
         self.assertAlmostEqual(decay_ratio, expected_decay_ratio, delta=0.2)

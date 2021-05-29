@@ -22,7 +22,6 @@
 
 import unittest
 from simpa.utils import Tags
-from simpa.core import run_optical_forward_model
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -42,7 +41,6 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         MCX_BINARY_PATH = "/path/to/mcx/binary/mcx.exe"     # On Linux systems, the .exe at the end must be omitted.
         VOLUME_NAME = "TestVolume"
 
-        print("setUp")
         self.settings = {
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
@@ -78,9 +76,6 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.volume[:, :, :, 2] = self.g
         self.volume[:, :, :, 3] = 1
 
-    def tearDown(self):
-        print("tearDown")
-
     def test_fluence(self):
         self.perform_test(distance=self.dim/2, spacing=1)
 
@@ -101,14 +96,11 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         :param r: radial distance between source and detector.
         :return: fluence at a point with source-detector distance r.
         """
-        print(self.settings[Tags.OPTICAL_MODEL])
         if self.settings[Tags.OPTICAL_MODEL] == Tags.OPTICAL_MODEL_MCX:
-            print("MCX: transfer to mm")
             mua = 0.1 * self.mua    # convert mua from cm^-1 to mm^-1
             mus = 0.1 * self.mus    # convert mus from cm^-1 to mm^-1
             spacing = self.settings[Tags.SPACING_MM]
         else:
-            print("MCXYZ: transfer to cm")
             r = r / 10.0
             mua = self.mua
             mus = self.mus
@@ -152,7 +144,7 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         self.assertDiffusionTheory(distance)
 
     def assertDiffusionTheory(self, distance):
-        optical_path = run_optical_forward_model(self.settings)
+        optical_path = None#run_optical_forward_model(self.settings)
         fluence = np.load(optical_path)['fluence']
         number_of_measurements = np.arange(1, int(distance/self.settings[Tags.SPACING_MM]) + 1, 1)
         measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]
@@ -177,23 +169,3 @@ class TestInifinitesimalSlabExperiment(unittest.TestCase):
         ax.set_yscale("log")
         plt.legend(handles, labels)
         plt.show()
-
-        # Plot error
-        #
-        # plt.plot(measurement_distances, (diffusion_approx - fluence_measurements) / diffusion_approx)
-        # plt.grid()
-        # plt.show()
-
-        # for sim, diff in zip(fluence_measurements, diffusion_approx):
-        #     """
-        #     if the fluence is smaller than 0.00001% of the source strength,
-        #     we assume that the random fluctuation of the photons will cause a
-        #     larger error.
-        #     """
-        #     if diff < 1e-7:
-        #         continue
-        #     else:
-        #         """
-        #         we simpa_tests for 50% of the expected value from the diffusion approx.
-        #         """
-        #         self.assertAlmostEqual(sim, diff, delta=0.5*diff)

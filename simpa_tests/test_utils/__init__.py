@@ -23,7 +23,7 @@
 import numpy as np
 from simpa.utils import TISSUE_LIBRARY
 from simpa.utils.libraries.structure_library import Background, CircularTubularStructure
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils import Tags
 
 def assert_equals_recursive(a, b):

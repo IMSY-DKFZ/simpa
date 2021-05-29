@@ -27,7 +27,6 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     """
     Generates a path within an hdf5 file in the SIMPA convention
 
-    :param settings: SIMPA Settings dictionary.
     :param data_field: Data field that is supposed to be stored in an hdf5 file.
     :param wavelength: Wavelength of the current simulation.
     :return: String which defines the path to the data_field.
@@ -54,10 +53,15 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
                          Tags.RECONSTRUCTED_DATA,
                          Tags.RECONSTRUCTED_DATA_NOISE]
 
-    simulation_ouput_fields = [Tags.OPTICAL_MODEL_OUTPUT_NAME,
-                               Tags.SIMULATION_PROPERTIES]
+    simulation_output_fields = [Tags.OPTICAL_MODEL_OUTPUT_NAME,
+                                Tags.SIMULATION_PROPERTIES]
 
-    if wavelength is None and ((data_field in wavelength_dependent_properties) or (data_field in simulation_output)):
+    wavelength_dependent_image_processing_output = [Tags.ITERATIVE_qPAI_RESULT]
+
+    wavelength_independent_image_processing_output = [Tags.LINEAR_UNMIXING_RESULT]
+
+    if wavelength is None and ((data_field in wavelength_dependent_properties) or (data_field in simulation_output) or
+                               (data_field in wavelength_dependent_image_processing_output)):
         raise ValueError("Please specify the wavelength as integer!")
     else:
         wl = "/{}/".format(wavelength)
@@ -71,8 +75,12 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
             dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + wl
     elif data_field in wavelength_independent_properties:
         dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + "/"
-    elif data_field in simulation_ouput_fields:
+    elif data_field in simulation_output_fields:
         dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + "/"
+    elif data_field in wavelength_dependent_image_processing_output:
+        dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + wl
+    elif data_field in wavelength_independent_image_processing_output:
+        dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + "/"
     else:
         raise ValueError("The requested data_field is not a valid argument. Please specify a valid data_field using "
                          "the Tags from simpa/utils/tags.py!")

@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 import numpy as np
+from simpa.log import Logger
 from simpa.utils import Tags, SaveFilePaths
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.processing import preprocess_images
@@ -28,9 +29,11 @@ from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.io_handling.serialization import SIMPAJSONSerializer
 from scipy.ndimage import zoom
 import os
+import inspect
 import subprocess
 import json
 
+logger = Logger()
 
 def upsample(settings):
     """
@@ -40,7 +43,7 @@ def upsample(settings):
     :return: Path to the upsampled image data.
     """
 
-    print("UPSAMPLE IMAGE")
+    logger.info("UPSAMPLE IMAGE")
 
     optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME, wavelength=settings[Tags.WAVELENGTH])
 
@@ -183,13 +186,15 @@ def lanczos_upsample(settings, image_data):
         serializer = SIMPAJSONSerializer()
         json.dump(settings, json_file, indent="\t", default=serializer.default)
 
+    base_script_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+
     cmd = list()
     cmd.append(settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
     cmd.append("-nodisplay")
     cmd.append("-nosplash")
     cmd.append("-r")
-    cmd.append("addpath('"+settings[Tags.UPSAMPLING_SCRIPT_LOCATION]+"');" +
-               settings[Tags.UPSAMPLING_SCRIPT] + "('" + tmp_output_file + "', '" + tmp_json_filename + "');exit;")
+    cmd.append("addpath('"+base_script_path+"');" +
+               "upsampling.m" + "('" + tmp_output_file + "', '" + tmp_json_filename + "');exit;")
 
     cur_dir = os.getcwd()
     os.chdir(settings[Tags.SIMULATION_PATH])

@@ -24,7 +24,7 @@ import unittest
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 from simpa.utils.deformation_manager import create_deformation_settings
 from simpa.utils import Tags
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import HorizontalLayerStructure
 
 

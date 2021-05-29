@@ -75,12 +75,6 @@ class Tags:
     Usage: naming convention
     """
 
-    SIMULATION_EXTRACT_FIELD_OF_VIEW = ("extract_field_of_view", bool)
-    """
-    If True, converts a 3D volume to a 2D volume by extracting the middle slice along the y-axis.\n
-    Usage: SIMPA package
-    """
-
     GPU = ("gpu", (bool, np.bool, np.bool_))
     """
     If True, uses all available gpu options of the used modules.\n
@@ -106,19 +100,19 @@ class Tags:
     VOLUME_CREATOR = ("volume_creator", str)
     """
     Choice of the volume creator adapter.\n 
-    Usage: module volume_creation, module device_digital_twins
+    Usage: module volume_creation_module, module device_digital_twins
     """
 
     VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
     """
     Corresponds to the ModelBasedVolumeCreator.\n
-    Usage: module volume_creation, naming convention
+    Usage: module volume_creation_module, naming convention
     """
 
     VOLUME_CREATOR_SEGMENTATION_BASED = "volume_creator_segmentation_based"
     """
     Corresponds to the SegmentationBasedVolumeCreator.\n
-    Usage: module volume_creation, naming convention
+    Usage: module volume_creation_module, naming convention
     """
 
     INPUT_SEGMENTATION_VOLUME = ("input_segmentation_volume", np.ndarray)
@@ -143,7 +137,7 @@ class Tags:
     MOLECULE_COMPOSITION = ("molecule_composition", list)
     """
     List that contains all the molecules within a structure.\n
-    Usage: module volume_creation
+    Usage: module volume_creation_module
     """
 
     SIMULATE_DEFORMED_LAYERS = ("simulate_deformed_layers", bool)
@@ -298,7 +292,7 @@ class Tags:
     Usage: SIMPA package
     """
 
-    DIGITAL_DEVICE_MSOT = "digital_device_msot"
+    DIGITAL_DEVICE_MSOT_ACUITY = "digital_device_msot"
     """
     Corresponds to the MSOTAcuityEcho device.\n
     Usage: SIMPA package, naming convention
@@ -310,7 +304,7 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
-    DIGITAL_DEVICE_INVISION = "digital_device_invision"
+    DIGITAL_DEVICE_MSOT_INVISION = "digital_device_invision"
     """
     Corresponds to the InVision 256-TF device.\n
     Usage: SIMPA package, naming convention
@@ -328,14 +322,9 @@ class Tags:
     Usage: SIMPA package
     """
 
+    OPTICAL_MODEL_SETTINGS = ("optical_model_settings", dict)
     """
     Optical model settings
-    """
-
-    RUN_OPTICAL_MODEL = ("run_optical_forward_model", bool)
-    """
-    If True, the simulation will run the optical forward model.\n
-    Usage: module core (simulate.py)
     """
 
     OPTICAL_MODEL_OUTPUT_NAME = "optical_forward_model_output"
@@ -347,26 +336,33 @@ class Tags:
     OPTICAL_MODEL_BINARY_PATH = ("optical_model_binary_path", str)
     """
     Absolute path of the location of the optical forward model binary.\n
-    Usage: module optical_simulation
+    Usage: module optical_simulation_module
     """
 
     OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", (int, np.integer, float, np.float))
     """
     Number of photons used in the optical simulation.\n
-    Usage: module optical_simulation
+    Usage: module optical_simulation_module
     """
 
     OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = ("optical_model_illumination_geometry_xml_file", str)
     """
     Absolute path of the location of the optical forward model illumination geometry.\n
-    Usage: module optical_simulation
+    Usage: module optical_simulation_module
+    """
+
+    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_JSON_FILE = ("optical_model_illumination_geometry_json_file", str)
+    """
+    Absolute path of the location of the JSON file containing the IPASC-formatted optical forward 
+    model illumination geometry.\n
+    Usage: module optical_simulation_module
     """
 
     LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, np.float, list,
                                                                              range, tuple, np.ndarray))
     """
     Laser pulse energy used in the optical simulation.\n
-    Usage: module optical_simulation
+    Usage: module optical_simulation_module
     """
 
     OPTICAL_MODEL_FLUENCE = "fluence"
@@ -511,9 +507,15 @@ class Tags:
     """
 
     ILLUMINATION_TYPE_MSOT_ACUITY_ECHO = "msot_acuity_echo"
-    """
+    """s
     Corresponds to msot_acuity_echo source in mcx. The device is manufactured by iThera Medical, Munich, Germany
     (https: // www.ithera-medical.com / products / msot-acuity /).\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
+    ILLUMINATION_TYPE_MSOT_INVISION = "invision"
+    """
+    Corresponds to a source definition in mcx.\n
     Usage: adapter mcx_adapter, naming convention
     """
 
@@ -523,42 +525,48 @@ class Tags:
     Usage: adapter mcx_adapter, naming convention
     """
 
+    ILLUMINATION_TYPE_IPASC_DEFINITION = "ipasc"
+    """
+    Corresponds to a source definition in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     # Supported optical models
     OPTICAL_MODEL = ("optical_model", str)
     """
     Choice of the used optical model.\n
-    Usage: module optical_simulation
+    Usage: module optical_simulation_module
     """
 
     OPTICAL_MODEL_MCXYZ = "mcxyz"
     """
     Corresponds to the mcxyz simulation.\n
-    Usage: module optical_simulation, naming convention
+    Usage: module optical_simulation_module, naming convention
     """
 
     OPTICAL_MODEL_MCX = "mcx"
     """
     Corresponds to the mcx simulation.\n
-    Usage: module optical_simulation, naming convention
+    Usage: module optical_simulation_module, naming convention
     """
 
     OPTICAL_MODEL_TEST = "simpa_tests"
     """
     Corresponds to an adapter for testing purposes only.\n
-    Usage: module optical_simulation, naming convention
+    Usage: module optical_simulation_module, naming convention
     """
 
     # Supported acoustic models
     ACOUSTIC_MODEL = ("acoustic_model", str)
     """
     Choice of the used acoustic model.\n
-    Usage: module acoustic_simulation
+    Usage: module acoustic_forward_module
     """
 
     ACOUSTIC_MODEL_K_WAVE = "kwave"
     """
     Corresponds to the kwave simulaiton.\n
-    Usage: module acoustic_simulation, naming convention
+    Usage: module acoustic_forward_module, naming convention
     """
 
     K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float, np.float))
@@ -576,35 +584,18 @@ class Tags:
     ACOUSTIC_MODEL_TEST = "simpa_tests"
     """
     Corresponds to an adapter for testing purposes only.\n
-    Usage: module acoustic_simulation, naming convention
+    Usage: module acoustic_forward_module, naming convention
     """
 
-    ACOUSTIC_MODEL_SCRIPT_LOCATION = ("acoustic_model_script_location", str)
+    ACOUSTIC_MODEL_SETTINGS = ("acoustic_model_settings", dict)
     """
-    Absolute path of the location of the acoustic_simulation folder in the SIMPA core module.\n
-    Usage: module acoustic_simulation
-    """
-
-    TIME_REVEARSAL_SCRIPT_LOCATION = ("time_revearsal_script_location", str)
-    """
-    Absolute path of the location of the image_reconstruction folder in the SIMPA core module.\n
-    Usage: adapter TimeReversalAdapter
-    """
-
-    """
-    Acoustic model settings
-    """
-
-    RUN_ACOUSTIC_MODEL = ("run_acoustic_forward_model", (bool, np.bool, np.bool_))
-    """
-    If True, the simulation will run the acoustic forward model.\n
-    Usage: module core (simulate.py)
+    Acoustic model settings.
     """
 
     ACOUSTIC_MODEL_BINARY_PATH = ("acoustic_model_binary_path", str)
     """
     Absolute path of the location of the acoustic forward model binary.\n
-    Usage: module optical_simulation
+    Usage: module optical_simulation_module
     """
 
     ACOUSTIC_MODEL_OUTPUT_NAME = "acoustic_forward_model_output"
@@ -643,11 +634,9 @@ class Tags:
     Usage: naming convention
     """
 
-    # Reconstruction settings
-    PERFORM_IMAGE_RECONSTRUCTION = ("perform_image_reconstruction", (bool, np.bool, np.bool_))
-    """
-    If True, the simulation will run the image reconstruction.\n
-    Usage: module core (simulate.py)
+    RECONSTRUCTION_MODEL_SETTINGS = ("reconstruction_model_settings", dict)
+    """"
+    Reconstruction Model Settings
     """
 
     RECONSTRUCTION_OUTPUT_NAME = ("reconstruction_result", str)
@@ -659,43 +648,43 @@ class Tags:
     RECONSTRUCTION_ALGORITHM = ("reconstruction_algorithm", str)
     """
     Choice of the used reconstruction algorithm.\n
-    Usage: module image_reconstruction
+    Usage: module reconstruction_module
     """
 
     RECONSTRUCTION_ALGORITHM_DAS = "DAS"
     """
     Corresponds to the reconstruction algorithm DAS with the MitkBeamformingAdapter.\n
-    Usage: module image_reconstruction, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_DMAS = "DMAS"
     """
     Corresponds to the reconstruction algorithm DMAS with the MitkBeamformingAdapter.\n
-    Usage: module image_reconstruction, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
     """
     Corresponds to the reconstruction algorithm sDMAS with the MitkBeamformingAdapter.\n
-    Usage: module image_reconstruction, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_PYTORCH_DAS = "PyTorch_DAS"
     """
     Corresponds to the reconstruction algorithm DAS with the PyTorchDASAdapter.\n
-    Usage: module image_reconstruction, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_TIME_REVERSAL = "time_reversal"
     """
     Corresponds to the reconstruction algorithm Time Reversal with TimeReversalAdapter.\n
-    Usage: module image_reconstruction, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_ALGORITHM_TEST = "TEST"
     """
     Corresponds to an adapter for testing purposes only.\n
-    Usage: module image_reconstruction, naming convention
+    Usage: module reconstruction_module, naming convention
     """
 
     RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool, np.bool_))
@@ -836,24 +825,6 @@ class Tags:
     Upsampling settings
     """
 
-    CROP_IMAGE = ("crop_image", bool)
-    """
-    If True, the PA image cropped in the image processing.\n
-    Usage: module processing
-    """
-
-    CROP_POWER_OF_TWO = ("crop_power_of_two", bool)
-    """
-    If True, the PA image cropped to the shape as the nearest power of two in the image processing.\n
-    Usage: module processing
-    """
-
-    PERFORM_UPSAMPLING = ("sample", bool)
-    """
-    If True, the PA image upsampled in the image processing.\n
-    Usage: module processing
-    """
-
     UPSAMPLING_METHOD = ("upsampling_method", str)
     """
     Choice of the upsampling method used in the image processing.\n
@@ -893,12 +864,6 @@ class Tags:
     UPSAMPLING_SCRIPT = ("upsampling_script", str)
     """
     Name of the upsampling script used for the lanczos upsampling.\n
-    Usage: module processing
-    """
-
-    UPSAMPLING_SCRIPT_LOCATION = ("upsampling_script_location", str)
-    """
-    Absolute path to the upsampling script used for the lanczos upsampling.\n
     Usage: module processing
     """
 
@@ -1087,7 +1052,7 @@ class Tags:
     """
     Number of detector elements that fit into the generated volume if the dimensions and/or spacing of the generated 
     volume were not highly resolved enough to be sufficient for the selected PA device.\n
-    Usage: module acoustic_simulation, naming convention
+    Usage: module acoustic_forward_module, naming convention
     """
 
     SENSOR_CONCAVE = "concave"
@@ -1108,108 +1073,123 @@ class Tags:
     Usage: adapter MitkBeamformingAdapter, naming convention
     """
 
+    # Pipelining parameters
+
+    DATA_FIELD = "data_field"
+    """
+    Defines which data field a certain function shall be applied to.\n 
+    Usage: module processing
+    """
+
     # Noise properties
-    APPLY_NOISE_MODEL = ("apply_noise_model", bool)
+
+    NOISE_MEAN = "noise_mean"
     """
-    If True, the simulation will apply a noise model.\n
-    Usage: module core (simulate.py)
+    Mean of a noise model.\n 
+    Usage: module processing.noise_models
     """
 
-    NOISE_MODEL = ("noise_model", str)
+    NOISE_STD = "noise_std"
     """
-    Choice of the noise model.\n 
-    Usage: module noise_simulation
-    """
-
-    NOISE_MODEL_GAUSSIAN = "noise_model_gaussian"
-    """
-    Corresponds to a gaussian noise model.\n 
-    Usage: module noise_simulation
+    Standard deviation of a noise model.\n 
+    Usage: module processing.noise_models
     """
 
-    NOISE_MEAN = ("noise_mean", (int, np.integer, float, np.float))
+    NOISE_MODE = "noise_mode"
     """
-    Mean of the gaussian noise model used in the noise modelling.\n 
-    Usage: module noise_simulation
-    """
-
-    NOISE_STD = ("noise_std", (int, np.integer, float, np.float))
-    """
-    Standard deviation of the gaussian noise model used in the noise modelling.\n 
-    Usage: module noise_simulation
+    The mode tag of a noise model is used to differentiate between\n
+    Tags.NOISE_MODE_ADDITIVE and Tags.NOISE_MODE_MULTIPLICATIVE.\n  
+    Usage: module processing.noise_models
     """
 
-    NOISE_MODEL_PATH = ("noise_model_path", str)
+    NOISE_MODE_ADDITIVE = "noise_mode_additive"
     """
-    Absolute path of a .csv file with an experimentally recorded noise model.\n
-    Usage: module noise_simulation
+    A noise model shall be applied additively s_n = s + n.\n  
+    Usage: module processing.noise_models
+    """
+
+    NOISE_MODE_MULTIPLICATIVE = "noise_mode_multiplicative"
+    """
+    A noise model shall be applied multiplicatively s_n = s * n.\n  
+    Usage: module processing.noise_models
+    """
+
+    NOISE_NON_NEGATIVITY_CONSTRAINT = "noise_non_negativity_constraint"
+    """
+    Defines if after the noise model negative values shall be allowed.\n  
+    Usage: module processing.noise_models
+    """
+
+    VOLUME_CREATION_MODEL_SETTINGS = ("volume_creation_model_settings", dict)
+    """"
+    Volume Creation Model Settings
     """
 
     # Structures
     STRUCTURES = ("structures", dict)
     """
     Settings dictionary which contains all the structures that should be generated inside the volume.\n
-    Usage: module volume_creation
+    Usage: module volume_creation_module
     """
 
     HORIZONTAL_LAYER_STRUCTURE = "HorizontalLayerStructure"
     """
     Corresponds to the HorizontalLayerStructure in the structure_library.\n
-    Usage: module volume_creation, naming_convention
+    Usage: module volume_creation_module, naming_convention
     """
 
     CIRCULAR_TUBULAR_STRUCTURE = "CircularTubularStructure"
     """
     Corresponds to the CircularTubularStructure in the structure_library.\n
-    Usage: module volume_creation, naming_convention
+    Usage: module volume_creation_module, naming_convention
     """
 
     ELLIPTICAL_TUBULAR_STRUCTURE = "EllipticalTubularStructure"
     """
     Corresponds to the EllipticalTubularStructure in the structure_library.\n
-    Usage: module volume_creation, naming_convention
+    Usage: module volume_creation_module, naming_convention
     """
 
     SPHERICAL_STRUCTURE = "SphericalStructure"
     """
     Corresponds to the SphericalStructure in the structure_library.\n
-    Usage: module volume_creation, naming_convention
+    Usage: module volume_creation_module, naming_convention
     """
 
     PARALLELEPIPED_STRUCTURE = "ParallelepipedStructure"
     """
     Corresponds to the ParallelepipedStructure in the structure_library.\n
-    Usage: module volume_creation, naming_convention
+    Usage: module volume_creation_module, naming_convention
     """
 
     RECTANGULAR_CUBOID_STRUCTURE = "RectangularCuboidStructure"
     """
     Corresponds to the RectangularCuboidStructure in the structure_library.\n
-    Usage: module volume_creation, naming_convention
+    Usage: module volume_creation_module, naming_convention
     """
 
     STRUCTURE_TYPE = ("structure_type", str)
     """
     Defines the structure type to one structure in the structure_library.\n
-    Usage: module volume_creation
+    Usage: module volume_creation_module
     """
 
     STRUCTURE_SEGMENTATION_TYPE = "structure_segmentation_type"
     """
     Defines the structure segmentation type to one segmentation type in SegmentationClasses.\n
-    Usage: module volume_creation, naming convention
+    Usage: module volume_creation_module, naming convention
     """
 
     UNITS_ARBITRARY = "arbitrary_unity"
     """
     Define arbitrary units if no units were given in the settings.\n
-    Usage: module optical_simulation, naming convention
+    Usage: module optical_simulation_module, naming convention
     """
 
     UNITS_PRESSURE = "newton_per_meters_squared"
     """
     Standard units used in the SIMPA framework.\n
-    Usage: module optical_simulation, naming convention
+    Usage: module optical_simulation_module, naming convention
     """
 
     """
@@ -1268,4 +1248,66 @@ class Tags:
     """
     Name of the simulation outputs as original data in the SIMPA output file.\n
     Usage: naming convention
+    """
+
+    """
+    Image processing
+    """
+
+    IMAGE_PROCESSING = "image_processing"
+    """
+    Location of the image processing outputs in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
+    ITERATIVE_qPAI_RESULT = "iterative_qpai_result"
+    """
+    Name of the data field in which the iterative qPAI result will be stored.\n
+    Usage: naming convention
+    """
+
+    LINEAR_UNMIXING_RESULT = "linear_unmixing_result"
+    """
+    Name of the data field in which the linear unmixing result will be stored.\n
+    Usage: naming convention
+    """
+
+    """
+    Iterative qPAI Reconstruction
+    """
+
+    ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION = ("constant_regularization", (bool, np.bool, np.bool_))
+    """
+    If True, the fluence regularization will be constant.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    DOWNSCALE_FACTOR = ("downscale_factor", (int, float, np.int_, np.float_))
+    """
+    Downscale factor of the resampling in the qPAI reconstruction\n
+    Usage: module processing
+    """
+
+    ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER = ("maximum_iteration_number", (int, np.integer))
+    """
+    Maximum number of iterations performed in iterative reconstruction if stopping criterion is not reached.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float, np.float))
+    """
+    Sigma value used for constant regularization of fluence.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS = ("save_intermediate_results", (bool, np.bool, np.bool_))
+    """
+    If True, a list of all intermediate absorption updates (middle slices only) will be saved in a numpy file.\n
+    Usage: module processing (iterative_qPAI_algorithm.py)
+    """
+
+    ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
+    """
+    Ratio of improvement and preceding error at which iteration method stops. 
+    Usage: module processing (iterative_qPAI_algorithm.py)
     """

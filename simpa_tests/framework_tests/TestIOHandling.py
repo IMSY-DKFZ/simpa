@@ -23,7 +23,7 @@ import unittest
 from simpa.io_handling import load_hdf5
 from simpa.io_handling import save_hdf5
 from simpa.utils import Tags
-from simpa.utils.settings_generator import Settings
+from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import Background
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 from simpa_tests.test_utils import assert_equals_recursive
@@ -32,17 +32,10 @@ import os
 
 class TestIOHandling(unittest.TestCase):
 
-    def setUp(self):
-        print("setUp")
-
-    def tearDown(self):
-        print("tearDown")
-
     def test_write_and_read_default_dictionary(self):
         save_dictionary = dict()
         settings = Settings()
-        settings.add_minimal_meta_information()
-        settings.add_minimal_optical_properties()
+        settings['Test'] = 'test2'
         save_dictionary[Tags.SETTINGS] = settings
         try:
             save_hdf5(save_dictionary, "test.hdf5")
@@ -59,9 +52,10 @@ class TestIOHandling(unittest.TestCase):
 
         save_dictionary = Settings()
         settings = Settings()
-        settings.add_minimal_meta_information()
-        settings.add_minimal_optical_properties()
-
+        settings[Tags.SPACING_MM] = 0.5
+        settings[Tags.DIM_VOLUME_X_MM] = 10
+        settings[Tags.DIM_VOLUME_Y_MM] = 10
+        settings[Tags.DIM_VOLUME_Z_MM] = 10
         save_dictionary[Tags.SETTINGS] = settings
 
         background_dictionary = Settings()
@@ -72,8 +66,6 @@ class TestIOHandling(unittest.TestCase):
 
         save_dictionary[Tags.STRUCTURES] = structure_settings
 
-        print(save_dictionary)
-
         try:
             save_hdf5(save_dictionary, "test.hdf5")
             read_dictionary = load_hdf5("test.hdf5")
@@ -83,7 +75,5 @@ class TestIOHandling(unittest.TestCase):
             # clean up after test
             if os.path.exists("test.hdf5"):
                 os.remove("test.hdf5")
-
-        print(read_dictionary)
 
         assert_equals_recursive(save_dictionary, read_dictionary)

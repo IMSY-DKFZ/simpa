@@ -21,6 +21,11 @@
 # SOFTWARE.
 
 from simpa.utils import Tags
+from simpa.log import Logger
+logger = Logger()
+import numpy as np
+import torch
+
 
 
 def preprocess_image(settings, image_data):
@@ -36,9 +41,9 @@ def preprocess_image(settings, image_data):
         if settings[Tags.CROP_IMAGE]:
             if Tags.CROP_POWER_OF_TWO in settings:
                 if settings[Tags.CROP_POWER_OF_TWO]:
-                    print("Previous sizes: ", image_data.shape)
+                    logger.debug("Previous sizes: " + str(image_data.shape))
                     image_data = top_center_crop_power_two(image_data)
-                    print("New sizes: ", image_data.shape)
+                    logger.debug("New sizes: " + str(image_data.shape))
 
     return image_data
 
@@ -95,3 +100,50 @@ def top_center_crop_power_two(image_data):
     target_width = 1 << (input_width.bit_length() - 1)
 
     return top_center_crop(image_data, (target_height, target_width))
+
+
+def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
+    """
+    Normalizes the given data by applying min max normalization.
+    The resulting array has values between 0 and 1 inclusive.
+
+    :param data: (numpy array) data to be normalized
+    :return: (numpy array) normalized array
+    """
+
+    if data is None:
+        raise AttributeError("Data must not be none in order to normalize it.")
+
+    min = data.min()
+    max = data.max()
+    output = (data - min) / (max - min)
+
+    return output
+
+
+def reconstruction_mode_transformation(time_series_sensor_data: torch.tensor = None,
+                                       mode: str = Tags.RECONSTRUCTION_MODE_PRESSURE) -> torch.tensor:
+    """
+    Transformes `time_series_sensor_data` for other modes, for example `Tags.RECONSTRUCTION_MODE_DIFFERENTIAL`.
+    Default mode is `Tags.RECONSTRUCTION_MODE_PRESSURE`.
+
+    :param time_series_sensor_data: (torch tensor) Time series data to be transformed
+    :param mode: (str) reconstruction mode: Tags.RECONSTRUCTION_MODE_PRESSURE (default) 
+                or Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
+    :return: (torch tensor) potentially transformed tensor
+    """
+
+    # depending on mode use pressure data or its derivative
+    if mode == Tags.RECONSTRUCTION_MODE_DIFFERENTIAL:
+        zeros = torch.zeros([time_series_sensor_data.shape[0], 1], names=None).to(time_series_sensor_data.device)
+        time_vector = torch.arange(1, time_series_sensor_data.shape[1]+1).to(time_series_sensor_data.device)
+        time_derivative_pressure = time_series_sensor_data[:, 1:] - time_series_sensor_data[:, 0:-1]
+        time_derivative_pressure = torch.cat([time_derivative_pressure, zeros], dim=1)
+        time_derivative_pressure = torch.mul(time_derivative_pressure, time_vector)
+        output = time_derivative_pressure  # use time derivative pressure
+    elif mode == Tags.RECONSTRUCTION_MODE_PRESSURE:
+        output = time_series_sensor_data  # already in pressure format
+    else:
+        raise AttributeError(
+            "An invalid reconstruction mode was set, only differential and pressure are supported.")
+    return output

@@ -44,6 +44,12 @@ Either download suitable executables or build yourself from the following source
 
 http://mcx.space/
 
+In order to obtain access to all custom sources that we implemented, please build mcx yourself from the
+following mcx Github fork:
+https://www.github.com/jgroehl/mcx
+
+For the installation, please follow the instructions from the original repository.
+
 ### k-Wave (Acoustic Forward Model)
 
 Please follow the following steps and use the k-Wave install instructions 
@@ -66,6 +72,18 @@ However, it can also be used for image processing.
 
 A basic example on how to use simpa in you project to run an optical forward simulation is given in the 
 samples/minimal_optical_simulation.py file.
+
+### Path Management
+
+As a pipelining tool that serves as a communication layer between different numerical forward models and
+processing tools, SIMPA needs to be configured with the paths to these tools on your local hard drive.
+To this end, we have implemented the `PathManager` class that you can import to your project using
+`from simpa.utils import PathManager`. The PathManager looks for a `path_config.env` file (just like the
+one we provided in the `simpa_examples`) in the following places in this order:
+1. The optional path you give the PathManager
+2. Your $HOME$ directory
+3. The current working directory
+4. The SIMPA home directory path
 
 ## How to contribute
 
