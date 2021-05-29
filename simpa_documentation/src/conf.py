@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -43,9 +43,9 @@ project = 'SIMPA'
 copyright = '2020, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
 author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
 
-# The full version, including alpha/beta/rc tags
-release = '0.1.0'
-version = release
+# The full version
+# SIMPA syntax: RELEASE.MAJOR.MINOR
+version = '0.3.0'
 
 
 # -- General configuration ---------------------------------------------------

@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -32,6 +32,10 @@ import nrrd
 
 
 class MitkBeamformingAdapter(ReconstructionAdapterBase):
+    """
+    This adapter can be used to reconstruct an image with the MITK beamforming tool.
+    However, there is only support for linear and curved transducers.
+    """
 
     def convert_settings_file(self, file, settings, save_path):
 
@@ -78,7 +82,7 @@ class MitkBeamformingAdapter(ReconstructionAdapterBase):
         with open(save_path, "w") as xml_write_file:
             xmltodict.unparse(beamforming_dict, xml_write_file, pretty=True, indent="\t")
 
-    def reconstruction_algorithm(self, time_series_sensor_data, settings, distortion):
+    def reconstruction_algorithm(self, time_series_sensor_data, settings):
         print("Calling MITK now........")
 
         tmp_path = settings[Tags.SIMULATION_PATH] + "/" + settings[Tags.VOLUME_NAME]

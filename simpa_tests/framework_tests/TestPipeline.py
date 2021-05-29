@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -54,8 +54,6 @@ class TestPipeline(unittest.TestCase):
             Tags.DIM_VOLUME_Z_MM: self.VOLUME_HEIGHT_IN_MM,
             Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM,
             Tags.DIM_VOLUME_Y_MM: self.VOLUME_WIDTH_IN_MM,
-            Tags.AIR_LAYER_HEIGHT_MM: 0,
-            Tags.GELPAD_LAYER_HEIGHT_MM: 0,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
 
             # The following parameters set the optical forward model

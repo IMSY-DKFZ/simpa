@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -24,13 +24,31 @@ from simpa.utils import Tags
 
 
 def define_illumination(settings, nx, ny, nz):
+    """
+        This method creates a dictionary that represents the illumination geometry in a way
+        that it can be used with the respective illumination framework.
+
+        :param settings: The settings file containing the simulation instructions
+        :param nx: number of voxels along the x dimension of the volume
+        :param ny: number of voxels along the y dimension of the volume
+        :param nz: number of voxels along the z dimension of the volume
+        """
     if settings[Tags.OPTICAL_MODEL] is Tags.OPTICAL_MODEL_MCX:
         return define_illumination_mcx(settings, nx, ny, nz)
     if settings[Tags.OPTICAL_MODEL] is Tags.OPTICAL_MODEL_MCXYZ:
         return define_illumination_mcxyz(settings, nx, ny, nz)
 
 
-def define_illumination_mcx(settings, nx, ny, nz):
+def define_illumination_mcx(settings, nx, ny, nz) -> dict:
+    """
+    This method creates a dictionary that contains tags as they are expected for the
+    mcx simulation tool to represent the illumination geometry.
+
+    :param settings: The settings file containing the simulation instructions
+    :param nx: number of voxels along the x dimension of the volume
+    :param ny: number of voxels along the y dimension of the volume
+    :param nz: number of voxels along the z dimension of the volume
+    """
     if Tags.ILLUMINATION_TYPE not in settings:
         source_type = Tags.ILLUMINATION_TYPE_PENCIL
     else:
@@ -72,5 +90,4 @@ def define_illumination_mcx(settings, nx, ny, nz):
 
 
 def define_illumination_mcxyz(settings, nx, ny, nz):
-    # TODO
-    raise NotImplementedError("niy - only supports mcx :D")
+    raise NotImplementedError("not implemented yet - w currently only support mcx..")

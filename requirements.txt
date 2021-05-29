@@ -6,14 +6,10 @@ scikit-image==0.16.2
 xmltodict
 h5py
 pandas
-sphinx
+sphinx==2.4.4
 rst2pdf
 m2r
+mistune==0.8.4
 coverage
 deprecated
-
-dash
-plotly
-plotly-express
-dash-bootstrap-components
-dash_colorscales
+torch

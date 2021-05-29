@@ -1,6 +1,6 @@
 %% The MIT License (MIT)
 %%
-%% Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+%% Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,8 @@
 %% SOFTWARE.
 
 function [] = simulate_3D(optical_path)
+
+fprintf("TEST")
 
 %% Read settings file
 
@@ -92,23 +94,14 @@ kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
 %% Define sensor
 
 % if a field of the struct "data" is given which describes the sensor mask, the array is loaded and is used as sensor.mask
-if isfield(data, 'sensor_mask') == true
+if isfield(data, 'sensor_mask')
     sensor.mask = data.sensor_mask;
-    % add 2 pixel "gel" to reduce Fourier artifact
-%    sensor.mask = padarray(sensor.mask, [GEL_LAYER_HEIGHT 0], 0, 'pre');
-else
-%    num_elements = settings.sensor_num_elements;
-%    element_spacing = Ny / num_elements;
-%    sensor.mask = zeros(Nx, Ny);
-%    sensor.mask(3, round(element_spacing/2):round(element_spacing):Ny) = 1;
-%    writeNPY(sensor.mask, "/home/kris/hard_drive/data/pipeline_test/Pipeline_test/sensor_mask.npy");
+    fprintf("Number of elements in sensor mask: %d", sum(sensor.mask,'all'))
 end
 
 % if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
-if isfield(data, 'directivity_angle') == true
+if isfield(data, 'directivity_angle')
     sensor.directivity_angle = data.directivity_angle;
-    % add 2 pixel "gel" to reduce Fourier artifact
-%    sensor.directivity_angle = padarray(sensor.directivity_angle, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 end
 
 if isfield(data, 'directivity_size')
@@ -118,10 +111,8 @@ end
 %sensor.directivity_pattern = settings.sensor_directivity_pattern;
 
 % define the frequency response of the sensor elements, gaussian shape with
-% FWHM = bandwidth*center_freq
-
-center_freq = double(settings.sensor_center_frequency); % [Hz]
-bandwidth = double(settings.sensor_bandwidth); % [%]
+center_freq = double(settings.sensor_center_frequency); % in units of [Hz]
+bandwidth = double(settings.sensor_bandwidth); % in units of [%]
 sensor.frequency_response = [center_freq, bandwidth];
 
 %% Computation settings
@@ -146,7 +137,7 @@ else
 end
 
 %% Write data to mat array
-save(strcat(optical_path, '.mat'), 'time_series_data')
+save(strcat(optical_path), 'time_series_data')
 time_step = kgrid.dt;
 number_time_steps = kgrid.Nt;
 save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');

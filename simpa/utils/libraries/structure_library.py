@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 from abc import abstractmethod
 from simpa.utils.settings_generator import Settings
 from simpa.utils.tissue_properties import TissueProperties
-from simpa.utils import Tags, SegmentationClasses
+from simpa.utils import Tags
 from simpa.utils.calculate import rotation
 import operator
 from simpa.utils.libraries.molecule_library import MolecularComposition
@@ -55,7 +55,7 @@ class Structures:
                 structure_class = globals()[single_structure_settings[Tags.STRUCTURE_TYPE]]
                 structure = structure_class(global_settings, single_structure_settings)
                 structures.append(structure)
-            except Exception as e:
+            except Exception:
                 print("An exception has occurred while trying to parse ", single_structure_settings[Tags.STRUCTURE_TYPE]," from the dictionary.")
                 print("The structure type was", single_structure_settings[Tags.STRUCTURE_TYPE])
                 print(traceback.format_exc())
@@ -66,7 +66,12 @@ class Structures:
 
 class GeometricalStructure:
     """
-    TODO
+    Base class for all model-based structures for ModelBasedVolumeCreator. A GeometricalStructure has an internal
+    representation of its own geometry. This is represented by self.geometrical_volume which is a 3D array that defines
+    for every voxel within the simulation volume if it is enclosed in the GeometricalStructure or if it is outside.
+    Most of the GeometricalStructures implement a partial volume effect. So if a voxel has the value 1, it is completely
+    enclosed by the GeometricalStructure. If a voxel has a value between 0 and 1, that fraction of the volume is
+    occupied by the GeometricalStructure. If a voxel has the value 0, it is outside of the GeometricalStructure.
     """
 
     def __init__(self, global_settings: Settings, single_structure_settings: Settings = None):
@@ -107,24 +112,42 @@ class GeometricalStructure:
         self.fill_internal_volume()
 
     def fill_internal_volume(self):
+        """
+        Fills self.geometrical_volume of the GeometricalStructure.
+        """
         indices, values = self.get_enclosed_indices()
         self.geometrical_volume[indices] = values
 
     @abstractmethod
     def get_enclosed_indices(self):
+        """
+        Gets indices of the voxels that are either entirely or partially occupied by the GeometricalStructure.
+        :return: mask for a numpy array
+        """
         pass
 
     @abstractmethod
     def get_params_from_settings(self, single_structure_settings):
+        """
+        Gets all the parameters required for the specific GeometricalStructure.
+        :param single_structure_settings: Settings which describe the specific GeometricalStructure.
+        :return: Tuple of parameters
+        """
         pass
 
     def properties_for_wavelength(self, wavelength) -> TissueProperties:
+        """
+        Returns the values corresponding to each optical/acoustic property used in SIMPA.
+        :param wavelength: Wavelength of the queried properties
+        :return: optical/acoustic properties
+        """
         return self.molecule_composition.get_properties_for_wavelength(wavelength)
 
     @abstractmethod
     def to_settings(self) -> Settings:
         """
-        TODO
+        Creates a Settings dictionary which contains all the parameters needed to create the same GeometricalStructure
+        again.
         :return : A tuple containing the settings key and the needed entries
         """
         settings_dict = Settings()
@@ -136,6 +159,23 @@ class GeometricalStructure:
 
 
 class HorizontalLayerStructure(GeometricalStructure):
+    """
+    Defines a Layer structure which spans the xy-plane in the SIMPA axis convention. The thickness of the layer is
+    defined along the z-axis. This layer can be deformed by the simpa.utils.deformation_manager.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 10
+        structure[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+        structure[Tags.STRUCTURE_END_MM] = [0, 0, 100]
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (single_structure_settings[Tags.STRUCTURE_START_MM],
@@ -207,6 +247,26 @@ class HorizontalLayerStructure(GeometricalStructure):
 
 
 class CircularTubularStructure(GeometricalStructure):
+    """
+    Defines a circular tube which is defined by a start and end point as well as a radius. This structure implements
+    partial volume effects. The tube can be set to adhere to a deformation defined by the
+    simpa.utils.deformation_manager. The start and end points of the tube will then be shifted along the z-axis
+    accordingly.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [50, 0, 50]
+        structure[Tags.STRUCTURE_END_MM] = [50, 100, 50]
+        structure[Tags.STRUCTURE_RADIUS_MM] = 5
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
@@ -268,6 +328,25 @@ class CircularTubularStructure(GeometricalStructure):
 
 
 class SphericalStructure(GeometricalStructure):
+    """
+    Defines a sphere which is defined by a start point and a radius. This structure implements
+    partial volume effects. The sphere can be set to adhere to a deformation defined by the
+    simpa.utils.deformation_manager. The start point of the sphere will then be shifted along the z-axis
+    accordingly.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [50, 50, 50]
+        structure[Tags.STRUCTURE_RADIUS_MM] = 10
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.SPHERICAL_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
@@ -320,6 +399,27 @@ class SphericalStructure(GeometricalStructure):
 
 
 class RectangularCuboidStructure(GeometricalStructure):
+    """
+    Defines a rectangular cuboid (box) which is defined by a start point its extent along the x-, y-, and z-axis.
+    This structure implements partial volume effects. The box can be set to adhere to a deformation defined by the
+    simpa.utils.deformation_manager. The start point of the box will then be shifted along the z-axis
+    accordingly.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [25, 25, 25]
+        structure[Tags.STRUCTURE_X_EXTENT_MM] = 40
+        structure[Tags.STRUCTURE_Y_EXTENT_MM] = 50
+        structure[Tags.STRUCTURE_Z_EXTENT_MM] = 60
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
@@ -400,7 +500,21 @@ class RectangularCuboidStructure(GeometricalStructure):
 
 class ParallelepipedStructure(GeometricalStructure):
     """
-    This class currently has no partial volume effects implemented. TODO
+    Defines a parallelepiped which is defined by a start point and three edge vectors which originate from the start
+    point. This structure currently does not implement partial volume effects.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [25, 25, 25]
+        structure[Tags.STRUCTURE_FIRST_EDGE_MM] = [5, 1, 1]
+        structure[Tags.STRUCTURE_SECOND_EDGE_MM] = [1, 5, 1]
+        structure[Tags.STRUCTURE_THIRD_EDGE_MM] = [1, 1, 5]
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        structure[Tags.STRUCTURE_TYPE] = Tags.PARALLELEPIPED_STRUCTURE
+
     """
 
     def get_params_from_settings(self, single_structure_settings):
@@ -481,6 +595,29 @@ class ParallelepipedStructure(GeometricalStructure):
 
 
 class EllipticalTubularStructure(GeometricalStructure):
+    """
+    Defines a elliptical tube which is defined by a start and end point as well as a radius and an eccentricity. The
+    elliptical geometry corresponds to a circular tube of the specified radius which is compressed along the z-axis
+    until it reaches the specified eccentricity under the assumption of a constant volume. This structure implements
+    partial volume effects. The tube can be set to adhere to a deformation defined by the
+    simpa.utils.deformation_manager. The start and end points of the tube will then be shifted along the z-axis
+    accordingly.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure = Settings()
+
+        structure[Tags.PRIORITY] = 9
+        structure[Tags.STRUCTURE_START_MM] = [50, 0, 50]
+        structure[Tags.STRUCTURE_END_MM] = [50, 100, 50]
+        structure[Tags.STRUCTURE_RADIUS_MM] = 5
+        structure[Tags.STRUCTURE_ECCENTRICITY] = 0.8
+        structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure[Tags.ADHERE_TO_DEFORMATION] = True
+        structure[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
@@ -570,6 +707,14 @@ class EllipticalTubularStructure(GeometricalStructure):
 
 
 class Background(GeometricalStructure):
+    """
+    Defines a background that fills the whole simulation volume. It is always given the priority of 0 so that other
+    structures can overwrite it when necessary.
+    Example usage:
+        background_dictionary = Settings()
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
+        background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    """
 
     def get_enclosed_indices(self):
         array = np.ones((self.volume_dimensions_voxels[0],
@@ -597,6 +742,29 @@ class Background(GeometricalStructure):
 
 
 class VesselStructure(GeometricalStructure):
+    """
+    Defines a vessel tree that is generated randomly in the simulation volume. The generation process begins at the
+    start with a specified radius. The vessel grows roughly in the specified direction. The deviation is specified by
+    the curvature factor. Furthermore, the radius of the vessel can vary depending on the specified radius variation
+    factor. The bifurcation length defines how long a vessel can get until it will bifurcate. This structure implements
+    partial volume effects.
+    Example usage:
+
+        # single_structure_settings initialization
+        structure_settings = Settings()
+
+        structure_settings[Tags.PRIORITY] = 10
+        structure_settings[Tags.STRUCTURE_START_MM] = [50, 0, 50]
+        structure_settings[Tags.STRUCTURE_DIRECTION] = [0, 1, 0]
+        structure_settings[Tags.STRUCTURE_RADIUS_MM] = 4
+        structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.05
+        structure_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
+        structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 70
+        structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        structure_settings[Tags.STRUCTURE_TYPE] = Tags.VESSEL_STRUCTURE
+
+    """
 
     def get_params_from_settings(self, single_structure_settings):
         params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
@@ -622,64 +790,70 @@ class VesselStructure(GeometricalStructure):
     def fill_internal_volume(self):
         self.geometrical_volume = self.get_enclosed_indices()
 
+    def calculate_vessel_samples(self, position, direction, bifurcation_length, radius, radius_variation,
+                                 volume_dimensions, curvature_factor):
+        position_array = [position]
+        radius_array = [radius]
+        samples = 0
+
+        while np.all(position < volume_dimensions) and np.all(0 <= position):
+            if samples >= bifurcation_length:
+                vessel_branch_positions1 = position
+                vessel_branch_positions2 = position
+                angles = np.random.normal(np.pi / 16, np.pi / 8, 3)
+                vessel_branch_directions1 = np.squeeze(np.array(np.matmul(rotation(angles), direction)))
+                vessel_branch_directions2 = np.squeeze(np.array(np.matmul(rotation(-angles), direction)))
+                vessel_branch_radius1 = 1 / np.sqrt(2) * radius
+                vessel_branch_radius2 = 1 / np.sqrt(2) * radius
+                vessel_branch_radius_variation1 = 1 / np.sqrt(2) * radius_variation
+                vessel_branch_radius_variation2 = 1 / np.sqrt(2) * radius_variation
+
+                if vessel_branch_radius1 >= 0.5:
+                    vessel1_pos, vessel1_rad = self.calculate_vessel_samples(vessel_branch_positions1,
+                                                                             vessel_branch_directions1,
+                                                                             bifurcation_length,
+                                                                             vessel_branch_radius1,
+                                                                             vessel_branch_radius_variation1,
+                                                                             volume_dimensions, curvature_factor)
+                    position_array += vessel1_pos
+                    radius_array += vessel1_rad
+
+                if vessel_branch_radius2 >= 0.5:
+                    vessel2_pos, vessel2_rad = self.calculate_vessel_samples(vessel_branch_positions2,
+                                                                             vessel_branch_directions2,
+                                                                             bifurcation_length,
+                                                                             vessel_branch_radius2,
+                                                                             vessel_branch_radius_variation2,
+                                                                             volume_dimensions, curvature_factor)
+                    position_array += vessel2_pos
+                    radius_array += vessel2_rad
+                break
+
+            position = np.add(position, direction)
+            position_array.append(position)
+            radius_array.append(np.random.uniform(-1, 1) * radius_variation + radius)
+
+            step_vector = np.random.uniform(-1, 1, 3)
+            step_vector = direction + curvature_factor * step_vector
+            direction = step_vector / np.linalg.norm(step_vector)
+            samples += 1
+
+        return position_array, radius_array
+
     def get_enclosed_indices(self):
-        start_mm, radius_mm, direction_mm, bifurcation_length_mm, curvature_factor, radius_variation_factor, \
-        partial_volume = self.params
+        start_mm, radius_mm, direction_mm, bifurcation_length_mm, curvature_factor, \
+            radius_variation_factor, partial_volume = self.params
         start_voxels = start_mm / self.voxel_spacing
         radius_voxels = radius_mm / self.voxel_spacing
         direction_voxels = direction_mm / self.voxel_spacing
         direction_vector_voxels = direction_voxels / np.linalg.norm(direction_voxels)
         bifurcation_length_voxels = bifurcation_length_mm / self.voxel_spacing
 
-        def calculate_vessel_samples(position, direction, bifurcation_length, radius, radius_variation,
-                                     volume_dimensions):
-            position_array = [position]
-            radius_array = [radius]
-            samples = 0
-
-            while np.all(position < volume_dimensions) and np.all(0 <= position):
-                if samples >= bifurcation_length:
-                    vessel_branch_positions1 = position
-                    vessel_branch_positions2 = position
-                    angles = np.random.normal(np.pi / 16, np.pi / 8, 3)
-                    vessel_branch_directions1 = np.squeeze(np.array(np.matmul(rotation(angles), direction)))
-                    vessel_branch_directions2 = np.squeeze(np.array(np.matmul(rotation(-angles), direction)))
-                    vessel_branch_radius1 = 1 / np.sqrt(2) * radius
-                    vessel_branch_radius2 = 1 / np.sqrt(2) * radius
-                    vessel_branch_radius_variation1 = 1 / np.sqrt(2) * radius_variation
-                    vessel_branch_radius_variation2 = 1 / np.sqrt(2) * radius_variation
-
-                    vessel1_pos, vessel1_rad = calculate_vessel_samples(vessel_branch_positions1,
-                                                                        vessel_branch_directions1,
-                                                                        bifurcation_length,
-                                                                        vessel_branch_radius1,
-                                                                        vessel_branch_radius_variation1,
-                                                                        volume_dimensions)
-
-                    vessel2_pos, vessel2_rad = calculate_vessel_samples(vessel_branch_positions2,
-                                                                        vessel_branch_directions2,
-                                                                        bifurcation_length,
-                                                                        vessel_branch_radius2,
-                                                                        vessel_branch_radius_variation2,
-                                                                        volume_dimensions)
-                    position_array += vessel1_pos + vessel2_pos
-                    radius_array += vessel1_rad + vessel2_rad
-                    break
-
-                position = np.add(position, direction)
-                position_array.append(position)
-                radius_array.append(np.random.uniform(-1, 1) * radius_variation + radius)
-
-                step_vector = np.random.uniform(-1, 1, 3)
-                step_vector = direction + curvature_factor * step_vector
-                direction = step_vector / np.linalg.norm(step_vector)
-                samples += 1
-
-            return position_array, radius_array
-
-        position_array, radius_array = calculate_vessel_samples(start_voxels, direction_vector_voxels,
-                                                                bifurcation_length_voxels, radius_voxels,
-                                                                radius_variation_factor, self.volume_dimensions_voxels)
+        position_array, radius_array = self.calculate_vessel_samples(start_voxels, direction_vector_voxels,
+                                                                     bifurcation_length_voxels, radius_voxels,
+                                                                     radius_variation_factor,
+                                                                     self.volume_dimensions_voxels,
+                                                                     curvature_factor)
 
         position_array = np.array(position_array)
 
@@ -711,37 +885,31 @@ class VesselStructure(GeometricalStructure):
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    import matplotlib as mpl
     from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-    from simpa.utils.deformation_manager import create_deformation_settings
 
     import time
     timer = time.time()
 
-    global_settings = Settings()
-    global_settings[Tags.SPACING_MM] = 0.9
-    global_settings[Tags.DIM_VOLUME_X_MM] = 80
-    global_settings[Tags.DIM_VOLUME_Y_MM] = 90
-    global_settings[Tags.DIM_VOLUME_Z_MM] = 100
+    _global_settings = Settings()
+    _global_settings[Tags.SPACING_MM] = 2
+    _global_settings[Tags.DIM_VOLUME_X_MM] = 80
+    _global_settings[Tags.DIM_VOLUME_Y_MM] = 90
+    _global_settings[Tags.DIM_VOLUME_Z_MM] = 100
 
     structure_settings = Settings()
     structure_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     structure_settings[Tags.STRUCTURE_START_MM] = [50, 0, 50]
     structure_settings[Tags.STRUCTURE_DIRECTION] = [0, 1, 0]
     structure_settings[Tags.STRUCTURE_RADIUS_MM] = 4
-    structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.05
+    structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.2
     structure_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
-    structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 70
+    structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 10
     structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
-    vessel = VesselStructure(global_settings, structure_settings)
+    vessel = VesselStructure(_global_settings, structure_settings)
     vol1 = vessel.geometrical_volume
-    print("generation of the vessel took", timer - time.time())
+    print("generation of the vessel took", time.time() - timer)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.voxels(vol1, shade=True)
-    # ax.set_xlim(0, 100)
-    # ax.set_ylim(0, 100)
-    # ax.set_zlim(0, 100)
-
     plt.show()

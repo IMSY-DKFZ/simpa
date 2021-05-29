@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -49,6 +49,10 @@ from simpa.utils.calculate import randomize_uniform
 
 from simpa.utils.deformation_manager import create_deformation_settings
 from simpa.utils.deformation_manager import get_functional_from_deformation_settings
+
+from simpa.utils.settings_generator import Settings
+
+from simpa.utils.dict_path_manager import generate_dict_path
 
 if __name__ == "__main__":
     view_absorption_spectra()

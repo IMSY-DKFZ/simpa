@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -22,7 +22,11 @@
 
 from simpa.core.optical_simulation import OpticalForwardAdapterBase
 
+
 class TestOpticalAdapter(OpticalForwardAdapterBase):
+    """
+    This Adapter was created for tesing purposes and only
+    """
 
     def forward_model(self, absorption_cm, scattering_cm, anisotropy, settings):
         return absorption_cm / ((1 - anisotropy) * scattering_cm)

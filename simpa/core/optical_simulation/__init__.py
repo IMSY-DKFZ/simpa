@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated simpa_documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ class OpticalForwardAdapterBase:
         A adapter that implements the forward_model method, will take optical properties of absorption, scattering,
         and scattering anisotropy as input and return the light fluence as output.
 
-        :param optical_properties_path: path to a *.npz file that contains the following tags:
+        :param optical_properties_path: path to a .npz file that contains the following tags:
             Tags.PROPERTY_ABSORPTION_PER_CM -> contains the optical absorptions in units of one per centimeter
             Tags.PROPERTY_SCATTERING_PER_CM -> contains the optical scattering in units of one per centimeter
             Tags.PROPERTY_ANISOTROPY -> contains the dimensionless optical scattering anisotropy
@@ -60,9 +60,9 @@ class OpticalForwardAdapterBase:
         print("Simulating the optical forward process...")
 
         optical_properties = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], optical_properties_path)
-        absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM]
-        scattering = optical_properties[Tags.PROPERTY_SCATTERING_PER_CM]
-        anisotropy = optical_properties[Tags.PROPERTY_ANISOTROPY]
+        absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(settings[Tags.WAVELENGTH])]
+        scattering = optical_properties[Tags.PROPERTY_SCATTERING_PER_CM][str(settings[Tags.WAVELENGTH])]
+        anisotropy = optical_properties[Tags.PROPERTY_ANISOTROPY][str(settings[Tags.WAVELENGTH])]
 
         fluence = self.forward_model(absorption_cm=absorption,
                                      scattering_cm=scattering,

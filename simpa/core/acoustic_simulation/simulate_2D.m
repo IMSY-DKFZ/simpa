@@ -1,6 +1,6 @@
 %% The MIT License (MIT)
 %%
-%% Copyright (c) 2018 Computer Assisted Medical Interventions Group, DKFZ
+%% Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -144,7 +144,7 @@ else
 end
 
 %% Write data to mat array
-save(strcat(optical_path, '.mat'), 'time_series_data')%, '-v7.3')
+save(optical_path, 'time_series_data')%, '-v7.3')
 time_step = kgrid.dt;
 number_time_steps = kgrid.Nt;
 save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');
