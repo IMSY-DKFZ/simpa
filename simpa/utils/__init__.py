@@ -53,6 +53,7 @@ from .deformation_manager import get_functional_from_deformation_settings
 from .settings import Settings
 
 from .dict_path_manager import generate_dict_path
+from .dict_path_manager import get_data_field_from_simpa_output
 
 from .constants import EPS
 
