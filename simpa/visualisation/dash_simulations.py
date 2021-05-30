@@ -28,7 +28,7 @@ REQUIREMENTS:
 You will need to install the following packages in order to use this script. It is recommended to create a virtualenv
 to install this packages:
 
-`pip install dash dash-table dash-daq plotly plotly-express dash-bootstrap-components pandas numpy`
+`pip install dash dash-table dash-daq dash_colorscales plotly plotly-express dash-bootstrap-components pandas numpy`
 
 USAGE:
 ===================================================================
@@ -57,8 +57,8 @@ from simpa.utils.tags import Tags
 external_stylesheets = [dbc.themes.JOURNAL, '.assets/dcc.css']
 app = dash.Dash(external_stylesheets=external_stylesheets, title="SIMPA")
 
-simpa_logo = './.assets/simpa_logo.png'
-cami_logo = './.assets/CAMIC_logo-wo_DKFZ.png'
+simpa_logo = './assets/simpa_logo.png'
+cami_logo = './assets/CAMIC_logo-wo_DKFZ.png'
 encoded_simpa_logo = (base64.b64encode(open(simpa_logo, 'rb').read())).decode()
 encoded_cami_logo = (base64.b64encode(open(cami_logo, 'rb').read())).decode()
 
@@ -76,6 +76,16 @@ class DataContainer:
 
 
 data = DataContainer()
+
+# plotly figure controls configuration
+config = {
+    "modeBarButtonsToAdd": [
+        "drawclosedpath",
+        "drawcircle",
+        "drawrect",
+        "eraseshape",
+    ]
+}
 
 app.layout = html.Div([
     html.Div(id='dummy', style={'display': None}),
@@ -95,13 +105,13 @@ app.layout = html.Div([
         dbc.Col([
             html.H4("SIMPA Visualization Tool"),
             html.H6("CAMI, Computer Assisted Medical Interventions"),
-        ], width=6),
+        ], width=9),
         dbc.Col([
-            html.Img(src='data:image/png;base64,{}'.format(encoded_simpa_logo), width='50%')
-        ], width=3),
+            html.Img(src='data:image/png;base64,{}'.format(encoded_simpa_logo), width='100%')
+        ], width=1),
         dbc.Col([
-            html.Img(src='data:image/png;base64,{}'.format(encoded_cami_logo), width='50%')
-        ], width=3)
+            html.Img(src='data:image/png;base64,{}'.format(encoded_cami_logo), width='100%')
+        ], width=2)
     ], style=dict(zIndex=0)),
     html.Br(),
     dcc.Tabs([
@@ -180,10 +190,12 @@ app.layout = html.Div([
 
                                     dcc.Graph(id="plot_11",
                                               hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                                              style={"width": "45%", "display": 'inline-block'}),
+                                              style={"width": "45%", "display": 'inline-block'},
+                                              config=config),
                                     dcc.Graph(id="plot_12",
                                               hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                                              style={"width": "45%", "display": 'inline-block'}),
+                                              style={"width": "45%", "display": 'inline-block'},
+                                              config=config),
                                     html.Div([
                                         dcc.RangeSlider(
                                             id="plot_scaler2",
@@ -436,22 +448,20 @@ def populate_file_params(file_path):
 def get_data_fields():
     data.wavelengths = data.simpa_output["settings"]["wavelengths"]
     data_fields = dict()
-    sim_props = list(data.simpa_output["simulations"]["original_data"]["simulation_properties"][
-                         "{}".format(data.wavelengths[0])].keys())
-    simulations = list(data.simpa_output["simulations"]["original_data"]["optical_forward_model_output"][
-                           "{}".format(data.wavelengths[0])].keys())
+    sim_props = list(data.simpa_output["simulations"]["simulation_properties"].keys())
+    simulations = list(data.simpa_output["simulations"]["optical_forward_model_output"].keys())
 
     for data_field in sim_props:
         data_fields[data_field] = dict()
         for wavelength in data.wavelengths:
-            data_fields[data_field][wavelength] = data.simpa_output["simulations"]["original_data"] \
-                ["simulation_properties"]["{}".format(wavelength)][data_field]
+            data_fields[data_field][wavelength] = data.simpa_output["simulations"]\
+                ["simulation_properties"][data_field][f"{wavelength}"]
 
     for data_field in simulations:
         data_fields[data_field] = dict()
         for wavelength in data.wavelengths:
-            data_fields[data_field][wavelength] = data.simpa_output["simulations"]["original_data"] \
-                ["optical_forward_model_output"]["{}".format(wavelength)][data_field]
+            data_fields[data_field][wavelength] = data.simpa_output["simulations"]\
+                ["optical_forward_model_output"][data_field][f"{wavelength}"]
 
     data.simpa_data_fields = data_fields
 
