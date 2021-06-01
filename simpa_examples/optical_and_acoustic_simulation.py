@@ -156,7 +156,7 @@ settings.set_reconstruction_settings({
 
 settings["noise_initial_pressure"] = {
     Tags.NOISE_MEAN: 1,
-    Tags.NOISE_STD: 0.1,
+    Tags.NOISE_STD: 0.01,
     Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
     Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
     Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True

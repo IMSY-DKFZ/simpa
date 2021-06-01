@@ -59,6 +59,24 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         device_position = self.device_position_mm
         return np.add(abstract_element_positions, device_position)
 
+    def get_detector_element_positions_accounting_for_field_of_view(self) -> np.ndarray:
+        """
+        Similar to::
+
+            get_detector_element_positions_base_mm
+
+        This method returns the absolute positions of the detection elements relative to the device
+        position in the imaged volume, where the device position is defined by the following tag::
+
+            Tags.DIGITAL_DEVICE_POSITION
+
+        :returns: A numpy array containing the coordinates of the detection elements
+
+        """
+        abstract_element_positions = self.get_detector_element_positions_base_mm()
+        device_position = self.device_position_mm
+        return np.add(abstract_element_positions, device_position)
+
     @abstractmethod
     def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
         """

@@ -45,7 +45,7 @@ class FieldOfViewCroppingProcessingComponent(ProcessingComponent):
 
         data_fields = self.component_settings[Tags.DATA_FIELD]
 
-        field_of_view_mm = device.get_field_of_view_mm(self.global_settings)
+        field_of_view_mm = device.get_field_of_view_mm()
         field_of_view_voxels = (field_of_view_mm / self.global_settings[Tags.SPACING_MM]).astype(np.int)
 
         # In case it should be cropped from A to A, then crop from A to A+1
