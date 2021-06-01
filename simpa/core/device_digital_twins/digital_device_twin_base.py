@@ -16,7 +16,11 @@ class DigitalDeviceTwinBase:
     This class represents a device that can be used for illumination, detection or both.
     """
 
-    def __init__(self):
+    def __init__(self, device_position_mm: np.ndarray = None):
+        if device_position_mm is None:
+            self.device_position_mm = np.array([0, 0, 0])
+        else:
+            self.device_position_mm = device_position_mm
         self.logger = Logger()
 
     @abstractmethod
@@ -43,7 +47,7 @@ class DigitalDeviceTwinBase:
         """
         pass
 
-    def get_field_of_view_mm(self, global_settings: Settings) -> np.ndarray:
+    def get_field_of_view_mm(self) -> np.ndarray:
         """
         returns the absolute field of view in mm where the probe position is already
         accounted for.
@@ -51,7 +55,7 @@ class DigitalDeviceTwinBase:
         where x, y, and z denote the coordinate axes and s and e denote the start and end
         positions.
         """
-        position = self.get_probe_position_mm(global_settings)
+        position = self.device_position_mm
         field_of_view_extent = self.get_field_of_view_extent_mm()
 
         return np.asarray([position[0] + field_of_view_extent[0],
@@ -62,26 +66,11 @@ class DigitalDeviceTwinBase:
                            position[2] + field_of_view_extent[5]
                            ])
 
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        """
-        Defines the default position of this probe in the volume in mm
-        """
-        return np.asarray([0, 0, 0])
-
-    def get_probe_position_mm(self, global_settings: Settings) -> np.ndarray:
-        """
-        returns the probe position in the volume
-        """
-        if Tags.DIGITAL_DEVICE_POSITION in global_settings and global_settings[Tags.DIGITAL_DEVICE_POSITION]:
-            return np.asarray(global_settings[Tags.DIGITAL_DEVICE_POSITION])
-
-        return self.get_default_probe_position(global_settings)
-
 
 class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
 
-    def __init__(self):
-        super(PhotoacousticDevice, self).__init__()
+    def __init__(self,  device_position_mm: np.ndarray = None):
+        super(PhotoacousticDevice, self).__init__(device_position_mm=device_position_mm)
         self.detection_geometry = None
         self.illumination_geometries = []
 

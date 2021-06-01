@@ -16,15 +16,14 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
     """
     def __init__(self, number_detector_elements, detector_element_width_mm,
                  detector_element_length_mm, center_frequency_hz, bandwidth_percent,
-                 sampling_frequency_mhz, probe_height_mm, probe_width_mm):
-        super().__init__()
+                 sampling_frequency_mhz, probe_width_mm, device_position_mm: np.ndarray = None):
+        super().__init__(device_position_mm=device_position_mm)
         self.number_detector_elements = number_detector_elements
         self.detector_element_width_mm = detector_element_width_mm
         self.detector_element_length_mm = detector_element_length_mm
         self.center_frequency_Hz = center_frequency_hz
         self.bandwidth_percent = bandwidth_percent
         self.sampling_frequency_MHz = sampling_frequency_mhz
-        self.probe_height_mm = probe_height_mm
         self.probe_width_mm = probe_width_mm
 
     @abstractmethod
@@ -57,7 +56,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
         """
         abstract_element_positions = self.get_detector_element_positions_base_mm()
-        device_position = self.get_probe_position_mm(global_settings)
+        device_position = self.device_position_mm
         return np.add(abstract_element_positions, device_position)
 
     @abstractmethod

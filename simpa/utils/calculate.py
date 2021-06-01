@@ -171,6 +171,27 @@ def rotation(angles):
     return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])
 
 
+def rotation_matrix_between_vectors(a, b):
+    """
+    Returns the rotation matrix from a to b
+
+    :param a: 3D vector to rotate
+    :param b: 3D target vector
+    :return: rotation matrix
+    """
+    a_norm, b_norm = (a / np.linalg.norm(a)).reshape(3), (b / np.linalg.norm(b)).reshape(3)
+    cross_product = np.cross(a_norm, b_norm)
+    if np.abs(cross_product.all()) < 1e-10:
+        return np.zeros([3, 3])
+    dot_product = np.dot(a_norm, b_norm)
+    s = np.linalg.norm(cross_product)
+    mat = np.array([[0, -cross_product[2], cross_product[1]],
+                    [cross_product[2], 0, -cross_product[0]],
+                    [-cross_product[1], cross_product[0], 0]])
+    rotation_matrix = np.eye(3) + mat + mat.dot(mat) * ((1 - dot_product) / (s ** 2))
+    return rotation_matrix
+
+
 def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
     """
     Normalizes the given data by applying min max normalization.
@@ -183,8 +204,8 @@ def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
     if data is None:
         raise AttributeError("Data must not be none in order to normalize it.")
 
-    min = data.min()
-    max = data.max()
+    min = np.min(data)
+    max = np.max(data)
     output = (data - min) / (max - min)
 
     return output

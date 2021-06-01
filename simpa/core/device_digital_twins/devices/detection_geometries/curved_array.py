@@ -17,15 +17,14 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
 
     def __init__(self, pitch_mm=0.5,
                  radius_mm=40,
-                 focus_in_field_of_view_mm=None,
                  number_detector_elements=256,
                  detector_element_width_mm=0.24,
                  detector_element_length_mm=13,
                  center_frequency_hz=3.96e6,
                  bandwidth_percent=55,
                  sampling_frequency_mhz=40,
-                 probe_height_mm=43.2,
-                 angular_origin_offset=np.pi):
+                 angular_origin_offset=np.pi,
+                 device_position_mm=None):
         """
         :param angular_origin_offset: TODO
         """
@@ -36,16 +35,12 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
                          center_frequency_hz=center_frequency_hz,
                          bandwidth_percent=bandwidth_percent,
                          sampling_frequency_mhz=sampling_frequency_mhz,
-                         probe_height_mm=probe_height_mm,
-                         probe_width_mm=2 * np.sin(pitch_mm / radius_mm * 128) * radius_mm)
+                         probe_width_mm=2 * np.sin(pitch_mm / radius_mm * 128) * radius_mm,
+                         device_position_mm=device_position_mm)
 
         self.pitch_mm = pitch_mm
         self.radius_mm = radius_mm
         self.angular_origin_offset = angular_origin_offset
-
-        if focus_in_field_of_view_mm is None:
-            focus_in_field_of_view_mm = np.array([0, 0, 8])
-        self.focus_in_field_of_view_mm = focus_in_field_of_view_mm
 
     def get_field_of_view_extent_mm(self) -> np.ndarray:
         return np.asarray([-self.probe_width_mm/2,
@@ -54,10 +49,10 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
                            0, 100])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.probe_height_mm + 1):
+        if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.radius_mm + 1):
             self.logger.error("Volume z dimension is too small to encompass the device in simulation!"
                               "Must be at least {} mm but was {} mm"
-                              .format((self.probe_height_mm + 1),
+                              .format((self.radius_mm + 1),
                                       global_settings[Tags.DIM_VOLUME_Z_MM]))
             return False
         if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
@@ -82,14 +77,8 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
 
     def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
         detector_positions = self.get_detector_element_positions_base_mm()
-        detector_orientations = np.subtract(self.focus_in_field_of_view_mm, detector_positions)
+        detector_orientations = np.subtract(0, detector_positions)
         norm = np.linalg.norm(detector_orientations, axis=-1)
         for dim in range(3):
             detector_orientations[:, dim] = detector_orientations[:, dim] / norm
         return detector_orientations
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
-                               global_settings[Tags.DIM_VOLUME_Y_MM],
-                               global_settings[Tags.DIM_VOLUME_Z_MM]])
-        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, self.probe_height_mm])

@@ -34,6 +34,7 @@ path_manager = PathManager()
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
 
+
 def create_example_tissue():
     """
     This is a very simple example script of how to create a tissue definition.
@@ -46,7 +47,7 @@ def create_example_tissue():
 
     muscle_dictionary = Settings()
     muscle_dictionary[Tags.PRIORITY] = 1
-    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 3]
+    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
@@ -65,8 +66,8 @@ def create_example_tissue():
 
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
-    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 3]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 3.5]
+    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 0.5]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
@@ -118,6 +119,7 @@ settings.set_optical_settings({
 })
 
 settings.set_acoustic_settings({
+    Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.PROPERTY_ALPHA_POWER: 1.05,
     Tags.SENSOR_RECORD: "p",
@@ -138,6 +140,7 @@ settings.set_reconstruction_settings({
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
+    Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL,
@@ -165,17 +168,19 @@ settings["noise_time_series"] = {
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
 
-device = MSOTAcuityEcho()
+device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                     VOLUME_PLANAR_DIM_IN_MM/2,
+                                                     0]))
 
 device.update_settings_for_use_of_model_based_volume_creator(settings)
 
 SIMUATION_PIPELINE = [
     VolumeCreationModelModelBasedAdapter(settings),
     OpticalForwardModelMcxAdapter(settings),
-    FieldOfViewCroppingProcessingComponent(settings),
-    #GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
+    GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
+    FieldOfViewCroppingProcessingComponent(settings),
     ImageReconstructionModuleDelayAndSumAdapter(settings)
 ]
 
@@ -189,6 +194,7 @@ else:
 if VISUALIZE:
     visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
                    show_time_series_data=True,
+                   show_initial_pressure=True,
                    show_absorption=False,
                    show_segmentation_map=False,
                    show_tissue_density=False,

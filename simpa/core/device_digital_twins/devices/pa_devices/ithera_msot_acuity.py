@@ -31,28 +31,32 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
     """
 
-    def __init__(self):
-        super(MSOTAcuityEcho, self).__init__()
+    def __init__(self, device_position_mm: np.ndarray = None):
+        super(MSOTAcuityEcho, self).__init__(device_position_mm=device_position_mm)
+
+        self.mediprene_membrane_height_mm = 1
+        self.probe_height_mm = 43.2
+        self.focus_in_field_of_view_mm = 8
+        detection_geometry_position_vector = np.add(self.device_position_mm,
+                                                    np.array([0, 0,
+                                                              self.probe_height_mm + self.focus_in_field_of_view_mm]))
 
         detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.34,
                                                           radius_mm=40,
-                                                          focus_in_field_of_view_mm=np.array([0, 0, 8]),
                                                           number_detector_elements=256,
                                                           detector_element_width_mm=0.24,
                                                           detector_element_length_mm=13,
                                                           center_frequency_hz=3.96e6,
                                                           bandwidth_percent=55,
                                                           sampling_frequency_mhz=40,
-                                                          probe_height_mm=43.2,
-                                                          angular_origin_offset=np.pi)
+                                                          angular_origin_offset=np.pi,
+                                                          device_position_mm=detection_geometry_position_vector)
 
         self.set_detection_geometry(detection_geometry)
 
         illumination_geometry = MSOTAcuityIlluminationGeometry()
 
         self.add_illumination_geometry(illumination_geometry)
-
-        self.mediprene_membrane_height_mm = 1
 
     def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
         nx = global_settings[Tags.DIM_VOLUME_X_MM]
@@ -69,7 +73,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                 "settings dictionary.")
             return
 
-        probe_size_mm = self.detection_geometry.probe_height_mm
+        probe_size_mm = self.probe_height_mm
         mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
 
@@ -99,12 +103,12 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                 structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
                                                                  0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                                 2] + self.detection_geometry.probe_height_mm
+                                                                 2] + self.probe_height_mm
             if Tags.STRUCTURE_END_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
                                                                0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                               2] + self.detection_geometry.probe_height_mm
+                                                               2] + self.probe_height_mm
 
         if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
             us_gel_thickness = np.random.normal(0.4, 0.1)
@@ -162,13 +166,12 @@ if __name__ == "__main__":
     # detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
     # position_map = np.zeros((x_dim, z_dim))
     # position_map[detector_positions[:, 0], detector_positions[:, 2]] = 1
-    middle_point = int(detector_positions.shape[0] / 2)
+    middle_point = int(detector_positions.shape[0]/2)
     import matplotlib.pyplot as plt
-
     plt.scatter(detector_positions[:, 0], detector_positions[:, 2])
-    plt.scatter(detector_positions[middle_point, 0],
-                detector_positions[middle_point, 2] + device.detection_geometry.radius_mm)
+    plt.scatter(detector_positions[middle_point, 0], detector_positions[middle_point, 2] + device.detection_geometry.radius_mm)
     plt.quiver(detector_positions[:, 0], detector_positions[:, 2], detector_orientations[:, 0], detector_orientations[:, 2])
+    # plt.quiver(np.zeros([256]) + detector_positions[middle_point, 0], np.zeros([256]) + detector_positions[middle_point, 2] + device.detection_geometry.radius_mm, -detector_orientations[:, 0], -detector_orientations[:, 2])
     plt.show()
     # plt.imshow(map)
     # plt.show()
