@@ -105,7 +105,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         data_to_show.append(reconstructed_data)
         data_item_names.append("Reconstruction")
         cmaps.append("viridis")
-        logscales.append(False and log_scale)
+        logscales.append(True and log_scale)
     if segmentation_map is not None and show_segmentation_map:
         data_to_show.append(segmentation_map)
         data_item_names.append("Segmentation Map")
@@ -123,7 +123,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         plt.subplot(num_rows, len(data_to_show), i+1)
         plt.title(data_item_names[i])
         if len(np.shape(data_to_show[i])) > 2:
-            pos = int(np.shape(data_to_show[i])[1] / 2)
+            pos = int(np.shape(data_to_show[i])[1] / 2) - 1
             data = np.rot90(data_to_show[i][:, pos, :], -1)
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         else:

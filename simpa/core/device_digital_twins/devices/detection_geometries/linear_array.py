@@ -20,7 +20,7 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
         return np.asarray([-self.probe_width_mm/2,
                            self.probe_width_mm/2,
                            0, 0,
-                           0, 100])
+                           0, 50])
 
     def __init__(self, pitch_mm=0.5,
                  number_detector_elements=100,
