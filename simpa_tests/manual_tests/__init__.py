@@ -29,7 +29,8 @@ class ReconstructionAlgorithmTestBaseClass:
         self.SPACING = 0.3  # 15
         self.RANDOM_SEED = 4711
         np.random.seed(self.RANDOM_SEED)
-        self.device = MSOTAcuityEcho()
+        self.device = MSOTAcuityEcho(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                                  self.VOLUME_PLANAR_DIM_IN_MM/2, 0]))
 
         self.general_settings = {
             # These parameters set the general properties of the simulated volume
