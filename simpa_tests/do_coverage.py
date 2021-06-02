@@ -13,22 +13,22 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 cov = Coverage(source=['simpa'])
 cov.start()
 
-test_classes = ["simpa_tests.framework_tests.structure_tests.TestLayers",
-                "simpa_tests.framework_tests.structure_tests.TestBoxes",
-                "simpa_tests.framework_tests.structure_tests.TestEllipticalTubes",
-                "simpa_tests.framework_tests.structure_tests.TestParallelEpipeds",
-                "simpa_tests.framework_tests.structure_tests.TestSpheres",
-                "simpa_tests.framework_tests.structure_tests.TestTubes",
-                "simpa_tests.framework_tests.TestPipeline",
-                "simpa_tests.framework_tests.TestProcessing",
-                "simpa_tests.framework_tests.TestCreateAVolume",
-                "simpa_tests.framework_tests.TestIOHandling",
-                "simpa_tests.framework_tests.TestCalculationUtils",
-                "simpa_tests.framework_tests.TestLogging",
-                "simpa_tests.framework_tests.TestPathManager",
-                "simpa_tests.framework_tests.tissue_library.TestCoreAssumptions",
-                "simpa_tests.framework_tests.tissue_library.TestTissueLibraryAgainstLiteratureValues",
-                "simpa_tests.framework_tests.TestNoiseModels",
+test_classes = ["simpa_tests.automatic_tests.structure_tests.TestLayers",
+                "simpa_tests.automatic_tests.structure_tests.TestBoxes",
+                "simpa_tests.automatic_tests.structure_tests.TestEllipticalTubes",
+                "simpa_tests.automatic_tests.structure_tests.TestParallelEpipeds",
+                "simpa_tests.automatic_tests.structure_tests.TestSpheres",
+                "simpa_tests.automatic_tests.structure_tests.TestTubes",
+                "simpa_tests.automatic_tests.TestPipeline",
+                "simpa_tests.automatic_tests.TestProcessing",
+                "simpa_tests.automatic_tests.TestCreateAVolume",
+                "simpa_tests.automatic_tests.TestIOHandling",
+                "simpa_tests.automatic_tests.TestCalculationUtils",
+                "simpa_tests.automatic_tests.TestLogging",
+                "simpa_tests.automatic_tests.TestPathManager",
+                "simpa_tests.automatic_tests.tissue_library.TestCoreAssumptions",
+                "simpa_tests.automatic_tests.tissue_library.TestTissueLibraryAgainstLiteratureValues",
+                "simpa_tests.automatic_tests.TestNoiseModels",
                 ]
 
 suite = unittest.TestSuite()

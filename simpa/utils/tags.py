@@ -380,6 +380,13 @@ class Tags:
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
+    MCX_ASSUMED_ANISOTROPY = ("mcx_seed", (float, np.float))
+    """
+    The anisotropy that should be assumed for the mcx simulations.
+    If not set, a default value of 0.9 will be assumed.
+    Usage: module optical_modelling, adapter mcx_adapter
+    """
+
     ILLUMINATION_TYPE = ("optical_model_illumination_type", str)
     """
     Type of the illumination geometry used in mcx.\n

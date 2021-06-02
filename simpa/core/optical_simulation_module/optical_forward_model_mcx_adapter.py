@@ -27,7 +27,10 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
 
     def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
 
-        MCX_ASSUMED_ANISOTROPY = 0.9
+        if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
+            _assumed_anisotropy = self.component_settings[Tags.MCX_ASSUMED_ANISOTROPY]
+        else:
+            _assumed_anisotropy = 0.9
 
         absorption_mm = absorption_cm / 10
         scattering_mm = scattering_cm / 10
@@ -37,7 +40,8 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
         #   we adjust the scattering parameter to be more accurate in the diffuse regime.
         #   This will lead to errors, especially in the quasi-ballistic regime.
 
-        scattering_mm = (scattering_mm * (1 - anisotropy)) / (1 - MCX_ASSUMED_ANISOTROPY)  # FIXME
+        given_reduced_scattering = (scattering_mm * (1 - anisotropy))
+        scattering_mm = given_reduced_scattering / (1 - _assumed_anisotropy)
         scattering_mm[scattering_mm < 1e-10] = 1e-10
 
         op_array = np.asarray([absorption_mm, scattering_mm])
@@ -105,7 +109,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
                     {
                         "mua": 1,
                         "mus": 1,
-                        "g": MCX_ASSUMED_ANISOTROPY,
+                        "g": _assumed_anisotropy,
                         "n": 1
                     }
                 ],
