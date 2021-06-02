@@ -45,7 +45,6 @@ class MultispectralProcessingAlgorithm(ABC):
             self.logger.critical(msg)
             raise TypeError(msg)
 
-
     @abstractmethod
     def run(self):
         """
