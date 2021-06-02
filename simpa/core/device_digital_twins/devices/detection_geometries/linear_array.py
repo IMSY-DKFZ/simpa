@@ -17,8 +17,8 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
     """
 
     def get_field_of_view_extent_mm(self) -> np.ndarray:
-        return np.asarray([-self.number_detector_elements*self.pitch_mm/2,
-                           self.number_detector_elements*self.pitch_mm/2,
+        return np.asarray([-self.probe_width_mm/2,
+                           self.probe_width_mm/2,
                            0, 0,
                            0, 100])
 

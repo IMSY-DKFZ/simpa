@@ -19,7 +19,7 @@ source.p0 = data.initial_pressure;
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
-GEL_LAYER_HEIGHT = 0;
+GEL_LAYER_HEIGHT = 3;
 
 %source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 [Nx, Ny, Nz] = size(source.p0);
