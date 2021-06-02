@@ -44,6 +44,8 @@ class TestInifinitesimalSlabExperiment():
         It contains a muscular background, an epidermis layer on top of the muscles
         and two blood vessels. It is used for volume creation.
         """
+        spacing = self.settings[Tags.SPACING_MM]
+
         background_dictionary = Settings()
         background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(self.mua, self.mus, self.g)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
@@ -53,9 +55,10 @@ class TestInifinitesimalSlabExperiment():
                                                                              anisotropy_value)
         slab_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
         slab_dictionary[Tags.PRIORITY] = 9
-        slab_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 50-slab_width/2]
-        slab_dictionary[Tags.STRUCTURE_X_EXTENT_MM] = 27
-        slab_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = 27
+        slab_dictionary[Tags.STRUCTURE_START_MM] = [int(self.xy_dim/2), int(self.xy_dim/2),
+                                                    self.z_dim/2-slab_width/2]
+        slab_dictionary[Tags.STRUCTURE_X_EXTENT_MM] = spacing
+        slab_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = spacing
         slab_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = slab_width
         slab_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
         slab_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
@@ -175,7 +178,7 @@ class TestInifinitesimalSlabExperiment():
         # Define the volume of the thin slab
 
         self.settings.set_volume_creation_settings({
-            Tags.SIMULATE_DEFORMED_LAYERS: True,
+            Tags.SIMULATE_DEFORMED_LAYERS: False,
             Tags.STRUCTURES: self.create_example_tissue(distance, absorption_value=absorption_value,
                                                         scattering_value=scattering_value,
                                                         anisotropy_value=anisotropy_value)
