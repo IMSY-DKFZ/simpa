@@ -36,7 +36,7 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-class TestInifinitesimalSlabExperiment():
+class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
 
     def create_example_tissue(self, slab_width, scattering_value=1e-30, absorption_value=1e-30, anisotropy_value=0.0):
         """
@@ -55,12 +55,13 @@ class TestInifinitesimalSlabExperiment():
                                                                              anisotropy_value)
         slab_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
         slab_dictionary[Tags.PRIORITY] = 9
-        slab_dictionary[Tags.STRUCTURE_START_MM] = [int(self.xy_dim/2), int(self.xy_dim/2),
+        slab_dictionary[Tags.STRUCTURE_START_MM] = [(self.xy_dim / 2) - spacing,
+                                                    (self.xy_dim / 2) - spacing,
                                                     self.z_dim/2-slab_width/2]
         slab_dictionary[Tags.STRUCTURE_X_EXTENT_MM] = spacing
         slab_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = spacing
         slab_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = slab_width
-        slab_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
+        slab_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         slab_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
 
         tissue_dict = Settings()
@@ -77,15 +78,15 @@ class TestInifinitesimalSlabExperiment():
         """
 
         path_manager = PathManager()
-        self.z_dim = 100
-        self.xy_dim = 27
+        self.z_dim = 40
+        self.xy_dim = 1
 
         self.settings = Settings({
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
             Tags.VOLUME_NAME: "DiffuseFluenceTest",
             Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
-            Tags.SPACING_MM: 0.5,
+            Tags.SPACING_MM: 0.1,
             Tags.DIM_VOLUME_X_MM: self.xy_dim,
             Tags.DIM_VOLUME_Y_MM: self.xy_dim,
             Tags.DIM_VOLUME_Z_MM: self.z_dim,
@@ -126,7 +127,7 @@ class TestInifinitesimalSlabExperiment():
         We expect a decay ratio of e^1.
         """
         self.perform_test(distance=10, expected_decay_ratio=np.e ** 1, scattering_value=0.5, absorption_value=0.5,
-                          anisotropy_value=0.0)
+                          anisotropy_value=0.0, title="Absorption and Scattering over 1 cm")
 
     def test_both_double_width(self):
         """
@@ -134,46 +135,70 @@ class TestInifinitesimalSlabExperiment():
         We expect a decay ratio of e^2.
         """
         self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=0.5, absorption_value=0.5,
-                          anisotropy_value=0.0)
+                          anisotropy_value=0.0, title="Absorption and Scattering over 2 cm")
 
     def test_isotropic_scattering(self):
         """
         Here, the slab is 10 mm long, only mus is used with a value of 0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.0)
+        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.0,
+                          title="Isotropic Scattering over 1 cm")
 
     def test_isotropic_scattering_double_width(self):
         """
         Here, the slab is 20 mm long, only mus is used with a value of 0.1 mm^-1.
         We expect a decay ratio of e^2.
         """
-        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=1, anisotropy_value=0.0)
+        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=1, anisotropy_value=0.0,
+                          title="Isotropic Scattering over 2 cm")
 
-    def test_anisotropic_scattering(self):
+    def test_anisotropic_scattering_0_9(self):
         """
         Here, the slab is 10 mm long, only mus is used with a value of 0.1 mm^-1.
         The anisotropy of the scattering is 0.9.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.9)
+        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.9,
+                          title="Anisotropic Scattering (0.9) over 1 cm")
+
+    def test_anisotropic_scattering_0_5(self):
+        """
+        Here, the slab is 10 mm long, only mus is used with a value of 0.1 mm^-1.
+        The anisotropy of the scattering is 0.9.
+        We expect a decay ratio of e^1.
+        """
+        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.5,
+                          title="Anisotropic Scattering (0.5) over 1 cm")
+
+    def test_anisotropic_scattering_0_1(self):
+        """
+        Here, the slab is 10 mm long, only mus is used with a value of 0.1 mm^-1.
+        The anisotropy of the scattering is 0.9.
+        We expect a decay ratio of e^1.
+        """
+        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.1,
+                          title="Anisotropic Scattering (0.1) over 1 cm")
 
     def test_absorption(self):
         """
         Here, the slab is 10 mm long, only mua is used with a value of 0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e, absorption_value=1)
+        self.perform_test(distance=10, expected_decay_ratio=np.e, absorption_value=1,
+                          title="Absorption over 1 cm"
+                          )
 
     def test_absorption_double_width(self):
         """
         Here, the slab is 20 mm long, only mua is used with a value of 0.1 mm^-1.
         We expect a decay ratio of e^2.
         """
-        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, absorption_value=1)
+        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, absorption_value=1,
+                          title="Absorption over 2 cm")
 
     def perform_test(self, distance=10, expected_decay_ratio=np.e, scattering_value=1e-30,
-                     absorption_value=1e-30, anisotropy_value=1.0):
+                     absorption_value=1e-30, anisotropy_value=1.0, title=""):
 
         # Define the volume of the thin slab
 
@@ -197,43 +222,49 @@ class TestInifinitesimalSlabExperiment():
         fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_FLUENCE,
                                   self.settings[Tags.WAVELENGTH])
         absorption = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
-                                 self.settings[Tags.WAVELENGTH])
+                                  self.settings[Tags.WAVELENGTH])
         scattering = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SCATTERING_PER_CM,
-                                 self.settings[Tags.WAVELENGTH])
+                                  self.settings[Tags.WAVELENGTH])
         anisotropy = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ANISOTROPY,
-                                     self.settings[Tags.WAVELENGTH])
-        half_dim = int((self.xy_dim / 2) / self.settings[Tags.SPACING_MM])-1
-        print("early fluence", fluence[half_dim, half_dim, int(10/self.settings[Tags.SPACING_MM])])
-        print("late fluence", fluence[half_dim, half_dim, int(90/self.settings[Tags.SPACING_MM])])
-        decay_ratio = fluence[half_dim, half_dim, int(10/self.settings[Tags.SPACING_MM])] / \
-                      fluence[half_dim, half_dim, int(90/self.settings[Tags.SPACING_MM])]
+                                  self.settings[Tags.WAVELENGTH])
+
+        early_point = int((self.z_dim / 2 - distance / 2) / self.settings[Tags.SPACING_MM])
+        late_point = int((self.z_dim / 2 + distance / 2) / self.settings[Tags.SPACING_MM])
+        illuminator_point = int((self.xy_dim / 2) / self.settings[Tags.SPACING_MM]) - 1
+
+        print("early fluence", fluence[illuminator_point, illuminator_point, early_point])
+        print("late fluence", fluence[illuminator_point, illuminator_point, late_point])
+        decay_ratio = fluence[illuminator_point, illuminator_point, early_point] / \
+                      fluence[illuminator_point, illuminator_point, late_point]
+
+        expected_end_fluence = fluence[illuminator_point, illuminator_point, early_point] / expected_decay_ratio
         print("Expected", expected_decay_ratio, "and was", decay_ratio)
 
-        plt.figure(figsize=(12, 3))
-        plt.subplot(1, 4, 1)
-        plt.title("Fluence [log]")
-        plt.imshow(np.log10(fluence[:, half_dim, :]))
-        plt.subplot(1, 4, 2)
-        plt.title("Absorption")
-        plt.imshow(absorption[:, half_dim, :])
-        plt.subplot(1, 4, 3)
-        plt.title("Scattering")
-        plt.imshow(scattering[:, half_dim, :])
-        plt.subplot(1, 4, 4)
-        plt.title("Anisotropy")
-        plt.imshow(anisotropy[:, half_dim, :])
+        plt.figure(figsize=(6, 4))
+        plt.title(f"Fluence profile for {title}")
+        plt.plot(fluence[illuminator_point, illuminator_point, :], label="Fluence")
+        plt.axhline(expected_end_fluence, label="Expected Value", color="red")
+        plt.legend(loc="center left")
+        ax2 = plt.twinx()
+        ax2.plot(absorption[illuminator_point, illuminator_point, :], label="Absorption", linestyle="dashed", alpha=0.5)
+        ax2.plot(scattering[illuminator_point, illuminator_point, :], label="Scattering", linestyle="dashed", alpha=0.5)
+        ax2.plot(anisotropy[illuminator_point, illuminator_point, :], label="Anisotropy", linestyle="dashed", alpha=0.5)
+        plt.legend(loc="center right")
+
         plt.tight_layout()
         plt.show()
         plt.close()
 
 
 if __name__ == '__main__':
-    test = TestInifinitesimalSlabExperiment()
+    test = TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment()
     test.setUp()
-    # test.test_both()
-    # test.test_both_double_width()
-    # test.test_absorption()
-    # test.test_absorption_double_width()
+    test.test_both()
+    test.test_both_double_width()
+    test.test_absorption()
+    test.test_absorption_double_width()
     test.test_isotropic_scattering()
-    test.test_anisotropic_scattering()
+    test.test_anisotropic_scattering_0_9()
+    test.test_anisotropic_scattering_0_5()
+    test.test_anisotropic_scattering_0_1()
     test.test_isotropic_scattering_double_width()

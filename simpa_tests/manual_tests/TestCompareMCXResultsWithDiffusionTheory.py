@@ -16,7 +16,7 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-class TestInifinitesimalSlabExperiment():
+class TestCompareMCXResultsWithDiffusionTheory():
 
     def create_example_tissue(self):
         """
@@ -67,7 +67,8 @@ class TestInifinitesimalSlabExperiment():
             Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
             Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+            Tags.MCX_ASSUMED_ANISOTROPY: 0.9
         })
 
         class CustomDevice(PhotoacousticDevice):
@@ -144,9 +145,7 @@ class TestInifinitesimalSlabExperiment():
     def assertDiffusionTheory(self, distance, spacing):
         fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_FLUENCE,
                                   self.settings[Tags.WAVELENGTH])
-        print(np.shape(fluence))
         number_of_measurements = np.arange(0, int(distance/self.settings[Tags.SPACING_MM]), 1)
-        print(number_of_measurements)
         measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]
         fluence_measurements = fluence[int((self.dim/spacing)/2), int((self.dim/spacing)/2) + number_of_measurements, 0]
 
@@ -160,8 +159,8 @@ class TestInifinitesimalSlabExperiment():
         ax.scatter(measurement_distances, fluence_measurements, marker="o", c="r", label="Simulation")
         ax.plot(measurement_distances, diffusion_approx, label="Diffusion Approx.")
         ax.fill_between(measurement_distances,
-                         diffusion_approx - 0.5*diffusion_approx,
-                         diffusion_approx + 0.5*diffusion_approx,
+                         diffusion_approx - 0.5 * diffusion_approx,
+                         diffusion_approx + 0.5 * diffusion_approx,
                          alpha=0.2, label="Accepted Error Range")
         handles, labels = ax.get_legend_handles_labels()
         handles = [handles[0], handles[2], handles[1]]
@@ -172,7 +171,7 @@ class TestInifinitesimalSlabExperiment():
 
 
 if __name__ == '__main__':
-    test = TestInifinitesimalSlabExperiment()
+    test = TestCompareMCXResultsWithDiffusionTheory()
     test.setUp()
     test.test_spacing_short()
     test.test_spacing_middle()
