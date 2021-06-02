@@ -98,7 +98,8 @@ class TestInifinitesimalSlabExperiment():
             Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
             Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+            Tags.MCX_ASSUMED_ANISOTROPY: 0.9
         })
 
         class CustomDevice(PhotoacousticDevice):
@@ -152,7 +153,7 @@ class TestInifinitesimalSlabExperiment():
         The anisotropy of the scattering is 0.9.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=10, anisotropy_value=0.9)
+        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.9)
 
     def test_absorption(self):
         """
@@ -179,6 +180,8 @@ class TestInifinitesimalSlabExperiment():
                                                         scattering_value=scattering_value,
                                                         anisotropy_value=anisotropy_value)
         })
+
+        self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value
 
         pipeline = [
             VolumeCreationModelModelBasedAdapter(self.settings),
@@ -224,10 +227,10 @@ class TestInifinitesimalSlabExperiment():
 if __name__ == '__main__':
     test = TestInifinitesimalSlabExperiment()
     test.setUp()
-    test.test_both()
-    test.test_both_double_width()
-    test.test_absorption()
-    test.test_absorption_double_width()
+    # test.test_both()
+    # test.test_both_double_width()
+    # test.test_absorption()
+    # test.test_absorption_double_width()
     test.test_isotropic_scattering()
     test.test_anisotropic_scattering()
     test.test_isotropic_scattering_double_width()
