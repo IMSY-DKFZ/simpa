@@ -41,7 +41,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         """
         pass
 
-    def get_detector_element_positions_accounting_for_device_position_mm(self, global_settings: Settings) -> np.ndarray:
+    def get_detector_element_positions_accounting_for_device_position_mm(self) -> np.ndarray:
         """
         Similar to::
 
@@ -74,8 +74,18 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
         """
         abstract_element_positions = self.get_detector_element_positions_base_mm()
-        device_position = self.device_position_mm
-        return np.add(abstract_element_positions, device_position)
+        field_of_view = self.get_field_of_view_mm()
+        x_half = (field_of_view[1] - field_of_view[0]) / 2
+        y_half = (field_of_view[3] - field_of_view[2]) / 2
+        if np.abs(x_half) < 1e-10:
+            abstract_element_positions[:, 0] = 0
+        if np.abs(y_half) < 1e-10:
+            abstract_element_positions[:, 1] = 0
+
+        abstract_element_positions[:, 0] += x_half
+        abstract_element_positions[:, 1] += y_half
+        abstract_element_positions[:, 2] += field_of_view[4]
+        return abstract_element_positions
 
     @abstractmethod
     def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:

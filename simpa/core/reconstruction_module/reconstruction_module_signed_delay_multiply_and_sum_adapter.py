@@ -69,8 +69,7 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
         # get device specific sensor positions
         detection_geometry.check_settings_prerequisites(self.global_settings)
 
-        sensor_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(
-            self.global_settings)
+        sensor_positions = detection_geometry.get_detector_element_positions_accounting_for_field_of_view()
 
         # time series sensor data must be numpy array
         if isinstance(sensor_positions, np.ndarray):
