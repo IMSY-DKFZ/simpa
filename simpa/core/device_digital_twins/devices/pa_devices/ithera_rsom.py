@@ -40,8 +40,9 @@ class RSOMExplorerP50(PhotoacousticDevice):
 
     def __init__(self, element_spacing_mm=0.02,
                  number_elements_x=10,
-                 number_elements_y=10):
-        super(RSOMExplorerP50, self).__init__()
+                 number_elements_y=10,
+                 device_position_mm: np.ndarray = None):
+        super(RSOMExplorerP50, self).__init__(device_position_mm=device_position_mm)
 
         detection_geometry = PlanarArrayDetectionGeometry(pitch_mm=element_spacing_mm,
                                                           number_detector_elements_x=number_elements_x,
@@ -59,12 +60,6 @@ class RSOMExplorerP50(PhotoacousticDevice):
                                                                 number_illuminators_y=number_elements_y)
 
         self.add_illumination_geometry(illumination_geometry)
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
-                               global_settings[Tags.DIM_VOLUME_Y_MM],
-                               global_settings[Tags.DIM_VOLUME_Z_MM]])
-        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, 0])
 
 
 if __name__ == "__main__":

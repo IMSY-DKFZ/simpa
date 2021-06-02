@@ -71,17 +71,10 @@ class TestCompareMCXResultsWithDiffusionTheory():
             Tags.MCX_ASSUMED_ANISOTROPY: 0.9
         })
 
-        class CustomDevice(PhotoacousticDevice):
-
-            def __init__(self):
-                super(CustomDevice, self).__init__()
-                self.add_illumination_geometry(PencilBeamIlluminationGeometry())
-
-            def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-                return np.asarray([global_settings[Tags.DIM_VOLUME_X_MM] / 2,
-                                   global_settings[Tags.DIM_VOLUME_Y_MM] / 2, 0])
-
-        self.device = CustomDevice()
+        self.device = PhotoacousticDevice(device_position_mm=np.asarray([self.settings[Tags.DIM_VOLUME_X_MM] / 2,
+                                                                         self.settings[Tags.DIM_VOLUME_Y_MM] / 2,
+                                                                         0]))
+        self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
     def test_fluence(self):
         self.perform_test(distance=self.dim/2, spacing=1)

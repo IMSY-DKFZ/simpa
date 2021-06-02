@@ -68,7 +68,8 @@ class TestqPAIReconstruction:
             Tags.OPTICAL_MODEL_BINARY_PATH: self.path_manager.get_mcx_binary_path(),
             Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
             Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+            Tags.MCX_ASSUMED_ANISOTROPY: 0.9
         })
         self.settings["noise_model"] = {
             Tags.NOISE_MEAN: 0.0,
@@ -79,8 +80,10 @@ class TestqPAIReconstruction:
         }
 
         self.device = RSOMExplorerP50(element_spacing_mm=0.5,
-                                      number_elements_x=30,
-                                      number_elements_y=30)
+                                      number_elements_x=10,
+                                      number_elements_y=10,
+                                      device_position_mm=np.asarray([self.settings[Tags.DIM_VOLUME_X_MM]/2,
+                                                                     self.settings[Tags.DIM_VOLUME_Y_MM]/2, 0]))
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
@@ -220,7 +223,7 @@ class TestqPAIReconstruction:
         and two blood vessels. It is used for volume creation.
         """
         background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.90)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
         epidermis_structure = Settings()
@@ -245,7 +248,7 @@ class TestqPAIReconstruction:
         vessel_structure_1[Tags.ADHERE_TO_DEFORMATION] = True
         vessel_structure_1[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
 
-        vessel_structure_2= Settings()
+        vessel_structure_2 = Settings()
         vessel_structure_2[Tags.PRIORITY] = 3
         vessel_structure_2[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2, 0,
                                                        self.VOLUME_HEIGHT_IN_MM / 3]

@@ -91,7 +91,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         if Tags.RANDOM_SEED in self.global_settings:
             self.global_settings[Tags.RANDOM_SEED] = int(self.global_settings[Tags.RANDOM_SEED])
         if Tags.MCX_SEED in self.optical_settings:
-            self.global_settings[Tags.MCX_SEED] = int(self.global_settings[Tags.MCX_SEED])
+            self.optical_settings[Tags.MCX_SEED] = int(self.optical_settings[Tags.MCX_SEED])
 
         # run reconstruction
         reconstructed_absorption, list_of_intermediate_absorptions = self.iterative_absorption_reconstruction(pa_device)
@@ -402,6 +402,8 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
             raise AssertionError("Tags.OPTICAL_MODEL tag was not specified in the settings.")
         model = self.optical_settings[Tags.OPTICAL_MODEL]
 
+        self.global_settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = np.mean(anisotropy)
+
         if model == Tags.OPTICAL_MODEL_MCX:
             forward_model_implementation = OpticalForwardModelMcxAdapter(self.global_settings)
         else:
@@ -415,16 +417,14 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
                                                                  scattering_cm=scattering,
                                                                  anisotropy=anisotropy,
                                                                  illumination_geometry=_device[0],
-                                                                 probe_position_mm=pa_device.get_probe_position_mm(
-                                                                     self.global_settings))
+                                                                 probe_position_mm=pa_device.device_position_mm)
             for idx in range(len(_device) - 1):
                 # we already looked at the 0th element, so go from 1 to n-1
                 fluence += forward_model_implementation.forward_model(absorption_cm=absorption,
                                                                       scattering_cm=scattering,
                                                                       anisotropy=anisotropy,
                                                                       illumination_geometry=_device[idx + 1],
-                                                                      probe_position_mm=pa_device.get_probe_position_mm(
-                                                                          self.global_settings))
+                                                                      probe_position_mm=pa_device.device_position_mm)
 
             fluence = fluence / len(_device)
 
@@ -433,8 +433,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
                                                                  scattering_cm=scattering,
                                                                  anisotropy=anisotropy,
                                                                  illumination_geometry=_device,
-                                                                 probe_position_mm=pa_device.get_probe_position_mm(
-                                                                     self.global_settings))
+                                                                 probe_position_mm=pa_device.device_position_mm)
 
         print("Simulating the optical forward process...[Done]")
 

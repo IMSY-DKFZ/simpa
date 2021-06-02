@@ -85,18 +85,11 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
             Tags.MCX_ASSUMED_ANISOTROPY: 0.9
         })
 
-        class CustomDevice(PhotoacousticDevice):
+        self.device = PhotoacousticDevice(device_position_mm=np.asarray([self.settings[Tags.DIM_VOLUME_X_MM] / 2,
+                                                                         self.settings[Tags.DIM_VOLUME_Y_MM] / 2,
+                                                                         10]))
 
-            def __init__(self):
-                super(CustomDevice, self).__init__()
-                self.add_illumination_geometry(PencilBeamIlluminationGeometry())
-
-            def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-                return np.asarray([global_settings[Tags.DIM_VOLUME_X_MM] / 2,
-                                   global_settings[Tags.DIM_VOLUME_Y_MM] / 2,
-                                   10])
-
-        self.device = CustomDevice()
+        self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
     def tearDown(self):
         os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
@@ -208,13 +201,13 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
                           use_mcx_anisotropy=False)
 
     def perform_test(self, scattering_value_1=1e-30,
-                           absorption_value_1=1e-30,
-                           anisotropy_value_1=1.0,
-                           scattering_value_2=1e-30,
-                           absorption_value_2=1e-30,
-                           anisotropy_value_2=1.0,
-                           title="Medium Abs. High Scat.",
-                           use_mcx_anisotropy=True):
+                     absorption_value_1=1e-30,
+                     anisotropy_value_1=1.0,
+                     scattering_value_2=1e-30,
+                     absorption_value_2=1e-30,
+                     anisotropy_value_2=1.0,
+                     title="Medium Abs. High Scat.",
+                     use_mcx_anisotropy=True):
 
         # RUN SIMULATION 1
 

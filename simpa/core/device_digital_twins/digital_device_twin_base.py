@@ -112,12 +112,6 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
                 _result = False
         return _result
 
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        """
-        Returns the default probe position in case none was given in the Settings dict.
-        """
-        return np.asarray([0, 0, 0])
-
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         """
         This method can be overwritten by a photoacoustic device if the device poses special constraints to the

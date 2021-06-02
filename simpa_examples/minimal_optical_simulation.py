@@ -34,22 +34,6 @@ VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
 VISUALIZE = True
 
 
-class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
-    """
-    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
-
-    """
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        return np.asarray([0, 0, 0])
-
-    def __init__(self):
-        super().__init__()
-        self.set_detection_geometry(LinearArrayDetectionGeometry())
-        self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
-                                                                direction_vector_mm=[0, 0, 5]))
-
-
 def create_example_tissue():
     """
     This is a very simple example script of how to create a tissue definition.
@@ -146,6 +130,19 @@ pipeline = [
     OpticalForwardModelMcxAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_model_1")
 ]
+
+class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
+    """
+    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
+
+    """
+
+    def __init__(self):
+        super().__init__(device_position_mm=np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                        VOLUME_PLANAR_DIM_IN_MM/2, 0]))
+        self.set_detection_geometry(LinearArrayDetectionGeometry())
+        self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
+                                                                direction_vector_mm=[0, 0, 5]))
 
 device = ExampleDeviceSlitIlluminationLinearDetector()
 

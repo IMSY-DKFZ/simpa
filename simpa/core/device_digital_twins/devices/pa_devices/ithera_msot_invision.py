@@ -30,8 +30,8 @@ class InVision256TF(PhotoacousticDevice):
 
     """
 
-    def __init__(self):
-        super(InVision256TF, self).__init__()
+    def __init__(self, device_position_mm: np.ndarray = None):
+        super(InVision256TF, self).__init__(device_position_mm=device_position_mm)
 
         detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.74,
                                                           radius_mm=40,
@@ -41,18 +41,11 @@ class InVision256TF(PhotoacousticDevice):
                                                           center_frequency_hz=5e6,
                                                           bandwidth_percent=55,
                                                           sampling_frequency_mhz=40,
-                                                          focus_in_field_of_view_mm=np.array([0, 0, 4]),
                                                           angular_origin_offset=0)
 
         self.set_detection_geometry(detection_geometry)
         for i in range(10):
             self.add_illumination_geometry(MSOTInVisionIlluminationGeometry(i))
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        sizes_mm = np.asarray([global_settings[Tags.DIM_VOLUME_X_MM],
-                               global_settings[Tags.DIM_VOLUME_Y_MM],
-                               global_settings[Tags.DIM_VOLUME_Z_MM]])
-        return np.array([sizes_mm[0] / 2, sizes_mm[1] / 2, sizes_mm[2] / 2])
 
     def get_field_of_view_extent_mm(self) -> np.ndarray:
         return np.asarray([-20, 20,
