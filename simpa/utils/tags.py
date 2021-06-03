@@ -1197,18 +1197,6 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
-    SETTINGS_JSON = ("settings_json", (bool, np.bool_))
-    """
-    If True, the SIMPA settings are saved in a .json file.\n
-    Usage: SIMPA package
-    """
-
-    SETTINGS_JSON_PATH = ("settings_json_path", str)
-    """
-    Absolute path to a .json file if SETTINGS_JSON is set to True.
-    Usage: SIMPA package
-    """
-
     SETTINGS = "settings"
     """
     Location of the simulation settings in the SIMPA output file.\n
