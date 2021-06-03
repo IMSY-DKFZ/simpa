@@ -89,10 +89,10 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
                 simulate_2d = True
                 axes = (0, 1)
                 if detectors_are_aligned_along_y_axis:
-                    transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM])))
+                    transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM]))) - 1
                     image_slice = np.s_[transducer_plane, :, :]
                 else:
-                    transducer_plane = int(round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM])))
+                    transducer_plane = int(round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM]))) - 1
                     image_slice = np.s_[:, transducer_plane, :]
             else:
                 simulate_2d = False

@@ -164,8 +164,8 @@ class ReconstructionAlgorithmTestBaseClass:
 
         plt.subplot(1, 2, 1)
         plt.title("Initial pressure")
-        plt.imshow(np.flipud(np.rot90(initial_pressure[:, 20, :])))
+        plt.imshow(np.rot90(initial_pressure[:, 20, :], 3))
         plt.subplot(1, 2, 2)
         plt.title(reconstructed_title)
-        plt.imshow(np.rot90(reconstructed_image, -1))
+        plt.imshow(np.rot90(reconstructed_image, 3))
         plt.show()
