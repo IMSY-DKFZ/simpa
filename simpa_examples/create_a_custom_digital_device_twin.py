@@ -21,9 +21,6 @@ class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
 
     """
 
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        return np.asarray([0, 0, 0])
-
     def __init__(self):
         super().__init__()
         self.set_detection_geometry(LinearArrayDetectionGeometry())
@@ -38,21 +35,14 @@ if __name__ == "__main__":
     settings[Tags.DIM_VOLUME_Z_MM] = 20
     settings[Tags.SPACING_MM] = 0.5
     settings[Tags.STRUCTURES] = {}
-    # settings[Tags.DIGITAL_DEVICE_POSITION] = [50, 50, 50]
-    settings = device.adjust_simulation_volume_and_settings(settings)
 
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
 
-    positions = device.get_detection_geometry().get_detector_element_positions_accounting_for_device_position_mm(settings)
+    positions = device.get_detection_geometry().get_detector_element_positions_accounting_for_device_position_mm()
     detector_elements = device.get_detection_geometry().get_detector_element_orientations(global_settings=settings)
-    # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
     positions = np.round(positions/settings[Tags.SPACING_MM]).astype(int)
-    position_map = np.zeros((x_dim, z_dim))
-    position_map[positions[:, 0], positions[:, 2]] = 1
     import matplotlib.pyplot as plt
     plt.scatter(positions[:, 0], positions[:, 2])
     plt.quiver(positions[:, 0], positions[:, 2], detector_elements[:, 0], detector_elements[:, 2])
     plt.show()
-    # plt.imshow(map)
-    # plt.show()

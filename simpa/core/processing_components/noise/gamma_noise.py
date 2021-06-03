@@ -17,11 +17,12 @@ class GammaNoiseProcessingComponent(ProcessingComponent):
     Applies Gaussian noise to the defined data field.
     The noise will be applied to all wavelengths.
 
-    Component Settings:
-       **Tags.NOISE_SHAPE (default: 2)
-       **Tags.NOISE_SCALE (default: 2)
-       **Tags.NOISE_MODE (default: Tags.NOISE_MODE_ADDITIVE)
-       **data_field (required)
+    Component Settings::
+
+       Tags.NOISE_SHAPE (default: 2)
+       Tags.NOISE_SCALE (default: 2)
+       Tags.NOISE_MODE (default: Tags.NOISE_MODE_ADDITIVE)
+       Tags.DATA_FIELD (required)
     """
 
     def run(self, device):

@@ -19,11 +19,12 @@ class UniformNoiseProcessingComponent(ProcessingComponent):
 
     The noise will be uniformly distributed between [min, max[.
 
-    Component Settings:
-       **Tags.NOISE_MIN (default: 0)
-       **Tags.NOISE_MAX (default: 1)
-       **Tags.NOISE_MODE (default: Tags.NOISE_MODE_ADDITIVE)
-       **data_field (required)
+    Component Settings::
+
+       Tags.NOISE_MIN (default: 0)
+       Tags.NOISE_MAX (default: 1)
+       Tags.NOISE_MODE (default: Tags.NOISE_MODE_ADDITIVE)
+       Tags.DATA_FIELD (required)
     """
 
     def run(self, device):

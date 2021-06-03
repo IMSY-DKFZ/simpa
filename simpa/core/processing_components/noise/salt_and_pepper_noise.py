@@ -20,11 +20,12 @@ class SaltAndPepperNoiseProcessingComponent(ProcessingComponent):
     The noise will be 50% salt and 50% pepper noise, but both can be set to the same value using the
     NOISE_MIN and NOISE_MAX fields.
 
-    Component Settings:
-       **Tags.NOISE_MIN (default: min(data_field))
-       **Tags.NOISE_MAX (default: max(data_field))
-       **Tags.NOISE_FREQUENCY (default: 0.01)
-       **data_field (required)
+    Component Settings::
+
+       Tags.NOISE_MIN (default: min(data_field))
+       Tags.NOISE_MAX (default: max(data_field))
+       Tags.NOISE_FREQUENCY (default: 0.01)
+       Tags.DATA_FIELD (required)
     """
 
     def run(self, device):

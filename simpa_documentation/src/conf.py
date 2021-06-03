@@ -24,13 +24,15 @@ sys.path.insert(0, os.path.abspath('.'))
 # -- Project information -----------------------------------------------------
 
 project = 'SIMPA'
-copyright = '2020, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
-author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg'
+copyright = '2020-2021, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and ' \
+            '2021, Cancer Research UK, Cambridge Institute (CRUK CI)'
+author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and ' \
+         'Cancer Research UK, Cambridge Institute (CRUK CI)'
 
 # The full version
 # SIMPA syntax: RELEASE.MAJOR.MINOR
-version = '0.3.1'
-
+with open('../../VERSION', 'r') as readme_file:
+    version = readme_file.read()
 
 # -- General configuration ---------------------------------------------------
 
@@ -57,7 +59,7 @@ source_suffix = {
 
 # -- Options for HTML output -------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the simpa_documentation for
+# The theme to use for HTML and HTML Help pages. See the documentation for
 # a list of builtin themes.
 #
 html_theme = 'alabaster'

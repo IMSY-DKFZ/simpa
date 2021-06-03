@@ -16,23 +16,17 @@ Welcome to the SIMPA documentation!
 Class references
 ================
 
-This component diagram shows the three principle modules
+This description details the three principle modules
 of the SIMPA toolkit and gives an insight into their constituents.
 The core is concerned with providing interfaces for the
 simulation tools, while the utils module contains many scripts
 and classes to facilitate the use of the simulation pipeline.
 
-.. image:: images/simpa_component_diagram.png
-    :width: 20cm
-
 Module: core
 -------------------
 
 The purpose of the core module is to provide interfaces that facilitate the integration of toolboxes and code for
-photoacoustic modeling into a single continuous pipeline:
-
-.. image:: images/pipeline_overview.png
-    :width: 20cm
+photoacoustic modeling into a single continuous pipeline.
 
 .. automodule:: simpa.core.simulation
     :members:
@@ -42,85 +36,104 @@ Volume creation
 
 The core contribution of the SIMPA toolkit is the creation of in silico tissue-mimicking
 phantoms. This feature is represented by the volume_creation module, that two main volume creation modules:
-| Model-based creation of volumes using a set of rules
-| Segmentation-based creation of volumes
 
-.. automodule:: simpa.core.volume_creation
-    :members:
+ - Model-based creation of volumes using a set of rules
+ - Segmentation-based creation of volumes
 
-.. automodule:: simpa.core.volume_creation.segmentation_based_volume_creator
-    :members:
-
-.. automodule:: simpa.core.volume_creation.versatile_volume_creator
+.. automodule:: simpa.core.volume_creation_module
     :members:
 
 Model-based volume creation
 """"""""""""""""""""""""""""
 
-.. automodule:: simpa.core.volume_creation.versatile_volume_creator
+.. automodule:: simpa.core.volume_creation_module.volume_creation_module_model_based_adapter
     :members:
 
 Segmentation-based volume creation
 """""""""""""""""""""""""""""""""""
 
-.. automodule:: simpa.core.volume_creation.segmentation_based_volume_creator
+.. automodule:: simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter
     :members:
 
-Optical forward modeling
+Optical forward modelling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: simpa.core.optical_simulation
-    :members:
-
-.. automodule:: simpa.core.optical_simulation.illumination_definition
+.. automodule:: simpa.core.optical_simulation_module
     :members:
 
 mcx integration
 """"""""""""""""""
 
-.. automodule:: simpa.core.optical_simulation.mcx_adapter
+.. automodule:: simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter
     :members:
 
-Acoustic forward modeling
+Acoustic forward modelling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: simpa.core.acoustic_simulation
+.. automodule:: simpa.core.acoustic_forward_module
     :members:
 
 k-Wave integration
 """""""""""""""""""
 
-.. automodule:: simpa.core.acoustic_simulation.k_wave_adapter
-    :members:
-
-Noise modeling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: simpa.core.noise_simulation.noise_modelling
-    :members:
-
-.. automodule:: simpa.core.noise_simulation
+.. automodule:: simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter
     :members:
 
 Image reconstruction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: simpa.core.image_reconstruction.reconstruction_modelling
+.. automodule:: simpa.core.reconstruction_module
     :members:
 
-.. automodule:: simpa.core.image_reconstruction
+.. automodule:: simpa.core.reconstruction_module.reconstruction_utils
     :members:
 
 Backprojection
 """""""""""""""""""""""""""""""
 
-.. automodule:: simpa.core.image_reconstruction.BackprojectionAdapter
+.. automodule:: simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter
     :members:
 
-Time Revearsal
+Delay-Multiply-And-Sum (DMAS)
 """""""""""""""""""""""""""""""
 
-.. automodule:: simpa.core.image_reconstruction.TimeReversalAdapter
+.. automodule:: simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter
+    :members:
+
+signed Delay-Multiply-And-Sum (sDMAS)
+"""""""""""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter
+    :members:
+
+Time Reversal
+""""""""""""""
+
+.. automodule:: simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter
+    :members:
+
+Processing Components
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: simpa.core.processing_components
+    :members:
+
+Noise Models
+"""""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.processing_components.noise.gamma_noise
+    :members:
+
+.. automodule:: simpa.core.processing_components.noise.gaussian_noise
+    :members:
+
+.. automodule:: simpa.core.processing_components.noise.poisson_noise
+    :members:
+
+.. automodule:: simpa.core.processing_components.noise.salt_and_pepper_noise
+    :members:
+
+.. automodule:: simpa.core.processing_components.noise.uniform_noise
     :members:
 
 Digital device twins
@@ -129,18 +142,50 @@ Digital device twins
 At every step along the forward simulation, knowledge of the photoacoustic device that is used for the measurements is
 needed. This is important to reflect characteristic artefacts and challenges for the respective device.
 
-To this end, we have included digital twins of commonly used devices into the SIMPA core.
+To this end, we have included digital twins of commonly used devices into the SIMPA core. Additionally, we have included
+detection geometries and illumination geometries that can be used to create custom photoacoustic devices for simulation.
 
-MSOT Acuity Echo
-""""""""""""""""""
+Detection Geometries
+"""""""""""""""""""""
 
-.. automodule:: simpa.core.device_digital_twins.msot_devices
+.. automodule:: simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base
     :members:
 
-RSOM Explorer P50
-"""""""""""""""""""
+.. automodule:: simpa.core.device_digital_twins.devices.detection_geometries.curved_array
+    :members:
 
-.. automodule:: simpa.core.device_digital_twins.rsom_device
+.. automodule:: simpa.core.device_digital_twins.devices.detection_geometries.linear_array
+    :members:
+
+.. automodule:: simpa.core.device_digital_twins.devices.detection_geometries.planar_array
+    :members:
+
+Illumination Geometries
+""""""""""""""""""""""""
+
+.. automodule:: simpa.core.device_digital_twins.devices.illumination_geometries.illumination_geometry_base
+    :members:
+
+.. automodule:: simpa.core.device_digital_twins.devices.illumination_geometries.pencil_array_illumination
+    :members:
+
+.. automodule:: simpa.core.device_digital_twins.devices.illumination_geometries.pencil_beam_illumination
+    :members:
+
+.. automodule:: simpa.core.device_digital_twins.devices.illumination_geometries.slit_illumination
+    :members:
+
+
+Models of real world devices
+""""""""""""""""""""""""""""
+
+.. automodule:: simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity
+    :members:
+
+.. automodule:: simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_invision
+    :members:
+
+.. automodule:: simpa.core.device_digital_twins.devices.pa_devices.ithera_rsom
     :members:
 
 Module: utils
@@ -150,7 +195,7 @@ The utils module contains several general-purpose utility functions whose purpos
 the use of SIMPA. The most important of these is the Tags class, which defines the strings and data types
 that have to be used for the keys and values of the settings dictionary.
 
-.. automodule:: simpa.utils.tags
+.. automodule:: simpa.utils.calculate
     :members:
 
 .. automodule:: simpa.utils.constants
@@ -168,7 +213,7 @@ that have to be used for the keys and values of the settings dictionary.
 .. automodule:: simpa.utils.settings
     :members:
 
-.. automodule:: simpa.utils.calculate
+.. automodule:: simpa.utils.tags
     :members:
 
 .. automodule:: simpa.utils.tissue_properties
@@ -203,26 +248,39 @@ Module: io_handling
 .. automodule:: simpa.io_handling.io_hdf5
     :members:
 
+.. automodule:: simpa.io_handling.serialization
+    :members:
+
+Module: log
+-------------------
+
+.. automodule:: simpa.log
+    :members:
+
+.. automodule:: simpa.log.file_logger
+    :members:
+
+
 Examples
 ================
 
-Performing a complete forward simulation with acoustic modeling, optical modeling, as well as image reconstruction
+Performing an optical forward simulation
 --------------------------------------------------------------------------------------------------------------------
 
 The file can be found in simpa_examples/minimal_optical_simulation.py:
 
+.. literalinclude:: ../../simpa_examples/minimal_optical_simulation.py
+    :language: python
+    :lines: 1-
+
+Performing a complete forward simulation with acoustic modeling, optical modeling, as well as image reconstruction
+--------------------------------------------------------------------------------------------------------------------
+
+The file can be found in simpa_examples/optical_and_acoustic_simulation.py:
+
 .. literalinclude:: ../../simpa_examples/optical_and_acoustic_simulation.py
     :language: python
-    :lines: 23-
-
-Reading the HDF5 simulation output
-----------------------------------
-
-The file can be found in simpa_examples/access_saved_PAI_data.py:
-
-.. literalinclude:: ../../simpa_examples/access_saved_PAI_data.py
-    :language: python
-    :lines: 23-
+    :lines: 1-
 
 Defining custom tissue structures and properties
 ------------------------------------------------
@@ -231,4 +289,31 @@ The file can be found in simpa_examples/create_custom_tissues.py:
 
 .. literalinclude:: ../../simpa_examples/create_custom_tissues.py
     :language: python
-    :lines: 23-
+    :lines: 1-
+
+Defining a custom digital device twin class
+------------------------------------------------
+
+The file can be found in simpa_examples/create_a_custom_digital_device_twin.py:
+
+.. literalinclude:: ../../simpa_examples/create_a_custom_digital_device_twin.py
+    :language: python
+    :lines: 1-
+
+Defining custom tissue types
+------------------------------------------------
+
+The file can be found in simpa_examples/create_custom_tissues.py:
+
+.. literalinclude:: ../../simpa_examples/create_custom_tissues.py
+    :language: python
+    :lines: 1-
+
+Load a segmentation mask and use it to simulate
+------------------------------------------------
+
+The file can be found in simpa_examples/segmentation_loader.py:
+
+.. literalinclude:: ../../simpa_examples/segmentation_loader.py
+    :language: python
+    :lines: 1-

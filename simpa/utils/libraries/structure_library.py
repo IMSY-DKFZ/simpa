@@ -692,7 +692,9 @@ class Background(GeometricalStructure):
     """
     Defines a background that fills the whole simulation volume. It is always given the priority of 0 so that other
     structures can overwrite it when necessary.
-    Example usage:
+
+    Example usage::
+
         background_dictionary = Settings()
         background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
