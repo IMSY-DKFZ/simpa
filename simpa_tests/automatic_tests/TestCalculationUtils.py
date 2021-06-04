@@ -5,8 +5,7 @@ SPDX-License-Identifier: MIT
 """
 
 import unittest
-from simpa.utils import SegmentationClasses
-from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
+from simpa.utils import SegmentationClasses, MolecularCompositionGenerator
 from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 from simpa.utils.calculate import calculate_oxygenation
 from simpa.utils.calculate import randomize_uniform

@@ -4,34 +4,12 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties
+from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
 from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
-from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils.calculate import randomize_uniform
-
-
-class MolecularCompositionGenerator(object):
-    """
-    The MolecularCompositionGenerator is a helper class to facilitate the creation of a
-    MolecularComposition instance.
-    """
-    def __init__(self):
-        self.molecular_composition_dictionary = dict()
-
-    def append(self, value: Molecule = None, key: str = None):
-        if key is None:
-            key = value.name
-        if key in self.molecular_composition_dictionary:
-            raise KeyError(key + " already in the molecular composition!")
-        self.molecular_composition_dictionary[key] = value
-        return self
-
-    def get_molecular_composition(self, segmentation_type):
-        return MolecularComposition(segmentation_type=segmentation_type,
-                                    molecular_composition_settings=self.molecular_composition_dictionary)
 
 
 class TissueLibrary(object):
@@ -59,7 +37,7 @@ class TissueLibrary(object):
                                                                 anisotropy_spectrum=
                                                                 AnisotropySpectrumLibrary.
                                                                 CONSTANT_ANISOTROPY_ARBITRARY(g)))
-                                               .get_molecular_composition(SegmentationClasses.GENERIC))
+                .get_molecular_composition(SegmentationClasses.GENERIC))
 
     def muscle(self, background_oxy=None, blood_volume_fraction=None):
         """
