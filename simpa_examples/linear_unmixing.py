@@ -27,12 +27,13 @@ from simpa.processing import linear_unmixing as lu
 import numpy as np
 from simpa.simulation_components import *
 from simpa.utils.path_manager import PathManager
-from simpa.io_handling import load_data_field
+from simpa.io_handling import load_data_field, load_hdf5
+import matplotlib.pyplot as plt
 
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
-path_manager = PathManager()
+path_manager = PathManager("/home/p253n/Patricia/simpa/path_config.env")
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
@@ -125,7 +126,7 @@ settings.set_optical_settings({
 # Set component settings for linear unmixing.
 # Performs linear spectral unmixing on the defined data field.
 settings["linear_unmixing"] = {
-    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
     Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
@@ -142,7 +143,13 @@ simulate(pipeline, settings)
 lu.LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
 
 # load linear unmixing results
-lu_results = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-                             Tags.LINEAR_UNMIXING_RESULT)
-print(lu_results.keys())
+file = load_hdf5(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5")
+print(file["simulations"]["simulation_properties"]["mua"]["750"].keys())
+
+
+
+# lu_results = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+#                              Tags.LINEAR_UNMIXING_RESULT)
+# plt.imshow((lu_results["chromophore_concentrations"]["Deoxyhemoglobin"][6]))
+# plt.show()
 

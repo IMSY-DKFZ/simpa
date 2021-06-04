@@ -117,7 +117,7 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
         # split results to create dictionary which contains linear unmixing result for each chromophore
         for index, chromophore in enumerate(self.chromophore_spectra_dict.keys()):
             self.chromophore_concentrations_dict[chromophore] = self.chromophore_concentrations[index]
-        self.logger.debug(f"The chromophore concentration was computed for chromophores: "
+        self.logger.info(f"The chromophore concentration was computed for chromophores: "
                           f"{self.chromophore_concentrations_dict.keys()}")
 
         # compute blood oxygen saturation if selected
@@ -127,14 +127,21 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
                 sO2 = self.calculate_sO2()
                 save_dict = {
                     "sO2": sO2,
-                    "chromophore_concentrations": self.chromophore_concentrations_dict
+                    "chromophore_concentrations": self.chromophore_concentrations_dict,
+                    "chromophore_wavelengths": self.chromophore_wavelengths_dict
                 }
             else:
                 self.logger.info("Blood oxygen saturation is not calculated.")
-                save_dict = self.chromophore_concentrations_dict
+                save_dict = {
+                            "chromophore_concentrations": self.chromophore_concentrations_dict,
+                            "chromophore_wavelengths": self.chromophore_wavelengths_dict
+                }
         else:
             self.logger.info("Blood oxygen saturation is not calculated.")
-            save_dict = self.chromophore_concentrations_dict
+            save_dict = {
+                "chromophore_concentrations": self.chromophore_concentrations_dict,
+                "chromophore_wavelengths": self.chromophore_wavelengths_dict
+            }
 
         # save linear unmixing result in hdf5
         save_data_field(save_dict, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
@@ -180,6 +187,7 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
                                  f"Unmixing is approached with just {len(self.component_settings[chromophore_tag])} "
                                  f"wavelength for {chromophore_name}.")
 
+        # TODO: change error handling e.g. (try, except)
         for wavelength in self.component_settings[chromophore_tag]:
             if wavelength not in self.global_wavelengths:
                 self.logger.critical(f"{chromophore_name}: wavelength {wavelength}nm was not simulated and will not be used.")
@@ -264,7 +272,11 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
             concentration_oxy = self.chromophore_concentrations_dict["Oxyhemoglobin"]
             concentration_deoxy = self.chromophore_concentrations_dict["Deoxyhemoglobin"]
 
-            return concentration_oxy / (concentration_oxy + concentration_deoxy)
+            sO2 = concentration_oxy / (concentration_oxy + concentration_deoxy)
+            # if total hemoglobin is zero handle NaN by setting sO2 to zero
+            where_are_NaNs = np.isnan(sO2)
+            sO2[where_are_NaNs] = 0
+            return sO2
 
         except Exception:
             raise KeyError("Chromophores oxy- and/or deoxyhemoglobin were not specified in component settings, "
