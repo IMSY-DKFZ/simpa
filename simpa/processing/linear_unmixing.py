@@ -186,23 +186,16 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
             self.logger.critical(f"Linear unmixing should be performed with at least two wavelengths! "
                                  f"Unmixing is approached with just {len(self.component_settings[chromophore_tag])} "
                                  f"wavelength for {chromophore_name}.")
-
-        # TODO: change error handling e.g. (try, except)
-        for wavelength in self.component_settings[chromophore_tag]:
-            if wavelength not in self.global_wavelengths:
-                self.logger.critical(f"{chromophore_name}: wavelength {wavelength}nm was not simulated and will not be used.")
-            if chromophore_name != "Nickel Sulphide" and chromophore_name != "Copper Sulphide":
-                if wavelength > 1000 or wavelength < 450:
-                    raise ValueError(f"{chromophore_name}: wavelength {wavelength}nm is larger/smaller than allowed.")
-            else:
-                if wavelength > 980 or wavelength < 500:
-                    raise ValueError(f"{chromophore_name}: wavelength {wavelength}nm is larger/smaller than allowed.")
-
-        self.chromophore_wavelengths_dict[chromophore_name] = self.component_settings[chromophore_tag]
-        spectra = SPECTRAL_LIBRARY.get_spectrum_by_name(chromophore_name)
-        self.chromophore_spectra_dict[chromophore_name] = [spectra.get_absorption_for_wavelength(wavelength)
-                                                           for wavelength in self.component_settings[chromophore_tag]]
-        return None
+        # TODO: refactor of Spectra Library and error handling
+        try:
+            self.chromophore_wavelengths_dict[chromophore_name] = self.component_settings[chromophore_tag]
+            spectra = SPECTRAL_LIBRARY.get_spectrum_by_name(chromophore_name)
+            self.chromophore_spectra_dict[chromophore_name] = [spectra.get_absorption_for_wavelength(wavelength)
+                                                                for wavelength in self.component_settings[chromophore_tag]]
+        except Exception as e:
+            self.logger.warning("Loading of spectrum not successful.")
+            self.logger.debug(e)
+            raise ValueError("For details see above.")
 
     def create_piv_absorption_matrix(self):
         """

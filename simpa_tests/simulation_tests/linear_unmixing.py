@@ -226,7 +226,7 @@ class TestLinearUnmixing:
 
 if __name__ == '__main__':
     test = TestLinearUnmixing()
-    #test.generic_setup()
-    #test.generic_test()
-    test.visual_setup()
-    test.visual_test()
+    test.generic_setup()
+    test.generic_test()
+    #test.visual_setup()
+    #test.visual_test()
