@@ -1,33 +1,17 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
-from simpa.utils.settings import Settings
-from simpa.processing import linear_unmixing as lu
+from simpa.algorithms.multispectral import linear_unmixing as lu
 import numpy as np
-from simpa.simulation_components import *
+from simpa.core import *
 from simpa.utils.path_manager import PathManager
-from simpa.io_handling import load_data_field, load_hdf5
+from simpa.io_handling import load_data_field
+from simpa.core.device_digital_twins import PencilBeamIlluminationGeometry
 import matplotlib.pyplot as plt
 
 
@@ -40,7 +24,7 @@ VOLUME_PLANAR_DIM_IN_MM = 30
 VOLUME_HEIGHT_IN_MM = 60
 SPACING = 5
 RANDOM_SEED = 471
-VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
+VOLUME_NAME = "LinearUnmixingExample_"+str(RANDOM_SEED)
 WAVELENGTHS = [750, 800, 850]
 
 
@@ -72,7 +56,7 @@ def create_example_tissue():
                                                   12,
                                                   VOLUME_HEIGHT_IN_MM/2]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(oxygenation=0.99)
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -132,24 +116,37 @@ settings["linear_unmixing"] = {
     Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
 }
 
+device = PencilBeamIlluminationGeometry()
+
 # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
     OpticalForwardModelMcxAdapter(settings)
 ]
-simulate(pipeline, settings)
+simulate(pipeline, settings, device)
 
 # Run linear unmixing component with above specified settings
-lu.LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
+lu.LinearUnmixingProcessingComponent(settings, "linear_unmixing").run(device)
 
-# load linear unmixing results
-file = load_hdf5(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5")
-print(file["simulations"]["simulation_properties"]["mua"]["750"].keys())
+# Load linear unmixing result (blood oxygen saturation) and reference absorption for first wavelength
+lu_results = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+sO2 = lu_results["sO2"]
 
+mua = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
+                              wavelength=WAVELENGTHS[0])
 
+# Visualize linear unmixing result
+y_dim = int(mua.shape[1] / 2)
+plt.figure(figsize=(15, 15))
+plt.suptitle("Linear Unmixing")
+plt.subplot(121)
+plt.title("Absorption coefficients")
+plt.imshow(np.rot90(mua[:, y_dim, :], -1))
+plt.colorbar(fraction=0.05)
+plt.subplot(122)
+plt.title("Blood oxygen saturation")
+plt.imshow(np.rot90(sO2[:, y_dim, :], -1))
+plt.colorbar(fraction=0.05)
+plt.show()
 
-# lu_results = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-#                              Tags.LINEAR_UNMIXING_RESULT)
-# plt.imshow((lu_results["chromophore_concentrations"]["Deoxyhemoglobin"][6]))
-# plt.show()
 
