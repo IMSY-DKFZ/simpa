@@ -65,11 +65,25 @@ else
     medium.density = 1000*ones(Nx, Ny, Nz);
 end
 
-kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
-% CFL number of 0.3 (advised by manual)
-% Using makeTime, dt = CFL*dx/medium.sound_speed and the total
-% time is set to the time it would take for an acoustic wave to travel
-% across the longest grid diagonal.
+%% Sampling rate
+
+% load sampling rate from settings
+dt = 1.0 / double(settings.sensor_sampling_rate_mhz * 1000000);
+
+% Simulate as many time steps as a wave takes to traverse diagonally through the entire tissue
+Nt = round((sqrt(Ny*Ny+Nx*Nx+Nz*Nz)*dx / mean(medium.sound_speed, 'all')) / dt);
+
+estimated_cfl_number = dt / dx * mean(medium.sound_speed, 'all');
+
+% smaller time steps are better for numerical stability in time progressing simulations
+% A minimum CFL of 0.3 is advised in the kwave handbook.
+% In case we specify something larger, we use a higher sampling rate than anticipated.
+% Otherwise we simulate with the target sampling rate
+if estimated_cfl_number < 0.3
+    kgrid.setTime(Nt, dt);
+else
+    kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);
+end
 
 %% Define sensor
 
