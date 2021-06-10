@@ -61,9 +61,11 @@ http://www.k-wave.org/
 
 1. Install MATLAB with the core and parallel computing toolboxes activated at the minimum.
 2. Download the kWave toolbox
-3. Add the kWave toolbox base bath to the toolbox paths in MATLAB
-4. If wanted: Download the CPP and CUDA binary files and place them inthe k-Wave/binaries folder
-5. Note down the system path to the `matlab` executable file.
+3. Add the kWave toolbox base path to the toolbox paths in MATLAB
+4. Download the kWaveArray addition from the link given in this user forum post http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources
+5. Add the kWaveArray folder to the toolbox paths in MATLAB as well
+6. If wanted: Download the CPP and CUDA binary files and place them inthe k-Wave/binaries folder
+7. Note down the system path to the `matlab` executable file.
 
 ## Overview
 
@@ -72,7 +74,7 @@ However, it can also be used for image processing.
 
 ### Simulating photoacoustic images
 
-A basic example on how to use simpa in you project to run an optical forward simulation is given in the 
+A basic example on how to use simpa in your project to run an optical forward simulation is given in the 
 samples/minimal_optical_simulation.py file.
 
 ### Path Management
@@ -102,9 +104,7 @@ base.
 Please make sure that you have included unit tests for your code and that all previous tests still run through.
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST and you are very welcome to participate and
-raise any issues or suggest new features. You can join the meeting using the following link:
-
-https://meet.google.com/rze-bxej-cvj
+raise any issues or suggest new features. If you want to join this meeting, write one of the core developers (see developer_guide.md) 
 
 Please see the github guidelines for creating pull requests: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests
 
