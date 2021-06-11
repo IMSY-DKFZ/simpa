@@ -1,49 +1,32 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.utils import MolecularCompositionGenerator
 from simpa.utils import MOLECULE_LIBRARY
 from simpa.utils import Molecule
-from simpa.utils import AbsorptionSpectrum
+from simpa.utils import Spectrum
+from simpa.utils.libraries.spectra_library import ScatteringSpectrumLibrary, AnisotropySpectrumLibrary
 import numpy as np
 
 
 def create_custom_absorber():
     wavelengths = np.linspace(200, 1500, 100)
-    absorber = AbsorptionSpectrum(spectrum_name="random absorber",
-                                  wavelengths=wavelengths,
-                                  absorption_per_centimeter=np.random.random(
+    absorber = Spectrum(spectrum_name="random absorber",
+                        wavelengths=wavelengths,
+                        values=np.random.random(
                                       np.shape(wavelengths)))
     return absorber
 
 
 def create_custom_chromophore(volume_fraction: float = 1.0):
     chromophore = Molecule(
-            spectrum=create_custom_absorber(),
+            absorption_spectrum=create_custom_absorber(),
             volume_fraction=volume_fraction,
-            mus500=40.0,
-            b_mie=1.1,
-            f_ray=0.9,
-            anisotropy=0.9
+            scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(40.0),
+            anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9)
         )
     return chromophore
 

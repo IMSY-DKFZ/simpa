@@ -1,43 +1,27 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.io_handling import load_hdf5, load_data_field
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
-from simpa.core.device_digital_twins.msot_device import MSOTAcuityEcho
+from simpa.utils.path_manager import PathManager
+from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 import numpy as np
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter
+from simpa.core import ImageReconstructionModuleDelayAndSumAdapter
 
 # FIXME temporary workaround for newest Intel architectures
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
-PATH = "/home/tom/dev/FP/simpa/simpa_examples/CompletePipelineTestMSOT_4711.hdf5"
+path_manager = PathManager()
+PATH = path_manager.get_hdf5_file_save_path() + "/CompletePipelineTestMSOT_4711.hdf5"
 
 file = load_hdf5(PATH)
 settings = Settings(file["settings"])
-print(settings)
-#settings[Tags.WAVELENGTH] = settings[Tags.WAVELENGTHS][0]
+settings[Tags.WAVELENGTH] = settings[Tags.WAVELENGTHS][0]
 
 settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
@@ -50,10 +34,8 @@ settings.set_reconstruction_settings({
 })
 
 device = MSOTAcuityEcho()
-device.check_settings_prerequisites(settings)
-settings = device.adjust_simulation_volume_and_settings(settings)
 
-ImageReconstructionModuleDelayAndSumAdapter(settings).run()
+ImageReconstructionModuleDelayAndSumAdapter(settings).run(device)
 
 reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)

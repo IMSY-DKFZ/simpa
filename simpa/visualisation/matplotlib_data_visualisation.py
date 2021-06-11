@@ -1,24 +1,8 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.io_handling import load_hdf5
 import matplotlib.pyplot as plt
@@ -87,11 +71,6 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
             logger.critical("The key " + str(Tags.RECONSTRUCTED_DATA) + " was not in the simpa output.")
             raise e
 
-    shape = np.shape(absorption)
-    x_pos = int(shape[0] / 2)
-    y_pos = int(shape[1] / 2)
-    z_pos = int(shape[2] / 2)
-
     cmap_label_names, cmap_label_values, cmap = get_segmentation_colormap()
 
     data_to_show = []
@@ -143,7 +122,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         data_to_show.append(reconstructed_data)
         data_item_names.append("Reconstruction")
         cmaps.append("viridis")
-        logscales.append(False and log_scale)
+        logscales.append(True and log_scale)
     if segmentation_map is not None and show_segmentation_map:
         data_to_show.append(segmentation_map)
         data_item_names.append("Segmentation Map")
@@ -161,7 +140,8 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         plt.subplot(num_rows, len(data_to_show), i+1)
         plt.title(data_item_names[i])
         if len(np.shape(data_to_show[i])) > 2:
-            data = np.rot90(data_to_show[i][:, y_pos, :], -1)
+            pos = int(np.shape(data_to_show[i])[1] / 2) - 1
+            data = np.rot90(data_to_show[i][:, pos, :], -1)
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         else:
             data = np.rot90(data_to_show[i][:, :], -1)
@@ -172,7 +152,8 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
             plt.subplot(num_rows, len(data_to_show), i + 1 + len(data_to_show))
             plt.title(data_item_names[i])
             if len(np.shape(data_to_show[i])) > 2:
-                data = np.rot90(data_to_show[i][x_pos, :, :], -1)
+                pos = int(np.shape(data_to_show[i])[0] / 2)
+                data = np.rot90(data_to_show[i][pos, :, :], -1)
                 plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
             else:
                 data = np.rot90(data_to_show[i][:, :], -1)

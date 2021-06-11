@@ -1,24 +1,8 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 import numpy as np
 from simpa.utils import TISSUE_LIBRARY
@@ -47,31 +31,31 @@ def assert_equals_recursive(a, b):
         assert a == b, str(a) + " is not the same as " + str(b)
 
 
-def create_background(global_settings):
+def create_background():
     background_structure_dictionary = dict()
     background_structure_dictionary[Tags.PRIORITY] = 0
     background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-    bg = Background(global_settings, Settings(background_structure_dictionary))
-    return bg.to_settings()
+    background_structure_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    return background_structure_dictionary
 
 
-def create_vessel(global_settings):
+def create_vessel():
     tubular_structure_dictionary = dict()
     tubular_structure_dictionary[Tags.PRIORITY] = 2
-    tubular_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+    tubular_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
     tubular_structure_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     tubular_structure_dictionary[Tags.STRUCTURE_END_MM] = [10, 10, 10]
     tubular_structure_dictionary[Tags.STRUCTURE_RADIUS_MM] = 4
     tubular_structure_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     tubular_structure_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    tube = CircularTubularStructure(global_settings, Settings(tubular_structure_dictionary))
-    return tube.to_settings()
+    tubular_structure_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+    return tubular_structure_dictionary
 
 
-def create_test_structure_parameters(global_settings):
+def create_test_structure_parameters():
     structures_dict = dict()
-    structures_dict["background"] = create_background(global_settings)
-    structures_dict["vessel"] = create_vessel(global_settings)
+    structures_dict["background"] = create_background()
+    structures_dict["vessel"] = create_vessel()
     return structures_dict
 
 
@@ -108,52 +92,3 @@ def create_test_structure_of_molecule(global_settings, molecule1, molecule2, mol
         structures_dict["vessel"] = create_vessel_of_molecule(global_settings, molecule2, prio=1, structure_start=1)
         structures_dict["vessel2"] = create_vessel_of_molecule(global_settings, molecule3, prio=2, structure_start=1.25)
     return structures_dict
-
-
-def create_background_of_tissue(global_settings, tissue):
-    background_structure_dictionary = dict()
-    background_structure_dictionary[Tags.PRIORITY] = 0
-    background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = tissue
-    bg = Background(global_settings, Settings(background_structure_dictionary))
-    return bg.to_settings()
-
-
-def create_vessel_of_tissue(global_settings, tissue, prio=0):
-    background_structure_dictionary = dict()
-    background_structure_dictionary[Tags.PRIORITY] = prio
-    background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = tissue
-    bg = Background(global_settings, Settings(background_structure_dictionary))
-    return bg.to_settings()
-
-
-def create_test_structure_of_tissue(global_settings, tissue1, tissue2, tissue3, key):
-    structures_dict = dict()
-    if key =="setting1":
-        structures_dict["background"] = create_background_of_tissue(global_settings, tissue1)
-    if key =="setting2":
-        structures_dict["background"] = create_background_of_tissue(global_settings, tissue1)
-        structures_dict["vessel"] = create_vessel_of_tissue(global_settings, tissue2, prio=1, structure_start=1)
-    if key =="setting3":
-        structures_dict["background"] = create_background_of_tissue(global_settings, tissue1)
-        structures_dict["vessel"] = create_vessel_of_tissue(global_settings, tissue2, prio=1, structure_start=1)
-        structures_dict["vessel2"] = create_vessel_of_tissue(global_settings, tissue3, prio=2, structure_start=1.25)
-    return structures_dict
-
-
-def set_settings():
-    random_seed = 4711
-    settings = {
-        Tags.WAVELENGTHS: [500, 700, 800, 900],
-        Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
-        Tags.RANDOM_SEED: random_seed,
-        Tags.VOLUME_NAME: "MoleculePhantom_" + str(random_seed).zfill(6),
-        Tags.SIMULATION_PATH: ".",
-        Tags.RUN_OPTICAL_MODEL: False,
-        Tags.RUN_ACOUSTIC_MODEL: False,
-        Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW: False,
-        Tags.SPACING_MM: 0.25,
-        Tags.DIM_VOLUME_Z_MM: 2,
-        Tags.DIM_VOLUME_X_MM: 2,
-        Tags.DIM_VOLUME_Y_MM: 2
-    }
-    return settings

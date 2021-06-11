@@ -1,24 +1,8 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from abc import abstractmethod
 from simpa.utils.settings import Settings
@@ -79,7 +63,10 @@ class GeometricalStructure:
     occupied by the GeometricalStructure. If a voxel has the value 0, it is outside of the GeometricalStructure.
     """
 
-    def __init__(self, global_settings: Settings, single_structure_settings: Settings = None):
+    def __init__(self, global_settings: Settings,
+                 single_structure_settings: Settings = None):
+
+        self.logger = Logger()
 
         self.voxel_spacing = global_settings[Tags.SPACING_MM]
         volume_x_dim = int(np.round(global_settings[Tags.DIM_VOLUME_X_MM] / self.voxel_spacing))
@@ -88,16 +75,22 @@ class GeometricalStructure:
         self.volume_dimensions_voxels = np.asarray([volume_x_dim, volume_y_dim, volume_z_dim])
 
         self.volume_dimensions_mm = self.volume_dimensions_voxels * self.voxel_spacing
-        self.do_deformation = (Tags.SIMULATE_DEFORMED_LAYERS in global_settings and
-                               global_settings[Tags.SIMULATE_DEFORMED_LAYERS])
+        self.do_deformation = (Tags.SIMULATE_DEFORMED_LAYERS in global_settings.get_volume_creation_settings() and
+                               global_settings.get_volume_creation_settings()[Tags.SIMULATE_DEFORMED_LAYERS])
+
         if (Tags.ADHERE_TO_DEFORMATION in single_structure_settings and
                 not single_structure_settings[Tags.ADHERE_TO_DEFORMATION]):
             self.do_deformation = False
-        if self.do_deformation and Tags.DEFORMED_LAYERS_SETTINGS in global_settings:
+
+        self.logger.debug(f"This structure will simulate deformations: {self.do_deformation}")
+
+        if self.do_deformation and Tags.DEFORMED_LAYERS_SETTINGS in global_settings.get_volume_creation_settings():
             self.deformation_functional_mm = get_functional_from_deformation_settings(
-                global_settings[Tags.DEFORMED_LAYERS_SETTINGS])
+                global_settings.get_volume_creation_settings()[Tags.DEFORMED_LAYERS_SETTINGS])
         else:
             self.deformation_functional_mm = None
+
+        self.logger.debug(f"This structure's deformation functional: {self.deformation_functional_mm}")
 
         if single_structure_settings is None:
             self.molecule_composition = MolecularComposition()
@@ -708,7 +701,9 @@ class Background(GeometricalStructure):
     """
     Defines a background that fills the whole simulation volume. It is always given the priority of 0 so that other
     structures can overwrite it when necessary.
-    Example usage:
+
+    Example usage::
+
         background_dictionary = Settings()
         background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100.0, 0.9)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND

@@ -1,31 +1,17 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
+from simpa.core.device_digital_twins import *
 import numpy as np
-from simpa.simulation_components import *
+from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
+    GaussianNoiseProcessingComponent
 
 from simpa.utils.path_manager import PathManager
 
@@ -76,7 +62,7 @@ def create_example_tissue():
                                                   12,
                                                   VOLUME_HEIGHT_IN_MM/2]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood_generic()
+    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -111,10 +97,11 @@ general_settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.WAVELENGTHS: [798]
-
-    # Simulation Device
-    # Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT,
+    Tags.WAVELENGTHS: [798],
+    Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                   VOLUME_PLANAR_DIM_IN_MM/2,
+                                   0],
+    Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
 }
 
 settings = Settings(general_settings)
@@ -131,7 +118,7 @@ settings.set_optical_settings({
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
 })
 settings["noise_model_1"] = {
-    Tags.NOISE_MEAN: 1,
+    Tags.NOISE_MEAN: 1.0,
     Tags.NOISE_STD: 0.1,
     Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
     Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
@@ -144,7 +131,22 @@ pipeline = [
     GaussianNoiseProcessingComponent(settings, "noise_model_1")
 ]
 
-simulate(pipeline, settings)
+class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
+    """
+    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
+
+    """
+
+    def __init__(self):
+        super().__init__(device_position_mm=np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                        VOLUME_PLANAR_DIM_IN_MM/2, 0]))
+        self.set_detection_geometry(LinearArrayDetectionGeometry())
+        self.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
+                                                                direction_vector_mm=[0, 0, 5]))
+
+device = ExampleDeviceSlitIlluminationLinearDetector()
+
+simulate(pipeline, settings, device)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]
@@ -153,4 +155,4 @@ else:
 
 if VISUALIZE:
     visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
-                   log_scale=False)
+                   log_scale=True)
