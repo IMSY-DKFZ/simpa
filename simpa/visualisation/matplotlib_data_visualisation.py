@@ -48,28 +48,32 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
             fluence = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_FLUENCE, wavelength)
         except KeyError as e:
             logger.critical("The key " + str(Tags.OPTICAL_MODEL_FLUENCE) + " was not in the simpa output.")
-            raise e
+            show_fluence = False
+            fluence = None
 
     if show_initial_pressure:
         try:
             initial_pressure = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength)
         except KeyError as e:
             logger.critical("The key " + str(Tags.OPTICAL_MODEL_INITIAL_PRESSURE) + " was not in the simpa output.")
-            raise e
+            show_initial_pressure = False
+            initial_pressure = None
 
     if show_time_series_data:
         try:
             time_series_data = get_data_field_from_simpa_output(file, Tags.TIME_SERIES_DATA, wavelength)
         except KeyError as e:
             logger.critical("The key " + str(Tags.TIME_SERIES_DATA) + " was not in the simpa output.")
-            raise e
+            show_time_series_data = False
+            time_series_data = None
 
     if show_reconstructed_data:
         try:
             reconstructed_data = get_data_field_from_simpa_output(file, Tags.RECONSTRUCTED_DATA, wavelength)
         except KeyError as e:
             logger.critical("The key " + str(Tags.RECONSTRUCTED_DATA) + " was not in the simpa output.")
-            raise e
+            show_reconstructed_data = False
+            reconstructed_data = None
 
     cmap_label_names, cmap_label_values, cmap = get_segmentation_colormap()
 

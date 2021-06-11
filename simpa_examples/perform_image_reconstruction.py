@@ -33,6 +33,7 @@ settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
 })
 
+# TODO use the correct device definition here
 device = MSOTAcuityEcho()
 
 ImageReconstructionModuleDelayAndSumAdapter(settings).run(device)
