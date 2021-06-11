@@ -4,7 +4,9 @@
 
 function [] = time_reversal_3D(acoustic_path)
 
-%% Read settings file
+%% In case of an error, make sure the matlab scripts exits anyway
+clean_up = onCleanup(@exit);
+
 %% Read settings file
 data = load(acoustic_path);
 

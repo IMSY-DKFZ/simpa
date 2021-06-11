@@ -132,6 +132,8 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                     dictionary[key] = item[()]
                     if isinstance(dictionary[key], bytes):
                         dictionary[key] = dictionary[key].decode("utf-8")
+                    elif isinstance(dictionary[key], np.bool_):
+                        dictionary[key] = bool(dictionary[key])
                 else:
                     dictionary[key] = None
             elif isinstance(item, h5py._hl.group.Group):
