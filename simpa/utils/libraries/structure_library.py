@@ -63,7 +63,10 @@ class GeometricalStructure:
     occupied by the GeometricalStructure. If a voxel has the value 0, it is outside of the GeometricalStructure.
     """
 
-    def __init__(self, global_settings: Settings, single_structure_settings: Settings = None):
+    def __init__(self, global_settings: Settings,
+                 single_structure_settings: Settings = None):
+
+        self.logger = Logger()
 
         self.voxel_spacing = global_settings[Tags.SPACING_MM]
         volume_x_dim = int(np.round(global_settings[Tags.DIM_VOLUME_X_MM] / self.voxel_spacing))
@@ -72,16 +75,22 @@ class GeometricalStructure:
         self.volume_dimensions_voxels = np.asarray([volume_x_dim, volume_y_dim, volume_z_dim])
 
         self.volume_dimensions_mm = self.volume_dimensions_voxels * self.voxel_spacing
-        self.do_deformation = (Tags.SIMULATE_DEFORMED_LAYERS in global_settings and
-                               global_settings[Tags.SIMULATE_DEFORMED_LAYERS])
+        self.do_deformation = (Tags.SIMULATE_DEFORMED_LAYERS in global_settings.get_volume_creation_settings() and
+                               global_settings.get_volume_creation_settings()[Tags.SIMULATE_DEFORMED_LAYERS])
+
         if (Tags.ADHERE_TO_DEFORMATION in single_structure_settings and
                 not single_structure_settings[Tags.ADHERE_TO_DEFORMATION]):
             self.do_deformation = False
-        if self.do_deformation and Tags.DEFORMED_LAYERS_SETTINGS in global_settings:
+
+        self.logger.debug(f"This structure will simulate deformations: {self.do_deformation}")
+
+        if self.do_deformation and Tags.DEFORMED_LAYERS_SETTINGS in global_settings.get_volume_creation_settings():
             self.deformation_functional_mm = get_functional_from_deformation_settings(
-                global_settings[Tags.DEFORMED_LAYERS_SETTINGS])
+                global_settings.get_volume_creation_settings()[Tags.DEFORMED_LAYERS_SETTINGS])
         else:
             self.deformation_functional_mm = None
+
+        self.logger.debug(f"This structure's deformation functional: {self.deformation_functional_mm}")
 
         if single_structure_settings is None:
             self.molecule_composition = MolecularComposition()
