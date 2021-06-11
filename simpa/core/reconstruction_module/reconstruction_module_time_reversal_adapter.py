@@ -39,10 +39,6 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
         :param detection_geometry: PA device that is used for reconstruction
         """
 
-        tmp_ac_properties = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
-                                      SaveFilePaths.SIMULATION_PROPERTIES.format(Tags.ORIGINAL_DATA,
-                                                                                 self.global_settings[Tags.WAVELENGTH]))
-
         if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not \
                 self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
             axes = (0, 1)
@@ -85,20 +81,18 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
                                  "Please increase it!")
 
         # TODO: Include possibility to
-        # possible_acoustic_properties = [Tags.PROPERTY_SPEED_OF_SOUND,
-        #                                 Tags.PROPERTY_DENSITY,
-        #                                 Tags.PROPERTY_ALPHA_COEFF
-        #                                 ]
+        possible_acoustic_properties = [Tags.PROPERTY_SPEED_OF_SOUND,
+                                        Tags.PROPERTY_DENSITY,
+                                        Tags.PROPERTY_ALPHA_COEFF
+                                        ]
         input_data[Tags.PROPERTY_SENSOR_MASK] = sensor_map
 
-        # volumes = tmp_ac_properties
-
-        # for acoustic_property in possible_acoustic_properties:
-        #     if acoustic_property in tmp_ac_properties.keys():
-        #         try:
-        #             input_data[acoustic_property] = np.rot90(volumes[acoustic_property], 3, axes=axes)
-        #         except ValueError or KeyError:
-        #             self.logger.error("{} not specified.".format(acoustic_property))
+        for acoustic_property in possible_acoustic_properties:
+            if acoustic_property in self.component_settings:
+                try:
+                    input_data[acoustic_property] = self.component_settings[acoustic_property]
+                except ValueError or KeyError:
+                    self.logger.error("{} not specified.".format(acoustic_property))
 
         return input_data
 
@@ -195,8 +189,8 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
 
         reconstructed_data = np.flipud(np.rot90(reconstructed_data, 1, axes))
 
-        os.chdir(cur_dir)
-        os.remove(acoustic_path)
-        os.remove(acoustic_path + "tr.mat")
+        # os.chdir(cur_dir)
+        # os.remove(acoustic_path)
+        # os.remove(acoustic_path + "tr.mat")
 
         return reconstructed_data
