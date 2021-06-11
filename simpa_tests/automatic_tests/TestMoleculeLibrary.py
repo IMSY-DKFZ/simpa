@@ -5,11 +5,11 @@ SPDX-License-Identifier: MIT
 """
 
 import unittest
-from simpa.utils.libraries.tissue_library import MolecularComposition, MolecularCompositionGenerator
+from simpa.utils.libraries.tissue_library import MolecularComposition
 from simpa.utils.libraries.literature_values import StandardProperties, OpticalTissueProperties
 from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 from simpa.utils.libraries.spectra_library import Spectrum
-from simpa.utils import SegmentationClasses
+from simpa.utils import SegmentationClasses, MolecularCompositionGenerator
 from simpa.utils import Tags
 from simpa.utils import SPECTRAL_LIBRARY
 import numpy as np

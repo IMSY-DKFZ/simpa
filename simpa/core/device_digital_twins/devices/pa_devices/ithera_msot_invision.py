@@ -76,6 +76,7 @@ class InVision256TF(PhotoacousticDevice):
                 abstract_element_positions[:, 0] += x_half
                 abstract_element_positions[:, 1] += y_half
                 abstract_element_positions[:, 2] += z_half
+
                 return abstract_element_positions
 
             def get_field_of_view_extent_mm(self) -> np.ndarray:

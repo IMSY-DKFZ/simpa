@@ -19,13 +19,12 @@ from .libraries.spectra_library import Spectrum
 from .libraries.spectra_library import SPECTRAL_LIBRARY
 from .libraries.spectra_library import view_absorption_spectra
 
-from .libraries.molecule_library import Molecule
+from .libraries.molecule_library import Molecule, MolecularCompositionGenerator
 from .libraries.molecule_library import MoleculeLibrary
 from .libraries.molecule_library import MOLECULE_LIBRARY
 
 from .libraries.tissue_library import TissueLibrary
 from .libraries.tissue_library import TISSUE_LIBRARY
-from .libraries.tissue_library import MolecularCompositionGenerator
 
 from .calculate import calculate_oxygenation
 from .calculate import calculate_gruneisen_parameter_from_temperature

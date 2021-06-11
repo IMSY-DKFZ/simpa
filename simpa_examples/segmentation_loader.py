@@ -6,12 +6,11 @@ SPDX-License-Identifier: MIT
 
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
-from simpa.utils import Tags, SegmentationClasses
+from simpa.utils import Tags, SegmentationClasses, MolecularCompositionGenerator
 import numpy as np
 from skimage.data import shepp_logan_phantom
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
-from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from scipy.ndimage import zoom
 from simpa.utils.path_manager import PathManager
