@@ -73,8 +73,8 @@ To this end, use the pytorch website tool to figure out which version to install
 you should do the following steps in a command line:</p>
 <ol class="arabic simple">
 <li><p>Navigate to the <code class="docutils literal notranslate"><span class="pre">simpa</span></code> source directory (same level where the setup.py is in)</p></li>
-<li><p>Execute the command <code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">-b</span> <span class="pre">pdf</span> <span class="pre">-a</span> <span class="pre">simpa_documentation/src</span> <span class="pre">simpa_documentation</span></code></p></li>
-<li><p>Find the <code class="docutils literal notranslate"><span class="pre">PDF</span></code> file in <code class="docutils literal notranslate"><span class="pre">simpa_documentation/simpa_documantation.pdf</span></code></p></li>
+<li><p>Execute the command <code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">-b</span> <span class="pre">html</span> <span class="pre">-a</span> <span class="pre">docs/src</span> <span class="pre">docs</span></code></p></li>
+<li><p>Find the <code class="docutils literal notranslate"><span class="pre">HTML</span></code> file in <code class="docutils literal notranslate"><span class="pre">docs/index.html</span></code></p></li>
 </ol>
 </div>
 <div class="section" id="external-tools-installation-instructions">
@@ -2186,7 +2186,7 @@ Their usage within the SIMPA package is divided in “SIMPA package”, “modul
 
 <dl class="attribute">
 <dt id="simpa.utils.tags.Tags.DOWNSCALE_FACTOR">
-<code class="sig-name descname">DOWNSCALE_FACTOR</code><em class="property"> = ('downscale_factor', (&lt;class 'int'&gt;, &lt;class 'float'&gt;, &lt;class 'numpy.int64'&gt;, &lt;class 'numpy.float64'&gt;))</em><a class="headerlink" href="#simpa.utils.tags.Tags.DOWNSCALE_FACTOR" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">DOWNSCALE_FACTOR</code><em class="property"> = ('downscale_factor', (&lt;class 'int'&gt;, &lt;class 'float'&gt;, &lt;class 'numpy.int32'&gt;, &lt;class 'numpy.float64'&gt;))</em><a class="headerlink" href="#simpa.utils.tags.Tags.DOWNSCALE_FACTOR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Downscale factor of the resampling in the qPAI reconstruction</p>
 <p>Usage: module algorithms (iterative_qPAI_algorithm.py)</p>
 </dd></dl>
@@ -4530,16 +4530,17 @@ in the near future (e.g. ‘disk space low’). The software is still working as
 
 <span class="c1"># TODO: For the device choice, uncomment the undesired device</span>
 
-<span class="n">device</span> <span class="o">=</span> <span class="n">MSOTAcuityEcho</span><span class="p">(</span><span class="n">device_position_mm</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">VOLUME_TRANSDUCER_DIM_IN_MM</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-                                                     <span class="n">VOLUME_PLANAR_DIM_IN_MM</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-                                                     <span class="mi">0</span><span class="p">]))</span>
-<span class="n">device</span><span class="o">.</span><span class="n">update_settings_for_use_of_model_based_volume_creator</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<span class="c1"># device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,</span>
+<span class="c1">#                                                      VOLUME_PLANAR_DIM_IN_MM/2,</span>
+<span class="c1">#                                                      0]))</span>
+<span class="c1"># device.update_settings_for_use_of_model_based_volume_creator(settings)</span>
 
-<span class="c1"># device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,</span>
-<span class="c1">#                                                           VOLUME_PLANAR_DIM_IN_MM/2,</span>
-<span class="c1">#                                                           0]))</span>
-<span class="c1"># device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25, number_detector_elements=100))</span>
-<span class="c1"># device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[50, 0, 0]))</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">PhotoacousticDevice</span><span class="p">(</span><span class="n">device_position_mm</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">VOLUME_TRANSDUCER_DIM_IN_MM</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                                          <span class="n">VOLUME_PLANAR_DIM_IN_MM</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                                                          <span class="mi">0</span><span class="p">]))</span>
+<span class="n">device</span><span class="o">.</span><span class="n">set_detection_geometry</span><span class="p">(</span><span class="n">LinearArrayDetectionGeometry</span><span class="p">(</span><span class="n">device_position_mm</span><span class="o">=</span><span class="n">device</span><span class="o">.</span><span class="n">device_position_mm</span><span class="p">,</span> <span class="n">pitch_mm</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+                                                           <span class="n">number_detector_elements</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
+<span class="n">device</span><span class="o">.</span><span class="n">add_illumination_geometry</span><span class="p">(</span><span class="n">SlitIlluminationGeometry</span><span class="p">(</span><span class="n">slit_vector_mm</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
 
 
 <span class="n">SIMUATION_PIPELINE</span> <span class="o">=</span> <span class="p">[</span>
@@ -4905,7 +4906,7 @@ in the near future (e.g. ‘disk space low’). The software is still working as
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2020-2021, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and 2021, Cancer Research UK, Cambridge Institute (CRUK CI).
+      &copy;.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
