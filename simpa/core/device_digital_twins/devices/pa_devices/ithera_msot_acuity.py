@@ -19,6 +19,9 @@ class MSOTAcuityEcho(PhotoacousticDevice):
     due to the limitations of the possibilities how to represent a device in the software frameworks,
     constitutes only an approximation.
 
+    The origin for this device is the center of the membrane at the point of contact between the membrane and the
+    tissue, i.e. the outer center of the membrane.
+
     Some important publications that showcase the use cases of the MSOT Acuity and Acuity Echo device are::
 
         Regensburger, Adrian P., et al. "Detection of collagens by multispectral optoacoustic
@@ -32,6 +35,10 @@ class MSOTAcuityEcho(PhotoacousticDevice):
     """
 
     def __init__(self, device_position_mm: np.ndarray = None):
+        """
+
+        :param device_position_mm: Outer center of the membrane.
+        """
         super(MSOTAcuityEcho, self).__init__(device_position_mm=device_position_mm)
 
         self.mediprene_membrane_height_mm = 1

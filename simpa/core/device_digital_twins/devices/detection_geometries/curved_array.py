@@ -12,7 +12,7 @@ from simpa.utils import Settings, Tags
 class CurvedArrayDetectionGeometry(DetectionGeometryBase):
     """
     This class represents a digital twin of a ultrasound detection device
-    with a curved detection geometry
+    with a curved detection geometry. The origin for this device is the center (focus) of the curved array.
     """
 
     def __init__(self, pitch_mm=0.5,
@@ -26,7 +26,17 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
                  angular_origin_offset=np.pi,
                  device_position_mm=None):
         """
-        :param angular_origin_offset: TODO
+
+        :param pitch_mm: In-plane distance between the beginning of one detector element to the next detector element.
+        :param radius_mm:
+        :param number_detector_elements:
+        :param detector_element_width_mm:
+        :param detector_element_length_mm:
+        :param center_frequency_hz:
+        :param bandwidth_percent:
+        :param sampling_frequency_mhz:
+        :param angular_origin_offset:
+        :param device_position_mm: Center (focus) of the curved array.
         """
 
         super().__init__(number_detector_elements=number_detector_elements,
