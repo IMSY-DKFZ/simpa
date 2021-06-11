@@ -2,6 +2,13 @@
 
 The Simulation and Image Processing for Photoacoustic Imaging (SIMPA) toolkit.
 
+**(!) Alpha Version 0.4.0 (!)** 
+
+The toolkit is still under development and is thus not fully tested and may contain bugs. 
+Please report any issues that you find in our Issue Tracker: https://github.com/CAMI-DKFZ/simpa/issues. 
+Also make sure to double check all value ranges of the optical and acoustic tissue properties 
+and to assess all simulation results for plausibility.
+
 ## SIMPA Install Instructions
 
 You can install simpa with pip. Simply run:
