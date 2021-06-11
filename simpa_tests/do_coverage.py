@@ -40,4 +40,4 @@ cov.stop()
 cov.save()
 
 cov.report(skip_empty=True, skip_covered=False)
-cov.html_report(directory="../simpa_documentation/test_coverage")
+cov.html_report(directory="../docs/test_coverage")

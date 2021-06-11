@@ -1,8 +1,8 @@
-# simpa_documentation build artifacts
-simpa_documentation/.doctrees
-simpa_documentation/.doctrees/*
-simpa_documentation/test_coverage
-simpa_documentation/test_coverage/*
+# docs build artifacts
+docs/.doctrees
+docs/.doctrees/*
+docs/test_coverage
+docs/test_coverage/*
 
 *.orig
 */*.orig
@@ -75,7 +75,7 @@ instance/
 # Scrapy stuff:
 .scrapy
 
-# Sphinx simpa_documentation
+# Sphinx docs
 docs/_build/
 
 # PyBuilder
@@ -113,7 +113,7 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs simpa_documentation
+# mkdocs docs
 /site
 
 # mypy
