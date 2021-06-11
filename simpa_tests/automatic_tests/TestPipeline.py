@@ -54,7 +54,7 @@ class TestPipeline(unittest.TestCase):
         settings = Settings(settings)
         settings.set_volume_creation_settings(
             {
-                Tags.STRUCTURES: create_test_structure_parameters(settings)
+                Tags.STRUCTURES: create_test_structure_parameters()
             }
         )
         settings.set_optical_settings({

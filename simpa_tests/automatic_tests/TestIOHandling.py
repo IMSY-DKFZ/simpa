@@ -45,9 +45,9 @@ class TestIOHandling(unittest.TestCase):
 
         background_dictionary = Settings()
         background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-        bg = Background(settings, background_dictionary)
+        background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
         structure_settings = Settings()
-        structure_settings["background"] = bg.to_settings()
+        structure_settings["background"] = background_dictionary
 
         save_dictionary[Tags.STRUCTURES] = structure_settings
 
