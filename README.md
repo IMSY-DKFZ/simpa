@@ -11,11 +11,7 @@ and to assess all simulation results for plausibility.
 
 ## SIMPA Install Instructions
 
-You can install simpa with pip. Simply run:
-
-`pip install simpa`
-
-For a manual installation from the code, please follow steps 1 - 3:
+The recommended way to install simpa is a manual installation from the GitHub repository, please follow steps 1 - 3:
 
 1. `git clone https://github.com/CAMI-DKFZ/simpa.git`
 2. `git checkout master`
@@ -25,10 +21,14 @@ Now open a python instance in the 'simpa' folder that you have just downloaded. 
 virtual environment activated
 1. `cd simpa`
 2. `pip install -r requirements.txt`
-3. `python -m setup.py install`
+3. `python setup.py install` (for developement: `python setup.py develop`)
 4. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
 If no error messages arise, you are now setup to use simpa in your project.
+
+You can also install simpa with pip. Simply run:
+
+`pip install simpa`
 
 You also need to manually install the pytorch library to use all features of SIMPA.
 To this end, use the pytorch website tool to figure out which version to install:
