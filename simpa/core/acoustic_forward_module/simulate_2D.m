@@ -38,7 +38,7 @@ kgrid = kWaveGrid(Nx, dx, Ny, dx);
 
 % if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
 if isfield(data, 'sos') == true
-    medium.sound_speed = data.sos
+    medium.sound_speed = data.sos;
     % add 2 pixel "gel" to reduce Fourier artifact
     medium.sound_speed = padarray(medium.sound_speed, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else

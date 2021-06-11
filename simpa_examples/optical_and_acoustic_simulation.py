@@ -114,7 +114,8 @@ general_settings = {
             Tags.GPU: True,
 
             # The following parameters set the optical forward model
-            Tags.WAVELENGTHS: [700]
+            Tags.WAVELENGTHS: [700],
+            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
         }
 settings = Settings(general_settings)
 np.random.seed(RANDOM_SEED)
@@ -166,7 +167,9 @@ settings.set_reconstruction_settings({
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True,
-    Tags.PROPERTY_SPEED_OF_SOUND: 1540
+    Tags.PROPERTY_SPEED_OF_SOUND: 1540,
+    Tags.PROPERTY_ALPHA_COEFF: 0.01,
+    Tags.PROPERTY_DENSITY: 1000
 })
 
 settings["noise_initial_pressure"] = {
