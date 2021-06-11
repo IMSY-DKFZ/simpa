@@ -154,7 +154,7 @@ general_settings = {
 settings = Settings(general_settings)
 
 settings.set_volume_creation_settings({
-    Tags.SIMULATE_DEFORMED_LAYERS: True,
+    Tags.SIMULATE_DEFORMED_LAYERS: False,
     Tags.STRUCTURES: create_measurement_setup(inclusion_thickness)
 })
 settings.set_optical_settings({
