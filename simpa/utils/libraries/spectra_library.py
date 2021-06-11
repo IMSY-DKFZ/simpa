@@ -30,8 +30,8 @@ class Spectrum(object):
             raise ValueError("The shape of the wavelengths and the absorption coefficients did not match: " +
                              str(np.shape(wavelengths)) + " vs " + str(np.shape(values)))
 
-        self.new_wavelengths = np.arange(self.min_wavelength, self.max_wavelength+1, 1)
-        self.new_absorptions = np.interp(self.new_wavelengths, self.wavelengths, self.values)
+        new_wavelengths = np.arange(self.min_wavelength, self.max_wavelength+1, 1)
+        self.new_absorptions = np.interp(new_wavelengths, self.wavelengths, self.values)
 
     def get_value_over_wavelength(self):
         """
