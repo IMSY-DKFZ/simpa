@@ -179,9 +179,9 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
         # set values of invalid indices to 0 so that they don't influence the result
         values[invalid_indices] = 0
-        sum = torch.sum(values, dim=3)
+        _sum = torch.sum(values, dim=3)
         counter = torch.count_nonzero(values, dim=3)
-        torch.divide(sum, counter, out=output)
+        torch.divide(_sum, counter, out=output)
 
         reconstructed = output.cpu().numpy()
 

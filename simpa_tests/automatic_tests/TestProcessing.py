@@ -81,9 +81,9 @@ class TestProcessing(unittest.TestCase):
         print("test envelope detection")
 
         # absolute value
-        abs = apply_b_mode(self.test_image, method=Tags.RECONSTRUCTION_BMODE_METHOD_ABS)
+        _abs = apply_b_mode(self.test_image, method=Tags.RECONSTRUCTION_BMODE_METHOD_ABS)
         expected_abs = np.array([[1.2, 0.], [3., 255.]])
-        assert np.equal(abs, expected_abs).all(), "computed absolute array and expected don't match"
+        assert np.equal(_abs, expected_abs).all(), "computed absolute array and expected don't match"
 
         # Hilbert transform
         hilbert = apply_b_mode(self.test_image, method=Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM)

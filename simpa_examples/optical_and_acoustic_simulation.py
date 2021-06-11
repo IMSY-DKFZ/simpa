@@ -188,16 +188,17 @@ settings["noise_time_series"] = {
 
 # TODO: For the device choice, uncomment the undesired device
 
-device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                     VOLUME_PLANAR_DIM_IN_MM/2,
-                                                     0]))
-device.update_settings_for_use_of_model_based_volume_creator(settings)
+# device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+#                                                      VOLUME_PLANAR_DIM_IN_MM/2,
+#                                                      0]))
+# device.update_settings_for_use_of_model_based_volume_creator(settings)
 
-# device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                           0]))
-# device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25, number_detector_elements=100))
-# device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[50, 0, 0]))
+device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                          VOLUME_PLANAR_DIM_IN_MM/2,
+                                                          0]))
+device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25,
+                                                           number_detector_elements=200))
+device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
 
 SIMUATION_PIPELINE = [

@@ -24,7 +24,7 @@ of the new release:
    function calls with the wrong parameters or unresolved references.
 2. Run of all *framework_tests* for example using the do_coverage.py
    script without any unexpected failures.
-3. Execute the tests in the *simulation_tests* test suite and ensure
+3. Execute the tests in the *manual_tests* test suite and ensure
    that the results are okay.
 4. Follow the instructions of any other checklist in the *checklists*
    folder.

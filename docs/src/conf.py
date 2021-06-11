@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.abspath('.'))
 # -- Project information -----------------------------------------------------
 
 project = 'SIMPA'
-copyright = '2020-2021, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and ' \
+_copyright = '2020-2021, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and ' \
             '2021, Cancer Research UK, Cambridge Institute (CRUK CI)'
 author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and ' \
          'Cancer Research UK, Cambridge Institute (CRUK CI)'

@@ -175,9 +175,9 @@ settings.set_reconstruction_settings({
     Tags.PROPERTY_SPEED_OF_SOUND: SPEED_OF_SOUND
 })
 
-device = InVision256TF(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                      VOLUME_PLANAR_DIM_IN_MM/2,
-                                                     VOLUME_HEIGHT_IN_MM/2]))
+                                                     0]))
 
 device.update_settings_for_use_of_model_based_volume_creator(settings)
 

@@ -237,7 +237,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
         plt.figure(figsize=(6, 4))
         plt.title(f"Fluence profile for {title}")
         plt.plot(fluence[illuminator_point, illuminator_point, :], label="Fluence")
-        plt.axhline(expected_end_fluence, label="Expected Value", color="red")
+        plt.axhline(expected_end_fluence, label="Expected Value after Slab", color="red")
         plt.legend(loc="center left")
         ax2 = plt.twinx()
         ax2.plot(absorption[illuminator_point, illuminator_point, :], label="Absorption", linestyle="dashed", alpha=0.5)
