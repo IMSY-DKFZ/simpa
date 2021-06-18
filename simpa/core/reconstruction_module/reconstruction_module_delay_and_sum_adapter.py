@@ -41,8 +41,8 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         # check settings dictionary for elements and read them in
 
         # speed of sound: use given speed of sound, otherwise use average from simulation if specified
-        if Tags.PROPERTY_SPEED_OF_SOUND in self.global_settings and self.global_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
-            speed_of_sound_in_m_per_s = self.global_settings[Tags.PROPERTY_SPEED_OF_SOUND]
+        if Tags.PROPERTY_SPEED_OF_SOUND in self.component_settings and self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
+            speed_of_sound_in_m_per_s = self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]
         elif Tags.WAVELENGTH in self.global_settings and self.global_settings[Tags.WAVELENGTH]:
             sound_speed_m = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
             speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
@@ -53,10 +53,12 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
         if Tags.K_WAVE_SPECIFIC_DT in self.global_settings and self.global_settings[Tags.K_WAVE_SPECIFIC_DT]:
             time_spacing_in_ms = self.global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
-        elif Tags.SENSOR_SAMPLING_RATE_MHZ in self.global_settings and self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
-            time_spacing_in_ms = 1.0 / (self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
+        elif detection_geometry.sampling_frequency_MHz is not None:
+            time_spacing_in_ms = 1.0 / (detection_geometry.sampling_frequency_MHz * 1000)
         else:
             raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
+
+        self.logger.debug(f"Using a time_spacing of {time_spacing_in_ms}")
 
         # spacing
         if Tags.SPACING_MM in self.global_settings and self.global_settings[Tags.SPACING_MM]:
@@ -126,6 +128,11 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         zdim = int(np.abs(field_of_view[2] - field_of_view[3]) / spacing_in_mm) + 1
         ydim = int(np.abs(field_of_view[4] - field_of_view[5]) / spacing_in_mm) + 1
 
+        self.logger.debug(f"FOV X: 0 - {xdim * spacing_in_mm}")
+        self.logger.debug(f"FOV Y: 0 - {ydim * spacing_in_mm}")
+        self.logger.debug(f"FOV Z: 0 - {zdim * spacing_in_mm}")
+        self.logger.debug(f"SOS: {speed_of_sound_in_m_per_s}")
+
         if zdim == 1:
             sensor_positions[:, 1] = 0  # Assume imaging plane
 
@@ -172,9 +179,9 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
         # set values of invalid indices to 0 so that they don't influence the result
         values[invalid_indices] = 0
-        sum = torch.sum(values, dim=3)
+        _sum = torch.sum(values, dim=3)
         counter = torch.count_nonzero(values, dim=3)
-        torch.divide(sum, counter, out=output)
+        torch.divide(_sum, counter, out=output)
 
         reconstructed = output.cpu().numpy()
 

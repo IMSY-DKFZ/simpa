@@ -4,6 +4,9 @@
 
 function [] = time_reversal_2D(acoustic_path)
 
+%% In case of an error, make sure the matlab scripts exits anyway
+clean_up = onCleanup(@exit);
+
 %% Read settings file
 data = load(acoustic_path);
 
@@ -31,14 +34,14 @@ source.p0 = 0;
 
 % if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
 if isfield(data, 'sos') == true
-    medium.sound_speed = data.sos;
+    medium.sound_speed = double(data.sos);
 else
     medium.sound_speed = 1540;
 end
 
 % if a field of the struct "data" is given which describes the attenuation, the array is loaded and is used as medium.alpha_coeff
 if isfield(data, 'alpha_coeff') == true
- medium.alpha_coeff = data.alpha_coeff;
+ medium.alpha_coeff = double(data.alpha_coeff);
 else
  medium.alpha_coeff = 0.01;
 end
@@ -47,7 +50,7 @@ medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
-    medium.density = data.density;
+    medium.density = double(data.density);
 else
     medium.density = 1000*ones(Nx, Ny);
 end

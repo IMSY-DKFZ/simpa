@@ -375,3 +375,24 @@ class MoleculeLibrary(object):
 
 
 MOLECULE_LIBRARY = MoleculeLibrary()
+
+
+class MolecularCompositionGenerator(object):
+    """
+    The MolecularCompositionGenerator is a helper class to facilitate the creation of a
+    MolecularComposition instance.
+    """
+    def __init__(self):
+        self.molecular_composition_dictionary = dict()
+
+    def append(self, value: Molecule = None, key: str = None):
+        if key is None:
+            key = value.name
+        if key in self.molecular_composition_dictionary:
+            raise KeyError(key + " already in the molecular composition!")
+        self.molecular_composition_dictionary[key] = value
+        return self
+
+    def get_molecular_composition(self, segmentation_type):
+        return MolecularComposition(segmentation_type=segmentation_type,
+                                    molecular_composition_settings=self.molecular_composition_dictionary)

@@ -147,7 +147,8 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             Tags.SENSOR_NUM_ELEMENTS: PA_device.number_detector_elements,
             Tags.DETECTOR_ELEMENT_WIDTH_MM: PA_device.detector_element_width_mm,
             Tags.SENSOR_CENTER_FREQUENCY_HZ: PA_device.center_frequency_Hz,
-            Tags.SENSOR_BANDWIDTH_PERCENT: PA_device.bandwidth_percent
+            Tags.SENSOR_BANDWIDTH_PERCENT: PA_device.bandwidth_percent,
+            Tags.SENSOR_SAMPLING_RATE_MHZ: PA_device.sampling_frequency_MHz
         })
         if isinstance(PA_device, CurvedArrayDetectionGeometry):
             k_wave_settings[Tags.SENSOR_RADIUS_MM] = PA_device.radius_mm

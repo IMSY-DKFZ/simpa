@@ -12,11 +12,22 @@ import numpy as np
 
 class DetectionGeometryBase(DigitalDeviceTwinBase):
     """
-    This class represents an illumination geometry
+    This class represents a detector geometry.
     """
     def __init__(self, number_detector_elements, detector_element_width_mm,
                  detector_element_length_mm, center_frequency_hz, bandwidth_percent,
                  sampling_frequency_mhz, probe_width_mm, device_position_mm: np.ndarray = None):
+        """
+
+        :param number_detector_elements: Total number of detector elements.
+        :param detector_element_width_mm: In-plane width of one detector element (pitch - distance between two elements).
+        :param detector_element_length_mm: Out-of-plane length of one detector element.
+        :param center_frequency_hz:
+        :param bandwidth_percent:
+        :param sampling_frequency_mhz:
+        :param probe_width_mm: Total in-plane extent of the detector geometry.
+        :param device_position_mm: Origin of the internal representation of the device.
+        """
         super().__init__(device_position_mm=device_position_mm)
         self.number_detector_elements = number_detector_elements
         self.detector_element_width_mm = detector_element_width_mm

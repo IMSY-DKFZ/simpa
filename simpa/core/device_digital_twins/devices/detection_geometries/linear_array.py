@@ -12,15 +12,10 @@ from simpa.utils import Settings, Tags
 class LinearArrayDetectionGeometry(DetectionGeometryBase):
     """
     This class represents a digital twin of a ultrasound detection device
-    with a linear detection geometry.
+    with a linear detection geometry. The origin for this device is the center of the linear array, so approximately
+    the position of the (number_detector_elements/2)th detector element.
 
     """
-
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        return np.asarray([-self.probe_width_mm/2,
-                           self.probe_width_mm/2,
-                           0, 0,
-                           0, 50])
 
     def __init__(self, pitch_mm=0.5,
                  number_detector_elements=100,
@@ -30,6 +25,17 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
                  bandwidth_percent=55,
                  sampling_frequency_mhz=40,
                  device_position_mm: np.ndarray = None):
+        """
+
+        :param pitch_mm:
+        :param number_detector_elements:
+        :param detector_element_width_mm:
+        :param detector_element_length_mm:
+        :param center_frequency_hz:
+        :param bandwidth_percent:
+        :param sampling_frequency_mhz:
+        :param device_position_mm: Center of the linear array.
+        """
         super().__init__(number_detector_elements=number_detector_elements,
                          detector_element_width_mm=detector_element_width_mm,
                          detector_element_length_mm=detector_element_length_mm,
@@ -39,6 +45,12 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
                          probe_width_mm=number_detector_elements * pitch_mm,
                          device_position_mm=device_position_mm)
         self.pitch_mm = pitch_mm
+
+    def get_field_of_view_extent_mm(self) -> np.ndarray:
+        return np.asarray([-self.probe_width_mm/2,
+                           self.probe_width_mm/2,
+                           0, 0,
+                           0, 50])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:

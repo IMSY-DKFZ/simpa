@@ -12,7 +12,7 @@ from simpa.utils import Settings, Tags
 class PlanarArrayDetectionGeometry(DetectionGeometryBase):
     """
     This class represents a digital twin of a ultrasound detection device
-    with a linear detection geometry.
+    with a linear detection geometry. The origin for this device is the center of the planar array.
 
     """
 
@@ -25,6 +25,18 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
                  bandwidth_percent=55,
                  sampling_frequency_mhz=40,
                  device_position_mm: np.ndarray = None):
+        """
+
+        :param pitch_mm:
+        :param number_detector_elements_x:
+        :param number_detector_elements_y:
+        :param detector_element_width_mm:
+        :param detector_element_length_mm:
+        :param center_frequency_hz:
+        :param bandwidth_percent:
+        :param sampling_frequency_mhz:
+        :param device_position_mm: Center of the planar array.
+        """
         super().__init__(number_detector_elements=number_detector_elements_x * number_detector_elements_y,
                          detector_element_width_mm=detector_element_width_mm,
                          detector_element_length_mm=detector_element_length_mm,

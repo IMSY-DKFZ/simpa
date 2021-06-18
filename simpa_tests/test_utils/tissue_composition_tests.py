@@ -49,7 +49,7 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
 
         if visualise_values:
             for tag_idx, tag in enumerate(TissueProperties.property_tags):
-                ax = plt.subplot(3, np.ceil(num_subplots/3), (tag_idx+1))
+                ax = plt.subplot(3, int(np.ceil(num_subplots/3)), (tag_idx+1))
                 ax.set_title(tag)
                 ax.set_xlabel("wavelength [nm]")
                 ax.set_ylabel("value [units]")

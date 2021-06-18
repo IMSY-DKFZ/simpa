@@ -204,8 +204,8 @@ def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
     if data is None:
         raise AttributeError("Data must not be none in order to normalize it.")
 
-    min = np.min(data)
-    max = np.max(data)
-    output = (data - min) / (max - min)
+    _min = np.min(data)
+    _max = np.max(data)
+    output = (data - _min) / (_max - _min)
 
     return output

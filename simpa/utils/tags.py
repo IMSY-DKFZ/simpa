@@ -1121,6 +1121,12 @@ class Tags:
     Usage: module volume_creation_module
     """
 
+    CHILD_STRUCTURES = ("child_structures", dict)
+    """
+    Settings dictionary which contains all the child structures of a parent structure.\n
+    Usage: module volume_creation_module
+    """
+
     HORIZONTAL_LAYER_STRUCTURE = "HorizontalLayerStructure"
     """
     Corresponds to the HorizontalLayerStructure in the structure_library.\n

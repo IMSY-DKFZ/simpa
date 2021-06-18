@@ -13,8 +13,10 @@ import numpy as np
 from simpa.utils.path_manager import PathManager
 from simpa.core import ImageReconstructionModuleDelayAndSumAdapter, GaussianNoiseProcessingComponent, \
     OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
-    FieldOfViewCroppingProcessingComponent
+    FieldOfViewCroppingProcessingComponent, ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter, \
+    ReconstructionModuleTimeReversalAdapter
 from simpa.core.device_digital_twins import MSOTAcuityEcho
+from simpa.core.device_digital_twins import LinearArrayDetectionGeometry, SlitIlluminationGeometry, PhotoacousticDevice
 
 
 # FIXME temporary workaround for newest Intel architectures
@@ -49,25 +51,35 @@ def create_example_tissue():
     muscle_dictionary[Tags.PRIORITY] = 1
     muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-    muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+    muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.05, 100, 0.9)
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 + 5,
                                                     0, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10]
+    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 + 5, VOLUME_PLANAR_DIM_IN_MM, 10]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
+    vessel_2_dictionary = Settings()
+    vessel_2_dictionary[Tags.PRIORITY] = 3
+    vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 -10,
+                                                    0, 5]
+    vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 -10, VOLUME_PLANAR_DIM_IN_MM, 5]
+    vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
+    vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+    vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
-    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 0.5]
+    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 1]
+    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1.1]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
@@ -78,6 +90,7 @@ def create_example_tissue():
     tissue_dict["muscle"] = muscle_dictionary
     tissue_dict["epidermis"] = epidermis_dictionary
     tissue_dict["vessel_1"] = vessel_1_dictionary
+    tissue_dict["vessel_2"] = vessel_2_dictionary
     return tissue_dict
 
 
@@ -101,7 +114,8 @@ general_settings = {
             Tags.GPU: True,
 
             # The following parameters set the optical forward model
-            Tags.WAVELENGTHS: [700]
+            Tags.WAVELENGTHS: [700],
+            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
         }
 settings = Settings(general_settings)
 np.random.seed(RANDOM_SEED)
@@ -116,6 +130,7 @@ settings.set_optical_settings({
     Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+    Tags.MCX_ASSUMED_ANISOTROPY: 0.9,
 })
 
 settings.set_acoustic_settings({
@@ -135,15 +150,15 @@ settings.set_acoustic_settings({
 settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.ACOUSTIC_SIMULATION_3D: True,
+    Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.PROPERTY_ALPHA_POWER: 1.05,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
-    Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
+    Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
     Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
-    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL,
+    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
     Tags.SENSOR_RECORD: "p",
     Tags.PMLInside: False,
     Tags.PMLSize: [31, 32],
@@ -151,7 +166,10 @@ settings.set_reconstruction_settings({
     Tags.PlotPML: False,
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
-    Tags.ACOUSTIC_LOG_SCALE: True
+    Tags.ACOUSTIC_LOG_SCALE: True,
+    Tags.PROPERTY_SPEED_OF_SOUND: 1540,
+    Tags.PROPERTY_ALPHA_COEFF: 0.01,
+    Tags.PROPERTY_DENSITY: 1000
 })
 
 settings["noise_initial_pressure"] = {
@@ -168,11 +186,20 @@ settings["noise_time_series"] = {
     Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
 }
 
-device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                     VOLUME_PLANAR_DIM_IN_MM/2,
-                                                     0]))
+# TODO: For the device choice, uncomment the undesired device
 
-device.update_settings_for_use_of_model_based_volume_creator(settings)
+# device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+#                                                      VOLUME_PLANAR_DIM_IN_MM/2,
+#                                                      0]))
+# device.update_settings_for_use_of_model_based_volume_creator(settings)
+
+device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                          VOLUME_PLANAR_DIM_IN_MM/2,
+                                                          0]))
+device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25,
+                                                           number_detector_elements=200))
+device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
+
 
 SIMUATION_PIPELINE = [
     VolumeCreationModelModelBasedAdapter(settings),
@@ -180,9 +207,8 @@ SIMUATION_PIPELINE = [
     GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    FieldOfViewCroppingProcessingComponent(settings),
-    ImageReconstructionModuleDelayAndSumAdapter(settings)
-]
+    ReconstructionModuleTimeReversalAdapter(settings),
+    ]
 
 simulate(SIMUATION_PIPELINE, settings, device)
 

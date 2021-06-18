@@ -18,6 +18,7 @@ with open('requirements.txt', 'r') as requirements_file:
 setuptools.setup(
     name="simpa",
     version=version,
+    url="https://github.com/CAMI-DKFZ/simpa",
     author="Computer Assisted Medical Interventions (CAMI), DKFZ \n"
            "Cancer Research UK, Cambridge Institute (CRUK CI)",
     description="Simulation and Image Processing for Photoacoustic Imaging",

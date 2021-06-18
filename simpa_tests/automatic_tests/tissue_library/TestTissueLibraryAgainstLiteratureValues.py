@@ -10,6 +10,11 @@ from simpa_tests.test_utils.tissue_composition_tests import compare_molecular_co
     get_epidermis_reference_dictionary, get_dermis_reference_dictionary, get_muscle_reference_dictionary, \
     get_fully_oxygenated_blood_reference_dictionary, get_fully_deoxygenated_blood_reference_dictionary
 
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+VISUALISE = False
 
 class TestEpidermis(unittest.TestCase):
 
@@ -23,7 +28,7 @@ class TestEpidermis(unittest.TestCase):
         compare_molecular_composition_against_expected_values(
             molecular_composition=TISSUE_LIBRARY.epidermis(0.014),
             expected_values=get_epidermis_reference_dictionary(),
-            visualise_values=False,
+            visualise_values=VISUALISE,
             title="EPIDERMIS"
         )
 
@@ -31,7 +36,7 @@ class TestEpidermis(unittest.TestCase):
         compare_molecular_composition_against_expected_values(
             molecular_composition=TISSUE_LIBRARY.dermis(),
             expected_values=get_dermis_reference_dictionary(),
-            visualise_values=False,
+            visualise_values=VISUALISE,
             title="DERMIS"
         )
 
@@ -39,7 +44,7 @@ class TestEpidermis(unittest.TestCase):
         compare_molecular_composition_against_expected_values(
             molecular_composition=TISSUE_LIBRARY.muscle(),
             expected_values=get_muscle_reference_dictionary(),
-            visualise_values=False,
+            visualise_values=VISUALISE,
             title="MUSCLE"
         )
 
@@ -47,7 +52,7 @@ class TestEpidermis(unittest.TestCase):
         compare_molecular_composition_against_expected_values(
             molecular_composition=TISSUE_LIBRARY.blood(1.0),
             expected_values=get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=True),
-            visualise_values=False,
+            visualise_values=VISUALISE,
             title="OXY BLOOD"
         )
 
@@ -55,6 +60,6 @@ class TestEpidermis(unittest.TestCase):
         compare_molecular_composition_against_expected_values(
             molecular_composition=TISSUE_LIBRARY.blood(0.0),
             expected_values=get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=True),
-            visualise_values=False,
+            visualise_values=VISUALISE,
             title="DEOXY BLOOD"
         )

@@ -16,6 +16,9 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     :return: String which defines the path to the data_field.
     """
 
+    if data_field in [Tags.SIMULATIONS, Tags.SETTINGS]:
+        return "/" + data_field + "/"
+
     wavelength_dependent_properties = [Tags.PROPERTY_ABSORPTION_PER_CM,
                                        Tags.PROPERTY_SCATTERING_PER_CM,
                                        Tags.PROPERTY_ANISOTROPY]
@@ -70,3 +73,24 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
                          "the Tags from simpa/utils/tags.py!")
 
     return dict_path
+
+
+def get_data_field_from_simpa_output(simpa_output: dict, data_field: (tuple, str), wavelength: (int, float) = None):
+    """
+    Navigates through a dictionary in the standard simpa output format to a specific data field.
+
+    :param simpa_output: Dictionary that is in the standard simpa output format.
+    :param data_field: Data field that is contained in simpa_output.
+    :param wavelength: Wavelength of the current simulation.
+    :return: Queried data_field.
+    """
+
+    dict_path = generate_dict_path(data_field, wavelength)
+    keys_to_data_field = dict_path.split("/")
+    current_dict = simpa_output
+    for key in keys_to_data_field:
+        if key == "":
+            continue
+        current_dict = current_dict[key]
+
+    return current_dict

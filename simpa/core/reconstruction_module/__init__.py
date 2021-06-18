@@ -56,7 +56,7 @@ class ReconstructionAdapterBase(SimulationModule):
 
         reconstruction_output_path = generate_dict_path(Tags.RECONSTRUCTED_DATA, self.global_settings[Tags.WAVELENGTH])
 
-        save_hdf5({Tags.RECONSTRUCTED_DATA: reconstruction}, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+        save_hdf5(reconstruction, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
                   reconstruction_output_path)
 
         self.logger.info("Performing reconstruction...[Done]")

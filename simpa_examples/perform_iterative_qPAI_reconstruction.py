@@ -19,8 +19,7 @@ from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModel
     GaussianNoiseProcessingComponent
 from simpa.algorithms.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
 from simpa.utils.path_manager import PathManager
-from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry, MSOTAcuityEcho, \
-    PencilArrayIlluminationGeometry
+from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -146,12 +145,10 @@ pipeline = [
 class CustomDevice(PhotoacousticDevice):
 
     def __init__(self):
-        super(CustomDevice, self).__init__()
+        super(CustomDevice, self).__init__(device_position_mm=np.asarray([general_settings[Tags.DIM_VOLUME_X_MM] / 2,
+                                                                          general_settings[Tags.DIM_VOLUME_Y_MM] / 2,
+                                                                          0]))
         self.add_illumination_geometry(PencilBeamIlluminationGeometry())
-
-    def get_default_probe_position(self, global_settings: Settings) -> np.ndarray:
-        return np.asarray([global_settings[Tags.DIM_VOLUME_X_MM]/2,
-                           global_settings[Tags.DIM_VOLUME_Y_MM]/2, 0])
 
 
 device = CustomDevice()

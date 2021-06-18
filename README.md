@@ -2,13 +2,16 @@
 
 The Simulation and Image Processing for Photoacoustic Imaging (SIMPA) toolkit.
 
+**(!) Alpha Version 0.4.0 (!)** 
+
+The toolkit is still under development and is thus not fully tested and may contain bugs. 
+Please report any issues that you find in our Issue Tracker: https://github.com/CAMI-DKFZ/simpa/issues. 
+Also make sure to double check all value ranges of the optical and acoustic tissue properties 
+and to assess all simulation results for plausibility.
+
 ## SIMPA Install Instructions
 
-You can install simpa with pip. Simply run:
-
-`pip install simpa`
-
-For a manual installation from the code, please follow steps 1 - 3:
+The recommended way to install simpa is a manual installation from the GitHub repository, please follow steps 1 - 3:
 
 1. `git clone https://github.com/CAMI-DKFZ/simpa.git`
 2. `git checkout master`
@@ -18,10 +21,14 @@ Now open a python instance in the 'simpa' folder that you have just downloaded. 
 virtual environment activated
 1. `cd simpa`
 2. `pip install -r requirements.txt`
-3. `python -m setup.py install`
+3. `python setup.py install` (for developement: `python setup.py develop`)
 4. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
 If no error messages arise, you are now setup to use simpa in your project.
+
+You can also install simpa with pip. Simply run:
+
+`pip install simpa`
 
 You also need to manually install the pytorch library to use all features of SIMPA.
 To this end, use the pytorch website tool to figure out which version to install:
@@ -33,8 +40,8 @@ When the installation went fine and you want to make sure that you have the late
 you should do the following steps in a command line:
 
 1. Navigate to the `simpa` source directory (same level where the setup.py is in)
-2. Execute the command `sphinx-build -b pdf -a simpa_documentation/src simpa_documentation`
-3. Find the `PDF` file in `simpa_documentation/simpa_documantation.pdf`
+2. Execute the command `sphinx-build -b html -a docs/src docs`
+3. Find the `HTML` file in `docs/index.html`
 
 ## External Tools installation instructions
 
@@ -61,9 +68,11 @@ http://www.k-wave.org/
 
 1. Install MATLAB with the core and parallel computing toolboxes activated at the minimum.
 2. Download the kWave toolbox
-3. Add the kWave toolbox base bath to the toolbox paths in MATLAB
-4. If wanted: Download the CPP and CUDA binary files and place them inthe k-Wave/binaries folder
-5. Note down the system path to the `matlab` executable file.
+3. Add the kWave toolbox base path to the toolbox paths in MATLAB
+4. Download the kWaveArray addition from the link given in this user forum post http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources
+5. Add the kWaveArray folder to the toolbox paths in MATLAB as well
+6. If wanted: Download the CPP and CUDA binary files and place them inthe k-Wave/binaries folder
+7. Note down the system path to the `matlab` executable file.
 
 ## Overview
 
@@ -72,7 +81,7 @@ However, it can also be used for image processing.
 
 ### Simulating photoacoustic images
 
-A basic example on how to use simpa in you project to run an optical forward simulation is given in the 
+A basic example on how to use simpa in your project to run an optical forward simulation is given in the 
 samples/minimal_optical_simulation.py file.
 
 ### Path Management
@@ -102,9 +111,7 @@ base.
 Please make sure that you have included unit tests for your code and that all previous tests still run through.
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST and you are very welcome to participate and
-raise any issues or suggest new features. You can join the meeting using the following link:
-
-https://meet.google.com/rze-bxej-cvj
+raise any issues or suggest new features. If you want to join this meeting, write one of the core developers (see developer_guide.md) 
 
 Please see the github guidelines for creating pull requests: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests
 

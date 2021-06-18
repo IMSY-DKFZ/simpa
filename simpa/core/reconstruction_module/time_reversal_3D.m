@@ -4,7 +4,9 @@
 
 function [] = time_reversal_3D(acoustic_path)
 
-%% Read settings file
+%% In case of an error, make sure the matlab scripts exits anyway
+clean_up = onCleanup(@exit);
+
 %% Read settings file
 data = load(acoustic_path);
 
@@ -32,14 +34,14 @@ source.p0 = 0;
 
 % if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
 if isfield(data, 'sos') == true
-    medium.sound_speed = data.sos;
+    medium.sound_speed = double(data.sos);
 else
     medium.sound_speed = 1540;
 end
 
 % if a field of the struct "data" is given which describes the attenuation, the array is loaded and is used as medium.alpha_coeff
 if isfield(data, 'alpha_coeff') == true
- medium.alpha_coeff = data.alpha_coeff;
+ medium.alpha_coeff = double(data.alpha_coeff);
 else
  medium.alpha_coeff = 0.01;
 end
@@ -48,7 +50,7 @@ medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
-    medium.density = data.density;
+    medium.density = double(data.density);
 else
     medium.density = 1000*ones(Nx, Ny, Nz);
 end
@@ -67,10 +69,6 @@ kgrid.setTime(settings.Nt, settings.dt)
 %% Define sensor
 
 sensor.mask = data.sensor_mask;
-
-disp("Sensor Mask Size")
-disp(size(sensor.mask))
-
 
 % if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
 %if isfield(data, 'directivity_angle') == true
@@ -91,9 +89,6 @@ bandwidth = double(settings.sensor_bandwidth); % [%]
 sensor.frequency_response = [center_freq, bandwidth];
 
 sensor.time_reversal_boundary_data = time_series_data;
-
-disp("Time Series Data Size")
-disp(size(sensor.time_reversal_boundary_data))
 
 %% Computation settings
 

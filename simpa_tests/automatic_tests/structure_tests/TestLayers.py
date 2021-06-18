@@ -33,6 +33,12 @@ class TestLayers(unittest.TestCase):
         self.layer_settings[Tags.ADHERE_TO_DEFORMATION] = True
         self.layer_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
+        self.global_settings.set_volume_creation_settings(
+            {
+                Tags.STRUCTURES: self.layer_settings
+            }
+        )
+
     def assert_values(self, volume, values):
         assert abs(volume[0][0][0] - values[0]) < 1e-5, "excpected " + str(values[0]) + " but was " + str(volume[0][0][0])
         assert abs(volume[0][0][1] - values[1]) < 1e-5, "excpected " + str(values[1]) + " but was " + str(volume[0][0][1])

@@ -17,6 +17,11 @@ class DigitalDeviceTwinBase:
     """
 
     def __init__(self, device_position_mm: np.ndarray = None):
+        """
+        Constructor of the base class for all digital devices.
+        :param device_position_mm: Each device has an internal position which serves as origin for internal
+        representations of e.g. detector element positions or illuminator positions.
+        """
         if device_position_mm is None:
             self.device_position_mm = np.array([0, 0, 0])
         else:

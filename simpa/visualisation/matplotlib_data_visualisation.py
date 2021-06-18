@@ -10,6 +10,8 @@ import matplotlib as mpl
 import numpy as np
 from simpa.utils import SegmentationClasses, Tags
 from simpa.utils.settings import Settings
+from simpa.utils import get_data_field_from_simpa_output
+from simpa.log import Logger
 
 
 def visualise_data(path_to_hdf5_file: str, wavelength: int,
@@ -26,6 +28,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
                    log_scale=True,
                    show_xz_only=False):
 
+    logger = Logger()
     file = load_hdf5(path_to_hdf5_file)
 
     fluence = None
@@ -33,26 +36,44 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
     time_series_data = None
     reconstructed_data = None
 
-    simulation_result_data = file['simulations']
-    simulation_properties = simulation_result_data['simulation_properties']
-    absorption = simulation_properties['mua'][str(wavelength)]
-    scattering = simulation_properties['mus'][str(wavelength)]
-    anisotropy = simulation_properties['g'][str(wavelength)]
-    segmentation_map = simulation_properties['seg']
-    speed_of_sound = simulation_properties['sos']
-    density = simulation_properties['density']
+    absorption = get_data_field_from_simpa_output(file, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
+    scattering = get_data_field_from_simpa_output(file, Tags.PROPERTY_SCATTERING_PER_CM, wavelength)
+    anisotropy = get_data_field_from_simpa_output(file, Tags.PROPERTY_ANISOTROPY, wavelength)
+    segmentation_map = get_data_field_from_simpa_output(file, Tags.PROPERTY_SEGMENTATION)
+    speed_of_sound = get_data_field_from_simpa_output(file, Tags.PROPERTY_SPEED_OF_SOUND)
+    density = get_data_field_from_simpa_output(file, Tags.PROPERTY_DENSITY)
 
-    if "optical_forward_model_output" in simulation_result_data:
-        optical_data = simulation_result_data['optical_forward_model_output']
-        if "fluence" in optical_data and "initial_pressure" in optical_data:
-            fluence = optical_data['fluence'][str(wavelength)]
-            initial_pressure = optical_data['initial_pressure'][str(wavelength)]
+    if show_fluence:
+        try:
+            fluence = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_FLUENCE, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.OPTICAL_MODEL_FLUENCE) + " was not in the simpa output.")
+            show_fluence = False
+            fluence = None
 
-    if "time_series_data" in simulation_result_data:
-        time_series_data = simulation_result_data["time_series_data"][str(wavelength)]
+    if show_initial_pressure:
+        try:
+            initial_pressure = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.OPTICAL_MODEL_INITIAL_PRESSURE) + " was not in the simpa output.")
+            show_initial_pressure = False
+            initial_pressure = None
 
-    if "time_series_data" in simulation_result_data:
-        reconstructed_data = simulation_result_data["reconstructed_data"][str(wavelength)]["reconstructed_data"]
+    if show_time_series_data:
+        try:
+            time_series_data = get_data_field_from_simpa_output(file, Tags.TIME_SERIES_DATA, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.TIME_SERIES_DATA) + " was not in the simpa output.")
+            show_time_series_data = False
+            time_series_data = None
+
+    if show_reconstructed_data:
+        try:
+            reconstructed_data = get_data_field_from_simpa_output(file, Tags.RECONSTRUCTED_DATA, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.RECONSTRUCTED_DATA) + " was not in the simpa output.")
+            show_reconstructed_data = False
+            reconstructed_data = None
 
     cmap_label_names, cmap_label_values, cmap = get_segmentation_colormap()
 

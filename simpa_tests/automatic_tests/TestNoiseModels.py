@@ -20,14 +20,14 @@ from simpa.core import VolumeCreationModelModelBasedAdapter
 
 class TestNoiseModels(unittest.TestCase):
 
-    def create_background_parameters(self, global_settings, background_value):
+    def create_background_parameters(self, background_value):
         background_structure_dictionary = dict()
         background_structure_dictionary[Tags.PRIORITY] = 0
         background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(
             mua=background_value, mus=background_value, g=0.5
         )
-        bg = Background(global_settings, Settings(background_structure_dictionary))
-        return {Tags.BACKGROUND: bg.to_settings()}
+        background_structure_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+        return {Tags.BACKGROUND: background_structure_dictionary}
 
     def validate_noise_model_results(self, noise_model, noise_model_settings,
                                      background_value,
@@ -56,8 +56,7 @@ class TestNoiseModels(unittest.TestCase):
         settings = Settings(settings)
         settings.set_volume_creation_settings(
             {
-                Tags.STRUCTURES: self.create_background_parameters(global_settings=settings,
-                                                                   background_value=background_value)
+                Tags.STRUCTURES: self.create_background_parameters(background_value=background_value)
             }
         )
 
