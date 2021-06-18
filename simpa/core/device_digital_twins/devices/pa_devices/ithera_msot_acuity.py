@@ -161,7 +161,7 @@ if __name__ == "__main__":
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
 
-    detector_positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(settings)
+    detector_positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
     detector_orientations = device.detection_geometry.get_detector_element_orientations(settings)
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
     # detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
