@@ -30,7 +30,7 @@ class TestLinearUnmixing:
         self.logger = Logger()
         # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
         #  point to the correct file in the PathManager().
-        self.path_manager = PathManager("/home/p253n/workplace/simpa/path_config.env")
+        self.path_manager = PathManager()
         RANDOM_SEED = 471
         self.WAVELENGTHS = [750, 850]  # the performance is checked using two wavelengths
 

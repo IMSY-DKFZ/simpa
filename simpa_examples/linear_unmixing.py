@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
-path_manager = PathManager("/home/p253n/workplace/simpa/path_config.env")
+path_manager = PathManager()
 
 # set global params characterizing the simulated volume
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
