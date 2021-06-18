@@ -6,13 +6,12 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 from simpa.core.reconstruction_module import ReconstructionAdapterBase
-from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.core.device_digital_twins import DetectionGeometryBase
 import numpy as np
 import torch
 from simpa.utils.settings import Settings
-from simpa.core.reconstruction_module.reconstruction_utils import get_apodization_factor, bandpass_filtering, apply_b_mode, \
-    reconstruction_mode_transformation
+from simpa.core.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values, apply_b_mode, \
+    preparing_reconstruction_and_obtaining_reconstruction_settings, compute_image_dimensions
 
 
 class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
@@ -30,168 +29,36 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
         Photoacoustic Imaging", https://doi.org/10.3390/jimaging4100121
         """
 
-        # check for B-mode methods and perform envelope detection on time series data if specified
-
-        if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in self.component_settings\
-                and self.component_settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION] \
-                and Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
-            time_series_sensor_data = apply_b_mode(
-                time_series_sensor_data, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
-
-        ### INPUT CHECKING AND VALIDATION ###
-        # check settings dictionary for elements and read them in
-
-        # speed of sound: use given speed of sound, otherwise use average from simulation if specified
-        if Tags.PROPERTY_SPEED_OF_SOUND in self.component_settings and self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
-            speed_of_sound_in_m_per_s = self.component_settings[Tags.PROPERTY_SPEED_OF_SOUND]
-        elif Tags.WAVELENGTH in self.global_settings and self.global_settings[Tags.WAVELENGTH]:
-            sound_speed_m = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
-            speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
-        else:
-            raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND"
-                                 "or WAVELENGTH to obtain the average speed of sound")
-
-        # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
-        if Tags.K_WAVE_SPECIFIC_DT in self.global_settings and self.global_settings[Tags.K_WAVE_SPECIFIC_DT]:
-            time_spacing_in_ms = self.global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
-        elif Tags.SENSOR_SAMPLING_RATE_MHZ in self.global_settings and self.global_settings[
-            Tags.SENSOR_SAMPLING_RATE_MHZ]:
-            time_spacing_in_ms = 1.0 / (self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
-        else:
-            raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
-
-        # spacing
-        if Tags.SPACING_MM in self.global_settings and self.global_settings[Tags.SPACING_MM]:
-            spacing_in_mm = self.global_settings[Tags.SPACING_MM]
-        else:
-            raise AttributeError("Please specify a value for SPACING_MM")
-
-        # get device specific sensor positions
-        detection_geometry.check_settings_prerequisites(self.global_settings)
-
-        sensor_positions = detection_geometry.get_detector_element_positions_accounting_for_field_of_view()
-
-        # time series sensor data must be numpy array
-        if isinstance(sensor_positions, np.ndarray):
-            sensor_positions = torch.from_numpy(sensor_positions)
-        if isinstance(time_series_sensor_data, np.ndarray):
-            time_series_sensor_data = torch.from_numpy(time_series_sensor_data)
-        assert isinstance(time_series_sensor_data, torch.Tensor), \
-            'The time series sensor data must have been converted to a tensor'
-
-        # move tensors to GPU if available, otherwise use CPU
-        if Tags.GPU not in self.global_settings:
-            if torch.cuda.is_available():
-                dev = "cuda"
-            else:
-                dev = "cpu"
-        else:
-            dev = "cuda" if self.global_settings[Tags.GPU] else "cpu"
-
-        device = torch.device(dev)
-        sensor_positions = sensor_positions.to(device)
-        time_series_sensor_data = time_series_sensor_data.to(device)
-
-        # array must be of correct dimension
-        assert time_series_sensor_data.ndim == 2, 'Time series data must have exactly 2 dimensions' \
-                                                  ', one for the sensor elements and one for time. ' \
-                                                  'Stack images and sensor positions for 3D reconstruction' \
-                                                  'Apply beamforming per wavelength if you have a 3D array. '
-
-        # check reconstruction mode - pressure by default
-        if Tags.RECONSTRUCTION_MODE in self.component_settings:
-            mode = self.component_settings[Tags.RECONSTRUCTION_MODE]
-        else:
-            mode = Tags.RECONSTRUCTION_MODE_PRESSURE
-        time_series_sensor_data = reconstruction_mode_transformation(time_series_sensor_data, mode=mode)
-
-        # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
-        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in self.component_settings \
-                or self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
-
-            cutoff_lowpass = self.component_settings[Tags.BANDPASS_CUTOFF_LOWPASS] \
-                if Tags.BANDPASS_CUTOFF_LOWPASS in self.component_settings else int(8e6)
-            cutoff_highpass = self.component_settings[Tags.BANDPASS_CUTOFF_HIGHPASS] \
-                if Tags.BANDPASS_CUTOFF_HIGHPASS in self.component_settings else int(0.1e6)
-            tukey_alpha = self.component_settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in \
-                self.component_settings else 0.5
-            time_series_sensor_data = bandpass_filtering(time_series_sensor_data,
-                                                         time_spacing_in_ms=time_spacing_in_ms,
-                                                         cutoff_lowpass=cutoff_lowpass,
-                                                         cutoff_highpass=cutoff_highpass,
-                                                         tukey_alpha=tukey_alpha)
+        time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm, time_spacing_in_ms, torch_device = preparing_reconstruction_and_obtaining_reconstruction_settings(
+            time_series_sensor_data, self.component_settings, self.global_settings, detection_geometry, self.logger)
 
         ### ALGORITHM ITSELF ###
 
-        ## compute size of beamformed image ##
-        xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0])) / spacing_in_mm
-        xdim = int(xdim) + 1  # correction due to subtraction of indices starting at 0
-        ydim = float(time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) / spacing_in_mm
-        ydim = int(round(ydim))
-        zdim = (max(sensor_positions[:, 1]) - min(sensor_positions[:, 1]))/spacing_in_mm
-        zdim = int(zdim) + 1  # correction due to subtraction of indices starting at 0
+        xdim, zdim, ydim = compute_image_dimensions(
+            detection_geometry, spacing_in_mm, speed_of_sound_in_m_per_s, self.logger)
 
         if zdim == 1:
             sensor_positions[:, 1] = 0  # Assume imaging plane
 
-        if time_series_sensor_data.shape[0] < sensor_positions.shape[0]:
-            self.logger.warning("Warning: The time series data has less sensor element entries than the given "
-                                "sensor positions. "
-                                "This might be due to a low simulated resolution, please increase it.")
-
-        n_sensor_elements = time_series_sensor_data.shape[0]
-
-        self.logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
-              f',number of sensor elements: {n_sensor_elements}')
-
         # construct output image
-        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=device)
+        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=torch_device)
 
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=device),
-                                        torch.arange(ydim, device=device),
-                                        torch.arange(zdim, device=device),
-                                        torch.arange(n_sensor_elements, device=device))
+        values, n_sensor_elements = compute_delay_and_sum_values(time_series_sensor_data, sensor_positions, xdim,
+                                                                 ydim, zdim, spacing_in_mm, speed_of_sound_in_m_per_s,
+                                                                 time_spacing_in_ms, self.logger, torch_device,
+                                                                 self.component_settings)
 
-        delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
-                            (xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj])) ** 2 +
-                            (zz * spacing_in_mm - torch.abs(sensor_positions[:, 1][jj])) ** 2) \
-            / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
-
-        # perform index validation
-        invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
-        torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1] - 1)
-
-        # interpolation of delays
-        lower_delays = (torch.floor(delays)).long()
-        upper_delays = lower_delays + 1
-        torch.clip_(upper_delays, min=0, max=time_series_sensor_data.shape[1] - 1)
-        lower_values = time_series_sensor_data[jj, lower_delays]
-        upper_values = time_series_sensor_data[jj, upper_delays]
-        values = lower_values * (upper_delays - delays) + upper_values * (delays - lower_delays)
-
-        # perform apodization if specified
-        if Tags.RECONSTRUCTION_APODIZATION_METHOD in self.component_settings:
-            apodization = get_apodization_factor(apodization_method=self.component_settings[
-                Tags.RECONSTRUCTION_APODIZATION_METHOD],
-                                                 dimensions=(xdim, ydim, zdim), n_sensor_elements=n_sensor_elements,
-                                                 device=device)
-            values = values * apodization
-
-        # set values of invalid indices to 0 so that they don't influence the result
-        values[invalid_indices] = 0
         DAS = torch.sum(values, dim=3)
 
-        del delays # free memory of delays
-
         for x in range(xdim):
-            yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=device),
-                                            torch.arange(zdim, device=device),
-                                            torch.arange(n_sensor_elements, device=device),
-                                            torch.arange(n_sensor_elements, device=device))
-            M = values[x,yy,zz,nn] * values[x,yy,zz,mm]
+            yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=torch_device),
+                                            torch.arange(zdim, device=torch_device),
+                                            torch.arange(n_sensor_elements, device=torch_device),
+                                            torch.arange(n_sensor_elements, device=torch_device))
+            M = values[x, yy, zz, nn] * values[x, yy, zz, mm]
             M = torch.sign(M) * torch.sqrt(torch.abs(M))
             # only take upper triangle without diagonal and sum up along n and m axis (last two)
-            output[x] = torch.triu(M, diagonal=1).sum(dim=(-1,-2))
+            output[x] = torch.triu(M, diagonal=1).sum(dim=(-1, -2))
         output = torch.sign(DAS) * output
         reconstructed = output.cpu().numpy()
 
@@ -210,7 +77,7 @@ def reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data: n
                                                       detection_geometry: DetectionGeometryBase,
                                                       settings: dict = None,
                                                       sound_of_speed: int = 1540,
-                                      time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
+                                                      time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
 
