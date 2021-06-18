@@ -154,7 +154,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
             k_wave_settings["Nt"] = self.global_settings[Tags.K_WAVE_SPECIFIC_NT]
         else:
             num_samples = time_series_sensor_data.shape[1]
-            time_per_sample_s = 1 / (self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000000)
+            time_per_sample_s = 1 / (self.component_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000000)
             k_wave_settings["dt"] = time_per_sample_s
             k_wave_settings["Nt"] = num_samples
         input_data["settings"] = k_wave_settings
@@ -189,8 +189,8 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
 
         reconstructed_data = np.flipud(np.rot90(reconstructed_data, 1, axes))
 
-        # os.chdir(cur_dir)
-        # os.remove(acoustic_path)
-        # os.remove(acoustic_path + "tr.mat")
+        os.chdir(cur_dir)
+        os.remove(acoustic_path)
+        os.remove(acoustic_path + "tr.mat")
 
         return reconstructed_data
