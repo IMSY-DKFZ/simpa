@@ -80,12 +80,13 @@ sensor.mask = data.sensor_mask;
 
 %sensor.directivity_pattern = settings.sensor_directivity_pattern;
 
-% define the frequency response of the sensor elements, gaussian shape with
-% FWHM = bandwidth*center_freq
-
-center_freq = double(settings.sensor_center_frequency); % [Hz]
-bandwidth = double(settings.sensor_bandwidth); % [%]
-sensor.frequency_response = [center_freq, bandwidth];
+% model sensor frequency response
+if isfield(settings, 'model_sensor_frequency_response') == true
+    if settings.model_sensor_frequency_response == true
+        center_freq = double(settings.sensor_center_frequency); % [Hz]
+        bandwidth = double(settings.sensor_bandwidth); % [%]
+        sensor.frequency_response = [center_freq, bandwidth];
+end
 
 sensor.time_reversal_boundary_data = time_series_data;
 

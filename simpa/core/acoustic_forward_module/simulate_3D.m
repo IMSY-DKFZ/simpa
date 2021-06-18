@@ -145,9 +145,14 @@ end
 
 % assign binary mask from karray to the sensor mask
 sensor.mask = karray.getArrayBinaryMask(kgrid);
-center_freq = double(settings.sensor_center_frequency); % [Hz]
-bandwidth = double(settings.sensor_bandwidth); % [%]
-sensor.frequency_response = [center_freq, bandwidth];
+
+% model sensor frequency response
+if isfield(settings, 'model_sensor_frequency_response') == true
+    if settings.model_sensor_frequency_response == true
+        center_freq = double(settings.sensor_center_frequency); % [Hz]
+        bandwidth = double(settings.sensor_bandwidth); % [%]
+        sensor.frequency_response = [center_freq, bandwidth];
+end
 
 %% Computation settings
 

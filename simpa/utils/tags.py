@@ -952,6 +952,12 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
+    MODEL_SENSOR_FREQUENCY_RESPONSE = ("model_sensor_frequency_response", bool)
+    """
+    Boolean to decide whether to model the sensor frequency response in kwave.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer, float, np.float))
     """
     Sensor center frequency in kwave.\n
