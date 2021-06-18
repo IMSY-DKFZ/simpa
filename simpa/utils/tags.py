@@ -945,6 +945,12 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
+    INITIAL_PRESSURE_SMOOTHING = ("initial_pressure_smoothing", (bool, np.bool, np.bool_))
+    """
+    If True, the initial pressure is smoothed before simulated in kwave.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     # Acoustic Sensor Properties
     SENSOR_RECORD = ("sensor_record", str)
     """

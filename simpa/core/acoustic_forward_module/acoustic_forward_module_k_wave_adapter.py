@@ -141,7 +141,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         possible_k_wave_parameters = [Tags.SPACING_MM, Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
-                                      Tags.SENSOR_DIRECTIVITY_PATTERN]
+                                      Tags.SENSOR_DIRECTIVITY_PATTERN, Tags.INITIAL_PRESSURE_SMOOTHING]
 
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: PA_device.number_detector_elements,
