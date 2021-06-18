@@ -18,20 +18,26 @@ from simpa.core.device_digital_twins import PencilBeamIlluminationGeometry
 
 
 class TestLinearUnmixingVisual:
+    """
+    This test is a manual test, so visual confirmation is needed.
+    """
 
     def setup(self):
+        """
+        This function lays the foundation for the manual test.
+        """
 
         self.logger = Logger()
         # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
         #  point to the correct file in the PathManager().
-        self.path_manager = PathManager()
+        self.path_manager = PathManager("/home/p253n/workplace/simpa/path_config.env")
 
         RANDOM_SEED = 471
-        self.VISUAL_WAVELENGTHS = [750, 800, 850]
+        self.VISUAL_WAVELENGTHS = [750, 800, 850]  # the performance is checked using three wavelengths
+
         np.random.seed(RANDOM_SEED)
 
-        # Initialize global settings and prepare for simulation pipeline including
-        # volume creation and optical forward simulation
+        # Initialize global settings and prepare for simulation pipeline including volume creation
         general_settings = {
             Tags.RANDOM_SEED: RANDOM_SEED,
             Tags.VOLUME_NAME: "LinearUnmixingManualTest_" + str(RANDOM_SEED),
@@ -49,7 +55,8 @@ class TestLinearUnmixingVisual:
         })
 
         # Set component settings for linear unmixing.
-        # Performs linear spectral unmixing on the defined data field.
+        # We are interested in the blood oxygen saturation, so we have to execute linear unmixing with
+        # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
         self.settings["linear_unmixing"] = {
             Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
             Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN: self.VISUAL_WAVELENGTHS,
@@ -57,6 +64,7 @@ class TestLinearUnmixingVisual:
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
         }
 
+        # Define device for simulation
         self.device = PencilBeamIlluminationGeometry()
 
         # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
@@ -69,15 +77,23 @@ class TestLinearUnmixingVisual:
         lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run(self.device)
 
     def perform_test(self):
+        """
+        This function visualizes the linear unmixing result, represented by the blood oxygen saturation.
+        The user has to check if the test was successful.
+        """
 
-        self.logger.info("Performing visual linear unmixing test...")
+        self.logger.info("Testing linear unmixing...")
 
+        # Load blood oxygen saturation
         lu_results = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
         sO2 = lu_results["sO2"]
 
+        # Load reference absorption for the first wavelength
         mua = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
                               wavelength=self.VISUAL_WAVELENGTHS[0])
 
+        # Visualize linear unmixing result
+        # The shape of the linear unmixing result should take after the reference absorption
         y_dim = int(mua.shape[1] / 2)
         plt.figure(figsize=(15, 15))
         plt.suptitle("Linear Unmixing - Visual Test")
@@ -91,7 +107,7 @@ class TestLinearUnmixingVisual:
         plt.colorbar(fraction=0.05)
         plt.show()
 
-        # clean up files after test
+        # clean up file after testing
         os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
 
     def create_example_tissue(self):

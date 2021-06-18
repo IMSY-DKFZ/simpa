@@ -12,20 +12,22 @@ from simpa.core import *
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import PencilBeamIlluminationGeometry
-from simpa.core.device_digital_twins import *
 import matplotlib.pyplot as plt
 
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
-path_manager = PathManager()
+path_manager = PathManager("/home/p253n/workplace/simpa/path_config.env")
 
+# set global params characterizing the simulated volume
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
 VOLUME_HEIGHT_IN_MM = 60
 SPACING = 0.5
 RANDOM_SEED = 471
-VOLUME_NAME = "LinearUnmixingExample_"+str(RANDOM_SEED)
+VOLUME_NAME = "LinearUnmixingExample_" + str(RANDOM_SEED)
+
+# since we want to perform linear unmixing, the simulation pipeline should be execute for at least two wavelengths
 WAVELENGTHS = [750, 800, 850]
 
 
@@ -77,15 +79,15 @@ def create_example_tissue():
     tissue_dict["vessel_1"] = vessel_1_dictionary
     return tissue_dict
 
+
 # Seed the numpy random configuration prior to creating the global_settings file in
-# order to ensure that the same volume
-# is generated with the same random seed every time.
+# order to ensure that the same volume is generated with the same random seed every time.
 np.random.seed(RANDOM_SEED)
 
 # Initialize global settings and prepare for simulation pipeline including
-# volume creation and optical forward simulation
+# volume creation and optical forward simulation.
 general_settings = {
-    # These parameters set the general propeties of the simulated volume
+    # These parameters set the general properties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
     Tags.VOLUME_NAME: VOLUME_NAME,
     Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
@@ -114,7 +116,9 @@ settings.set_optical_settings({
 })
 
 # Set component settings for linear unmixing.
-# Performs linear spectral unmixing on the defined data field.
+# In this example we are only interested in the chromophore concentration of oxy- and deoxyhemoglobin and the
+# resulting blood oxygen saturation. We want to perform the algorithm using all three wavelengths defined above.
+# Please take a look at the component for more information.
 settings["linear_unmixing"] = {
     Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
     Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN: WAVELENGTHS,
@@ -122,6 +126,7 @@ settings["linear_unmixing"] = {
     Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
 }
 
+# Get device for simulation
 device = PencilBeamIlluminationGeometry()
 
 # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
@@ -131,10 +136,10 @@ pipeline = [
 ]
 simulate(pipeline, settings, device)
 
-# Run linear unmixing component with above specified settings
+# Run linear unmixing component with above specified settings.
 lu.LinearUnmixingProcessingComponent(settings, "linear_unmixing").run(device)
 
-# Load linear unmixing result (blood oxygen saturation) and reference absorption for first wavelength
+# Load linear unmixing result (blood oxygen saturation) and reference absorption for first wavelength.
 lu_results = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
 sO2 = lu_results["sO2"]
 
