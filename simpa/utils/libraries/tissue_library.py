@@ -127,7 +127,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.dermal_scatterer(1.0 - bvf))
                 .get_molecular_composition(SegmentationClasses.DERMIS))
 
-    def subcutaneous_fat(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
+    def subcutaneous_fat(self, oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
         """
 
         :return: a settings dictionary containing all min and max parameters fitting for subcutaneous fat tissue.
@@ -135,10 +135,6 @@ class TissueLibrary(object):
 
         # Get water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
-
-        # Determine muscle oxygenation
-        oxy = randomize_uniform(background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
-                                background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
 
         # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
         [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(
