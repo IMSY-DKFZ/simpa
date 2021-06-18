@@ -12,6 +12,7 @@ from simpa.core import *
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import PencilBeamIlluminationGeometry
+from simpa.core.device_digital_twins import *
 import matplotlib.pyplot as plt
 
 
@@ -22,7 +23,7 @@ path_manager = PathManager()
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
 VOLUME_PLANAR_DIM_IN_MM = 30
 VOLUME_HEIGHT_IN_MM = 60
-SPACING = 5
+SPACING = 0.5
 RANDOM_SEED = 471
 VOLUME_NAME = "LinearUnmixingExample_"+str(RANDOM_SEED)
 WAVELENGTHS = [750, 800, 850]
@@ -92,7 +93,12 @@ general_settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.WAVELENGTHS: WAVELENGTHS
+    Tags.WAVELENGTHS: WAVELENGTHS,
+
+    Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+                                   VOLUME_PLANAR_DIM_IN_MM / 2,
+                                   0],
+    Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
 }
 settings = Settings(general_settings)
 settings.set_volume_creation_settings({
