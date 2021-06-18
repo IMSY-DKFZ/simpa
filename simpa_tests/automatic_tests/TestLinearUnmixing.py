@@ -118,4 +118,3 @@ if __name__ == '__main__':
     test = TestLinearUnmixing()
     test.setup()
     test.perform_test()
-

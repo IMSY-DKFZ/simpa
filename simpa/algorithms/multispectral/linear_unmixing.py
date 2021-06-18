@@ -11,7 +11,6 @@ from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 import numpy as np
 import scipy.linalg as linalg
 from simpa.utils.settings import Settings
-from typing import Tuple
 
 
 class LinearUnmixingProcessingComponent(ProcessingComponent):
@@ -282,4 +281,3 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
         except Exception:
             raise KeyError("Chromophores oxy- and/or deoxyhemoglobin were not specified in component settings, "
                            "so so2 cannot be calculated!")
-

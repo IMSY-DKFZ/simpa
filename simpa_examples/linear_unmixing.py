@@ -159,5 +159,3 @@ plt.title("Blood oxygen saturation")
 plt.imshow(np.rot90(sO2[:, y_dim, :], -1))
 plt.colorbar(fraction=0.05)
 plt.show()
-
-
