@@ -61,8 +61,8 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         self.logger.debug(f"Using a time_spacing of {time_spacing_in_ms}")
 
         # spacing
-        if Tags.SPACING_MM in self.global_settings and self.global_settings[Tags.SPACING_MM]:
-            spacing_in_mm = self.global_settings[Tags.SPACING_MM]
+        if Tags.SPACING_MM in self.component_settings and self.component_settings[Tags.SPACING_MM]:
+            spacing_in_mm = self.component_settings[Tags.SPACING_MM]
         else:
             raise AttributeError("Please specify a value for SPACING_MM")
 
