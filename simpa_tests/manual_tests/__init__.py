@@ -86,7 +86,8 @@ class ReconstructionAlgorithmTestBaseClass:
             Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
             Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
-            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL
+            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL,
+            Tags.SPACING_MM: self.settings[Tags.SPACING_MM]
         })
 
         self.settings["noise_initial_pressure"] = {

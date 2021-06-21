@@ -48,9 +48,8 @@ class DelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseClass):
             Tags.RECONSTRUCTED_DATA,
             wavelength=self.settings[Tags.WAVELENGTH])
 
-        reconstructed_image = load_hdf5(
-            self.settings[Tags.SIMPA_OUTPUT_PATH],
-            reconstructed_image_path)[Tags.RECONSTRUCTED_DATA]
+        reconstructed_image = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.RECONSTRUCTED_DATA,
+                                              self.settings[Tags.WAVELENGTH])
 
         self.plot_reconstruction_compared_with_initial_pressure(reconstructed_image, "Reconstructed image using adapter")
 
