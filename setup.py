@@ -23,6 +23,6 @@ setuptools.setup(
            "Cancer Research UK, Cambridge Institute (CRUK CI)",
     description="Simulation and Image Processing for Photoacoustic Imaging",
     long_description=long_description,
-    packages=['simpa'],
+    packages=setuptools.find_packages(exclude=["simpa_tests", "simpa_examples",]),
     install_requires=requirements
 )
