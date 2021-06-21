@@ -16,6 +16,13 @@ settings = data.settings;
 
 source.p0 = data.initial_pressure;
 
+% Choose if the initial pressure should be smoothed before simulation
+if isfield(settings, 'initial_pressure_smoothing') == true
+    p0_smoothing = settings.initial_pressure_smoothing;
+else
+    p0_smoothing = true;
+end
+
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
@@ -166,7 +173,7 @@ input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
               'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale, ...
-              'Smooth', settings.initial_pressure_smoothing};
+              'Smooth', p0_smoothing};
 
 if settings.gpu == true
     time_series_data = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
