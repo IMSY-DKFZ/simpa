@@ -86,6 +86,7 @@ if isfield(settings, 'model_sensor_frequency_response') == true
         center_freq = double(settings.sensor_center_frequency); % [Hz]
         bandwidth = double(settings.sensor_bandwidth); % [%]
         sensor.frequency_response = [center_freq, bandwidth];
+    end
 end
 
 sensor.time_reversal_boundary_data = time_series_data;
@@ -101,7 +102,7 @@ end
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.movie_name, 'PlotScale', [0, 1], 'LogScale', settings.acoustic_log_scale};
+              'MovieName', settings.movie_name, 'PlotScale', [0, 1]};
 
 if settings.gpu == true
     reconstructed_data = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
