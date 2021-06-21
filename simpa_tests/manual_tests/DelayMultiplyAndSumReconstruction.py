@@ -43,11 +43,6 @@ class DelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseClass):
 
         simulate(SIMUATION_PIPELINE, self.settings, self.device)
 
-
-        reconstructed_image_path = generate_dict_path(
-            Tags.RECONSTRUCTED_DATA,
-            wavelength=self.settings[Tags.WAVELENGTH])
-
         reconstructed_image = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.RECONSTRUCTED_DATA,
                                               self.settings[Tags.WAVELENGTH])
 
