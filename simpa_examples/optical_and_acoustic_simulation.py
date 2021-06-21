@@ -58,12 +58,13 @@ def create_example_tissue():
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 + 5,
+    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                     0, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 + 5, VOLUME_PLANAR_DIM_IN_MM, 10]
+    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    vessel_1_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
     vessel_2_dictionary = Settings()
@@ -74,6 +75,7 @@ def create_example_tissue():
     vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
     vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
     vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    vessel_2_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
     vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
     epidermis_dictionary = Settings()
