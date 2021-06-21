@@ -172,7 +172,8 @@ settings.set_reconstruction_settings({
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True,
-    Tags.PROPERTY_SPEED_OF_SOUND: SPEED_OF_SOUND
+    Tags.PROPERTY_SPEED_OF_SOUND: SPEED_OF_SOUND,
+    Tags.SPACING_MM: SPACING
 })
 
 device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
