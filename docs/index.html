@@ -2204,7 +2204,7 @@ Their usage within the SIMPA package is divided in “SIMPA package”, “modul
 
 <dl class="attribute">
 <dt id="simpa.utils.tags.Tags.DOWNSCALE_FACTOR">
-<code class="sig-name descname">DOWNSCALE_FACTOR</code><em class="property"> = ('downscale_factor', (&lt;class 'int'&gt;, &lt;class 'float'&gt;, &lt;class 'numpy.int32'&gt;, &lt;class 'numpy.float64'&gt;))</em><a class="headerlink" href="#simpa.utils.tags.Tags.DOWNSCALE_FACTOR" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">DOWNSCALE_FACTOR</code><em class="property"> = ('downscale_factor', (&lt;class 'int'&gt;, &lt;class 'float'&gt;, &lt;class 'numpy.int64'&gt;, &lt;class 'numpy.float64'&gt;))</em><a class="headerlink" href="#simpa.utils.tags.Tags.DOWNSCALE_FACTOR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Downscale factor of the resampling in the qPAI reconstruction</p>
 <p>Usage: module algorithms (iterative_qPAI_algorithm.py)</p>
 </dd></dl>
@@ -2387,6 +2387,13 @@ Corresponds to msot_acuity_echo source in mcx. The device is manufactured by iTh
 </dd></dl>
 
 <dl class="attribute">
+<dt id="simpa.utils.tags.Tags.INITIAL_PRESSURE_SMOOTHING">
+<code class="sig-name descname">INITIAL_PRESSURE_SMOOTHING</code><em class="property"> = ('initial_pressure_smoothing', (&lt;class 'bool'&gt;, &lt;class 'bool'&gt;, &lt;class 'numpy.bool_'&gt;))</em><a class="headerlink" href="#simpa.utils.tags.Tags.INITIAL_PRESSURE_SMOOTHING" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the initial pressure is smoothed before simulated in kwave.</p>
+<p>Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="simpa.utils.tags.Tags.INPUT_SEGMENTATION_VOLUME">
 <code class="sig-name descname">INPUT_SEGMENTATION_VOLUME</code><em class="property"> = ('input_segmentation_volume', &lt;class 'numpy.ndarray'&gt;)</em><a class="headerlink" href="#simpa.utils.tags.Tags.INPUT_SEGMENTATION_VOLUME" title="Permalink to this definition">¶</a></dt>
 <dd><p>Array that defines a segmented volume.</p>
@@ -2498,6 +2505,13 @@ Usage: module optical_modelling, adapter mcx_adapter</p>
 <code class="sig-name descname">MEDIUM_TEMPERATURE_CELCIUS</code><em class="property"> = ('medium_temperature', (&lt;class 'int'&gt;, &lt;class 'numpy.integer'&gt;, &lt;class 'float'&gt;, &lt;class 'float'&gt;))</em><a class="headerlink" href="#simpa.utils.tags.Tags.MEDIUM_TEMPERATURE_CELCIUS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Temperature of the simulated volume.</p>
 <p>Usage: module noise_simulation</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="simpa.utils.tags.Tags.MODEL_SENSOR_FREQUENCY_RESPONSE">
+<code class="sig-name descname">MODEL_SENSOR_FREQUENCY_RESPONSE</code><em class="property"> = ('model_sensor_frequency_response', &lt;class 'bool'&gt;)</em><a class="headerlink" href="#simpa.utils.tags.Tags.MODEL_SENSOR_FREQUENCY_RESPONSE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean to decide whether to model the sensor frequency response in kwave.</p>
+<p>Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -3610,14 +3624,23 @@ SPDX-License-Identifier: MIT</p>
 <code class="sig-name descname">muscle</code><span class="sig-paren">(</span><em class="sig-param">background_oxy=None</em>, <em class="sig-param">blood_volume_fraction=None</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.utils.libraries.tissue_library.TissueLibrary.muscle" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>a settings dictionary containing all min and max parameters fitting for generic background tissue.</p>
+<dd class="field-odd"><p>a settings dictionary containing all min and max parameters fitting for muscle tissue.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
+<dt id="simpa.utils.libraries.tissue_library.TissueLibrary.soft_tissue">
+<code class="sig-name descname">soft_tissue</code><span class="sig-paren">(</span><em class="sig-param">background_oxy=None</em>, <em class="sig-param">blood_volume_fraction=None</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.utils.libraries.tissue_library.TissueLibrary.soft_tissue" title="Permalink to this definition">¶</a></dt>
+<dd><p>IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
+It is a mixture of muscle (mostly optical properties) and water (mostly acoustic properties).
+This tissue type roughly resembles the generic background tissue that we see in real PA images.
+:return: a settings dictionary containing all min and max parameters fitting for generic soft tissue.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="simpa.utils.libraries.tissue_library.TissueLibrary.subcutaneous_fat">
-<code class="sig-name descname">subcutaneous_fat</code><span class="sig-paren">(</span><em class="sig-param">background_oxy=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.utils.libraries.tissue_library.TissueLibrary.subcutaneous_fat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">subcutaneous_fat</code><span class="sig-paren">(</span><em class="sig-param">oxy=0.5</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.utils.libraries.tissue_library.TissueLibrary.subcutaneous_fat" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>a settings dictionary containing all min and max parameters fitting for subcutaneous fat tissue.</p>
@@ -4418,12 +4441,13 @@ in the near future (e.g. ‘disk space low’). The software is still working as
 
     <span class="n">vessel_1_dictionary</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">()</span>
     <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">PRIORITY</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">STRUCTURE_START_MM</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">VOLUME_TRANSDUCER_DIM_IN_MM</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">STRUCTURE_START_MM</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">VOLUME_TRANSDUCER_DIM_IN_MM</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
                                                     <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
-    <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">STRUCTURE_END_MM</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">VOLUME_TRANSDUCER_DIM_IN_MM</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">5</span><span class="p">,</span> <span class="n">VOLUME_PLANAR_DIM_IN_MM</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+    <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">STRUCTURE_END_MM</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">VOLUME_TRANSDUCER_DIM_IN_MM</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">VOLUME_PLANAR_DIM_IN_MM</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
     <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">STRUCTURE_RADIUS_MM</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">MOLECULE_COMPOSITION</span><span class="p">]</span> <span class="o">=</span> <span class="n">TISSUE_LIBRARY</span><span class="o">.</span><span class="n">blood</span><span class="p">()</span>
     <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONSIDER_PARTIAL_VOLUME</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">ADHERE_TO_DEFORMATION</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">vessel_1_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">STRUCTURE_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">CIRCULAR_TUBULAR_STRUCTURE</span>
 
     <span class="n">vessel_2_dictionary</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">()</span>
@@ -4434,6 +4458,7 @@ in the near future (e.g. ‘disk space low’). The software is still working as
     <span class="n">vessel_2_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">STRUCTURE_RADIUS_MM</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">vessel_2_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">MOLECULE_COMPOSITION</span><span class="p">]</span> <span class="o">=</span> <span class="n">TISSUE_LIBRARY</span><span class="o">.</span><span class="n">blood</span><span class="p">()</span>
     <span class="n">vessel_2_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONSIDER_PARTIAL_VOLUME</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">vessel_2_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">ADHERE_TO_DEFORMATION</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">vessel_2_dictionary</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">STRUCTURE_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">CIRCULAR_TUBULAR_STRUCTURE</span>
 
     <span class="n">epidermis_dictionary</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">()</span>
