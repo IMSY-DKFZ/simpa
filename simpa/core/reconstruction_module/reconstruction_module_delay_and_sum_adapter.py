@@ -1,39 +1,23 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.utils import Tags
 from simpa.core.reconstruction_module import ReconstructionAdapterBase
 from simpa.io_handling.io_hdf5 import load_data_field
-from simpa.core.device_digital_twins import DEVICE_MAP
 import numpy as np
 import torch
 from simpa.utils.settings import Settings
-from simpa.processing.preprocess_images import reconstruction_mode_transformation
-from simpa.processing.signal_processing import get_apodization_factor, bandpass_filtering, apply_b_mode
+from simpa.core.reconstruction_module.reconstruction_utils import get_apodization_factor, bandpass_filtering, apply_b_mode, \
+    reconstruction_mode_transformation
+from simpa.core.device_digital_twins import DetectionGeometryBase
 
 
 class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
-    def reconstruction_algorithm(self, time_series_sensor_data):
+    def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry: DetectionGeometryBase):
         """
         Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
         first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
@@ -69,23 +53,23 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
         if Tags.K_WAVE_SPECIFIC_DT in self.global_settings and self.global_settings[Tags.K_WAVE_SPECIFIC_DT]:
             time_spacing_in_ms = self.global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
-        elif Tags.SENSOR_SAMPLING_RATE_MHZ in self.global_settings and self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ]:
-            time_spacing_in_ms = 1.0 / (self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000)
+        elif detection_geometry.sampling_frequency_MHz is not None:
+            time_spacing_in_ms = 1.0 / (detection_geometry.sampling_frequency_MHz * 1000)
         else:
             raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
 
+        self.logger.debug(f"Using a time_spacing of {time_spacing_in_ms}")
+
         # spacing
-        if Tags.SPACING_MM in self.global_settings and self.global_settings[Tags.SPACING_MM]:
-            spacing_in_mm = self.global_settings[Tags.SPACING_MM]
+        if Tags.SPACING_MM in self.component_settings and self.component_settings[Tags.SPACING_MM]:
+            spacing_in_mm = self.component_settings[Tags.SPACING_MM]
         else:
             raise AttributeError("Please specify a value for SPACING_MM")
 
         # get device specific sensor positions
-        pa_device = DEVICE_MAP[self.global_settings[Tags.DIGITAL_DEVICE]]
-        pa_device.check_settings_prerequisites(self.global_settings)
-        pa_device.adjust_simulation_volume_and_settings(self.global_settings)
+        detection_geometry.check_settings_prerequisites(self.global_settings)
 
-        sensor_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm(self.global_settings)
+        sensor_positions = detection_geometry.get_detector_element_positions_accounting_for_field_of_view()
 
         # time series sensor data must be numpy array
         if isinstance(sensor_positions, np.ndarray):
@@ -104,9 +88,9 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         else:
             dev = "cuda" if self.global_settings[Tags.GPU] else "cpu"
 
-        device = torch.device(dev)
-        sensor_positions = sensor_positions.to(device)
-        time_series_sensor_data = time_series_sensor_data.to(device)
+        torch_device = torch.device(dev)
+        sensor_positions = sensor_positions.to(torch_device)
+        time_series_sensor_data = time_series_sensor_data.to(torch_device)
 
         # array must be of correct dimension
         assert time_series_sensor_data.ndim == 2, 'Time series data must have exactly 2 dimensions' \
@@ -138,33 +122,36 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
         ### ALGORITHM ITSELF ###
 
-        ## compute size of beamformed image ##
-        xdim = (max(sensor_positions[:, 0]) - min(sensor_positions[:, 0])) / spacing_in_mm
-        xdim = int(xdim) + 1  # correction due to subtraction of indices starting at 0
-        ydim = float(time_series_sensor_data.shape[1] * time_spacing_in_ms * speed_of_sound_in_m_per_s) / spacing_in_mm
-        ydim = int(round(ydim))
-        zdim = (max(sensor_positions[:, 1]) - min(sensor_positions[:, 1]))/spacing_in_mm
-        zdim = int(zdim) + 1  # correction due to subtraction of indices starting at 0
+        ## compute size of beamformed image from field of view ##
+        field_of_view = detection_geometry.get_field_of_view_extent_mm()
+        xdim = int(np.abs(field_of_view[0] - field_of_view[1]) / spacing_in_mm) + 1
+        zdim = int(np.abs(field_of_view[2] - field_of_view[3]) / spacing_in_mm) + 1
+        ydim = int(np.abs(field_of_view[4] - field_of_view[5]) / spacing_in_mm) + 1
+
+        self.logger.debug(f"FOV X: 0 - {xdim * spacing_in_mm}")
+        self.logger.debug(f"FOV Y: 0 - {ydim * spacing_in_mm}")
+        self.logger.debug(f"FOV Z: 0 - {zdim * spacing_in_mm}")
+        self.logger.debug(f"SOS: {speed_of_sound_in_m_per_s}")
 
         if zdim == 1:
             sensor_positions[:, 1] = 0  # Assume imaging plane
 
         if time_series_sensor_data.shape[0] < sensor_positions.shape[0]:
             self.logger.warning("Warning: The time series data has less sensor element entries than the given sensor positions. "
-                  "This might be due to a low simulated resolution, please increase it.")
+                                "This might be due to a low simulated resolution, please increase it.")
 
         n_sensor_elements = time_series_sensor_data.shape[0]
 
         self.logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
-              f',number of sensor elements: {n_sensor_elements}')
+                          f',number of sensor elements: {n_sensor_elements}')
 
         # construct output image
-        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=device)
+        output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=torch_device)
 
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=device),
-                                        torch.arange(ydim, device=device),
-                                        torch.arange(zdim, device=device),
-                                        torch.arange(n_sensor_elements, device=device))
+        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=torch_device),
+                                        torch.arange(ydim, device=torch_device),
+                                        torch.arange(zdim, device=torch_device),
+                                        torch.arange(n_sensor_elements, device=torch_device))
 
         delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
                             (xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj])) ** 2 +
@@ -187,14 +174,14 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         if Tags.RECONSTRUCTION_APODIZATION_METHOD in self.component_settings:
             apodization = get_apodization_factor(apodization_method=self.component_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD],
                                                  dimensions=(xdim, ydim, zdim), n_sensor_elements=n_sensor_elements,
-                                                 device=device)
+                                                 device=torch_device)
             values = values * apodization
 
         # set values of invalid indices to 0 so that they don't influence the result
         values[invalid_indices] = 0
-        sum = torch.sum(values, dim=3)
+        _sum = torch.sum(values, dim=3)
         counter = torch.count_nonzero(values, dim=3)
-        torch.divide(sum, counter, out=output)
+        torch.divide(_sum, counter, out=output)
 
         reconstructed = output.cpu().numpy()
 
@@ -203,17 +190,23 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in self.component_settings \
                 and self.component_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION] \
                 and Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
-            reconstructed = apply_b_mode(reconstructed, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
+            reconstructed = apply_b_mode(
+                reconstructed, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         return reconstructed.squeeze()
 
 
-def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray, settings: dict = None, sound_of_speed: int = 1540,
-                                      time_spacing: float = 2.5e-8, sensor_spacing: float = 0.1) -> np.ndarray:
+def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray,
+                                      detection_geometry: DetectionGeometryBase,
+                                      settings: dict = None,
+                                      sound_of_speed: int = 1540,
+                                      time_spacing: float = 2.5e-8,
+                                      sensor_spacing: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
 
     :param time_series_sensor_data: (2D numpy array) sensor data of shape (sensor elements, time steps)
+    :param detection_geometry: The DetectionGeometryBase that should be used to reconstruct the given time series data
     :param settings: (dict) settings dictionary: by default there is none and the other parameters are used instead,
                      but if parameters are given in the settings those will be used instead of parsed arguments)
     :param sound_of_speed: (int) speed of sound in medium in meters per second (default: 1540 m/s)
@@ -236,5 +229,5 @@ def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray, setti
     if Tags.SPACING_MM not in settings or settings[Tags.SPACING_MM] is None:
         settings[Tags.SPACING_MM] = sensor_spacing
 
-    adapter = ImageReconstructionModuleDelayAndSumAdapter()
-    return adapter.reconstruction_algorithm(time_series_sensor_data, settings)
+    adapter = ImageReconstructionModuleDelayAndSumAdapter(settings)
+    return adapter.reconstruction_algorithm(time_series_sensor_data, detection_geometry)

@@ -1,24 +1,8 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.core.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils.libraries.structure_library import Structures
@@ -74,6 +58,7 @@ class VolumeCreationModelModelBasedAdapter(VolumeCreatorModuleBase):
         """
 
         if Tags.SIMULATE_DEFORMED_LAYERS in self.component_settings and self.component_settings[Tags.SIMULATE_DEFORMED_LAYERS]:
+            self.logger.debug("Tags.SIMULATE_DEFORMED_LAYERS in self.component_settings is TRUE")
             np.random.seed(self.global_settings[Tags.RANDOM_SEED])
             self.component_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(
                 bounds_mm=[[0, self.global_settings[Tags.DIM_VOLUME_X_MM]],

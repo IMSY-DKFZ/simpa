@@ -14,8 +14,11 @@ Janek M. Groehl (janek.grohl@cruk.cam.ac.uk)
 ## How to contribute
 
 The SIMPA code is written and maintained on a closed repository that is hosted on a server
-of the German Cancer Research Center and changes to the develop or master branch are mirrored on Github.
-As such, only the current master and develop branch of the repository are open source.
+of the German Cancer Research Center and changes to the develop or master branch are mirrored on Github 
+(https://github.com/CAMI-DKFZ/simpa/). As such, only the current master and develop branch of the repository are 
+open source.
+
+To make us aware of an issue, please create an issue on the SIMPA github repository.
 
 To contribute to SIMPA, please fork the SIMPA github repository and create a pull request with a branch containing your 
 suggested changes. The core team developers will then review the suggested changes and integrate these into the code 
@@ -24,10 +27,9 @@ base.
 Please make sure that you have included unit tests for your code and that all previous tests still run through.
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST and you are
-very welcome to participate and
-raise any issues or suggest new features. You can join the meeting using the following link:
-
-https://meet.google.com/rze-bxej-cvj
+very welcome to participate and raise any issues or suggest new features. You can obtain the meeting links from the core
+developer team.
+We also have a Slack workspace that you can join if you are interested to contribute.
 
 Please see the github guidelines for creating pull requests:
 https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests

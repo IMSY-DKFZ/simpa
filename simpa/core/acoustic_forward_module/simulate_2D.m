@@ -1,26 +1,11 @@
-%% The MIT License (MIT)
-%%
-%% Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-%%
-%% Permission is hereby granted, free of charge, to any person obtaining a copy
-%% of this software and associated documentation files (the "Software"), to deal
-%% in the Software without restriction, including without limitation the rights
-%% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-%% copies of the Software, and to permit persons to whom the Software is
-%% furnished to do so, subject to the following conditions:
-%%
-%% The above copyright notice and this permission notice shall be included in all
-%% copies or substantial portions of the Software.
-%%
-%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-%% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-%% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-%% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-%% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-%% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-%% SOFTWARE.
+%%SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+%%SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+%%SPDX-License-Identifier: MIT
 
 function [] = simulate_2D(optical_path)
+
+%% In case of an error, make sure the matlab scripts exits anyway
+clean_up = onCleanup(@exit);
 
 %% Read settings file
 
@@ -31,10 +16,17 @@ settings = data.settings;
 
 source.p0 = data.initial_pressure;
 
+% Choose if the initial pressure should be smoothed before simulation
+if isfield(settings, 'initial_pressure_smoothing') == true
+    p0_smoothing = settings.initial_pressure_smoothing;
+else
+    p0_smoothing = true;
+end
+
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
-GEL_LAYER_HEIGHT = 2;
+GEL_LAYER_HEIGHT = 3;
 
 source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 [Nx, Ny] = size(source.p0);
@@ -52,7 +44,7 @@ kgrid = kWaveGrid(Nx, dx, Ny, dx);
 %% Define medium
 
 % if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
-if isfield(data, 'sos') == false
+if isfield(data, 'sos') == true
     medium.sound_speed = data.sos;
     % add 2 pixel "gel" to reduce Fourier artifact
     medium.sound_speed = padarray(medium.sound_speed, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
@@ -61,7 +53,7 @@ else
 end
 
 % if a field of the struct "data" is given which describes the attenuation, the array is loaded and is used as medium.alpha_coeff
-if isfield(data, 'alpha_coeff') == false
+if isfield(data, 'alpha_coeff') == true
  medium.alpha_coeff = data.alpha_coeff;
  % add 2 pixel "gel" to reduce Fourier artifact
  medium.alpha_coeff = padarray(medium.alpha_coeff, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
@@ -72,7 +64,7 @@ end
 medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
-if isfield(data, 'density') == false
+if isfield(data, 'density') == true
     medium.density = data.density;
     % add 2 pixel "gel" to reduce Fourier artifact
     medium.density = padarray(medium.density, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
@@ -80,47 +72,94 @@ else
     medium.density = 1000*ones(Nx, Ny);
 end
 
-%sound_speed_ref = min(min(medium.sound_speed));
-%kgrid.dt = 1 / (settings.sensor_sampling_rate_mhz * 10^6);
-%kgrid.Nt = ceil((sqrt((Nx*dx)^2+(Ny*dx)^2) / sound_speed_ref) / kgrid.dt);
-kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);	% time array with
-% CFL number of 0.3 (advised by manual)
-% Using makeTime, dt = CFL*dx/medium.sound_speed and the total
-% time is set to the time it would take for an acoustic wave to travel 
-% across the longest grid diagonal.
+
+%% Sampling rate
+
+% load sampling rate from settings
+dt = 1.0 / double(settings.sensor_sampling_rate_mhz * 1000000);
+
+% Simulate as many time steps as a wave takes to traverse diagonally through the entire tissue
+Nt = round((sqrt(Ny*Ny+Nx*Nx)*dx / mean(medium.sound_speed, 'all')) / dt);
+
+estimated_cfl_number = dt / dx * mean(medium.sound_speed, 'all');
+
+% smaller time steps are better for numerical stability in time progressing simulations
+% A minimum CFL of 0.3 is advised in the kwave handbook.
+% In case we specify something larger, we use a higher sampling rate than anticipated.
+% Otherwise we simulate with the target sampling rate
+if estimated_cfl_number < 0.3
+    kgrid.setTime(Nt, dt);
+else
+    kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);
+end
 
 %% Define sensor
 
-% if a field of the struct "data" is given which describes the sensor mask, the array is loaded and is used as sensor.mask
-if isfield(data, 'sensor_mask') == true
-    sensor.mask = data.sensor_mask;
-    % add 2 pixel "gel" to reduce Fourier artifact
-    % sensor.mask = padarray(sensor.mask, [GEL_LAYER_HEIGHT 0], 0, 'pre');
-else
-    num_elements = double(settings.sensor_num_elements);
-    element_spacing = Ny / num_elements;
-    sensor.mask = ones(Nx, Ny);
+% create empty array
+karray = kWaveArray;
+
+elem_pos = data.sensor_element_positions/1000;
+
+% In case some detectors are defined at zeros or with negative values out
+% of bounds, correct all of them with minimum needed correction of
+% spacing dx.
+
+min_x_pos = find(elem_pos(1, :) <= 0);
+min_y_pos = find(elem_pos(2, :) <= 0);
+x_correction = 0;
+y_correction = 0;
+if size(min_x_pos) > 0
+   x_correction = dx;
 end
 
-% if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
-if isfield(data, 'directivity_angle') == true
-    sensor.directivity_angle = data.directivity_angle;
-    % add 2 pixel "gel" to reduce Fourier artifact
-    sensor.directivity_angle = padarray(sensor.directivity_angle, [GEL_LAYER_HEIGHT 0], 0, 'pre');
+if size(min_y_pos) > 0
+   y_correction = dx;
 end
 
-if isfield(data, 'directivity_size')
-    sensor.directivity_size = settings.sensor_directivity_size;
+elem_pos(1, :) = elem_pos(1, :) - 0.5*kgrid.x_size + x_correction;
+elem_pos(2, :) = elem_pos(2, :) - 0.5*kgrid.y_size + y_correction;
+num_elements = size(elem_pos, 2);
+
+element_width = double(settings.detector_element_width_mm)/1000;
+angles = data.directivity_angle;
+
+if isfield(settings, 'sensor_radius_mm') == true
+    radius_of_curv = double(settings.sensor_radius_mm)/1000;
 end
 
-%sensor.directivity_pattern = settings.sensor_directivity_pattern;
+% For addArcElement orient all elements towards the focus
+% For the iThera MSOT Acuity Echo, it is [0.008, 0]
 
-% define the frequency response of the sensor elements, gaussian shape with
-% FWHM = bandwidth*center_freq
+%focus_pos = [0.008, 0];
 
-% center_freq = double(settings.sensor_center_frequency); % [Hz]
-% bandwidth = double(settings.sensor_bandwidth); % [%]
-% sensor.frequency_response = [center_freq, bandwidth];
+% add elements to the array
+
+%for ind = 1:num_elements
+%    karray.addArcElement(elem_pos(:, ind), radius_of_curv, element_width, focus_pos);
+%end
+for ind = 1:num_elements
+  x = elem_pos(1, ind);
+  y = elem_pos(2, ind);
+  alpha = angles(1, ind);
+%  x2=x+0.5*(element_width*sin(alpha));
+%  y2=y+0.5*(element_width*cos(alpha));
+  x = x - 0.5*(element_width*sin(alpha));
+  y = y - 0.5*(element_width*cos(alpha));
+  karray.addRectElement([x, y], element_width, 0.00001, [angles(1, ind)]);
+%  karray.addLineElement([x, y], [x2, y2]);
+end
+
+% assign binary mask from karray to the sensor mask
+sensor.mask = karray.getArrayBinaryMask(kgrid);
+
+% model sensor frequency response
+if isfield(settings, 'model_sensor_frequency_response') == true
+    if settings.model_sensor_frequency_response == true
+        center_freq = double(settings.sensor_center_frequency); % [Hz]
+        bandwidth = double(settings.sensor_bandwidth); % [%]
+        sensor.frequency_response = [center_freq, bandwidth];
+    end
+end
 
 %% Computation settings
 
@@ -129,12 +168,12 @@ if settings.gpu == true
 else
     datacast = 'single';
 end
-% max_pressure = max(max(initial_pressure));
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale};
+              'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale, ...
+              'Smooth', p0_smoothing};
 
 if settings.gpu == true
     time_series_data = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
@@ -143,16 +182,8 @@ else
     time_series_data = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
 end
 
-center_freq = double(settings.sensor_center_frequency); % [Hz]
-bandwidth = double(settings.sensor_bandwidth); % [%]
-num_elements = size(time_series_data, 2);
-num_samples = size(time_series_data(1).p, 4);
-ts_array = zeros(num_elements, num_samples);
-for i = 1:num_elements
-   ts_array(i, :) = time_series_data(i).p;
-end
-time_series_data = gaussianFilter(ts_array, 1/kgrid.dt, center_freq, bandwidth);
-%time_series_data = time_series_data.';
+% combine data to give one trace per physical array element
+time_series_data = karray.combineSensorData(kgrid, time_series_data);
 
 %% Write data to mat array
 save(optical_path, 'time_series_data')%, '-v7.3')

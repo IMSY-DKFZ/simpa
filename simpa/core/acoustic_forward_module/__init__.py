@@ -1,31 +1,16 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from abc import abstractmethod
 import numpy as np
-from simpa.core.simulation_components import SimulationModule
+from simpa.core import SimulationModule
 from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.core.device_digital_twins import PhotoacousticDevice, DetectionGeometryBase
 
 
 class AcousticForwardModelBaseAdapter(SimulationModule):
@@ -52,7 +37,7 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         self.component_settings = global_settings.get_acoustic_settings()
 
     @abstractmethod
-    def forward_model(self) -> np.ndarray:
+    def forward_model(self, detection_geometry) -> np.ndarray:
         """
         This method performs the acoustic forward modeling given the initial pressure
         distribution and the acoustic tissue properties contained in the settings file.
@@ -62,17 +47,25 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         """
         pass
 
-    def run(self):
+    def run(self, digital_device_twin):
         """
         Call this method to invoke the simulation process.
 
-        :param global_settings: the settings dictionary containing all simulation parameters.
+        :param digital_device_twin:
         :return: a numpy array containing the time series pressure data per detection element
         """
 
         self.logger.info("Simulating the acoustic forward process...")
 
-        time_series_data = self.forward_model()
+        _device = None
+        if isinstance(digital_device_twin, DetectionGeometryBase):
+            _device = digital_device_twin
+        elif isinstance(digital_device_twin, PhotoacousticDevice):
+            _device = digital_device_twin.get_detection_geometry()
+        else:
+            raise TypeError(f"The optical forward modelling does not support devices of type {type(digital_device_twin)}")
+
+        time_series_data = self.forward_model(_device)
 
         acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 

@@ -1,24 +1,8 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.io_handling import load_hdf5
 import matplotlib.pyplot as plt
@@ -26,6 +10,8 @@ import matplotlib as mpl
 import numpy as np
 from simpa.utils import SegmentationClasses, Tags
 from simpa.utils.settings import Settings
+from simpa.utils import get_data_field_from_simpa_output
+from simpa.log import Logger
 
 
 def visualise_data(path_to_hdf5_file: str, wavelength: int,
@@ -42,6 +28,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
                    log_scale=True,
                    show_xz_only=False):
 
+    logger = Logger()
     file = load_hdf5(path_to_hdf5_file)
 
     fluence = None
@@ -49,31 +36,44 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
     time_series_data = None
     reconstructed_data = None
 
-    simulation_result_data = file['simulations']
-    simulation_properties = simulation_result_data['simulation_properties']
-    absorption = simulation_properties['mua'][str(wavelength)]
-    scattering = simulation_properties['mus'][str(wavelength)]
-    anisotropy = simulation_properties['g'][str(wavelength)]
-    segmentation_map = simulation_properties['seg']
-    speed_of_sound = simulation_properties['sos']
-    density = simulation_properties['density']
+    absorption = get_data_field_from_simpa_output(file, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
+    scattering = get_data_field_from_simpa_output(file, Tags.PROPERTY_SCATTERING_PER_CM, wavelength)
+    anisotropy = get_data_field_from_simpa_output(file, Tags.PROPERTY_ANISOTROPY, wavelength)
+    segmentation_map = get_data_field_from_simpa_output(file, Tags.PROPERTY_SEGMENTATION)
+    speed_of_sound = get_data_field_from_simpa_output(file, Tags.PROPERTY_SPEED_OF_SOUND)
+    density = get_data_field_from_simpa_output(file, Tags.PROPERTY_DENSITY)
 
-    if "optical_forward_model_output" in simulation_result_data:
-        optical_data = simulation_result_data['optical_forward_model_output']
-        if "fluence" in optical_data and "initial_pressure" in optical_data:
-            fluence = optical_data['fluence'][str(wavelength)]
-            initial_pressure = optical_data['initial_pressure'][str(wavelength)]
+    if show_fluence:
+        try:
+            fluence = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_FLUENCE, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.OPTICAL_MODEL_FLUENCE) + " was not in the simpa output.")
+            show_fluence = False
+            fluence = None
 
-    if "time_series_data" in simulation_result_data:
-        time_series_data = simulation_result_data["time_series_data"][str(wavelength)]
+    if show_initial_pressure:
+        try:
+            initial_pressure = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.OPTICAL_MODEL_INITIAL_PRESSURE) + " was not in the simpa output.")
+            show_initial_pressure = False
+            initial_pressure = None
 
-    if "time_series_data" in simulation_result_data:
-        reconstructed_data = simulation_result_data["reconstructed_data"][str(wavelength)]["reconstructed_data"]
+    if show_time_series_data:
+        try:
+            time_series_data = get_data_field_from_simpa_output(file, Tags.TIME_SERIES_DATA, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.TIME_SERIES_DATA) + " was not in the simpa output.")
+            show_time_series_data = False
+            time_series_data = None
 
-    shape = np.shape(absorption)
-    x_pos = int(shape[0] / 2)
-    y_pos = int(shape[1] / 2)
-    z_pos = int(shape[2] / 2)
+    if show_reconstructed_data:
+        try:
+            reconstructed_data = get_data_field_from_simpa_output(file, Tags.RECONSTRUCTED_DATA, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.RECONSTRUCTED_DATA) + " was not in the simpa output.")
+            show_reconstructed_data = False
+            reconstructed_data = None
 
     cmap_label_names, cmap_label_values, cmap = get_segmentation_colormap()
 
@@ -126,7 +126,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         data_to_show.append(reconstructed_data)
         data_item_names.append("Reconstruction")
         cmaps.append("viridis")
-        logscales.append(False and log_scale)
+        logscales.append(True and log_scale)
     if segmentation_map is not None and show_segmentation_map:
         data_to_show.append(segmentation_map)
         data_item_names.append("Segmentation Map")
@@ -144,7 +144,8 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
         plt.subplot(num_rows, len(data_to_show), i+1)
         plt.title(data_item_names[i])
         if len(np.shape(data_to_show[i])) > 2:
-            data = np.rot90(data_to_show[i][:, y_pos, :], -1)
+            pos = int(np.shape(data_to_show[i])[1] / 2) - 1
+            data = np.rot90(data_to_show[i][:, pos, :], -1)
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         else:
             data = np.rot90(data_to_show[i][:, :], -1)
@@ -155,7 +156,8 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
             plt.subplot(num_rows, len(data_to_show), i + 1 + len(data_to_show))
             plt.title(data_item_names[i])
             if len(np.shape(data_to_show[i])) > 2:
-                data = np.rot90(data_to_show[i][x_pos, :, :], -1)
+                pos = int(np.shape(data_to_show[i])[0] / 2)
+                data = np.rot90(data_to_show[i][pos, :, :], -1)
                 plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
             else:
                 data = np.rot90(data_to_show[i][:, :], -1)

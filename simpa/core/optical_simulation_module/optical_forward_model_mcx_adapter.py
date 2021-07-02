@@ -1,24 +1,8 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 import numpy as np
 import struct
@@ -27,7 +11,6 @@ from simpa.utils import Tags
 from simpa.core.optical_simulation_module import OpticalForwardModuleBase
 import json
 import os
-from simpa.core.optical_simulation_module.illumination_definition import define_illumination
 import gc
 
 
@@ -42,10 +25,25 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
 
     """
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy):
+    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
+
+        if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
+            _assumed_anisotropy = self.component_settings[Tags.MCX_ASSUMED_ANISOTROPY]
+        else:
+            _assumed_anisotropy = 0.9
 
         absorption_mm = absorption_cm / 10
         scattering_mm = scattering_cm / 10
+
+        # FIXME Currently, mcx only accepts a single value for the anisotropy.
+        #   In order to use the correct reduced scattering coefficient throughout the simulation,
+        #   we adjust the scattering parameter to be more accurate in the diffuse regime.
+        #   This will lead to errors, especially in the quasi-ballistic regime.
+
+        given_reduced_scattering = (scattering_mm * (1 - anisotropy))
+        scattering_mm = given_reduced_scattering / (1 - _assumed_anisotropy)
+        scattering_mm[scattering_mm < 1e-10] = 1e-10
+
         op_array = np.asarray([absorption_mm, scattering_mm])
 
         [_, nx, ny, nz] = np.shape(op_array)
@@ -81,32 +79,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
             dt = 5e-09
         frames = int(time/dt)
 
-        if Tags.ILLUMINATION_TYPE in self.component_settings:
-            source = define_illumination(self.global_settings, self.component_settings, nx, ny, nz)
-        else:
-            source = {
-                  "Pos": [
-                      int(nx / 2) + 0.5, int(ny / 2) + 0.5, 1
-                  ],
-                  "Dir": [
-                      0,
-                      0.342027,
-                      0.93969
-                  ],
-                  "Type": "pasetup",
-                  "Param1": [
-                      24.5 / self.global_settings[Tags.SPACING_MM],
-                      0,
-                      0,
-                      22.8 / self.global_settings[Tags.SPACING_MM]
-                  ],
-                  "Param2": [
-                      0,
-                      0,
-                      0,
-                      0
-                  ]
-              }
+        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings, probe_position_mm)
 
         settings_dict = {
             "Session": {
@@ -120,12 +93,6 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
                 "T1": time,
                 "Dt": dt
             },
-            # "Optode": {
-            # 	"Source": {
-            # 		"Pos": [int(nx/2)+0.5,int(ny/2)+0.5,1],
-            # 		"Dir": [0,0,1]
-            # 	}
-            # },
             "Optode": {
               "Source": source
             },
@@ -142,7 +109,7 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
                     {
                         "mua": 1,
                         "mus": 1,
-                        "g": 0.9,
+                        "g": _assumed_anisotropy,
                         "n": 1
                     }
                 ],
@@ -157,6 +124,8 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
                 settings_dict["RNGSeed"] = self.global_settings[Tags.RANDOM_SEED]
         else:
             settings_dict["RNGSeed"] = self.component_settings[Tags.MCX_SEED]
+
+        print(settings_dict)
 
         tmp_json_filename = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
                             self.global_settings[Tags.VOLUME_NAME]+".json"
