@@ -24,7 +24,8 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
                  bandwidth_percent=55,
                  sampling_frequency_mhz=40,
                  angular_origin_offset=np.pi,
-                 device_position_mm=None):
+                 device_position_mm=None,
+                 field_of_view_extent_mm=None):
         """
 
         :param pitch_mm: In-plane distance between the beginning of one detector element to the next detector element.
@@ -38,8 +39,7 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         :param angular_origin_offset:
         :param device_position_mm: Center (focus) of the curved array.
         """
-
-        super().__init__(number_detector_elements=number_detector_elements,
+        super(CurvedArrayDetectionGeometry, self).__init__(number_detector_elements=number_detector_elements,
                          detector_element_width_mm=detector_element_width_mm,
                          detector_element_length_mm=detector_element_length_mm,
                          center_frequency_hz=center_frequency_hz,
@@ -48,15 +48,16 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
                          probe_width_mm=2 * np.sin(pitch_mm / radius_mm * 128) * radius_mm,
                          device_position_mm=device_position_mm)
 
+        if field_of_view_extent_mm is None:
+            self.field_of_view_extent_mm = np.asarray([-self.probe_width_mm/2,
+                                                       self.probe_width_mm/2,
+                                                       0, 0, 0, 100])
+        else:
+            self.field_of_view_extent_mm = field_of_view_extent_mm
+
         self.pitch_mm = pitch_mm
         self.radius_mm = radius_mm
         self.angular_origin_offset = angular_origin_offset
-
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        return np.asarray([-self.probe_width_mm/2,
-                           self.probe_width_mm/2,
-                           0, 0,
-                           0, 100])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.radius_mm + 1):

@@ -72,15 +72,17 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         self.logger.debug(f"OPTICAL_PATH: {str(optical_path)}")
 
         data_dict = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-        del data_dict[Tags.OPTICAL_MODEL_FLUENCE]
+        if Tags.OPTICAL_MODEL_FLUENCE in data_dict:
+            del data_dict[Tags.OPTICAL_MODEL_FLUENCE]
         gc.collect()
 
         tmp_ac_data = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], SaveFilePaths.SIMULATION_PROPERTIES)
 
-        PA_device = detection_geometry
-        PA_device.check_settings_prerequisites(self.global_settings)
-        field_of_view_extent = PA_device.get_field_of_view_extent_mm()
-        detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm()
+        pa_device = detection_geometry
+        pa_device.check_settings_prerequisites(self.global_settings)
+        field_of_view_extent = pa_device.field_of_view_extent_mm
+        detector_positions_mm = pa_device.get_detector_element_positions_accounting_for_device_position_mm()
+        self.logger.debug(f"field_of_view_extent: {field_of_view_extent}")
 
         if not self.component_settings.get(Tags.ACOUSTIC_SIMULATION_3D):
             detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
@@ -107,20 +109,31 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND][image_slice], 3, axes=axes)
         data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY][image_slice], 3, axes=axes)
         data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF][image_slice], 3, axes=axes)
-        data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(
-            np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength][image_slice], axes=axes))
+        data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength][image_slice], 3, axes=axes)
+
+        # import matplotlib.pyplot as plt
+        # plt.subplot(1, 3, 1)
+        # plt.imshow(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE])
+        # plt.subplot(1, 3, 2)
+        # plt.imshow(data_dict[Tags.PROPERTY_SPEED_OF_SOUND])
+        # plt.subplot(1, 3, 3)
+        # plt.imshow(data_dict[Tags.PROPERTY_DENSITY])
+        # plt.show()
+        # plt.close()
 
         if simulate_2d:
             detector_positions_mm_2d = np.delete(detector_positions_mm, 1, axis=1)
             detector_positions_mm_2d = np.moveaxis(detector_positions_mm_2d, 1, 0)
             data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = detector_positions_mm_2d[[1, 0]]
-            orientations = PA_device.get_detector_element_orientations(self.global_settings)
+            orientations = pa_device.get_detector_element_orientations(self.global_settings)
             angles = np.arccos(np.dot(orientations, np.array([1, 0, 0])))
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles[::-1]
+            self.logger.debug(f"POSITIONS {detector_positions_mm_2d[[1, 0]]}")
+            self.logger.debug(f"ANGLES {angles[::-1]}")
         else:
             detector_positions_mm = np.moveaxis(detector_positions_mm, 1, 0)
             data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = detector_positions_mm[[2, 1, 0]]
-            orientations = PA_device.get_detector_element_orientations(self.global_settings)
+            orientations = pa_device.get_detector_element_orientations(self.global_settings)
             x_angles = np.arccos(np.dot(orientations, np.array([1, 0, 0]))) * 360 / (2*np.pi)
             y_angles = np.arccos(np.dot(orientations, np.array([0, 1, 0]))) * 360 / (2*np.pi)
             z_angles = np.arccos(np.dot(orientations, np.array([0, 0, 1]))) * 360 / (2*np.pi)
@@ -136,6 +149,10 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles
             data_dict[Tags.PROPERTY_INTRINSIC_EULER_ANGLE] = intrinsic_euler_angles
 
+        self.logger.debug(f"Detector positions for kwave: {data_dict[Tags.SENSOR_ELEMENT_POSITIONS]}")
+
+
+
         optical_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
         possible_k_wave_parameters = [Tags.SPACING_MM, Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
@@ -144,14 +161,14 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
                                       Tags.SENSOR_DIRECTIVITY_PATTERN, Tags.INITIAL_PRESSURE_SMOOTHING]
 
         k_wave_settings = Settings({
-            Tags.SENSOR_NUM_ELEMENTS: PA_device.number_detector_elements,
-            Tags.DETECTOR_ELEMENT_WIDTH_MM: PA_device.detector_element_width_mm,
-            Tags.SENSOR_CENTER_FREQUENCY_HZ: PA_device.center_frequency_Hz,
-            Tags.SENSOR_BANDWIDTH_PERCENT: PA_device.bandwidth_percent,
-            Tags.SENSOR_SAMPLING_RATE_MHZ: PA_device.sampling_frequency_MHz
+            Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
+            Tags.DETECTOR_ELEMENT_WIDTH_MM: pa_device.detector_element_width_mm,
+            Tags.SENSOR_CENTER_FREQUENCY_HZ: pa_device.center_frequency_Hz,
+            Tags.SENSOR_BANDWIDTH_PERCENT: pa_device.bandwidth_percent,
+            Tags.SENSOR_SAMPLING_RATE_MHZ: pa_device.sampling_frequency_MHz
         })
-        if isinstance(PA_device, CurvedArrayDetectionGeometry):
-            k_wave_settings[Tags.SENSOR_RADIUS_MM] = PA_device.radius_mm
+        if isinstance(pa_device, CurvedArrayDetectionGeometry):
+            k_wave_settings[Tags.SENSOR_RADIUS_MM] = pa_device.radius_mm
 
         for parameter in possible_k_wave_parameters:
             if parameter in self.component_settings:
@@ -166,7 +183,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         data_dict["settings"] = k_wave_settings
         sio.savemat(optical_path, data_dict, long_field_names=True)
 
-        del data_dict, k_wave_settings, detector_positions_mm, PA_device
+        del data_dict, k_wave_settings, detector_positions_mm, pa_device
         gc.collect()
 
         if not simulate_2d:

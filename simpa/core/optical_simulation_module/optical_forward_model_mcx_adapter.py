@@ -125,8 +125,6 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
         else:
             settings_dict["RNGSeed"] = self.component_settings[Tags.MCX_SEED]
 
-        print(settings_dict)
-
         tmp_json_filename = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
                             self.global_settings[Tags.VOLUME_NAME]+".json"
         with open(tmp_json_filename, "w") as json_file:

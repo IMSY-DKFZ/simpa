@@ -5,7 +5,7 @@
 function [] = simulate_3D(optical_path)
 
 %% In case of an error, make sure the matlab scripts exits anyway
-clean_up = onCleanup(@exit);
+% clean_up = onCleanup(@exit); % Not sure if this is a good idea..
 
 %% Read settings file
 
@@ -188,8 +188,8 @@ time_series_data = karray.combineSensorData(kgrid, time_series_data);
 
 %% Write data to mat array
 save(optical_path, 'time_series_data')%, '-v7.3')
-time_step = kgrid.dt;
-number_time_steps = kgrid.Nt;
+time_step = kgrid.dt
+number_time_steps = kgrid.Nt
 save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');
 
 end
