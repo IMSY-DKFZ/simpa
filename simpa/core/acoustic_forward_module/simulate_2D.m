@@ -25,7 +25,7 @@ end
 
 %% Define kWaveGrid
 
-% add 2 pixel "gel" to reduce Fourier artifact
+% add N pixel "gel" to reduce Fourier artifact
 GEL_LAYER_HEIGHT = 3;
 
 source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
@@ -46,7 +46,7 @@ kgrid = kWaveGrid(Nx, dx, Ny, dx);
 % if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
 if isfield(data, 'sos') == true
     medium.sound_speed = data.sos;
-    % add 2 pixel "gel" to reduce Fourier artifact
+    % add N pixel "gel" to reduce Fourier artifact
     medium.sound_speed = padarray(medium.sound_speed, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
     medium.sound_speed = 1540;
@@ -55,18 +55,19 @@ end
 % if a field of the struct "data" is given which describes the attenuation, the array is loaded and is used as medium.alpha_coeff
 if isfield(data, 'alpha_coeff') == true
  medium.alpha_coeff = data.alpha_coeff;
- % add 2 pixel "gel" to reduce Fourier artifact
+ % add N pixel "gel" to reduce Fourier artifact
  medium.alpha_coeff = padarray(medium.alpha_coeff, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
  medium.alpha_coeff = 0.01;
 end
 
 medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
+medium.alpha_mode = 'no_dispersion';
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
     medium.density = data.density;
-    % add 2 pixel "gel" to reduce Fourier artifact
+    % add N pixel "gel" to reduce Fourier artifact
     medium.density = padarray(medium.density, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
     medium.density = 1000*ones(Nx, Ny);
@@ -127,26 +128,15 @@ if isfield(settings, 'sensor_radius_mm') == true
     radius_of_curv = double(settings.sensor_radius_mm)/1000;
 end
 
-% For addArcElement orient all elements towards the focus
-% For the iThera MSOT Acuity Echo, it is [0.008, 0]
-
-%focus_pos = [0.008, 0];
-
 % add elements to the array
 
-%for ind = 1:num_elements
-%    karray.addArcElement(elem_pos(:, ind), radius_of_curv, element_width, focus_pos);
-%end
 for ind = 1:num_elements
   x = elem_pos(1, ind);
   y = elem_pos(2, ind);
   alpha = angles(1, ind);
-%  x2=x+0.5*(element_width*sin(alpha));
-%  y2=y+0.5*(element_width*cos(alpha));
   x = x - 0.5*(element_width*sin(alpha));
   y = y - 0.5*(element_width*cos(alpha));
   karray.addRectElement([x, y], element_width, 0.00001, [angles(1, ind)]);
-%  karray.addLineElement([x, y], [x2, y2]);
 end
 
 % assign binary mask from karray to the sensor mask

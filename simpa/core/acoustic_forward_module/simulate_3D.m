@@ -62,6 +62,7 @@ else
 end
 
 medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
+medium.alpha_mode = 'no_dispersion';
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
