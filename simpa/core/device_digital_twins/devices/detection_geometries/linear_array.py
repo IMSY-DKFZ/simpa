@@ -53,12 +53,6 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
               field_of_view_extent_mm=field_of_view_extent_mm)
         self.pitch_mm = pitch_mm
 
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        return np.asarray([-self.probe_width_mm/2,
-                           self.probe_width_mm/2,
-                           0, 0,
-                           0, 50])
-
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
             self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
