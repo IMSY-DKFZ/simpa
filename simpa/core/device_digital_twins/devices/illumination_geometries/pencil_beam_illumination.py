@@ -16,9 +16,6 @@ class PencilBeamIlluminationGeometry(IlluminationGeometryBase):
     The device position is defined as the middle of the slit.
     """
 
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        pass
-
     def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_PENCILARRAY
 

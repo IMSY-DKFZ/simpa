@@ -210,42 +210,42 @@ dist.append(simulate_and_evaluate_with_device(MSOTAcuityEcho(device_position_mm=
 dist.append(simulate_and_evaluate_with_device(InVision256TF(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                                          VOLUME_PLANAR_DIM_IN_MM/2,
                                                                                          VOLUME_HEIGHT_IN_MM/2]))))
-# device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                           0]),
-#                              field_of_view_extent_mm=np.asarray([-VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                                  VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                                  0, 0, 0, VOLUME_HEIGHT_IN_MM]))
-# device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
-#                                                            pitch_mm=0.2,
-#                                                            number_detector_elements=256))
-# device.add_illumination_geometry(PencilBeamIlluminationGeometry())
-# dist.append(simulate_and_evaluate_with_device(device))
-#
-# device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                           5]),
-#                              field_of_view_extent_mm=np.asarray([-VOLUME_TRANSDUCER_DIM_IN_MM / 2,
-#                                                                  VOLUME_TRANSDUCER_DIM_IN_MM / 2,
-#                                                                  0, 0, 0, VOLUME_HEIGHT_IN_MM]))
-#
-# device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
-#                                                            pitch_mm=0.2,
-#                                                            number_detector_elements=256))
-# device.add_illumination_geometry(PencilBeamIlluminationGeometry())
-# dist.append(simulate_and_evaluate_with_device(device))
-#
-# device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                           10]),
-#                              field_of_view_extent_mm=np.asarray([-VOLUME_TRANSDUCER_DIM_IN_MM / 2,
-#                                                                  VOLUME_TRANSDUCER_DIM_IN_MM / 2,
-#                                                                  0, 0, 0, VOLUME_HEIGHT_IN_MM]))
-# device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
-#                                                            pitch_mm=0.2,
-#                                                            number_detector_elements=256))
-# device.add_illumination_geometry(PencilBeamIlluminationGeometry())
-# dist.append(simulate_and_evaluate_with_device(device))
+device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                          VOLUME_PLANAR_DIM_IN_MM/2,
+                                                          0]),
+                             field_of_view_extent_mm=np.asarray([-VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                                 VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                                 0, 0, 0, VOLUME_HEIGHT_IN_MM]))
+device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+                                                           pitch_mm=0.2,
+                                                           number_detector_elements=256))
+device.add_illumination_geometry(PencilBeamIlluminationGeometry())
+dist.append(simulate_and_evaluate_with_device(device))
+
+device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                          VOLUME_PLANAR_DIM_IN_MM/2,
+                                                          5]),
+                             field_of_view_extent_mm=np.asarray([-VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+                                                                 VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+                                                                 0, 0, 0, VOLUME_HEIGHT_IN_MM]))
+
+device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+                                                           pitch_mm=0.2,
+                                                           number_detector_elements=256))
+device.add_illumination_geometry(PencilBeamIlluminationGeometry())
+dist.append(simulate_and_evaluate_with_device(device))
+
+device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                          VOLUME_PLANAR_DIM_IN_MM/2,
+                                                          10]),
+                             field_of_view_extent_mm=np.asarray([-VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+                                                                 VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+                                                                 0, 0, 0, VOLUME_HEIGHT_IN_MM]))
+device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+                                                           pitch_mm=0.2,
+                                                           number_detector_elements=256))
+device.add_illumination_geometry(PencilBeamIlluminationGeometry())
+dist.append(simulate_and_evaluate_with_device(device))
 print("")
 print("Results:")
 print("______________")

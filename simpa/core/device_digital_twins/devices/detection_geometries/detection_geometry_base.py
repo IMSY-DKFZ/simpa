@@ -16,7 +16,8 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
     """
     def __init__(self, number_detector_elements, detector_element_width_mm,
                  detector_element_length_mm, center_frequency_hz, bandwidth_percent,
-                 sampling_frequency_mhz, probe_width_mm, device_position_mm: np.ndarray = None):
+                 sampling_frequency_mhz, probe_width_mm, device_position_mm: np.ndarray = None,
+                 field_of_view_extent_mm: np.ndarray = None):
         """
 
         :param number_detector_elements: Total number of detector elements.
@@ -28,7 +29,8 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         :param probe_width_mm: Total in-plane extent of the detector geometry.
         :param device_position_mm: Origin of the internal representation of the device.
         """
-        super().__init__(device_position_mm=device_position_mm)
+        super(DetectionGeometryBase, self).__init__(device_position_mm=device_position_mm,
+                                                    field_of_view_extent_mm=field_of_view_extent_mm)
         self.number_detector_elements = number_detector_elements
         self.detector_element_width_mm = detector_element_width_mm
         self.detector_element_length_mm = detector_element_length_mm
@@ -84,10 +86,11 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         :returns: A numpy array containing the coordinates of the detection elements
 
         """
-        abstract_element_positions = self.get_detector_element_positions_base_mm()
-        field_of_view = self.get_field_of_view_mm()
+        abstract_element_positions = np.copy(self.get_detector_element_positions_base_mm())
+        field_of_view = self.field_of_view_extent_mm
         x_half = (field_of_view[1] - field_of_view[0]) / 2
         y_half = (field_of_view[3] - field_of_view[2]) / 2
+        z_half = (field_of_view[5] - field_of_view[4]) / 2
         if np.abs(x_half) < 1e-10:
             abstract_element_positions[:, 0] = 0
         if np.abs(y_half) < 1e-10:
@@ -95,7 +98,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
         abstract_element_positions[:, 0] += x_half
         abstract_element_positions[:, 1] += y_half
-        abstract_element_positions[:, 2] += field_of_view[4]
+        abstract_element_positions[:, 2] += z_half
         return abstract_element_positions
 
     @abstractmethod
