@@ -117,8 +117,8 @@ if size(min_y_pos) > 0
    y_correction = dx;
 end
 
-elem_pos(1, :) = elem_pos(1, :) - 0.5 * kgrid.x_size + x_correction;
-elem_pos(2, :) = elem_pos(2, :) - 0.5 * kgrid.y_size + y_correction + dx * GEL_LAYER_HEIGHT;
+elem_pos(1, :) = elem_pos(1, :) - 0.5 * kgrid.x_size + x_correction + dx * GEL_LAYER_HEIGHT;
+elem_pos(2, :) = elem_pos(2, :) - 0.5 * kgrid.y_size + y_correction;
 num_elements = size(elem_pos, 2);
 
 element_width = double(settings.detector_element_width_mm)/1000;
