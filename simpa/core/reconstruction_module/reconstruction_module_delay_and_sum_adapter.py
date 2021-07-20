@@ -127,11 +127,9 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
 
         ### ALGORITHM ITSELF ###
 
-        ## compute size of beamformed image from field of view ##
+        ## compute size of beamformed image from field of view
         field_of_view = detection_geometry.field_of_view_extent_mm
-        x_offset_correct = 1 if field_of_view[1] / spacing_in_mm - field_of_view[0] / spacing_in_mm < 1 else 0
-        z_offset_correct = 1 if field_of_view[3] / spacing_in_mm - field_of_view[2] / spacing_in_mm < 1 else 0
-        y_offset_correct = 1 if field_of_view[5] / spacing_in_mm - field_of_view[4] / spacing_in_mm < 1 else 0
+        self.logger.debug(f"Field of view: {field_of_view}")
 
         xdim_start = int(field_of_view[0] / spacing_in_mm)
         xdim_end = int(field_of_view[1] / spacing_in_mm)
@@ -140,9 +138,16 @@ class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
         ydim_start = int(field_of_view[4] / spacing_in_mm)
         ydim_end = int(field_of_view[5] / spacing_in_mm)
 
-        xdim = (xdim_end - xdim_start) + x_offset_correct
-        ydim = (ydim_end - ydim_start) + y_offset_correct
-        zdim = (zdim_end - zdim_start) + z_offset_correct
+        xdim = (xdim_end - xdim_start)
+        ydim = (ydim_end - ydim_start)
+        zdim = (zdim_end - zdim_start)
+
+        if xdim < 1:
+            xdim = 1
+        if ydim < 1:
+            ydim = 1
+        if zdim < 1:
+            zdim = 1
 
         if zdim == 1:
             sensor_positions[:, 1] = 0  # Assume imaging plane

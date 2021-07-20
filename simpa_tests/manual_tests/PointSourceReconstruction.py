@@ -204,6 +204,28 @@ def simulate_and_evaluate_with_device(_device):
 
 
 dist = list()
+
+# fov_e = np.asarray([-VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_TRANSDUCER_DIM_IN_MM/2, 0, 0, 0, VOLUME_HEIGHT_IN_MM])
+# device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+#                                                           VOLUME_PLANAR_DIM_IN_MM/2,
+#                                                           0]),
+#                              field_of_view_extent_mm=fov_e)
+# device.set_detection_geometry(Random2DArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+#                                                              number_detector_elements=256,
+#                                                              seed=1234, field_of_view_extent_mm=fov_e))
+# device.add_illumination_geometry(PencilBeamIlluminationGeometry())
+# dist.append(simulate_and_evaluate_with_device(device))
+#
+# device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+#                                                           VOLUME_PLANAR_DIM_IN_MM/2,
+#                                                           0]),
+#                              field_of_view_extent_mm=fov_e)
+# device.set_detection_geometry(Random3DArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+#                                                              number_detector_elements=256,
+#                                                              seed=1234, field_of_view_extent_mm=fov_e))
+# device.add_illumination_geometry(PencilBeamIlluminationGeometry())
+# dist.append(simulate_and_evaluate_with_device(device))
+
 dist.append(simulate_and_evaluate_with_device(MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                                           VOLUME_PLANAR_DIM_IN_MM/2,
                                                                                           20]))))

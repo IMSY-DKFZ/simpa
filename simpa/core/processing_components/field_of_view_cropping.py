@@ -8,7 +8,7 @@ from simpa.utils import Tags, Settings
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.io_handling import load_data_field, save_data_field
 from simpa.core.processing_components import ProcessingComponent
-from simpa.core.device_digital_twins import DigitalDeviceTwinBase
+from simpa.core.device_digital_twins import DigitalDeviceTwinBase, PhotoacousticDevice
 import numpy as np
 
 
@@ -45,7 +45,10 @@ class FieldOfViewCroppingProcessingComponent(ProcessingComponent):
 
         data_fields = self.component_settings[Tags.DATA_FIELD]
 
-        field_of_view_mm = device.get_field_of_view_mm()
+        if isinstance(device, PhotoacousticDevice):
+            field_of_view_mm = device.detection_geometry.get_field_of_view_mm()
+        else:
+            field_of_view_mm = device.get_field_of_view_mm()
         self.logger.debug(f"FOV (mm): {field_of_view_mm}")
         field_of_view_voxels = (field_of_view_mm / self.global_settings[Tags.SPACING_MM]).astype(np.int32)
         self.logger.debug(f"FOV (voxels): {field_of_view_voxels}")

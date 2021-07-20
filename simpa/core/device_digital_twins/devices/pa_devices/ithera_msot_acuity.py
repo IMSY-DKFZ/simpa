@@ -52,10 +52,10 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         if field_of_view_extent_mm is None:
             field_of_view_extent_mm = np.asarray([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
                                                   (2 * np.sin(0.34 / 40 * 128) * 40) / 2,
-                                                  0, 0, 0, 100])
+                                                  0, 0, 0, 20])
 
-        field_of_view_extent_mm[4] -= (self.probe_height_mm + self.focus_in_field_of_view_mm)
-        field_of_view_extent_mm[5] -= (self.probe_height_mm + self.focus_in_field_of_view_mm)
+        field_of_view_extent_mm[4] -= self.focus_in_field_of_view_mm
+        field_of_view_extent_mm[5] -= self.focus_in_field_of_view_mm
 
         detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.34,
                                                           radius_mm=40,
@@ -69,17 +69,10 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           device_position_mm=detection_geometry_position_vector,
                                                           field_of_view_extent_mm=field_of_view_extent_mm)
 
-        self.field_of_view_extent_mm = detection_geometry.field_of_view_extent_mm
         self.set_detection_geometry(detection_geometry)
 
         illumination_geometry = MSOTAcuityIlluminationGeometry()
         self.add_illumination_geometry(illumination_geometry)
-
-    def get_field_of_view_mm(self) -> np.ndarray:
-        fov = super(MSOTAcuityEcho, self).get_field_of_view_mm()
-        fov[4] += (self.probe_height_mm + self.focus_in_field_of_view_mm)
-        fov[5] += (self.probe_height_mm + self.focus_in_field_of_view_mm)
-        return fov
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         try:
@@ -187,12 +180,13 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     plt.figure()
     plt.subplot(1, 2, 1)
-    plt.title("Detector Elements and ")
+    plt.title("In Volume")
     plt.scatter(positions[:, 0], positions[:, 2])
     plt.quiver(positions[:, 0], positions[:, 2], orientations[:, 0], orientations[:, 2])
     fov = device.detection_geometry.get_field_of_view_mm()
     plt.plot([fov[0], fov[1], fov[1], fov[0], fov[0]], [fov[4], fov[4], fov[5], fov[5], fov[4]], color="red")
     plt.subplot(1, 2, 2)
+    plt.title("Base")
     positions = device.detection_geometry.get_detector_element_positions_base_mm()
     fov = device.detection_geometry.field_of_view_extent_mm
     plt.plot([fov[0], fov[1], fov[1], fov[0], fov[0]], [fov[4], fov[4], fov[5], fov[5], fov[4]], color="red")

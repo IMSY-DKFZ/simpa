@@ -39,10 +39,10 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
         :param device_position_mm: Center of the planar array.
         """
         if field_of_view_extent_mm is None:
-            field_of_view_extent_mm = np.asarray([-self.number_detector_elements_x * self.pitch_mm / 2,
-                                                  self.number_detector_elements_x * self.pitch_mm / 2,
-                                                  -self.number_detector_elements_y * self.pitch_mm / 2,
-                                                  self.number_detector_elements_y * self.pitch_mm / 2,
+            field_of_view_extent_mm = np.asarray([-number_detector_elements_x * pitch_mm / 2,
+                                                  number_detector_elements_x * pitch_mm / 2,
+                                                  -number_detector_elements_y * pitch_mm / 2,
+                                                  number_detector_elements_y * pitch_mm / 2,
                                                   0, 100])
 
         super(PlanarArrayDetectionGeometry, self).__init__(
@@ -85,8 +85,8 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
         for x in range(self.number_detector_elements_x):
             for y in range(self.number_detector_elements_y):
                 detector_element_positions_mm[x + y*self.number_detector_elements_x] = \
-                    [(x - self.number_detector_elements_x/2) * self.pitch_mm,
-                     (y - self.number_detector_elements_y/2) * self.pitch_mm,
+                    [(x - self.number_detector_elements_x/2 + 0.5) * self.pitch_mm,
+                     (y - self.number_detector_elements_y/2 + 0.5) * self.pitch_mm,
                      0]
         return detector_element_positions_mm
 
