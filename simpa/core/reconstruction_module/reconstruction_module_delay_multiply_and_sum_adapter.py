@@ -149,8 +149,8 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
                                         torch.arange(n_sensor_elements, device=torch_device))
 
         delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
-                            (xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj])) ** 2 +
-                            (zz * spacing_in_mm - torch.abs(sensor_positions[:, 1][jj])) ** 2) \
+                            (xx * spacing_in_mm - sensor_positions[:, 0][jj]) ** 2 +
+                            (zz * spacing_in_mm - sensor_positions[:, 1][jj]) ** 2) \
             / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
 
         # perform index validation
