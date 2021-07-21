@@ -34,7 +34,7 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
 
         ### ALGORITHM ITSELF ###
 
-        xdim, zdim, ydim = compute_image_dimensions(
+        xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
             detection_geometry, spacing_in_mm, speed_of_sound_in_m_per_s, self.logger)
 
         if zdim == 1:
@@ -44,7 +44,8 @@ class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAd
         output = torch.zeros((xdim, ydim, zdim), dtype=torch.float32, device=torch_device)
 
         values, n_sensor_elements = compute_delay_and_sum_values(time_series_sensor_data, sensor_positions, xdim,
-                                                                 ydim, zdim, spacing_in_mm, speed_of_sound_in_m_per_s,
+                                                                 ydim, zdim, xdim_start, xdim_end, ydim_start, ydim_end,
+                                                                 zdim_start, zdim_end, spacing_in_mm, speed_of_sound_in_m_per_s,
                                                                  time_spacing_in_ms, self.logger, torch_device,
                                                                  self.component_settings)
 

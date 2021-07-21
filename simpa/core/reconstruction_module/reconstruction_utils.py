@@ -207,13 +207,18 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(time_series_s
     # spacing
     if Tags.SPACING_MM in component_settings and component_settings[Tags.SPACING_MM]:
         spacing_in_mm = component_settings[Tags.SPACING_MM]
+        logger.debug(f"Reconstructing with spacing from component_settings: {spacing_in_mm}")
+    elif Tags.SPACING_MM in global_settings and global_settings[Tags.SPACING_MM]:
+        spacing_in_mm = global_settings[Tags.SPACING_MM]
+        logger.debug(f"Reconstructing with spacing from global_settings: {spacing_in_mm}")
     else:
-        raise AttributeError("Please specify a value for SPACING_MM")
+        raise AttributeError("Please specify a value for SPACING_MM in either the component_settings or"
+                             "the global_settings.")
 
     # get device specific sensor positions
     detection_geometry.check_settings_prerequisites(global_settings)
 
-    sensor_positions = detection_geometry.get_detector_element_positions_accounting_for_field_of_view()
+    sensor_positions = detection_geometry.get_detector_element_positions_base_mm()
 
     # time series sensor data must be numpy array
     if isinstance(sensor_positions, np.ndarray):
@@ -272,23 +277,41 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
     """
     compute size of beamformed image from field of view of detection geometry
 
-    Returns x,z,y dimensions of reconstructed image volume in pixels
+    Returns x,z,y dimensions of reconstructed image volume in pixels as well 
+    as the range for each dimension as start and end pixels.
     """
-    field_of_view = detection_geometry.get_field_of_view_extent_mm()
-    xdim = int(np.abs(field_of_view[0] - field_of_view[1]) / spacing_in_mm) + 1
-    zdim = int(np.abs(field_of_view[2] - field_of_view[3]) / spacing_in_mm) + 1
-    ydim = int(np.abs(field_of_view[4] - field_of_view[5]) / spacing_in_mm) + 1
+    field_of_view = detection_geometry.field_of_view_extent_mm
+    logger.debug(f"Field of view: {field_of_view}")
+
+    xdim_start = int(field_of_view[0] / spacing_in_mm)
+    xdim_end = int(field_of_view[1] / spacing_in_mm)
+    zdim_start = int(field_of_view[2] / spacing_in_mm)
+    zdim_end = int(field_of_view[3] / spacing_in_mm)
+    ydim_start = int(field_of_view[4] / spacing_in_mm)
+    ydim_end = int(field_of_view[5] / spacing_in_mm)
+
+    xdim = (xdim_end - xdim_start)
+    ydim = (ydim_end - ydim_start)
+    zdim = (zdim_end - zdim_start)
+
+    if xdim < 1:
+        xdim = 1
+    if ydim < 1:
+        ydim = 1
+    if zdim < 1:
+        zdim = 1
 
     logger.debug(f"FOV X: 0 - {xdim * spacing_in_mm}")
     logger.debug(f"FOV Y: 0 - {ydim * spacing_in_mm}")
     logger.debug(f"FOV Z: 0 - {zdim * spacing_in_mm}")
     logger.debug(f"SOS: {speed_of_sound_in_m_per_s}")
 
-    return xdim, zdim, ydim
+    return xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end
 
 
 def compute_delay_and_sum_values(time_series_sensor_data: torch.tensor, sensor_positions: torch.tensor, xdim: int,
-                                 ydim: int, zdim: int, spacing_in_mm: float, speed_of_sound_in_m_per_s: float,
+                                 ydim: int, zdim: int, xdim_start: int, xdim_end: int, ydim_start: int, ydim_end: int,
+                                 zdim_start: int, zdim_end: int, spacing_in_mm: float, speed_of_sound_in_m_per_s: float,
                                  time_spacing_in_ms: float, logger: Logger, torch_device: torch.device,
                                  component_settings: Settings) -> Tuple[torch.tensor, int]:
     """
@@ -308,14 +331,20 @@ def compute_delay_and_sum_values(time_series_sensor_data: torch.tensor, sensor_p
     logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
                  f',number of sensor elements: {n_sensor_elements}')
 
-    xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim, device=torch_device),
-                                    torch.arange(ydim, device=torch_device),
-                                    torch.arange(zdim, device=torch_device),
-                                    torch.arange(n_sensor_elements, device=torch_device))
+    if zdim == 1:
+        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
+                                        torch.arange(ydim_start, ydim_end, device=torch_device),
+                                        torch.arange(zdim, device=torch_device),
+                                        torch.arange(n_sensor_elements, device=torch_device))
+    else:
+        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
+                                        torch.arange(ydim_start, ydim_end, device=torch_device),
+                                        torch.arange(zdim_start, zdim_end, device=torch_device),
+                                        torch.arange(n_sensor_elements, device=torch_device))
 
     delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
-                        (xx * spacing_in_mm - torch.abs(sensor_positions[:, 0][jj])) ** 2 +
-                        (zz * spacing_in_mm - torch.abs(sensor_positions[:, 1][jj])) ** 2) \
+                        (xx * spacing_in_mm - sensor_positions[:, 0][jj]) ** 2 +
+                        (zz * spacing_in_mm - sensor_positions[:, 1][jj]) ** 2) \
         / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
 
     # perform index validation

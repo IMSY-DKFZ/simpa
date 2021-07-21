@@ -25,19 +25,21 @@ end
 
 %% Define kWaveGrid
 
-% add 2 pixel "gel" to reduce Fourier artifact
+% add N pixel "gel" to reduce Fourier artifact
 GEL_LAYER_HEIGHT = 3;
 
 source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 [Nx, Ny] = size(source.p0);
+disp(Nx);
+disp(Ny);
 if isfield(settings, 'sample') == true
     if settings.sample == true
-        dx = double(settings.voxel_spacing_mm)/(double(settings.upscale_factor) * 1000);
+        dx = double(settings.voxel_spacing_mm) / (double(settings.upscale_factor) * 1000);
     else
-        dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m
+        dx = double(settings.voxel_spacing_mm) / 1000;    % convert from mm to m
     end
 else
-    dx = double(settings.voxel_spacing_mm)/1000;    % convert from mm to m
+    dx = double(settings.voxel_spacing_mm) / 1000;    % convert from mm to m
 end
 kgrid = kWaveGrid(Nx, dx, Ny, dx);
 
@@ -46,7 +48,6 @@ kgrid = kWaveGrid(Nx, dx, Ny, dx);
 % if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
 if isfield(data, 'sos') == true
     medium.sound_speed = data.sos;
-    % add 2 pixel "gel" to reduce Fourier artifact
     medium.sound_speed = padarray(medium.sound_speed, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
     medium.sound_speed = 1540;
@@ -55,23 +56,21 @@ end
 % if a field of the struct "data" is given which describes the attenuation, the array is loaded and is used as medium.alpha_coeff
 if isfield(data, 'alpha_coeff') == true
  medium.alpha_coeff = data.alpha_coeff;
- % add 2 pixel "gel" to reduce Fourier artifact
  medium.alpha_coeff = padarray(medium.alpha_coeff, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
  medium.alpha_coeff = 0.01;
 end
 
 medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
+medium.alpha_mode = 'no_dispersion';
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
     medium.density = data.density;
-    % add 2 pixel "gel" to reduce Fourier artifact
     medium.density = padarray(medium.density, [GEL_LAYER_HEIGHT 0], 'replicate', 'pre');
 else
-    medium.density = 1000*ones(Nx, Ny);
+    medium.density = 1000 * ones(Nx, Ny);
 end
-
 
 %% Sampling rate
 
@@ -82,6 +81,7 @@ dt = 1.0 / double(settings.sensor_sampling_rate_mhz * 1000000);
 Nt = round((sqrt(Ny*Ny+Nx*Nx)*dx / mean(medium.sound_speed, 'all')) / dt);
 
 estimated_cfl_number = dt / dx * mean(medium.sound_speed, 'all');
+disp(estimated_cfl_number);
 
 % smaller time steps are better for numerical stability in time progressing simulations
 % A minimum CFL of 0.3 is advised in the kwave handbook.
@@ -89,8 +89,10 @@ estimated_cfl_number = dt / dx * mean(medium.sound_speed, 'all');
 % Otherwise we simulate with the target sampling rate
 if estimated_cfl_number < 0.3
     kgrid.setTime(Nt, dt);
+    disp("Setting custom time!");
 else
     kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);
+    disp("Making time!");
 end
 
 %% Define sensor
@@ -116,8 +118,9 @@ if size(min_y_pos) > 0
    y_correction = dx;
 end
 
-elem_pos(1, :) = elem_pos(1, :) - 0.5*kgrid.x_size + x_correction;
-elem_pos(2, :) = elem_pos(2, :) - 0.5*kgrid.y_size + y_correction;
+elem_pos(1, :) = elem_pos(1, :) - 0.5 * kgrid.x_size + x_correction + dx * GEL_LAYER_HEIGHT;
+elem_pos(2, :) = elem_pos(2, :) - 0.5 * kgrid.y_size + y_correction;
+
 num_elements = size(elem_pos, 2);
 
 element_width = double(settings.detector_element_width_mm)/1000;
@@ -127,26 +130,16 @@ if isfield(settings, 'sensor_radius_mm') == true
     radius_of_curv = double(settings.sensor_radius_mm)/1000;
 end
 
-% For addArcElement orient all elements towards the focus
-% For the iThera MSOT Acuity Echo, it is [0.008, 0]
-
-%focus_pos = [0.008, 0];
 
 % add elements to the array
 
-%for ind = 1:num_elements
-%    karray.addArcElement(elem_pos(:, ind), radius_of_curv, element_width, focus_pos);
-%end
 for ind = 1:num_elements
   x = elem_pos(1, ind);
   y = elem_pos(2, ind);
   alpha = angles(1, ind);
-%  x2=x+0.5*(element_width*sin(alpha));
-%  y2=y+0.5*(element_width*cos(alpha));
-  x = x - 0.5*(element_width*sin(alpha));
-  y = y - 0.5*(element_width*cos(alpha));
+  x = x + 0.5 * (element_width*sin(alpha));
+  y = y + 0.5 * (element_width*cos(alpha));
   karray.addRectElement([x, y], element_width, 0.00001, [angles(1, ind)]);
-%  karray.addLineElement([x, y], [x2, y2]);
 end
 
 % assign binary mask from karray to the sensor mask
@@ -170,10 +163,10 @@ else
 end
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
-              'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
-              'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale, ...
-              'Smooth', p0_smoothing};
+               'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
+               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
+               'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale, ...
+               'Smooth', p0_smoothing};
 
 if settings.gpu == true
     time_series_data = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
@@ -187,8 +180,8 @@ time_series_data = karray.combineSensorData(kgrid, time_series_data);
 
 %% Write data to mat array
 save(optical_path, 'time_series_data')%, '-v7.3')
-time_step = kgrid.dt;
-number_time_steps = kgrid.Nt;
+time_step = kgrid.dt
+number_time_steps = kgrid.Nt
 save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');
 
 end

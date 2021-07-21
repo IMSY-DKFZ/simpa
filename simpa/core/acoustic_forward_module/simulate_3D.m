@@ -62,6 +62,7 @@ else
 end
 
 medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
+medium.alpha_mode = 'no_dispersion';
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
@@ -122,9 +123,9 @@ if size(min_z_pos) > 0
 end
 
 
-elem_pos(1, :) = elem_pos(1, :) - 0.5*kgrid.x_size + x_correction;
-elem_pos(2, :) = elem_pos(2, :) - 0.5*kgrid.y_size + y_correction;
-elem_pos(3, :) = elem_pos(3, :) - 0.5*kgrid.z_size + z_correction;
+elem_pos(1, :) = elem_pos(1, :) - 0.5 * kgrid.x_size + x_correction + dx * GEL_LAYER_HEIGHT;
+elem_pos(2, :) = elem_pos(2, :) - 0.5 * kgrid.y_size + y_correction;
+elem_pos(3, :) = elem_pos(3, :) - 0.5 * kgrid.z_size + z_correction;
 num_elements = size(elem_pos, 2);
 
 element_width = double(settings.detector_element_width_mm)/1000;

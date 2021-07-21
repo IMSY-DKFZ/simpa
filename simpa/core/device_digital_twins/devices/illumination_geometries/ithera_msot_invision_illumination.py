@@ -22,9 +22,6 @@ class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
         super().__init__()
         self.geometry_id = geometry_id
 
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        pass
-
     def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm: np.ndarray):
         self.logger.debug(probe_position_mm)
         source_type = Tags.ILLUMINATION_TYPE_MSOT_INVISION

@@ -41,7 +41,8 @@ class RSOMExplorerP50(PhotoacousticDevice):
     def __init__(self, element_spacing_mm=0.02,
                  number_elements_x=10,
                  number_elements_y=10,
-                 device_position_mm: np.ndarray = None):
+                 device_position_mm: np.ndarray = None,
+                 field_of_view_extent_mm: np.ndarray = None):
         super(RSOMExplorerP50, self).__init__(device_position_mm=device_position_mm)
 
         detection_geometry = PlanarArrayDetectionGeometry(pitch_mm=element_spacing_mm,
@@ -51,7 +52,9 @@ class RSOMExplorerP50(PhotoacousticDevice):
                                                           bandwidth_percent=100.0,
                                                           sampling_frequency_mhz=500.0,
                                                           detector_element_width_mm=1,
-                                                          detector_element_length_mm=1)
+                                                          detector_element_length_mm=1,
+                                                          device_position_mm=device_position_mm,
+                                                          field_of_view_extent_mm=field_of_view_extent_mm)
 
         self.set_detection_geometry(detection_geometry)
 
@@ -67,7 +70,8 @@ if __name__ == "__main__":
     os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
     device = RSOMExplorerP50(element_spacing_mm=0.5,
                              number_elements_y=9,
-                             number_elements_x=9)
+                             number_elements_x=9,
+                             device_position_mm=np.asarray([6, 6, 0]))
     settings = Settings()
     settings[Tags.DIM_VOLUME_X_MM] = 12
     settings[Tags.DIM_VOLUME_Y_MM] = 12
@@ -78,11 +82,23 @@ if __name__ == "__main__":
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
 
-    positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm(settings)
+    positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
     detector_elements = device.detection_geometry.get_detector_element_orientations(global_settings=settings)
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
     # positions = np.round(positions / settings[Tags.SPACING_MM]).astype(int)
 
     import matplotlib.pyplot as plt
-    plt.scatter(positions[:, 0], positions[:, 1], marker='x')
+
+    plt.figure()
+    plt.subplot(1, 2, 1)
+    plt.title("In Volume")
+    plt.scatter(positions[:, 0], positions[:, 1])
+    fov = device.detection_geometry.get_field_of_view_mm()
+    plt.plot([fov[0], fov[1], fov[1], fov[0], fov[0]], [fov[2], fov[2], fov[3], fov[3], fov[2]], color="red")
+    plt.subplot(1, 2, 2)
+    plt.title("Base")
+    positions = device.detection_geometry.get_detector_element_positions_base_mm()
+    fov = device.detection_geometry.field_of_view_extent_mm
+    plt.plot([fov[0], fov[1], fov[1], fov[0], fov[0]], [fov[2], fov[2], fov[3], fov[3], fov[2]], color="red")
+    plt.scatter(positions[:, 0], positions[:, 1])
     plt.show()

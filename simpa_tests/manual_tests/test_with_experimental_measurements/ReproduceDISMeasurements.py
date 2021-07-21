@@ -209,7 +209,8 @@ for wavelength in settings[Tags.WAVELENGTHS]:
     print(f"Total Transmission: {total_transmission * 100:.2f}% (expected "
           f"{transmittance_spectrum.get_value_for_wavelength(wavelength) * 100:.2f}%)")
 
-visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", wavelength=800,
+visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+               wavelength=800,
                show_segmentation_map=False,
                show_absorption=True,
                show_fluence=True,

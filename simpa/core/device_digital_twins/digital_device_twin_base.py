@@ -16,7 +16,8 @@ class DigitalDeviceTwinBase:
     This class represents a device that can be used for illumination, detection or both.
     """
 
-    def __init__(self, device_position_mm: np.ndarray = None):
+    def __init__(self, device_position_mm: np.ndarray = None,
+                 field_of_view_extent_mm: np.ndarray = None):
         """
         Constructor of the base class for all digital devices.
         :param device_position_mm: Each device has an internal position which serves as origin for internal
@@ -26,6 +27,12 @@ class DigitalDeviceTwinBase:
             self.device_position_mm = np.array([0, 0, 0])
         else:
             self.device_position_mm = device_position_mm
+
+        if field_of_view_extent_mm is None:
+            self.field_of_view_extent_mm = np.asarray([-10, 10, -10, 10, -10, 10])
+        else:
+            self.field_of_view_extent_mm = field_of_view_extent_mm
+
         self.logger = Logger()
 
     @abstractmethod
@@ -42,16 +49,6 @@ class DigitalDeviceTwinBase:
         """
         pass
 
-    @abstractmethod
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        """
-        Returns the field of view extent of this imaging device.
-        It is defined as a numpy array of the shape [xs, xe, ys, ye, zs, ze],
-        where x, y, and z denote the coordinate axes and s and e denote the start and end
-        positions. These coordinates are defined relatively to the probe position.
-        """
-        pass
-
     def get_field_of_view_mm(self) -> np.ndarray:
         """
         returns the absolute field of view in mm where the probe position is already
@@ -61,7 +58,7 @@ class DigitalDeviceTwinBase:
         positions.
         """
         position = self.device_position_mm
-        field_of_view_extent = self.get_field_of_view_extent_mm()
+        field_of_view_extent = self.field_of_view_extent_mm
 
         return np.asarray([position[0] + field_of_view_extent[0],
                            position[0] + field_of_view_extent[1],
@@ -74,15 +71,25 @@ class DigitalDeviceTwinBase:
 
 class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
 
-    def __init__(self,  device_position_mm: np.ndarray = None):
-        super(PhotoacousticDevice, self).__init__(device_position_mm=device_position_mm)
+    def __init__(self,  device_position_mm: np.ndarray = None,
+                 field_of_view_extent_mm: np.ndarray = None):
+        super(PhotoacousticDevice, self).__init__(device_position_mm=device_position_mm,
+                                                  field_of_view_extent_mm=field_of_view_extent_mm)
         self.detection_geometry = None
         self.illumination_geometries = []
 
     def set_detection_geometry(self, detection_geometry):
+        if detection_geometry is None:
+            msg = "The given detection_geometry must not be None!"
+            self.logger.critical(msg)
+            raise ValueError(msg)
         self.detection_geometry = detection_geometry
 
     def add_illumination_geometry(self, illumination_geometry):
+        if illumination_geometry is None:
+            msg = "The given illumination_geometry must not be None!"
+            self.logger.critical(msg)
+            raise ValueError(msg)
         self.illumination_geometries.append(illumination_geometry)
 
     def get_detection_geometry(self):
@@ -101,10 +108,6 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
             return self.illumination_geometries[0]
 
         return self.illumination_geometries
-
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        # TODO also integrate the illumination bounds -> maximum extent, smallest for start, biggest for end
-        return self.detection_geometry.get_field_of_view_extent_mm()
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         _result = True

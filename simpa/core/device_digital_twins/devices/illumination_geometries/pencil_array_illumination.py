@@ -30,9 +30,6 @@ class PencilArrayIlluminationGeometry(IlluminationGeometryBase):
         self.number_illuminators_x = number_illuminators_x
         self.number_illuminators_y = number_illuminators_y
 
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        pass
-
     def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_PENCILARRAY
 
