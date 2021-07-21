@@ -49,16 +49,6 @@ class DigitalDeviceTwinBase:
         """
         pass
 
-    @abstractmethod
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        """
-        Returns the field of view extent of this imaging device.
-        It is defined as a numpy array of the shape [xs, xe, ys, ye, zs, ze],
-        where x, y, and z denote the coordinate axes and s and e denote the start and end
-        positions. These coordinates are defined relatively to the probe position.
-        """
-        pass
-
     def get_field_of_view_mm(self) -> np.ndarray:
         """
         returns the absolute field of view in mm where the probe position is already

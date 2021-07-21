@@ -90,7 +90,6 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         field_of_view = self.field_of_view_extent_mm
         x_half = (field_of_view[1] - field_of_view[0]) / 2
         y_half = (field_of_view[3] - field_of_view[2]) / 2
-        z_half = (field_of_view[5] - field_of_view[4]) / 2
         if np.abs(x_half) < 1e-10:
             abstract_element_positions[:, 0] = 0
         if np.abs(y_half) < 1e-10:
@@ -98,7 +97,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
         abstract_element_positions[:, 0] += x_half
         abstract_element_positions[:, 1] += y_half
-        abstract_element_positions[:, 2] += z_half
+        abstract_element_positions[:, 2] += field_of_view[4]
         return abstract_element_positions
 
     @abstractmethod
