@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Spectrum, Molecule
+from simpa.utils import Spectrum, Molecule, Settings
 
 
 class SIMPASerializer(object):
@@ -23,3 +23,8 @@ class SIMPASerializer(object):
             return _object.__dict__
 
         return _object
+
+
+SERIALIZATION_MAP = {
+    "Settings": Settings.deserialize
+}

@@ -5,10 +5,11 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.utils import Tags
+from simpa.utils.serializer import SerializableSIMPAClass
 from simpa.log import Logger
 
 
-class Settings(dict):
+class Settings(dict, SerializableSIMPAClass):
     """
     The Settings class is a dictionary that contains all relevant settings for running a simulation in the SIMPA
     toolkit. It includes an automatic sanity check for input parameters using the simpa.utils.Tags class. \n
@@ -148,3 +149,10 @@ class Settings(dict):
         from simpa.io_handling.io_hdf5 import load_hdf5
         for key, value in load_hdf5(path).items():
             self[key] = value
+
+    def serialize(self):
+        return {"Settings": dict(self)}
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize: dict):
+        return Settings(dictionary_to_deserialize)

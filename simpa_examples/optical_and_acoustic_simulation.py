@@ -21,12 +21,13 @@ from simpa.core.device_digital_twins import LinearArrayDetectionGeometry, SlitIl
 
 # FIXME temporary workaround for newest Intel architectures
 import os
+import time
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.25
+SPACING = 0.1
 RANDOM_SEED = 4711
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -34,7 +35,7 @@ RANDOM_SEED = 4711
 path_manager = PathManager()
 
 # If VISUALIZE is set to True, the simulation result will be plotted
-VISUALIZE = True
+VISUALIZE = False
 
 
 def create_example_tissue():
@@ -171,7 +172,8 @@ settings.set_reconstruction_settings({
     Tags.ACOUSTIC_LOG_SCALE: True,
     Tags.PROPERTY_SPEED_OF_SOUND: 1540,
     Tags.PROPERTY_ALPHA_COEFF: 0.01,
-    Tags.PROPERTY_DENSITY: 1000
+    Tags.PROPERTY_DENSITY: 1000,
+    Tags.SPACING_MM: SPACING
 })
 
 settings["noise_initial_pressure"] = {
@@ -209,9 +211,10 @@ SIMUATION_PIPELINE = [
     GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    ReconstructionModuleTimeReversalAdapter(settings),
+    ImageReconstructionModuleDelayAndSumAdapter(settings),
     ]
 
+print(time.time())
 simulate(SIMUATION_PIPELINE, settings, device)
 
 if Tags.WAVELENGTH in settings:

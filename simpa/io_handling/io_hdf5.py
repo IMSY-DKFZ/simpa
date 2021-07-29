@@ -6,12 +6,13 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 import h5py
-from simpa.io_handling.serialization import SIMPASerializer
+from simpa.io_handling.serialization import SIMPASerializer, SERIALIZATION_MAP
 from simpa.utils import Spectrum, Molecule
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.dict_path_manager import generate_dict_path
 import numpy as np
 from simpa.log import Logger
+from simpa.utils.serializer import SerializableSIMPAClass
 
 MOLECULE_COMPOSITION = Tags.MOLECULE_COMPOSITION[0]
 MOLECULE = "molecule"
@@ -97,6 +98,8 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
     else:
         writing_mode = "a"
 
+    if isinstance(save_item, SerializableSIMPAClass):
+        save_item = save_item.serialize()
     if isinstance(save_item, dict):
         with h5py.File(file_path, writing_mode) as h5file:
             data_grabber(h5file, file_dictionary_path, save_item, file_compression)
@@ -137,7 +140,12 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                 else:
                     dictionary[key] = None
             elif isinstance(item, h5py._hl.group.Group):
-                if key == "list":
+                if key in SERIALIZATION_MAP.keys():
+                    serialized_class = SERIALIZATION_MAP[key](item)
+                    if isinstance(serialized_class, dict):
+                        for serialized_key, serialized_item in serialized_class.items():
+                            serialized_class[serialized_key] = data_grabber(file, path + key + "/")
+                elif key == "list":
                     dictionary_list = [None for x in item.keys()]
                     for listkey in sorted(item.keys()):
                         if isinstance(item[listkey], h5py._hl.dataset.Dataset):

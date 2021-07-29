@@ -14,7 +14,7 @@ from simpa.core.device_digital_twins.devices.detection_geometries.linear_array i
 from simpa.utils import Settings, Tags
 import numpy as np
 
-
+Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION
 class ExampleDeviceSlitIlluminationLinearDetector(PhotoacousticDevice):
     """
     This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
