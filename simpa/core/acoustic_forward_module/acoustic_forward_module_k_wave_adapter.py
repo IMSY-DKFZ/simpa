@@ -4,6 +4,7 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
+from simpa.utils.path_manager import PathManager
 from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 import numpy as np
 import subprocess
@@ -65,7 +66,13 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
     """
 
-    def forward_model(self, detection_geometry) -> np.ndarray:
+    def forward_model(self, detection_geometry: DetectionGeometryBase) -> np.ndarray:
+        """
+        Runs the acoustic forward model and performs reading parameters and values from an hdf5 file
+        before calling the actual algorithm and saves the updated settings afterwards.
+
+        Returns the simulated time series data (numpy array)
+        """
 
         optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
                                           wavelength=self.global_settings[Tags.WAVELENGTH])
@@ -87,7 +94,6 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
             detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
             if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
-                simulate_2d = True
                 axes = (0, 1)
                 if detectors_are_aligned_along_y_axis:
                     transducer_plane = int(
@@ -98,22 +104,66 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
                         round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM]))) - 1
                     image_slice = np.s_[:, transducer_plane, :]
             else:
-                simulate_2d = False
                 axes = (0, 2)
                 image_slice = np.s_[:]
         else:
-            simulate_2d = False
             axes = (0, 2)
             image_slice = np.s_[:]
 
         wavelength = str(self.global_settings[Tags.WAVELENGTH])
-        data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(
-            tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND][image_slice], 3, axes=axes)
-        data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY][image_slice], 3, axes=axes)
-        data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(
-            tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF][image_slice], 3, axes=axes)
-        data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.flip(
+        speed_of_sound = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND][image_slice], 3, axes=axes)
+        density = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY][image_slice], 3, axes=axes)
+        alpha_coeff = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF][image_slice], 3, axes=axes)
+        initial_pressure = np.flip(
             np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength][image_slice], axes=axes))
+
+        time_series_data, global_settings = self.k_wave_acoustic_forward_model(
+            detection_geometry, speed_of_sound, density, alpha_coeff, initial_pressure, optical_path=self.global_settings[Tags.SIMPA_OUTPUT_PATH])
+        save_hdf5(global_settings, global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
+
+        return time_series_data
+
+    def k_wave_acoustic_forward_model(self, detection_geometry: DetectionGeometryBase, speed_of_sound: float, density: float,
+                                      alpha_coeff: float, initial_pressure: np.ndarray, optical_path: str = "temporary") -> np.ndarray:
+        """
+        Runs the acoustic forward model with the given parameters
+            speed_of_sound (float)
+            density (float)
+            alpha_coeff (float)
+        for the initial_pressure distribution (numpy array) and a given detection geometry.
+        Uses the given optical_path (str) or if none is given a temporary one for saving temporary files.
+
+        Note, that in order to work properly, this function assumes that several settings mentioned above are set.
+        This can either be done by reading it from a settings file (e.g. when being called from forward_model) or
+        by parsing all settings individually as in the convenience function (perform_k_wave_acoustic_forward_simulation).
+
+        Returns 
+        time_series_data (numpy array): simulated time series data
+        global_settings (Settings): updated global settings with new entries from the simulation
+        """
+
+        data_dict = {}
+
+        PA_device = detection_geometry
+        # TODO: Catch ValueError if Z_DIM, X_DIM aren't set
+        # PA_device.check_settings_prerequisites(self.global_settings)
+        field_of_view_extent = PA_device.get_field_of_view_extent_mm()
+        detector_positions_mm = PA_device.get_detector_element_positions_accounting_for_device_position_mm()
+
+        if not self.component_settings.get(Tags.ACOUSTIC_SIMULATION_3D):
+            detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
+            detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
+            if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
+                simulate_2d = True
+            else:
+                simulate_2d = False
+        else:
+            simulate_2d = False
+
+        data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.ones_like(initial_pressure) * speed_of_sound
+        data_dict[Tags.PROPERTY_DENSITY] = np.ones_like(initial_pressure) * density
+        data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.ones_like(initial_pressure) * alpha_coeff
+        data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = initial_pressure
 
         if simulate_2d:
             detector_positions_mm_2d = np.delete(detector_positions_mm, 1, axis=1)
@@ -141,7 +191,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles
             data_dict[Tags.PROPERTY_INTRINSIC_EULER_ANGLE] = intrinsic_euler_angles
 
-        optical_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
+        optical_path = optical_path + ".mat"
 
         possible_k_wave_parameters = [Tags.SPACING_MM, Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
@@ -193,7 +243,8 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         cmd.append("addpath('" + base_script_path + "');" +
                    simulation_script_path + "('" + optical_path + "');exit;")
         cur_dir = os.getcwd()
-        os.chdir(self.global_settings[Tags.SIMULATION_PATH])
+        # TODO: Why is the directory changed here?
+        # os.chdir(self.global_settings[Tags.SIMULATION_PATH])
         self.logger.info(cmd)
         subprocess.run(cmd)
 
@@ -208,73 +259,95 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         self.global_settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])
         self.global_settings[Tags.K_WAVE_SPECIFIC_NT] = num_time_steps
 
-        save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
-
         os.remove(optical_path)
         os.remove(optical_path + "dt.mat")
         os.chdir(cur_dir)
 
-        return raw_time_series_data
+        return raw_time_series_data, self.global_settings
 
 
-def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array, detection_geometry: DetectionGeometryBase) -> np.array:
+def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array, detection_geometry: DetectionGeometryBase, speed_of_sound: float = 1540.0,
+                                               density: float = 1000.0, alpha_coeff: float = 0.02, acoustic_settings: Settings = None, alpha_power: float = 1.05, sensor_record: str = "p", pml_inside: bool = False, pml_alpha: float = 1.5, plot_pml: bool = False, record_movie: bool = False, movie_name: str = "visualization_log", acoustic_log_scale: bool = True, gpu: bool = True, spacing_mm: float = 0.5) -> np.array:
+    """
+    Convenience function for performing a k-Wave acoustic forward simulation using a given detection geometry and 
+    initial pressure distribution (numpy array) with the following parameters:
+        speed_of_sound (float)
+        density (float)
+        alpha_coeff (float)
+    as well as acoustic_settings (Settings). The acoustic settings may be parsed individually, however, they will 
+    be overwritten if they are also set in the acoustic_settings.
 
-    # save initial pressure
-    # optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
+    Returns the simulated time series data (numpy array).
+    """
 
-    # optical_output = {
-    #     Tags.OPTICAL_MODEL_INITIAL_PRESSURE: {700: reference.cpu().numpy()},
-    #     Tags.OPTICAL_MODEL_FLUENCE: {700: reference.cpu().numpy()},
-    # }
+    # check and set acoustic settings
+    if acoustic_settings is None:
+        acoustic_settings = Settings()
 
-    # save_hdf5(optical_output, "temp.hdf5", optical_output_path)
-    # # save_data_field(initial_pressure, "CompletePipelineTestMSOT_4711.hdf5",
-    # #                 Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=700)
-    # optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME, wavelength=700)
-    # data_dict = load_hdf5("CompletePipelineTestMSOT_4711.hdf5", optical_path)
-    # print(data_dict['initial_pressure']['700'].shape)
-    # data_dict['initial_pressure']['700'] = initial_pressure
-    # # optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME, wavelength=700)
-    # save_hdf5(initial_pressure, "CompletePipelineTestMSOT_4711.hdf5", optical_path)
-    # # save_data_field(initial_pressure, "CompletePipelineTestMSOT_4711.hdf5",
-    # #                 Tags.OPTICAL_MODEL_FLUENCE, wavelength=700)
+    pm = PathManager()
+    if Tags.ACOUSTIC_MODEL_BINARY_PATH not in acoustic_settings or acoustic_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] is None:
+        acoustic_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] = pm.get_matlab_binary_path()
 
-    # TODO: Check which settings and simulation data are required and which may be left out.
-    # Construct a template hdf5 based on this where the initial pressure and further settings are added.
-    # Then call the adapter afterwards.
+    if Tags.PROPERTY_ALPHA_POWER not in acoustic_settings or acoustic_settings[Tags.PROPERTY_ALPHA_POWER] is None:
+        acoustic_settings[Tags.PROPERTY_ALPHA_POWER] = alpha_power
 
-    # run acoustic simulation
+    if Tags.SENSOR_RECORD not in acoustic_settings or acoustic_settings[Tags.SENSOR_RECORD] is None:
+        acoustic_settings[Tags.SENSOR_RECORD] = sensor_record
+
+    if Tags.PMLInside not in acoustic_settings or acoustic_settings[Tags.PMLInside] is None:
+        acoustic_settings[Tags.PMLInside] = pml_inside
+
+    if Tags.PMLAlpha not in acoustic_settings or acoustic_settings[Tags.PMLAlpha] is None:
+        acoustic_settings[Tags.PMLAlpha] = pml_alpha
+
+    if Tags.PlotPML not in acoustic_settings or acoustic_settings[Tags.PlotPML] is None:
+        acoustic_settings[Tags.PlotPML] = plot_pml
+
+    if Tags.RECORDMOVIE not in acoustic_settings or acoustic_settings[Tags.RECORDMOVIE] is None:
+        acoustic_settings[Tags.RECORDMOVIE] = record_movie
+
+    if Tags.MOVIENAME not in acoustic_settings or acoustic_settings[Tags.MOVIENAME] is None:
+        acoustic_settings[Tags.MOVIENAME] = movie_name
+
+    if Tags.ACOUSTIC_LOG_SCALE not in acoustic_settings or acoustic_settings[Tags.ACOUSTIC_LOG_SCALE] is None:
+        acoustic_settings[Tags.ACOUSTIC_LOG_SCALE] = acoustic_log_scale
+
+    if Tags.GPU not in acoustic_settings or acoustic_settings[Tags.GPU] is None:
+        acoustic_settings[Tags.GPU] = gpu
+
+    if Tags.SPACING_MM not in acoustic_settings or acoustic_settings[Tags.SPACING_MM] is None:
+        acoustic_settings[Tags.SPACING_MM] = spacing_mm
+
     settings = Settings()
-    settings[Tags.WAVELENGTH] = 700
-    settings[Tags.SIMPA_OUTPUT_PATH] = "CompletePipelineTestMSOT_4711.hdf5"
-    settings[Tags.DIM_VOLUME_Z_MM] = 25
-    settings[Tags.SPACING_MM] = 0.5
-    settings[Tags.SIMULATION_PATH] = "/home/tom/dev/MSc/test/simpa"
-    settings[Tags.GPU] = True
+    settings.set_acoustic_settings(acoustic_settings)
 
-    settings.set_acoustic_settings({
-        Tags.ACOUSTIC_SIMULATION_3D: False,
-        Tags.ACOUSTIC_MODEL_BINARY_PATH: "/usr/local/MATLAB/R2020b/bin/matlab",
-        Tags.PROPERTY_ALPHA_POWER: 1.05,
-        Tags.SENSOR_RECORD: "p",
-        Tags.PMLInside: False,
-        Tags.PMLSize: [31, 32],
-        Tags.PMLAlpha: 1.5,
-        Tags.PlotPML: False,
-        Tags.RECORDMOVIE: False,
-        Tags.MOVIENAME: "visualization_log",
-        Tags.ACOUSTIC_LOG_SCALE: True
-    })
-
+    # initialize adapter and run forward model
     kWave = AcousticForwardModelKWaveAdapter(settings)
-    time_series_data = kWave.forward_model(detection_geometry)
-
+    time_series_data, updated_global_settings = kWave.k_wave_acoustic_forward_model(detection_geometry, speed_of_sound,
+                                                                                    density, alpha_coeff, initial_pressure)
     return time_series_data
 
 
 if __name__ == '__main__':
-    print("Tom")
-    initial_pressure = None  # load_data_field("Wl_700.hdf5", Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=700)
+    # test convenience function
+    initial_pressure = load_data_field("CompletePipelineTestMSOT_4711.hdf5",
+                                       Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=700)
+    image_slice = np.s_[:, 40, :]
+    initial_pressure = np.flip(initial_pressure[image_slice])
+
+    pm = PathManager()
+    acoustic_settings = {
+        Tags.ACOUSTIC_MODEL_BINARY_PATH: pm.get_matlab_binary_path(),
+        Tags.PROPERTY_ALPHA_POWER: 1.05,
+        Tags.SENSOR_RECORD: "p",
+        Tags.PMLInside: False,
+        Tags.PMLAlpha: 1.5,
+        Tags.PlotPML: False,
+        Tags.RECORDMOVIE: False,
+        Tags.MOVIENAME: "visualization_log",
+        Tags.ACOUSTIC_LOG_SCALE: True,
+        Tags.GPU: True,
+        Tags.SPACING_MM: 0.5,
+    }
     time_series_data = perform_k_wave_acoustic_forward_simulation(
-        initial_pressure, MSOTAcuityEcho().get_detection_geometry())
-    print(time_series_data.shape)
+        initial_pressure, MSOTAcuityEcho().get_detection_geometry(), speed_of_sound=1540, density=1000, alpha_coeff=0.02, acoustic_settings=acoustic_settings)
