@@ -5,9 +5,10 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.core.volume_creation_module import VolumeCreatorModuleBase
-from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
+from simpa.io_handling import save_hdf5
+import h5py
 import numpy as np
 
 
@@ -45,5 +46,10 @@ class VolumeCreationModuleSegmentationBasedAdapter(VolumeCreatorModuleBase):
             class_properties = class_mapping[seg_class].get_properties_for_wavelength(wavelength)
             for prop_tag in TissueProperties.property_tags:
                 volumes[prop_tag][segmentation_volume == seg_class] = class_properties[prop_tag]
+
+        del self.global_settings[Tags.VOLUME_CREATION_MODEL_SETTINGS][Tags.INPUT_SEGMENTATION_VOLUME]
+        with h5py.File(self.global_settings[Tags.SIMPA_OUTPUT_PATH], "a") as f:
+            del f["/settings/"]
+        save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
         return volumes

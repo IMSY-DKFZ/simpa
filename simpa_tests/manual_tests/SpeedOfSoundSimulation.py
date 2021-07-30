@@ -156,7 +156,7 @@ settings.set_acoustic_settings({
 settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.PROPERTY_ALPHA_POWER: 1.05,
+    Tags.PROPERTY_ALPHA_POWER: 0.00,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
@@ -172,7 +172,8 @@ settings.set_reconstruction_settings({
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True,
-    Tags.PROPERTY_SPEED_OF_SOUND: SPEED_OF_SOUND
+    Tags.PROPERTY_SPEED_OF_SOUND: SPEED_OF_SOUND,
+    Tags.SPACING_MM: SPACING
 })
 
 device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
@@ -197,7 +198,8 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
+    visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+                   wavelength=WAVELENGTH,
                    show_time_series_data=False,
                    show_initial_pressure=True,
                    show_absorption=False,

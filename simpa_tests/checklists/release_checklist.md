@@ -31,7 +31,8 @@ of the new release:
    folder.
 6. Execute all examples of the *simpa_examples* folder and ensure
    they run through.
-7. Make sure the SIMPA version number is adjusted in the framework.   
+7. Make sure the SIMPA version number is adjusted in the framework.
+8. Update the documentation.
 
 ## Release Steps
 

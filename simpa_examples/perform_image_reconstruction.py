@@ -30,7 +30,8 @@ settings.set_reconstruction_settings({
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
-    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE
+    Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
+    Tags.SPACING_MM: settings[Tags.SPACING_MM]
 })
 
 # TODO use the correct device definition here
@@ -41,7 +42,7 @@ ImageReconstructionModuleDelayAndSumAdapter(settings).run(device)
 reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)
 
-visualise_data(PATH, settings[Tags.WAVELENGTH], show_absorption=False,
-               show_initial_pressure=False,
-               show_segmentation_map=False,
-               log_scale=False)
+visualise_data(path_to_hdf5_file=PATH,
+               wavelength=settings[Tags.WAVELENGTH],
+               show_reconstructed_data=True,
+               show_xz_only=True)

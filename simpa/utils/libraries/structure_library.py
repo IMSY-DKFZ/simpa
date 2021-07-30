@@ -301,6 +301,16 @@ class CircularTubularStructure(GeometricalStructure):
             radius_margin = 0.7071
 
         target_vector = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
+        if self.do_deformation:
+            # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
+            deformation_values_mm = self.deformation_functional_mm(np.arange(self.volume_dimensions_voxels[0], step=1) *
+                                                                   self.voxel_spacing,
+                                                                   np.arange(self.volume_dimensions_voxels[1], step=1) *
+                                                                   self.voxel_spacing).T
+            deformation_values_mm = deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
+                                                                  self.volume_dimensions_voxels[1], 1, 1)
+            deformation_values_mm = np.tile(deformation_values_mm, (1, 1, self.volume_dimensions_voxels[2], 3))
+            target_vector = target_vector + (deformation_values_mm / self.voxel_spacing)
         cylinder_vector = np.subtract(end_voxels, start_voxels)
 
         target_radius = np.linalg.norm(target_vector, axis=-1) * np.sin(
@@ -656,6 +666,16 @@ class EllipticalTubularStructure(GeometricalStructure):
             radius_margin = 0.7071
 
         target_vector = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
+        if self.do_deformation:
+            # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
+            deformation_values_mm = self.deformation_functional_mm(np.arange(self.volume_dimensions_voxels[0], step=1) *
+                                                                   self.voxel_spacing,
+                                                                   np.arange(self.volume_dimensions_voxels[1], step=1) *
+                                                                   self.voxel_spacing).T
+            deformation_values_mm = deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
+                                                                  self.volume_dimensions_voxels[1], 1, 1)
+            deformation_values_mm = np.tile(deformation_values_mm, (1, 1, self.volume_dimensions_voxels[2], 3))
+            target_vector = target_vector + (deformation_values_mm / self.voxel_spacing)
         cylinder_vector = np.subtract(end_voxels, start_voxels)
 
         main_axis_length = radius_voxels/(1-eccentricity**2)**0.25

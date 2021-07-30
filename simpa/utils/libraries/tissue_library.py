@@ -42,7 +42,7 @@ class TissueLibrary(object):
     def muscle(self, background_oxy=None, blood_volume_fraction=None):
         """
 
-        :return: a settings dictionary containing all min and max parameters fitting for generic background tissue.
+        :return: a settings dictionary containing all min and max parameters fitting for muscle tissue.
         """
 
         # Determine muscle oxygenation
@@ -68,6 +68,51 @@ class TissueLibrary(object):
         custom_water.alpha_coefficient = 1.58
         custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_MUSCLE + 16
         custom_water.density = StandardProperties.DENSITY_MUSCLE + 41
+        custom_water.mus500 = OpticalTissueProperties.MUS500_MUSCLE_TISSUE
+        custom_water.b_mie = OpticalTissueProperties.BMIE_MUSCLE_TISSUE
+        custom_water.f_ray = OpticalTissueProperties.FRAY_MUSCLE_TISSUE
+
+        # generate the tissue dictionary
+        return (MolecularCompositionGenerator()
+                .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(value=MOLECULE_LIBRARY.muscle_scatterer(
+                        volume_fraction=1 - fraction_oxy - fraction_deoxy - water_volume_fraction),
+                        key="muscle_scatterers")
+                .append(custom_water)
+                .get_molecular_composition(SegmentationClasses.MUSCLE))
+
+    def soft_tissue(self, background_oxy=None, blood_volume_fraction=None):
+        """
+        IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
+        It is a mixture of muscle (mostly optical properties) and water (mostly acoustic properties).
+        This tissue type roughly resembles the generic background tissue that we see in real PA images.
+        :return: a settings dictionary containing all min and max parameters fitting for generic soft tissue.
+        """
+
+        # Determine muscle oxygenation
+        if background_oxy is None:
+            oxy = OpticalTissueProperties.BACKGROUND_OXYGENATION
+        else:
+            oxy = background_oxy
+
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        if blood_volume_fraction is None:
+            bvf = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE
+        else:
+            bvf = blood_volume_fraction
+
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(bvf, oxy)
+
+        # Get the water volume fraction
+        water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
+
+        custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
+        custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
+        custom_water.alpha_coefficient = 0.08
+        custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_WATER
+        custom_water.density = StandardProperties.DENSITY_WATER
         custom_water.mus500 = OpticalTissueProperties.MUS500_MUSCLE_TISSUE
         custom_water.b_mie = OpticalTissueProperties.BMIE_MUSCLE_TISSUE
         custom_water.f_ray = OpticalTissueProperties.FRAY_MUSCLE_TISSUE
@@ -127,7 +172,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.dermal_scatterer(1.0 - bvf))
                 .get_molecular_composition(SegmentationClasses.DERMIS))
 
-    def subcutaneous_fat(self, background_oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
+    def subcutaneous_fat(self, oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
         """
 
         :return: a settings dictionary containing all min and max parameters fitting for subcutaneous fat tissue.
@@ -135,10 +180,6 @@ class TissueLibrary(object):
 
         # Get water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
-
-        # Determine muscle oxygenation
-        oxy = randomize_uniform(background_oxy - OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION,
-                                background_oxy + OpticalTissueProperties.BACKGROUND_OXYGENATION_VARIATION)
 
         # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
         [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(

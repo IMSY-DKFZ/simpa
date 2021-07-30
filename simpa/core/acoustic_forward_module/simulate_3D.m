@@ -16,6 +16,13 @@ settings = data.settings;
 
 source.p0 = data.initial_pressure;
 
+% Choose if the initial pressure should be smoothed before simulation
+if isfield(settings, 'initial_pressure_smoothing') == true
+    p0_smoothing = settings.initial_pressure_smoothing;
+else
+    p0_smoothing = true;
+end
+
 %% Define kWaveGrid
 
 % add 2 pixel "gel" to reduce Fourier artifact
@@ -55,6 +62,7 @@ else
 end
 
 medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
+medium.alpha_mode = 'no_dispersion';
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
@@ -115,9 +123,9 @@ if size(min_z_pos) > 0
 end
 
 
-elem_pos(1, :) = elem_pos(1, :) - 0.5*kgrid.x_size + x_correction;
-elem_pos(2, :) = elem_pos(2, :) - 0.5*kgrid.y_size + y_correction;
-elem_pos(3, :) = elem_pos(3, :) - 0.5*kgrid.z_size + z_correction;
+elem_pos(1, :) = elem_pos(1, :) - 0.5 * kgrid.x_size + x_correction + dx * GEL_LAYER_HEIGHT;
+elem_pos(2, :) = elem_pos(2, :) - 0.5 * kgrid.y_size + y_correction;
+elem_pos(3, :) = elem_pos(3, :) - 0.5 * kgrid.z_size + z_correction;
 num_elements = size(elem_pos, 2);
 
 element_width = double(settings.detector_element_width_mm)/1000;
@@ -145,9 +153,15 @@ end
 
 % assign binary mask from karray to the sensor mask
 sensor.mask = karray.getArrayBinaryMask(kgrid);
-center_freq = double(settings.sensor_center_frequency); % [Hz]
-bandwidth = double(settings.sensor_bandwidth); % [%]
-sensor.frequency_response = [center_freq, bandwidth];
+
+% model sensor frequency response
+if isfield(settings, 'model_sensor_frequency_response') == true
+    if settings.model_sensor_frequency_response == true
+        center_freq = double(settings.sensor_center_frequency); % [Hz]
+        bandwidth = double(settings.sensor_bandwidth); % [%]
+        sensor.frequency_response = [center_freq, bandwidth];
+    end
+end
 
 %% Computation settings
 
@@ -160,7 +174,8 @@ end
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', double(settings.pml_alpha), 'PMLSize', 'auto', ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale};
+              'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale, ...
+              'Smooth', p0_smoothing};
 
 if settings.gpu == true
     time_series_data = kspaceFirstOrder3DG(kgrid, medium, source, sensor, input_args{:});

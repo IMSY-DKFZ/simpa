@@ -58,12 +58,13 @@ def create_example_tissue():
 
     vessel_1_dictionary = Settings()
     vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 + 5,
+    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                     0, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 + 5, VOLUME_PLANAR_DIM_IN_MM, 10]
+    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    vessel_1_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
     vessel_2_dictionary = Settings()
@@ -74,6 +75,7 @@ def create_example_tissue():
     vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
     vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
     vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    vessel_2_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
     vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
     epidermis_dictionary = Settings()
@@ -112,7 +114,6 @@ general_settings = {
             Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.GPU: True,
-
             # The following parameters set the optical forward model
             Tags.WAVELENGTHS: [700],
             Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
@@ -136,7 +137,7 @@ settings.set_optical_settings({
 settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.PROPERTY_ALPHA_POWER: 1.05,
+    Tags.PROPERTY_ALPHA_POWER: 0.00,
     Tags.SENSOR_RECORD: "p",
     Tags.PMLInside: False,
     Tags.PMLSize: [31, 32],
@@ -151,7 +152,7 @@ settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.ACOUSTIC_SIMULATION_3D: False,
-    Tags.PROPERTY_ALPHA_POWER: 1.05,
+    Tags.PROPERTY_ALPHA_POWER: 0.00,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
@@ -188,17 +189,17 @@ settings["noise_time_series"] = {
 
 # TODO: For the device choice, uncomment the undesired device
 
-# device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                      VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                      0]))
-# device.update_settings_for_use_of_model_based_volume_creator(settings)
+device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                     VOLUME_PLANAR_DIM_IN_MM/2,
+                                                     0]))
+device.update_settings_for_use_of_model_based_volume_creator(settings)
 
-device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                          VOLUME_PLANAR_DIM_IN_MM/2,
-                                                          0]))
-device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25,
-                                                           number_detector_elements=200))
-device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
+# device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+#                                                           VOLUME_PLANAR_DIM_IN_MM/2,
+#                                                           0]))
+# device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25,
+#                                                            number_detector_elements=200))
+# device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
 
 SIMUATION_PIPELINE = [
@@ -207,7 +208,8 @@ SIMUATION_PIPELINE = [
     GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    ReconstructionModuleTimeReversalAdapter(settings),
+    ImageReconstructionModuleDelayAndSumAdapter(settings),
+    FieldOfViewCroppingProcessingComponent(settings)
     ]
 
 simulate(SIMUATION_PIPELINE, settings, device)
@@ -218,7 +220,8 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
+    visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+                   wavelength=WAVELENGTH,
                    show_time_series_data=True,
                    show_initial_pressure=True,
                    show_absorption=False,

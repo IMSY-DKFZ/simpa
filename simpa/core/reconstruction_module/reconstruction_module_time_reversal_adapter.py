@@ -49,18 +49,19 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
         pa_device.check_settings_prerequisites(self.global_settings)
 
         # spacing
-        if Tags.SPACING_MM in self.global_settings and self.global_settings[Tags.SPACING_MM]:
+        if Tags.SPACING_MM in self.component_settings and self.component_settings[Tags.SPACING_MM]:
+            spacing_in_mm = self.component_settings[Tags.SPACING_MM]
+        elif Tags.SPACING_MM in self.global_settings and self.global_settings[Tags.SPACING_MM]:
             spacing_in_mm = self.global_settings[Tags.SPACING_MM]
         else:
             raise AttributeError("Please specify a value for SPACING_MM")
 
-        detector_positions = detection_geometry.get_detector_element_positions_accounting_for_field_of_view()
+        detector_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
         detector_positions_voxels = np.round(detector_positions / self.global_settings[Tags.SPACING_MM]).astype(int)
 
-        field_of_view = detection_geometry.get_field_of_view_extent_mm()
-        volume_x_dim = int(np.abs(field_of_view[0] - field_of_view[1]) / spacing_in_mm) + 2     # plus 2 because of off-
-        volume_y_dim = int(np.abs(field_of_view[2] - field_of_view[3]) / spacing_in_mm) + 2     # by-one error in matlab
-        volume_z_dim = int(np.abs(field_of_view[4] - field_of_view[5]) / spacing_in_mm) + 2     # otherwise
+        volume_x_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_X_MM] / spacing_in_mm) + 1)   # plus 2 because of off-
+        volume_y_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_Y_MM] / spacing_in_mm) + 1)      # by-one error in matlab
+        volume_z_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_Z_MM] / spacing_in_mm) + 1)      # otherwise
 
         if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not \
                 self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
@@ -78,7 +79,9 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
         det_elements_sensor_map = np.count_nonzero(sensor_map)
         if det_elements_sensor_map != pa_device.number_detector_elements:
             raise AttributeError("The spacing is too large to fit every detector element on the sensor map."
-                                 "Please increase it!")
+                                 "Please increase it! "
+                                 f"Expected {pa_device.number_detector_elements} elements but it "
+                                 f"were {det_elements_sensor_map}.")
 
         # TODO: Include possibility to
         possible_acoustic_properties = [Tags.PROPERTY_SPEED_OF_SOUND,
@@ -130,9 +133,9 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
         input_data = self.get_acoustic_properties(input_data, detection_geometry)
         acoustic_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
-        possible_k_wave_parameters = [Tags.SPACING_MM,
+        possible_k_wave_parameters = [Tags.SPACING_MM, Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
-                                      Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
+                                      Tags.RECORDMOVIE, Tags.MOVIENAME,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
 
         pa_device = detection_geometry
@@ -154,7 +157,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
             k_wave_settings["Nt"] = self.global_settings[Tags.K_WAVE_SPECIFIC_NT]
         else:
             num_samples = time_series_sensor_data.shape[1]
-            time_per_sample_s = 1 / (self.global_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000000)
+            time_per_sample_s = 1 / (self.component_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] * 1000000)
             k_wave_settings["dt"] = time_per_sample_s
             k_wave_settings["Nt"] = num_samples
         input_data["settings"] = k_wave_settings
@@ -189,8 +192,8 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
 
         reconstructed_data = np.flipud(np.rot90(reconstructed_data, 1, axes))
 
-        # os.chdir(cur_dir)
-        # os.remove(acoustic_path)
-        # os.remove(acoustic_path + "tr.mat")
+        os.chdir(cur_dir)
+        os.remove(acoustic_path)
+        os.remove(acoustic_path + "tr.mat")
 
         return reconstructed_data
