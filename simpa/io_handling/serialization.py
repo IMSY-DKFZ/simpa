@@ -26,5 +26,6 @@ class SIMPASerializer(object):
 
 
 SERIALIZATION_MAP = {
-    "Settings": Settings
+    "Settings": Settings,
+    "Molecule": Molecule
 }

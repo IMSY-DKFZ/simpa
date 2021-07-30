@@ -21,13 +21,12 @@ from simpa.core.device_digital_twins import LinearArrayDetectionGeometry, SlitIl
 
 # FIXME temporary workaround for newest Intel architectures
 import os
-import time
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.1
+SPACING = 0.2
 RANDOM_SEED = 4711
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -35,7 +34,7 @@ RANDOM_SEED = 4711
 path_manager = PathManager()
 
 # If VISUALIZE is set to True, the simulation result will be plotted
-VISUALIZE = False
+VISUALIZE = True
 
 
 def create_example_tissue():
@@ -117,7 +116,7 @@ general_settings = {
             Tags.GPU: True,
 
             # The following parameters set the optical forward model
-            Tags.WAVELENGTHS: [700, 750, 800, 850, 900],
+            Tags.WAVELENGTHS: [700],
             Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
         }
 settings = Settings(general_settings)
@@ -139,7 +138,7 @@ settings.set_optical_settings({
 settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.PROPERTY_ALPHA_POWER: 1.05,
+    Tags.PROPERTY_ALPHA_POWER: 0.00,
     Tags.SENSOR_RECORD: "p",
     Tags.PMLInside: False,
     Tags.PMLSize: [31, 32],
@@ -154,7 +153,7 @@ settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.ACOUSTIC_SIMULATION_3D: False,
-    Tags.PROPERTY_ALPHA_POWER: 1.05,
+    Tags.PROPERTY_ALPHA_POWER: 0.00,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
@@ -192,17 +191,17 @@ settings["noise_time_series"] = {
 
 # TODO: For the device choice, uncomment the undesired device
 
-# device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                      VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                      0]))
-# device.update_settings_for_use_of_model_based_volume_creator(settings)
+device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                     VOLUME_PLANAR_DIM_IN_MM/2,
+                                                     0]))
+device.update_settings_for_use_of_model_based_volume_creator(settings)
 
-device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                          VOLUME_PLANAR_DIM_IN_MM/2,
-                                                          0]))
-device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25,
-                                                           number_detector_elements=200))
-device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
+# device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+#                                                           VOLUME_PLANAR_DIM_IN_MM/2,
+#                                                           0]))
+# device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25,
+#                                                            number_detector_elements=200))
+# device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
 
 SIMUATION_PIPELINE = [
@@ -211,10 +210,10 @@ SIMUATION_PIPELINE = [
     GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    ImageReconstructionModuleDelayAndSumAdapter(settings),
+    ReconstructionModuleTimeReversalAdapter(settings),
+    FieldOfViewCroppingProcessingComponent(settings)
     ]
 
-print(time.time())
 simulate(SIMUATION_PIPELINE, settings, device)
 
 if Tags.WAVELENGTH in settings:
@@ -223,7 +222,8 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
+    visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+                   wavelength=WAVELENGTH,
                    show_time_series_data=True,
                    show_initial_pressure=True,
                    show_absorption=False,

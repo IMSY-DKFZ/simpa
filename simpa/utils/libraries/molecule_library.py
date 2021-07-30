@@ -12,6 +12,7 @@ from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary, Sca
 from simpa.utils import Spectrum
 from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
+from simpa.utils.serializer import SerializableSIMPAClass
 
 
 class MolecularComposition(list):
@@ -69,7 +70,7 @@ class MolecularComposition(list):
         return self.internal_properties
 
 
-class Molecule(object):
+class Molecule(SerializableSIMPAClass, object):
 
     def __init__(self, name: str = None,
                  absorption_spectrum: Spectrum = None,
@@ -180,6 +181,24 @@ class Molecule(object):
                         gruneisen_parameter=settings["gruneisen_parameter"],
                         anisotropy_spectrum=settings["anisotropy_spectrum"],
                         density=settings["density"])
+
+    def serialize(self):
+        mol = self.__dict__
+        return {"Molecule": mol}
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize: dict):
+        Molecule(name=dictionary_to_deserialize["name"],
+                 absorption_spectrum=dictionary_to_deserialize["spectrum"],
+                 volume_fraction=dictionary_to_deserialize["volume_fraction"],
+                 scattering_spectrum=dictionary_to_deserialize["scattering_spectrum"],
+                 alpha_coefficient=dictionary_to_deserialize["alpha_coefficient"],
+                 speed_of_sound=dictionary_to_deserialize["speed_of_sound"],
+                 gruneisen_parameter=dictionary_to_deserialize["gruneisen_parameter"],
+                 anisotropy_spectrum=dictionary_to_deserialize["anisotropy_spectrum"],
+                 density=dictionary_to_deserialize["density"])
+        mol = Molecule(dictionary_to_deserialize)
+        return mol
 
 
 class MoleculeLibrary(object):
