@@ -42,7 +42,7 @@ ImageReconstructionModuleDelayAndSumAdapter(settings).run(device)
 reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)
 
-visualise_data(PATH, settings[Tags.WAVELENGTH], show_absorption=False,
-               show_initial_pressure=False,
-               show_segmentation_map=False,
-               log_scale=False)
+visualise_data(path_to_hdf5_file=PATH,
+               wavelength=settings[Tags.WAVELENGTH],
+               show_reconstructed_data=True,
+               show_xz_only=True)
