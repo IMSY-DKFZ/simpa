@@ -168,9 +168,7 @@ settings.set_reconstruction_settings({
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True,
-    Tags.PROPERTY_SPEED_OF_SOUND: 1540,
-    Tags.PROPERTY_ALPHA_COEFF: 0.01,
-    Tags.PROPERTY_DENSITY: 1000
+    Tags.SPACING_MM: 0.1
 })
 
 settings["noise_initial_pressure"] = {
@@ -208,7 +206,7 @@ SIMUATION_PIPELINE = [
     GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    ImageReconstructionModuleDelayAndSumAdapter(settings),
+    ReconstructionModuleTimeReversalAdapter(settings),
     FieldOfViewCroppingProcessingComponent(settings)
     ]
 

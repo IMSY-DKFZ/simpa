@@ -57,7 +57,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
             raise AttributeError("Please specify a value for SPACING_MM")
 
         detector_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
-        detector_positions_voxels = np.round(detector_positions / self.global_settings[Tags.SPACING_MM]).astype(int)
+        detector_positions_voxels = np.round(detector_positions / spacing_in_mm).astype(int)
 
         volume_x_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_X_MM] / spacing_in_mm) + 1)   # plus 2 because of off-
         volume_y_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_Y_MM] / spacing_in_mm) + 1)      # by-one error in matlab
@@ -97,7 +97,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
                 except ValueError or KeyError:
                     self.logger.error("{} not specified.".format(acoustic_property))
 
-        return input_data
+        return input_data, spacing_in_mm
 
     def reorder_time_series_data(self, time_series_sensor_data, detection_geometry):
         """
@@ -120,7 +120,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
                                   positions[i, 2])
             return _sort_order
         pa_device = detection_geometry
-        detector_positions = pa_device.get_detector_element_positions_accounting_for_device_position_mm()
+        detector_positions = pa_device.get_detector_element_positions_base_mm()
         index_array = np.argsort(sort_order(detector_positions))
         return time_series_sensor_data[index_array]
 
@@ -130,10 +130,10 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
         time_series_sensor_data = self.reorder_time_series_data(time_series_sensor_data, detection_geometry)
 
         input_data[Tags.TIME_SERIES_DATA] = time_series_sensor_data
-        input_data = self.get_acoustic_properties(input_data, detection_geometry)
+        input_data, spacing_in_mm = self.get_acoustic_properties(input_data, detection_geometry)
         acoustic_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
-        possible_k_wave_parameters = [Tags.SPACING_MM, Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
+        possible_k_wave_parameters = [Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
@@ -143,7 +143,8 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
             Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
             Tags.SENSOR_DIRECTIVITY_SIZE_M: pa_device.detector_element_width_mm / 1000,
             Tags.SENSOR_CENTER_FREQUENCY_HZ: pa_device.center_frequency_Hz,
-            Tags.SENSOR_BANDWIDTH_PERCENT: pa_device.bandwidth_percent
+            Tags.SENSOR_BANDWIDTH_PERCENT: pa_device.bandwidth_percent,
+            Tags.SPACING_MM: spacing_in_mm
         })
 
         for parameter in possible_k_wave_parameters:
@@ -191,6 +192,26 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
         reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.RECONSTRUCTED_DATA]
 
         reconstructed_data = np.flipud(np.rot90(reconstructed_data, 1, axes))
+
+        field_of_view_mm = detection_geometry.get_field_of_view_mm()
+        field_of_view_voxels = (field_of_view_mm / spacing_in_mm).astype(np.int32)
+        self.logger.debug(f"FOV (voxels): {field_of_view_voxels}")
+        # In case it should be cropped from A to A, then crop from A to A+1
+        x_offset_correct = 1 if (field_of_view_voxels[1] - field_of_view_voxels[0]) < 1 else 0
+        y_offset_correct = 1 if (field_of_view_voxels[3] - field_of_view_voxels[2]) < 1 else 0
+        z_offset_correct = 1 if (field_of_view_voxels[5] - field_of_view_voxels[4]) < 1 else 0
+
+        if len(np.shape(reconstructed_data)) == 2:
+            reconstructed_data = np.squeeze(reconstructed_data[field_of_view_voxels[0]:field_of_view_voxels[1] + x_offset_correct,
+                                    field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
+        elif len(np.shape(reconstructed_data)) == 3:
+            reconstructed_data = np.squeeze(reconstructed_data[field_of_view_voxels[0]:field_of_view_voxels[1] + x_offset_correct,
+                                    field_of_view_voxels[2]:field_of_view_voxels[3] + y_offset_correct,
+                                    field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
+        else:
+            self.logger.critical("Unexpected number of dimensions in reconstructed image. "
+                                 f"Expected 2 or 3 but was {len(np.shape(reconstructed_data))}")
+
 
         os.chdir(cur_dir)
         os.remove(acoustic_path)

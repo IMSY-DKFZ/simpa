@@ -23,6 +23,10 @@ from simpa.io_handling import load_data_field
 path_manager = PathManager()
 
 SPEED_OF_SOUND = 1500
+SPACING = 0.5
+XZ_DIM = 90
+Y_DIM = 40
+
 
 def create_pipeline(_settings: Settings):
     return [
@@ -30,12 +34,12 @@ def create_pipeline(_settings: Settings):
         OpticalForwardModelMcxAdapter(settings),
         AcousticForwardModelKWaveAdapter(settings),
         FieldOfViewCroppingProcessingComponent(settings),
-        ImageReconstructionModuleDelayAndSumAdapter(settings)
+        ReconstructionModuleTimeReversalAdapter(settings)
     ]
 
 
 def get_device():
-    pa_device = InVision256TF(device_position_mm=np.asarray([45, 20, 45]))
+    pa_device = InVision256TF(device_position_mm=np.asarray([XZ_DIM/2, Y_DIM/2, XZ_DIM/2]))
     return pa_device
 
 
@@ -126,12 +130,12 @@ def get_settings():
     general_settings = {
         # These parameters set the general properties of the simulated volume
         Tags.RANDOM_SEED: 4711,
-        Tags.VOLUME_NAME: "SpeedOfSoundBug",
+        Tags.VOLUME_NAME: "InVision Simulation Example",
         Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
-        Tags.SPACING_MM: 0.5,
-        Tags.DIM_VOLUME_Z_MM: 90,
-        Tags.DIM_VOLUME_X_MM: 90,
-        Tags.DIM_VOLUME_Y_MM: 40,
+        Tags.SPACING_MM: SPACING,
+        Tags.DIM_VOLUME_Z_MM: XZ_DIM,
+        Tags.DIM_VOLUME_X_MM: XZ_DIM,
+        Tags.DIM_VOLUME_Y_MM: Y_DIM,
         Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
         Tags.GPU: True,
         Tags.WAVELENGTHS: [700]
@@ -178,7 +182,7 @@ def get_settings():
         Tags.ACOUSTIC_LOG_SCALE: True,
         Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
         Tags.PROPERTY_ALPHA_POWER: 0.00,
-        Tags.SPACING_MM: 0.5,
+        Tags.SPACING_MM: 0.25,
     }
 
     _settings = Settings(general_settings)
