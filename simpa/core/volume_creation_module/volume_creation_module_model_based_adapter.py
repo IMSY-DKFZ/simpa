@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.core.volume_creation_module import VolumeCreatorModuleBase
-from simpa.utils.libraries.structure_library import Structures
+from simpa.utils.libraries.structure_library.StructureBase import Structures
 from simpa.utils import Tags
 import numpy as np
 from simpa.utils import create_deformation_settings

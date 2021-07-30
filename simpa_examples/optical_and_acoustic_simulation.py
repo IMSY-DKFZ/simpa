@@ -5,7 +5,8 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.utils import Tags, TISSUE_LIBRARY
-
+from simpa.utils.libraries.structure_library import define_horizontal_layer_structure_settings,\
+    define_circular_tubular_structure_settings
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
@@ -47,52 +48,32 @@ def create_example_tissue():
     background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-10, 1e-10, 1.0)
     background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
-    muscle_dictionary = Settings()
-    muscle_dictionary[Tags.PRIORITY] = 1
-    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-    muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-    muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.05, 100, 0.9)
-    muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
-
-    vessel_1_dictionary = Settings()
-    vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                    0, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
-    vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    vessel_1_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
-    vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
-
-    vessel_2_dictionary = Settings()
-    vessel_2_dictionary[Tags.PRIORITY] = 3
-    vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 -10,
-                                                    0, 5]
-    vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 -10, VOLUME_PLANAR_DIM_IN_MM, 5]
-    vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
-    vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
-    vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    vessel_2_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
-    vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
-
-    epidermis_dictionary = Settings()
-    epidermis_dictionary[Tags.PRIORITY] = 8
-    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 1]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1.1]
-    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
-    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
-
     tissue_dict = Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
-    tissue_dict["muscle"] = muscle_dictionary
-    tissue_dict["epidermis"] = epidermis_dictionary
-    tissue_dict["vessel_1"] = vessel_1_dictionary
-    tissue_dict["vessel_2"] = vessel_2_dictionary
+    tissue_dict["muscle"] = define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
+                                                                       molecular_composition=TISSUE_LIBRARY.constant(0.05, 100, 0.9),
+                                                                       priority=1,
+                                                                       consider_partial_volume=True,
+                                                                       adhere_to_deformation=True)
+    tissue_dict["epidermis"] = define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
+                                                                          molecular_composition=TISSUE_LIBRARY.epidermis(),
+                                                                          priority=8,
+                                                                          consider_partial_volume=True,
+                                                                          adhere_to_deformation=True)
+    tissue_dict["vessel_1"] = define_circular_tubular_structure_settings(
+        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 -10, 0, 5],
+        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 -10, VOLUME_PLANAR_DIM_IN_MM, 5],
+        molecular_composition=TISSUE_LIBRARY.blood(),
+        radius_mm=2, priority=3, consider_partial_volume=True,
+        adhere_to_deformation=False
+    )
+    tissue_dict["vessel_2"] = define_circular_tubular_structure_settings(
+        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, 0, 10],
+        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10],
+        molecular_composition=TISSUE_LIBRARY.blood(),
+        radius_mm=3, priority=3, consider_partial_volume=True,
+        adhere_to_deformation=False
+    )
     return tissue_dict
 
 
