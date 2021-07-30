@@ -56,7 +56,7 @@ from scipy import ndimage
 from simpa.io_handling import load_hdf5
 from simpa.utils import get_data_field_from_simpa_output
 
-external_stylesheets = [dbc.themes.JOURNAL, '.assets/dcc.css']
+external_stylesheets = [dbc.themes.JOURNAL, 'assets/dcc.css']
 app = dash.Dash(external_stylesheets=external_stylesheets, title="SIMPA")
 
 simpa_logo = './assets/simpa_logo.png'
@@ -70,6 +70,7 @@ DEFAULT_COLORSCALE = ['rgb(5,48,97)', 'rgb(33,102,172)', 'rgb(67,147,195)', 'rgb
 
 
 class DataContainer:
+    shape = None
     simpa_output = None
     simpa_data_fields = None
     wavelengths = None
@@ -128,11 +129,13 @@ app.layout = html.Div([
                         type="text",
                         pattern=None,
                         placeholder="Path to simulation folder or file",
+                        persistence=True,
                         persistence_type="session",
                     ),
                     dcc.Dropdown(
                         id="file_selection",
                         placeholder="Simulation files",
+                        persistence=True,
                         persistence_type="session",
                     ),
                     html.Br(),
@@ -320,50 +323,6 @@ app.layout = html.Div([
                     ])
                 ], width=10),
             ])
-        ]),
-        dcc.Tab(label="Properties", children=[
-            html.Br(),
-            dbc.Row([
-                dbc.Col(
-                    html.Div([
-                        html.H6("Data selection"),
-                        html.Hr(),
-                        html.Br(),
-                        dash_table.DataTable(
-                            id="data_table",
-                            columns=[{"name": 'Col 1', "id": 'Col 1'}, {"name": 'Col 2', "id": 'Col 2'}],
-                            data=[{'Col 1': 1, 'Col 2': 0.5}, {'Col 1': 2, 'Col 2': 1.5}],
-                            style_as_list_view=True,
-                            style_table={'overflowX': 'scroll', 'maxHeight': '300px',
-                                         'overflowY': 'scroll', 'maxWidth': '800px'},
-                            fixed_rows={'headers': True, 'data': 0},
-                            style_cell={
-                                'minWidth': '50px', 'maxWidth': '90px',
-                                'overflow': 'hidden',
-                                'textOverflow': 'ellipsis',
-                                'padding': '5px',
-                                'textAlign': 'center'
-                            },
-                            style_data_conditional=[
-                                {
-                                    'if': {'row_index': 'odd'},
-                                    'backgroundColor': 'rgb(248, 248, 248)'
-                                }
-                            ],
-                            style_header={
-                                'backgroundColor': '#e6b600ff',
-                                'fontWeight': 'bold'
-                            },
-                            filter_action='native',
-                            sort_action='native',
-                            sort_mode='multi',
-                            row_selectable="multi",
-                            row_deletable=True,
-                            persistence=False,
-                        )
-                    ]), width=6
-                )
-            ])
         ])
     ])
 ], style={'padding': 40, 'zIndex': 0})
@@ -404,6 +363,7 @@ def populate_file_selection(_, data_path):
     Output("volume_slider", "value"),
     Output("volume_slider", "step"),
     Output("volume_slider", "marks"),
+    Output("volume_slider", "disabled"),
     Output("param2", "options"),
     Output("param2", "disabled"),
     Output("param3", "options"),
@@ -417,16 +377,29 @@ def populate_file_selection(_, data_path):
     Input("file_selection", "value"),
 )
 def populate_file_params(file_path):
+    global data
     if file_path is None:
         raise PreventUpdate()
     if os.path.isfile(file_path):
         data.simpa_output = load_hdf5(file_path)
-        get_data_fields()
-        n_slices = data.simpa_data_fields['mua'][data.wavelengths[0]].shape[-1]
-        vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::int(n_slices / 10)]}
-        vol_slider_min = 0
-        vol_slider_max = n_slices - 1
-        vol_slider_value = 0
+        _load_data_fields()
+        mua = data.simpa_data_fields['mua'][data.wavelengths[0]]
+        data.shape = mua.shape
+        if len(mua.shape) == 3:
+            n_slices = data.simpa_data_fields['mua'][data.wavelengths[0]].shape[-1]
+            disable_vol_slider = False
+            vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::int(n_slices / 10)]}
+            vol_slider_min = 0
+            vol_slider_max = n_slices - 1
+            vol_slider_value = 0
+        elif len(mua.shape) == 2:
+            disable_vol_slider = True
+            vol_slider_marks = {i: {'label': str(i)} for i in range(0, 100, 10)}
+            vol_slider_min = 0
+            vol_slider_max = 100
+            vol_slider_value = 0
+        else:
+            raise ValueError(f"Number of dimensions of mua is not supported: {mua.shape}")
         plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3d" not in t]
         options_list = [{'label': key, 'value': key} for key in data.simpa_data_fields.keys() if key != 'units']
         if len(data.wavelengths) > 20:
@@ -439,12 +412,12 @@ def populate_file_params(file_path):
             wv_step = data.wavelengths[1] - data.wavelengths[0]
         return options_list, False, min(data.wavelengths), max(data.wavelengths), data.wavelengths[0], \
                wv_step, marks, \
-               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, \
+               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, disable_vol_slider,\
                options_list, False, options_list, False, "imshow", plot_options, "imshow", plot_options, \
                False, False
 
 
-def get_data_fields():
+def _load_data_fields():
     data.wavelengths = data.simpa_output["settings"]["wavelengths"]
     data_fields = dict()
     sim_props = list(data.simpa_output["simulations"]["simulation_properties"].keys())
@@ -640,37 +613,26 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis):
                 continue
             x_c = click_data["points"][0]["x"]
             y_c = click_data["points"][0]["y"]
-            if "z" in click_data["points"][0]:
-                z_c = click_data["points"][0]["z"]
-            else:
-                z_c = None
-            if not isinstance(z_c, int):
-                z_c = None
             if not isinstance(x_c, int) or not isinstance(y_c, int):
                 continue
-            if (x_c, y_c, z_c) not in zip(data.click_points["x"], data.click_points["y"],
-                                          data.click_points["z"]):
-                data.click_points["x"].append(x_c)
-                data.click_points["y"].append(y_c)
-                data.click_points["z"].append(z_c)
+            data.click_points["x"].append(x_c)
+            data.click_points["y"].append(y_c)
         if not data.click_points["x"] or not data.click_points["y"]:
             raise PreventUpdate
         plot_data = list()
         for i, x in enumerate(data.click_points["x"]):
             y = data.click_points["y"][i]
-            z = data.click_points["z"][i]
             for param in data_field:
                 spectral_values = list()
                 for wavelength in data.wavelengths:
-                    if z and isinstance(z, int):
-                        spectral_values.append(np.rot90(data.simpa_data_fields[param][wavelength], 1)[x, y, z])
-                    else:
-                        # 3D data but no "z" in clickData
+                    if len(data.shape) == 3:
                         array = np.take(np.rot90(data.simpa_data_fields[param][wavelength], 1), indices=axis_ind,
                                         axis=axis)
-                        spectral_values.append(array[y, x])
+                    else:
+                        array = np.rot90(data.simpa_data_fields[param][wavelength], 1)
+                    spectral_values.append(array[y, x])
                 plot_data += [go.Scatter(x=data.wavelengths, y=spectral_values, mode="lines+markers",
-                                         name=param + f" x={x}, y={y}, z={z}")]
+                                         name=param + f" x={x}, y={y}")]
         return go.Figure(data=plot_data)
 
 
@@ -706,39 +668,6 @@ def update_general_info(param1, wv):
         open_toast = False
         toast_child = []
     return children, toast_child, open_toast
-
-
-@app.callback(Output("data_table", "data"),
-              Output("data_table", "columns"),
-              Input("plot_11", "relayoutData"),
-              Input("plot_12", "relayoutData"),
-              State("plot_11", "figure"),
-              State("plot_12", "figure")
-              )
-def update_data_table(relay_11, relay_12, fig_11, fig_12):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        raise PreventUpdate()
-    else:
-        plot_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if plot_id == "plot_11" and relay_11 and "shapes" in relay_11:
-        last_shape = relay_11["shapes"][-1]
-        shape_data = _extract_data_from_figure(last_shape, fig_11)
-    elif plot_id == "plot_12" and relay_12 and "shapes" in relay_12:
-        last_shape = relay_11["shapes"][-1]
-        shape_data = _extract_data_from_figure(last_shape, fig_12)
-
-
-def _extract_data_from_figure(shape, figure):
-    p_type = figure["data"][0]["type"]
-    if p_type not in ["heatmap"]:
-        return None
-    shape_data = None
-    if shape["type"] == "path":
-        im = np.array(figure["data"][0]["z"])
-        mask = path_to_mask(shape["path"], im.shape)
-        shape_data = im[mask]
-    return shape_data
 
 
 def path_to_indices(path):
