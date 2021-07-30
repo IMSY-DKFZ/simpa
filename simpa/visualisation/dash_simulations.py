@@ -50,9 +50,11 @@ import base64
 import numpy as np
 import os
 import pandas as pd
+from skimage import draw
+from scipy import ndimage
 
 from simpa.io_handling import load_hdf5
-from simpa.utils.tags import Tags
+from simpa.utils import get_data_field_from_simpa_output
 
 external_stylesheets = [dbc.themes.JOURNAL, '.assets/dcc.css']
 app = dash.Dash(external_stylesheets=external_stylesheets, title="SIMPA")
@@ -406,7 +408,6 @@ def populate_file_selection(_, data_path):
     Output("param2", "disabled"),
     Output("param3", "options"),
     Output("param3", "disabled"),
-    Output("volume_slider", "disabled"),
     Output("plot_type1", "value"),
     Output("plot_type1", "options"),
     Output("plot_type2", "value"),
@@ -421,28 +422,26 @@ def populate_file_params(file_path):
     if os.path.isfile(file_path):
         data.simpa_output = load_hdf5(file_path)
         get_data_fields()
-        if data.simpa_output["settings"][Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW[0]]:
-            is_2d = True
-            vol_slider_marks = {i: {'label': str(i)} for i in range(10)}
-            vol_slider_min = 0
-            vol_slider_max = 9
-            vol_slider_value = 0
-            plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3D" not in t]
-        else:
-            is_2d = False
-            n_slices = data.simpa_data_fields['mua'][data.wavelengths[0]].shape[-1]
-            vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::int(n_slices / 10)]}
-            vol_slider_min = 0
-            vol_slider_max = n_slices - 1
-            vol_slider_value = 0
-            plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3d" not in t]
+        n_slices = data.simpa_data_fields['mua'][data.wavelengths[0]].shape[-1]
+        vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::int(n_slices / 10)]}
+        vol_slider_min = 0
+        vol_slider_max = n_slices - 1
+        vol_slider_value = 0
+        plot_options = [{'label': t, 'value': t} for t in data.plot_types if "3d" not in t]
         options_list = [{'label': key, 'value': key} for key in data.simpa_data_fields.keys() if key != 'units']
-        marks = {int(wv): str(wv) for wv in data.wavelengths[::int(len(data.wavelengths) / 10)]}
+        if len(data.wavelengths) > 20:
+            marks = {int(wv): str(wv) for wv in data.wavelengths[::int(len(data.wavelengths) / 10)]}
+        else:
+            marks = {int(wv): str(wv) for wv in data.wavelengths}
+        if len(data.wavelengths) == 1:
+            wv_step = 1
+        else:
+            wv_step = data.wavelengths[1] - data.wavelengths[0]
         return options_list, False, min(data.wavelengths), max(data.wavelengths), data.wavelengths[0], \
-                data.wavelengths[1] - data.wavelengths[0], marks, \
-                vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, \
-                options_list, False, options_list, False, is_2d, "imshow", plot_options, "imshow", plot_options, \
-                False, False
+               wv_step, marks, \
+               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, \
+               options_list, False, options_list, False, "imshow", plot_options, "imshow", plot_options, \
+               False, False
 
 
 def get_data_fields():
@@ -454,15 +453,14 @@ def get_data_fields():
     for data_field in sim_props:
         data_fields[data_field] = dict()
         for wavelength in data.wavelengths:
-            data_fields[data_field][wavelength] = data.simpa_output["simulations"]\
-                ["simulation_properties"][data_field][f"{wavelength}"]
+            data_fields[data_field][wavelength] = get_data_field_from_simpa_output(data.simpa_output, data_field,
+                                                                                   wavelength)
 
     for data_field in simulations:
         data_fields[data_field] = dict()
         for wavelength in data.wavelengths:
-            data_fields[data_field][wavelength] = data.simpa_output["simulations"]\
-                ["optical_forward_model_output"][data_field][f"{wavelength}"]
-
+            data_fields[data_field][wavelength] = get_data_field_from_simpa_output(data.simpa_output, data_field,
+                                                                                   wavelength)
     data.simpa_data_fields = data_fields
 
 
@@ -493,6 +491,8 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
         if plot_type == "imshow":
             plot = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
             figure = go.Figure(data=plot)
+            for i, x in enumerate(data.click_points["x"]):
+                figure.add_annotation(x=x, y=data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
             disable_scaler = False
         elif plot_type == "hist-2D":
             df = pd.DataFrame()
@@ -512,6 +512,8 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
         elif plot_type == "contour":
             figure = go.Figure(data=go.Contour(z=plot_data, contours=dict(showlabels=True,
                                                                           labelfont=dict(size=14, color="white"))))
+            for i, x in enumerate(data.click_points["x"]):
+                figure.add_annotation(x=x, y=data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
             disable_scaler = True
         elif plot_type == "hist-3D":
             plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1).flatten()
@@ -530,7 +532,7 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
                                          caps=dict(x_show=False, y_show=False, z_show=False),
                                          surface=dict(fill=0.5, pattern='odd', count=10)))
             for i, x in enumerate(data.click_points["x"]):
-                figure.add_annotation(x, data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
+                figure.add_annotation(x=x, y=data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
             disable_scaler = True
         else:
             raise PreventUpdate
@@ -564,6 +566,8 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
         if plot_type == "imshow":
             plot = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
             figure = go.Figure(data=plot)
+            for i, x in enumerate(data.click_points["x"]):
+                figure.add_annotation(x=x, y=data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
             disable_scaler = False
         elif plot_type == "hist-2D":
             df = pd.DataFrame()
@@ -622,7 +626,7 @@ def rest_points(_):
     Input("plot_11", "clickData"),
     Input("plot_12", "clickData"),
     Input("volume_slider", "value"),
-    Input("volume_axis", "value"),
+    Input("volume_axis", "value")
 )
 def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis):
     global data
@@ -631,10 +635,6 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis):
     else:
         if isinstance(data_field, str):
             data_field = [data_field]
-        if data.simpa_output["settings"][Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW[0]]:
-            is_2d = True
-        else:
-            is_2d = False
         for click_data in [click_data1, click_data2]:
             if not click_data:
                 continue
@@ -664,8 +664,6 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis):
                 for wavelength in data.wavelengths:
                     if z and isinstance(z, int):
                         spectral_values.append(np.rot90(data.simpa_data_fields[param][wavelength], 1)[x, y, z])
-                    elif is_2d:
-                        spectral_values.append(np.rot90(data.simpa_data_fields[param][wavelength], 1)[y, x])
                     else:
                         # 3D data but no "z" in clickData
                         array = np.take(np.rot90(data.simpa_data_fields[param][wavelength], 1), indices=axis_ind,
@@ -687,10 +685,6 @@ def update_general_info(param1, wv):
     if not param1:
         raise PreventUpdate
     global data
-    if data.simpa_output["settings"][Tags.SIMULATION_EXTRACT_FIELD_OF_VIEW[0]]:
-        is_2d = True
-    else:
-        is_2d = False
     array = data.simpa_data_fields[param1][wv]
     shape = array.shape
     size = array.size * len(data.wavelengths)
@@ -699,19 +693,73 @@ def update_general_info(param1, wv):
     n_not_finite = size - n_finite
     children = [
         dcc.Markdown(f'''
-        Data is `{'2D' if is_2d else '3D'}`\n
         Data shape per channel is `{shape}`\n
         Data size per parameter is `{size}`\n
-        Not finite points: `{n_not_finite} -> {100*n_not_finite/size}%`\n
+        Not finite points: `{n_not_finite} -> {100 * n_not_finite / size}%`\n
         ''')
     ]
     if n_not_finite:
         open_toast = True
-        toast_child = [dcc.Markdown(f"Found not finite values in array: `{n_not_finite} -> {100*n_not_finite/size}%`")]
+        toast_child = [
+            dcc.Markdown(f"Found not finite values in array: `{n_not_finite} -> {100 * n_not_finite / size}%`")]
     else:
         open_toast = False
         toast_child = []
     return children, toast_child, open_toast
+
+
+@app.callback(Output("data_table", "data"),
+              Output("data_table", "columns"),
+              Input("plot_11", "relayoutData"),
+              Input("plot_12", "relayoutData"),
+              State("plot_11", "figure"),
+              State("plot_12", "figure")
+              )
+def update_data_table(relay_11, relay_12, fig_11, fig_12):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        raise PreventUpdate()
+    else:
+        plot_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if plot_id == "plot_11" and relay_11 and "shapes" in relay_11:
+        last_shape = relay_11["shapes"][-1]
+        shape_data = _extract_data_from_figure(last_shape, fig_11)
+    elif plot_id == "plot_12" and relay_12 and "shapes" in relay_12:
+        last_shape = relay_11["shapes"][-1]
+        shape_data = _extract_data_from_figure(last_shape, fig_12)
+
+
+def _extract_data_from_figure(shape, figure):
+    p_type = figure["data"][0]["type"]
+    if p_type not in ["heatmap"]:
+        return None
+    shape_data = None
+    if shape["type"] == "path":
+        im = np.array(figure["data"][0]["z"])
+        mask = path_to_mask(shape["path"], im.shape)
+        shape_data = im[mask]
+    return shape_data
+
+
+def path_to_indices(path):
+    """From SVG path to numpy array of coordinates, each row being a (row, col) point
+    """
+    indices_str = [
+        el.replace("M", "").replace("Z", "").split(",") for el in path.split("L")
+    ]
+    return np.rint(np.array(indices_str, dtype=float)).astype(np.int)
+
+
+def path_to_mask(path, shape):
+    """From SVG path to a boolean array where all pixels enclosed by the path
+    are True, and the other pixels are False.
+    """
+    cols, rows = path_to_indices(path).T
+    rr, cc = draw.polygon(rows, cols)
+    mask = np.zeros(shape, dtype=np.bool)
+    mask[rr, cc] = True
+    mask = ndimage.binary_fill_holes(mask)
+    return mask
 
 
 if __name__ == "__main__":
