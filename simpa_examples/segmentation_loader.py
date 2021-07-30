@@ -1,38 +1,21 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
-from simpa.utils import Tags, SegmentationClasses
+from simpa.utils import Tags, SegmentationClasses, MolecularCompositionGenerator
 import numpy as np
 from skimage.data import shepp_logan_phantom
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
-from simpa.utils.libraries.tissue_library import MolecularCompositionGenerator
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from scipy.ndimage import zoom
 from simpa.utils.path_manager import PathManager
-
-from simpa.simulation_components import *
+from simpa.core.device_digital_twins import RSOMExplorerP50
+from simpa.core import VolumeCreationModuleSegmentationBasedAdapter, OpticalForwardModelMcxAdapter
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -61,7 +44,7 @@ segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacin
 def segmention_class_mapping():
     ret_dict = dict()
     ret_dict[0] = TISSUE_LIBRARY.heavy_water()
-    ret_dict[1] = TISSUE_LIBRARY.blood_generic()
+    ret_dict[1] = TISSUE_LIBRARY.blood()
     ret_dict[2] = TISSUE_LIBRARY.epidermis()
     ret_dict[3] = TISSUE_LIBRARY.muscle()
     ret_dict[4] = TISSUE_LIBRARY.mediprene()
@@ -87,7 +70,6 @@ settings[Tags.SPACING_MM] = target_spacing
 settings[Tags.DIM_VOLUME_X_MM] = 400 / (target_spacing / input_spacing)
 settings[Tags.DIM_VOLUME_Y_MM] = 128 / (target_spacing / input_spacing)
 settings[Tags.DIM_VOLUME_Z_MM] = 400 / (target_spacing / input_spacing)
-settings[Tags.DIGITAL_DEVICE] = Tags.DIGITAL_DEVICE_MSOT_ACUITY
 
 settings.set_volume_creation_settings({
     Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,
@@ -107,7 +89,7 @@ pipeline = [
     OpticalForwardModelMcxAdapter(settings)
 ]
 
-simulate(pipeline, settings)
+simulate(pipeline, settings, RSOMExplorerP50(element_spacing_mm=1.0))
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]

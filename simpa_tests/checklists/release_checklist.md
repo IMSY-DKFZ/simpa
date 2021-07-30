@@ -20,17 +20,19 @@ version.
 The following things *must* be done and passed to allow for publication
 of the new release:
 
-1. Run a code inspection to test for any compile errors, such as
+1. Update package version numbers for requirements
+2. Run a code inspection to test for any compile errors, such as
    function calls with the wrong parameters or unresolved references.
-2. Run of all *framework_tests* for example using the do_coverage.py
+3. Run of all *framework_tests* for example using the do_coverage.py
    script without any unexpected failures.
-3. Execute the tests in the *simulation_tests* test suite and ensure
+4. Execute the tests in the *manual_tests* test suite and ensure
    that the results are okay.
-4. Follow the instructions of any other checklist in the *checklists*
+5. Follow the instructions of any other checklist in the *checklists*
    folder.
-5. Execute all examples of the *simpa_examples* folder and ensure
+6. Execute all examples of the *simpa_examples* folder and ensure
    they run through.
-6. Make sure the SIMPA version number is adjusted in the framework.   
+7. Make sure the SIMPA version number is adjusted in the framework.
+8. Update the documentation.
 
 ## Release Steps
 
@@ -40,4 +42,3 @@ build runs successfully.
 3. Create a release tag with the correct version on Github.
 4. Update the code on zenodo.
 5. Upload the code to pypi.
-      

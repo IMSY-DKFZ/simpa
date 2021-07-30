@@ -1,24 +1,8 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 import numpy as np
 
@@ -91,6 +75,12 @@ class Tags:
     """
     Temperature of the simulated volume.\n
     Usage: module noise_simulation
+    """
+
+    LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE = ("minimize_file_size", (bool, np.bool, np.bool_))
+    """
+    If not set to False, the HDF5 file will be optimised after the simulations are done.
+    Usage: simpa.core.simulation.simulate
     """
 
     """
@@ -310,6 +300,12 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
+    DIGITAL_DEVICE_SLIT_ILLUMINATION_LINEAR_DETECTOR = "digital_device_slit_illumination_linear_detector"
+    """
+    Corresponds to a PA device with a slit as illumination and a linear array as detection geometry.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DIGITAL_DEVICE_POSITION = ("digital_device_position", (list, tuple, np.ndarray))
     """
     Position in [x, y, z] coordinates of the device in the generated volume.\n
@@ -342,12 +338,6 @@ class Tags:
     OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", (int, np.integer, float, np.float))
     """
     Number of photons used in the optical simulation.\n
-    Usage: module optical_simulation_module
-    """
-
-    OPTICAL_MODEL_ILLUMINATION_GEOMETRY_XML_FILE = ("optical_model_illumination_geometry_xml_file", str)
-    """
-    Absolute path of the location of the optical forward model illumination geometry.\n
     Usage: module optical_simulation_module
     """
 
@@ -387,6 +377,13 @@ class Tags:
     """
     Specific seed for random initialisation in mcx.\n
     if not set, Tags.RANDOM_SEED will be used instead.
+    Usage: module optical_modelling, adapter mcx_adapter
+    """
+
+    MCX_ASSUMED_ANISOTROPY = ("mcx_seed", (int, np.int, float, np.float))
+    """
+    The anisotropy that should be assumed for the mcx simulations.
+    If not set, a default value of 0.9 will be assumed.
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
@@ -536,12 +533,6 @@ class Tags:
     """
     Choice of the used optical model.\n
     Usage: module optical_simulation_module
-    """
-
-    OPTICAL_MODEL_MCXYZ = "mcxyz"
-    """
-    Corresponds to the mcxyz simulation.\n
-    Usage: module optical_simulation_module, naming convention
     """
 
     OPTICAL_MODEL_MCX = "mcx"
@@ -821,64 +812,6 @@ class Tags:
     Usage: adapter BackprojectionAdapter, naming_convention
     """
 
-    """
-    Upsampling settings
-    """
-
-    UPSAMPLING_METHOD = ("upsampling_method", str)
-    """
-    Choice of the upsampling method used in the image processing.\n
-    Usage: module processing
-    """
-
-    UPSAMPLING_METHOD_DEEP_LEARNING = "deeplearning"
-    """
-    Corresponds to deep learning as the upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_METHOD_NEAREST_NEIGHBOUR = "nearestneighbour"
-    """
-    Corresponds to nearest neighbour as the upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_METHOD_BILINEAR = "bilinear"
-    """
-    Corresponds to the bilinear upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_METHOD_LANCZOS2 = "lanczos2"
-    """
-    Corresponds to lanczos with kernel size 2 as the upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_METHOD_LANCZOS3 = "lanczos3"
-    """
-    Corresponds to lanczos with kernel size 3 as the upsampling method used in the image processing.\n
-    Usage: module processing, naming concention
-    """
-
-    UPSAMPLING_SCRIPT = ("upsampling_script", str)
-    """
-    Name of the upsampling script used for the lanczos upsampling.\n
-    Usage: module processing
-    """
-
-    UPSCALE_FACTOR = ("upscale_factor", (int, float, np.int_, np.float_))
-    """
-    Upscale factor of the upsampling in the image processing.\n
-    Usage: module processing
-    """
-
-    DL_MODEL_PATH = ("dl_model_path", str)
-    """
-    Absolute path to the deep learning model used for the deep learning upsampling.\n
-    Usage: module processing
-    """
-
     # physical property volume types
     PROPERTY_ABSORPTION_PER_CM = "mua"
     """
@@ -949,6 +882,13 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
+    PROPERTY_INTRINSIC_EULER_ANGLE = "intrinsic_euler_angle"
+    """
+    Intrinsic euler angles of the detector elements in the kWaveArray.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
+
     PROPERTY_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float, np.float))
     """
     Exponent of the exponential acoustic attenuation law of kwave.\n
@@ -1005,10 +945,22 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
+    INITIAL_PRESSURE_SMOOTHING = ("initial_pressure_smoothing", (bool, np.bool, np.bool_))
+    """
+    If True, the initial pressure is smoothed before simulated in kwave.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
     # Acoustic Sensor Properties
     SENSOR_RECORD = ("sensor_record", str)
     """
     Sensor Record mode of the sensor in kwave. Default should be "p".\n
+    Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
+    """
+
+    MODEL_SENSOR_FREQUENCY_RESPONSE = ("model_sensor_frequency_response", bool)
+    """
+    Boolean to decide whether to model the sensor frequency response in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
@@ -1055,6 +1007,19 @@ class Tags:
     Usage: module acoustic_forward_module, naming convention
     """
 
+    SENSOR_ELEMENT_POSITIONS = "sensor_element_positions"
+    """
+    Number of detector elements that fit into the generated volume if the dimensions and/or spacing of the generated 
+    volume were not highly resolved enough to be sufficient for the selected PA device.\n
+    Usage: module acoustic_forward_module, naming convention
+    """
+
+    DETECTOR_ELEMENT_WIDTH_MM = "detector_element_width_mm"
+    """
+    Width of a detector element. Corresponds to the pitch - the distance between two detector element borders.\n
+    Usage: module acoustic_forward_module, naming convention
+    """
+
     SENSOR_CONCAVE = "concave"
     """
     Indicates that the geometry of the used PA device in the Mitk Beamforming is concave.\n
@@ -1069,8 +1034,14 @@ class Tags:
 
     SENSOR_RADIUS_MM = "sensor_radius_mm"
     """
-    Radius of a concave geometry of the used PA device in the Mitk Beamforming.\n
-    Usage: adapter MitkBeamformingAdapter, naming convention
+    Radius of a concave geometry of the used PA device.\n
+    Usage: adapter AcousticForwardModelKWaveAdapter, naming convention
+    """
+
+    SENSOR_PITCH_MM = "sensor_pitch_mm"
+    """
+    Pitch of detector elements of the used PA device.\n
+    Usage: adapter AcousticForwardModelKWaveAdapter, naming convention
     """
 
     # Pipelining parameters
@@ -1078,46 +1049,76 @@ class Tags:
     DATA_FIELD = "data_field"
     """
     Defines which data field a certain function shall be applied to.\n 
-    Usage: module processing
+    Usage: module core.processing_components
     """
 
     # Noise properties
 
+    NOISE_SHAPE = "noise_shape"
+    """
+    Shape of a noise model.\n 
+    Usage: module core.processing_components.noise
+    """
+
+    NOISE_SCALE = "noise_scale"
+    """
+    Scale of a noise model.\n 
+    Usage: module core.processing_components.noise
+    """
+
+    NOISE_FREQUENCY = "noise_frequency"
+    """
+    Frequency of the noise model.\n 
+    Usage: module core.processing_components.noise
+    """
+
+    NOISE_MIN = "noise_min"
+    """
+    Min of a noise model.\n 
+    Usage: module core.processing_components.noise
+    """
+
+    NOISE_MAX = "noise_max"
+    """
+    Max of a noise model.\n 
+    Usage: module core.processing_components.noise
+    """
+
     NOISE_MEAN = "noise_mean"
     """
     Mean of a noise model.\n 
-    Usage: module processing.noise_models
+    Usage: module core.processing_components.noise
     """
 
     NOISE_STD = "noise_std"
     """
     Standard deviation of a noise model.\n 
-    Usage: module processing.noise_models
+    Usage: module core.processing_components.noise
     """
 
     NOISE_MODE = "noise_mode"
     """
     The mode tag of a noise model is used to differentiate between\n
     Tags.NOISE_MODE_ADDITIVE and Tags.NOISE_MODE_MULTIPLICATIVE.\n  
-    Usage: module processing.noise_models
+    Usage: module core.processing_components.noise
     """
 
     NOISE_MODE_ADDITIVE = "noise_mode_additive"
     """
     A noise model shall be applied additively s_n = s + n.\n  
-    Usage: module processing.noise_models
+    Usage: module core.processing_components.noise
     """
 
     NOISE_MODE_MULTIPLICATIVE = "noise_mode_multiplicative"
     """
     A noise model shall be applied multiplicatively s_n = s * n.\n  
-    Usage: module processing.noise_models
+    Usage: module core.processing_components.noise
     """
 
     NOISE_NON_NEGATIVITY_CONSTRAINT = "noise_non_negativity_constraint"
     """
     Defines if after the noise model negative values shall be allowed.\n  
-    Usage: module processing.noise_models
+    Usage: module core.processing_components.noise
     """
 
     VOLUME_CREATION_MODEL_SETTINGS = ("volume_creation_model_settings", dict)
@@ -1129,6 +1130,12 @@ class Tags:
     STRUCTURES = ("structures", dict)
     """
     Settings dictionary which contains all the structures that should be generated inside the volume.\n
+    Usage: module volume_creation_module
+    """
+
+    CHILD_STRUCTURES = ("child_structures", dict)
+    """
+    Settings dictionary which contains all the child structures of a parent structure.\n
     Usage: module volume_creation_module
     """
 
@@ -1208,18 +1215,6 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
-    SETTINGS_JSON = ("settings_json", (bool, np.bool_))
-    """
-    If True, the SIMPA settings are saved in a .json file.\n
-    Usage: SIMPA package
-    """
-
-    SETTINGS_JSON_PATH = ("settings_json_path", str)
-    """
-    Absolute path to a .json file if SETTINGS_JSON is set to True.
-    Usage: SIMPA package
-    """
-
     SETTINGS = "settings"
     """
     Location of the simulation settings in the SIMPA output file.\n
@@ -1251,12 +1246,12 @@ class Tags:
     """
 
     """
-    Image processing
+    Image Processing
     """
 
     IMAGE_PROCESSING = "image_processing"
     """
-    Location of the image processing outputs in the SIMPA output file.\n
+    Location of the image algorithms outputs in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -1279,35 +1274,35 @@ class Tags:
     ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION = ("constant_regularization", (bool, np.bool, np.bool_))
     """
     If True, the fluence regularization will be constant.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     DOWNSCALE_FACTOR = ("downscale_factor", (int, float, np.int_, np.float_))
     """
     Downscale factor of the resampling in the qPAI reconstruction\n
-    Usage: module processing
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER = ("maximum_iteration_number", (int, np.integer))
     """
     Maximum number of iterations performed in iterative reconstruction if stopping criterion is not reached.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float, np.float))
     """
     Sigma value used for constant regularization of fluence.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS = ("save_intermediate_results", (bool, np.bool, np.bool_))
     """
     If True, a list of all intermediate absorption updates (middle slices only) will be saved in a numpy file.\n
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
     ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
     """
     Ratio of improvement and preceding error at which iteration method stops. 
-    Usage: module processing (iterative_qPAI_algorithm.py)
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
     """

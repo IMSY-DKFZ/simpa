@@ -1,28 +1,12 @@
-%% The MIT License (MIT)
-%%
-%% Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-%%
-%% Permission is hereby granted, free of charge, to any person obtaining a copy
-%% of this software and associated documentation files (the "Software"), to deal
-%% in the Software without restriction, including without limitation the rights
-%% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-%% copies of the Software, and to permit persons to whom the Software is
-%% furnished to do so, subject to the following conditions:
-%%
-%% The above copyright notice and this permission notice shall be included in all
-%% copies or substantial portions of the Software.
-%%
-%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-%% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-%% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-%% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-%% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-%% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-%% SOFTWARE.
+%%SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+%%SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+%%SPDX-License-Identifier: MIT
 
 function [] = time_reversal_3D(acoustic_path)
 
-%% Read settings file
+%% In case of an error, make sure the matlab scripts exits anyway
+clean_up = onCleanup(@exit);
+
 %% Read settings file
 data = load(acoustic_path);
 
@@ -50,14 +34,14 @@ source.p0 = 0;
 
 % if a field of the struct "data" is given which describes the sound speed, the array is loaded and is used as medium.sound_speed
 if isfield(data, 'sos') == true
-    medium.sound_speed = data.sos;
+    medium.sound_speed = double(data.sos);
 else
     medium.sound_speed = 1540;
 end
 
 % if a field of the struct "data" is given which describes the attenuation, the array is loaded and is used as medium.alpha_coeff
 if isfield(data, 'alpha_coeff') == true
- medium.alpha_coeff = data.alpha_coeff;
+ medium.alpha_coeff = double(data.alpha_coeff);
 else
  medium.alpha_coeff = 0.01;
 end
@@ -66,7 +50,7 @@ medium.alpha_power = double(settings.medium_alpha_power); % b for a * MHz ^ b
 
 % if a field of the struct "data" is given which describes the density, the array is loaded and is used as medium.density
 if isfield(data, 'density') == true
-    medium.density = data.density;
+    medium.density = double(data.density);
 else
     medium.density = 1000*ones(Nx, Ny, Nz);
 end
@@ -86,10 +70,6 @@ kgrid.setTime(settings.Nt, settings.dt)
 
 sensor.mask = data.sensor_mask;
 
-disp("Sensor Mask Size")
-disp(size(sensor.mask))
-
-
 % if a field of the struct "data" is given which describes the sensor directivity angles, the array is loaded and is used as sensor.directivity_angle
 %if isfield(data, 'directivity_angle') == true
 %    sensor.directivity_angle = data.directivity_angle;
@@ -101,17 +81,16 @@ disp(size(sensor.mask))
 
 % sensor.directivity_pattern = settings.sensor_directivity_pattern;
 
-% define the frequency response of the sensor elements, gaussian shape with
-% FWHM = bandwidth*center_freq
-
-center_freq = double(settings.sensor_center_frequency); % [Hz]
-bandwidth = double(settings.sensor_bandwidth); % [%]
-sensor.frequency_response = [center_freq, bandwidth];
+% model sensor frequency response
+if isfield(settings, 'model_sensor_frequency_response') == true
+    if settings.model_sensor_frequency_response == true
+        center_freq = double(settings.sensor_center_frequency); % [Hz]
+        bandwidth = double(settings.sensor_bandwidth); % [%]
+        sensor.frequency_response = [center_freq, bandwidth];
+    end
+end
 
 sensor.time_reversal_boundary_data = time_series_data;
-
-disp("Time Series Data Size")
-disp(size(sensor.time_reversal_boundary_data))
 
 %% Computation settings
 
@@ -124,7 +103,7 @@ end
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
-              'MovieName', settings.movie_name, 'PlotScale', [0, 1], 'LogScale', settings.acoustic_log_scale};
+              'MovieName', settings.movie_name, 'PlotScale', [0, 1]};
 
 if settings.gpu == true
     reconstructed_data = kspaceFirstOrder3DG(kgrid, medium, source, sensor, input_args{:});

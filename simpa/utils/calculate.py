@@ -1,24 +1,8 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2021 Computer Assisted Medical Interventions Group, DKFZ
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated simpa_documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
 
 from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 import numpy as np
@@ -185,3 +169,43 @@ def rotation(angles):
     :return: rotation matrix
     """
     return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])
+
+
+def rotation_matrix_between_vectors(a, b):
+    """
+    Returns the rotation matrix from a to b
+
+    :param a: 3D vector to rotate
+    :param b: 3D target vector
+    :return: rotation matrix
+    """
+    a_norm, b_norm = (a / np.linalg.norm(a)).reshape(3), (b / np.linalg.norm(b)).reshape(3)
+    cross_product = np.cross(a_norm, b_norm)
+    if np.abs(cross_product.all()) < 1e-10:
+        return np.zeros([3, 3])
+    dot_product = np.dot(a_norm, b_norm)
+    s = np.linalg.norm(cross_product)
+    mat = np.array([[0, -cross_product[2], cross_product[1]],
+                    [cross_product[2], 0, -cross_product[0]],
+                    [-cross_product[1], cross_product[0], 0]])
+    rotation_matrix = np.eye(3) + mat + mat.dot(mat) * ((1 - dot_product) / (s ** 2))
+    return rotation_matrix
+
+
+def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
+    """
+    Normalizes the given data by applying min max normalization.
+    The resulting array has values between 0 and 1 inclusive.
+
+    :param data: (numpy array) data to be normalized
+    :return: (numpy array) normalized array
+    """
+
+    if data is None:
+        raise AttributeError("Data must not be none in order to normalize it.")
+
+    _min = np.min(data)
+    _max = np.max(data)
+    output = (data - _min) / (_max - _min)
+
+    return output
