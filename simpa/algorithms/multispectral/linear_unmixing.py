@@ -6,14 +6,14 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 from simpa.io_handling import load_data_field, save_data_field
-from simpa.core.processing_components import ProcessingComponent
+from simpa.algorithms.multispectral import MultispectralProcessingAlgorithm
 from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 import numpy as np
 import scipy.linalg as linalg
 from simpa.utils.settings import Settings
 
 
-class LinearUnmixingProcessingComponent(ProcessingComponent):
+class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
     """
         Performs linear spectral unmixing (LU) using Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI)
         on the defined data field for each chromophore specified in the component settings.
@@ -43,13 +43,9 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
         """
 
     def __init__(self, global_settings, component_settings_key: str):
-        super(ProcessingComponent, self).__init__(global_settings=global_settings)
+        super(LinearUnmixingProcessingComponent, self).__init__(global_settings=global_settings,
+                                                                component_settings_key=component_settings_key)
 
-        self.global_settings = global_settings
-        self.component_settings = Settings(global_settings[component_settings_key])
-        self.global_wavelengths = []  # wavelengths used for LU
-
-        self.data_array = []  # array of simulated data fields for all wavelengths
         self.chromophore_spectra_dict = {}  # dictionary containing the spectrum for each chromophore and wavelength
         self.pseudo_inverse_absorption_matrix = []  # endmember matrix needed in LU
 
@@ -57,40 +53,9 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
         self.chromophore_concentrations_dict = {}  # dictionary of LU results
         self.chromophore_wavelengths_dict = {}  # dictionary of corresponding wavelengths
 
-    def run(self, pa_device):
+    def run(self):
 
         self.logger.info("Performing linear spectral unmixing...")
-
-        # check data field in component settings to confirm completeness and load from settings it specified
-        if Tags.DATA_FIELD not in self.component_settings.keys():
-            self.logger.critical()
-            raise KeyError(f"The tag Tags.DATA_FIELD must be set in order to perform linear unmixing!")
-        else:
-            self.logger.info(f"Linear unmixing will be performed on data field: {self.component_settings[Tags.DATA_FIELD]}.")
-            data_field = self.component_settings[Tags.DATA_FIELD]
-
-        # get all wavelengths with which LU should be performed
-        # if wavelengths are not specified in the component settings all wavelengths,
-        # for which the simulation pipeline was executed, will be used
-        if Tags.WAVELENGTHS in self.component_settings.keys():
-            self.global_wavelengths = self.component_settings[Tags.WAVELENGTHS]
-        else:
-            self.global_wavelengths = self.global_settings[Tags.WAVELENGTHS]
-
-        # compute volume dimensions to create data array
-        # this is not ideal, but stable
-        spacing = self.global_settings[Tags.SPACING_MM]
-        x_dim = int(self.global_settings[Tags.DIM_VOLUME_X_MM] / spacing)
-        y_dim = int(self.global_settings[Tags.DIM_VOLUME_Y_MM] / spacing)
-        z_dim = int(self.global_settings[Tags.DIM_VOLUME_Z_MM] / spacing)
-
-        # create array which contains the simulated data fields of all specified wavelengths
-        # the first dimension of the created data array encodes wavelength
-        self.data_array = np.empty((len(self.global_wavelengths), x_dim, y_dim, z_dim))
-        for i in range(len(self.global_wavelengths)):
-            self.data_array[i, :, :, :] = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
-                                                          data_field,
-                                                          self.global_wavelengths[i])
 
         # get absorption values for all chromophores and wavelengths using SIMPAs spectral library
         # the absorption values are saved in self.chromophore_spectra_dict
@@ -210,7 +175,7 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
         :return: pseudo inverse absorption matrix
         """
 
-        numberWavelengths = len(self.global_wavelengths)
+        numberWavelengths = len(self.wavelengths)
         numberChromophores = len(self.chromophore_spectra_dict.keys())
 
         # prepare matrix
@@ -219,8 +184,9 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
         # write absorption data for each chromophore and the corresponding wavelength into an array (matrix)
         for index, key in enumerate(self.chromophore_spectra_dict.keys()):
             for wave in range(numberWavelengths):
-                if self.global_wavelengths[wave] in self.chromophore_wavelengths_dict[key]:
-                    endmemberMatrix[wave][index] = self.chromophore_spectra_dict[key][self.chromophore_wavelengths_dict[key].index(self.global_wavelengths[wave])]
+                if self.wavelengths[wave] in self.chromophore_wavelengths_dict[key]:
+                    endmemberMatrix[wave][index] = self.chromophore_spectra_dict[key][
+                        self.chromophore_wavelengths_dict[key].index(self.wavelengths[wave])]
 
         return linalg.pinv(endmemberMatrix)
 
@@ -235,9 +201,9 @@ class LinearUnmixingProcessingComponent(ProcessingComponent):
         """
 
         # reshape image data to [number of wavelength, number of pixel]
-        dims_raw = np.shape(self.data_array)
+        dims_raw = np.shape(self.data)
         try:
-            reshapedData = np.reshape(self.data_array, (dims_raw[0], -1))
+            reshapedData = np.reshape(self.data, (dims_raw[0], -1))
         except Exception:
             self.logger.critical(f"FLUPAI failed probably caused by wrong input dimensions of {dims_raw}!")
             raise ValueError("Reshaping of input data failed. FLUPAI expects a 4 dimensional numpy array, "

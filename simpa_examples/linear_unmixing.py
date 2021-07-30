@@ -6,14 +6,16 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
-from simpa.algorithms.multispectral import linear_unmixing as lu
+from simpa.algorithms.multispectral.linear_unmixing import LinearUnmixingProcessingComponent
 import numpy as np
 from simpa.core import *
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import PencilBeamIlluminationGeometry
 import matplotlib.pyplot as plt
-
+# FIXME temporary workaround for newest Intel architectures
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
@@ -121,6 +123,7 @@ settings.set_optical_settings({
 # Please take a look at the component for more information.
 settings["linear_unmixing"] = {
     Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+    Tags.WAVELENGTHS: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
@@ -137,7 +140,7 @@ pipeline = [
 simulate(pipeline, settings, device)
 
 # Run linear unmixing component with above specified settings.
-lu.LinearUnmixingProcessingComponent(settings, "linear_unmixing").run(device)
+LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
 
 # Load linear unmixing result (blood oxygen saturation) and reference absorption for first wavelength.
 lu_results = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)

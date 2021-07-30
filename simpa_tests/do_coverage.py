@@ -29,6 +29,7 @@ test_classes = ["simpa_tests.automatic_tests.structure_tests.TestLayers",
                 "simpa_tests.automatic_tests.tissue_library.TestCoreAssumptions",
                 "simpa_tests.automatic_tests.tissue_library.TestTissueLibraryAgainstLiteratureValues",
                 "simpa_tests.automatic_tests.TestNoiseModels",
+                "simpa_tests.automatic_tests.TestLinearUnmixing",
                 ]
 
 suite = unittest.TestSuite()
