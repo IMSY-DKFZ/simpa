@@ -151,7 +151,11 @@ def reconstruction_mode_transformation(time_series_sensor_data: torch.tensor = N
     return output
 
 
-def preparing_reconstruction_and_obtaining_reconstruction_settings(time_series_sensor_data: np.ndarray, component_settings: Settings, global_settings: Settings, detection_geometry: DetectionGeometryBase, logger: Logger) -> Tuple[torch.tensor, float, float, torch.tensor, torch.device, float, float]:
+def preparing_reconstruction_and_obtaining_reconstruction_settings(
+        time_series_sensor_data: np.ndarray, component_settings: Settings, global_settings: Settings,
+        detection_geometry: DetectionGeometryBase, logger: Logger) -> Tuple[torch.tensor, torch.tensor,
+                                                                            float, float, float,
+                                                                            torch.device]:
     """
     Performs all preperation steps that need to be done before reconstructing an image:
     - performs envelope detection of time series data if specified
@@ -269,11 +273,13 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(time_series_s
                                                      cutoff_highpass=cutoff_highpass,
                                                      tukey_alpha=tukey_alpha)
 
-    return time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm, time_spacing_in_ms, torch_device
+    return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
+            time_spacing_in_ms, torch_device)
 
 
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
-                             speed_of_sound_in_m_per_s: float, logger: Logger) -> Tuple[int, int, int]:
+                             speed_of_sound_in_m_per_s: float, logger: Logger) -> Tuple[int, int, int, int, int,
+                                                                                        int, int, int, int]:
     """
     compute size of beamformed image from field of view of detection geometry
 
@@ -301,10 +307,9 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
     if zdim < 1:
         zdim = 1
 
-    logger.debug(f"FOV X: 0 - {xdim * spacing_in_mm}")
-    logger.debug(f"FOV Y: 0 - {ydim * spacing_in_mm}")
-    logger.debug(f"FOV Z: 0 - {zdim * spacing_in_mm}")
-    logger.debug(f"SOS: {speed_of_sound_in_m_per_s}")
+    logger.debug(f"FOV X: {xdim_start * spacing_in_mm} - {xdim_end * spacing_in_mm}")
+    logger.debug(f"FOV Y: {ydim_start * spacing_in_mm} - {ydim_end * spacing_in_mm}")
+    logger.debug(f"FOV Z: {zdim_start * spacing_in_mm} - {zdim_end * spacing_in_mm}")
 
     return xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end
 
