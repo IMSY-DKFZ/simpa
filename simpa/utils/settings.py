@@ -16,21 +16,23 @@ class Settings(dict, SerializableSIMPAClass):
     Usage: Seetings({Tags.KEY1: value1, Tags.KEY2: value2, ...})
     """
 
-    def __init__(self, dictionary: dict = None):
+    def __init__(self, dictionary: dict = None, verbose: bool = True):
         super(Settings, self).__init__()
         self.logger = Logger()
+        self.verbose = verbose
         if dictionary is None:
             dictionary = {}
         for key, value in dictionary.items():
-            self[key] = value
+            self.__setitem__(key, value)
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
             super().__setitem__(key, value)
-            self.logger.warning("The key for the Settings dictionary should be a tuple in the form of "
-                                        "('{}', (data_type_1, data_type_2, ...)). "
-                                        "The tuple of data types specifies all possible types, the value can have.\n"
-                                        "The key '{}' has been given the value {}".format(key, key, value))
+            if self.verbose:
+                self.logger.warning("The key for the Settings dictionary should be a tuple in the form of "
+                                    "('{}', (data_type_1, data_type_2, ...)). "
+                                    "The tuple of data types specifies all possible types, the value can have.\n"
+                                    "The key '{}' has been given the value {}".format(key, key, value))
             return
         elif not isinstance(key, tuple):
             raise TypeError("The key for the Settings dictionary has to be a tuple in the form of "
@@ -155,4 +157,4 @@ class Settings(dict, SerializableSIMPAClass):
 
     @staticmethod
     def deserialize(dictionary_to_deserialize: dict):
-        return Settings(dictionary_to_deserialize)
+        return Settings(dictionary_to_deserialize, verbose=False)

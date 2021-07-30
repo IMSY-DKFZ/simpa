@@ -117,7 +117,7 @@ general_settings = {
             Tags.GPU: True,
 
             # The following parameters set the optical forward model
-            Tags.WAVELENGTHS: [700],
+            Tags.WAVELENGTHS: [700, 750, 800, 850, 900],
             Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
         }
 settings = Settings(general_settings)

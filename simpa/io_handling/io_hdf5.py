@@ -141,10 +141,10 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                     dictionary[key] = None
             elif isinstance(item, h5py._hl.group.Group):
                 if key in SERIALIZATION_MAP.keys():
-                    serialized_class = SERIALIZATION_MAP[key](item)
-                    if isinstance(serialized_class, dict):
-                        for serialized_key, serialized_item in serialized_class.items():
-                            serialized_class[serialized_key] = data_grabber(file, path + key + "/")
+                    serialized_dict = data_grabber(file, path + key + "/")
+                    serialized_class = SERIALIZATION_MAP[key]
+                    deserialized_class = serialized_class.deserialize(serialized_dict)
+                    dictionary = deserialized_class
                 elif key == "list":
                     dictionary_list = [None for x in item.keys()]
                     for listkey in sorted(item.keys()):

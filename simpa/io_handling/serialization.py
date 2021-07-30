@@ -26,5 +26,5 @@ class SIMPASerializer(object):
 
 
 SERIALIZATION_MAP = {
-    "Settings": Settings.deserialize
+    "Settings": Settings
 }
