@@ -1,5 +1,9 @@
-import operator
-import traceback
+"""
+SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+SPDX-License-Identifier: MIT
+"""
+
 from abc import abstractmethod
 
 import numpy as np
@@ -8,42 +12,6 @@ from simpa.log import Logger
 from simpa.utils import Settings, Tags, get_functional_from_deformation_settings
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.tissue_properties import TissueProperties
-
-
-class Structures:
-    """
-    TODO
-    """
-    def __init__(self, settings: Settings, volume_creator_settings: dict):
-        """
-        TODO
-        """
-        self.logger = Logger()
-        self.structures = self.from_settings(settings, volume_creator_settings)
-        self.sorted_structures = sorted(self.structures, key=operator.attrgetter('priority'), reverse=True)
-
-    def from_settings(self, global_settings, volume_creator_settings):
-        structures = list()
-        if not Tags.STRUCTURES in volume_creator_settings:
-            self.logger.warning("Did not find any structure definitions in the settings file!")
-            return structures
-        _structure_settings = volume_creator_settings[Tags.STRUCTURES]
-        for struc_tag_name in _structure_settings:
-            single_structure_settings = _structure_settings[struc_tag_name]
-            try:
-                structure_class = globals()[single_structure_settings[Tags.STRUCTURE_TYPE]]
-                structure = structure_class(global_settings, single_structure_settings)
-                structures.append(structure)
-            except Exception as e:
-                self.logger.critical("An exception has occurred while trying to parse " +
-                                     str(single_structure_settings[Tags.STRUCTURE_TYPE]) +
-                                     " from the dictionary.")
-                self.logger.critical("The structure type was " + str(single_structure_settings[Tags.STRUCTURE_TYPE]))
-                self.logger.critical(traceback.format_exc())
-                self.logger.critical("trying to continue as normal...")
-                raise e
-
-        return structures
 
 
 class GeometricalStructure:
