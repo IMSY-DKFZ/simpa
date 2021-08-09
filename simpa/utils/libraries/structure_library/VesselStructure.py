@@ -178,5 +178,5 @@ def define_vessel_structure_settings(vessel_start_mm: list,
         Tags.MOLECULE_COMPOSITION: molecular_composition,
         Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
         Tags.ADHERE_TO_DEFORMATION: adhere_to_deformation,
-        Tags.STRUCTURE_TYPE: Tags.CIRCULAR_TUBULAR_STRUCTURE
+        Tags.STRUCTURE_TYPE: Tags.VESSEL_STRUCTURE
     }

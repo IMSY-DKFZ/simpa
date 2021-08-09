@@ -272,6 +272,8 @@ class Tags:
     Usage: adapter versatile_volume_creation, class VesselStructure
     """
 
+    VESSEL_STRUCTURE = "VesselStructure"
+
     """
     Digital Device Twin Settings
     """
