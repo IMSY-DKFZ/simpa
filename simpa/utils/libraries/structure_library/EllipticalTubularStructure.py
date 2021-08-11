@@ -146,5 +146,5 @@ def define_elliptical_tubular_structure_settings(tube_start_mm: list,
         Tags.MOLECULE_COMPOSITION: molecular_composition,
         Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
         Tags.ADHERE_TO_DEFORMATION: adhere_to_deformation,
-        Tags.STRUCTURE_TYPE: Tags.CIRCULAR_TUBULAR_STRUCTURE
+        Tags.STRUCTURE_TYPE: Tags.ELLIPTICAL_TUBULAR_STRUCTURE
     }
