@@ -43,8 +43,8 @@ class MultispectralProcessingAlgorithm(ABC):
         self.data = list()
         for i in range(len(self.wavelengths)):
             self.data.append(load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
-                                                          self.data_field,
-                                                          self.wavelengths[i]))
+                                             self.data_field,
+                                             self.wavelengths[i]))
 
         self.data = np.asarray(self.data)
 

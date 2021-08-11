@@ -224,7 +224,7 @@ class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
         numberChromophores = len(self.pseudo_inverse_absorption_matrix)
         chromophores_concentrations = []
         for chromophore in range(numberChromophores):
-            chromophores_concentrations.append(np.reshape(output[chromophore, :], (dims_raw[1], dims_raw[2], dims_raw[3])))
+            chromophores_concentrations.append(np.reshape(output[chromophore, :], (dims_raw[1:])))
         return chromophores_concentrations
 
     def calculate_sO2(self) -> np.ndarray:

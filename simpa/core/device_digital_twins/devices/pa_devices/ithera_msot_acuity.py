@@ -70,7 +70,6 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           field_of_view_extent_mm=field_of_view_extent_mm)
 
         self.set_detection_geometry(detection_geometry)
-        Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION
         illumination_geometry = MSOTAcuityIlluminationGeometry()
         self.add_illumination_geometry(illumination_geometry)
 
