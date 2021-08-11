@@ -84,7 +84,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         detector_positions_mm = pa_device.get_detector_element_positions_accounting_for_device_position_mm()
         self.logger.debug(f"field_of_view_extent: {field_of_view_extent}")
 
-        if not self.component_settings.get(Tags.ACOUSTIC_SIMULATION_3D):
+        if not self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
             detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
             detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
             if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
