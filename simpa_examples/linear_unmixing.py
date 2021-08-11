@@ -11,7 +11,7 @@ import numpy as np
 from simpa.core import *
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field
-from simpa.core.device_digital_twins import PencilBeamIlluminationGeometry
+from simpa.core.device_digital_twins import MSOTAcuityEcho
 import matplotlib.pyplot as plt
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -22,9 +22,9 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 path_manager = PathManager()
 
 # set global params characterizing the simulated volume
-VOLUME_TRANSDUCER_DIM_IN_MM = 60
-VOLUME_PLANAR_DIM_IN_MM = 30
-VOLUME_HEIGHT_IN_MM = 60
+VOLUME_TRANSDUCER_DIM_IN_MM = 75
+VOLUME_PLANAR_DIM_IN_MM = 20
+VOLUME_HEIGHT_IN_MM = 25
 SPACING = 0.5
 RANDOM_SEED = 471
 VOLUME_NAME = "LinearUnmixingExample_" + str(RANDOM_SEED)
@@ -45,7 +45,7 @@ def create_example_tissue():
 
     muscle_dictionary = Settings()
     muscle_dictionary[Tags.PRIORITY] = 1
-    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 10]
+    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
@@ -56,10 +56,10 @@ def create_example_tissue():
     vessel_1_dictionary[Tags.PRIORITY] = 3
     vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                     10,
-                                                    VOLUME_HEIGHT_IN_MM/2]
+                                                    5]
     vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                   12,
-                                                  VOLUME_HEIGHT_IN_MM/2]
+                                                  5]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(oxygenation=0.99)
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
@@ -67,8 +67,8 @@ def create_example_tissue():
 
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
-    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 9]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 10]
+    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 0.1]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
@@ -99,9 +99,6 @@ general_settings = {
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
     Tags.WAVELENGTHS: WAVELENGTHS,
 
-    Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM / 2,
-                                   VOLUME_PLANAR_DIM_IN_MM / 2,
-                                   0],
     Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
 }
 settings = Settings(general_settings)
@@ -113,7 +110,6 @@ settings.set_optical_settings({
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
 })
 
@@ -122,7 +118,7 @@ settings.set_optical_settings({
 # resulting blood oxygen saturation. We want to perform the algorithm using all three wavelengths defined above.
 # Please take a look at the component for more information.
 settings["linear_unmixing"] = {
-    Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
     Tags.WAVELENGTHS: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN: WAVELENGTHS,
@@ -130,7 +126,10 @@ settings["linear_unmixing"] = {
 }
 
 # Get device for simulation
-device = PencilBeamIlluminationGeometry()
+device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                     VOLUME_PLANAR_DIM_IN_MM/2,
+                                                     0]))
+device.update_settings_for_use_of_model_based_volume_creator(settings)
 
 # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
 pipeline = [
@@ -143,22 +142,35 @@ simulate(pipeline, settings, device)
 LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
 
 # Load linear unmixing result (blood oxygen saturation) and reference absorption for first wavelength.
-lu_results = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+file_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
+lu_results = load_data_field(file_path, Tags.LINEAR_UNMIXING_RESULT)
 sO2 = lu_results["sO2"]
 
-mua = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
-                              wavelength=WAVELENGTHS[0])
+mua = load_data_field(file_path, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength=WAVELENGTHS[0])
+p0 = load_data_field(file_path, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=WAVELENGTHS[0])
+gt_oxy = load_data_field(file_path, Tags.PROPERTY_OXYGENATION, wavelength=WAVELENGTHS[0])
 
 # Visualize linear unmixing result
-y_dim = int(mua.shape[1] / 2)
-plt.figure(figsize=(15, 15))
+data_shape = mua.shape
+if len(data_shape) == 3:
+    y_dim = int(data_shape[1] / 2)
+    p0 = p0[:, y_dim, :]
+    mua = mua[:, y_dim, :]
+    sO2 = sO2[:, y_dim, :]
+    gt_oxy = gt_oxy[:, y_dim, :]
+
+plt.figure(figsize=(15, 5))
 plt.suptitle("Linear Unmixing")
-plt.subplot(121)
-plt.title("Absorption coefficients")
-plt.imshow(np.rot90(mua[:, y_dim, :], -1))
+plt.subplot(1, 3, 1)
+plt.title("Initial Pressure")
+plt.imshow(np.rot90(p0, -1))
 plt.colorbar(fraction=0.05)
-plt.subplot(122)
+plt.subplot(1, 3, 2)
+plt.title("Ground Truth Blood oxygen saturation")
+gt_im = plt.imshow(np.rot90(gt_oxy, -1))
+plt.colorbar(fraction=0.05)
+plt.subplot(1, 3, 3)
 plt.title("Blood oxygen saturation")
-plt.imshow(np.rot90(sO2[:, y_dim, :], -1))
-plt.colorbar(fraction=0.05)
+plt.imshow(np.rot90(sO2, -1))
+plt.colorbar(gt_im, fraction=0.05)
 plt.show()
