@@ -96,5 +96,5 @@ def define_parallelepiped_structure_settings(start_mm: list, edge_a_mm: list, ed
         Tags.MOLECULE_COMPOSITION: molecular_composition,
         Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
         Tags.ADHERE_TO_DEFORMATION: adhere_to_deformation,
-        Tags.STRUCTURE_TYPE: Tags.RECTANGULAR_CUBOID_STRUCTURE
+        Tags.STRUCTURE_TYPE: Tags.PARALLELEPIPED_STRUCTURE
     }

@@ -52,7 +52,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         if field_of_view_extent_mm is None:
             field_of_view_extent_mm = np.asarray([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
                                                   (2 * np.sin(0.34 / 40 * 128) * 40) / 2,
-                                                  0, 0, 0, 20])
+                                                  0, 0, 0, 50])
 
         field_of_view_extent_mm[4] -= self.focus_in_field_of_view_mm
         field_of_view_extent_mm[5] -= self.focus_in_field_of_view_mm
@@ -70,7 +70,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           field_of_view_extent_mm=field_of_view_extent_mm)
 
         self.set_detection_geometry(detection_geometry)
-
+        Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION
         illumination_geometry = MSOTAcuityIlluminationGeometry()
         self.add_illumination_geometry(illumination_geometry)
 
