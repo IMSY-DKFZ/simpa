@@ -60,13 +60,19 @@ class DigitalDeviceTwinBase:
         position = self.device_position_mm
         field_of_view_extent = self.field_of_view_extent_mm
 
-        return np.asarray([position[0] + field_of_view_extent[0],
-                           position[0] + field_of_view_extent[1],
-                           position[1] + field_of_view_extent[2],
-                           position[1] + field_of_view_extent[3],
-                           position[2] + field_of_view_extent[4],
-                           position[2] + field_of_view_extent[5]
-                           ])
+        field_of_view = np.asarray([position[0] + field_of_view_extent[0],
+                                    position[0] + field_of_view_extent[1],
+                                    position[1] + field_of_view_extent[2],
+                                    position[1] + field_of_view_extent[3],
+                                    position[2] + field_of_view_extent[4],
+                                    position[2] + field_of_view_extent[5]
+                                    ])
+        if min(field_of_view) < 0:
+            self.logger.warning(f"The field of view of the chosen device is not fully within the simulated volume, "
+                                f"field of view is: {field_of_view}")
+            field_of_view[field_of_view < 0] = 0
+
+        return field_of_view
 
 
 class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):

@@ -134,7 +134,8 @@ device.update_settings_for_use_of_model_based_volume_creator(settings)
 # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
-    OpticalForwardModelMcxAdapter(settings)
+    OpticalForwardModelMcxAdapter(settings),
+    FieldOfViewCroppingProcessingComponent(settings),
 ]
 simulate(pipeline, settings, device)
 
