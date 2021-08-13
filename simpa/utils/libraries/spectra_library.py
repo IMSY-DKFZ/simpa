@@ -61,13 +61,6 @@ class Spectrum(SerializableSIMPAClass, object):
         else:
             return super().__eq__(other)
 
-
-    @staticmethod
-    def from_settings(absorption_spectrum_settings: dict):
-        return Spectrum(spectrum_name=absorption_spectrum_settings["spectrum_name"],
-                        wavelengths=absorption_spectrum_settings["wavelengths"],
-                        values=absorption_spectrum_settings["values"])
-
     def serialize(self) -> dict:
         serialized_spectrum = self.__dict__
         return {"Spectrum": serialized_spectrum}

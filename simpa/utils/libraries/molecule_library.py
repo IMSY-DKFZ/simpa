@@ -183,18 +183,6 @@ class Molecule(SerializableSIMPAClass, object):
         else:
             return super().__eq__(other)
 
-    @staticmethod
-    def from_settings(settings):
-        return Molecule(name=settings["name"],
-                        absorption_spectrum=settings["spectrum"],
-                        volume_fraction=settings["volume_fraction"],
-                        scattering_spectrum=settings["scattering_spectrum"],
-                        alpha_coefficient=settings["alpha_coefficient"],
-                        speed_of_sound=settings["speed_of_sound"],
-                        gruneisen_parameter=settings["gruneisen_parameter"],
-                        anisotropy_spectrum=settings["anisotropy_spectrum"],
-                        density=settings["density"])
-
     def serialize(self):
         serialized_molecule = self.__dict__
         return {"Molecule": serialized_molecule}
