@@ -13,7 +13,7 @@ class Settings(dict, SerializableSIMPAClass):
     """
     The Settings class is a dictionary that contains all relevant settings for running a simulation in the SIMPA
     toolkit. It includes an automatic sanity check for input parameters using the simpa.utils.Tags class. \n
-    Usage: Seetings({Tags.KEY1: value1, Tags.KEY2: value2, ...})
+    Usage: Settings({Tags.KEY1: value1, Tags.KEY2: value2, ...})
     """
 
     def __init__(self, dictionary: dict = None, verbose: bool = True):
