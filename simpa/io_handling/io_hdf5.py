@@ -4,11 +4,8 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Tags
 import h5py
-from simpa.io_handling.serialization import SIMPASerializer, SERIALIZATION_MAP
-from simpa.utils import Spectrum, Molecule
-from simpa.utils.libraries.molecule_library import MolecularComposition
+from simpa.io_handling.serialization import SERIALIZATION_MAP
 from simpa.utils.dict_path_manager import generate_dict_path
 import numpy as np
 from simpa.log import Logger
