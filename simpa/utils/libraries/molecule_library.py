@@ -15,14 +15,12 @@ from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_par
 from simpa.utils.serializer import SerializableSIMPAClass
 
 
-class MolecularComposition(list):
+class MolecularComposition(SerializableSIMPAClass, list):
 
     def __init__(self, segmentation_type=None, molecular_composition_settings=None):
         super().__init__()
         self.segmentation_type = segmentation_type
         self.internal_properties = TissueProperties()
-        self.cached_absorption = np.ones((5000, )) * -1
-        self.cached_scattering = np.ones((5000,)) * -1
 
         if molecular_composition_settings is None:
             return
@@ -68,6 +66,21 @@ class MolecularComposition(list):
                 molecule.volume_fraction * molecule.anisotropy_spectrum.get_value_for_wavelength(wavelength)
 
         return self.internal_properties
+
+    def serialize(self) -> dict:
+        dict_items = self.__dict__
+        list_items = [molecule for molecule in self]
+        return {"MolecularComposition": {"dict_items": dict_items, "list_items": list_items}}
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize: dict):
+        deserialized_molecular_composition = MolecularCompositionGenerator()
+        for molecule in dictionary_to_deserialize["list_items"]:
+            deserialized_molecular_composition.append(molecule)
+        deserialized_molecular_composition = deserialized_molecular_composition.get_molecular_composition(
+            dictionary_to_deserialize["dict_items"]["segmentation_type"]
+        )
+        return deserialized_molecular_composition
 
 
 class Molecule(SerializableSIMPAClass, object):

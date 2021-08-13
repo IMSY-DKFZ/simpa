@@ -5,6 +5,7 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.utils import Spectrum, Molecule, Settings
+from simpa.utils.libraries.molecule_library import MolecularComposition
 
 
 class SIMPASerializer(object):
@@ -29,4 +30,5 @@ SERIALIZATION_MAP = {
     "Settings": Settings,
     "Molecule": Molecule,
     "Spectrum": Spectrum,
+    "MolecularComposition": MolecularComposition,
 }

@@ -14,10 +14,6 @@ import numpy as np
 from simpa.log import Logger
 from simpa.utils.serializer import SerializableSIMPAClass
 
-MOLECULE_COMPOSITION = Tags.MOLECULE_COMPOSITION[0]
-# MOLECULE = "molecule"
-# ABSORPTION_SPECTRUM = "absorption_spectrum"
-
 logger = Logger()
 
 
@@ -41,22 +37,15 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
         :param data_dictionary: Dictionary to save.
         :param compression: possible file compression for the corresponding dataset. Values are: gzip, lzf and szip.
         """
-        serializer = SIMPASerializer()
+
         for key, item in data_dictionary.items():
             key = str(key)
             if isinstance(item, SerializableSIMPAClass):
                 serialized_item = item.serialize()
+
                 data_grabber(file, path + key + "/", serialized_item, file_compression)
             elif not isinstance(item, (list, dict, type(None))):
 
-                # if isinstance(item, Molecule):
-                #     data_grabber(file, path + key + "/" + MOLECULE + "/",
-                #                  serializer.serialize(item), compression)
-                # if isinstance(item, Spectrum):
-                #     # data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/",
-                #     #              serializer.serialize(item), compression)
-                #     print("##############################\n###############\n#####################")
-                # else:
                 if isinstance(item, (bytes, int, np.int64, float, str, bool, np.bool_)):
                     try:
                         h5file[path + key] = item
@@ -83,7 +72,11 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
                                         "Make sure this key is not a tuple. " + str(item) + " " + str(type(item)))
                         raise e
             elif item is None:
-                h5file[path + key] = "None"
+                try:
+                    h5file[path + key] = "None"
+                except (OSError, RuntimeError, ValueError):
+                    del h5file[path + key]
+                    h5file[path + key] = "None"
             elif isinstance(item, list):
                 list_dict = dict()
                 for i, list_item in enumerate(item):
@@ -157,18 +150,6 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                         elif isinstance(item[listkey], h5py._hl.group.Group):
                             dictionary_list[int(listkey)] = data_grabber(file, path + key + "/" + listkey + "/")
                     dictionary = dictionary_list
-                elif key == MOLECULE_COMPOSITION:
-                    mc = MolecularComposition()
-                    molecules = data_grabber(file, path + key + "/")
-                    for molecule in molecules:
-                        mc.append(molecule)
-                    dictionary[key] = mc
-                # elif key == MOLECULE:
-                #     data = data_grabber(file, path + key + "/")
-                #     dictionary = Molecule.from_settings(data)
-                # elif key == ABSORPTION_SPECTRUM:
-                #     data = data_grabber(file, path + key + "/")
-                #     dictionary = Spectrum.from_settings(data)
                 else:
                     dictionary[key] = data_grabber(file, path + key + "/")
         return dictionary

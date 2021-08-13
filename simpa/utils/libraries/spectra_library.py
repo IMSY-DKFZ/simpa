@@ -79,6 +79,7 @@ class Spectrum(SerializableSIMPAClass, object):
                                          values=dictionary_to_deserialize["values"])
         return deserialized_spectrum
 
+
 class AnisotropySpectrumLibrary(object):
 
     EPIDERMIS = Spectrum("g Anisotropy", np.asarray([450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000]),
