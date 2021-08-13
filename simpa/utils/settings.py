@@ -143,15 +143,6 @@ class Settings(dict, SerializableSIMPAClass):
         """
         self[Tags.RECONSTRUCTION_MODEL_SETTINGS] = Settings(reconstruction_settings)
 
-    def save(self, path):
-        from simpa.io_handling.io_hdf5 import save_hdf5
-        save_hdf5(self, path)
-
-    def load(self, path):
-        from simpa.io_handling.io_hdf5 import load_hdf5
-        for key, value in load_hdf5(path).items():
-            self[key] = value
-
     def serialize(self):
         return {"Settings": dict(self)}
 
