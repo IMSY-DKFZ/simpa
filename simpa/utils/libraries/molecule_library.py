@@ -183,22 +183,21 @@ class Molecule(SerializableSIMPAClass, object):
                         density=settings["density"])
 
     def serialize(self):
-        mol = self.__dict__
-        return {"Molecule": mol}
+        serialized_molecule = self.__dict__
+        return {"Molecule": serialized_molecule}
 
     @staticmethod
     def deserialize(dictionary_to_deserialize: dict):
-        Molecule(name=dictionary_to_deserialize["name"],
-                 absorption_spectrum=dictionary_to_deserialize["spectrum"],
-                 volume_fraction=dictionary_to_deserialize["volume_fraction"],
-                 scattering_spectrum=dictionary_to_deserialize["scattering_spectrum"],
-                 alpha_coefficient=dictionary_to_deserialize["alpha_coefficient"],
-                 speed_of_sound=dictionary_to_deserialize["speed_of_sound"],
-                 gruneisen_parameter=dictionary_to_deserialize["gruneisen_parameter"],
-                 anisotropy_spectrum=dictionary_to_deserialize["anisotropy_spectrum"],
-                 density=dictionary_to_deserialize["density"])
-        mol = Molecule(dictionary_to_deserialize)
-        return mol
+        deserialized_molecule = Molecule(name=dictionary_to_deserialize["name"],
+                                         absorption_spectrum=dictionary_to_deserialize["spectrum"],
+                                         volume_fraction=dictionary_to_deserialize["volume_fraction"],
+                                         scattering_spectrum=dictionary_to_deserialize["scattering_spectrum"],
+                                         alpha_coefficient=dictionary_to_deserialize["alpha_coefficient"],
+                                         speed_of_sound=dictionary_to_deserialize["speed_of_sound"],
+                                         gruneisen_parameter=dictionary_to_deserialize["gruneisen_parameter"],
+                                         anisotropy_spectrum=dictionary_to_deserialize["anisotropy_spectrum"],
+                                         density=dictionary_to_deserialize["density"])
+        return deserialized_molecule
 
 
 class MoleculeLibrary(object):

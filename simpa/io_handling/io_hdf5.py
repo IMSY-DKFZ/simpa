@@ -15,8 +15,8 @@ from simpa.log import Logger
 from simpa.utils.serializer import SerializableSIMPAClass
 
 MOLECULE_COMPOSITION = Tags.MOLECULE_COMPOSITION[0]
-MOLECULE = "molecule"
-ABSORPTION_SPECTRUM = "absorption_spectrum"
+# MOLECULE = "molecule"
+# ABSORPTION_SPECTRUM = "absorption_spectrum"
 
 logger = Logger()
 
@@ -44,40 +44,44 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
         serializer = SIMPASerializer()
         for key, item in data_dictionary.items():
             key = str(key)
-            if not isinstance(item, (list, dict, type(None))):
+            if isinstance(item, SerializableSIMPAClass):
+                serialized_item = item.serialize()
+                data_grabber(file, path + key + "/", serialized_item, file_compression)
+            elif not isinstance(item, (list, dict, type(None))):
 
-                if isinstance(item, Molecule):
-                    data_grabber(file, path + key + "/" + MOLECULE + "/",
-                                 serializer.serialize(item), compression)
-                elif isinstance(item, Spectrum):
-                    data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/",
-                                 serializer.serialize(item), compression)
+                # if isinstance(item, Molecule):
+                #     data_grabber(file, path + key + "/" + MOLECULE + "/",
+                #                  serializer.serialize(item), compression)
+                # if isinstance(item, Spectrum):
+                #     # data_grabber(file, path + key + "/" + ABSORPTION_SPECTRUM + "/",
+                #     #              serializer.serialize(item), compression)
+                #     print("##############################\n###############\n#####################")
+                # else:
+                if isinstance(item, (bytes, int, np.int64, float, str, bool, np.bool_)):
+                    try:
+                        h5file[path + key] = item
+                    except (OSError, RuntimeError, ValueError):
+                        del h5file[path + key]
+                        h5file[path + key] = item
                 else:
-                    if isinstance(item, (bytes, int, np.int64, float, str, bool, np.bool_)):
-                        try:
-                            h5file[path + key] = item
-                        except (OSError, RuntimeError, ValueError):
-                            del h5file[path + key]
-                            h5file[path + key] = item
-                    else:
-                        c = None
-                        if isinstance(item, np.ndarray):
-                            c = compression
+                    c = None
+                    if isinstance(item, np.ndarray):
+                        c = compression
 
+                    try:
+                        h5file.create_dataset(path + key, data=item, compression=c)
+                    except (OSError, RuntimeError, ValueError):
+                        del h5file[path + key]
                         try:
                             h5file.create_dataset(path + key, data=item, compression=c)
-                        except (OSError, RuntimeError, ValueError):
-                            del h5file[path + key]
-                            try:
-                                h5file.create_dataset(path + key, data=item, compression=c)
-                            except RuntimeError as e:
-                                logger.critical("item " + str(item) + " of type " + str(type(item)) +
-                                                " was not serializable! Full exception: " + str(e))
-                                raise e
-                        except TypeError as e:
-                            logger.critical("The key " + str(key) + " was not of the correct typing for HDF5 handling."
-                                            "Make sure this key is not a tuple. " + str(item) + " " + str(type(item)))
+                        except RuntimeError as e:
+                            logger.critical("item " + str(item) + " of type " + str(type(item)) +
+                                            " was not serializable! Full exception: " + str(e))
                             raise e
+                    except TypeError as e:
+                        logger.critical("The key " + str(key) + " was not of the correct typing for HDF5 handling."
+                                        "Make sure this key is not a tuple. " + str(item) + " " + str(type(item)))
+                        raise e
             elif item is None:
                 h5file[path + key] = "None"
             elif isinstance(item, list):
@@ -159,12 +163,12 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                     for molecule in molecules:
                         mc.append(molecule)
                     dictionary[key] = mc
-                elif key == MOLECULE:
-                    data = data_grabber(file, path + key + "/")
-                    dictionary = Molecule.from_settings(data)
-                elif key == ABSORPTION_SPECTRUM:
-                    data = data_grabber(file, path + key + "/")
-                    dictionary = Spectrum.from_settings(data)
+                # elif key == MOLECULE:
+                #     data = data_grabber(file, path + key + "/")
+                #     dictionary = Molecule.from_settings(data)
+                # elif key == ABSORPTION_SPECTRUM:
+                #     data = data_grabber(file, path + key + "/")
+                #     dictionary = Spectrum.from_settings(data)
                 else:
                     dictionary[key] = data_grabber(file, path + key + "/")
         return dictionary

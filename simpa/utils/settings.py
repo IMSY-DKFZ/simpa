@@ -153,8 +153,10 @@ class Settings(dict, SerializableSIMPAClass):
             self[key] = value
 
     def serialize(self):
+        tt = {"Settings": dict(self)}
         return {"Settings": dict(self)}
 
     @staticmethod
     def deserialize(dictionary_to_deserialize: dict):
+        ll = Settings(dictionary_to_deserialize, verbose=False)
         return Settings(dictionary_to_deserialize, verbose=False)
