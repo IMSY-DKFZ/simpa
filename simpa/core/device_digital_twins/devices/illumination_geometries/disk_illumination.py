@@ -4,27 +4,28 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-import numpy as np
-
 from simpa.core.device_digital_twins import IlluminationGeometryBase
 from simpa.utils import Settings, Tags
 
 
-class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
+class DiskIlluminationGeometry(IlluminationGeometryBase):
     """
-    This class represents a Gaussian beam illumination geometry.
-    The position is defined as the middle of the beam.
+    This class represents a disk illumination geometry.
+    The device position is defined as the middle of the disk.
     """
-
     def __init__(self, beam_radius_mm=None):
-        super(GaussianBeamIlluminationGeometry, self).__init__()
+        """
+        Initializes a disk illumination source.
+        :param beam_radius_mm: Defines the radius of the disk
+        """
+        super(DiskIlluminationGeometry, self).__init__()
         if beam_radius_mm is None:
-            beam_radius_mm = 0
+            beam_radius_mm = 1
 
         self.beam_radius_mm = beam_radius_mm
 
     def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
-        source_type = Tags.ILLUMINATION_TYPE_GAUSSIAN
+        source_type = Tags.ILLUMINATION_TYPE_DISK
 
         spacing = global_settings[Tags.SPACING_MM]
 
