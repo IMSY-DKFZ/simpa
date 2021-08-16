@@ -298,9 +298,9 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         downscaling_method = "nearest"
 
-        downscaled_initial_pressure = zoom(initial_pressure, self.downscale_factor, order=1, mode=downscaling_method)
-        downscaled_scattering = zoom(scattering, self.downscale_factor, order=1, mode=downscaling_method)
-        downscaled_anisotropy = zoom(anisotropy, self.downscale_factor, order=1, mode=downscaling_method)
+        downscaled_initial_pressure = zoom(initial_pressure, self.downscale_factor, order=0, mode=downscaling_method)
+        downscaled_scattering = zoom(scattering, self.downscale_factor, order=0, mode=downscaling_method)
+        downscaled_anisotropy = zoom(anisotropy, self.downscale_factor, order=0, mode=downscaling_method)
 
         new_spacing = self.global_settings[Tags.SPACING_MM] / self.downscale_factor
         self.global_settings[Tags.SPACING_MM] = new_spacing
