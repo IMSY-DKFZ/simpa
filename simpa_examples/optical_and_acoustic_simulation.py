@@ -149,7 +149,10 @@ settings.set_reconstruction_settings({
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True,
-    Tags.SPACING_MM: 0.1
+    Tags.PROPERTY_SPEED_OF_SOUND: 1540,
+    Tags.PROPERTY_ALPHA_COEFF: 0.01,
+    Tags.PROPERTY_DENSITY: 1000,
+    Tags.SPACING_MM: SPACING
 })
 
 settings["noise_initial_pressure"] = {
