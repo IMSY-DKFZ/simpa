@@ -123,26 +123,26 @@ class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
         This function might have to change drastically if the design of the spectral library changes in the future!
         """
 
-        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN, "Constant Absorber (10)")
-        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE, "Constant Absorber (1)")
-        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO, "Constant Absorber (0)")
-        if Tags.LINEAR_UNMIXING_COPPER_SULPHIDE in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_COPPER_SULPHIDE, "Copper Sulphide")
-        if Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE, "Nickel Sulphide")
-        if Tags.LINEAR_UNMIXING_MELANIN in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_MELANIN, "Melanin")
-        if Tags.LINEAR_UNMIXING_FAT in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_FAT, "Fat")
-        if Tags.LINEAR_UNMIXING_WATER in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_WATER, "Water")
-        if Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN, "Oxyhemoglobin")
-        if Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN, "Deoxyhemoglobin")
+        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS, "Constant Absorber (10)")
+        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS, "Constant Absorber (1)")
+        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS, "Constant Absorber (0)")
+        if Tags.LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS, "Copper Sulphide")
+        if Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS, "Nickel Sulphide")
+        if Tags.LINEAR_UNMIXING_MELANIN_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_MELANIN_WAVELENGTHS, "Melanin")
+        if Tags.LINEAR_UNMIXING_FAT_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_FAT_WAVELENGTHS, "Fat")
+        if Tags.LINEAR_UNMIXING_WATER_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_WATER_WAVELENGTHS, "Water")
+        if Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS, "Oxyhemoglobin")
+        if Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS, "Deoxyhemoglobin")
 
         return None
 

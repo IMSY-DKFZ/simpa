@@ -1309,69 +1309,75 @@ class Tags:
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
-    LINEAR_UNMIXING_OXYHEMOGLOBIN = "linear_unmixing_oxyhemoglobin"
+    LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS = ("linear_unmixing_oxyhemoglobin", list)
     """
     List of wavelengths used in linear unmixing for oxyhemoglobin chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_DEOXYHEMOGLOBIN = "linear_unmixing_deoxyhemoglobin"
+    LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS = ("linear_unmixing_deoxyhemoglobin", list)
     """
     List of wavelengths used in linear unmixing for deoxyhemoglobin chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_WATER = "linear_unmixing_water"
+    LINEAR_UNMIXING_WATER_WAVELENGTHS = ("linear_unmixing_water", list)
     """
     List of wavelengths used in linear unmixing for water chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_FAT = "linear_unmixing_fat"
+    LINEAR_UNMIXING_FAT_WAVELENGTHS = ("linear_unmixing_fat", list)
     """
     List of wavelengths used in linear unmixing for fat chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_MELANIN = "linear_unmixing_melanin"
+    LINEAR_UNMIXING_MELANIN_WAVELENGTHS = ("linear_unmixing_melanin", list)
     """
     List of wavelengths used in linear unmixing for melanin chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_NICKEL_SULPHIDE = "linear_unmixing_nickel_sulphide"
+    LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS = ("linear_unmixing_nickel_sulphide", list)
     """
     List of wavelengths used in linear unmixing for nickel sulphide chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_COPPER_SULPHIDE = "linear_unmixing_copper_sulphide"
+    LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS = ("linear_unmixing_copper_sulphide", list)
     """
     List of wavelengths used in linear unmixing for copper sulphide chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO = "linear_unmixing_constant_zero"
+    LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS = ("linear_unmixing_constant_zero", list)
     """
     List of wavelengths used in linear unmixing for constant absorber (zero) chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE = "linear_unmixing_constant_one"
+    LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS = ("linear_unmixing_constant_one", list)
     """
     List of wavelengths used in linear unmixing for constant absorber (one) chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN = "linear_unmixing_constant_ten"
+    LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS = ("linear_unmixing_constant_ten", list)
     """
     List of wavelengths used in linear unmixing for constant absorber (ten) chromophore.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
     """
 
     LINEAR_UNMIXING_COMPUTE_SO2 = ("linear_unmixing_compute_so2", (bool, np.bool, np.bool_))
     """
     If True the blood oxygen saturation is calculated and saved. This is only possible \n
     if the tags LINEAR_UNMIXING_OXYHEMOGLOBIN and LINEAR_UNMIXING_DEOXYHEMOGLOBIN are set.\n
-    Usage: processing
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    SIGNAL_THRESHOLD = ("linear_unmixing_signal_threshold", (int, np.integer, float, np.float))
+    """
+    Number that specifies which fraction of the signal intensity is used for the specified processing algorithm.\n
+    Usage: module algorithms (linear_unmixing)
     """

@@ -8,6 +8,7 @@ from simpa.utils import Tags
 from simpa.log import Logger
 import numpy as np
 from abc import ABC, abstractmethod
+import matplotlib.pyplot as plt
 
 
 class MultispectralProcessingAlgorithm(ABC):
@@ -47,6 +48,8 @@ class MultispectralProcessingAlgorithm(ABC):
                                              self.wavelengths[i]))
 
         self.data = np.asarray(self.data)
+        if Tags.SIGNAL_THRESHOLD in self.component_settings:
+            self.data[self.data < self.component_settings[Tags.SIGNAL_THRESHOLD]*np.max(self.data)] = 0
 
     @abstractmethod
     def run(self):

@@ -59,8 +59,8 @@ class TestLinearUnmixingVisual:
         # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
         self.settings["linear_unmixing"] = {
             Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
-            Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN: self.VISUAL_WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN: self.VISUAL_WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.VISUAL_WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.VISUAL_WAVELENGTHS,
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
         }
 
