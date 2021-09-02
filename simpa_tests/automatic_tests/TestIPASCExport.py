@@ -84,13 +84,13 @@ class TestDeviceUUID(unittest.TestCase):
 
     def test_file_is_not_created_on_only_optical_simulation(self):
         simulate(self.optical_simulation_pipeline, self.settings, RSOMExplorerP50(0.1, 1, 1))
-        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hfd5")
+        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(not os.path.exists(self.expected_ipasc_output_path))
         self.clean_up()
 
     def test_file_is_created_on_acoustic_simulation(self):
         simulate(self.full_simulation_pipeline, self.settings, RSOMExplorerP50(0.1, 1, 1))
-        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hfd5")
+        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(os.path.exists(self.expected_ipasc_output_path))
         self.clean_up()
 

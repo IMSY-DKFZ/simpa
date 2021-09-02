@@ -28,13 +28,13 @@ class IpascSimpaAdapter(BaseAdapter):
         # Input validation with descriptive error messages
         if not os.path.exists(hdf5_file_path):
             self.logger.error(f"The given file path ({hdf5_file_path}) does not exist.")
-            return
+            raise AssertionError(f"The given file path ({hdf5_file_path}) does not exist.")
         if not os.path.isfile(hdf5_file_path):
             self.logger.error(f"The given file path ({hdf5_file_path}) does not point to a file.")
-            return
+            raise AssertionError(f"The given file path ({hdf5_file_path}) does not point to a file.")
         if not hdf5_file_path.endswith(".hdf5"):
             self.logger.error(f"The given file path must point to an hdf5 file that ends with '.hdf5'")
-            return
+            raise AssertionError(f"The given file path must point to an hdf5 file that ends with '.hdf5'")
         self.simpa_hdf5_file_path = hdf5_file_path
         self.ipasc_hdf5_file_path = hdf5_file_path.replace(".hdf5", "_ipasc.hdf5")
 
@@ -53,7 +53,7 @@ class IpascSimpaAdapter(BaseAdapter):
         # checking given photoacoustic device
         if device is None or not isinstance(device, PhotoacousticDevice):
             self.logger.error("Given device was not a photoacoustic device.")
-            return
+            raise AssertionError("Given device was not a photoacoustic device.")
         self.device = device
 
         if Tags.WAVELENGTHS not in settings:
@@ -62,8 +62,12 @@ class IpascSimpaAdapter(BaseAdapter):
         self.wavelengths = self.settings[Tags.WAVELENGTHS]
 
         # Load the data for the first wavelength just to get the number of elements and number of time steps
-        num_elements, num_time_steps = np.shape(load_data_field(self.simpa_hdf5_file_path,
-                                                                Tags.TIME_SERIES_DATA, self.wavelengths[0]))
+        try:
+            num_elements, num_time_steps = np.shape(load_data_field(self.simpa_hdf5_file_path,
+                                                                    Tags.TIME_SERIES_DATA, self.wavelengths[0]))
+        except KeyError as e:
+            self.logger.error(e)
+            raise AssertionError(e)
 
         self.time_series_data = np.zeros(shape=(num_elements, num_time_steps, len(self.wavelengths), 1))
 
@@ -134,7 +138,9 @@ def export_to_ipasc(hdf5_file_path: str, device: DigitalDeviceTwinBase, settings
                      settings dictionary from the HDF5 file.
     :return: None
     """
-    logger = Logger()
-    ipasc_adapter = IpascSimpaAdapter(hdf5_file_path, device, settings)
-    pa_data = ipasc_adapter.generate_pa_data()
-    write_ipasc_data(ipasc_adapter.ipasc_hdf5_file_path, pa_data)
+    try:
+        ipasc_adapter = IpascSimpaAdapter(hdf5_file_path, device, settings)
+        pa_data = ipasc_adapter.generate_pa_data()
+        write_ipasc_data(ipasc_adapter.ipasc_hdf5_file_path, pa_data)
+    except Exception as e:
+        Logger().error(e)
