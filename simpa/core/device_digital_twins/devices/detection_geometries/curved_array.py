@@ -88,7 +88,7 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
 
         return detector_positions
 
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
+    def get_detector_element_orientations(self) -> np.ndarray:
         detector_positions = self.get_detector_element_positions_base_mm()
         detector_orientations = np.subtract(0, detector_positions)
         norm = np.linalg.norm(detector_orientations, axis=-1)

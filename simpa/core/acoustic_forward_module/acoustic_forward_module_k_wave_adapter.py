@@ -119,13 +119,13 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             detector_positions_mm_2d = np.delete(detector_positions_mm, 1, axis=1)
             detector_positions_mm_2d = np.moveaxis(detector_positions_mm_2d, 1, 0)
             data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = detector_positions_mm_2d[[1, 0]]
-            orientations = pa_device.get_detector_element_orientations(self.global_settings)
+            orientations = pa_device.get_detector_element_orientations()
             angles = np.arccos(np.dot(orientations, np.array([1, 0, 0])))
             data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles[::-1]
         else:
             detector_positions_mm = np.moveaxis(detector_positions_mm, 1, 0)
             data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = detector_positions_mm[[2, 1, 0]]
-            orientations = pa_device.get_detector_element_orientations(self.global_settings)
+            orientations = pa_device.get_detector_element_orientations()
             x_angles = np.arccos(np.dot(orientations, np.array([1, 0, 0]))) * 360 / (2*np.pi)
             y_angles = np.arccos(np.dot(orientations, np.array([0, 1, 0]))) * 360 / (2*np.pi)
             z_angles = np.arccos(np.dot(orientations, np.array([0, 0, 1]))) * 360 / (2*np.pi)

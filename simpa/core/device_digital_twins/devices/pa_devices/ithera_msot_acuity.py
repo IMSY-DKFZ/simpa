@@ -170,7 +170,7 @@ if __name__ == "__main__":
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
 
     positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
-    orientations = device.detection_geometry.get_detector_element_orientations(settings)
+    orientations = device.detection_geometry.get_detector_element_orientations()
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
     # detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
     # position_map = np.zeros((x_dim, z_dim))

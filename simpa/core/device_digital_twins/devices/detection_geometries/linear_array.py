@@ -72,7 +72,7 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
 
         return detector_positions
 
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
+    def get_detector_element_orientations(self) -> np.ndarray:
         detector_orientations = np.zeros((self.number_detector_elements, 3))
         detector_orientations[:, 2] = -1
         return detector_orientations

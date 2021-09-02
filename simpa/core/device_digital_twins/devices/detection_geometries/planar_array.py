@@ -90,7 +90,7 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
                      0]
         return detector_element_positions_mm
 
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
+    def get_detector_element_orientations(self) -> np.ndarray:
         detector_element_orientations = np.zeros((self.number_detector_elements, 3))
         detector_element_orientations[:, 2] = 1
         return detector_element_orientations

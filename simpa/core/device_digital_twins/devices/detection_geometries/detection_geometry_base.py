@@ -101,7 +101,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         return abstract_element_positions
 
     @abstractmethod
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
+    def get_detector_element_orientations(self) -> np.ndarray:
         """
         This method yields a normalised orientation vector for each detection element. The length of
         this vector is the same as the one obtained via the position methods::
