@@ -40,7 +40,7 @@ if __name__ == "__main__":
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
 
     positions = device.get_detection_geometry().get_detector_element_positions_accounting_for_device_position_mm()
-    detector_elements = device.get_detection_geometry().get_detector_element_orientations(global_settings=settings)
+    detector_elements = device.get_detection_geometry().get_detector_element_orientations()
     positions = np.round(positions/settings[Tags.SPACING_MM]).astype(int)
     import matplotlib.pyplot as plt
     plt.scatter(positions[:, 0], positions[:, 2])

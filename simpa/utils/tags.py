@@ -1381,3 +1381,10 @@ class Tags:
     Number that specifies which fraction of the signal intensity is used for the specified processing algorithm.\n
     Usage: module algorithms (linear_unmixing)
     """
+
+    DO_IPASC_EXPORT = ("do_ipasc_export", (bool, np.bool, np.bool_))
+    """
+    Flag which determines whether the simulated time series data (if available) will be
+    exported into the IPASC data format.
+    Usage: module io_handling, core
+    """
