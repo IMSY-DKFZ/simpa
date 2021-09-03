@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 import unittest
 import os
+import numpy as np
 
 from simpa.core.simulation import simulate
 from simpa.core.device_digital_twins import RSOMExplorerP50
@@ -14,6 +15,11 @@ from simpa_tests.test_utils import create_test_structure_parameters
 from simpa.core import VolumeCreationModelModelBasedAdapter
 from simpa.core.optical_simulation_module.optical_forward_model_test_adapter import OpticalForwardModelTestAdapter
 from simpa.core.acoustic_forward_module.acoustic_forward_model_test_adapter import AcousticForwardModelTestAdapter
+from simpa.core.reconstruction_module.reconstruction_module_test_adapter import ReconstructionModuleTestAdapter
+
+from ipasc_tool import load_data as load_ipasc
+from simpa.io_handling import load_hdf5 as load_simpa
+from simpa.io_handling import load_data_field as load_simpa_datafield
 
 
 class TestDeviceUUID(unittest.TestCase):
@@ -49,8 +55,11 @@ class TestDeviceUUID(unittest.TestCase):
         self.settings.set_acoustic_settings({
             "test": "test"
         })
+        self.settings.set_reconstruction_settings({
+            "test": "test"
+        })
 
-        self.full_simulation_pipeline = [
+        self.acoustic_simulation_pipeline = [
             VolumeCreationModelModelBasedAdapter(self.settings),
             OpticalForwardModelTestAdapter(self.settings),
             AcousticForwardModelTestAdapter(self.settings),
@@ -61,10 +70,16 @@ class TestDeviceUUID(unittest.TestCase):
             OpticalForwardModelTestAdapter(self.settings)
         ]
 
-        self.expected_ipasc_output_path = None
+        self.full_simulation_pipeline = [
+            VolumeCreationModelModelBasedAdapter(self.settings),
+            OpticalForwardModelTestAdapter(self.settings),
+            AcousticForwardModelTestAdapter(self.settings),
+            ReconstructionModuleTestAdapter(self.settings)
+        ]
 
-    def tearDown(self) -> None:
-        pass
+        self.device = RSOMExplorerP50(0.1, 3, 3)
+
+        self.expected_ipasc_output_path = None
 
     def clean_up(self):
         print(f"Attempting to clean {self.settings[Tags.SIMPA_OUTPUT_PATH]}")
@@ -79,21 +94,58 @@ class TestDeviceUUID(unittest.TestCase):
             # Delete the created file
             os.remove(self.expected_ipasc_output_path)
 
-    def test_ipasc_adapter_does_sensible_things(self):
-        pass
+    def assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self, simpa_path, ipasc_path):
+        if not (os.path.exists(simpa_path) and os.path.isfile(simpa_path)):
+            raise AssertionError("simpa_path not valid")
+        if not (os.path.exists(ipasc_path) and os.path.isfile(ipasc_path)):
+            raise AssertionError("ipasc_path not valid")
+
+        simpa_data = load_simpa(simpa_path)
+        settings = Settings(simpa_data[Tags.SETTINGS])
+        wavelengths = settings[Tags.WAVELENGTHS]
+        simpa_time_series = []
+        for wl in wavelengths:
+            simpa_time_series.append(load_simpa_datafield(simpa_path, Tags.TIME_SERIES_DATA, wl))
+        simpa_time_series = np.reshape(np.asarray(simpa_time_series), (-1, ))
+
+        ipasc_data = load_ipasc(ipasc_path)
+        ipasc_time_series = np.reshape(ipasc_data.binary_time_series_data, (-1, ))
+
+        time_series_sum = np.abs(np.sum(simpa_time_series-ipasc_time_series))
+        self.assertAlmostEqual(time_series_sum, 0.00000, places=4, msg=f"Expected {0} but was {time_series_sum}")
+
+        simpa_positions = np.reshape(
+            self.device.get_detection_geometry().get_detector_element_positions_base_mm(), (-1,))
+        simpa_orientations = np.reshape(
+            self.device.get_detection_geometry().get_detector_element_orientations(), (-1,))
+
+        ipasc_positions = np.reshape(ipasc_data.get_detector_position(), (-1,))
+        ipasc_orientations = np.reshape(ipasc_data.get_detector_orientation(), (-1,))
+
+        positions_sum = np.abs(np.sum(simpa_positions - ipasc_positions))
+        orientations_sum = np.abs(np.sum(simpa_orientations - ipasc_orientations))
+        self.assertAlmostEqual(positions_sum, 0.00000, places=4, msg=f"Expected {0} but was {positions_sum}")
+        self.assertAlmostEqual(orientations_sum, 0.00000, places=4, msg=f"Expected {0} but was {orientations_sum}")
 
     def test_file_is_not_created_on_only_optical_simulation(self):
-        simulate(self.optical_simulation_pipeline, self.settings, RSOMExplorerP50(0.1, 1, 1))
+        simulate(self.optical_simulation_pipeline, self.settings, self.device)
         self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(not os.path.exists(self.expected_ipasc_output_path))
         self.clean_up()
 
     def test_file_is_created_on_acoustic_simulation(self):
-        simulate(self.full_simulation_pipeline, self.settings, RSOMExplorerP50(0.1, 1, 1))
+        simulate(self.acoustic_simulation_pipeline, self.settings, self.device)
         self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(os.path.exists(self.expected_ipasc_output_path))
+        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_PATH],
+                                                                     self.expected_ipasc_output_path)
         self.clean_up()
 
     def test_file_is_created_on_full_simulation(self):
-        pass
+        simulate(self.full_simulation_pipeline, self.settings, self.device)
+        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
+        self.assertTrue(os.path.exists(self.expected_ipasc_output_path))
+        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_PATH],
+                                                                     self.expected_ipasc_output_path)
+        self.clean_up()
 
