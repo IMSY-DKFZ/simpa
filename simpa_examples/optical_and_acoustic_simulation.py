@@ -51,18 +51,20 @@ def create_example_tissue():
     tissue_dict = Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
     tissue_dict["muscle"] = define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
-                                                                       molecular_composition=TISSUE_LIBRARY.constant(0.05, 100, 0.9),
+                                                                       molecular_composition=
+                                                                       TISSUE_LIBRARY.constant(0.05, 100, 0.9),
                                                                        priority=1,
                                                                        consider_partial_volume=True,
                                                                        adhere_to_deformation=True)
     tissue_dict["epidermis"] = define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
-                                                                          molecular_composition=TISSUE_LIBRARY.epidermis(),
+                                                                          molecular_composition=
+                                                                          TISSUE_LIBRARY.epidermis(),
                                                                           priority=8,
                                                                           consider_partial_volume=True,
                                                                           adhere_to_deformation=True)
     tissue_dict["vessel_1"] = define_circular_tubular_structure_settings(
-        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 -10, 0, 5],
-        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 -10, VOLUME_PLANAR_DIM_IN_MM, 5],
+        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, 0, 5],
+        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, VOLUME_PLANAR_DIM_IN_MM, 5],
         molecular_composition=TISSUE_LIBRARY.blood(),
         radius_mm=2, priority=3, consider_partial_volume=True,
         adhere_to_deformation=False
@@ -96,8 +98,9 @@ general_settings = {
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.GPU: True,
             # The following parameters set the optical forward model
-            Tags.WAVELENGTHS: [700],
-            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
+            Tags.WAVELENGTHS: [700, 800],
+            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True,
+            Tags.DO_IPASC_EXPORT: True
         }
 settings = Settings(general_settings)
 np.random.seed(RANDOM_SEED)
@@ -171,17 +174,21 @@ settings["noise_time_series"] = {
 
 # TODO: For the device choice, uncomment the undesired device
 
-device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                     VOLUME_PLANAR_DIM_IN_MM/2,
-                                                     0]))
-device.update_settings_for_use_of_model_based_volume_creator(settings)
+# device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+#                                                      VOLUME_PLANAR_DIM_IN_MM/2,
+#                                                      0]))
+# device.update_settings_for_use_of_model_based_volume_creator(settings)
 
-# device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                           0]))
-# device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25,
-#                                                            number_detector_elements=200))
-# device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
+device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                          VOLUME_PLANAR_DIM_IN_MM/2,
+                                                          0]),
+                             field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20]))
+device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+                                                           pitch_mm=0.25,
+                                                           number_detector_elements=200,
+                                                           field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20])))
+print(device.get_detection_geometry().get_detector_element_positions_base_mm())
+device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
 
 SIMUATION_PIPELINE = [
