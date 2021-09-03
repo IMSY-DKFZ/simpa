@@ -85,20 +85,22 @@ class IpascSimpaAdapter(BaseAdapter):
     def generate_meta_data_device(self) -> dict:
         device_creator = DeviceMetaDataCreator()
         device_creator.set_general_information(uuid=self.device.generate_uuid(),
-                                               fov=self.device.field_of_view_extent_mm)
+                                               fov=self.device.field_of_view_extent_mm/1000)
 
-        positions = self.device.get_detection_geometry().get_detector_element_positions_base_mm()
+        positions = self.device.get_detection_geometry().get_detector_element_positions_base_mm()/1000
         orientations = self.device.get_detection_geometry().get_detector_element_orientations()
 
         for idx, (position, orientation) in enumerate(zip(positions, orientations)):
             detection_element_creator = DetectionElementCreator()
+            # do not forget to convert to m
             detection_element_creator.set_detector_position(position)
             detection_element_creator.set_detector_orientation(orientation)
             detection_element_creator.set_detector_geometry_type("CUBOID")
+            # do not forget to convert to m
             detection_element_creator.set_detector_geometry(
                 np.asarray([self.device.get_detection_geometry().detector_element_width_mm,
-                            self.device.get_detection_geometry().detector_element_length_mm, 0.0001]))
-            device_creator.add_detection_element(f"detector_{idx}", detection_element_creator.get_dictionary())
+                            self.device.get_detection_geometry().detector_element_length_mm, 0.0001]) / 1000)
+            device_creator.add_detection_element(detection_element_creator.get_dictionary())
 
         return device_creator.finalize_device_meta_data()
 

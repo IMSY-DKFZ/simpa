@@ -39,7 +39,7 @@ class TestDeviceUUID(unittest.TestCase):
             Tags.DIM_VOLUME_Z_MM: self.VOLUME_HEIGHT_IN_MM,
             Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM,
             Tags.DIM_VOLUME_Y_MM: self.VOLUME_WIDTH_IN_MM,
-            Tags.WAVELENGTHS: [800],
+            Tags.WAVELENGTHS: [800, 801],
             Tags.DO_IPASC_EXPORT: True
         }
 
@@ -77,8 +77,9 @@ class TestDeviceUUID(unittest.TestCase):
             ReconstructionModuleTestAdapter(self.settings)
         ]
 
-        self.device = RSOMExplorerP50(0.1, 3, 3)
+        self.device = RSOMExplorerP50(0.1, 12, 12)
 
+        self.expected_ipasc_output_path = None
         self.expected_ipasc_output_path = None
 
     def clean_up(self):
@@ -114,15 +115,13 @@ class TestDeviceUUID(unittest.TestCase):
         time_series_sum = np.abs(np.sum(simpa_time_series-ipasc_time_series))
         self.assertAlmostEqual(time_series_sum, 0.00000, places=4, msg=f"Expected {0} but was {time_series_sum}")
 
-        simpa_positions = np.reshape(
-            self.device.get_detection_geometry().get_detector_element_positions_base_mm(), (-1,))
-        simpa_orientations = np.reshape(
-            self.device.get_detection_geometry().get_detector_element_orientations(), (-1,))
+        simpa_positions = self.device.get_detection_geometry().get_detector_element_positions_base_mm()
+        simpa_orientations = self.device.get_detection_geometry().get_detector_element_orientations()
 
-        ipasc_positions = np.reshape(ipasc_data.get_detector_position(), (-1,))
-        ipasc_orientations = np.reshape(ipasc_data.get_detector_orientation(), (-1,))
+        ipasc_positions = ipasc_data.get_detector_position() * 1000
+        ipasc_orientations = ipasc_data.get_detector_orientation()
 
-        positions_sum = np.abs(np.sum(simpa_positions - ipasc_positions))
+        positions_sum = np.sum(np.abs(simpa_positions - ipasc_positions))
         orientations_sum = np.abs(np.sum(simpa_orientations - ipasc_orientations))
         self.assertAlmostEqual(positions_sum, 0.00000, places=4, msg=f"Expected {0} but was {positions_sum}")
         self.assertAlmostEqual(orientations_sum, 0.00000, places=4, msg=f"Expected {0} but was {orientations_sum}")
@@ -138,7 +137,7 @@ class TestDeviceUUID(unittest.TestCase):
         self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(os.path.exists(self.expected_ipasc_output_path))
         self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_PATH],
-                                                                     self.expected_ipasc_output_path)
+                                                                            self.expected_ipasc_output_path)
         self.clean_up()
 
     def test_file_is_created_on_full_simulation(self):
@@ -146,6 +145,5 @@ class TestDeviceUUID(unittest.TestCase):
         self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(os.path.exists(self.expected_ipasc_output_path))
         self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_PATH],
-                                                                     self.expected_ipasc_output_path)
+                                                                            self.expected_ipasc_output_path)
         self.clean_up()
-
