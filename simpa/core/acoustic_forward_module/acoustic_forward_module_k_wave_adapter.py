@@ -4,6 +4,8 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
+from simpa.core.device_digital_twins.digital_device_twin_base import PhotoacousticDevice
 from simpa.utils.path_manager import PathManager
 from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 import numpy as np
@@ -14,7 +16,7 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.settings import Settings
 from simpa.utils.calculate import rotation_matrix_between_vectors
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry, PlanarArrayDetectionGeometry, \
-    CurvedArrayDetectionGeometry, DetectionGeometryBase
+    CurvedArrayDetectionGeometry, DetectionGeometryBase, SlitIlluminationGeometry
 import os
 import inspect
 import scipy.io as sio
@@ -323,52 +325,3 @@ def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array, detec
     time_series_data, updated_global_settings = kWave.k_wave_acoustic_forward_model(detection_geometry, speed_of_sound,
                                                                                     density, alpha_coeff, initial_pressure)
     return time_series_data
-
-
-if __name__ == '__main__':
-    # test convenience function
-    initial_pressure = load_data_field("CompletePipelineTestMSOT_4711.hdf5",
-                                       Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=700)
-    image_slice = np.s_[:, 40, :]
-    initial_pressure = initial_pressure[image_slice].T #np.flip(np.rot90(initial_pressure[image_slice], axes=(0,1)))
-    
-
-    pm = PathManager()
-    acoustic_settings = {
-        Tags.ACOUSTIC_MODEL_BINARY_PATH: pm.get_matlab_binary_path(),
-        Tags.PROPERTY_ALPHA_POWER: 0.0,
-        Tags.SENSOR_RECORD: "p",
-        Tags.PMLInside: False,
-        Tags.PMLAlpha: 1.5,
-        Tags.PlotPML: False,
-        Tags.RECORDMOVIE: False,
-        Tags.MOVIENAME: "visualization_log",
-        Tags.ACOUSTIC_LOG_SCALE: True,
-        Tags.GPU: True,
-        Tags.SPACING_MM: 0.25,
-    }
-    time_series_data = perform_k_wave_acoustic_forward_simulation(
-        initial_pressure, MSOTAcuityEcho().get_detection_geometry(), speed_of_sound=1540, density=1000, alpha_coeff=0.0, acoustic_settings=acoustic_settings)
-
-    import matplotlib.pyplot as plt
-    # plt.imshow(initial_pressure)
-    # plt.show()
-    # plt.imshow(time_series_data)
-    # plt.show()
-    settings = Settings({
-        Tags.DIM_VOLUME_Z_MM: 42,
-        Tags.DIM_VOLUME_X_MM: 72,
-    })
-    settings.set_reconstruction_settings({
-        Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
-        Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION: True,
-        Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
-        Tags.PROPERTY_SPEED_OF_SOUND: 1540,
-        Tags.SPACING_MM: 0.5,
-        Tags.SENSOR_SAMPLING_RATE_MHZ: 40,
-
-    })
-    reconstructed = reconstruct_delay_and_sum_pytorch(
-        time_series_data.copy(), MSOTAcuityEcho().get_detection_geometry(), settings)
-    plt.imshow(reconstructed)
-    plt.show()
