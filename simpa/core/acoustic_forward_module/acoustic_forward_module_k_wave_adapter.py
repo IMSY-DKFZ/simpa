@@ -121,13 +121,16 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE][wavelength][image_slice], axes=axes))
 
         time_series_data, global_settings = self.k_wave_acoustic_forward_model(
-            detection_geometry, speed_of_sound, density, alpha_coeff, initial_pressure, optical_path=self.global_settings[Tags.SIMPA_OUTPUT_PATH])
+            detection_geometry, speed_of_sound, density, alpha_coeff, initial_pressure,
+            optical_path=self.global_settings[Tags.SIMPA_OUTPUT_PATH])
         save_hdf5(global_settings, global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
         return time_series_data
 
-    def k_wave_acoustic_forward_model(self, detection_geometry: DetectionGeometryBase, speed_of_sound: float, density: float,
-                                      alpha_coeff: float, initial_pressure: np.ndarray, optical_path: str = "temporary") -> np.ndarray:
+    def k_wave_acoustic_forward_model(self, detection_geometry: DetectionGeometryBase,
+                                      speed_of_sound: float, density: float,
+                                      alpha_coeff: float, initial_pressure: np.ndarray,
+                                      optical_path: str = "temporary") -> tuple:
         """
         Runs the acoustic forward model with the given parameters
             speed_of_sound (float)
@@ -138,7 +141,8 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
 
         Note, that in order to work properly, this function assumes that several settings mentioned above are set.
         This can either be done by reading it from a settings file (e.g. when being called from forward_model) or
-        by parsing all settings individually as in the convenience function (perform_k_wave_acoustic_forward_simulation).
+        by parsing all settings individually as in the convenience function
+        (perform_k_wave_acoustic_forward_simulation).
 
         Returns 
         time_series_data (numpy array): simulated time series data
@@ -299,7 +303,8 @@ def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array,
         acoustic_settings = Settings()
 
     pm = PathManager()
-    if Tags.ACOUSTIC_MODEL_BINARY_PATH not in acoustic_settings or acoustic_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] is None:
+    if Tags.ACOUSTIC_MODEL_BINARY_PATH not in acoustic_settings or \
+            acoustic_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] is None:
         acoustic_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] = pm.get_matlab_binary_path()
 
     if Tags.PROPERTY_ALPHA_POWER not in acoustic_settings or acoustic_settings[Tags.PROPERTY_ALPHA_POWER] is None:
@@ -337,6 +342,6 @@ def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array,
 
     # initialize adapter and run forward model
     kWave = AcousticForwardModelKWaveAdapter(settings)
-    time_series_data, updated_global_settings = kWave.k_wave_acoustic_forward_model(detection_geometry, speed_of_sound,
-                                                                                    density, alpha_coeff, initial_pressure)
+    time_series_data, updated_global_settings = kWave.k_wave_acoustic_forward_model(
+        detection_geometry, speed_of_sound, density, alpha_coeff, initial_pressure)
     return time_series_data
