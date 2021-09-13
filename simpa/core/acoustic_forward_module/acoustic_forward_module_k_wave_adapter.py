@@ -94,25 +94,21 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         field_of_view_extent = pa_device.field_of_view_extent_mm
         detector_positions_mm = pa_device.get_detector_element_positions_accounting_for_device_position_mm()
         self.logger.debug(f"field_of_view_extent: {field_of_view_extent}")
-
-        if not self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
-            detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
-            detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
-            if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
-                axes = (0, 1)
-                if detectors_are_aligned_along_y_axis:
-                    transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM]))) - 1
-                    image_slice = np.s_[transducer_plane, :, :]
-                else:
-                    transducer_plane = int(round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM]))) - 1
-                    image_slice = np.s_[:, transducer_plane, :]
+        
+        detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
+        detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
+        if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
+            axes = (0, 1)
+            if detectors_are_aligned_along_y_axis:
+                transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM]))) - 1
+                image_slice = np.s_[transducer_plane, :, :]
             else:
-                axes = (0, 2)
-                image_slice = np.s_[:]
+                transducer_plane = int(round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM]))) - 1
+                image_slice = np.s_[:, transducer_plane, :]
         else:
             axes = (0, 2)
             image_slice = np.s_[:]
-
+        
         wavelength = str(self.global_settings[Tags.WAVELENGTH])
         data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND][image_slice],
                                                            3, axes=axes)
