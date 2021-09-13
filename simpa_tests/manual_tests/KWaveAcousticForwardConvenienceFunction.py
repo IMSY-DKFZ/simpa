@@ -116,8 +116,9 @@ class KWaveAcousticForwardConvenienceFunction:
             Tags.GPU: True,
             Tags.SPACING_MM: self.SPACING,
         }
-        time_series_data = perform_k_wave_acoustic_forward_simulation(initial_pressure,
-                                                                      self.device.get_detection_geometry(), speed_of_sound=1540, density=1000,
+        time_series_data = perform_k_wave_acoustic_forward_simulation(initial_pressure=initial_pressure,
+                                                                      detection_geometry=self.device.get_detection_geometry(),
+                                                                      speed_of_sound=1540, density=1000,
                                                                       alpha_coeff=0.0, acoustic_settings=acoustic_settings)
 
         # reconstruct the time series data to compare it with initial pressure

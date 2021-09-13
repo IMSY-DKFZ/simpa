@@ -193,6 +193,7 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             data_dict[Tags.PROPERTY_INTRINSIC_EULER_ANGLE] = intrinsic_euler_angles
 
         optical_path = optical_path + ".mat"
+        optical_path = os.path.abspath(optical_path)
 
         possible_k_wave_parameters = [Tags.SPACING_MM, Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
@@ -265,8 +266,22 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
         return raw_time_series_data, self.global_settings
 
 
-def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array, detection_geometry: DetectionGeometryBase, speed_of_sound: float = 1540.0,
-                                               density: float = 1000.0, alpha_coeff: float = 0.02, acoustic_settings: Settings = None, alpha_power: float = 0.0, sensor_record: str = "p", pml_inside: bool = False, pml_alpha: float = 1.5, plot_pml: bool = False, record_movie: bool = False, movie_name: str = "visualization_log", acoustic_log_scale: bool = True, gpu: bool = True, spacing_mm: float = 0.5) -> np.array:
+def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array,
+                                               detection_geometry: DetectionGeometryBase,
+                                               speed_of_sound: float = 1540.0,
+                                               density: float = 1000.0,
+                                               alpha_coeff: float = 0.02,
+                                               acoustic_settings: Settings = None,
+                                               alpha_power: float = 0.0,
+                                               sensor_record: str = "p",
+                                               pml_inside: bool = False,
+                                               pml_alpha: float = 1.5,
+                                               plot_pml: bool = False,
+                                               record_movie: bool = False,
+                                               movie_name: str = "visualization_log",
+                                               acoustic_log_scale: bool = True,
+                                               gpu: bool = True,
+                                               spacing_mm: float = 0.5) -> np.array:
     """
     Convenience function for performing a k-Wave acoustic forward simulation using a given detection geometry and 
     initial pressure distribution (numpy array) with the following parameters:
