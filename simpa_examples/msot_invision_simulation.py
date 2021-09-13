@@ -18,7 +18,6 @@ from simpa.core import ImageReconstructionModuleDelayAndSumAdapter, \
     OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
     FieldOfViewCroppingProcessingComponent, ReconstructionModuleTimeReversalAdapter
 from simpa.core.device_digital_twins import *
-from simpa.io_handling import load_data_field
 
 path_manager = PathManager()
 

@@ -4,10 +4,10 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Tags, SaveFilePaths
+from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.core.reconstruction_module import ReconstructionAdapterBase
-from simpa.io_handling.io_hdf5 import load_hdf5
+from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
 import numpy as np
 import scipy.io as sio
 import subprocess
@@ -112,22 +112,18 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
         The default np.argsort() method does not yield the same result as expected by
         k-Wave. Hence, this workaround.
         """
-        def sort_order(positions):
-            _sort_order = np.zeros((len(positions)))
-            for i in range(len(_sort_order)):
-                _sort_order[i] = (positions[i, 0] * 100000000000 +
-                                  positions[i, 1] * 100000 +
-                                  positions[i, 2])
-            return _sort_order
-        pa_device = detection_geometry
-        detector_positions = pa_device.get_detector_element_positions_base_mm()
-        index_array = np.argsort(sort_order(detector_positions))
-        return time_series_sensor_data[index_array]
+
+        detector_positions = detection_geometry.get_detector_element_positions_base_mm()
+        angles = np.arctan2(detector_positions[:, 2], detector_positions[:, 0])
+        matlab_order = np.argsort(angles)
+        return time_series_sensor_data[matlab_order]
 
     def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry):
         input_data = dict()
 
-        time_series_sensor_data = self.reorder_time_series_data(time_series_sensor_data, detection_geometry)
+        # If the detecttion_geometry is something else than linear, the time series data have to be reordered for matlab
+        if not isinstance(detection_geometry, LinearArrayDetectionGeometry):
+            time_series_sensor_data = self.reorder_time_series_data(time_series_sensor_data, detection_geometry)
 
         input_data[Tags.TIME_SERIES_DATA] = time_series_sensor_data
         input_data, spacing_in_mm = self.get_acoustic_properties(input_data, detection_geometry)

@@ -89,6 +89,13 @@ if isfield(settings, 'model_sensor_frequency_response') == true
     end
 end
 
+% kwave expects the time series data to be in an order
+% "based on the angle that each sensor point makes with the centre of the grid".
+[simpa, sort_idx] = reorderSensorData(kgrid, sensor, time_series_data);
+len_array = sort(sort_idx);
+[simpa, real_idx] = intersect(sort_idx, len_array);
+time_series_data = time_series_data(real_idx, :);
+
 sensor.time_reversal_boundary_data = time_series_data;
 
 %% Computation settings
