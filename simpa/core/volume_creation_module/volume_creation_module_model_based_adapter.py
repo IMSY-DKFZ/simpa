@@ -8,7 +8,7 @@ from simpa.core.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils.libraries.structure_library import Structures
 from simpa.utils import Tags
 import numpy as np
-from simpa.utils import create_deformation_settings
+from simpa.utils import create_deformation_settings, get_functional_from_deformation_settings
 from simpa.log import Logger
 
 
@@ -59,14 +59,14 @@ class VolumeCreationModelModelBasedAdapter(VolumeCreatorModuleBase):
 
         if Tags.SIMULATE_DEFORMED_LAYERS in self.component_settings and self.component_settings[Tags.SIMULATE_DEFORMED_LAYERS]:
             self.logger.debug("Tags.SIMULATE_DEFORMED_LAYERS in self.component_settings is TRUE")
-            np.random.seed(self.global_settings[Tags.RANDOM_SEED])
-            self.component_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(
-                bounds_mm=[[0, self.global_settings[Tags.DIM_VOLUME_X_MM]],
-                           [0, self.global_settings[Tags.DIM_VOLUME_Y_MM]]],
-                maximum_z_elevation_mm=3,
-                filter_sigma=0,
-                cosine_scaling_factor=1)
-            # TODO extract as settings parameters
+            if Tags.DEFORMED_LAYERS_SETTINGS not in self.component_settings:
+                np.random.seed(self.global_settings[Tags.RANDOM_SEED])
+                self.component_settings[Tags.DEFORMED_LAYERS_SETTINGS] = create_deformation_settings(
+                    bounds_mm=[[0, self.global_settings[Tags.DIM_VOLUME_X_MM]],
+                               [0, self.global_settings[Tags.DIM_VOLUME_Y_MM]]],
+                    maximum_z_elevation_mm=3,
+                    filter_sigma=0,
+                    cosine_scaling_factor=1)
 
         volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes()
         global_volume_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
