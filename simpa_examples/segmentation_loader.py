@@ -97,4 +97,6 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5", WAVELENGTH)
+    visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5", wavelength=WAVELENGTH,
+                   show_initial_pressure=True,
+                   show_segmentation_map=True)
