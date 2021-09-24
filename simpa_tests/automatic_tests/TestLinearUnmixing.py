@@ -65,7 +65,7 @@ class TestLinearUnmixing:
         test_850_mua = np.array([[[0., oxy[1] + deoxy[1], oxy[1], deoxy[1], 0.7 * oxy[1] + 0.3 * deoxy[1]]]])
 
         # Load settings from hdf5 file
-        self.file = load_hdf5(self.settings[Tags.SIMPA_OUTPUT_PATH])["settings"]
+        self.file = load_hdf5(self.settings[Tags.SIMPA_OUTPUT_PATH])
 
         # Fill settings with absorption data fields
         mua_dict = {
@@ -92,11 +92,12 @@ class TestLinearUnmixing:
             Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
             Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
             Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
+            Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
+            Tags.WAVELENGTHS: self.WAVELENGTHS
         }
 
         # Run linear unmixing component
-        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run(self.device)
+        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
 
         # Load blood oxygen saturation
         lu_results = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)

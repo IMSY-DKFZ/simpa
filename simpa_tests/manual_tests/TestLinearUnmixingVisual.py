@@ -61,7 +61,8 @@ class TestLinearUnmixingVisual:
             Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
             Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.VISUAL_WAVELENGTHS,
             Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.VISUAL_WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
+            Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
+            Tags.WAVELENGTHS: self.VISUAL_WAVELENGTHS
         }
 
         # Define device for simulation
@@ -74,7 +75,7 @@ class TestLinearUnmixingVisual:
         simulate(pipeline, self.settings, self.device)
 
         # Run linear unmixing component with above specified settings
-        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run(self.device)
+        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
 
     def perform_test(self):
         """
