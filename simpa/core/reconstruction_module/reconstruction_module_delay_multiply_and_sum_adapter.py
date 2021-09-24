@@ -60,14 +60,6 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
 
         reconstructed = output.cpu().numpy()
 
-        # check for B-mode methods and perform envelope detection on beamformed image if specified
-
-        if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in self.component_settings \
-                and self.component_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION] \
-                and Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
-            reconstructed = apply_b_mode(
-                reconstructed, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
-
         return reconstructed.squeeze()
 
 
