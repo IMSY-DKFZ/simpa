@@ -142,7 +142,7 @@ settings.set_reconstruction_settings({
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
-    Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
+    Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: False,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
@@ -228,7 +228,11 @@ dist = list()
 
 dist.append(simulate_and_evaluate_with_device(MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-                                                                                          20]))))
+                                                                                          0]),
+                                                             field_of_view_extent_mm=np.array([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
+                                                                                               (2 * np.sin(0.34 / 40 * 128) * 40) / 2,
+                                                                                               0, 0, -25, 25]))))
+
 dist.append(simulate_and_evaluate_with_device(InVision256TF(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                                          VOLUME_PLANAR_DIM_IN_MM/2,
                                                                                          VOLUME_HEIGHT_IN_MM/2]))))
