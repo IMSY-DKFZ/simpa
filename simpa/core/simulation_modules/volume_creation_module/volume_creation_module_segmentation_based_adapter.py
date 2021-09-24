@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.core.volume_creation_module import VolumeCreatorModuleBase
+from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.io_handling import save_hdf5

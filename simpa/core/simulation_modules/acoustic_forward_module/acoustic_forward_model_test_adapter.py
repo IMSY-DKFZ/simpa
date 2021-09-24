@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 import numpy as np
 from simpa.utils import Tags
-from simpa.core.acoustic_forward_module import AcousticForwardModelBaseAdapter
+from simpa.core.simulation_modules.acoustic_forward_module import AcousticForwardModelBaseAdapter
 
 
 class AcousticForwardModelTestAdapter(AcousticForwardModelBaseAdapter):

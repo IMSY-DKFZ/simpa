@@ -5,12 +5,12 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.utils import Tags
-from simpa.core.reconstruction_module import ReconstructionAdapterBase
+from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 import numpy as np
 import torch
 from simpa.utils.settings import Settings
-from simpa.core.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values, compute_image_dimensions, \
-    apply_b_mode, preparing_reconstruction_and_obtaining_reconstruction_settings
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values, compute_image_dimensions, \
+    preparing_reconstruction_and_obtaining_reconstruction_settings
 from simpa.core.device_digital_twins import DetectionGeometryBase
 
 

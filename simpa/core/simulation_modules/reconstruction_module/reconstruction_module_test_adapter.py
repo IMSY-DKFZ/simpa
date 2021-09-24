@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.core.reconstruction_module import ReconstructionAdapterBase
+from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 
 
 class ReconstructionModuleTestAdapter(ReconstructionAdapterBase):

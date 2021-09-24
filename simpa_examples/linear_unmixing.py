@@ -4,11 +4,12 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Tags, TISSUE_LIBRARY
+from simpa.utils import Tags, TISSUE_LIBRARY, Settings
 from simpa.core.simulation import simulate
 from simpa.algorithms.multispectral.linear_unmixing import LinearUnmixingProcessingComponent
 import numpy as np
-from simpa.core import *
+from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
+    FieldOfViewCroppingProcessingComponent
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import MSOTAcuityEcho

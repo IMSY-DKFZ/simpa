@@ -8,7 +8,7 @@ import numpy as np
 import struct
 import subprocess
 from simpa.utils import Tags
-from simpa.core.optical_simulation_module import OpticalForwardModuleBase
+from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
 import json
 import os
 import gc

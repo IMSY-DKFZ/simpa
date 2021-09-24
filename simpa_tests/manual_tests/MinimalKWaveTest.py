@@ -8,7 +8,7 @@ from simpa.core.simulation import simulate
 from simpa.utils import Tags, generate_dict_path, SaveFilePaths
 from simpa.utils.settings import Settings
 from simpa.utils.path_manager import PathManager
-from simpa.core import AcousticForwardModelKWaveAdapter, ImageReconstructionModuleDelayAndSumAdapter
+from simpa.simulation_components import AcousticForwardModelKWaveAdapter, ImageReconstructionModuleDelayAndSumAdapter
 from simpa.core.device_digital_twins import *
 from simpa.io_handling import save_hdf5, load_data_field
 import numpy as np

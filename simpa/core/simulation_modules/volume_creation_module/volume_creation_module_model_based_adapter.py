@@ -4,12 +4,11 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.core.volume_creation_module import VolumeCreatorModuleBase
+from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils.libraries.structure_library import Structures
 from simpa.utils import Tags
 import numpy as np
-from simpa.utils import create_deformation_settings, get_functional_from_deformation_settings
-from simpa.log import Logger
+from simpa.utils import create_deformation_settings
 
 
 class VolumeCreationModelModelBasedAdapter(VolumeCreatorModuleBase):

@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.core.optical_simulation_module import OpticalForwardModuleBase
+from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
 
 
 class OpticalForwardModelTestAdapter(OpticalForwardModuleBase):

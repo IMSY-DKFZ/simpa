@@ -5,20 +5,21 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.utils import Tags
-from simpa.core.reconstruction_module import ReconstructionAdapterBase
+from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 from simpa.core.device_digital_twins import DetectionGeometryBase
 import numpy as np
 import torch
 from simpa.utils.settings import Settings
-from simpa.core.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values, apply_b_mode, \
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values, \
     preparing_reconstruction_and_obtaining_reconstruction_settings, compute_image_dimensions
 
 
-class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
+class ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry: DetectionGeometryBase):
         """
-        Applies the Delay Multiply and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
+        Applies the signed Delay Multiply and Sum beamforming algorithm [1] to the time series sensor data
+        (2D numpy array where the
         first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
         beamforming settings (dictionary).
         A reconstructed image (2D numpy array) is returned.
@@ -48,6 +49,8 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
                                                                  time_spacing_in_ms, self.logger, torch_device,
                                                                  self.component_settings)
 
+        DAS = torch.sum(values, dim=3)
+
         for x in range(xdim):
             yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=torch_device),
                                             torch.arange(zdim, device=torch_device),
@@ -57,23 +60,22 @@ class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterB
             M = torch.sign(M) * torch.sqrt(torch.abs(M))
             # only take upper triangle without diagonal and sum up along n and m axis (last two)
             output[x] = torch.triu(M, diagonal=1).sum(dim=(-1, -2))
-
+        output = torch.sign(DAS) * output
         reconstructed = output.cpu().numpy()
 
         return reconstructed.squeeze()
 
 
-def reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarray,
-                                               detection_geometry: DetectionGeometryBase,
-                                               settings: dict = None,
-                                               speed_of_sound_in_m_per_s: int = 1540,
-                                               time_spacing_in_s: float = 2.5e-8,
-                                               sensor_spacing_in_mm: float = 0.1) -> np.ndarray:
+def reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarray,
+                                                      detection_geometry: DetectionGeometryBase,
+                                                      settings: dict = None,
+                                                      speed_of_sound_in_m_per_s: int = 1540,
+                                                      time_spacing_in_s: float = 2.5e-8,
+                                                      sensor_spacing_in_mm: float = 0.1) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
 
     :param time_series_sensor_data: (2D numpy array) sensor data of shape (sensor elements, time steps)
-    :param detection_geometry: The DetectioNGeometryBase to use for the reconstruction of the given time series data
     :param settings: (dict) settings dictionary: by default there is none and the other parameters are used instead,
                      but if parameters are given in the settings those will be used instead of parsed arguments)
     :param speed_of_sound_in_m_per_s: (int) speed of sound in medium in meters per second (default: 1540 m/s)
@@ -96,5 +98,5 @@ def reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarr
     if Tags.SPACING_MM not in settings or settings[Tags.SPACING_MM] is None:
         settings[Tags.SPACING_MM] = sensor_spacing_in_mm
 
-    adapter = ImageReconstructionModuleDelayMultiplyAndSumAdapter(settings)
+    adapter = ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter(settings)
     return adapter.reconstruction_algorithm(time_series_sensor_data, detection_geometry)

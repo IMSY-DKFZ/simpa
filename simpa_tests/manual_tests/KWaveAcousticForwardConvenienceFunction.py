@@ -6,9 +6,9 @@ SPDX-License-Identifier: MIT
 
 
 from simpa.core.device_digital_twins import SlitIlluminationGeometry, LinearArrayDetectionGeometry, PhotoacousticDevice
-from simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import perform_k_wave_acoustic_forward_simulation
-from simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter import reconstruct_delay_and_sum_pytorch
-from simpa.core import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, \
+from simpa import perform_k_wave_acoustic_forward_simulation
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import reconstruct_delay_and_sum_pytorch
+from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, \
     GaussianNoiseProcessingComponent
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate

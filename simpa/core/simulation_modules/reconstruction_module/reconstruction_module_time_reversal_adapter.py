@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
-from simpa.core.reconstruction_module import ReconstructionAdapterBase
+from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
 import numpy as np
 import scipy.io as sio

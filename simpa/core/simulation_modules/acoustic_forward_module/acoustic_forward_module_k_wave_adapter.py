@@ -4,26 +4,21 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.core.device_digital_twins.digital_device_twin_base import PhotoacousticDevice
 from simpa.utils.path_manager import PathManager
-from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 import numpy as np
 import subprocess
 from simpa.utils import Tags, SaveFilePaths
-from simpa.io_handling.io_hdf5 import load_data_field, load_hdf5, save_data_field, save_hdf5
+from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.settings import Settings
 from simpa.utils.calculate import rotation_matrix_between_vectors
-from simpa.core.device_digital_twins import LinearArrayDetectionGeometry, PlanarArrayDetectionGeometry, \
-    CurvedArrayDetectionGeometry, DetectionGeometryBase, SlitIlluminationGeometry
+from simpa.core.device_digital_twins import CurvedArrayDetectionGeometry, DetectionGeometryBase
 import os
 import inspect
 import scipy.io as sio
 from scipy.spatial.transform import Rotation
-from simpa.core.acoustic_forward_module import AcousticForwardModelBaseAdapter
+from simpa.core.simulation_modules.acoustic_forward_module import AcousticForwardModelBaseAdapter
 import gc
-from simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter import reconstruct_delay_and_sum_pytorch
 
 
 class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):

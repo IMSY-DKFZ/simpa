@@ -10,7 +10,7 @@ from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa.core.device_digital_twins import *
 import numpy as np
-from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
+from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
     GaussianNoiseProcessingComponent
 
 from simpa.utils.path_manager import PathManager
@@ -154,5 +154,8 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
+    visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+                   wavelength=WAVELENGTH,
+                   show_initial_pressure=True,
+                   show_absorption=True,
                    log_scale=True)

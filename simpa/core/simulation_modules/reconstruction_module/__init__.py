@@ -14,7 +14,7 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
 from simpa.utils import Settings
-from simpa.core.reconstruction_module.reconstruction_utils import bandpass_filtering, apply_b_mode
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filtering, apply_b_mode
 
 
 class ReconstructionAdapterBase(SimulationModule):

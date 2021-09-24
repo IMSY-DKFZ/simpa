@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 import unittest
 import numpy as np
 import matplotlib.pyplot as plt
-from simpa.core.reconstruction_module.reconstruction_utils import bandpass_filtering
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filtering
 from simpa.utils import Settings, Tags
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
 

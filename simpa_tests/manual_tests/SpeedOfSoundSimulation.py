@@ -14,7 +14,7 @@ from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary, Ani
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.utils.path_manager import PathManager
-from simpa.core import ImageReconstructionModuleDelayAndSumAdapter, \
+from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter, \
     OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
     FieldOfViewCroppingProcessingComponent
 from simpa.core.device_digital_twins import MSOTAcuityEcho, InVision256TF

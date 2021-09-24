@@ -11,7 +11,7 @@ from simpa.utils.path_manager import PathManager
 from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 import numpy as np
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.core import ImageReconstructionModuleDelayAndSumAdapter
+from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter
 
 # FIXME temporary workaround for newest Intel architectures
 import os
