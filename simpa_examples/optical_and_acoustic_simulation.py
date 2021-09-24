@@ -4,14 +4,11 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Tags, TISSUE_LIBRARY
-from simpa.utils.libraries.structure_library import define_horizontal_layer_structure_settings,\
+from simpa import Tags, TISSUE_LIBRARY, PathManager, Settings, simulate
+from simpa import define_horizontal_layer_structure_settings,\
     define_circular_tubular_structure_settings
-from simpa.core.simulation import simulate
-from simpa.utils.settings import Settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
-from simpa.utils.path_manager import PathManager
 from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter, GaussianNoiseProcessingComponent, \
     OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
     FieldOfViewCroppingProcessingComponent, ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter, \

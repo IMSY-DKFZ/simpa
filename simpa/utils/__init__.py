@@ -26,6 +26,15 @@ from .libraries.molecule_library import MOLECULE_LIBRARY
 from .libraries.tissue_library import TissueLibrary
 from .libraries.tissue_library import TISSUE_LIBRARY
 
+from .libraries.structure_library import define_horizontal_layer_structure_settings
+from .libraries.structure_library import define_elliptical_tubular_structure_settings
+from .libraries.structure_library import define_circular_tubular_structure_settings
+from .libraries.structure_library import define_spherical_structure_settings
+from .libraries.structure_library import define_vessel_structure_settings
+from .libraries.structure_library import define_background_structure_settings
+from .libraries.structure_library import define_parallelepiped_structure_settings
+from .libraries.structure_library import define_rectangular_cuboid_structure_settings
+
 from .calculate import calculate_oxygenation
 from .calculate import calculate_gruneisen_parameter_from_temperature
 from .calculate import randomize_uniform
