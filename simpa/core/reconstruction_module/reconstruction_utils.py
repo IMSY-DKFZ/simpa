@@ -50,20 +50,31 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
     return output
 
 
-def bandpass_filtering(data: torch.tensor = None, time_spacing_in_ms: float = None,
-                       cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
-                       tukey_alpha: float = 0.5) -> torch.tensor:
+def bandpass_filtering(data: np.ndarray, global_settings: Settings, component_settings: Settings,
+                        device: DetectionGeometryBase) -> np.ndarray:
     """
     Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
 
-    :param data: (torch tensor) data to be filtered
-    :param time_spacing_in_ms: (float) time spacing in milliseconds, e.g. 2.5e-5
-    :param cutoff_lowpass: (int) Signal above this value will be ignored (in MHz)
-    :param cutoff_highpass: (int) Signal below this value will be ignored (in MHz)
-    :param tukey_alpha: (float) transition value between 0 (rectangular) and 1 (Hann window)
-    :return: (torch tensor) filtered data
+    :param data: (numpy array) data to be filtered
+    :param global_settings: (Settings) settings for the whole simulation
+    :param component_settings: (Settings) settings for the reconstruction module
+    :param device:
+    :return: (numpy array) filtered data
     """
+    if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
+        time_spacing_in_ms = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
+    elif device.sampling_frequency_MHz is not None:
+        time_spacing_in_ms = 1.0 / (device.sampling_frequency_MHz * 1000)
+    else:
+        raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
+    cutoff_lowpass = component_settings[Tags.BANDPASS_CUTOFF_LOWPASS] \
+        if Tags.BANDPASS_CUTOFF_LOWPASS in component_settings else int(8e6)
+    cutoff_highpass = component_settings[Tags.BANDPASS_CUTOFF_HIGHPASS] \
+        if Tags.BANDPASS_CUTOFF_HIGHPASS in component_settings else int(0.1e6)
+    tukey_alpha = component_settings[
+        Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in component_settings else 0.5
+
     if data is None or time_spacing_in_ms is None:
         raise AttributeError("data and time spacing must be specified")
 
@@ -77,14 +88,14 @@ def bandpass_filtering(data: torch.tensor = None, time_spacing_in_ms: float = No
     small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
     large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
 
-    win = torch.tensor(tukey(large_index - small_index, alpha=tukey_alpha), device=data.device)
-    window = torch.zeros(frequencies.shape, device=data.device)
+    win = tukey(large_index - small_index, alpha=tukey_alpha)
+    window = np.zeros(frequencies.shape)
     window[small_index:large_index] = win
 
     # transform data into Fourier space, multiply filter and transform back
-    data_in_fourier_space = torch.fft.fft(data)
-    filtered_data_in_fourier_space = data_in_fourier_space * window.expand_as(data_in_fourier_space)
-    return torch.fft.ifft(filtered_data_in_fourier_space).real
+    data_in_fourier_space = np.fft.fft(data)
+    filtered_data_in_fourier_space = data_in_fourier_space * np.broadcast_to(window, np.shape(data_in_fourier_space))
+    return np.fft.ifft(filtered_data_in_fourier_space).real
 
 
 def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
@@ -257,21 +268,6 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     else:
         mode = Tags.RECONSTRUCTION_MODE_PRESSURE
     time_series_sensor_data = reconstruction_mode_transformation(time_series_sensor_data, mode=mode)
-
-    # apply by default bandpass filter using tukey window with alpha=0.5 on time series data in frequency domain
-    if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING not in component_settings \
-            or component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is not False:
-
-        cutoff_lowpass = component_settings[Tags.BANDPASS_CUTOFF_LOWPASS] \
-            if Tags.BANDPASS_CUTOFF_LOWPASS in component_settings else int(8e6)
-        cutoff_highpass = component_settings[Tags.BANDPASS_CUTOFF_HIGHPASS] \
-            if Tags.BANDPASS_CUTOFF_HIGHPASS in component_settings else int(0.1e6)
-        tukey_alpha = component_settings[Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in component_settings else 0.5
-        time_series_sensor_data = bandpass_filtering(time_series_sensor_data,
-                                                     time_spacing_in_ms=time_spacing_in_ms,
-                                                     cutoff_lowpass=cutoff_lowpass,
-                                                     cutoff_highpass=cutoff_highpass,
-                                                     tukey_alpha=tukey_alpha)
 
     return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
             time_spacing_in_ms, torch_device)

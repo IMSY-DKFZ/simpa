@@ -133,7 +133,7 @@ settings.set_acoustic_settings({
 })
 
 settings.set_reconstruction_settings({
-    Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: True,
+    Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.PROPERTY_ALPHA_POWER: 0.00,

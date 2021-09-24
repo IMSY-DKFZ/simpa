@@ -14,6 +14,7 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
 from simpa.utils import Settings
+from simpa.core.reconstruction_module.reconstruction_utils import bandpass_filtering
 
 
 class ReconstructionAdapterBase(SimulationModule):
@@ -52,6 +53,15 @@ class ReconstructionAdapterBase(SimulationModule):
             _device = device.get_detection_geometry()
         else:
             raise TypeError(f"Type {type(device)} is not supported for performing image reconstruction.")
+
+        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING in self.component_settings and \
+                self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is True:
+
+            time_series_sensor_data = bandpass_filtering(time_series_sensor_data,
+                                                         self.global_settings,
+                                                         self.component_settings,
+                                                         _device)
+
         reconstruction = self.reconstruction_algorithm(time_series_sensor_data, _device)
 
         reconstruction_output_path = generate_dict_path(Tags.RECONSTRUCTED_DATA, self.global_settings[Tags.WAVELENGTH])
