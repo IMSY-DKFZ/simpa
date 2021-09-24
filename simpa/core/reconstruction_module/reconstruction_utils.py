@@ -189,13 +189,6 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     torch_device: (torch device) either cpu or cuda GPU device used for the tensors
     """
 
-    # check for B-mode methods and perform envelope detection on time series data if specified
-    if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in component_settings\
-            and component_settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION] \
-            and Tags.RECONSTRUCTION_BMODE_METHOD in component_settings:
-        time_series_sensor_data = apply_b_mode(
-            time_series_sensor_data, method=component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
-
     ### INPUT CHECKING AND VALIDATION ###
     # check settings dictionary for elements and read them in
 

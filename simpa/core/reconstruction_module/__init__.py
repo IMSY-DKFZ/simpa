@@ -14,7 +14,7 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
 from simpa.utils import Settings
-from simpa.core.reconstruction_module.reconstruction_utils import bandpass_filtering
+from simpa.core.reconstruction_module.reconstruction_utils import bandpass_filtering, apply_b_mode
 
 
 class ReconstructionAdapterBase(SimulationModule):
@@ -61,6 +61,13 @@ class ReconstructionAdapterBase(SimulationModule):
                                                          self.global_settings,
                                                          self.component_settings,
                                                          _device)
+
+        # check for B-mode methods and perform envelope detection on time series data if specified
+        if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in self.component_settings \
+                and self.component_settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION] \
+                and Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
+            time_series_sensor_data = apply_b_mode(
+                time_series_sensor_data, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         reconstruction = self.reconstruction_algorithm(time_series_sensor_data, _device)
 
