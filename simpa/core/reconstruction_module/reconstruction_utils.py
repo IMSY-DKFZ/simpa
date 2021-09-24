@@ -78,8 +78,10 @@ def bandpass_filtering(data: np.ndarray, global_settings: Settings, component_se
     if data is None or time_spacing_in_ms is None:
         raise AttributeError("data and time spacing must be specified")
 
+    time_series_index = len(data.shape) - 1
+
     # construct bandpass filter given the cutoff values and time spacing
-    frequencies = np.fft.fftfreq(data.shape[1], d=time_spacing_in_ms/1000)
+    frequencies = np.fft.fftfreq(data.shape[time_series_index], d=time_spacing_in_ms/1000)
 
     if cutoff_highpass > cutoff_lowpass:
         raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
@@ -168,12 +170,12 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
                                                                             float, float, float,
                                                                             torch.device]:
     """
-    Performs all preperation steps that need to be done before reconstructing an image:
+    Performs all preparation steps that need to be done before reconstructing an image:
     - performs envelope detection of time series data if specified
     - obtains speed of sound value from settings
     - obtains time spacing value from settings or PA device
     - obtain spacing from settings
-    - checks PA device prerequsites
+    - checks PA device prerequisites
     - obtains sensor positions from PA device
     - moves data arrays on correct torch device
     - computed differential mode if specified

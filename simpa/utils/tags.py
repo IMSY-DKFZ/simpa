@@ -768,13 +768,13 @@ class Tags:
 
     BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float, np.float))
     """
-    Sets the cutoff threshold in MHz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
+    Sets the cutoff threshold in Hz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
     BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", (int, np.integer, float, np.float))
     """
-    Sets the cutoff threshold in MHz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
+    Sets the cutoff threshold in Hz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 

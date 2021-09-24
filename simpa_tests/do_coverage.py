@@ -32,6 +32,7 @@ test_classes = ["simpa_tests.automatic_tests.structure_tests.TestLayers",
                 "simpa_tests.automatic_tests.TestLinearUnmixing",
                 "simpa_tests.automatic_tests.TestIPASCExport",
                 "simpa_tests.automatic_tests.TestDeviceUUID",
+                "simpa_tests.automatic_tests.TestBandpassFilter",
                 ]
 
 suite = unittest.TestSuite()
