@@ -33,6 +33,7 @@ test_classes = ["simpa_tests.automatic_tests.structure_tests.TestLayers",
                 "simpa_tests.automatic_tests.TestIPASCExport",
                 "simpa_tests.automatic_tests.TestDeviceUUID",
                 "simpa_tests.automatic_tests.TestBandpassFilter",
+                "simpa_tests.automatic_tests.device_tests.TestCurvedArray"
                 ]
 
 suite = unittest.TestSuite()

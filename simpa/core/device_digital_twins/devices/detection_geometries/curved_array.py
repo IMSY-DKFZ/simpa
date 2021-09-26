@@ -47,8 +47,20 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
              center_frequency_hz=center_frequency_hz,
              bandwidth_percent=bandwidth_percent,
              sampling_frequency_mhz=sampling_frequency_mhz,
-             probe_width_mm=2 * np.sin(pitch_mm / radius_mm * 128) * radius_mm,
              device_position_mm=device_position_mm)
+
+        self.pitch_mm = pitch_mm
+        self.radius_mm = radius_mm
+        self.angular_origin_offset = angular_origin_offset
+
+        detector_positions = self.get_detector_element_positions_base_mm()
+        min_x_coordinate = np.min(detector_positions[:, 0])
+        max_x_coordinate = np.max(detector_positions[:, 0])
+        self.probe_width_mm = max_x_coordinate - min_x_coordinate
+
+        min_z_coordinate = np.min(detector_positions[:, 2])
+        max_z_coordinate = np.max(detector_positions[:, 2])
+        self.probe_height_mm = max_z_coordinate - min_z_coordinate
 
         if field_of_view_extent_mm is None:
             self.field_of_view_extent_mm = np.asarray([-self.probe_width_mm/2,
@@ -57,18 +69,14 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         else:
             self.field_of_view_extent_mm = field_of_view_extent_mm
 
-        self.pitch_mm = pitch_mm
-        self.radius_mm = radius_mm
-        self.angular_origin_offset = angular_origin_offset
-
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_Z_MM] < (self.radius_mm + 1):
+        if global_settings[Tags.DIM_VOLUME_Z_MM] < (self.probe_height_mm + 1):
             self.logger.error("Volume z dimension is too small to encompass the device in simulation!"
                               "Must be at least {} mm but was {} mm"
-                              .format((self.radius_mm + 1),
+                              .format((self.probe_height_mm + 1),
                                       global_settings[Tags.DIM_VOLUME_Z_MM]))
             return False
-        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm:
+        if global_settings[Tags.DIM_VOLUME_X_MM] < (self.probe_width_mm + 1):
             self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
                               "Must be at least {} mm but was {} mm"
                               .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
