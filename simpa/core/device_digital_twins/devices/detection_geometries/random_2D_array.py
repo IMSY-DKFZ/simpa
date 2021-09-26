@@ -66,15 +66,15 @@ class Random2DArrayDetectionGeometry(DetectionGeometryBase):
                          field_of_view_extent_mm=field_of_view_extent_mm)
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
+        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + 1:
             self.logger.error("Volume x dimension is too small to encompass random device in simulation!"
                               "Must be at least {} mm but was {} mm"
-                              .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
+                              .format(self.probe_width_mm + 1, global_settings[Tags.DIM_VOLUME_X_MM]))
             return False
-        if global_settings[Tags.DIM_VOLUME_Z_MM] <= self.probe_height_mm:
+        if global_settings[Tags.DIM_VOLUME_Z_MM] < self.probe_height_mm + 1:
             self.logger.error("Volume z dimension is too small to encompass random device in simulation!"
                               "Must be at least {} mm but was {} mm"
-                              .format(self.probe_height_mm, global_settings[Tags.DIM_VOLUME_Z_MM]))
+                              .format(self.probe_height_mm + 1, global_settings[Tags.DIM_VOLUME_Z_MM]))
             return False
         return True
 

@@ -68,14 +68,14 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
                            0, 100])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
+        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + 1:
             self.logger.error(f"Volume x dimension is too small to encompass RSOM device in simulation!"
-                              f"Must be at least {self.probe_width_mm} mm but "
+                              f"Must be at least {self.probe_width_mm + 1} mm but "
                               f"was {global_settings[Tags.DIM_VOLUME_X_MM]} mm")
             return False
-        if global_settings[Tags.DIM_VOLUME_Y_MM] <= self.probe_depth_mm:
+        if global_settings[Tags.DIM_VOLUME_Y_MM] < self.probe_depth_mm + 1:
             self.logger.error(f"Volume y dimension is too small to encompass RSOM device in simulation!"
-                              f"Must be at least {self.probe_depth_mm} mm but "
+                              f"Must be at least {self.probe_depth_mm + 1} mm but "
                               f"was {global_settings[Tags.DIM_VOLUME_X_MM]} mm")
             return False
         return True
