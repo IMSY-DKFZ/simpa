@@ -26,7 +26,6 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         :param center_frequency_hz:
         :param bandwidth_percent:
         :param sampling_frequency_mhz:
-        :param probe_width_mm: Total in-plane extent of the detector geometry.
         :param device_position_mm: Origin of the internal representation of the device.
         """
         super(DetectionGeometryBase, self).__init__(device_position_mm=device_position_mm,
