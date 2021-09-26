@@ -52,13 +52,13 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
               center_frequency_hz=center_frequency_hz,
               bandwidth_percent=bandwidth_percent,
               sampling_frequency_mhz=sampling_frequency_mhz,
-              probe_width_mm=number_detector_elements_x * pitch_mm,
               device_position_mm=device_position_mm,
               field_of_view_extent_mm=field_of_view_extent_mm)
         self.pitch_mm = pitch_mm
         self.number_detector_elements_x = number_detector_elements_x
         self.number_detector_elements_y = number_detector_elements_y
         self.probe_depth_mm = number_detector_elements_y * pitch_mm
+        self.probe_width_mm = number_detector_elements_x * pitch_mm
 
     def get_field_of_view_extent_mm(self) -> np.ndarray:
         return np.asarray([-self.number_detector_elements_x*self.pitch_mm/2,

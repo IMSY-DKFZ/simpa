@@ -63,9 +63,10 @@ class Random3DArrayDetectionGeometry(DetectionGeometryBase):
                          center_frequency_hz=center_frequency_hz,
                          bandwidth_percent=bandwidth_percent,
                          sampling_frequency_mhz=sampling_frequency_mhz,
-                         probe_width_mm=width,
                          device_position_mm=device_position_mm,
                          field_of_view_extent_mm=field_of_view_extent_mm)
+
+        self.probe_width_mm = width
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + 1:
