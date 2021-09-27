@@ -175,7 +175,7 @@ class AbsorptionSpectrumLibrary(object):
             if spectrum.spectrum_name == spectrum_name:
                 return spectrum
 
-        raise LookupError("No spectrum for the given name exists")
+        raise LookupError(f"No spectrum for the given name '{spectrum_name}' exists")
 
 
 SPECTRAL_LIBRARY = AbsorptionSpectrumLibrary()
