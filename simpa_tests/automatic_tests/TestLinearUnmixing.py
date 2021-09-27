@@ -4,36 +4,35 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
+import unittest
+from unittest.case import expectedFailure
 from simpa.utils import Tags
 from simpa.core.simulation import simulate
 from simpa.algorithms.multispectral import linear_unmixing as lu
 import numpy as np
-from simpa.core import *
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field, load_hdf5, save_hdf5
 from simpa.log import Logger
 import os
 from simpa.core.device_digital_twins import PencilBeamIlluminationGeometry
+from simpa.utils.settings import Settings
 
-
-class TestLinearUnmixing:
+class TestLinearUnmixing(unittest.TestCase):
     """
     This test is an automatic test, so there is no visual confirmation needed.
     The test result is returned by the logger.
     """
 
-    def setup(self):
+    def setUp(self):
         """
         This function lays the foundation for the generic test.
         """
-
         self.logger = Logger()
         # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
         #  point to the correct file in the PathManager().
         self.path_manager = PathManager()
         RANDOM_SEED = 471
         self.WAVELENGTHS = [750, 850]  # the performance is checked using two wavelengths
-
         # Set general settings which are needed by the linear unmixing component
         general_settings = {
             # These parameters set the general properties of the simulated volume
@@ -105,17 +104,84 @@ class TestLinearUnmixing:
 
         # Perform test by comparing computed with expected sO2
         # The result can differ slightly, but the difference should be smaller than 1e-8
-        try:
-            assert np.allclose(sO2, np.array([[[0, 0.5, 1, 0, 0.7]]]), atol=1e-8)
-            self.logger.info("Linear unmixing test was SUCCESSFUL!")
-        except:
-            self.logger.critical("Linear unmixing test FAILED!")
+        self.assertTrue(np.allclose(sO2, np.array([[[0, 0.5, 1, 0, 0.7]]]), atol=1e-8), "Linear unmixing test failed")
+        
+    @expectedFailure
+    def test_invalid_wavelengths(self):
+        """
+        This function tests what happens, if invalid wavelengths were selected for computing the LU.
+        Expects that a KeyError is thrown.
+        """
+        self.logger.info("Testing linear unmixing with invalid wavelengths ...")
 
+        # Set component settings for linear unmixing
+        # We are interested in the blood oxygen saturation, so we have to execute linear unmixing with
+        # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
+        self.settings["linear_unmixing"] = {
+            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
+            Tags.WAVELENGTHS: [23, 42] # Test random invalid wavelengths
+        }
+
+        # Run linear unmixing component
+        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+        
+    @expectedFailure    
+    def test_oxygen_saturation_without_hemoglobin(self):
+        """
+        This function tests what happens, if the oxygen saturation shall be computed but
+        neither oxy- nor deoxyhemoglobin were selected.
+        Expects that a KeyError is thrown.
+        """
+        self.logger.info("Testing linear unmixing for oxygen saturation without hemoglobin ...")
+
+        # Set component settings for linear unmixing
+        # We are interested in the blood oxygen saturation, so we have to execute linear unmixing with
+        # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2,
+        # however in this test we forget to set the chromophores oxy- and deoxyhemoglobin
+        self.settings["linear_unmixing"] = {
+            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
+            Tags.WAVELENGTHS: self.WAVELENGTHS
+        }
+
+        # Run linear unmixing component
+        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+        
+    def test_with_all_absorbers(self):
+        """
+        This function tests what happens, if all absorbers are selected.
+        Expects that a KeyError is thrown.
+        """
+        self.logger.info("Testing linear unmixing with invalid wavelengths ...")
+
+        # Set component settings for linear unmixing
+        # We are interested in the blood oxygen saturation, so we have to execute linear unmixing with
+        # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
+        self.settings["linear_unmixing"] = {
+            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_MELANIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_FAT_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_WATER_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
+            Tags.WAVELENGTHS: self.WAVELENGTHS
+        }
+
+        # Run linear unmixing component
+        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+
+    def tearDown(self):
         # Clean up file after testing
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
-
-
-if __name__ == '__main__':
-    test = TestLinearUnmixing()
-    test.setup()
-    test.perform_test()
+        if (os.path.exists(self.settings[Tags.SIMPA_OUTPUT_PATH]) and
+                os.path.isfile(self.settings[Tags.SIMPA_OUTPUT_PATH])):
+            # Delete the created file
+            os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
