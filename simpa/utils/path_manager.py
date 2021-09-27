@@ -50,7 +50,7 @@ class PathManager:
             raise FileNotFoundError(error_message)
 
         self.environment_path = environment_path
-        load_dotenv(environment_path)
+        load_dotenv(environment_path, override=True)
 
     def detect_local_path_config(self):
         """

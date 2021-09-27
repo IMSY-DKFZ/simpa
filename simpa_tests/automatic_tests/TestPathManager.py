@@ -11,7 +11,7 @@ from pathlib import Path
 from dotenv import unset_key
 
 
-class TestLogging(unittest.TestCase):
+class TestPathManager(unittest.TestCase):
     def setUp(self):
         self.path = '/path_config.env'
         self.save_path = "/workplace/data/"
@@ -37,14 +37,16 @@ class TestLogging(unittest.TestCase):
 
     def test_instantiate_when_file_is_in_home(self):
 
-        if not self.home_file_exists:
-            self.write_config_file(self.home_file)
+        if self.home_file_exists:
+            self.hide_config_file(self.home_file)
+        self.write_config_file(self.home_file)
 
         path_manager = PathManager()
         self.check_path_manager_correctly_loaded(path_manager)
 
-        if not self.home_file_exists:
-            self.delete_config_file(self.home_file)
+        self.delete_config_file(self.home_file)
+        if self.home_file_exists:
+            self.restore_config_file(self.home_file)
 
     @unittest.expectedFailure
     def test_fail_if_no_default_directories_set(self):
