@@ -91,6 +91,10 @@ class OpticalForwardModuleBase(SimulationModule):
                                 * conversion_factor)
         else:
             units = Tags.UNITS_ARBITRARY
+            if len(fluence.shape) == 4:
+                import numpy as np
+                absorption = np.tile(absorption, (int(self.component_settings[Tags.TOTAL_TIME] / self.component_settings[Tags.TIME_STEP]), 1, 1, 1))
+                absorption = np.moveaxis(absorption, 0, 3)
             initial_pressure = absorption * fluence
 
         optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)

@@ -131,7 +131,7 @@ class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
 
         possible_k_wave_parameters = [Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
-                                      Tags.RECORDMOVIE, Tags.MOVIENAME,
+                                      Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
 
         pa_device = detection_geometry
