@@ -71,6 +71,13 @@ class ReconstructionAdapterBase(SimulationModule):
 
         reconstruction = self.reconstruction_algorithm(time_series_sensor_data, _device)
 
+        # check for B-mode methods and perform envelope detection on time series data if specified
+        if Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION in self.component_settings \
+                and self.component_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION] \
+                and Tags.RECONSTRUCTION_BMODE_METHOD in self.component_settings:
+            reconstruction = apply_b_mode(
+                reconstruction, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
+
         reconstruction_output_path = generate_dict_path(Tags.RECONSTRUCTED_DATA, self.global_settings[Tags.WAVELENGTH])
 
         save_hdf5(reconstruction, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
