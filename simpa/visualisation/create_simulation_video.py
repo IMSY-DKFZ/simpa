@@ -95,11 +95,11 @@ settings.set_acoustic_settings({
     Tags.PMLSize: [31, 32],
     Tags.PMLAlpha: 1.5,
     Tags.PlotPML: False,
-    Tags.RECORDMOVIE: True,
+    Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True,
     Tags.MODEL_SENSOR_FREQUENCY_RESPONSE: False,
-    Tags.INITIAL_PRESSURE_SMOOTHING: False,
+    Tags.INITIAL_PRESSURE_SMOOTHING: True,
 })
 settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
@@ -147,9 +147,9 @@ settings["noise_time_series"] = {
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
     OpticalForwardModelMcxAdapter(settings),
-    # GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
+    GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
     AcousticForwardModelKWaveAdapter(settings),
-    # GaussianNoiseProcessingComponent(settings, "noise_time_series"),
+    GaussianNoiseProcessingComponent(settings, "noise_time_series"),
     ImageReconstructionModuleDelayAndSumAdapter(settings),
     FieldOfViewCroppingProcessingComponent(settings),
 ]
@@ -157,7 +157,7 @@ pipeline = [
 device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                      VOLUME_PLANAR_DIM_IN_MM/2,
                                                      -3]),
-                        field_of_view_extent_mm=np.asarray([-20, 20, 0, 0, 0, 20]))
+                        field_of_view_extent_mm=np.asarray([-20 - SPACING/2, 20 + SPACING/2, 0, 0, 0, 20 + SPACING]))
 
 device.update_settings_for_use_of_model_based_volume_creator(settings)
 
@@ -172,13 +172,47 @@ if VISUALIZE:
     from cv2 import VideoWriter, VideoWriter_fourcc
     from matplotlib import cm
     from PIL import Image
+    from simpa.utils.calculate import min_max_normalization
+    import nrrd
+
     p0 = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
                          Tags.OPTICAL_MODEL_INITIAL_PRESSURE, WAVELENGTH)
     recon = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
                             Tags.RECONSTRUCTED_DATA, WAVELENGTH)
 
-    plt.imshow(recon)
-    plt.show()
+    recon = min_max_normalization(recon)
+    recon = np.rot90(recon, 3)
+
+    orig_im, header = nrrd.read(REAL_IMAGE_PATH)
+    orig_im = min_max_normalization(orig_im[:, :, 0])
+    orig_im = np.fliplr(np.rot90(orig_im, 3))
+
+    # plt.subplot(1, 2, 1)
+    # plt.imshow(recon)
+    # plt.subplot(1, 2, 2)
+    # plt.imshow(orig_im)
+    # plt.show()
+
+    MORPH_STEPS = 1000
+
+    shape = recon.shape
+
+    width = shape[1]
+    height = shape[0]
+    seconds = 5
+    FPS = int(MORPH_STEPS / seconds)
+
+    fourcc = VideoWriter_fourcc(*'MP42')
+    video = VideoWriter(path_manager.get_hdf5_file_save_path() + "/morph_video.avi", fourcc, float(FPS), (width, height))
+
+    for i in range(FPS * seconds):
+        frame = ((FPS * seconds) - (i + 1))/(FPS * seconds) * recon + (i + 1)/(FPS * seconds) * orig_im
+        frame /= np.max(frame)
+        frame = Image.fromarray(np.uint8(cm.viridis(frame) * 255)).convert("RGB")
+        frame = np.asarray(frame)
+        frame = frame[:, :, ::-1]
+        video.write(frame)
+    video.release()
 
     if VIDEO:
         shape = p0.shape
