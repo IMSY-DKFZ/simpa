@@ -28,15 +28,15 @@ path_manager = PathManager()
 VOLUME_TRANSDUCER_DIM_IN_MM = 40
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 20
-SPACING = 0.15625
+SPACING = 0.22#0.15625
 RANDOM_SEED = 1234
 VOLUME_NAME = "Optical_Video_"+str(RANDOM_SEED)
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
-VIDEO = False
-TOTAL_TIME = 5e-9
-FRAMES = 1
+VIDEO = True
+TOTAL_TIME = 5e-10
+FRAMES = 50
 
 # Seed the numpy random configuration prior to creating the global_settings file in
 # order to ensure that the same volume
@@ -79,9 +79,9 @@ settings.set_volume_creation_settings({
     Tags.US_GEL: True
 })
 settings.set_optical_settings({
-    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
-    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+    # Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
     Tags.MCX_ASSUMED_ANISOTROPY: 0.9,
     Tags.TOTAL_TIME: TOTAL_TIME,
     Tags.TIME_STEP: TOTAL_TIME/FRAMES,
@@ -147,11 +147,11 @@ settings["noise_time_series"] = {
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
     OpticalForwardModelMcxAdapter(settings),
-    GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
-    AcousticForwardModelKWaveAdapter(settings),
-    GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    ImageReconstructionModuleDelayAndSumAdapter(settings),
-    FieldOfViewCroppingProcessingComponent(settings),
+    # GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
+    # AcousticForwardModelKWaveAdapter(settings),
+    # GaussianNoiseProcessingComponent(settings, "noise_time_series"),
+    # ImageReconstructionModuleDelayAndSumAdapter(settings),
+    # FieldOfViewCroppingProcessingComponent(settings),
 ]
 
 device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
@@ -161,7 +161,7 @@ device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM
 
 device.update_settings_for_use_of_model_based_volume_creator(settings)
 
-simulate(pipeline, settings, device)
+# simulate(pipeline, settings, device)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]
@@ -176,43 +176,43 @@ if VISUALIZE:
     import nrrd
 
     p0 = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-                         Tags.OPTICAL_MODEL_INITIAL_PRESSURE, WAVELENGTH)
-    recon = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-                            Tags.RECONSTRUCTED_DATA, WAVELENGTH)
-
-    recon = min_max_normalization(recon)
-    recon = np.rot90(recon, 3)
-
-    orig_im, header = nrrd.read(REAL_IMAGE_PATH)
-    orig_im = min_max_normalization(orig_im[:, :, 0])
-    orig_im = np.fliplr(np.rot90(orig_im, 3))
-
-    # plt.subplot(1, 2, 1)
-    # plt.imshow(recon)
-    # plt.subplot(1, 2, 2)
-    # plt.imshow(orig_im)
-    # plt.show()
-
-    MORPH_STEPS = 1000
-
-    shape = recon.shape
-
-    width = shape[1]
-    height = shape[0]
-    seconds = 5
-    FPS = int(MORPH_STEPS / seconds)
-
-    fourcc = VideoWriter_fourcc(*'MP42')
-    video = VideoWriter(path_manager.get_hdf5_file_save_path() + "/morph_video.avi", fourcc, float(FPS), (width, height))
-
-    for i in range(FPS * seconds):
-        frame = ((FPS * seconds) - (i + 1))/(FPS * seconds) * recon + (i + 1)/(FPS * seconds) * orig_im
-        frame /= np.max(frame)
-        frame = Image.fromarray(np.uint8(cm.viridis(frame) * 255)).convert("RGB")
-        frame = np.asarray(frame)
-        frame = frame[:, :, ::-1]
-        video.write(frame)
-    video.release()
+                         Tags.OPTICAL_MODEL_FLUENCE, WAVELENGTH)
+    # recon = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+    #                         Tags.RECONSTRUCTED_DATA, WAVELENGTH)
+    #
+    # recon = min_max_normalization(recon)
+    # recon = np.rot90(recon, 3)
+    #
+    # orig_im, header = nrrd.read(REAL_IMAGE_PATH)
+    # orig_im = min_max_normalization(orig_im[:, :, 0])
+    # orig_im = np.fliplr(np.rot90(orig_im, 3))
+    #
+    # # plt.subplot(1, 2, 1)
+    # # plt.imshow(recon)
+    # # plt.subplot(1, 2, 2)
+    # # plt.imshow(orig_im)
+    # # plt.show()
+    #
+    # MORPH_STEPS = 1000
+    #
+    # shape = recon.shape
+    #
+    # width = shape[1]
+    # height = shape[0]
+    # seconds = 5
+    # FPS = int(MORPH_STEPS / seconds)
+    #
+    # fourcc = VideoWriter_fourcc(*'MP42')
+    # video = VideoWriter(path_manager.get_hdf5_file_save_path() + "/morph_video.avi", fourcc, float(FPS), (width, height))
+    #
+    # for i in range(FPS * seconds):
+    #     frame = ((FPS * seconds) - (i + 1))/(FPS * seconds) * recon + (i + 1)/(FPS * seconds) * orig_im
+    #     frame /= np.max(frame)
+    #     frame = Image.fromarray(np.uint8(cm.viridis(frame) * 255)).convert("RGB")
+    #     frame = np.asarray(frame)
+    #     frame = frame[:, :, ::-1]
+    #     video.write(frame)
+    # video.release()
 
     if VIDEO:
         shape = p0.shape
