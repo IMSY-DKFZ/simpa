@@ -77,7 +77,7 @@ class TestLinearUnmixing(unittest.TestCase):
         # Save adapted file in hdf5
         save_hdf5(self.file, self.settings[Tags.SIMPA_OUTPUT_PATH])
 
-    def perform_test(self):
+    def test(self):
         """
         This function performs the generic test. The result is returned by the logger.
         """
@@ -92,7 +92,8 @@ class TestLinearUnmixing(unittest.TestCase):
             Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
             Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
-            Tags.WAVELENGTHS: self.WAVELENGTHS
+            Tags.WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_NON_NEGATIVE: False
         }
 
         # Run linear unmixing component
@@ -105,6 +106,38 @@ class TestLinearUnmixing(unittest.TestCase):
         # Perform test by comparing computed with expected sO2
         # The result can differ slightly, but the difference should be smaller than 1e-8
         self.assertTrue(np.allclose(sO2, np.array([[[0, 0.5, 1, 0, 0.7]]]), atol=1e-8), "Linear unmixing test failed")
+
+    def test_non_negative_least_squares(self):
+        """
+        This function performs the generic test using the non-negative least squares linear unmixing of
+        scipy.optimize. The result is returned by the logger.
+        """
+
+        self.logger.info("Testing linear unmixing...")
+
+        # Set component settings for linear unmixing
+        # We are interested in the blood oxygen saturation, so we have to execute linear unmixing with
+        # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
+        self.settings["linear_unmixing"] = {
+            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
+            Tags.WAVELENGTHS: self.WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_NON_NEGATIVE: True
+        }
+
+        # Run linear unmixing component
+        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+
+        # Load blood oxygen saturation
+        lu_results = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+        sO2 = lu_results["sO2"]
+
+        # Perform test by comparing computed with expected sO2
+        # The result can differ slightly, but the difference should be smaller than 1e-8
+        self.assertTrue(np.allclose(sO2, np.array([[[0, 0.5, 1, 0, 0.7]]]), atol=1e-8), "Linear unmixing with "
+                                                                                        "non-negative constraint test failed")
         
     @expectedFailure
     def test_invalid_wavelengths(self):
@@ -149,7 +182,7 @@ class TestLinearUnmixing(unittest.TestCase):
 
         # Run linear unmixing component
         lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
-        
+
     def test_with_all_absorbers(self):
         """
         This function tests what happens, if all absorbers are selected.
