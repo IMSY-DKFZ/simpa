@@ -13,6 +13,8 @@ from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import MSOTAcuityEcho
 import matplotlib.pyplot as plt
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
+
 # FIXME temporary workaround for newest Intel architectures
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -25,7 +27,7 @@ path_manager = PathManager()
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.5
+SPACING = 0.25
 RANDOM_SEED = 471
 VOLUME_NAME = "LinearUnmixingExample_" + str(RANDOM_SEED)
 
@@ -37,7 +39,7 @@ def create_example_tissue():
     """
     This is a very simple example script of how to create a tissue definition.
     It contains a muscular background, an epidermis layer on top of the muscles
-    and a blood vessel.
+    and two blood vessels.
     """
     background_dictionary = Settings()
     background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
@@ -65,6 +67,19 @@ def create_example_tissue():
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
+    vessel_2_dictionary = Settings()
+    vessel_2_dictionary[Tags.PRIORITY] = 3
+    vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/3,
+                                                    10,
+                                                    5]
+    vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/3,
+                                                  12,
+                                                  5]
+    vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
+    vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(oxygenation=0.75)
+    vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+
     epidermis_dictionary = Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
     epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
@@ -79,6 +94,7 @@ def create_example_tissue():
     tissue_dict["muscle"] = muscle_dictionary
     tissue_dict["epidermis"] = epidermis_dictionary
     tissue_dict["vessel_1"] = vessel_1_dictionary
+    tissue_dict["vessel_2"] = vessel_2_dictionary
     return tissue_dict
 
 
@@ -98,7 +114,7 @@ general_settings = {
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
     Tags.WAVELENGTHS: WAVELENGTHS,
-
+    Tags.GPU: True,
     Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
 }
 settings = Settings(general_settings)
@@ -122,7 +138,8 @@ settings["linear_unmixing"] = {
     Tags.WAVELENGTHS: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: WAVELENGTHS,
-    Tags.LINEAR_UNMIXING_COMPUTE_SO2: True
+    Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
+    Tags.LINEAR_UNMIXING_NON_NEGATIVE: True
 }
 
 # Get device for simulation
@@ -135,43 +152,16 @@ device.update_settings_for_use_of_model_based_volume_creator(settings)
 pipeline = [
     VolumeCreationModelModelBasedAdapter(settings),
     OpticalForwardModelMcxAdapter(settings),
-    FieldOfViewCroppingProcessingComponent(settings),
+    # FieldOfViewCroppingProcessingComponent(settings)
 ]
 simulate(pipeline, settings, device)
 
 # Run linear unmixing component with above specified settings.
 LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
 
-# Load linear unmixing result (blood oxygen saturation) and reference absorption for first wavelength.
-file_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
-lu_results = load_data_field(file_path, Tags.LINEAR_UNMIXING_RESULT)
-sO2 = lu_results["sO2"]
-
-mua = load_data_field(file_path, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength=WAVELENGTHS[0])
-p0 = load_data_field(file_path, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=WAVELENGTHS[0])
-gt_oxy = load_data_field(file_path, Tags.PROPERTY_OXYGENATION, wavelength=WAVELENGTHS[0])
-
 # Visualize linear unmixing result
-data_shape = mua.shape
-if len(data_shape) == 3:
-    y_dim = int(data_shape[1] / 2)
-    p0 = p0[:, y_dim, :]
-    mua = mua[:, y_dim, :]
-    sO2 = sO2[:, y_dim, :]
-    gt_oxy = gt_oxy[:, y_dim, :]
-
-plt.figure(figsize=(15, 5))
-plt.suptitle("Linear Unmixing")
-plt.subplot(1, 3, 1)
-plt.title("Initial Pressure")
-plt.imshow(np.rot90(p0, -1))
-plt.colorbar(fraction=0.05)
-plt.subplot(1, 3, 2)
-plt.title("Ground Truth Blood oxygen saturation")
-gt_im = plt.imshow(np.rot90(gt_oxy, -1))
-plt.colorbar(fraction=0.05)
-plt.subplot(1, 3, 3)
-plt.title("Blood oxygen saturation")
-plt.imshow(np.rot90(sO2, -1))
-plt.colorbar(gt_im, fraction=0.05)
-plt.show()
+visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+               wavelength=WAVELENGTHS[0],
+               show_initial_pressure=True,
+               show_oxygenation=True,
+               show_linear_unmixing_sO2=True)

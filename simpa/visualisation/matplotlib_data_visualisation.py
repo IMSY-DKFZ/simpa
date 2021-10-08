@@ -29,6 +29,8 @@ def visualise_data(wavelength: int = None,
                    show_time_series_data=False,
                    show_reconstructed_data=False,
                    show_segmentation_map=False,
+                   show_oxygenation=False,
+                   show_linear_unmixing_sO2=False,
                    log_scale=False,
                    show_xz_only=False):
 
@@ -52,6 +54,8 @@ def visualise_data(wavelength: int = None,
     initial_pressure = None
     time_series_data = None
     reconstructed_data = None
+    oxygenation = None
+    linear_unmixing_sO2 = None
 
     absorption = get_data_field_from_simpa_output(file, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
     scattering = get_data_field_from_simpa_output(file, Tags.PROPERTY_SCATTERING_PER_CM, wavelength)
@@ -91,6 +95,24 @@ def visualise_data(wavelength: int = None,
             logger.critical("The key " + str(Tags.RECONSTRUCTED_DATA) + " was not in the simpa output.")
             show_reconstructed_data = False
             reconstructed_data = None
+
+    if show_oxygenation:
+        try:
+            oxygenation = get_data_field_from_simpa_output(file, Tags.PROPERTY_OXYGENATION, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.PROPERTY_OXYGENATION) + " was not in the simpa output.")
+            show_oxygenation = False
+            oxygenation = None
+
+    if show_linear_unmixing_sO2:
+        try:
+            linear_unmixing_output = get_data_field_from_simpa_output(file, Tags.LINEAR_UNMIXING_RESULT)
+            linear_unmixing_sO2 = linear_unmixing_output["sO2"]
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.LINEAR_UNMIXING_RESULT) + " was not in the simpa output or blood "
+                                                                            "oxygen saturation was not computed.")
+            show_linear_unmixing_sO2 = False
+            linear_unmixing_sO2 = None
 
     cmap_label_names, cmap_label_values, cmap = get_segmentation_colormap()
 
@@ -144,6 +166,16 @@ def visualise_data(wavelength: int = None,
         data_item_names.append("Reconstruction")
         cmaps.append("viridis")
         logscales.append(True and log_scale)
+    if oxygenation is not None and show_oxygenation:
+        data_to_show.append(oxygenation)
+        data_item_names.append("Oxygenation")
+        cmaps.append("viridis")
+        logscales.append(False and log_scale)
+    if linear_unmixing_sO2 is not None and show_linear_unmixing_sO2:
+        data_to_show.append(linear_unmixing_sO2)
+        data_item_names.append("Linear Unmixed Oxygenation")
+        cmaps.append("viridis")
+        logscales.append(False and log_scale)
     if segmentation_map is not None and show_segmentation_map:
         data_to_show.append(segmentation_map)
         data_item_names.append("Segmentation Map")

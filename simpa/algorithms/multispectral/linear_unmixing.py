@@ -11,12 +11,16 @@ from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 import numpy as np
 import scipy.linalg as linalg
 from simpa.utils.settings import Settings
+from scipy.optimize import nnls
 
 
 class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
     """
         Performs linear spectral unmixing (LU) using Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI)
         on the defined data field for each chromophore specified in the component settings.
+
+        If tag LINEAR_UNMIXING_NON_NEGATIVE is set to True non-negative linear unmixing is performed, which solves the
+        KKT (Karush-Kuhn-Tucker) conditions for the non-negative least squares problem.
 
         This component saves a dictionary containing the chromophore concentrations and corresponding wavelengths for
         each chromophore. If the tag LINEAR_UNMIXING_COMPUTE_SO2 is set True the blood oxygen saturation
@@ -27,6 +31,7 @@ class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
 
         :param kwargs:
            **Tags.DATA_FIELD (required)
+           **Tags.LINEAR_UNMIXING_NON_NEGATIVE
            **Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN
            **Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN
            **Tags.LINEAR_UNMIXING_WATER
@@ -47,7 +52,8 @@ class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
                                                                 component_settings_key=component_settings_key)
 
         self.chromophore_spectra_dict = {}  # dictionary containing the spectrum for each chromophore and wavelength
-        self.pseudo_inverse_absorption_matrix = []  # endmember matrix needed in LU
+        self.absorption_matrix = []  # endmember matrix needed in LU
+        self.pseudo_inverse_absorption_matrix = []
 
         self.chromophore_concentrations = []  # list of LU results
         self.chromophore_concentrations_dict = {}  # dictionary of LU results
@@ -70,15 +76,21 @@ class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
                            "Please specify at least one chromophore in the component settings by setting "
                            "the corresponding tag.")
 
-        # create the pseudo inverse absorption matrix needed by FLUPAI
-        # the matrix should have the shape [#chromophores, #global wavelengths]
-        self.pseudo_inverse_absorption_matrix = self.create_piv_absorption_matrix()
-        self.logger.debug(f"The pseudo inverse absorption matrix has shape {np.shape(self.pseudo_inverse_absorption_matrix)}.")
+        # check if non-negative contraint should be used for linear unmixing
+        if Tags.LINEAR_UNMIXING_NON_NEGATIVE in self.component_settings:
+            non_negative = Tags.LINEAR_UNMIXING_NON_NEGATIVE
+        else:
+            non_negative = False
+
+        # create the absorption matrix needed by FLUPAI
+        # the matrix should have the shape [#global wavelengths, #chromophores]
+        self.absorption_matrix = self.create_absorption_matrix()
+        self.logger.debug(f"The absorption matrix has shape {np.shape(self.absorption_matrix)}.")
 
         # perform fast linear unmixing FLUPAI
         # the result saved in self.chromophore_concentrations is a list with the unmixed images
         # containing the chromophore concentration
-        self.chromophore_concentrations = self.flupai()
+        self.chromophore_concentrations = self.flupai(non_negative=non_negative)
         self.logger.debug(f"The unmixing result has shape {np.shape(self.chromophore_concentrations)}.")
 
         # split results to create dictionary which contains linear unmixing result for each chromophore
@@ -167,12 +179,11 @@ class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
             self.logger.debug(e)
             raise ValueError("For details see above.")
 
-    def create_piv_absorption_matrix(self) -> np.ndarray:
+    def create_absorption_matrix(self) -> np.ndarray:
         """
-        Method that returns the pseudo inverse of the absorption (endmember) matrix
-        needed for linear unmixing.
+        Method that returns the absorption (endmember) matrix needed for linear unmixing.
 
-        :return: pseudo inverse absorption matrix
+        :return: absorption matrix
         """
 
         numberWavelengths = len(self.wavelengths)
@@ -188,9 +199,9 @@ class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
                     endmemberMatrix[wave][index] = self.chromophore_spectra_dict[key][
                         self.chromophore_wavelengths_dict[key].index(self.wavelengths[wave])]
 
-        return linalg.pinv(endmemberMatrix)
+        return endmemberMatrix
 
-    def flupai(self) -> list:
+    def flupai(self, non_negative=False) -> list:
         """
         Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI) is based on
         SVD decomposition with a pseudo inverse, which is equivalent to a least squares
@@ -210,18 +221,30 @@ class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
                              "where the first dimension represents the wavelengths and the second, third and fourth "
                              "dimension are representing a single wavelength PA image.")
 
-        # matmul of x = PI * b with x chromophore information, PI pseudo inverse with absorber information and b
-        # containing the measured pixel
+        # if non_negative is False, matmul of x = PI * b with x chromophore information,
+        # PI pseudo inverse with absorber information and b containing the measured pixel,
+        # else non-negative least squares is performed.
         try:
-            output = np.matmul(self.pseudo_inverse_absorption_matrix, reshapedData)
-        except Exception:
-            self.logger.critical(f"Matrix multiplication failed probably caused by mismatching dimensions of pseudo"
-                                 f"inverse ({len(self.pseudo_inverse_absorption_matrix[0])}) and "
-                                 f"input data ({dims_raw[0]})!")
-            raise ValueError("Pseudo inverse (PI) and input data (b) must have matching sizes...")
+            if non_negative:
+                output = []
+                for i in range(np.shape(reshapedData)[1]):
+                    foo, ris = nnls(np.array(self.absorption_matrix), reshapedData[:, i])
+                    output.append(foo)
 
-        # write output into list of images containing the chromophore information
-        numberChromophores = len(self.pseudo_inverse_absorption_matrix)
+                output = np.swapaxes(output, axis1=0, axis2=1)
+            else:
+                self.pseudo_inverse_absorption_matrix = linalg.pinv(self.absorption_matrix)
+                output = np.matmul(self.pseudo_inverse_absorption_matrix, reshapedData)
+
+        except Exception as e:
+            self.logger.critical(f"Matrix multiplication failed probably caused by mismatching dimensions of absorption"
+                                 f"matrix ({len(self.absorption_matrix[1])}) and "
+                                 f"input data ({dims_raw[0]})!")
+            print(e)
+            raise ValueError("Absorption matrix and input data must have matching sizes...")
+
+    # write output into list of images containing the chromophore information
+        numberChromophores = np.shape(output)[0]
         chromophores_concentrations = []
         for chromophore in range(numberChromophores):
             chromophores_concentrations.append(np.reshape(output[chromophore, :], (dims_raw[1:])))

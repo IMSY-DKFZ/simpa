@@ -1309,6 +1309,13 @@ class Tags:
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
+    LINEAR_UNMIXING_NON_NEGATIVE = ("linear_unmixing_nonnegative", (bool, np.bool, np.bool_))
+    """
+    If True, non-negative linear unmixing is performed which solves the 
+    KKT (Karush-Kuhn-Tucker) conditions for the non-negative least squares problem. \n
+    Usage: module algorithms (linear unmixing)
+    """
+
     LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS = ("linear_unmixing_oxyhemoglobin", list)
     """
     List of wavelengths used in linear unmixing for oxyhemoglobin chromophore.\n
