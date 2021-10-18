@@ -125,3 +125,15 @@ You simply need to replace the `myscript` name with your script name.
 `python -m cProfile -o myscript.cprof myscript.py`
 
 `pyprof2calltree -k -i myscript.cprof`
+
+## Troubleshooting
+
+In this section, known problems are listed with their solutions:
+
+1. Error reading hdf5-files when using k-Wave binaries:
+   
+    If you encounter an error similar to:
+    `Error using h5readc`
+    `The filename specified was either not found on the MATLAB path or it contains unsupported characters.`
+    Look up the solution in [this thread of the k-Wave forum](http://www.k-wave.org/forum/topic/error-reading-h5-files-when-using-binaries).  
+      
