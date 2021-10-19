@@ -121,9 +121,9 @@ class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
 
         if Tags.MCX_SEED not in self.component_settings:
             if Tags.RANDOM_SEED in self.global_settings:
-                settings_dict["RNGSeed"] = self.global_settings[Tags.RANDOM_SEED]
+                settings_dict["Session"]["RNGSeed"] = self.global_settings[Tags.RANDOM_SEED]
         else:
-            settings_dict["RNGSeed"] = self.component_settings[Tags.MCX_SEED]
+            settings_dict["Session"]["RNGSeed"] = self.component_settings[Tags.MCX_SEED]
 
         print(settings_dict)
 
