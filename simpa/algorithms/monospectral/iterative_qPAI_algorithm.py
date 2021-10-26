@@ -195,6 +195,9 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
             # check if current error did not change significantly in comparison to preceding error
             if self.convergence_stopping_criterion(error_list, iteration=i):
+                if Tags.ITERATIVE_RECONSTRUCTION_SAVE_LAST_FLUENCE:
+                    dst = self.global_settings[Tags.SIMULATION_PATH] + "/last_fluence" + "_"
+                    np.save(dst + self.global_settings[Tags.VOLUME_NAME] + ".npy", fluence)
                 break
             i += 1
 

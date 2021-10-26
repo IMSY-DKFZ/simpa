@@ -1303,6 +1303,12 @@ class Tags:
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
+    ITERATIVE_RECONSTRUCTION_SAVE_LAST_FLUENCE = ("save_last_fluence", (bool, np.bool, np.bool_))
+    """
+    If True, the last simulated fluence before the stopping criterion will be saved in a numpy file.\n
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
+    """
+
     ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
     """
     Ratio of improvement and preceding error at which iteration method stops. 
