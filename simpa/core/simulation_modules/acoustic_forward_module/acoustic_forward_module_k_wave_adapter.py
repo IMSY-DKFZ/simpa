@@ -7,8 +7,8 @@ SPDX-License-Identifier: MIT
 from simpa.utils.path_manager import PathManager
 import numpy as np
 import subprocess
-from simpa.utils import Tags, SaveFilePaths
-from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5
+from simpa.utils import Tags
+from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5, load_data_field
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.settings import Settings
 from simpa.utils.calculate import rotation_matrix_between_vectors
@@ -82,7 +82,8 @@ class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
             del data_dict[Tags.OPTICAL_MODEL_FLUENCE]
         gc.collect()
 
-        tmp_ac_data = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], SaveFilePaths.SIMULATION_PROPERTIES)
+        tmp_ac_data = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.SIMULATION_PROPERTIES,
+                                      self.global_settings[Tags.WAVELENGTH])
 
         pa_device = detection_geometry
         pa_device.check_settings_prerequisites(self.global_settings)
