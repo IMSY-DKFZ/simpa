@@ -35,7 +35,7 @@ segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacin
                                          order=0)).astype(int)
 
 
-def segmention_class_mapping():
+def segmentation_class_mapping():
     ret_dict = dict()
     ret_dict[0] = sp.TISSUE_LIBRARY.heavy_water()
     ret_dict[1] = sp.TISSUE_LIBRARY.blood()
@@ -67,7 +67,7 @@ settings[Tags.DIM_VOLUME_Z_MM] = 400 / (target_spacing / input_spacing)
 
 settings.set_volume_creation_settings({
     Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,
-    Tags.SEGMENTATION_CLASS_MAPPING: segmention_class_mapping(),
+    Tags.SEGMENTATION_CLASS_MAPPING: segmentation_class_mapping(),
 
 })
 
