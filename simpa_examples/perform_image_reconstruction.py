@@ -4,23 +4,18 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.io_handling import load_hdf5, load_data_field
-from simpa.utils.settings import Settings
-from simpa.utils import Tags
-from simpa.utils.path_manager import PathManager
-from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
+import simpa as sp
+from simpa import Tags
 import numpy as np
-from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter
 
 # FIXME temporary workaround for newest Intel architectures
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-path_manager = PathManager()
+path_manager = sp.PathManager()
 PATH = path_manager.get_hdf5_file_save_path() + "/CompletePipelineTestMSOT_4711.hdf5"
 
-file = load_hdf5(PATH)
-settings = Settings(file["settings"])
+file = sp.load_hdf5(PATH)
+settings = sp.Settings(file["settings"])
 settings[Tags.WAVELENGTH] = settings[Tags.WAVELENGTHS][0]
 
 settings.set_reconstruction_settings({
@@ -35,14 +30,14 @@ settings.set_reconstruction_settings({
 })
 
 # TODO use the correct device definition here
-device = MSOTAcuityEcho()
+device = sp.MSOTAcuityEcho()
 
-ImageReconstructionModuleDelayAndSumAdapter(settings).run(device)
+sp.ImageReconstructionModuleDelayAndSumAdapter(settings).run(device)
 
-reconstructed_image = load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
+reconstructed_image = sp.load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)
 
-visualise_data(path_to_hdf5_file=PATH,
-               wavelength=settings[Tags.WAVELENGTH],
-               show_reconstructed_data=True,
-               show_xz_only=True)
+sp.visualise_data(path_to_hdf5_file=PATH,
+                  wavelength=settings[Tags.WAVELENGTH],
+                  show_reconstructed_data=True,
+                  show_xz_only=True)

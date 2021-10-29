@@ -45,4 +45,8 @@ from .core.device_digital_twins import *
 
 from .core.simulation import simulate
 
+from .io_handling import load_data_field, load_hdf5, save_data_field, save_hdf5
+from .io_handling.zenodo_download import download_from_zenodo
+from .io_handling.ipasc import export_to_ipasc
+
 from .visualisation.matplotlib_data_visualisation import visualise_data
