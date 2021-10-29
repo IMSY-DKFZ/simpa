@@ -71,8 +71,8 @@ class TestCompareMCXResultsWithDiffusionTheory():
             Tags.MCX_ASSUMED_ANISOTROPY: 0.9
         })
 
-        self.device = PhotoacousticDevice(device_position_mm=np.asarray([self.settings[Tags.DIM_VOLUME_X_MM] / 2,
-                                                                         self.settings[Tags.DIM_VOLUME_Y_MM] / 2,
+        self.device = PhotoacousticDevice(device_position_mm=np.asarray([self.settings[Tags.DIM_VOLUME_X_MM] / 2 - 0.5,
+                                                                         self.settings[Tags.DIM_VOLUME_Y_MM] / 2 - 0.5,
                                                                          0]))
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
