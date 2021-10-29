@@ -91,6 +91,7 @@ def SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY(name: str, mus_at_500_nm: float = 1.
                   (1 - fraction_rayleigh_scattering) * (wavelengths / 500) ** -mie_power_law_coefficient))
     return Spectrum(name, wavelengths, scattering)
 
+
 class ScatteringSpectrumLibrary(object):
     EPIDERMIS = SCATTERING_FROM_RAYLEIGH_AND_MIE_THEORY("epidermis scattering",
                                                         OpticalTissueProperties.MUS500_EPIDERMIS,

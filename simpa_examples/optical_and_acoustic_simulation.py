@@ -4,19 +4,9 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Tags, TISSUE_LIBRARY, PathManager, Settings
-from simpa.core.simulation import simulate
-from simpa.utils.libraries.structure_library import define_horizontal_layer_structure_settings,\
-    define_circular_tubular_structure_settings
-from simpa.visualisation.matplotlib_data_visualisation import visualise_data
+from simpa import Tags
+import simpa as sp
 import numpy as np
-from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter, GaussianNoiseProcessingComponent, \
-    OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
-    FieldOfViewCroppingProcessingComponent, ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter, \
-    ReconstructionModuleTimeReversalAdapter
-from simpa.core.device_digital_twins import MSOTAcuityEcho
-from simpa.core.device_digital_twins import LinearArrayDetectionGeometry, SlitIlluminationGeometry, PhotoacousticDevice
-
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -25,12 +15,12 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
-SPACING = 0.25
+SPACING = 0.2
 RANDOM_SEED = 4711
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
-path_manager = PathManager()
+path_manager = sp.PathManager()
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
@@ -42,35 +32,35 @@ def create_example_tissue():
     It contains a muscular background, an epidermis layer on top of the muscles
     and a blood vessel.
     """
-    background_dictionary = Settings()
-    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-10, 1e-10, 1.0)
+    background_dictionary = sp.Settings()
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-10, 1e-10, 1.0)
     background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
-    tissue_dict = Settings()
+    tissue_dict = sp.Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
-    tissue_dict["muscle"] = define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
-                                                                       molecular_composition=
-                                                                       TISSUE_LIBRARY.constant(0.05, 100, 0.9),
-                                                                       priority=1,
-                                                                       consider_partial_volume=True,
-                                                                       adhere_to_deformation=True)
-    tissue_dict["epidermis"] = define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
+    tissue_dict["muscle"] = sp.define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
                                                                           molecular_composition=
-                                                                          TISSUE_LIBRARY.epidermis(),
-                                                                          priority=8,
+                                                                          sp.TISSUE_LIBRARY.constant(0.05, 100, 0.9),
+                                                                          priority=1,
                                                                           consider_partial_volume=True,
                                                                           adhere_to_deformation=True)
-    tissue_dict["vessel_1"] = define_circular_tubular_structure_settings(
+    tissue_dict["epidermis"] = sp.define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
+                                                                             molecular_composition=
+                                                                             sp.TISSUE_LIBRARY.epidermis(),
+                                                                             priority=8,
+                                                                             consider_partial_volume=True,
+                                                                             adhere_to_deformation=True)
+    tissue_dict["vessel_1"] = sp.define_circular_tubular_structure_settings(
         tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, 0, 5],
         tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, VOLUME_PLANAR_DIM_IN_MM, 5],
-        molecular_composition=TISSUE_LIBRARY.blood(),
+        molecular_composition=sp.TISSUE_LIBRARY.blood(),
         radius_mm=2, priority=3, consider_partial_volume=True,
         adhere_to_deformation=False
     )
-    tissue_dict["vessel_2"] = define_circular_tubular_structure_settings(
+    tissue_dict["vessel_2"] = sp.define_circular_tubular_structure_settings(
         tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, 0, 10],
         tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10],
-        molecular_composition=TISSUE_LIBRARY.blood(),
+        molecular_composition=sp.TISSUE_LIBRARY.blood(),
         radius_mm=3, priority=3, consider_partial_volume=True,
         adhere_to_deformation=False
     )
@@ -100,7 +90,7 @@ general_settings = {
             Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True,
             Tags.DO_IPASC_EXPORT: True
         }
-settings = Settings(general_settings)
+settings = sp.Settings(general_settings)
 np.random.seed(RANDOM_SEED)
 
 settings.set_volume_creation_settings({
@@ -177,29 +167,29 @@ settings["noise_time_series"] = {
 #                                                      0]))
 # device.update_settings_for_use_of_model_based_volume_creator(settings)
 
-device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                          VOLUME_PLANAR_DIM_IN_MM/2,
-                                                          0]),
-                             field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20]))
-device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
-                                                           pitch_mm=0.25,
-                                                           number_detector_elements=200,
-                                                           field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20])))
+device = sp.PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                             VOLUME_PLANAR_DIM_IN_MM/2,
+                                                             0]),
+                                field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20]))
+device.set_detection_geometry(sp.LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+                                                              pitch_mm=0.25,
+                                                              number_detector_elements=100,
+                                                              field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20])))
 print(device.get_detection_geometry().get_detector_element_positions_base_mm())
-device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
+device.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
 
 SIMUATION_PIPELINE = [
-    VolumeCreationModelModelBasedAdapter(settings),
-    OpticalForwardModelMcxAdapter(settings),
-    GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
-    AcousticForwardModelKWaveAdapter(settings),
-    GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    ReconstructionModuleTimeReversalAdapter(settings),
-    FieldOfViewCroppingProcessingComponent(settings)
+    sp.VolumeCreationModelModelBasedAdapter(settings),
+    sp.OpticalForwardModelMcxAdapter(settings),
+    sp.GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
+    sp.AcousticForwardModelKWaveAdapter(settings),
+    sp.GaussianNoiseProcessingComponent(settings, "noise_time_series"),
+    sp.ReconstructionModuleTimeReversalAdapter(settings),
+    sp.FieldOfViewCroppingProcessingComponent(settings)
     ]
 
-simulate(SIMUATION_PIPELINE, settings, device)
+sp.simulate(SIMUATION_PIPELINE, settings, device)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]
@@ -207,13 +197,13 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-                   wavelength=WAVELENGTH,
-                   show_time_series_data=True,
-                   show_initial_pressure=True,
-                   show_absorption=False,
-                   show_segmentation_map=False,
-                   show_tissue_density=False,
-                   show_reconstructed_data=True,
-                   show_fluence=False,
-                   log_scale=False)
+    sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+                      wavelength=WAVELENGTH,
+                      show_time_series_data=True,
+                      show_initial_pressure=True,
+                      show_absorption=False,
+                      show_segmentation_map=False,
+                      show_tissue_density=False,
+                      show_reconstructed_data=True,
+                      show_fluence=False,
+                      log_scale=False)

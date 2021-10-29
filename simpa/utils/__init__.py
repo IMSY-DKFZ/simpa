@@ -18,6 +18,8 @@ from .libraries.spectra_library import AbsorptionSpectrumLibrary
 from .libraries.spectra_library import Spectrum
 from .libraries.spectra_library import SPECTRAL_LIBRARY
 from .libraries.spectra_library import view_absorption_spectra
+from .libraries.spectra_library import AnisotropySpectrumLibrary
+from .libraries.spectra_library import ScatteringSpectrumLibrary
 
 from .libraries.molecule_library import Molecule, MolecularCompositionGenerator
 from .libraries.molecule_library import MoleculeLibrary
@@ -41,6 +43,20 @@ from .dict_path_manager import get_data_field_from_simpa_output
 from .constants import EPS
 
 from .path_manager import PathManager
+
+from .libraries.structure_library.BackgroundStructure import Background, define_background_structure_settings
+from .libraries.structure_library.CircularTubularStructure import CircularTubularStructure, \
+    define_circular_tubular_structure_settings
+from .libraries.structure_library.EllipticalTubularStructure import EllipticalTubularStructure, \
+    define_elliptical_tubular_structure_settings
+from .libraries.structure_library.HorizontalLayerStructure import HorizontalLayerStructure, \
+    define_horizontal_layer_structure_settings
+from .libraries.structure_library.ParallelepipedStructure import ParallelepipedStructure, \
+    define_parallelepiped_structure_settings
+from .libraries.structure_library.RectangularCuboidStructure import RectangularCuboidStructure, \
+    define_rectangular_cuboid_structure_settings
+from .libraries.structure_library.SphericalStructure import SphericalStructure, define_spherical_structure_settings
+from .libraries.structure_library.VesselStructure import VesselStructure, define_vessel_structure_settings
 
 if __name__ == "__main__":
     view_absorption_spectra()
