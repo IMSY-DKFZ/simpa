@@ -12,8 +12,13 @@ from simpa.core.simulation import simulate
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.utils import Tags, Settings
 from simpa_tests.test_utils import create_test_structure_parameters
-from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelTestAdapter, \
-    AcousticForwardModelTestAdapter, ReconstructionModuleTestAdapter
+from simpa import VolumeCreationModelModelBasedAdapter
+from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_test_adapter import \
+    OpticalForwardModelTestAdapter
+from simpa.core.simulation_modules.acoustic_forward_module.acoustic_forward_model_test_adapter import \
+    AcousticForwardModelTestAdapter
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_test_adapter import \
+    ReconstructionModuleTestAdapter
 
 from ipasc_tool import load_data as load_ipasc
 from simpa.io_handling import load_hdf5 as load_simpa

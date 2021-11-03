@@ -5,12 +5,11 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.utils import Tags
-from simpa.io_handling import load_data_field, save_data_field
-from simpa.algorithms.multispectral import MultispectralProcessingAlgorithm
+from simpa.io_handling import save_data_field
+from simpa.core.processing_components.multispectral import MultispectralProcessingAlgorithm
 from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
 import numpy as np
 import scipy.linalg as linalg
-from simpa.utils.settings import Settings
 
 
 class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):

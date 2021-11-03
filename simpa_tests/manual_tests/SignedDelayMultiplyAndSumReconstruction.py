@@ -9,7 +9,7 @@ from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa.simulation_components import AcousticForwardModelKWaveAdapter, OpticalForwardModelMcxAdapter, \
     ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter, VolumeCreationModelModelBasedAdapter
-from simpa.core.processing_components.noise import GaussianNoiseProcessingComponent
+from simpa.core.processing_components.monospectral.noise import GaussianNoiseProcessingComponent
 from simpa import reconstruct_signed_delay_multiply_and_sum_pytorch
 from simpa_tests.manual_tests import ReconstructionAlgorithmTestBaseClass
 

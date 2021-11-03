@@ -13,7 +13,8 @@ from simpa.utils import Tags
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
-from simpa.simulation_components import OpticalForwardModelMcxAdapter
+from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import \
+    OpticalForwardModelMcxAdapter
 from simpa.utils import Settings
 from simpa.io_handling import save_data_field, load_data_field
 from simpa.utils import TISSUE_LIBRARY

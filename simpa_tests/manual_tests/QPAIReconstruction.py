@@ -18,7 +18,7 @@ from simpa.core.simulation import simulate
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, \
     GaussianNoiseProcessingComponent
-from simpa.algorithms.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
+from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
 from simpa.core.device_digital_twins import RSOMExplorerP50
 
 

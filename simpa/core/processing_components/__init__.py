@@ -21,11 +21,3 @@ class ProcessingComponent(SimulationModule, ABC):
         """
         super(ProcessingComponent, self).__init__(global_settings=global_settings)
         self.component_settings = global_settings[component_settings_key]
-
-
-from .noise import GaussianNoiseProcessingComponent
-from .noise import GammaNoiseProcessingComponent
-from .noise import PoissonNoiseProcessingComponent
-from .noise import SaltAndPepperNoiseProcessingComponent
-from .noise import UniformNoiseProcessingComponent
-from .field_of_view_cropping import FieldOfViewCroppingProcessingComponent

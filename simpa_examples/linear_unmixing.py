@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags, TISSUE_LIBRARY, Settings
 from simpa.core.simulation import simulate
-from simpa.algorithms.multispectral.linear_unmixing import LinearUnmixingProcessingComponent
+from simpa.core.processing_components.multispectral.linear_unmixing import LinearUnmixingProcessingComponent
 import numpy as np
 from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
     FieldOfViewCroppingProcessingComponent

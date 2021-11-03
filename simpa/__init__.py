@@ -34,12 +34,14 @@ from .core.simulation_modules.reconstruction_module.reconstruction_module_signed
 from .core.simulation_modules.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import \
     perform_k_wave_acoustic_forward_simulation
 
-from .core.processing_components.field_of_view_cropping import FieldOfViewCroppingProcessingComponent
-from .core.processing_components.noise.gamma_noise import GammaNoiseProcessingComponent
-from .core.processing_components.noise.gaussian_noise import GaussianNoiseProcessingComponent
-from .core.processing_components.noise.poisson_noise import PoissonNoiseProcessingComponent
-from .core.processing_components.noise.salt_and_pepper_noise import SaltAndPepperNoiseProcessingComponent
-from .core.processing_components.noise.uniform_noise import UniformNoiseProcessingComponent
+from simpa.core.processing_components.monospectral.noise import GaussianNoiseProcessingComponent
+from simpa.core.processing_components.monospectral.noise import GammaNoiseProcessingComponent
+from simpa.core.processing_components.monospectral.noise import PoissonNoiseProcessingComponent
+from simpa.core.processing_components.monospectral.noise import SaltAndPepperNoiseProcessingComponent
+from simpa.core.processing_components.monospectral.noise import UniformNoiseProcessingComponent
+from simpa.core.processing_components.monospectral.field_of_view_cropping import FieldOfViewCroppingProcessingComponent
+from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
+from simpa.core.processing_components.multispectral.linear_unmixing import LinearUnmixingProcessingComponent
 
 from .core.device_digital_twins import *
 

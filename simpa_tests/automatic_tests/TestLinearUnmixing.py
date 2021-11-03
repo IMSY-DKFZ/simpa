@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 from simpa.core.simulation import simulate
-from simpa.algorithms.multispectral import linear_unmixing as lu
+from simpa.core.processing_components.multispectral import linear_unmixing as lu
 import numpy as np
 from simpa.core import *
 from simpa.utils.path_manager import PathManager
