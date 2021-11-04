@@ -12,7 +12,7 @@ from simpa.core.simulation import simulate
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.utils import Tags, Settings
 from simpa_tests.test_utils import create_test_structure_parameters
-from simpa import VolumeCreationModelModelBasedAdapter
+from simpa import ModelBasedVolumeCreationAdapter
 from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_test_adapter import \
     OpticalForwardModelTestAdapter
 from simpa.core.simulation_modules.acoustic_forward_module.acoustic_forward_model_test_adapter import \
@@ -63,18 +63,18 @@ class TestDeviceUUID(unittest.TestCase):
         })
 
         self.acoustic_simulation_pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
+            ModelBasedVolumeCreationAdapter(self.settings),
             OpticalForwardModelTestAdapter(self.settings),
             AcousticForwardModelTestAdapter(self.settings),
         ]
 
         self.optical_simulation_pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
+            ModelBasedVolumeCreationAdapter(self.settings),
             OpticalForwardModelTestAdapter(self.settings)
         ]
 
         self.full_simulation_pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
+            ModelBasedVolumeCreationAdapter(self.settings),
             OpticalForwardModelTestAdapter(self.settings),
             AcousticForwardModelTestAdapter(self.settings),
             ReconstructionModuleTestAdapter(self.settings)

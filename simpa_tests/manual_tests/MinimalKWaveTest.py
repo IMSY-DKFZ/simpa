@@ -5,10 +5,10 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.core.simulation import simulate
-from simpa.utils import Tags, generate_dict_path, SaveFilePaths
+from simpa.utils import Tags, generate_dict_path
 from simpa.utils.settings import Settings
 from simpa.utils.path_manager import PathManager
-from simpa.simulation_components import AcousticForwardModelKWaveAdapter, ImageReconstructionModuleDelayAndSumAdapter
+from simpa import KWaveAdapter, DelayAndSumAdapter
 from simpa.core.device_digital_twins import *
 from simpa.io_handling import save_hdf5, load_data_field
 import numpy as np
@@ -86,13 +86,14 @@ acoutsic_properties = {
     Tags.PROPERTY_DENSITY: density,
     Tags.PROPERTY_ALPHA_COEFF: alpha
 }
-save_hdf5(acoutsic_properties, settings[Tags.SIMPA_OUTPUT_PATH], SaveFilePaths.SIMULATION_PROPERTIES)
+save_file_path = generate_dict_path(Tags.SIMULATION_PROPERTIES)
+save_hdf5(acoutsic_properties, settings[Tags.SIMPA_OUTPUT_PATH], save_file_path)
 optical_output = {
     Tags.OPTICAL_MODEL_INITIAL_PRESSURE: {settings[Tags.WAVELENGTHS][0]: initial_pressure}
 }
 optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
 save_hdf5(optical_output, settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
-AcousticForwardModelKWaveAdapter(settings).run(pa_device)
+KWaveAdapter(settings).run(pa_device)
 
 time_series_data = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH],
                                    data_field=Tags.TIME_SERIES_DATA,
@@ -106,21 +107,21 @@ plt.plot(time_series_data.T)
 plt.show()
 plt.close()
 
-ImageReconstructionModuleDelayAndSumAdapter(settings).run(pa_device)
+DelayAndSumAdapter(settings).run(pa_device)
 
 reconstructed_image_1000 = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH],
                                           data_field=Tags.RECONSTRUCTED_DATA,
                                           wavelength=settings[Tags.WAVELENGTHS][0])
 
 settings.get_reconstruction_settings()[Tags.PROPERTY_SPEED_OF_SOUND] = SPEED_OF_SOUND * 1.05
-ImageReconstructionModuleDelayAndSumAdapter(settings).run(pa_device)
+DelayAndSumAdapter(settings).run(pa_device)
 
 reconstructed_image_1050 = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH],
                                            data_field=Tags.RECONSTRUCTED_DATA,
                                            wavelength=settings[Tags.WAVELENGTHS][0])
 
 settings.get_reconstruction_settings()[Tags.PROPERTY_SPEED_OF_SOUND] = SPEED_OF_SOUND * 0.95
-ImageReconstructionModuleDelayAndSumAdapter(settings).run(pa_device)
+DelayAndSumAdapter(settings).run(pa_device)
 
 reconstructed_image_950 = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH],
                                            data_field=Tags.RECONSTRUCTED_DATA,

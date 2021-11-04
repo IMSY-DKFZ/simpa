@@ -27,7 +27,6 @@ class SingleDetectionElement(DetectionGeometryBase):
                          center_frequency_hz=1,
                          bandwidth_percent=500,
                          sampling_frequency_mhz=10,
-                         probe_width_mm=1,
                          device_position_mm=device_position_mm,
                          field_of_view_extent_mm=np.asarray([-10, 10, 0, 0, -10, 10]))
 

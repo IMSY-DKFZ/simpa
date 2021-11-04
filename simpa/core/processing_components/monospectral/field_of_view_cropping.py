@@ -12,17 +12,17 @@ from simpa.core.device_digital_twins import DigitalDeviceTwinBase, Photoacoustic
 import numpy as np
 
 
-class FieldOfViewCroppingProcessingComponent(ProcessingComponent):
+class FieldOfViewCropping(ProcessingComponent):
 
     def __init__(self, global_settings, settings_key=None):
         if settings_key is None:
             # TODO Extract from global settings all the fields that should be cropped
-            global_settings["FieldOfViewCroppingProcessingComponent"] = Settings({
+            global_settings["FieldOfViewCropping"] = Settings({
                       Tags.DATA_FIELD: TissueProperties.property_tags +
                                            [Tags.OPTICAL_MODEL_FLUENCE,
                                             Tags.OPTICAL_MODEL_INITIAL_PRESSURE]})
-        super(FieldOfViewCroppingProcessingComponent, self).__init__(global_settings,
-                                                                     "FieldOfViewCroppingProcessingComponent")
+        super(FieldOfViewCropping, self).__init__(global_settings,
+                                                                     "FieldOfViewCropping")
     """
     Applies Gaussian noise to the defined data field.
     The noise will be applied to all wavelengths.

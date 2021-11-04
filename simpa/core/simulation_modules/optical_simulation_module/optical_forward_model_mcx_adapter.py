@@ -14,7 +14,7 @@ import os
 import gc
 
 
-class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
+class MCXAdapter(OpticalForwardModuleBase):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA.
     MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue::

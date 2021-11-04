@@ -16,9 +16,9 @@ from scipy.ndimage import zoom
 from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
-from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, \
-    GaussianNoiseProcessingComponent
-from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
+from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
+    GaussianNoise
+from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI
 from simpa.core.device_digital_twins import RSOMExplorerP50
 
 
@@ -87,9 +87,9 @@ class TestqPAIReconstruction:
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
-            OpticalForwardModelMcxAdapter(self.settings),
-            GaussianNoiseProcessingComponent(self.settings, "noise_model")
+            ModelBasedVolumeCreationAdapter(self.settings),
+            MCXAdapter(self.settings),
+            GaussianNoise(self.settings, "noise_model")
         ]
         simulate(pipeline, self.settings, self.device)
 
@@ -123,7 +123,7 @@ class TestqPAIReconstruction:
             self.absorption_gt = zoom(absorption_gt, 0.73, order=1, mode="nearest")  # the default scale is 0.73
 
         # run the qPAI reconstruction
-        IterativeqPAIProcessingComponent(self.settings, "iterative_qpai_reconstruction").run(self.device)
+        IterativeqPAI(self.settings, "iterative_qpai_reconstruction").run(self.device)
 
         # get last iteration result (3-d)
         hdf5_path = self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5"

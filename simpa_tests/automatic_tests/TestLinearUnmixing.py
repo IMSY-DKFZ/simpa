@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 from simpa.core.simulation import simulate
-from simpa.core.processing_components.multispectral import linear_unmixing as lu
+from simpa import LinearUnmixing
 import numpy as np
 from simpa.core import *
 from simpa.utils.path_manager import PathManager
@@ -96,7 +96,8 @@ class TestLinearUnmixing:
         }
 
         # Run linear unmixing component
-        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run(self.device)
+        lu = LinearUnmixing(self.settings, "linear_unmixing")
+        lu.run()
 
         # Load blood oxygen saturation
         lu_results = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)

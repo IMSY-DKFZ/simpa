@@ -79,8 +79,8 @@ settings.set_optical_settings({
 })
 
 pipeline = [
-    sp.VolumeCreationModuleSegmentationBasedAdapter(settings),
-    sp.OpticalForwardModelMcxAdapter(settings)
+    sp.SegmentationBasedVolumeCreationAdapter(settings),
+    sp.MCXAdapter(settings)
 ]
 
 sp.simulate(pipeline, settings, sp.RSOMExplorerP50(element_spacing_mm=1.0))

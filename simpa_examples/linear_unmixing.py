@@ -6,10 +6,10 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags, TISSUE_LIBRARY, Settings
 from simpa.core.simulation import simulate
-from simpa.core.processing_components.multispectral.linear_unmixing import LinearUnmixingProcessingComponent
+from simpa.core.processing_components.multispectral.linear_unmixing import LinearUnmixing
 import numpy as np
-from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
-    FieldOfViewCroppingProcessingComponent
+from simpa import ModelBasedVolumeCreationAdapter, MCXAdapter, \
+    FieldOfViewCropping
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import MSOTAcuityEcho
@@ -134,14 +134,14 @@ device.update_settings_for_use_of_model_based_volume_creator(settings)
 
 # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
 pipeline = [
-    VolumeCreationModelModelBasedAdapter(settings),
-    OpticalForwardModelMcxAdapter(settings),
-    FieldOfViewCroppingProcessingComponent(settings),
+    ModelBasedVolumeCreationAdapter(settings),
+    MCXAdapter(settings),
+    FieldOfViewCropping(settings),
 ]
 simulate(pipeline, settings, device)
 
 # Run linear unmixing component with above specified settings.
-LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
+LinearUnmixing(settings, "linear_unmixing").run()
 
 # Load linear unmixing result (blood oxygen saturation) and reference absorption for first wavelength.
 file_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"

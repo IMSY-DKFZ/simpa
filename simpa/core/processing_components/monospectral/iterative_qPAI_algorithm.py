@@ -14,7 +14,7 @@ from simpa.utils.libraries.literature_values import OpticalTissueProperties, Sta
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
 from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import \
-    OpticalForwardModelMcxAdapter
+    MCXAdapter
 from simpa.utils import Settings
 from simpa.io_handling import save_data_field, load_data_field
 from simpa.utils import TISSUE_LIBRARY
@@ -22,7 +22,7 @@ from simpa.core.processing_components import ProcessingComponent
 import os
 
 
-class IterativeqPAIProcessingComponent(ProcessingComponent):
+class IterativeqPAI(ProcessingComponent):
     """
         Applies iterative qPAI Algorithm [1] on simulated initial pressure map and saves the
         reconstruction result in the hdf5 output file. If a 2-d map of initial_pressure is passed the algorithm saves
@@ -409,7 +409,7 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
         self.global_settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = np.mean(anisotropy)
 
         if model == Tags.OPTICAL_MODEL_MCX:
-            forward_model_implementation = OpticalForwardModelMcxAdapter(self.global_settings)
+            forward_model_implementation = MCXAdapter(self.global_settings)
         else:
             raise AssertionError("Tags.OPTICAL_MODEL tag must be Tags.OPTICAL_MODEL_MCX.")
 

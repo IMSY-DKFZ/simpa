@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags, PathManager, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
-from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter
+from simpa import ModelBasedVolumeCreationAdapter, MCXAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 from simpa.io_handling import load_data_field
 import numpy as np
@@ -128,8 +128,8 @@ class TestCompareMCXResultsWithDiffusionTheory():
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
-            OpticalForwardModelMcxAdapter(self.settings),
+            ModelBasedVolumeCreationAdapter(self.settings),
+            MCXAdapter(self.settings),
         ]
         simulate(pipeline, self.settings, self.device)
 

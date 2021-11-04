@@ -14,7 +14,7 @@ from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils im
     preparing_reconstruction_and_obtaining_reconstruction_settings, compute_image_dimensions
 
 
-class ImageReconstructionModuleDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
+class DelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry: DetectionGeometryBase):
         """
@@ -96,5 +96,5 @@ def reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarr
     if Tags.SPACING_MM not in settings or settings[Tags.SPACING_MM] is None:
         settings[Tags.SPACING_MM] = sensor_spacing_in_mm
 
-    adapter = ImageReconstructionModuleDelayMultiplyAndSumAdapter(settings)
+    adapter = DelayMultiplyAndSumAdapter(settings)
     return adapter.reconstruction_algorithm(time_series_sensor_data, detection_geometry)

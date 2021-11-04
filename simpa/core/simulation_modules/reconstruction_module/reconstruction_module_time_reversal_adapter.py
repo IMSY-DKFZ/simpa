@@ -15,7 +15,7 @@ import os
 import inspect
 
 
-class ReconstructionModuleTimeReversalAdapter(ReconstructionAdapterBase):
+class TimeReversalAdapter(ReconstructionAdapterBase):
     """
     The time reversal adapter includes the time reversal reconstruction
     algorithm implemented by the k-Wave toolkit into SIMPA.

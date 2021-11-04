@@ -120,9 +120,9 @@ settings["noise_model_1"] = {
 }
 
 pipeline = [
-    sp.VolumeCreationModelModelBasedAdapter(settings),
-    sp.OpticalForwardModelMcxAdapter(settings),
-    sp.GaussianNoiseProcessingComponent(settings, "noise_model_1")
+    sp.ModelBasedVolumeCreationAdapter(settings),
+    sp.MCXAdapter(settings),
+    sp.GaussianNoise(settings, "noise_model_1")
 ]
 
 

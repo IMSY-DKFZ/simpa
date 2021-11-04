@@ -8,8 +8,8 @@ SPDX-License-Identifier: MIT
 from simpa.core.device_digital_twins import SlitIlluminationGeometry, LinearArrayDetectionGeometry, PhotoacousticDevice
 from simpa import perform_k_wave_acoustic_forward_simulation
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import reconstruct_delay_and_sum_pytorch
-from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, \
-    GaussianNoiseProcessingComponent
+from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
+    GaussianNoise
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
 from simpa.io_handling import load_data_field
@@ -87,9 +87,9 @@ class KWaveAcousticForwardConvenienceFunction:
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
-            OpticalForwardModelMcxAdapter(self.settings),
-            GaussianNoiseProcessingComponent(self.settings, "noise_model")
+            ModelBasedVolumeCreationAdapter(self.settings),
+            MCXAdapter(self.settings),
+            GaussianNoise(self.settings, "noise_model")
         ]
         simulate(pipeline, self.settings, self.device)
 

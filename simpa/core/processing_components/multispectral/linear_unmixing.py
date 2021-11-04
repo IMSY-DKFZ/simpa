@@ -12,7 +12,7 @@ import numpy as np
 import scipy.linalg as linalg
 
 
-class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
+class LinearUnmixing(MultispectralProcessingAlgorithm):
     """
         Performs linear spectral unmixing (LU) using Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI)
         on the defined data field for each chromophore specified in the component settings.
@@ -42,8 +42,8 @@ class LinearUnmixingProcessingComponent(MultispectralProcessingAlgorithm):
         """
 
     def __init__(self, global_settings, component_settings_key: str):
-        super(LinearUnmixingProcessingComponent, self).__init__(global_settings=global_settings,
-                                                                component_settings_key=component_settings_key)
+        super(LinearUnmixing, self).__init__(global_settings=global_settings,
+                                             component_settings_key=component_settings_key)
 
         self.chromophore_spectra_dict = {}  # dictionary containing the spectrum for each chromophore and wavelength
         self.pseudo_inverse_absorption_matrix = []  # endmember matrix needed in LU

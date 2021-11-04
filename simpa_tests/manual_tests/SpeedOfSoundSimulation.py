@@ -14,9 +14,7 @@ from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary, Ani
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.utils.path_manager import PathManager
-from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter, \
-    OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
-    FieldOfViewCroppingProcessingComponent
+from simpa import DelayAndSumAdapter, MCXAdapter, KWaveAdapter, ModelBasedVolumeCreationAdapter, FieldOfViewCropping
 from simpa.core.device_digital_twins import MSOTAcuityEcho, InVision256TF
 
 
@@ -183,12 +181,12 @@ device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM
 device.update_settings_for_use_of_model_based_volume_creator(settings)
 
 SIMUATION_PIPELINE = [
-    VolumeCreationModelModelBasedAdapter(settings),
-    OpticalForwardModelMcxAdapter(settings),
-    AcousticForwardModelKWaveAdapter(settings),
-    FieldOfViewCroppingProcessingComponent(settings),
-    ImageReconstructionModuleDelayAndSumAdapter(settings)
-]
+        ModelBasedVolumeCreationAdapter(settings),
+        MCXAdapter(settings),
+        KWaveAdapter(settings),
+        FieldOfViewCropping(settings),
+        DelayAndSumAdapter(settings)
+    ]
 
 simulate(SIMUATION_PIPELINE, settings, device)
 

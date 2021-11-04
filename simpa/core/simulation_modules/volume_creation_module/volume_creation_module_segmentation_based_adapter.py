@@ -12,7 +12,7 @@ import h5py
 import numpy as np
 
 
-class VolumeCreationModuleSegmentationBasedAdapter(VolumeCreatorModuleBase):
+class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
     """
     This volume creator expects a np.ndarray to be in the settigs
     under the Tags.INPUT_SEGMENTATION_VOLUME tag and uses this array

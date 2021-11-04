@@ -18,11 +18,11 @@ Y_DIM = 40
 
 def create_pipeline(_settings: sp.Settings):
     return [
-        sp.VolumeCreationModelModelBasedAdapter(settings),
-        sp.OpticalForwardModelMcxAdapter(settings),
-        sp.AcousticForwardModelKWaveAdapter(settings),
-        sp.FieldOfViewCroppingProcessingComponent(settings),
-        sp.ReconstructionModuleTimeReversalAdapter(settings)
+        sp.ModelBasedVolumeCreationAdapter(settings),
+        sp.MCXAdapter(settings),
+        sp.KWaveAdapter(settings),
+        sp.FieldOfViewCropping(settings),
+        sp.TimeReversalAdapter(settings)
     ]
 
 

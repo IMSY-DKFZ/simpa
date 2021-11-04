@@ -1037,13 +1037,13 @@ class Tags:
     SENSOR_RADIUS_MM = "sensor_radius_mm"
     """
     Radius of a concave geometry of the used PA device.\n
-    Usage: adapter AcousticForwardModelKWaveAdapter, naming convention
+    Usage: adapter KWaveAdapter, naming convention
     """
 
     SENSOR_PITCH_MM = "sensor_pitch_mm"
     """
     Pitch of detector elements of the used PA device.\n
-    Usage: adapter AcousticForwardModelKWaveAdapter, naming convention
+    Usage: adapter KWaveAdapter, naming convention
     """
 
     # Pipelining parameters

@@ -11,7 +11,7 @@ from simpa.core.simulation import simulate
 import numpy as np
 from simpa_tests.test_utils import create_test_structure_parameters
 import os
-from simpa import VolumeCreationModelModelBasedAdapter
+from simpa import ModelBasedVolumeCreationAdapter
 from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_test_adapter import \
     OpticalForwardModelTestAdapter
 from simpa.core.simulation_modules.acoustic_forward_module.acoustic_forward_model_test_adapter import \
@@ -74,7 +74,7 @@ class TestPipeline(unittest.TestCase):
         })
 
         simulation_pipeline = [
-            VolumeCreationModelModelBasedAdapter(settings),
+            ModelBasedVolumeCreationAdapter(settings),
             OpticalForwardModelTestAdapter(settings),
             AcousticForwardModelTestAdapter(settings),
         ]

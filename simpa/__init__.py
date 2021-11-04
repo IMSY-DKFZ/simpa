@@ -9,21 +9,21 @@ from .utils import *
 
 
 from .core.simulation_modules.volume_creation_module.volume_creation_module_model_based_adapter import \
-    VolumeCreationModelModelBasedAdapter
+    ModelBasedVolumeCreationAdapter
 from .core.simulation_modules.volume_creation_module.volume_creation_module_segmentation_based_adapter import \
-    VolumeCreationModuleSegmentationBasedAdapter
+    SegmentationBasedVolumeCreationAdapter
 from .core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import \
-    OpticalForwardModelMcxAdapter
+    MCXAdapter
 from .core.simulation_modules.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import \
-    AcousticForwardModelKWaveAdapter
+    KWaveAdapter
 from .core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \
-    ImageReconstructionModuleDelayAndSumAdapter
+    DelayAndSumAdapter
 from .core.simulation_modules.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter import \
-    ImageReconstructionModuleDelayMultiplyAndSumAdapter
+    DelayMultiplyAndSumAdapter
 from .core.simulation_modules.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter import \
-    ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter
+    SignedDelayMultiplyAndSumAdapter
 from .core.simulation_modules.reconstruction_module.reconstruction_module_time_reversal_adapter import \
-    ReconstructionModuleTimeReversalAdapter
+    TimeReversalAdapter
 
 from .core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \
     reconstruct_delay_and_sum_pytorch
@@ -34,14 +34,14 @@ from .core.simulation_modules.reconstruction_module.reconstruction_module_signed
 from .core.simulation_modules.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import \
     perform_k_wave_acoustic_forward_simulation
 
-from simpa.core.processing_components.monospectral.noise import GaussianNoiseProcessingComponent
-from simpa.core.processing_components.monospectral.noise import GammaNoiseProcessingComponent
-from simpa.core.processing_components.monospectral.noise import PoissonNoiseProcessingComponent
-from simpa.core.processing_components.monospectral.noise import SaltAndPepperNoiseProcessingComponent
-from simpa.core.processing_components.monospectral.noise import UniformNoiseProcessingComponent
-from simpa.core.processing_components.monospectral.field_of_view_cropping import FieldOfViewCroppingProcessingComponent
-from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
-from simpa.core.processing_components.multispectral.linear_unmixing import LinearUnmixingProcessingComponent
+from simpa.core.processing_components.monospectral.noise import GaussianNoise
+from simpa.core.processing_components.monospectral.noise import GammaNoise
+from simpa.core.processing_components.monospectral.noise import PoissonNoise
+from simpa.core.processing_components.monospectral.noise import SaltAndPepperNoise
+from simpa.core.processing_components.monospectral.noise import UniformNoise
+from simpa.core.processing_components.monospectral.field_of_view_cropping import FieldOfViewCropping
+from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI
+from simpa.core.processing_components.multispectral.linear_unmixing import LinearUnmixing
 
 from .core.device_digital_twins import *
 

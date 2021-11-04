@@ -12,7 +12,7 @@ from simpa.core.processing_components import ProcessingComponent
 import numpy as np
 
 
-class UniformNoiseProcessingComponent(ProcessingComponent):
+class UniformNoise(ProcessingComponent):
     """
     Applies uniform noise to the defined data field.
     The noise will be applied to all wavelengths.

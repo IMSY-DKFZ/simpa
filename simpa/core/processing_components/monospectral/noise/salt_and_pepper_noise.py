@@ -12,7 +12,7 @@ from simpa.core.processing_components import ProcessingComponent
 import numpy as np
 
 
-class SaltAndPepperNoiseProcessingComponent(ProcessingComponent):
+class SaltAndPepperNoise(ProcessingComponent):
     """
     Applies salt and pepper noise to the defined data field.
     The noise will be applied to all wavelengths.

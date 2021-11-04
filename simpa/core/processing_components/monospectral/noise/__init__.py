@@ -4,8 +4,8 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from .gaussian_noise import GaussianNoiseProcessingComponent
-from .gamma_noise import GammaNoiseProcessingComponent
-from .poisson_noise import PoissonNoiseProcessingComponent
-from .salt_and_pepper_noise import SaltAndPepperNoiseProcessingComponent
-from .uniform_noise import UniformNoiseProcessingComponent
+from .gaussian_noise import GaussianNoise
+from .gamma_noise import GammaNoise
+from .poisson_noise import PoissonNoise
+from .salt_and_pepper_noise import SaltAndPepperNoise
+from .uniform_noise import UniformNoise

@@ -180,13 +180,13 @@ device.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[100
 
 
 SIMUATION_PIPELINE = [
-    sp.VolumeCreationModelModelBasedAdapter(settings),
-    sp.OpticalForwardModelMcxAdapter(settings),
-    sp.GaussianNoiseProcessingComponent(settings, "noise_initial_pressure"),
-    sp.AcousticForwardModelKWaveAdapter(settings),
-    sp.GaussianNoiseProcessingComponent(settings, "noise_time_series"),
-    sp.ReconstructionModuleTimeReversalAdapter(settings),
-    sp.FieldOfViewCroppingProcessingComponent(settings)
+    sp.ModelBasedVolumeCreationAdapter(settings),
+    sp.MCXAdapter(settings),
+    sp.GaussianNoise(settings, "noise_initial_pressure"),
+    sp.KWaveAdapter(settings),
+    sp.GaussianNoise(settings, "noise_time_series"),
+    sp.TimeReversalAdapter(settings),
+    sp.FieldOfViewCropping(settings)
     ]
 
 sp.simulate(SIMUATION_PIPELINE, settings, device)

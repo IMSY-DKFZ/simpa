@@ -32,7 +32,7 @@ settings.set_reconstruction_settings({
 # TODO use the correct device definition here
 device = sp.MSOTAcuityEcho()
 
-sp.ImageReconstructionModuleDelayAndSumAdapter(settings).run(device)
+sp.DelayAndSumAdapter(settings).run(device)
 
 reconstructed_image = sp.load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)

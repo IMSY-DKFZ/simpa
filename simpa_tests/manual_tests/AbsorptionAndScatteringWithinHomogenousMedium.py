@@ -25,7 +25,7 @@ Be aware that by running multiple tests at once, the previous tests are overwrit
 
 from simpa.utils import Tags, Settings, PathManager, TISSUE_LIBRARY
 from simpa.io_handling import load_data_field
-from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter
+from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter
 from simpa.core.simulation import simulate
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 import matplotlib.pyplot as plt
@@ -221,8 +221,8 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
         self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value_1
 
         pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
-            OpticalForwardModelMcxAdapter(self.settings)
+            ModelBasedVolumeCreationAdapter(self.settings),
+            MCXAdapter(self.settings)
         ]
 
         simulate(pipeline, self.settings, self.device)
@@ -245,8 +245,8 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
             self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = 0.9
 
         pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
-            OpticalForwardModelMcxAdapter(self.settings)
+            ModelBasedVolumeCreationAdapter(self.settings),
+            MCXAdapter(self.settings)
         ]
 
         simulate(pipeline, self.settings, self.device)

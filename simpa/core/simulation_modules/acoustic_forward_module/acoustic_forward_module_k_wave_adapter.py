@@ -21,7 +21,7 @@ from simpa.core.simulation_modules.acoustic_forward_module import AcousticForwar
 import gc
 
 
-class AcousticForwardModelKWaveAdapter(AcousticForwardModelBaseAdapter):
+class KWaveAdapter(AcousticForwardModelBaseAdapter):
     """
     The KwaveAcousticForwardModel adapter enables acoustic simulations to be run with the
     k-wave MATLAB toolbox. k-Wave is a free toolbox (http://www.k-wave.org/) developed by Bradley Treeby
@@ -340,7 +340,7 @@ def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array,
     settings.set_acoustic_settings(acoustic_settings)
 
     # initialize adapter and run forward model
-    kWave = AcousticForwardModelKWaveAdapter(settings)
+    kWave = KWaveAdapter(settings)
     time_series_data, updated_global_settings = kWave.k_wave_acoustic_forward_model(
         detection_geometry, speed_of_sound, density, alpha_coeff, initial_pressure)
     return time_series_data

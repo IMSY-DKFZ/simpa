@@ -10,7 +10,7 @@ from simpa.utils.settings import Settings
 from simpa.core.simulation import simulate
 import os
 from simpa_tests.test_utils import create_test_structure_parameters
-from simpa import VolumeCreationModelModelBasedAdapter
+from simpa import ModelBasedVolumeCreationAdapter
 from simpa.core.device_digital_twins import RSOMExplorerP50
 
 
@@ -34,7 +34,7 @@ class TestCreateVolume(unittest.TestCase):
         settings.set_volume_creation_settings({Tags.STRUCTURES: create_test_structure_parameters()})
 
         simulation_pipeline = [
-            VolumeCreationModelModelBasedAdapter(settings)
+            ModelBasedVolumeCreationAdapter(settings)
         ]
 
         simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
