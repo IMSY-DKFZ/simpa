@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 from .log import Logger
 from .utils import *
 
-
 from .core.simulation_modules.volume_creation_module.volume_creation_module_model_based_adapter import \
     ModelBasedVolumeCreationAdapter
 from .core.simulation_modules.volume_creation_module.volume_creation_module_segmentation_based_adapter import \

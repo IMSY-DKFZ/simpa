@@ -16,8 +16,7 @@ from .constants import SegmentationClasses
 # initialization order
 from .libraries.spectra_library import AbsorptionSpectrumLibrary
 from .libraries.spectra_library import Spectrum
-from .libraries.spectra_library import SPECTRAL_LIBRARY
-from .libraries.spectra_library import view_absorption_spectra
+from .libraries.spectra_library import view_saved_spectra
 from .libraries.spectra_library import AnisotropySpectrumLibrary
 from .libraries.spectra_library import ScatteringSpectrumLibrary
 
@@ -59,4 +58,4 @@ from .libraries.structure_library.SphericalStructure import SphericalStructure, 
 from .libraries.structure_library.VesselStructure import VesselStructure, define_vessel_structure_settings
 
 if __name__ == "__main__":
-    view_absorption_spectra()
+    view_saved_spectra()

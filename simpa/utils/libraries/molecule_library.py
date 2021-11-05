@@ -6,13 +6,14 @@ SPDX-License-Identifier: MIT
 
 import numpy as np
 from simpa.utils import Tags
+
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils import Spectrum
-from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
 from simpa.utils.serializer import SerializableSIMPAClass
+from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary
 
 
 class MolecularComposition(SerializableSIMPAClass, list):
@@ -113,7 +114,7 @@ class Molecule(SerializableSIMPAClass, object):
         self.name = name
 
         if absorption_spectrum is None:
-            absorption_spectrum = SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO
+            absorption_spectrum = AbsorptionSpectrumLibrary.CONSTANT_ABSORBER_ZERO
         if isinstance(absorption_spectrum, dict):
             absorption_spectrum = absorption_spectrum[list(absorption_spectrum.keys())[0]]
         if not isinstance(absorption_spectrum, Spectrum):
@@ -207,7 +208,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def water(volume_fraction: float = 1.0):
         return Molecule(name="water",
-                        absorption_spectrum=SPECTRAL_LIBRARY.WATER,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Water"),
                         volume_fraction=volume_fraction,
                         scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(
                             StandardProperties.WATER_MUS),
@@ -221,9 +222,9 @@ class MoleculeLibrary(object):
     @staticmethod
     def oxyhemoglobin(volume_fraction: float = 1.0):
         return Molecule(name="oxyhemoglobin",
-                        absorption_spectrum=SPECTRAL_LIBRARY.OXYHEMOGLOBIN,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Oxyhemoglobin"),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=ScatteringSpectrumLibrary.BLOOD,
+                        scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("blood_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.BLOOD_ANISOTROPY),
                         density=StandardProperties.DENSITY_BLOOD,
@@ -234,9 +235,9 @@ class MoleculeLibrary(object):
     @staticmethod
     def deoxyhemoglobin(volume_fraction: float = 1.0):
         return Molecule(name="deoxyhemoglobin",
-                        absorption_spectrum=SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Deoxyhemoglobin"),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=ScatteringSpectrumLibrary.BLOOD,
+                        scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("blood_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.BLOOD_ANISOTROPY),
                         density=StandardProperties.DENSITY_BLOOD,
@@ -247,10 +248,12 @@ class MoleculeLibrary(object):
     @staticmethod
     def melanin(volume_fraction: float = 1.0):
         return Molecule(name="melanin",
-                        absorption_spectrum=SPECTRAL_LIBRARY.MELANIN,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Melanin"),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=ScatteringSpectrumLibrary.EPIDERMIS,
-                        anisotropy_spectrum=AnisotropySpectrumLibrary.EPIDERMIS,
+                        scattering_spectrum=ScatteringSpectrumLibrary.scattering_from_rayleigh_and_mie_theory(
+                            "epidermis", OpticalTissueProperties.MUS500_EPIDERMIS, OpticalTissueProperties.FRAY_EPIDERMIS,
+                            OpticalTissueProperties.BMIE_EPIDERMIS),
+                        anisotropy_spectrum=AnisotropySpectrumLibrary().get_spectrum_by_name("Epidermis_Anisotropy"),
                         density=StandardProperties.DENSITY_SKIN,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN
@@ -259,9 +262,9 @@ class MoleculeLibrary(object):
     @staticmethod
     def fat(volume_fraction: float = 1.0):
         return Molecule(name="fat",
-                        absorption_spectrum=SPECTRAL_LIBRARY.FAT,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Fat"),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=ScatteringSpectrumLibrary.SUBCUTANEOUS_FAT,
+                        scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("fat_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
                         density=StandardProperties.DENSITY_FAT,
@@ -274,7 +277,7 @@ class MoleculeLibrary(object):
     def constant_scatterer(scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
                            volume_fraction: float = 1.0):
         return Molecule(name="constant_scatterer",
-                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Constant_Absorber_0"),
                         volume_fraction=volume_fraction,
                         scattering_spectrum=
                         ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(scattering_coefficient),
@@ -287,9 +290,9 @@ class MoleculeLibrary(object):
     @staticmethod
     def soft_tissue_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="soft_tissue_scatterer",
-                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Constant_Absorber_0"),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=ScatteringSpectrumLibrary.BACKGROUND,
+                        scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("background_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
                         density=StandardProperties.DENSITY_GENERIC,
@@ -300,9 +303,9 @@ class MoleculeLibrary(object):
     @staticmethod
     def muscle_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="muscle_scatterer",
-                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Constant_Absorber_0"),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=ScatteringSpectrumLibrary.MUSCLE,
+                        scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("muscle_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
                         density=StandardProperties.DENSITY_GENERIC,
@@ -313,10 +316,12 @@ class MoleculeLibrary(object):
     @staticmethod
     def epidermal_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="epidermal_scatterer",
-                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ZERO,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Constant_Absorber_0"),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=ScatteringSpectrumLibrary.EPIDERMIS,
-                        anisotropy_spectrum=AnisotropySpectrumLibrary.EPIDERMIS,
+                        scattering_spectrum=ScatteringSpectrumLibrary.scattering_from_rayleigh_and_mie_theory(
+                            "epidermis", OpticalTissueProperties.MUS500_EPIDERMIS, OpticalTissueProperties.FRAY_EPIDERMIS,
+                            OpticalTissueProperties.BMIE_EPIDERMIS),
+                        anisotropy_spectrum=AnisotropySpectrumLibrary().get_spectrum_by_name("Epidermis_Anisotropy"),
                         density=StandardProperties.DENSITY_SKIN,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN
@@ -325,9 +330,11 @@ class MoleculeLibrary(object):
     @staticmethod
     def dermal_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="dermal_scatterer",
-                        absorption_spectrum=SPECTRAL_LIBRARY.SKIN_BASELINE,
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Skin_Baseline"),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=ScatteringSpectrumLibrary.DERMIS,
+                        scattering_spectrum=ScatteringSpectrumLibrary.scattering_from_rayleigh_and_mie_theory(
+                            "dermis", OpticalTissueProperties.MUS500_DERMIS, OpticalTissueProperties.FRAY_DERMIS,
+                            OpticalTissueProperties.BMIE_DERMIS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.DERMIS_ANISOTROPY),
                         density=StandardProperties.DENSITY_SKIN,
@@ -338,10 +345,10 @@ class MoleculeLibrary(object):
     @staticmethod
     def bone(volume_fraction: float = 1.0):
         return Molecule(name="bone",
-                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(
+                        absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(
                             OpticalTissueProperties.BONE_ABSORPTION),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=ScatteringSpectrumLibrary.BONE,
+                        scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("bone_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
                         density=StandardProperties.DENSITY_BONE,
@@ -352,7 +359,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def mediprene(volume_fraction: float = 1.0):
         return Molecule(name="mediprene",
-                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),  # FIXME
+                        absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),  # FIXME
                         volume_fraction=volume_fraction,
                         scattering_spectrum=
                         ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY((-np.log(0.85)) -
@@ -366,7 +373,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def heavy_water(volume_fraction: float = 1.0):
         return Molecule(name="heavy_water",
-                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(
+                        absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(
                             StandardProperties.HEAVY_WATER_MUA),
                         volume_fraction=volume_fraction,
                         scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(
@@ -380,7 +387,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def air(volume_fraction: float = 1.0):
         return Molecule(name="air",
-                        absorption_spectrum=SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(
+                        absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(
                             StandardProperties.AIR_MUA),
                         volume_fraction=volume_fraction,
                         scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(

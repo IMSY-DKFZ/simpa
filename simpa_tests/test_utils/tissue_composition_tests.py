@@ -8,7 +8,6 @@ from simpa.utils import Tags, SegmentationClasses, calculate_gruneisen_parameter
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-from simpa.utils.libraries.literature_values import StandardProperties
 import numpy as np
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
