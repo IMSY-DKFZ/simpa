@@ -26,7 +26,7 @@ class TestSpectraCanBeFound(unittest.TestCase):
         AbsorptionSpectrumLibrary().get_spectrum_by_name("This does not exist")
 
     def test_scattering_spectra_valid(self):
-        names = ["background_scattering", "blood_scattering", "bone_scattering", "epidermis_scattering",
+        names = ["background_scattering", "blood_scattering", "bone_scattering",
                  "fat_scattering", "muscle_scattering"]
         lib = ScatteringSpectrumLibrary()
         for name in names:
