@@ -35,12 +35,12 @@ def create_example_tissue():
     tissue_dict = sp.Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
 
-    # tissue_dict["epidermis"] = sp.define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
-    #                                                                          molecular_composition=
-    #                                                                          sp.TISSUE_LIBRARY.epidermis(),
-    #                                                                          priority=8,
-    #                                                                          consider_partial_volume=True,
-    #                                                                          adhere_to_deformation=False)
+    tissue_dict["epidermis"] = sp.define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
+                                                                             molecular_composition=
+                                                                             sp.TISSUE_LIBRARY.epidermis(),
+                                                                             priority=8,
+                                                                             consider_partial_volume=True,
+                                                                             adhere_to_deformation=False)
     tissue_dict["vessel_1"] = sp.define_circular_tubular_structure_settings(
         tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, 0, 9],
         tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, VOLUME_PLANAR_DIM_IN_MM, 9],
@@ -49,8 +49,8 @@ def create_example_tissue():
         adhere_to_deformation=False
     )
     tissue_dict["vessel_2"] = sp.define_circular_tubular_structure_settings(
-        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, 0, 6],
-        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 6],
+        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/3, 0, 6],
+        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/3, VOLUME_PLANAR_DIM_IN_MM, 6],
         molecular_composition=sp.TISSUE_LIBRARY.blood(oxygenation=0.6),
         radius_mm=3, priority=3, consider_partial_volume=True,
         adhere_to_deformation=False
@@ -83,7 +83,7 @@ VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 general_settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: RANDOM_SEED,
-            Tags.VOLUME_NAME: "CompletePipelineTestMSOT2_" + str(RANDOM_SEED),
+            Tags.VOLUME_NAME: "CompletePipelineTestMSOTtest_" + str(RANDOM_SEED),
             Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
             Tags.SPACING_MM: SPACING,
             Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
@@ -127,7 +127,7 @@ settings.set_acoustic_settings({
 })
 
 settings.set_reconstruction_settings({
-    Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
+    Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: True,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
     Tags.SPACING_MM: settings[Tags.SPACING_MM]
