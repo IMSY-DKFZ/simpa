@@ -8,19 +8,19 @@ import unittest
 import os
 import numpy as np
 
-from simpa.core.processing_components.noise import *
+from simpa.core.processing_components.monospectral.noise import *
 from simpa.utils import Tags, Settings
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.core.simulation import simulate
 from simpa.utils import TISSUE_LIBRARY
-from simpa.utils.libraries.structure_library import Background
 from simpa.io_handling import load_data_field
-from simpa.core import VolumeCreationModelModelBasedAdapter
+from simpa import ModelBasedVolumeCreationAdapter
 
 
 class TestNoiseModels(unittest.TestCase):
 
-    def create_background_parameters(self, background_value):
+    @staticmethod
+    def create_background_parameters(background_value):
         background_structure_dictionary = dict()
         background_structure_dictionary[Tags.PRIORITY] = 0
         background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(
@@ -63,7 +63,7 @@ class TestNoiseModels(unittest.TestCase):
         settings["noise_model_settings"] = noise_model_settings
 
         simulation_pipeline = [
-            VolumeCreationModelModelBasedAdapter(settings),
+            ModelBasedVolumeCreationAdapter(settings),
             noise_model(settings, "noise_model_settings")
         ]
 
@@ -96,7 +96,7 @@ class TestNoiseModels(unittest.TestCase):
 
     @unittest.expectedFailure
     def test_gaussian_noise_no_data_field(self):
-        noise_model = GaussianNoiseProcessingComponent
+        noise_model = GaussianNoise
 
         # Test fails without set data field
         settings = {}
@@ -107,7 +107,7 @@ class TestNoiseModels(unittest.TestCase):
                                           expected_std=1)
 
     def test_gaussian_noise_correct_mean_and_standard_deviations(self):
-        noise_model = GaussianNoiseProcessingComponent
+        noise_model = GaussianNoise
 
         # Test additive version
         settings = {
@@ -169,7 +169,7 @@ class TestNoiseModels(unittest.TestCase):
 
     @unittest.expectedFailure
     def test_gamma_noise_no_data_field(self):
-        noise_model = GammaNoiseProcessingComponent
+        noise_model = GammaNoise
 
         # Test fails without set data field
         settings = {}
@@ -180,7 +180,7 @@ class TestNoiseModels(unittest.TestCase):
                                           expected_std=1)
 
     def test_gamma_noise_correct_mean_and_standard_deviations(self):
-        noise_model = GammaNoiseProcessingComponent
+        noise_model = GammaNoise
 
         # Test additive version
         settings = {
@@ -241,7 +241,7 @@ class TestNoiseModels(unittest.TestCase):
 
     @unittest.expectedFailure
     def test_poisson_noise_no_data_field(self):
-        noise_model = PoissonNoiseProcessingComponent
+        noise_model = PoissonNoise
 
         # Test fails without set data field
         settings = {}
@@ -252,7 +252,7 @@ class TestNoiseModels(unittest.TestCase):
                                           expected_std=1)
 
     def test_poisson_noise_correct_mean_and_standard_deviations(self):
-        noise_model = PoissonNoiseProcessingComponent
+        noise_model = PoissonNoise
 
         # Test additive version
         settings = {
@@ -310,7 +310,7 @@ class TestNoiseModels(unittest.TestCase):
 
     @unittest.expectedFailure
     def test_saltandpepper_noise_no_data_field(self):
-        noise_model = SaltAndPepperNoiseProcessingComponent
+        noise_model = SaltAndPepperNoise
 
         # Test fails without set data field
         settings = {}
@@ -321,7 +321,7 @@ class TestNoiseModels(unittest.TestCase):
                                           expected_std=1)
 
     def test_saltandpepper_noise_correct_mean_and_standard_deviations(self):
-        noise_model = SaltAndPepperNoiseProcessingComponent
+        noise_model = SaltAndPepperNoise
 
         # Test additive version
         settings = {
@@ -345,7 +345,7 @@ class TestNoiseModels(unittest.TestCase):
 
     @unittest.expectedFailure
     def test_uniform_noise_no_data_field(self):
-        noise_model = UniformNoiseProcessingComponent
+        noise_model = UniformNoise
 
         # Test fails without set data field
         settings = {}
@@ -356,7 +356,7 @@ class TestNoiseModels(unittest.TestCase):
                                           expected_std=1)
 
     def test_uniform_noise_correct_mean_and_standard_deviations(self):
-        noise_model = UniformNoiseProcessingComponent
+        noise_model = UniformNoise
 
         # Test additive version
         settings = {

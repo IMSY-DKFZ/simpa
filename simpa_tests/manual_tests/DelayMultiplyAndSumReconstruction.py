@@ -5,16 +5,10 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.utils import Tags
-from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.io_handling import load_data_field, load_hdf5
+from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
-from simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import AcousticForwardModelKWaveAdapter
-from simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter import OpticalForwardModelMcxAdapter
-from simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter import \
-    ImageReconstructionModuleDelayMultiplyAndSumAdapter
-from simpa.core.volume_creation_module.volume_creation_module_model_based_adapter import \
-    VolumeCreationModelModelBasedAdapter
-from simpa.core.processing_components.noise import GaussianNoiseProcessingComponent
+from simpa import KWaveAdapter, MCXAdapter, \
+    DelayAndSumAdapter, ModelBasedVolumeCreationAdapter, GaussianNoise
 from simpa import reconstruct_delay_multiply_and_sum_pytorch
 from simpa_tests.manual_tests import ReconstructionAlgorithmTestBaseClass
 
@@ -34,11 +28,11 @@ class DelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseClass):
         self.device.update_settings_for_use_of_model_based_volume_creator(self.settings)
 
         SIMUATION_PIPELINE = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
-            OpticalForwardModelMcxAdapter(self.settings),
-            GaussianNoiseProcessingComponent(self.settings, "noise_initial_pressure"),
-            AcousticForwardModelKWaveAdapter(self.settings),
-            ImageReconstructionModuleDelayMultiplyAndSumAdapter(self.settings)
+            ModelBasedVolumeCreationAdapter(self.settings),
+            MCXAdapter(self.settings),
+            GaussianNoise(self.settings, "noise_initial_pressure"),
+            KWaveAdapter(self.settings),
+            DelayAndSumAdapter(self.settings)
         ]
 
         simulate(SIMUATION_PIPELINE, self.settings, self.device)

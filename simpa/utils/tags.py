@@ -768,13 +768,13 @@ class Tags:
 
     BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float, np.float))
     """
-    Sets the cutoff threshold in MHz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
+    Sets the cutoff threshold in Hz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
     BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", (int, np.integer, float, np.float))
     """
-    Sets the cutoff threshold in MHz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
+    Sets the cutoff threshold in Hz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
@@ -1037,13 +1037,13 @@ class Tags:
     SENSOR_RADIUS_MM = "sensor_radius_mm"
     """
     Radius of a concave geometry of the used PA device.\n
-    Usage: adapter AcousticForwardModelKWaveAdapter, naming convention
+    Usage: adapter KWaveAdapter, naming convention
     """
 
     SENSOR_PITCH_MM = "sensor_pitch_mm"
     """
     Pitch of detector elements of the used PA device.\n
-    Usage: adapter AcousticForwardModelKWaveAdapter, naming convention
+    Usage: adapter KWaveAdapter, naming convention
     """
 
     # Pipelining parameters
@@ -1303,6 +1303,12 @@ class Tags:
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
+    ITERATIVE_RECONSTRUCTION_SAVE_LAST_FLUENCE = ("save_last_fluence", (bool, np.bool, np.bool_))
+    """
+    If True, the last simulated fluence before the stopping criterion will be saved in a numpy file.\n
+    Usage: module algorithms (iterative_qPAI_algorithm.py)
+    """
+
     ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
     """
     Ratio of improvement and preceding error at which iteration method stops. 
@@ -1387,4 +1393,11 @@ class Tags:
     """
     Number that specifies which fraction of the signal intensity is used for the specified processing algorithm.\n
     Usage: module algorithms (linear_unmixing)
+    """
+
+    DO_IPASC_EXPORT = ("do_ipasc_export", (bool, np.bool, np.bool_))
+    """
+    Flag which determines whether the simulated time series data (if available) will be
+    exported into the IPASC data format.
+    Usage: module io_handling, core
     """

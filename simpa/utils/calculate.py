@@ -209,3 +209,17 @@ def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
     output = (data - _min) / (_max - _min)
 
     return output
+
+def positive_Gauss(mean, std)-> np.float:
+    """
+    Generates a non-negative random sample (scalar) from a normal (Gaussian) distribution.
+
+    :param mean : float defining the mean ("centre") of the distribution. 
+    :param std: float defining the standard deviation (spread or "width") of the distribution. Must be non-negative.
+    :return: non-negative random sample from a normal (Gaussian) distribution.
+    """
+    random_value = np.random.normal(mean, std)
+    if random_value <=0:
+        return positive_Gauss(mean, std)
+    else: 
+        return random_value

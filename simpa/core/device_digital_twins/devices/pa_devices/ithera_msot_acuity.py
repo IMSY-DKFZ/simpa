@@ -45,17 +45,20 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         self.mediprene_membrane_height_mm = 1
         self.probe_height_mm = 43.2
         self.focus_in_field_of_view_mm = 8
-        detection_geometry_position_vector = np.add(self.device_position_mm,
-                                                    np.array([0, 0,
-                                                              self.probe_height_mm + self.focus_in_field_of_view_mm]))
+        self.detection_geometry_position_vector = np.add(self.device_position_mm,
+                                                         np.array([0, 0,
+                                                                   self.probe_height_mm +
+                                                                   self.focus_in_field_of_view_mm]))
 
         if field_of_view_extent_mm is None:
-            field_of_view_extent_mm = np.asarray([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
-                                                  (2 * np.sin(0.34 / 40 * 128) * 40) / 2,
-                                                  0, 0, 0, 50])
+            self.field_of_view_extent_mm = np.asarray([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
+                                                       (2 * np.sin(0.34 / 40 * 128) * 40) / 2,
+                                                       0, 0, 0, 50])
+        else:
+            self.field_of_view_extent_mm = field_of_view_extent_mm
 
-        field_of_view_extent_mm[4] -= self.focus_in_field_of_view_mm
-        field_of_view_extent_mm[5] -= self.focus_in_field_of_view_mm
+        self.field_of_view_extent_mm[4] -= self.focus_in_field_of_view_mm
+        self.field_of_view_extent_mm[5] -= self.focus_in_field_of_view_mm
 
         detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.34,
                                                           radius_mm=40,
@@ -66,8 +69,8 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           bandwidth_percent=55,
                                                           sampling_frequency_mhz=40,
                                                           angular_origin_offset=np.pi,
-                                                          device_position_mm=detection_geometry_position_vector,
-                                                          field_of_view_extent_mm=field_of_view_extent_mm)
+                                                          device_position_mm=self.detection_geometry_position_vector,
+                                                          field_of_view_extent_mm=self.field_of_view_extent_mm)
 
         self.set_detection_geometry(detection_geometry)
         illumination_geometry = MSOTAcuityIlluminationGeometry()
@@ -85,9 +88,9 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         probe_size_mm = self.probe_height_mm
         mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+        z_dim_position_shift_mm = mediprene_layer_height_mm + heavy_water_layer_height_mm
 
-        new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + mediprene_layer_height_mm + \
-                               heavy_water_layer_height_mm
+        new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + z_dim_position_shift_mm
 
         # adjust the z-dim to msot probe height
         global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
@@ -97,8 +100,27 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         # of the simulated volume.
 
         if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + 1:
-            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) + 1 - global_settings[Tags.DIM_VOLUME_X_MM]) / 2
+            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) + 1 -
+                                             global_settings[Tags.DIM_VOLUME_X_MM]) / 2
             global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + 1
+            self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0, 0]))
+            self.detection_geometry_position_vector = np.add(self.device_position_mm,
+                                                             np.array([0, 0,
+                                                                       self.probe_height_mm +
+                                                                       self.focus_in_field_of_view_mm]))
+            detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.34,
+                                                              radius_mm=40,
+                                                              number_detector_elements=256,
+                                                              detector_element_width_mm=0.24,
+                                                              detector_element_length_mm=13,
+                                                              center_frequency_hz=3.96e6,
+                                                              bandwidth_percent=55,
+                                                              sampling_frequency_mhz=40,
+                                                              angular_origin_offset=np.pi,
+                                                              device_position_mm=self.detection_geometry_position_vector,
+                                                              field_of_view_extent_mm=self.field_of_view_extent_mm)
+
+            self.set_detection_geometry(detection_geometry)
             self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
         else:
             width_shift_for_structures_mm = 0
@@ -170,7 +192,7 @@ if __name__ == "__main__":
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
 
     positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
-    orientations = device.detection_geometry.get_detector_element_orientations(settings)
+    orientations = device.detection_geometry.get_detector_element_orientations()
     # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
     # detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
     # position_map = np.zeros((x_dim, z_dim))

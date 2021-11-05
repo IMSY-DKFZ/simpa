@@ -8,8 +8,9 @@ import unittest
 from unittest.case import expectedFailure
 from simpa.utils import Tags
 from simpa.core.simulation import simulate
-from simpa.algorithms.multispectral import linear_unmixing as lu
+from simpa import LinearUnmixing
 import numpy as np
+from simpa.core import *
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field, load_hdf5, save_hdf5
 from simpa.log import Logger
@@ -97,7 +98,8 @@ class TestLinearUnmixing(unittest.TestCase):
         }
 
         # Run linear unmixing component
-        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+        lu = LinearUnmixing(self.settings, "linear_unmixing")
+        lu.run()
 
         # Load blood oxygen saturation
         lu_results = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
@@ -138,7 +140,7 @@ class TestLinearUnmixing(unittest.TestCase):
         # The result can differ slightly, but the difference should be smaller than 1e-8
         self.assertTrue(np.allclose(sO2, np.array([[[0, 0.5, 1, 0, 0.7]]]), atol=1e-8), "Linear unmixing with "
                                                                                         "non-negative constraint test failed")
-        
+
     @expectedFailure
     def test_invalid_wavelengths(self):
         """
@@ -160,8 +162,8 @@ class TestLinearUnmixing(unittest.TestCase):
 
         # Run linear unmixing component
         lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
-        
-    @expectedFailure    
+
+    @expectedFailure
     def test_oxygen_saturation_without_hemoglobin(self):
         """
         This function tests what happens, if the oxygen saturation shall be computed but

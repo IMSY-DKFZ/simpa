@@ -67,7 +67,7 @@ if __name__ == "__main__":
     x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
     z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
     positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
-    detector_elements = device.detection_geometry.get_detector_element_orientations(global_settings=settings)
+    detector_elements = device.detection_geometry.get_detector_element_orientations()
     import matplotlib.pyplot as plt
     plt.figure()
     plt.subplot(1, 2, 1)

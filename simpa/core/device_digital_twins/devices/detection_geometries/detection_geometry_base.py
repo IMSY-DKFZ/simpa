@@ -16,7 +16,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
     """
     def __init__(self, number_detector_elements, detector_element_width_mm,
                  detector_element_length_mm, center_frequency_hz, bandwidth_percent,
-                 sampling_frequency_mhz, probe_width_mm, device_position_mm: np.ndarray = None,
+                 sampling_frequency_mhz, device_position_mm: np.ndarray = None,
                  field_of_view_extent_mm: np.ndarray = None):
         """
 
@@ -26,7 +26,6 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         :param center_frequency_hz:
         :param bandwidth_percent:
         :param sampling_frequency_mhz:
-        :param probe_width_mm: Total in-plane extent of the detector geometry.
         :param device_position_mm: Origin of the internal representation of the device.
         """
         super(DetectionGeometryBase, self).__init__(device_position_mm=device_position_mm,
@@ -37,7 +36,6 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         self.center_frequency_Hz = center_frequency_hz
         self.bandwidth_percent = bandwidth_percent
         self.sampling_frequency_MHz = sampling_frequency_mhz
-        self.probe_width_mm = probe_width_mm
 
     @abstractmethod
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
@@ -101,7 +99,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         return abstract_element_positions
 
     @abstractmethod
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
+    def get_detector_element_orientations(self) -> np.ndarray:
         """
         This method yields a normalised orientation vector for each detection element. The length of
         this vector is the same as the one obtained via the position methods::

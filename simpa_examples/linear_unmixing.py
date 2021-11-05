@@ -4,11 +4,12 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Tags, TISSUE_LIBRARY
+from simpa.utils import Tags, TISSUE_LIBRARY, Settings
 from simpa.core.simulation import simulate
-from simpa.algorithms.multispectral.linear_unmixing import LinearUnmixingProcessingComponent
+from simpa.core.processing_components.multispectral.linear_unmixing import LinearUnmixing
 import numpy as np
-from simpa.core import *
+from simpa import ModelBasedVolumeCreationAdapter, MCXAdapter, \
+    FieldOfViewCropping
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import MSOTAcuityEcho
@@ -150,14 +151,23 @@ device.update_settings_for_use_of_model_based_volume_creator(settings)
 
 # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
 pipeline = [
-    VolumeCreationModelModelBasedAdapter(settings),
-    OpticalForwardModelMcxAdapter(settings),
-    # FieldOfViewCroppingProcessingComponent(settings)
+    ModelBasedVolumeCreationAdapter(settings),
+    MCXAdapter(settings),
+    FieldOfViewCropping(settings),
 ]
 simulate(pipeline, settings, device)
 
 # Run linear unmixing component with above specified settings.
-LinearUnmixingProcessingComponent(settings, "linear_unmixing").run()
+LinearUnmixing(settings, "linear_unmixing").run()
+
+# Load linear unmixing result (blood oxygen saturation) and reference absorption for first wavelength.
+file_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
+lu_results = load_data_field(file_path, Tags.LINEAR_UNMIXING_RESULT)
+sO2 = lu_results["sO2"]
+
+mua = load_data_field(file_path, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength=WAVELENGTHS[0])
+p0 = load_data_field(file_path, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=WAVELENGTHS[0])
+gt_oxy = load_data_field(file_path, Tags.PROPERTY_OXYGENATION, wavelength=WAVELENGTHS[0])
 
 # Visualize linear unmixing result
 visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",

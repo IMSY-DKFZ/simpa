@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags, PathManager, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
-from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter
+from simpa import ModelBasedVolumeCreationAdapter, MCXAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 from simpa.io_handling import load_data_field
 import numpy as np
@@ -71,8 +71,8 @@ class TestCompareMCXResultsWithDiffusionTheory():
             Tags.MCX_ASSUMED_ANISOTROPY: 0.9
         })
 
-        self.device = PhotoacousticDevice(device_position_mm=np.asarray([self.settings[Tags.DIM_VOLUME_X_MM] / 2,
-                                                                         self.settings[Tags.DIM_VOLUME_Y_MM] / 2,
+        self.device = PhotoacousticDevice(device_position_mm=np.asarray([self.settings[Tags.DIM_VOLUME_X_MM] / 2 - 0.5,
+                                                                         self.settings[Tags.DIM_VOLUME_Y_MM] / 2 - 0.5,
                                                                          0]))
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
@@ -128,8 +128,8 @@ class TestCompareMCXResultsWithDiffusionTheory():
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings),
-            OpticalForwardModelMcxAdapter(self.settings),
+            ModelBasedVolumeCreationAdapter(self.settings),
+            MCXAdapter(self.settings),
         ]
         simulate(pipeline, self.settings, self.device)
 

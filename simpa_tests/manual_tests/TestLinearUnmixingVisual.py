@@ -4,11 +4,11 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Tags, TISSUE_LIBRARY
+from simpa.utils import Tags, TISSUE_LIBRARY, Settings
 from simpa.core.simulation import simulate
-from simpa.algorithms.multispectral import linear_unmixing as lu
+from simpa.core.processing_components.multispectral import linear_unmixing as lu
 import numpy as np
-from simpa.core import *
+from simpa import ModelBasedVolumeCreationAdapter
 from simpa.utils.path_manager import PathManager
 from simpa.io_handling import load_data_field
 import matplotlib.pyplot as plt
@@ -70,12 +70,12 @@ class TestLinearUnmixingVisual:
 
         # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
         pipeline = [
-            VolumeCreationModelModelBasedAdapter(self.settings)
+            ModelBasedVolumeCreationAdapter(self.settings)
         ]
         simulate(pipeline, self.settings, self.device)
 
         # Run linear unmixing component with above specified settings
-        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+        lu.LinearUnmixing(self.settings, "linear_unmixing").run()
 
     def perform_test(self):
         """

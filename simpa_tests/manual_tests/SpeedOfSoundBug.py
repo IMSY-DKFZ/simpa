@@ -14,11 +14,8 @@ from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary, Ani
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.utils.path_manager import PathManager
-from simpa.core import ImageReconstructionModuleDelayAndSumAdapter, \
-    OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
-    FieldOfViewCroppingProcessingComponent, ReconstructionModuleTimeReversalAdapter
+from simpa import DelayAndSumAdapter, MCXAdapter, KWaveAdapter, ModelBasedVolumeCreationAdapter, FieldOfViewCropping
 from simpa.core.device_digital_twins import *
-from simpa.io_handling import load_data_field
 
 path_manager = PathManager()
 
@@ -26,11 +23,11 @@ SPEED_OF_SOUND = 1500
 
 def create_pipeline(_settings: Settings):
     return [
-        VolumeCreationModelModelBasedAdapter(settings),
-        OpticalForwardModelMcxAdapter(settings),
-        AcousticForwardModelKWaveAdapter(settings),
-        FieldOfViewCroppingProcessingComponent(settings),
-        ImageReconstructionModuleDelayAndSumAdapter(settings)
+        ModelBasedVolumeCreationAdapter(settings),
+        MCXAdapter(settings),
+        KWaveAdapter(settings),
+        FieldOfViewCropping(settings),
+        DelayAndSumAdapter(settings)
     ]
 
 

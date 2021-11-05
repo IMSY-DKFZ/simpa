@@ -27,7 +27,6 @@ class SingleDetectionElement(DetectionGeometryBase):
                          center_frequency_hz=1,
                          bandwidth_percent=500,
                          sampling_frequency_mhz=10,
-                         probe_width_mm=1,
                          device_position_mm=device_position_mm,
                          field_of_view_extent_mm=np.asarray([-10, 10, 0, 0, -10, 10]))
 
@@ -37,7 +36,7 @@ class SingleDetectionElement(DetectionGeometryBase):
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
         return np.copy(np.zeros((1, 3)))
 
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
+    def get_detector_element_orientations(self) -> np.ndarray:
         detector_orientations = np.zeros((self.number_detector_elements, 3))
         detector_orientations[:, 2] = 1
         return detector_orientations

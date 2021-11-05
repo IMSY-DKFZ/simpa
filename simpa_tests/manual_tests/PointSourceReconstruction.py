@@ -14,9 +14,7 @@ from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary, Ani
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.utils.path_manager import PathManager
-from simpa.core import ImageReconstructionModuleDelayAndSumAdapter, \
-    OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
-    FieldOfViewCroppingProcessingComponent
+from simpa import DelayAndSumAdapter, MCXAdapter, KWaveAdapter, ModelBasedVolumeCreationAdapter, FieldOfViewCropping
 from simpa.core.device_digital_twins import *
 from simpa.io_handling import load_data_field
 
@@ -142,7 +140,7 @@ settings.set_reconstruction_settings({
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
-    Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
+    Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: False,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
@@ -159,11 +157,11 @@ settings.set_reconstruction_settings({
 })
 
 SIMUATION_PIPELINE = [
-    VolumeCreationModelModelBasedAdapter(settings),
-    OpticalForwardModelMcxAdapter(settings),
-    AcousticForwardModelKWaveAdapter(settings),
-    FieldOfViewCroppingProcessingComponent(settings),
-    ImageReconstructionModuleDelayAndSumAdapter(settings)
+    ModelBasedVolumeCreationAdapter(settings),
+    MCXAdapter(settings),
+    KWaveAdapter(settings),
+    FieldOfViewCropping(settings),
+    DelayAndSumAdapter(settings)
 ]
 
 
@@ -228,7 +226,11 @@ dist = list()
 
 dist.append(simulate_and_evaluate_with_device(MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-                                                                                          20]))))
+                                                                                          0]),
+                                                             field_of_view_extent_mm=np.array([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
+                                                                                               (2 * np.sin(0.34 / 40 * 128) * 40) / 2,
+                                                                                               0, 0, -25, 25]))))
+
 dist.append(simulate_and_evaluate_with_device(InVision256TF(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                                          VOLUME_PLANAR_DIM_IN_MM/2,
                                                                                          VOLUME_HEIGHT_IN_MM/2]))))

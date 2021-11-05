@@ -4,18 +4,11 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.core.simulation import simulate
-from simpa.utils.settings import Settings
-from simpa.utils import Tags, SegmentationClasses, MolecularCompositionGenerator
+from simpa import Tags
+import simpa as sp
 import numpy as np
 from skimage.data import shepp_logan_phantom
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
-from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from scipy.ndimage import zoom
-from simpa.utils.path_manager import PathManager
-from simpa.core.device_digital_twins import RSOMExplorerP50
-from simpa.core import VolumeCreationModuleSegmentationBasedAdapter, OpticalForwardModelMcxAdapter
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -26,7 +19,7 @@ VISUALIZE = True
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
-path_manager = PathManager()
+path_manager = sp.PathManager()
 
 target_spacing = 1.0
 
@@ -41,27 +34,28 @@ segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
 segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
                                          order=0)).astype(int)
 
-def segmention_class_mapping():
+
+def segmentation_class_mapping():
     ret_dict = dict()
-    ret_dict[0] = TISSUE_LIBRARY.heavy_water()
-    ret_dict[1] = TISSUE_LIBRARY.blood()
-    ret_dict[2] = TISSUE_LIBRARY.epidermis()
-    ret_dict[3] = TISSUE_LIBRARY.muscle()
-    ret_dict[4] = TISSUE_LIBRARY.mediprene()
-    ret_dict[5] = TISSUE_LIBRARY.ultrasound_gel()
-    ret_dict[6] = TISSUE_LIBRARY.heavy_water()
-    ret_dict[7] = (MolecularCompositionGenerator()
-                   .append(MOLECULE_LIBRARY.oxyhemoglobin(0.01))
-                   .append(MOLECULE_LIBRARY.deoxyhemoglobin(0.01))
-                   .append(MOLECULE_LIBRARY.water(0.98))
-                   .get_molecular_composition(SegmentationClasses.COUPLING_ARTIFACT))
-    ret_dict[8] = TISSUE_LIBRARY.heavy_water()
-    ret_dict[9] = TISSUE_LIBRARY.heavy_water()
-    ret_dict[10] = TISSUE_LIBRARY.heavy_water()
+    ret_dict[0] = sp.TISSUE_LIBRARY.heavy_water()
+    ret_dict[1] = sp.TISSUE_LIBRARY.blood()
+    ret_dict[2] = sp.TISSUE_LIBRARY.epidermis()
+    ret_dict[3] = sp.TISSUE_LIBRARY.muscle()
+    ret_dict[4] = sp.TISSUE_LIBRARY.mediprene()
+    ret_dict[5] = sp.TISSUE_LIBRARY.ultrasound_gel()
+    ret_dict[6] = sp.TISSUE_LIBRARY.heavy_water()
+    ret_dict[7] = (sp.MolecularCompositionGenerator()
+                   .append(sp.MOLECULE_LIBRARY.oxyhemoglobin(0.01))
+                   .append(sp.MOLECULE_LIBRARY.deoxyhemoglobin(0.01))
+                   .append(sp.MOLECULE_LIBRARY.water(0.98))
+                   .get_molecular_composition(sp.SegmentationClasses.COUPLING_ARTIFACT))
+    ret_dict[8] = sp.TISSUE_LIBRARY.heavy_water()
+    ret_dict[9] = sp.TISSUE_LIBRARY.heavy_water()
+    ret_dict[10] = sp.TISSUE_LIBRARY.heavy_water()
     return ret_dict
 
 
-settings = Settings()
+settings = sp.Settings()
 settings[Tags.SIMULATION_PATH] = path_manager.get_hdf5_file_save_path()
 settings[Tags.VOLUME_NAME] = "SegmentationTest"
 settings[Tags.RANDOM_SEED] = 1234
@@ -73,7 +67,7 @@ settings[Tags.DIM_VOLUME_Z_MM] = 400 / (target_spacing / input_spacing)
 
 settings.set_volume_creation_settings({
     Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,
-    Tags.SEGMENTATION_CLASS_MAPPING: segmention_class_mapping(),
+    Tags.SEGMENTATION_CLASS_MAPPING: segmentation_class_mapping(),
 
 })
 
@@ -85,11 +79,11 @@ settings.set_optical_settings({
 })
 
 pipeline = [
-    VolumeCreationModuleSegmentationBasedAdapter(settings),
-    OpticalForwardModelMcxAdapter(settings)
+    sp.SegmentationBasedVolumeCreationAdapter(settings),
+    sp.MCXAdapter(settings)
 ]
 
-simulate(pipeline, settings, RSOMExplorerP50(element_spacing_mm=1.0))
+sp.simulate(pipeline, settings, sp.RSOMExplorerP50(element_spacing_mm=1.0))
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]
@@ -97,4 +91,7 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5", WAVELENGTH)
+    sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5",
+                      wavelength=WAVELENGTH,
+                      show_initial_pressure=True,
+                      show_segmentation_map=True)

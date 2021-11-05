@@ -10,6 +10,7 @@ from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 from simpa.utils.calculate import calculate_oxygenation
 from simpa.utils.calculate import randomize_uniform
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
+from simpa.utils.calculate import positive_Gauss
 import numpy as np
 
 
@@ -79,3 +80,10 @@ class TestCalculationUtils(unittest.TestCase):
             assert isinstance(gruneisen, float), "Gruneisenparameter was not a float"
             assert gruneisen > 0, "Gruneisenparameter was negative"
             assert gruneisen < 1, "Gruneisenparameter was way too large"
+    
+    def test_positive_Gauss(self):
+        for _ in range(1000):
+            mean = np.random.rand(1)[0]
+            std = np.random.rand(1)[0]
+            random_value = positive_Gauss(mean, std)
+            assert random_value > np.float(0), "positive Gauss value outside the desired range and negative"

@@ -9,6 +9,8 @@ from simpa.log import Logger
 from simpa.utils import Settings
 from simpa.utils import Tags
 import numpy as np
+import hashlib
+import uuid
 
 
 class DigitalDeviceTwinBase:
@@ -73,6 +75,12 @@ class DigitalDeviceTwinBase:
             field_of_view[field_of_view < 0] = 0
 
         return field_of_view
+
+    def generate_uuid(self):
+        class_dict = self.__dict__
+        m = hashlib.md5()
+        m.update(str(class_dict).encode('utf-8'))
+        return str(uuid.UUID(m.hexdigest()))
 
 
 class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):

@@ -4,27 +4,20 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
+from simpa import Tags
+import simpa as sp
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.ndimage import zoom
+
 # FIXME temporary workaround for newest Intel architectures
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-from simpa.utils import Tags, TISSUE_LIBRARY
-from simpa.core.simulation import simulate
-from simpa.io_handling import load_hdf5, load_data_field
-from simpa.utils.settings import Settings
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.ndimage import zoom
-from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
-    GaussianNoiseProcessingComponent
-from simpa.algorithms.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
-from simpa.utils.path_manager import PathManager
-from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry, DiskIlluminationGeometry
-
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
-path_manager = PathManager()
+path_manager = sp.PathManager()
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 30
 VOLUME_PLANAR_DIM_IN_MM = 30
@@ -43,42 +36,42 @@ def create_example_tissue():
     It contains a muscular background, an epidermis layer on top of the muscles
     and a blood vessel.
     """
-    background_dictionary = Settings()
-    background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.05, 30, 0.8)
+    background_dictionary = sp.Settings()
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(0.05, 30, 0.8)
     background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
-    epidermis_structure = Settings()
+    epidermis_structure = sp.Settings()
     epidermis_structure[Tags.PRIORITY] = 1
     epidermis_structure[Tags.STRUCTURE_START_MM] = [0, 0, VOLUME_HEIGHT_IN_MM / 10]
     epidermis_structure[Tags.STRUCTURE_END_MM] = [0, 0, (VOLUME_HEIGHT_IN_MM / 10) + 1]
-    epidermis_structure[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(3, 45, 0.92)
+    epidermis_structure[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(3, 45, 0.92)
     epidermis_structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_structure[Tags.ADHERE_TO_DEFORMATION] = True
     epidermis_structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
-    vessel_structure_1 = Settings()
+    vessel_structure_1 = sp.Settings()
     vessel_structure_1[Tags.PRIORITY] = 2
     vessel_structure_1[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2.5, 0, VOLUME_HEIGHT_IN_MM / 2]
     vessel_structure_1[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2.5, VOLUME_PLANAR_DIM_IN_MM,
                                                  VOLUME_HEIGHT_IN_MM / 2]
     vessel_structure_1[Tags.STRUCTURE_RADIUS_MM] = 2
     vessel_structure_1[Tags.STRUCTURE_ECCENTRICITY] = 0.75
-    vessel_structure_1[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(5, 40, 0.9)
+    vessel_structure_1[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(5, 40, 0.9)
     vessel_structure_1[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_structure_1[Tags.ADHERE_TO_DEFORMATION] = True
     vessel_structure_1[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
 
-    vessel_structure_2 = Settings()
+    vessel_structure_2 = sp.Settings()
     vessel_structure_2[Tags.PRIORITY] = 3
     vessel_structure_2[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2, 0, VOLUME_HEIGHT_IN_MM / 3]
     vessel_structure_2[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2, VOLUME_PLANAR_DIM_IN_MM,
                                                  VOLUME_HEIGHT_IN_MM / 3]
     vessel_structure_2[Tags.STRUCTURE_RADIUS_MM] = 0.75
-    vessel_structure_2[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(2, 50, 0.95)
+    vessel_structure_2[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(2, 50, 0.95)
     vessel_structure_2[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_structure_2[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
-    tissue_dict = Settings()
+    tissue_dict = sp.Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
     tissue_dict["epidermis"] = epidermis_structure
     tissue_dict["vessel_1"] = vessel_structure_1
@@ -100,7 +93,7 @@ general_settings = {
     Tags.WAVELENGTHS: [700]
 }
 
-settings = Settings(general_settings)
+settings = sp.Settings(general_settings)
 
 settings.set_volume_creation_settings({
     # These parameters set the properties for the volume creation
@@ -135,41 +128,41 @@ settings["iterative_qpai_reconstruction"] = {
 
 # run pipeline including iterative qPAI method
 pipeline = [
-    VolumeCreationModelModelBasedAdapter(settings),
-    OpticalForwardModelMcxAdapter(settings),
-    GaussianNoiseProcessingComponent(settings, "noise_model"),
-    IterativeqPAIProcessingComponent(settings, "iterative_qpai_reconstruction")
+    sp.ModelBasedVolumeCreationAdapter(settings),
+    sp.MCXAdapter(settings),
+    sp.GaussianNoise(settings, "noise_model"),
+    sp.IterativeqPAI(settings, "iterative_qpai_reconstruction")
 ]
 
 
-class CustomDevice(PhotoacousticDevice):
+class CustomDevice(sp.PhotoacousticDevice):
 
     def __init__(self):
         super(CustomDevice, self).__init__(device_position_mm=np.asarray([general_settings[Tags.DIM_VOLUME_X_MM] / 2,
                                                                           general_settings[Tags.DIM_VOLUME_Y_MM] / 2,
                                                                           0]))
-        self.add_illumination_geometry(DiskIlluminationGeometry(beam_radius_mm=2))
+        self.add_illumination_geometry(sp.DiskIlluminationGeometry(beam_radius_mm=2))
 
 
 device = CustomDevice()
 
 device.update_settings_for_use_of_model_based_volume_creator(settings)
 
-simulate(pipeline, settings, device)
+sp.simulate(pipeline, settings, device)
 
 # visualize reconstruction results
 if VISUALIZE:
     # get simulation output
     data_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
-    file = load_hdf5(data_path)
-    settings = Settings(file["settings"])
+    file = sp.load_hdf5(data_path)
+    settings = sp.Settings(file["settings"])
     wavelength = settings[Tags.WAVELENGTHS][0]
 
     # get reconstruction result
-    absorption_reconstruction = load_data_field(data_path, Tags.ITERATIVE_qPAI_RESULT, wavelength)
+    absorption_reconstruction = sp.load_data_field(data_path, Tags.ITERATIVE_qPAI_RESULT, wavelength)
 
     # get ground truth absorption coefficients
-    absorption_gt = load_data_field(data_path, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
+    absorption_gt = sp.load_data_field(data_path, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
 
     # rescale ground truth to same dimension as reconstruction (necessary due to resampling in iterative algorithm)
     scale = np.shape(absorption_reconstruction)[0] / np.shape(absorption_gt)[0]  # same as Tags.DOWNSCALE_FACTOR

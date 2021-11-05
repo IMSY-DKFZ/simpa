@@ -383,16 +383,16 @@ numpy arrays.</p>
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.VolumeCreationModuleSegmentationBasedAdapter">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.</code><code class="sig-name descname">VolumeCreationModuleSegmentationBasedAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.VolumeCreationModuleSegmentationBasedAdapter" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.SegmentationBasedVolumeCreationAdapter">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.</code><code class="sig-name descname">SegmentationBasedVolumeCreationAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.SegmentationBasedVolumeCreationAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><p>This volume creator expects a np.ndarray to be in the settigs
 under the Tags.INPUT_SEGMENTATION_VOLUME tag and uses this array
 together with a SegmentationClass mapping which is a dict defined in
 the settings under Tags.SEGMENTATION_CLASS_MAPPING.</p>
 <p>With this, an even greater utility is warranted.</p>
 <dl class="method">
-<dt id="simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.VolumeCreationModuleSegmentationBasedAdapter.create_simulation_volume">
-<code class="sig-name descname">create_simulation_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.VolumeCreationModuleSegmentationBasedAdapter.create_simulation_volume" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.SegmentationBasedVolumeCreationAdapter.create_simulation_volume">
+<code class="sig-name descname">create_simulation_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter.SegmentationBasedVolumeCreationAdapter.create_simulation_volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method will be called to create a simulation volume.</p>
 </dd></dl>
 
@@ -447,8 +447,8 @@ SPDX-License-Identifier: MIT</p>
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.OpticalForwardModelMcxAdapter">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.</code><code class="sig-name descname">OpticalForwardModelMcxAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.OpticalForwardModelMcxAdapter" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.MCXAdapter">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.</code><code class="sig-name descname">MCXAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.MCXAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class implements a bridge to the mcx framework to integrate mcx into SIMPA.
 MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Fang</span><span class="p">,</span> <span class="n">Qianqian</span><span class="p">,</span> <span class="ow">and</span> <span class="n">David</span> <span class="n">A</span><span class="o">.</span> <span class="n">Boas</span><span class="o">.</span> <span class="s2">&quot;Monte Carlo simulation of photon migration in 3D</span>
@@ -457,8 +457,8 @@ MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue:
 </pre></div>
 </div>
 <dl class="method">
-<dt id="simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.OpticalForwardModelMcxAdapter.forward_model">
-<code class="sig-name descname">forward_model</code><span class="sig-paren">(</span><em class="sig-param">absorption_cm</em>, <em class="sig-param">scattering_cm</em>, <em class="sig-param">anisotropy</em>, <em class="sig-param">illumination_geometry</em>, <em class="sig-param">probe_position_mm</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.OpticalForwardModelMcxAdapter.forward_model" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.MCXAdapter.forward_model">
+<code class="sig-name descname">forward_model</code><span class="sig-paren">(</span><em class="sig-param">absorption_cm</em>, <em class="sig-param">scattering_cm</em>, <em class="sig-param">anisotropy</em>, <em class="sig-param">illumination_geometry</em>, <em class="sig-param">probe_position_mm</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter.MCXAdapter.forward_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>A deriving class needs to implement this method according to its model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -541,8 +541,8 @@ A deriving class needs to implement this method according to its model.</p>
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.AcousticForwardModelKWaveAdapter">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.</code><code class="sig-name descname">AcousticForwardModelKWaveAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.AcousticForwardModelKWaveAdapter" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.KWaveAdapter">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.</code><code class="sig-name descname">KWaveAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.KWaveAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><p>The KwaveAcousticForwardModel adapter enables acoustic simulations to be run with the
 k-wave MATLAB toolbox. k-Wave is a free toolbox (<a class="reference external" href="http://www.k-wave.org/">http://www.k-wave.org/</a>) developed by Bradley Treeby
 and Ben Cox (University College London) and Jiri Jaros (Brno University of Technology).</p>
@@ -579,8 +579,8 @@ sensible defaults for these parameters.</p>
 <p>Please also refer to the simpa_examples scripts to see how the settings file can be
 parametrized successfully.</p>
 <dl class="method">
-<dt id="simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.AcousticForwardModelKWaveAdapter.forward_model">
-<code class="sig-name descname">forward_model</code><span class="sig-paren">(</span><em class="sig-param">detection_geometry</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.AcousticForwardModelKWaveAdapter.forward_model" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.KWaveAdapter.forward_model">
+<code class="sig-name descname">forward_model</code><span class="sig-paren">(</span><em class="sig-param">detection_geometry</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="headerlink" href="#simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter.KWaveAdapter.forward_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method performs the acoustic forward modeling given the initial pressure
 distribution and the acoustic tissue properties contained in the settings file.
 A deriving class needs to implement this method according to its model.</p>
@@ -726,11 +726,11 @@ or Tags.RECONSTRUCTION_MODE_DIFFERENTIAL</p></li>
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.ImageReconstructionModuleDelayAndSumAdapter">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.</code><code class="sig-name descname">ImageReconstructionModuleDelayAndSumAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.ImageReconstructionModuleDelayAndSumAdapter" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.DelayAndSumAdapter">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.</code><code class="sig-name descname">DelayAndSumAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.DelayAndSumAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.ImageReconstructionModuleDelayAndSumAdapter.reconstruction_algorithm">
-<code class="sig-name descname">reconstruction_algorithm</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry: simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base.DetectionGeometryBase</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.ImageReconstructionModuleDelayAndSumAdapter.reconstruction_algorithm" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.DelayAndSumAdapter.reconstruction_algorithm">
+<code class="sig-name descname">reconstruction_algorithm</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry: simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base.DetectionGeometryBase</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter.DelayAndSumAdapter.reconstruction_algorithm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies the Delay and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
 first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
 beamforming settings (dictionary).
@@ -771,11 +771,11 @@ but if parameters are given in the settings those will be used instead of parsed
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.ImageReconstructionModuleDelayMultiplyAndSumAdapter">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.</code><code class="sig-name descname">ImageReconstructionModuleDelayMultiplyAndSumAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.ImageReconstructionModuleDelayMultiplyAndSumAdapter" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.DelayMultiplyAndSumAdapter">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.</code><code class="sig-name descname">DelayMultiplyAndSumAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.DelayMultiplyAndSumAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.ImageReconstructionModuleDelayMultiplyAndSumAdapter.reconstruction_algorithm">
-<code class="sig-name descname">reconstruction_algorithm</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry: simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base.DetectionGeometryBase</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.ImageReconstructionModuleDelayMultiplyAndSumAdapter.reconstruction_algorithm" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.DelayMultiplyAndSumAdapter.reconstruction_algorithm">
+<code class="sig-name descname">reconstruction_algorithm</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry: simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base.DetectionGeometryBase</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter.DelayMultiplyAndSumAdapter.reconstruction_algorithm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies the Delay Multiply and Sum beamforming algorithm [1] to the time series sensor data (2D numpy array where the
 first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
 beamforming settings (dictionary).
@@ -816,11 +816,11 @@ but if parameters are given in the settings those will be used instead of parsed
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.</code><code class="sig-name descname">ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.SignedDelayMultiplyAndSumAdapter">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.</code><code class="sig-name descname">SignedDelayMultiplyAndSumAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.SignedDelayMultiplyAndSumAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter.reconstruction_algorithm">
-<code class="sig-name descname">reconstruction_algorithm</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry: simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base.DetectionGeometryBase</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter.reconstruction_algorithm" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.SignedDelayMultiplyAndSumAdapter.reconstruction_algorithm">
+<code class="sig-name descname">reconstruction_algorithm</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry: simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base.DetectionGeometryBase</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter.SignedDelayMultiplyAndSumAdapter.reconstruction_algorithm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies the signed Delay Multiply and Sum beamforming algorithm [1] to the time series sensor data
 (2D numpy array where the
 first dimension corresponds to the sensor elements and the second to the recorded time steps) with the given
@@ -861,8 +861,8 @@ but if parameters are given in the settings those will be used instead of parsed
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.ReconstructionModuleTimeReversalAdapter">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.</code><code class="sig-name descname">ReconstructionModuleTimeReversalAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.ReconstructionModuleTimeReversalAdapter" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.TimeReversalAdapter">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.</code><code class="sig-name descname">TimeReversalAdapter</code><span class="sig-paren">(</span><em class="sig-param">global_settings: simpa.utils.settings.Settings</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.TimeReversalAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time reversal adapter includes the time reversal reconstruction
 algorithm implemented by the k-Wave toolkit into SIMPA.</p>
 <p>Time reversal reconstruction uses the time series data and computes the forward simulation model
@@ -873,8 +873,8 @@ backwards in time:</p>
 </pre></div>
 </div>
 <dl class="method">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.ReconstructionModuleTimeReversalAdapter.get_acoustic_properties">
-<code class="sig-name descname">get_acoustic_properties</code><span class="sig-paren">(</span><em class="sig-param">input_data: dict</em>, <em class="sig-param">detection_geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.ReconstructionModuleTimeReversalAdapter.get_acoustic_properties" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.TimeReversalAdapter.get_acoustic_properties">
+<code class="sig-name descname">get_acoustic_properties</code><span class="sig-paren">(</span><em class="sig-param">input_data: dict</em>, <em class="sig-param">detection_geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.TimeReversalAdapter.get_acoustic_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method extracts the acoustic tissue properties from the settings dictionary and
 amends the information to the input_data.</p>
 <dl class="field-list simple">
@@ -888,8 +888,8 @@ amends the information to the input_data.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.ReconstructionModuleTimeReversalAdapter.reconstruction_algorithm">
-<code class="sig-name descname">reconstruction_algorithm</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.ReconstructionModuleTimeReversalAdapter.reconstruction_algorithm" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.TimeReversalAdapter.reconstruction_algorithm">
+<code class="sig-name descname">reconstruction_algorithm</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.TimeReversalAdapter.reconstruction_algorithm" title="Permalink to this definition">¶</a></dt>
 <dd><p>A deriving class needs to implement this method according to its model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -905,8 +905,8 @@ amends the information to the input_data.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.ReconstructionModuleTimeReversalAdapter.reorder_time_series_data">
-<code class="sig-name descname">reorder_time_series_data</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.ReconstructionModuleTimeReversalAdapter.reorder_time_series_data" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.TimeReversalAdapter.reorder_time_series_data">
+<code class="sig-name descname">reorder_time_series_data</code><span class="sig-paren">(</span><em class="sig-param">time_series_sensor_data</em>, <em class="sig-param">detection_geometry</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter.TimeReversalAdapter.reorder_time_series_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reorders the time series data to match the order that is assumed by kwave
 during image reconstruction with TimeReversal.</p>
 <p>The main issue here is, that, while forward modelling allows for the definition of
@@ -939,8 +939,8 @@ SPDX-License-Identifier: MIT</p>
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.processing_components.noise.gamma_noise.GammaNoiseProcessingComponent">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.gamma_noise.</code><code class="sig-name descname">GammaNoiseProcessingComponent</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.gamma_noise.GammaNoiseProcessingComponent" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.gamma_noise.GammaNoise">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.gamma_noise.</code><code class="sig-name descname">GammaNoise</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.gamma_noise.GammaNoise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Gaussian noise to the defined data field.
 The noise will be applied to all wavelengths.</p>
 <p>Component Settings:</p>
@@ -951,8 +951,8 @@ The noise will be applied to all wavelengths.</p>
 </pre></div>
 </div>
 <dl class="method">
-<dt id="simpa.core.processing_components.noise.gamma_noise.GammaNoiseProcessingComponent.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.gamma_noise.GammaNoiseProcessingComponent.run" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.gamma_noise.GammaNoise.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.gamma_noise.GammaNoise.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the respective simulation module</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -967,8 +967,8 @@ The noise will be applied to all wavelengths.</p>
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.processing_components.noise.gaussian_noise.GaussianNoiseProcessingComponent">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.gaussian_noise.</code><code class="sig-name descname">GaussianNoiseProcessingComponent</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.gaussian_noise.GaussianNoiseProcessingComponent" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.gaussian_noise.GaussianNoise">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.gaussian_noise.</code><code class="sig-name descname">GaussianNoise</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.gaussian_noise.GaussianNoise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Gaussian noise to the defined data field.
 The noise will be applied to all wavelengths.
 Component Settings:</p>
@@ -980,8 +980,8 @@ Component Settings:</p>
 </pre></div>
 </div>
 <dl class="method">
-<dt id="simpa.core.processing_components.noise.gaussian_noise.GaussianNoiseProcessingComponent.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.gaussian_noise.GaussianNoiseProcessingComponent.run" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.gaussian_noise.GaussianNoise.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.gaussian_noise.GaussianNoise.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the respective simulation module</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -996,8 +996,8 @@ Component Settings:</p>
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.processing_components.noise.poisson_noise.PoissonNoiseProcessingComponent">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.poisson_noise.</code><code class="sig-name descname">PoissonNoiseProcessingComponent</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.poisson_noise.PoissonNoiseProcessingComponent" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.poisson_noise.PoissonNoise">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.poisson_noise.</code><code class="sig-name descname">PoissonNoise</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.poisson_noise.PoissonNoise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Gaussian noise to the defined data field.
 The noise will be applied to all wavelengths.</p>
 <p>Component Settings:</p>
@@ -1007,8 +1007,8 @@ The noise will be applied to all wavelengths.</p>
 </pre></div>
 </div>
 <dl class="method">
-<dt id="simpa.core.processing_components.noise.poisson_noise.PoissonNoiseProcessingComponent.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.poisson_noise.PoissonNoiseProcessingComponent.run" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.poisson_noise.PoissonNoise.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.poisson_noise.PoissonNoise.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the respective simulation module</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1023,8 +1023,8 @@ The noise will be applied to all wavelengths.</p>
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.processing_components.noise.salt_and_pepper_noise.SaltAndPepperNoiseProcessingComponent">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.salt_and_pepper_noise.</code><code class="sig-name descname">SaltAndPepperNoiseProcessingComponent</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.salt_and_pepper_noise.SaltAndPepperNoiseProcessingComponent" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.salt_and_pepper_noise.SaltAndPepperNoise">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.salt_and_pepper_noise.</code><code class="sig-name descname">SaltAndPepperNoise</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.salt_and_pepper_noise.SaltAndPepperNoise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies salt and pepper noise to the defined data field.
 The noise will be applied to all wavelengths.</p>
 <p>The noise will be 50% salt and 50% pepper noise, but both can be set to the same value using the
@@ -1037,8 +1037,8 @@ NOISE_MIN and NOISE_MAX fields.</p>
 </pre></div>
 </div>
 <dl class="method">
-<dt id="simpa.core.processing_components.noise.salt_and_pepper_noise.SaltAndPepperNoiseProcessingComponent.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.salt_and_pepper_noise.SaltAndPepperNoiseProcessingComponent.run" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.salt_and_pepper_noise.SaltAndPepperNoise.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.salt_and_pepper_noise.SaltAndPepperNoise.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the respective simulation module</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1053,8 +1053,8 @@ NOISE_MIN and NOISE_MAX fields.</p>
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT</p>
 <dl class="class">
-<dt id="simpa.core.processing_components.noise.uniform_noise.UniformNoiseProcessingComponent">
-<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.uniform_noise.</code><code class="sig-name descname">UniformNoiseProcessingComponent</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.uniform_noise.UniformNoiseProcessingComponent" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.uniform_noise.UniformNoise">
+<em class="property">class </em><code class="sig-prename descclassname">simpa.core.processing_components.noise.uniform_noise.</code><code class="sig-name descname">UniformNoise</code><span class="sig-paren">(</span><em class="sig-param">global_settings</em>, <em class="sig-param">component_settings_key: str</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.uniform_noise.UniformNoise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies uniform noise to the defined data field.
 The noise will be applied to all wavelengths.</p>
 <p>The noise will be uniformly distributed between [min, max[.</p>
@@ -1066,8 +1066,8 @@ The noise will be applied to all wavelengths.</p>
 </pre></div>
 </div>
 <dl class="method">
-<dt id="simpa.core.processing_components.noise.uniform_noise.UniformNoiseProcessingComponent.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.uniform_noise.UniformNoiseProcessingComponent.run" title="Permalink to this definition">¶</a></dt>
+<dt id="simpa.core.processing_components.noise.uniform_noise.UniformNoise.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#simpa.core.processing_components.noise.uniform_noise.UniformNoise.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the respective simulation module</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3120,14 +3120,14 @@ volume were not highly resolved enough to be sufficient for the selected PA devi
 <dt id="simpa.utils.tags.Tags.SENSOR_PITCH_MM">
 <code class="sig-name descname">SENSOR_PITCH_MM</code><em class="property"> = 'sensor_pitch_mm'</em><a class="headerlink" href="#simpa.utils.tags.Tags.SENSOR_PITCH_MM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pitch of detector elements of the used PA device.</p>
-<p>Usage: adapter AcousticForwardModelKWaveAdapter, naming convention</p>
+<p>Usage: adapter KWaveAdapter, naming convention</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="simpa.utils.tags.Tags.SENSOR_RADIUS_MM">
 <code class="sig-name descname">SENSOR_RADIUS_MM</code><em class="property"> = 'sensor_radius_mm'</em><a class="headerlink" href="#simpa.utils.tags.Tags.SENSOR_RADIUS_MM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Radius of a concave geometry of the used PA device.</p>
-<p>Usage: adapter AcousticForwardModelKWaveAdapter, naming convention</p>
+<p>Usage: adapter KWaveAdapter, naming convention</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -4229,8 +4229,8 @@ in the near future (e.g. ‘disk space low’). The software is still working as
 <span class="kn">from</span> <span class="nn">simpa.visualisation.matplotlib_data_visualisation</span> <span class="kn">import</span> <span class="n">visualise_data</span>
 <span class="kn">from</span> <span class="nn">simpa.core.device_digital_twins</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">simpa.core</span> <span class="kn">import</span> <span class="n">VolumeCreationModelModelBasedAdapter</span><span class="p">,</span> <span class="n">OpticalForwardModelMcxAdapter</span><span class="p">,</span> \
-    <span class="n">GaussianNoiseProcessingComponent</span>
+<span class="kn">from</span> <span class="nn">simpa.core</span> <span class="kn">import</span> <span class="n">VolumeCreationModelModelBasedAdapter</span><span class="p">,</span> <span class="n">MCXAdapter</span><span class="p">,</span> \
+    <span class="n">GaussianNoise</span>
 
 <span class="kn">from</span> <span class="nn">simpa.utils.path_manager</span> <span class="kn">import</span> <span class="n">PathManager</span>
 
@@ -4346,8 +4346,8 @@ in the near future (e.g. ‘disk space low’). The software is still working as
 
 <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">VolumeCreationModelModelBasedAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
-    <span class="n">OpticalForwardModelMcxAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
-    <span class="n">GaussianNoiseProcessingComponent</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;noise_model_1&quot;</span><span class="p">)</span>
+    <span class="n">MCXAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
+    <span class="n">GaussianNoise</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;noise_model_1&quot;</span><span class="p">)</span>
 <span class="p">]</span>
 
 <span class="k">class</span> <span class="nc">ExampleDeviceSlitIlluminationLinearDetector</span><span class="p">(</span><span class="n">PhotoacousticDevice</span><span class="p">):</span>
@@ -4394,10 +4394,10 @@ in the near future (e.g. ‘disk space low’). The software is still working as
 <span class="kn">from</span> <span class="nn">simpa.visualisation.matplotlib_data_visualisation</span> <span class="kn">import</span> <span class="n">visualise_data</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">simpa.utils.path_manager</span> <span class="kn">import</span> <span class="n">PathManager</span>
-<span class="kn">from</span> <span class="nn">simpa.core</span> <span class="kn">import</span> <span class="n">ImageReconstructionModuleDelayAndSumAdapter</span><span class="p">,</span> <span class="n">GaussianNoiseProcessingComponent</span><span class="p">,</span> \
-    <span class="n">OpticalForwardModelMcxAdapter</span><span class="p">,</span> <span class="n">AcousticForwardModelKWaveAdapter</span><span class="p">,</span> <span class="n">VolumeCreationModelModelBasedAdapter</span><span class="p">,</span> \
-    <span class="n">FieldOfViewCroppingProcessingComponent</span><span class="p">,</span> <span class="n">ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter</span><span class="p">,</span> \
-    <span class="n">ReconstructionModuleTimeReversalAdapter</span>
+<span class="kn">from</span> <span class="nn">simpa.core</span> <span class="kn">import</span> <span class="n">DelayAndSumAdapter</span><span class="p">,</span> <span class="n">GaussianNoise</span><span class="p">,</span> \
+    <span class="n">MCXAdapter</span><span class="p">,</span> <span class="n">KWaveAdapter</span><span class="p">,</span> <span class="n">VolumeCreationModelModelBasedAdapter</span><span class="p">,</span> \
+    <span class="n">FieldOfViewCropping</span><span class="p">,</span> <span class="n">SignedDelayMultiplyAndSumAdapter</span><span class="p">,</span> \
+    <span class="n">TimeReversalAdapter</span>
 <span class="kn">from</span> <span class="nn">simpa.core.device_digital_twins</span> <span class="kn">import</span> <span class="n">MSOTAcuityEcho</span>
 <span class="kn">from</span> <span class="nn">simpa.core.device_digital_twins</span> <span class="kn">import</span> <span class="n">LinearArrayDetectionGeometry</span><span class="p">,</span> <span class="n">SlitIlluminationGeometry</span><span class="p">,</span> <span class="n">PhotoacousticDevice</span>
 
@@ -4588,11 +4588,11 @@ in the near future (e.g. ‘disk space low’). The software is still working as
 
 <span class="n">SIMUATION_PIPELINE</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">VolumeCreationModelModelBasedAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
-    <span class="n">OpticalForwardModelMcxAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
-    <span class="n">GaussianNoiseProcessingComponent</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;noise_initial_pressure&quot;</span><span class="p">),</span>
-    <span class="n">AcousticForwardModelKWaveAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
-    <span class="n">GaussianNoiseProcessingComponent</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;noise_time_series&quot;</span><span class="p">),</span>
-    <span class="n">ReconstructionModuleTimeReversalAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
+    <span class="n">MCXAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
+    <span class="n">GaussianNoise</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;noise_initial_pressure&quot;</span><span class="p">),</span>
+    <span class="n">KWaveAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
+    <span class="n">GaussianNoise</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;noise_time_series&quot;</span><span class="p">),</span>
+    <span class="n">TimeReversalAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
     <span class="p">]</span>
 
 <span class="n">simulate</span><span class="p">(</span><span class="n">SIMUATION_PIPELINE</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
@@ -4813,7 +4813,7 @@ in the near future (e.g. ‘disk space low’). The software is still working as
 <span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">zoom</span>
 <span class="kn">from</span> <span class="nn">simpa.utils.path_manager</span> <span class="kn">import</span> <span class="n">PathManager</span>
 <span class="kn">from</span> <span class="nn">simpa.core.device_digital_twins</span> <span class="kn">import</span> <span class="n">RSOMExplorerP50</span>
-<span class="kn">from</span> <span class="nn">simpa.core</span> <span class="kn">import</span> <span class="n">VolumeCreationModuleSegmentationBasedAdapter</span><span class="p">,</span> <span class="n">OpticalForwardModelMcxAdapter</span>
+<span class="kn">from</span> <span class="nn">simpa.core</span> <span class="kn">import</span> <span class="n">SegmentationBasedVolumeCreationAdapter</span><span class="p">,</span> <span class="n">MCXAdapter</span>
 
 <span class="c1"># FIXME temporary workaround for newest Intel architectures</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -4883,8 +4883,8 @@ in the near future (e.g. ‘disk space low’). The software is still working as
 <span class="p">})</span>
 
 <span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">VolumeCreationModuleSegmentationBasedAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
-    <span class="n">OpticalForwardModelMcxAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+    <span class="n">SegmentationBasedVolumeCreationAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
+    <span class="n">MCXAdapter</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 <span class="p">]</span>
 
 <span class="n">simulate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">RSOMExplorerP50</span><span class="p">(</span><span class="n">element_spacing_mm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">))</span>
