@@ -28,7 +28,7 @@ Module: core
 The purpose of the core module is to provide interfaces that facilitate the integration of toolboxes and code for
 photoacoustic modeling into a single continuous pipeline.
 
-.. automodule:: simpa.core.simulation
+.. automodule:: simpa.core.simulation_modules
     :members:
 
 Volume creation
@@ -40,76 +40,76 @@ phantoms. This feature is represented by the volume_creation module, that two ma
  - Model-based creation of volumes using a set of rules
  - Segmentation-based creation of volumes
 
-.. automodule:: simpa.core.volume_creation_module
+.. automodule:: simpa.core.simulation_modules.volume_creation_module
     :members:
 
 Model-based volume creation
 """"""""""""""""""""""""""""
 
-.. automodule:: simpa.core.volume_creation_module.volume_creation_module_model_based_adapter
+.. automodule:: simpa.core.simulation_modules.volume_creation_module.volume_creation_module_model_based_adapter
     :members:
 
 Segmentation-based volume creation
 """""""""""""""""""""""""""""""""""
 
-.. automodule:: simpa.core.volume_creation_module.volume_creation_module_segmentation_based_adapter
+.. automodule:: simpa.core.simulation_modules.volume_creation_module.volume_creation_module_segmentation_based_adapter
     :members:
 
 Optical forward modelling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: simpa.core.optical_simulation_module
+.. automodule:: simpa.core.simulation_modules.optical_simulation_module
     :members:
 
 mcx integration
 """"""""""""""""""
 
-.. automodule:: simpa.core.optical_simulation_module.optical_forward_model_mcx_adapter
+.. automodule:: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter
     :members:
 
 Acoustic forward modelling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: simpa.core.acoustic_forward_module
+.. automodule:: simpa.core.simulation_modules.acoustic_forward_module
     :members:
 
 k-Wave integration
 """""""""""""""""""
 
-.. automodule:: simpa.core.acoustic_forward_module.acoustic_forward_module_k_wave_adapter
+.. automodule:: simpa.core.simulation_modules.acoustic_forward_module.acoustic_forward_module_k_wave_adapter
     :members:
 
 Image reconstruction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: simpa.core.reconstruction_module
+.. automodule:: simpa.core.simulation_modules.reconstruction_module
     :members:
 
-.. automodule:: simpa.core.reconstruction_module.reconstruction_utils
+.. automodule:: simpa.core.simulation_modules.reconstruction_module.reconstruction_utils
     :members:
 
 Backprojection
 """""""""""""""""""""""""""""""
 
-.. automodule:: simpa.core.reconstruction_module.reconstruction_module_delay_and_sum_adapter
+.. automodule:: simpa.core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter
     :members:
 
 Delay-Multiply-And-Sum (DMAS)
 """""""""""""""""""""""""""""""
 
-.. automodule:: simpa.core.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter
+.. automodule:: simpa.core.simulation_modules.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter
     :members:
 
 signed Delay-Multiply-And-Sum (sDMAS)
 """""""""""""""""""""""""""""""""""""
 
-.. automodule:: simpa.core.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter
+.. automodule:: simpa.core.simulation_modules.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter
     :members:
 
 Time Reversal
 """"""""""""""
 
-.. automodule:: simpa.core.reconstruction_module.reconstruction_module_time_reversal_adapter
+.. automodule:: simpa.core.simulation_modules.reconstruction_module.reconstruction_module_time_reversal_adapter
     :members:
 
 Processing Components
