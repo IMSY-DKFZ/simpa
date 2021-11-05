@@ -4,6 +4,9 @@ docs/.doctrees/*
 docs/test_coverage
 docs/test_coverage/*
 
+simpa_tests/figures
+simpa_tests/figures/*
+
 *.orig
 */*.orig
 

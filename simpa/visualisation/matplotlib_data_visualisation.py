@@ -30,7 +30,8 @@ def visualise_data(wavelength: int = None,
                    show_reconstructed_data=False,
                    show_segmentation_map=False,
                    log_scale=False,
-                   show_xz_only=False):
+                   show_xz_only=False,
+                   save_path=None):
 
     if settings is not None and Tags.WAVELENGTHS in settings:
         if wavelength is None or wavelength not in settings[Tags.WAVELENGTHS]:
@@ -182,7 +183,10 @@ def visualise_data(wavelength: int = None,
             plt.colorbar()
 
     plt.tight_layout()
-    plt.show()
+    if save_path is not None:
+        plt.savefig(save_path, dpi=500)
+    else:
+        plt.show()
     plt.close()
 
 

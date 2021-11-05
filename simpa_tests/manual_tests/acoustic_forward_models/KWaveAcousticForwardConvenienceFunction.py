@@ -15,13 +15,15 @@ from simpa.core.simulation import simulate
 from simpa.io_handling import load_data_field
 import numpy as np
 from simpa.utils.path_manager import PathManager
+from simpa_tests.manual_tests import ManualIntegrationTestClass
+import matplotlib.pyplot as plt
 
 # FIXME temporary workaround for newest Intel architectures
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-class KWaveAcousticForwardConvenienceFunction:
+class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
     """
     This class test the convenience function for acoustic forward simulation.
     It first creates a volume and runs an optical forward simulation. 
@@ -29,7 +31,7 @@ class KWaveAcousticForwardConvenienceFunction:
     Lastly the generated time series data is reconstructed to compare whether everything worked.
     """
 
-    def create_volume_and_run_optical_simulation(self):
+    def setup(self):
         """
         Runs a pipeline consisting of volume creation and optical simulation. The resulting hdf5 file of the
         simple test volume is saved at SAVE_PATH location defined in the path_config.env file.
@@ -86,12 +88,18 @@ class KWaveAcousticForwardConvenienceFunction:
         self.device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
         # run pipeline including volume creation and optical mcx simulation
-        pipeline = [
+        self.pipeline = [
             ModelBasedVolumeCreationAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_model")
         ]
-        simulate(pipeline, self.settings, self.device)
+
+    def teardown(self):
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+
+    def perform_test(self):
+        simulate(self.pipeline, self.settings, self.device)
+        self.test_convenience_function()
 
     def test_convenience_function(self):
 
@@ -99,22 +107,22 @@ class KWaveAcousticForwardConvenienceFunction:
         initial_pressure = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
                                            Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=700)
         image_slice = np.s_[:, 40, :]
-        #initial_pressure = np.flip(np.rot90(initial_pressure[image_slice], axes=(0, 1)))
-        initial_pressure = initial_pressure[image_slice].T
+        self.initial_pressure = initial_pressure[image_slice].T
 
         # define acoustic settings and run simulation with convenience function
         acoustic_settings = {
+            Tags.ACOUSTIC_SIMULATION_3D: True,
             Tags.ACOUSTIC_MODEL_BINARY_PATH: self.path_manager.get_matlab_binary_path(),
-            Tags.PROPERTY_ALPHA_POWER: 0.0,
+            Tags.PROPERTY_ALPHA_POWER: 0.00,
             Tags.SENSOR_RECORD: "p",
             Tags.PMLInside: False,
+            Tags.PMLSize: [31, 32],
             Tags.PMLAlpha: 1.5,
             Tags.PlotPML: False,
             Tags.RECORDMOVIE: False,
             Tags.MOVIENAME: "visualization_log",
             Tags.ACOUSTIC_LOG_SCALE: True,
-            Tags.GPU: True,
-            Tags.SPACING_MM: self.SPACING,
+            Tags.MODEL_SENSOR_FREQUENCY_RESPONSE: False
         }
         time_series_data = perform_k_wave_acoustic_forward_simulation(initial_pressure=initial_pressure,
                                                                       detection_geometry=self.device.get_detection_geometry(),
@@ -131,21 +139,25 @@ class KWaveAcousticForwardConvenienceFunction:
             Tags.SENSOR_SAMPLING_RATE_MHZ: 40,
         })
 
-        reconstructed = reconstruct_delay_and_sum_pytorch(
+        self.reconstructed = reconstruct_delay_and_sum_pytorch(
             time_series_data.copy(), self.device.get_detection_geometry(), self.settings)
 
-        self.visualize_results(initial_pressure, reconstructed)
-
-    def visualize_results(self, initial_pressure, reconstructed):
+    def visualise_result(self, show_figure_on_screen=True, save_path=None):
         '''plot initial pressure and reconstructed image volume to manually compare'''
-        import matplotlib.pyplot as plt
-        plt.subplot(1, 2, 1)
-        plt.title("Initial Pressure")
-        plt.imshow(initial_pressure)
-        plt.subplot(1, 2, 2)
-        plt.title("Reconstructed Image")
-        plt.imshow(np.rot90(reconstructed, -1))
-        plt.show()
+        plt.subplot(2, 2, 1)
+        plt.title("Initial Pressure Pipeline")
+        plt.imshow(self.initial_pressure)
+        plt.subplot(2, 2, 2)
+        plt.title("Reconstructed Image Pipeline")
+        plt.imshow(np.rot90(self.reconstructed, -1))
+        plt.tight_layout()
+        if show_figure_on_screen:
+            plt.show()
+        else:
+            if save_path is None:
+                save_path = ""
+            plt.savefig(save_path + f"TestKWaveConvenienceFunction.png")
+        plt.close()
 
     def create_example_tissue(self):
         """
@@ -210,5 +222,4 @@ class KWaveAcousticForwardConvenienceFunction:
 
 if __name__ == '__main__':
     test = KWaveAcousticForwardConvenienceFunction()
-    test.create_volume_and_run_optical_simulation()
-    test.test_convenience_function()
+    test.run_test(show_figure_on_screen=False)

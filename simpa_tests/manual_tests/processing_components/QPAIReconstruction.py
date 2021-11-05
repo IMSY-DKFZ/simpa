@@ -20,16 +20,17 @@ from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
     GaussianNoise
 from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI
 from simpa.core.device_digital_twins import RSOMExplorerP50
+from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
-class TestqPAIReconstruction:
+class TestqPAIReconstruction(ManualIntegrationTestClass):
     """
     This class applies the iterative qPAI reconstruction algorithm on a simple test volume and
     - by visualizing the results - lets the user evaluate if the reconstruction is performed correctly.
     This test reconstruction contains a volume creation and an optical simulation.
     """
 
-    def setUp(self):
+    def setup(self):
         """
         Runs a pipeline consisting of volume creation and optical simulation. The resulting hdf5 file of the
         simple test volume is saved at SAVE_PATH location defined in the path_config.env file.
@@ -93,7 +94,7 @@ class TestqPAIReconstruction:
         ]
         simulate(pipeline, self.settings, self.device)
 
-    def test_qpai_reconstruction(self):
+    def perform_test(self):
         """
         Runs iterative qPAI reconstruction on test volume by accessing the settings dictionaries in a hdf5 file.
         """
@@ -126,19 +127,20 @@ class TestqPAIReconstruction:
         IterativeqPAI(self.settings, "iterative_qpai_reconstruction").run(self.device)
 
         # get last iteration result (3-d)
-        hdf5_path = self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5"
-        self.reconstructed_absorption = load_data_field(hdf5_path, Tags.ITERATIVE_qPAI_RESULT, self.wavelength)
+        self.hdf5_path = self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5"
+        self.reconstructed_absorption = load_data_field(self.hdf5_path, Tags.ITERATIVE_qPAI_RESULT, self.wavelength)
 
         # get reconstructed absorptions (2-d middle slices) at each iteration step
-        list_reconstructions_result_path = self.path_manager.get_hdf5_file_save_path() + \
+        self.list_reconstructions_result_path = self.path_manager.get_hdf5_file_save_path() + \
                         "/List_reconstructed_qpai_absorptions_" + str(self.wavelength) + "_" + self.VOLUME_NAME + ".npy"
-        self.list_2d_reconstructed_absorptions = np.load(list_reconstructions_result_path)
+        self.list_2d_reconstructed_absorptions = np.load(self.list_reconstructions_result_path)
 
+    def tear_down(self):
         # clean up files after test
-        os.remove(hdf5_path)
-        os.remove(list_reconstructions_result_path)
+        os.remove(self.hdf5_path)
+        os.remove(self.list_reconstructions_result_path)
 
-    def visualize_qpai_test_results(self):
+    def visualise_result(self, show_figure_on_screen=True, save_path=None):
         """
         Performs visualization of reconstruction results to allow for evaluation.
         The resulting figure displays the ground truth absorption coefficients, the corresponding reconstruction
@@ -213,7 +215,12 @@ class TestqPAIReconstruction:
             plt.clim(cmin, cmax)
             plt.axis('off')
 
-        plt.show()
+        if show_figure_on_screen:
+            plt.show()
+        else:
+            if save_path is None:
+                save_path = ""
+            plt.savefig(save_path + "qpai_reconstruction_test.png")
         plt.close()
 
     def create_example_tissue(self):
@@ -270,6 +277,4 @@ class TestqPAIReconstruction:
 
 if __name__ == '__main__':
     test = TestqPAIReconstruction()
-    test.setUp()
-    test.test_qpai_reconstruction()
-    test.visualize_qpai_test_results()
+    test.run_test(show_figure_on_screen=False)

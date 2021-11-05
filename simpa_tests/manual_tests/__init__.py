@@ -3,12 +3,44 @@ SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT
 """
+import os
 import numpy as np
 from simpa.utils.path_manager import PathManager
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 import matplotlib.pyplot as plt
+from abc import abstractmethod
+
+
+class ManualIntegrationTestClass(object):
+
+    @abstractmethod
+    def setup(self):
+        pass
+
+    @abstractmethod
+    def perform_test(self):
+        pass
+
+    @abstractmethod
+    def visualise_result(self, show_figure_on_screen=True, save_path=None):
+        pass
+
+    @abstractmethod
+    def tear_down(self):
+        pass
+
+    def run_test(self, show_figure_on_screen=True, save_path=None):
+        if save_path is None or not os.path.isdir(save_path):
+            save_path = "figures/"
+        if not os.path.exists(save_path):
+            os.mkdir(save_path)
+
+        self.setup()
+        self.perform_test()
+        self.visualise_result(show_figure_on_screen, save_path)
+        self.tear_down()
 
 
 class ReconstructionAlgorithmTestBaseClass:

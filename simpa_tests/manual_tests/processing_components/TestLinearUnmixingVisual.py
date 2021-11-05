@@ -15,9 +15,10 @@ import matplotlib.pyplot as plt
 from simpa.log import Logger
 import os
 from simpa.core.device_digital_twins import PencilBeamIlluminationGeometry
+from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
-class TestLinearUnmixingVisual:
+class TestLinearUnmixingVisual(ManualIntegrationTestClass):
     """
     This test is a manual test, so visual confirmation is needed.
     """
@@ -69,13 +70,9 @@ class TestLinearUnmixingVisual:
         self.device = PencilBeamIlluminationGeometry()
 
         # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
-        pipeline = [
+        self.pipeline = [
             ModelBasedVolumeCreationAdapter(self.settings)
         ]
-        simulate(pipeline, self.settings, self.device)
-
-        # Run linear unmixing component with above specified settings
-        lu.LinearUnmixing(self.settings, "linear_unmixing").run()
 
     def perform_test(self):
         """
@@ -83,33 +80,46 @@ class TestLinearUnmixingVisual:
         The user has to check if the test was successful.
         """
 
+        simulate(self.pipeline, self.settings, self.device)
+
+        # Run linear unmixing component with above specified settings
+        lu.LinearUnmixing(self.settings, "linear_unmixing").run()
+
         self.logger.info("Testing linear unmixing...")
 
         # Load blood oxygen saturation
-        lu_results = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
-        sO2 = lu_results["sO2"]
+        self.lu_results = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+        self.sO2 = self.lu_results["sO2"]
 
         # Load reference absorption for the first wavelength
-        mua = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
+        self.mua = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
                               wavelength=self.VISUAL_WAVELENGTHS[0])
 
+    def tear_down(self):
+        # clean up file after testing
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+
+    def visualise_result(self, show_figure_on_screen=True, save_path=None):
         # Visualize linear unmixing result
         # The shape of the linear unmixing result should take after the reference absorption
-        y_dim = int(mua.shape[1] / 2)
+        y_dim = int(self.mua.shape[1] / 2)
         plt.figure(figsize=(15, 15))
         plt.suptitle("Linear Unmixing - Visual Test")
         plt.subplot(121)
         plt.title("Absorption coefficients")
-        plt.imshow(np.rot90(mua[:, y_dim, :], -1))
+        plt.imshow(np.rot90(self.mua[:, y_dim, :], -1))
         plt.colorbar(fraction=0.05)
         plt.subplot(122)
         plt.title("Blood oxygen saturation")
-        plt.imshow(np.rot90(sO2[:, y_dim, :], -1))
+        plt.imshow(np.rot90(self.sO2[:, y_dim, :], -1))
         plt.colorbar(fraction=0.05)
-        plt.show()
-
-        # clean up file after testing
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        if show_figure_on_screen:
+            plt.show()
+        else:
+            if save_path is None:
+                save_path = ""
+            plt.savefig(save_path + "linear_unmixing_test.png")
+        plt.close()
 
     def create_example_tissue(self):
         """
@@ -162,5 +172,4 @@ class TestLinearUnmixingVisual:
 
 if __name__ == '__main__':
     test = TestLinearUnmixingVisual()
-    test.setup()
-    test.perform_test()
+    test.run_test(show_figure_on_screen=False)

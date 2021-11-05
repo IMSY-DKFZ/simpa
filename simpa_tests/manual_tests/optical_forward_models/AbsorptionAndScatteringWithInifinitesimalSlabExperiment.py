@@ -30,13 +30,14 @@ from simpa.core.simulation import simulate
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 import matplotlib.pyplot as plt
 import numpy as np
+from simpa_tests.manual_tests import ManualIntegrationTestClass
 import os
 # FIXME temporary workaround for newest Intel architectures
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
+class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrationTestClass):
 
     def create_example_tissue(self, slab_width, scattering_value=1e-30, absorption_value=1e-30, anisotropy_value=0.0):
         """
@@ -70,7 +71,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
 
         return tissue_dict
 
-    def setUp(self):
+    def setup(self):
         """
         This is not a completely autonomous simpa_tests case yet.
         If run on another pc, please adjust the SIMULATION_PATH and MODEL_BINARY_PATH fields.
@@ -112,7 +113,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
 
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
-    def tearDown(self):
+    def teardown(self):
         os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
 
     def test_both(self):
@@ -120,32 +121,32 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e ** 1, scattering_value=0.5, absorption_value=0.5,
-                          anisotropy_value=0.0, title="Absorption and Scattering over 1 cm")
+        return self.test_simulation(distance=10, expected_decay_ratio=np.e ** 1, scattering_value=0.5, absorption_value=0.5,
+                             anisotropy_value=0.0, title="Absorption and Scattering over 1 cm")
 
     def test_both_double_width(self):
         """
         Here, the slab is 20 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^2.
         """
-        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=0.5, absorption_value=0.5,
-                          anisotropy_value=0.0, title="Absorption and Scattering over 2 cm")
+        return self.test_simulation(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=0.5, absorption_value=0.5,
+                             anisotropy_value=0.0, title="Absorption and Scattering over 2 cm")
 
     def test_isotropic_scattering(self):
         """
         Here, the slab is 10 mm long, only mus is used with a value of 0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.0,
-                          title="Isotropic Scattering over 1 cm")
+        return self.test_simulation(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.0,
+                             title="Isotropic Scattering over 1 cm")
 
     def test_isotropic_scattering_double_width(self):
         """
         Here, the slab is 20 mm long, only mus is used with a value of 0.1 mm^-1.
         We expect a decay ratio of e^2.
         """
-        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=1, anisotropy_value=0.0,
-                          title="Isotropic Scattering over 2 cm")
+        return self.test_simulation(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=1, anisotropy_value=0.0,
+                             title="Isotropic Scattering over 2 cm")
 
     def test_anisotropic_scattering_0_9(self):
         """
@@ -153,8 +154,8 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
         The anisotropy of the scattering is 0.9.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.9,
-                          title="Anisotropic Scattering (0.9) over 1 cm")
+        return self.test_simulation(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.9,
+                             title="Anisotropic Scattering (0.9) over 1 cm")
 
     def test_anisotropic_scattering_0_5(self):
         """
@@ -162,8 +163,8 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
         The anisotropy of the scattering is 0.9.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.5,
-                          title="Anisotropic Scattering (0.5) over 1 cm")
+        return self.test_simulation(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.5,
+                             title="Anisotropic Scattering (0.5) over 1 cm")
 
     def test_anisotropic_scattering_0_1(self):
         """
@@ -171,28 +172,28 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
         The anisotropy of the scattering is 0.9.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.1,
-                          title="Anisotropic Scattering (0.1) over 1 cm")
+        return self.test_simulation(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.1,
+                             title="Anisotropic Scattering (0.1) over 1 cm")
 
     def test_absorption(self):
         """
         Here, the slab is 10 mm long, only mua is used with a value of 0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        self.perform_test(distance=10, expected_decay_ratio=np.e, absorption_value=1,
-                          title="Absorption over 1 cm"
-                          )
+        return self.test_simulation(distance=10, expected_decay_ratio=np.e, absorption_value=1,
+                             title="Absorption over 1 cm"
+                             )
 
     def test_absorption_double_width(self):
         """
         Here, the slab is 20 mm long, only mua is used with a value of 0.1 mm^-1.
         We expect a decay ratio of e^2.
         """
-        self.perform_test(distance=20, expected_decay_ratio=np.e ** 2, absorption_value=1,
-                          title="Absorption over 2 cm")
+        return self.test_simulation(distance=20, expected_decay_ratio=np.e ** 2, absorption_value=1,
+                             title="Absorption over 2 cm")
 
-    def perform_test(self, distance=10, expected_decay_ratio=np.e, scattering_value=1e-30,
-                     absorption_value=1e-30, anisotropy_value=1.0, title=""):
+    def test_simulation(self, distance=10, expected_decay_ratio=np.e, scattering_value=1e-30,
+                        absorption_value=1e-30, anisotropy_value=1.0, title=""):
 
         # Define the volume of the thin slab
 
@@ -234,31 +235,48 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment():
         expected_end_fluence = fluence[illuminator_point, illuminator_point, early_point] / expected_decay_ratio
         print("Expected", expected_decay_ratio, "and was", decay_ratio)
 
-        plt.figure(figsize=(6, 4))
-        plt.title(f"Fluence profile for {title}")
-        plt.plot(fluence[illuminator_point, illuminator_point, :], label="Fluence")
-        plt.axhline(expected_end_fluence, label="Expected Value after Slab", color="red")
-        plt.legend(loc="center left")
-        ax2 = plt.twinx()
-        ax2.plot(absorption[illuminator_point, illuminator_point, :], label="Absorption", linestyle="dashed", alpha=0.5)
-        ax2.plot(scattering[illuminator_point, illuminator_point, :], label="Scattering", linestyle="dashed", alpha=0.5)
-        ax2.plot(anisotropy[illuminator_point, illuminator_point, :], label="Anisotropy", linestyle="dashed", alpha=0.5)
-        plt.legend(loc="center right")
+        return (title, fluence, illuminator_point, expected_end_fluence, absorption,
+             scattering, anisotropy)
 
-        plt.tight_layout()
-        plt.show()
-        plt.close()
+    def visualise_result(self, show_figure_on_screen=True, save_path=None):
+        print(len(self.results))
+        for idx, result in enumerate(self.results):
+            (title, fluence, illuminator_point, expected_end_fluence, absorption,
+             scattering, anisotropy) = result
+
+            plt.figure(figsize=(6, 4))
+            plt.title(f"Fluence profile for {title}")
+            plt.plot(fluence[illuminator_point, illuminator_point, :], label="Fluence")
+            plt.axhline(expected_end_fluence, label="Expected Value after Slab", color="red")
+            plt.legend(loc="center left")
+            ax2 = plt.twinx()
+            ax2.plot(absorption[illuminator_point, illuminator_point, :], label="Absorption", linestyle="dashed", alpha=0.5)
+            ax2.plot(scattering[illuminator_point, illuminator_point, :], label="Scattering", linestyle="dashed", alpha=0.5)
+            ax2.plot(anisotropy[illuminator_point, illuminator_point, :], label="Anisotropy", linestyle="dashed", alpha=0.5)
+            plt.legend(loc="center right")
+
+            plt.tight_layout()
+            if show_figure_on_screen:
+                plt.show()
+            else:
+                if save_path is None:
+                    save_path = ""
+                plt.savefig(save_path + f"infinitessimal_slab_{idx}.png")
+            plt.close()
+
+    def perform_test(self):
+        self.results = list()
+        self.results.append(self.test_both())
+        self.results.append(self.test_both_double_width())
+        self.results.append(self.test_absorption())
+        self.results.append(self.test_absorption_double_width())
+        self.results.append(self.test_isotropic_scattering())
+        self.results.append(self.test_anisotropic_scattering_0_9())
+        self.results.append(self.test_anisotropic_scattering_0_5())
+        self.results.append(self.test_anisotropic_scattering_0_1())
+        self.results.append(self.test_isotropic_scattering_double_width())
 
 
 if __name__ == '__main__':
     test = TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment()
-    test.setUp()
-    test.test_both()
-    test.test_both_double_width()
-    test.test_absorption()
-    test.test_absorption_double_width()
-    test.test_isotropic_scattering()
-    test.test_anisotropic_scattering_0_9()
-    test.test_anisotropic_scattering_0_5()
-    test.test_anisotropic_scattering_0_1()
-    test.test_isotropic_scattering_double_width()
+    test.run_test(show_figure_on_screen=False)
