@@ -69,7 +69,9 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         Runs the acoustic forward model and performs reading parameters and values from an hdf5 file
         before calling the actual algorithm and saves the updated settings afterwards.
 
-        Returns the simulated time series data (numpy array)
+        :param detection_geometry:
+        :return: simulated time series data (numpy array)
+
         """
 
         optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
@@ -131,23 +133,24 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
                                       alpha_coeff: float, initial_pressure: np.ndarray,
                                       optical_path: str = "temporary") -> tuple:
         """
-        Runs the acoustic forward model with the given parameters
-            speed_of_sound (float)
-            density (float)
-            alpha_coeff (float)
-        for the initial_pressure distribution (numpy array) and a given detection geometry.
+        Runs the acoustic forward model with the given parameters speed_of_sound (float), density (float),
+        alpha_coeff (float) for the initial_pressure distribution (numpy array) and a given detection geometry.
         Uses the given optical_path (str) or if none is given a temporary one for saving temporary files.
-
         Note, that in order to work properly, this function assumes that several settings mentioned above are set.
         This can either be done by reading it from a settings file (e.g. when being called from forward_model) or
         by parsing all settings individually as in the convenience function
         (perform_k_wave_acoustic_forward_simulation).
 
-        Returns 
-        time_series_data (numpy array): simulated time series data
-        global_settings (Settings): updated global settings with new entries from the simulation
-        """
+        :param detection_geometry:
+        :param speed_of_sound:
+        :param density:
+        :param alpha_coeff:
+        :param initial_pressure:
+        :param optical_path:
+        :return: time_series_data (numpy array): simulated time series data, global_settings (Settings): updated global
+            settings with new entries from the simulation
 
+        """
         data_dict = {}
 
         pa_device = detection_geometry
@@ -286,15 +289,28 @@ def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array,
                                                gpu: bool = True,
                                                spacing_mm: float = 0.5) -> np.array:
     """
-    Convenience function for performing a k-Wave acoustic forward simulation using a given detection geometry and 
-    initial pressure distribution (numpy array) with the following parameters:
-        speed_of_sound (float)
-        density (float)
-        alpha_coeff (float)
-    as well as acoustic_settings (Settings). The acoustic settings may be parsed individually, however, they will 
-    be overwritten if they are also set in the acoustic_settings.
+    Convenience function for performing a k-Wave acoustic forward simulation using a given detection geometry and
+    initial pressure distribution (numpy array) with the following parameters speed_of_sound (float), density (float),
+    alpha_coeff (float) as well as acoustic_settings (Settings). The acoustic settings may be parsed individually,
+    however, they will be overwritten if they are also set in the acoustic_settings.
 
-    Returns the simulated time series data (numpy array).
+    :param initial_pressure:
+    :param detection_geometry:
+    :param speed_of_sound:
+    :param density:
+    :param alpha_coeff:
+    :param acoustic_settings:
+    :param alpha_power:
+    :param sensor_record:
+    :param pml_inside:
+    :param pml_alpha:
+    :param plot_pml:
+    :param record_movie:
+    :param movie_name:
+    :param acoustic_log_scale:
+    :param gpu:
+    :param spacing_mm:
+    :return: simulated time series data (numpy array)
     """
 
     # check and set acoustic settings

@@ -121,19 +121,19 @@ Processing Components
 Noise Models
 """""""""""""""""""""""""""""""
 
-.. automodule:: simpa.core.processing_components.noise.gamma_noise
+.. automodule:: simpa.core.processing_components.monospectral.noise.gamma_noise
     :members:
 
-.. automodule:: simpa.core.processing_components.noise.gaussian_noise
+.. automodule:: simpa.core.processing_components.monospectral.noise.gaussian_noise
     :members:
 
-.. automodule:: simpa.core.processing_components.noise.poisson_noise
+.. automodule:: simpa.core.processing_components.monospectral.noise.poisson_noise
     :members:
 
-.. automodule:: simpa.core.processing_components.noise.salt_and_pepper_noise
+.. automodule:: simpa.core.processing_components.monospectral.noise.salt_and_pepper_noise
     :members:
 
-.. automodule:: simpa.core.processing_components.noise.uniform_noise
+.. automodule:: simpa.core.processing_components.monospectral.noise.uniform_noise
     :members:
 
 Digital device twins
