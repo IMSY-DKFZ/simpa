@@ -130,7 +130,8 @@ class TestLinearUnmixing(unittest.TestCase):
         }
 
         # Run linear unmixing component
-        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+        lu = LinearUnmixing(self.settings, "linear_unmixing")
+        lu.run()
 
         # Load blood oxygen saturation
         lu_results = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
@@ -161,7 +162,8 @@ class TestLinearUnmixing(unittest.TestCase):
         }
 
         # Run linear unmixing component
-        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+        lu = LinearUnmixing(self.settings, "linear_unmixing")
+        lu.run()
 
     @expectedFailure
     def test_oxygen_saturation_without_hemoglobin(self):
@@ -183,7 +185,8 @@ class TestLinearUnmixing(unittest.TestCase):
         }
 
         # Run linear unmixing component
-        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+        lu = LinearUnmixing(self.settings, "linear_unmixing")
+        lu.run()
 
     def test_with_all_absorbers(self):
         """
@@ -212,7 +215,8 @@ class TestLinearUnmixing(unittest.TestCase):
         }
 
         # Run linear unmixing component
-        lu.LinearUnmixingProcessingComponent(self.settings, "linear_unmixing").run()
+        lu = LinearUnmixing(self.settings, "linear_unmixing")
+        lu.run()
 
     def tearDown(self):
         # Clean up file after testing
