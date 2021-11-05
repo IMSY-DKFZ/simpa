@@ -4,27 +4,15 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-automatic_test_classes = ["simpa_tests.automatic_tests.structure_tests.TestLayers",
-                            "simpa_tests.automatic_tests.structure_tests.TestBoxes",
-                            "simpa_tests.automatic_tests.structure_tests.TestEllipticalTubes",
-                            "simpa_tests.automatic_tests.structure_tests.TestParallelEpipeds",
-                            "simpa_tests.automatic_tests.structure_tests.TestSpheres",
-                            "simpa_tests.automatic_tests.structure_tests.TestTubes",
-                            "simpa_tests.automatic_tests.TestPipeline",
-                            "simpa_tests.automatic_tests.TestProcessing",
-                            "simpa_tests.automatic_tests.TestCreateAVolume",
-                            "simpa_tests.automatic_tests.TestIOHandling",
-                            "simpa_tests.automatic_tests.TestCalculationUtils",
-                            "simpa_tests.automatic_tests.TestLogging",
-                            "simpa_tests.automatic_tests.TestPathManager",
-                            "simpa_tests.automatic_tests.tissue_library.TestCoreAssumptions",
-                            "simpa_tests.automatic_tests.tissue_library.TestSpectraCanBeFound",
-                            "simpa_tests.automatic_tests.tissue_library.TestTissueLibraryAgainstLiteratureValues",
-                            "simpa_tests.automatic_tests.TestNoiseModels",
-                            "simpa_tests.automatic_tests.TestLinearUnmixing",
-                            "simpa_tests.automatic_tests.TestIPASCExport",
-                            "simpa_tests.automatic_tests.TestDeviceUUID",
-                            "simpa_tests.automatic_tests.TestBandpassFilter",
-                            "simpa_tests.automatic_tests.device_tests.TestCurvedArray",
-                            "simpa_tests.automatic_tests.device_tests.TestLinearArray",
-                            ]
+import glob
+import os
+import inspect
+
+base_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+
+files = glob.glob(os.path.join(base_path, "automatic_tests", "*/*.py"), recursive=True)
+files += glob.glob(os.path.join(base_path, "automatic_tests", "*.py"), recursive=True)
+files += glob.glob(os.path.join(base_path, "automatic_tests", "*/*/*.py"), recursive=True)
+
+automatic_test_classes = [file.replace(os.path.sep, ".")[file.replace(os.path.sep, ".").find("simpa_tests"):-3]
+                          for file in files]
