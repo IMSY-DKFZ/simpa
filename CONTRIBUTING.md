@@ -1,15 +1,17 @@
-# Developer Guide
-
-Dear SIMPA developers,
-Dear person who wants to contribute to the SIMPA toolkit,
+# Contributing to SIMPA
 
 First of all: Thank you for your participation and help! It is much appreciated!
+We are convinced that your contributions will help making SIMPA better, more robust, and 
+reliable for everyone!
+
 This Guide is meant to be used as a collection of How-To's to contribute to the framework.
 In case you have any questions, do not hesitate to get in touch with the members of the core development team:
 
 Kris K. Dreher (k.dreher@dkfz-heidelberg.de)
 
-Janek M. Groehl (janek.grohl@cruk.cam.ac.uk)
+Janek Gröhl (janek.grohl@cruk.cam.ac.uk)
+
+
 
 ## How to contribute
 
@@ -75,20 +77,20 @@ For functions, a lot of extra attributes can be added to the documentation:
         :raises ExceptionType: explain when and why this exception is raised
         """
 
-## Adding literature absorption spectra
+# List of Contributors
 
- The central point, where absorption spectra are collected and handled is in 
- `simpa.utils.libraries.spectra_library.py`. The file comprises the class `AbsorptionSpectrumLibrary`, in which the
- new absorption spectra can be added using the following two steps:
- 
- 1. In the beginning of the class, there is a bunch of constants that define spectra using the `AbsorptionSpectrum`
- class. Add a new constant here: `NEW_SPECTRUM = AbsorptionSpectrum(absorber_name, wavelengths, absorptions)`. By
- convention, the naming of the constant should be the same as the `absorber_name` field. The `wavelengths` and
- `absorptions` arrays must be of the same length and contain corresponding values.
- 
- 2. In the `__init__` method of the `AbsorptionSpectrumLibrary` class, the class constants are added to an internal
- list. This has the benefit of enabling the Library class to be iterable. Add your newly added constant field to 
- the list here.
- 
- 3. Your absorption spectrum is now usable throughout all of simpa and is accessible using the `SPECTRAL_LIBRARY`
- sngleton that can be imported using `from simpa.utils import SPECTRAL_LIBRARY`. 
+In the following table we list the people that have contributd to the SIMPA toolkit.
+People might be listed several times if they have contributed while being affiliated
+to different institutions. The contributors are sorted by end date
+and then by last name.
+
+|Year|Name|Affiliation|
+|---|---|---|
+|2019 - today | Kris Dreher | German Cancer Research Center |
+|2020 - today | Janek Gröhl | Cancer Research UK, Cambridge Institute |
+|2021 - today | Niklas Holzwarth | German Cancer Research Center |
+|2020 - today | Leonardo Menjivar | German Cancer Research Center |
+|2021 - today | Tom Rix | German Cancer Research Center |
+|2020 - today | Melanie Schellenberg | German Cancer Research Center |
+|2021 - today | Patricia Vieten | German Cancer Research Center |
+|2019 - 2020 | Janek Gröhl | German Cancer Research Center |
