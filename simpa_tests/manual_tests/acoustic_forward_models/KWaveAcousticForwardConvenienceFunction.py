@@ -7,7 +7,8 @@ SPDX-License-Identifier: MIT
 
 from simpa.core.device_digital_twins import SlitIlluminationGeometry, LinearArrayDetectionGeometry, PhotoacousticDevice
 from simpa import perform_k_wave_acoustic_forward_simulation
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import reconstruct_delay_and_sum_pytorch
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \
+    reconstruct_delay_and_sum_pytorch
 from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
     GaussianNoise
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
@@ -83,7 +84,8 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         self.device = PhotoacousticDevice(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                        self.VOLUME_PLANAR_DIM_IN_MM/2,
                                                                        0]))
-        self.device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=self.device.device_position_mm, pitch_mm=0.25,
+        self.device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=
+                                                                        self.device.device_position_mm, pitch_mm=0.25,
                                                                         number_detector_elements=200))
         self.device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
@@ -104,10 +106,11 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
     def test_convenience_function(self):
 
         # load initial pressure
-        initial_pressure = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
+        initial_pressure = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" +
+                                           self.VOLUME_NAME + ".hdf5",
                                            Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=700)
         image_slice = np.s_[:, 40, :]
-        self.initial_pressure = initial_pressure[image_slice].T
+        self.initial_pressure = np.rot90(initial_pressure[image_slice], -1)
 
         # define acoustic settings and run simulation with convenience function
         acoustic_settings = {
@@ -124,10 +127,11 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
             Tags.ACOUSTIC_LOG_SCALE: True,
             Tags.MODEL_SENSOR_FREQUENCY_RESPONSE: False
         }
-        time_series_data = perform_k_wave_acoustic_forward_simulation(initial_pressure=initial_pressure,
-                                                                      detection_geometry=self.device.get_detection_geometry(),
+        time_series_data = perform_k_wave_acoustic_forward_simulation(initial_pressure=self.initial_pressure,
+                                                                      detection_geometry=self.device.
+                                                                      get_detection_geometry(),
                                                                       speed_of_sound=1540, density=1000,
-                                                                      alpha_coeff=0.0, acoustic_settings=acoustic_settings)
+                                                                      alpha_coeff=0.0)
 
         # reconstruct the time series data to compare it with initial pressure
         self.settings.set_reconstruction_settings({

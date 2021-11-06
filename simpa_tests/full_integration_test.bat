@@ -6,6 +6,7 @@ coverage run -a --source="simpa" manual_tests/optical_forward_models/AbsorptionA
 coverage run -a --source="simpa" manual_tests/optical_forward_models/AbsorptionAndScatteringWithInifinitesimalSlabExperiment.py
 coverage run -a --source="simpa" manual_tests/optical_forward_models/CompareMCXResultsWithDiffusionTheory.py
 coverage run -a --source="simpa" manual_tests/acoustic_forward_models/MinimalKWaveTest.py
+coverage run -a --source="simpa" manual_tests/acoustic_forward_models/KWaveAcousticForwardConvenienceFunction.py
 
 
 
