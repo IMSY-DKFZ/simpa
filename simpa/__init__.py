@@ -51,3 +51,4 @@ from .io_handling.zenodo_download import download_from_zenodo
 from .io_handling.ipasc import export_to_ipasc
 
 from .visualisation.matplotlib_data_visualisation import visualise_data
+from .visualisation.matplotlib_device_visualisation import visualise_device

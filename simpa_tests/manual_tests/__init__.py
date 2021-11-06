@@ -49,6 +49,8 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         self.reconstructed_image_pipeline = None
         self.reconstructed_image_convenience = None
 
+
+
     @abstractmethod
     def test_reconstruction_of_simulation(self):
         pass
@@ -69,7 +71,7 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         self.VOLUME_TRANSDUCER_DIM_IN_MM = 75
         self.VOLUME_PLANAR_DIM_IN_MM = 20
         self.VOLUME_HEIGHT_IN_MM = 25
-        self.SPACING = 0.3  # 15
+        self.SPACING = 0.25
         self.RANDOM_SEED = 4711
         np.random.seed(self.RANDOM_SEED)
         self.device = MSOTAcuityEcho(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
@@ -77,13 +79,14 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         self.general_settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: self.RANDOM_SEED,
-            Tags.VOLUME_NAME: "CompletePipelineTestMSOT_" + str(self.RANDOM_SEED),
+            Tags.VOLUME_NAME: "TestImageReconstruction_" + str(self.RANDOM_SEED),
             Tags.SIMULATION_PATH: self.path_manager.get_hdf5_file_save_path(),
             Tags.SPACING_MM: self.SPACING,
             Tags.DIM_VOLUME_Z_MM: self.VOLUME_HEIGHT_IN_MM,
             Tags.DIM_VOLUME_X_MM: self.VOLUME_TRANSDUCER_DIM_IN_MM,
             Tags.DIM_VOLUME_Y_MM: self.VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+            Tags.GPU: True,
 
             # Simulation Device
             Tags.DIGITAL_DEVICE: Tags.DIGITAL_DEVICE_MSOT_ACUITY,
@@ -129,7 +132,21 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
             Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
             Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL,
-            Tags.SPACING_MM: self.settings[Tags.SPACING_MM]
+            Tags.SPACING_MM: self.settings[Tags.SPACING_MM],
+            Tags.SENSOR_RECORD: "p",
+            Tags.ACOUSTIC_SIMULATION_3D: False,
+            Tags.PROPERTY_ALPHA_POWER: 0.00,
+            Tags.PMLInside: False,
+            Tags.PMLSize: [31, 32],
+            Tags.PMLAlpha: 1.5,
+            Tags.PlotPML: False,
+            Tags.RECORDMOVIE: False,
+            Tags.MOVIENAME: "visualization_log",
+            Tags.ACOUSTIC_LOG_SCALE: True,
+            Tags.PROPERTY_SPEED_OF_SOUND: 1540,
+            Tags.PROPERTY_ALPHA_COEFF: 0.01,
+            Tags.PROPERTY_DENSITY: 1000,
+            Tags.ACOUSTIC_MODEL_BINARY_PATH: self.path_manager.get_matlab_binary_path(),
         })
 
         self.settings["noise_initial_pressure"] = {
@@ -204,6 +221,9 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         self.test_reconstruction_of_simulation()
         self.test_convenience_function()
 
+    def tear_down(self):
+        pass
+
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         initial_pressure = load_data_field(
             self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
@@ -215,10 +235,12 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         plt.imshow(np.rot90(initial_pressure[:, 20, :], 3))
         plt.subplot(1, 3, 2)
         plt.title("Pipeline\nReconstruction")
-        plt.imshow(np.rot90(self.reconstructed_image_pipeline, 3))
+        if self.reconstructed_image_pipeline is not None:
+            plt.imshow(np.rot90(self.reconstructed_image_pipeline, 3))
         plt.subplot(1, 3, 3)
         plt.title("Convenience Method\nReconstruction")
-        plt.imshow(np.rot90(self.reconstructed_image_convenience, 3))
+        if self.reconstructed_image_convenience is not None:
+            plt.imshow(np.rot90(self.reconstructed_image_convenience, 3))
 
         plt.tight_layout()
         if show_figure_on_screen:
@@ -226,5 +248,5 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         else:
             if save_path is None:
                 save_path = ""
-            plt.savefig(save_path + f"reconstrution_test_{self.__class__}.png")
+            plt.savefig(save_path + f"reconstrution_test_{self.__class__.__name__}.png")
         plt.close()

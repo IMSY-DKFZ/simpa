@@ -10,6 +10,9 @@ coverage run -a --source="simpa" manual_tests/acoustic_forward_models/KWaveAcous
 coverage run -a --source="simpa" manual_tests/image_reconstruction/DelayAndSumReconstruction.py
 coverage run -a --source="simpa" manual_tests/image_reconstruction/DelayMultiplyAndSumReconstruction.py
 coverage run -a --source="simpa" manual_tests/image_reconstruction/SignedDelayMultiplyAndSumReconstruction.py
+coverage run -a --source="simpa" manual_tests/image_reconstruction/TimeReversalReconstruction.py
+coverage run -a --source="simpa" manual_tests/digital_device_twins/VisualiseDevices.py
+
 
 coverage report
 coverage html -d ../docs/full_coverage/

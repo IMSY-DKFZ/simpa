@@ -77,7 +77,7 @@ VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 general_settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: RANDOM_SEED,
-            Tags.VOLUME_NAME: "CompletePipelineTestMSOT_" + str(RANDOM_SEED),
+            Tags.VOLUME_NAME: "CompletePipelineExample_" + str(RANDOM_SEED),
             Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
             Tags.SPACING_MM: SPACING,
             Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
@@ -85,7 +85,6 @@ general_settings = {
             Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.GPU: True,
-            # The following parameters set the optical forward model
             Tags.WAVELENGTHS: [700, 800],
             Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True,
             Tags.DO_IPASC_EXPORT: True

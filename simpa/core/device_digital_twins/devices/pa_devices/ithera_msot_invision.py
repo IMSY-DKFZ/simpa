@@ -52,35 +52,3 @@ class InVision256TF(PhotoacousticDevice):
         for i in range(10):
             self.add_illumination_geometry(MSOTInVisionIlluminationGeometry(i))
 
-
-if __name__ == "__main__":
-    import os
-    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-    device = InVision256TF(device_position_mm=np.asarray([50, 10, 50]))
-    settings = Settings()
-    settings[Tags.DIM_VOLUME_X_MM] = 100
-    settings[Tags.DIM_VOLUME_Y_MM] = 20
-    settings[Tags.DIM_VOLUME_Z_MM] = 100
-    settings[Tags.SPACING_MM] = 0.5
-    settings[Tags.STRUCTURES] = {}
-
-    x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
-    z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
-    positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
-    detector_elements = device.detection_geometry.get_detector_element_orientations()
-    import matplotlib.pyplot as plt
-    plt.figure()
-    plt.subplot(1, 2, 1)
-    plt.title("In volume")
-    plt.scatter(positions[:, 0], positions[:, 2])
-    plt.quiver(positions[:, 0], positions[:, 2], detector_elements[:, 0], detector_elements[:, 2])
-    fov = device.detection_geometry.get_field_of_view_mm()
-    plt.plot([fov[0], fov[1], fov[1], fov[0], fov[0]], [fov[4], fov[4], fov[5], fov[5], fov[4]], color="red")
-    plt.subplot(1, 2, 2)
-    plt.title("Baseline")
-    positions = device.detection_geometry.get_detector_element_positions_base_mm()
-    fov = device.detection_geometry.field_of_view_extent_mm
-    plt.plot([fov[0], fov[1], fov[1], fov[0], fov[0]], [fov[4], fov[4], fov[5], fov[5], fov[4]], color="red")
-    plt.scatter(positions[:, 0], positions[:, 2])
-    plt.quiver(positions[:, 0], positions[:, 2], detector_elements[:, 0], detector_elements[:, 2])
-    plt.show()
