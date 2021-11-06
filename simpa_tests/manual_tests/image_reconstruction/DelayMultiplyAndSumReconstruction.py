@@ -8,7 +8,7 @@ from simpa.utils import Tags
 from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa import KWaveAdapter, MCXAdapter, \
-    DelayAndSumAdapter, ModelBasedVolumeCreationAdapter, GaussianNoise
+    DelayMultiplyAndSumAdapter, ModelBasedVolumeCreationAdapter, GaussianNoise
 from simpa import reconstruct_delay_multiply_and_sum_pytorch
 from simpa_tests.manual_tests import ReconstructionAlgorithmTestBaseClass
 
@@ -32,15 +32,13 @@ class DelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseClass):
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_initial_pressure"),
             KWaveAdapter(self.settings),
-            DelayAndSumAdapter(self.settings)
+            DelayMultiplyAndSumAdapter(self.settings)
         ]
 
         simulate(SIMUATION_PIPELINE, self.settings, self.device)
 
-        reconstructed_image = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.RECONSTRUCTED_DATA,
+        self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.RECONSTRUCTED_DATA,
                                               self.settings[Tags.WAVELENGTH])
-
-        self.plot_reconstruction_compared_with_initial_pressure(reconstructed_image, "Reconstructed image using adapter")
 
     def test_convenience_function(self):
         # Load simulated time series data
@@ -48,14 +46,11 @@ class DelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseClass):
                                                   Tags.TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
 
         # reconstruct image using convenience function
-        reconstructed_image = reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data,
+        self.reconstructed_image_convenience = reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data,
                                                                          self.device.get_detection_geometry(),
                                                                          self.settings)
-
-        self.plot_reconstruction_compared_with_initial_pressure(reconstructed_image, "Reconstructed image using convenience function")
 
 
 if __name__ == '__main__':
     test = DelayMultiplyAndSumReconstruction()
-    test.test_reconstruction_of_simulation()
-    test.test_convenience_function()
+    test.run_test(show_figure_on_screen=False)

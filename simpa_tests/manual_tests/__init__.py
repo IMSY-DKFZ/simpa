@@ -43,9 +43,21 @@ class ManualIntegrationTestClass(object):
         self.tear_down()
 
 
-class ReconstructionAlgorithmTestBaseClass:
+class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
 
     def __init__(self):
+        self.reconstructed_image_pipeline = None
+        self.reconstructed_image_convenience = None
+
+    @abstractmethod
+    def test_reconstruction_of_simulation(self):
+        pass
+
+    @abstractmethod
+    def test_convenience_function(self):
+        pass
+
+    def setup(self):
         """
         This is not a completely autonomous simpa_tests case yet.
         Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -54,7 +66,6 @@ class ReconstructionAlgorithmTestBaseClass:
         """
 
         self.path_manager = PathManager()
-
         self.VOLUME_TRANSDUCER_DIM_IN_MM = 75
         self.VOLUME_PLANAR_DIM_IN_MM = 20
         self.VOLUME_HEIGHT_IN_MM = 25
@@ -63,7 +74,6 @@ class ReconstructionAlgorithmTestBaseClass:
         np.random.seed(self.RANDOM_SEED)
         self.device = MSOTAcuityEcho(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                   self.VOLUME_PLANAR_DIM_IN_MM/2, 0]))
-
         self.general_settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: self.RANDOM_SEED,
@@ -190,15 +200,31 @@ class ReconstructionAlgorithmTestBaseClass:
         tissue_dict["vessel_3"] = vessel_3_dictionary
         return tissue_dict
 
-    def plot_reconstruction_compared_with_initial_pressure(self, reconstructed_image, reconstructed_title):
+    def perform_test(self):
+        self.test_reconstruction_of_simulation()
+        self.test_convenience_function()
+
+    def visualise_result(self, show_figure_on_screen=True, save_path=None):
         initial_pressure = load_data_field(
             self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
             wavelength=self.settings[Tags.WAVELENGTH])
 
-        plt.subplot(1, 2, 1)
+        plt.figure(figsize=(9, 3))
+        plt.subplot(1, 3, 1)
         plt.title("Initial pressure")
         plt.imshow(np.rot90(initial_pressure[:, 20, :], 3))
-        plt.subplot(1, 2, 2)
-        plt.title(reconstructed_title)
-        plt.imshow(np.rot90(reconstructed_image, 3))
-        plt.show()
+        plt.subplot(1, 3, 2)
+        plt.title("Pipeline\nReconstruction")
+        plt.imshow(np.rot90(self.reconstructed_image_pipeline, 3))
+        plt.subplot(1, 3, 3)
+        plt.title("Convenience Method\nReconstruction")
+        plt.imshow(np.rot90(self.reconstructed_image_convenience, 3))
+
+        plt.tight_layout()
+        if show_figure_on_screen:
+            plt.show()
+        else:
+            if save_path is None:
+                save_path = ""
+            plt.savefig(save_path + f"reconstrution_test_{self.__class__}.png")
+        plt.close()

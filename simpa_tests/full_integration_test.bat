@@ -7,8 +7,9 @@ coverage run -a --source="simpa" manual_tests/optical_forward_models/AbsorptionA
 coverage run -a --source="simpa" manual_tests/optical_forward_models/CompareMCXResultsWithDiffusionTheory.py
 coverage run -a --source="simpa" manual_tests/acoustic_forward_models/MinimalKWaveTest.py
 coverage run -a --source="simpa" manual_tests/acoustic_forward_models/KWaveAcousticForwardConvenienceFunction.py
-
-
+coverage run -a --source="simpa" manual_tests/image_reconstruction/DelayAndSumReconstruction.py
+coverage run -a --source="simpa" manual_tests/image_reconstruction/DelayMultiplyAndSumReconstruction.py
+coverage run -a --source="simpa" manual_tests/image_reconstruction/SignedDelayMultiplyAndSumReconstruction.py
 
 coverage report
 coverage html -d ../docs/full_coverage/
