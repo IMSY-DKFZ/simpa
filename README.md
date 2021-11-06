@@ -98,20 +98,16 @@ one we provided in the `simpa_examples`) in the following places in this order:
 
 ## How to contribute
 
-Please find a more detailed description of how to contribute as well as code style references in our **developer_guide.md**
-
-The SIMPA code is written and maintained on a closed git repository that is hosted on a server
-of the German Cancer Research Center (DKFZ), Heidelberg, Germany and changes to the develop or master branch are mirrored on Github.
-As such, only the current master and develop branch of the repository are open source.
+Please find a more detailed description of how to contribute as well as code style references in **CONTRIBUTING.md**
 
 To contribute to SIMPA, please fork the SIMPA github repository and create a pull request with a branch containing your 
-suggested changes. The core team developers will then review the suggested changes and integrate these into the code 
+suggested changes. The core developers will then review the suggested changes and integrate these into the code 
 base.
 
 Please make sure that you have included unit tests for your code and that all previous tests still run through.
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST and you are very welcome to participate and
-raise any issues or suggest new features. If you want to join this meeting, write one of the core developers (see developer_guide.md) 
+raise any issues or suggest new features. If you want to join this meeting, write one of the core developers.
 
 Please see the github guidelines for creating pull requests: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests
 
@@ -128,12 +124,14 @@ You simply need to replace the `myscript` name with your script name.
 
 ## Troubleshooting
 
-In this section, known problems are listed with their solutions:
+In this section, known problems are listed with their solutions (if available):
 
-1. Error reading hdf5-files when using k-Wave binaries:
+### 1. Error reading hdf5-files when using k-Wave binaries:
    
-    If you encounter an error similar to:
-    `Error using h5readc`
-    `The filename specified was either not found on the MATLAB path or it contains unsupported characters.`
-    Look up the solution in [this thread of the k-Wave forum](http://www.k-wave.org/forum/topic/error-reading-h5-files-when-using-binaries).  
+If you encounter an error similar to:
+
+    Error using h5readc
+    The filename specified was either not found on the MATLAB path or it contains unsupported characters.
+
+Look up the solution in [this thread of the k-Wave forum](http://www.k-wave.org/forum/topic/error-reading-h5-files-when-using-binaries).  
       
