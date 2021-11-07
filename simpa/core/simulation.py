@@ -83,9 +83,9 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     # adapter / processing components, the amount of space on the hard drive that is allocated by the HDF5
     # code does not dynamically change. This can be remedied by re-writing the file after the simulation
     # terminates. As it might have a negative impact on simulation performance, it must be activated
-    # by the user manually.
-    if Tags.DO_FILE_COMPRESSION in settings and \
-            settings[Tags.DO_FILE_COMPRESSION]:
+    # by the user manually. Active by default.
+    if not(Tags.DO_FILE_COMPRESSION in settings and
+            not settings[Tags.DO_FILE_COMPRESSION]):
         all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
         save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH], file_compression="gzip")
 
