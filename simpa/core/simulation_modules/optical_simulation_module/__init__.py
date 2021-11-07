@@ -11,6 +11,7 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 import gc
 from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
+from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
 class OpticalForwardModuleBase(SimulationModule):
@@ -82,6 +83,9 @@ class OpticalForwardModuleBase(SimulationModule):
                                          illumination_geometry=_device,
                                          probe_position_mm=device.device_position_mm)
 
+        if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
+            assert_array_well_defined(fluence, assume_non_negativity=True)
+
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.component_settings:
             units = Tags.UNITS_PRESSURE
             # Initial pressure should be given in units of Pascale
@@ -92,6 +96,9 @@ class OpticalForwardModuleBase(SimulationModule):
         else:
             units = Tags.UNITS_ARBITRARY
             initial_pressure = absorption * fluence
+
+        if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
+            assert_array_well_defined(initial_pressure, assume_non_negativity=True)
 
         optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
 

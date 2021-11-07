@@ -11,6 +11,7 @@ from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.core.device_digital_twins import PhotoacousticDevice, DetectionGeometryBase
+from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
 class AcousticForwardModelBaseAdapter(SimulationModule):
@@ -66,6 +67,9 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
             raise TypeError(f"The optical forward modelling does not support devices of type {type(digital_device_twin)}")
 
         time_series_data = self.forward_model(_device)
+
+        if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
+            assert_array_well_defined(time_series_data)
 
         acoustic_output_path = generate_dict_path(Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 

@@ -1375,3 +1375,10 @@ class Tags:
     exported into the IPASC data format.
     Usage: module io_handling, core
     """
+
+    IGNORE_QA_ASSERTIONS = ("ignore_qa_assertions", bool)
+    """
+    Flag which presents any quality assessment to run during the simulation.
+    False by default. Only set to True if the pipeline is thoroughly tested.
+    Usage: core
+    """

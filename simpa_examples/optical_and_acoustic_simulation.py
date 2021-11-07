@@ -200,9 +200,6 @@ if VISUALIZE:
                       wavelength=WAVELENGTH,
                       show_time_series_data=True,
                       show_initial_pressure=True,
-                      show_absorption=False,
-                      show_segmentation_map=False,
-                      show_tissue_density=False,
                       show_reconstructed_data=True,
-                      show_fluence=False,
-                      log_scale=False)
+                      log_scale=False,
+                      show_xz_only=True)

@@ -12,6 +12,7 @@ import numpy as np
 from simpa.core import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import save_hdf5
+from simpa.utils.quality_assurance.data_sanity_testing import assert_equal_shapes, assert_array_well_defined
 
 
 class VolumeCreatorModuleBase(SimulationModule):
@@ -48,6 +49,12 @@ class VolumeCreatorModuleBase(SimulationModule):
         self.logger.info("VOLUME CREATION")
 
         volumes = self.create_simulation_volume()
+
+        if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
+            assert_equal_shapes(list(volumes.values()))
+            for _volume in volumes.values():
+                assert_array_well_defined(_volume)
+
         save_volumes = dict()
         for key, value in volumes.items():
             if key in [Tags.DATA_FIELD_ABSORPTION_PER_CM, Tags.DATA_FIELD_SCATTERING_PER_CM, Tags.DATA_FIELD_ANISOTROPY]:
