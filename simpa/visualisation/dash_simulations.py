@@ -38,7 +38,6 @@ USAGE:
 import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
-import dash_table
 import dash_bootstrap_components as dbc
 import dash_html_components as html
 import dash_colorscales as dcs
@@ -61,12 +60,19 @@ app = dash.Dash(external_stylesheets=external_stylesheets, title="SIMPA")
 
 simpa_logo = './assets/simpa_logo.png'
 cami_logo = './assets/CAMIC_logo-wo_DKFZ.png'
+github_logo = './assets/GitHub-Mark-64px.png'
+
+encoded_github_logo = (base64.b64encode(open(github_logo, 'rb').read())).decode()
 encoded_simpa_logo = (base64.b64encode(open(simpa_logo, 'rb').read())).decode()
 encoded_cami_logo = (base64.b64encode(open(cami_logo, 'rb').read())).decode()
 
 DEFAULT_COLORSCALE = ['rgb(5,48,97)', 'rgb(33,102,172)', 'rgb(67,147,195)', 'rgb(146,197,222)', 'rgb(209,229,240)',
                       'rgb(247,247,247)', 'rgb(253,219,199)', 'rgb(244,165,130)', 'rgb(214,96,77)',
                       'rgb(178,24,43)', 'rgb(103,0,31)']
+GITHUB_LINK = 'https://github.com/CAMI-DKFZ/simpa'
+BG_COLOR = "#506784"
+FONT_COLOR = "#F3F6FA"
+APP_TITLE = "SIMPA"
 
 
 class DataContainer:
@@ -108,13 +114,21 @@ app.layout = html.Div([
         dbc.Col([
             html.H4("SIMPA Visualization Tool"),
             html.H6("CAMI, Computer Assisted Medical Interventions"),
-        ], width=9),
+        ], width=8),
         dbc.Col([
             html.Img(src='data:image/png;base64,{}'.format(encoded_simpa_logo), width='100%')
         ], width=1),
         dbc.Col([
             html.Img(src='data:image/png;base64,{}'.format(encoded_cami_logo), width='100%')
-        ], width=2)
+        ], width=2),
+        dbc.Col([
+            html.A(
+                href=GITHUB_LINK,
+                children=[
+                    html.Img(src='data:image/png;base64,{}'.format(encoded_github_logo), width='75%')
+                ]
+            )
+        ], width=1),
     ], style=dict(zIndex=0)),
     html.Br(),
     dcc.Tabs([
@@ -122,51 +136,75 @@ app.layout = html.Div([
             html.Br(),
             dbc.Row([
                 dbc.Col([
-                    html.Hr(),
-                    html.H6("Plotting / Handling settings"),
-                    dbc.Input(
-                        id="data_path",
-                        type="text",
-                        pattern=None,
-                        placeholder="Path to simulation folder or file",
-                        persistence=True,
-                        persistence_type="session",
-                    ),
-                    dcc.Dropdown(
-                        id="file_selection",
-                        placeholder="Simulation files",
-                        persistence=True,
-                        persistence_type="session",
-                    ),
-                    html.Br(),
-                    html.Hr(),
-                    html.H6("Data selection"),
-                    dcc.Dropdown(
-                        id="volume_axis",
-                        multi=False,
-                        placeholder="Volume axis",
-                        persistence_type="session",
-                        options=[{'label': 'x', 'value': 0},
-                                 {'label': 'y', 'value': 1},
-                                 {'label': 'z', 'value': 2}],
-                        value=2
-                    ),
-                    html.Br(),
-                    html.Hr(),
-                    html.H6("Visual settings"),
-                    html.P("Color scale"),
-                    dcs.DashColorscales(
-                        id="colorscale_picker",
-                        nSwatches=7,
-                        fixSwatches=True,
-                        colorscale=DEFAULT_COLORSCALE
-                    ),
-                    html.Br(),
-                    html.Hr(),
-                    html.H6("General Information"),
-                    html.Div([
+                    dcc.Tabs([
+                        dcc.Tab(label="About", id="about-tab",children=[
+                            html.Br(),
+                            html.P("This is a dash app designed by the SIMPA developer team. For more information on "
+                                   "the SIMPA toolkit visit:", style={'text-align': 'justify'}),
+                            html.A("SIMPA", href=GITHUB_LINK),
+                            html.P("This app was developed based on the Dash framework from Plotly. It will allow you"
+                                   "to interactively visualize the simulated results that the SIMPA toolkit outputs. "
+                                   "If you encounter any problems please reach out to the developer team through the"
+                                   "GitHub page of SIMPA.",
+                                   style={'text-align': 'justify'}),
+                            dcc.Markdown("In the **Handlers** tab you will find a set of controllers that will help "
+                                         "you select the dataset you want to visualize and different visualization "
+                                         "controllers to select the correct displaying format.",
+                                         style={'text-align': 'justify'}),
+                            dcc.Markdown("In the *Data selection* subcategory you can choose which axis of the data "
+                                         "you want to visualize. In the *Visual settings* subcategory you can choose "
+                                         "the global color scale used for each subplot",
+                                         style={'text-align': 'justify'})
+                        ]),
+                        dcc.Tab(label="Handlers", id="handler-tab", children=[
+                            html.Hr(),
+                            html.H6("Plotting / Handling settings"),
+                            dbc.Input(
+                                id="data_path",
+                                type="text",
+                                pattern=None,
+                                placeholder="Path to simulation folder or file",
+                                persistence=True,
+                                persistence_type="session",
+                            ),
+                            dcc.Dropdown(
+                                id="file_selection",
+                                placeholder="Simulation files",
+                                persistence=True,
+                                persistence_type="session",
+                            ),
+                            html.Br(),
+                            html.Hr(),
+                            html.H6("Data selection"),
+                            dcc.Dropdown(
+                                id="volume_axis",
+                                multi=False,
+                                placeholder="Volume axis",
+                                persistence_type="session",
+                                options=[{'label': 'x', 'value': 0},
+                                         {'label': 'y', 'value': 1},
+                                         {'label': 'z', 'value': 2}],
+                                value=2
+                            ),
+                            html.Br(),
+                            html.Hr(),
+                            html.H6("Visual settings"),
+                            html.P("Color scale"),
+                            dcs.DashColorscales(
+                                id="colorscale_picker",
+                                nSwatches=7,
+                                fixSwatches=True,
+                                colorscale=DEFAULT_COLORSCALE
+                            ),
+                            html.Br(),
+                            html.Hr(),
+                            html.H6("General Information"),
+                            html.Div([
 
-                    ], id="general_info")
+                            ], id="general_info")
+                        ])
+                    ]),
+
                 ], width=2),
                 dbc.Col([
                     dbc.Row([
