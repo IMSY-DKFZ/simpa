@@ -86,7 +86,7 @@ general_settings = {
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.GPU: True,
             Tags.WAVELENGTHS: [700, 800],
-            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True,
+            Tags.DO_FILE_COMPRESSION: True,
             Tags.DO_IPASC_EXPORT: True
         }
 settings = sp.Settings(general_settings)
@@ -196,7 +196,7 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+    sp.visualise_data(path_to_hdf5_file=settings[Tags.SIMPA_OUTPUT_PATH],
                       wavelength=WAVELENGTH,
                       show_time_series_data=True,
                       show_initial_pressure=True,

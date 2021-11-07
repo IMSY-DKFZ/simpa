@@ -94,7 +94,7 @@ general_settings = {
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
     Tags.WAVELENGTHS: WAVELENGTHS,
 
-    Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
+    Tags.DO_FILE_COMPRESSION: True
 }
 settings = sp.Settings(general_settings)
 settings.set_volume_creation_settings({

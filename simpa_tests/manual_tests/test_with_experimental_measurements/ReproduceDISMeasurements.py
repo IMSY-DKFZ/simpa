@@ -155,7 +155,7 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
             Tags.DIM_VOLUME_X_MM: self.VOLUME_LENGTH_MM,
             Tags.DIM_VOLUME_Y_MM: self.VOLUME_LENGTH_MM,
             Tags.WAVELENGTHS: [500, 550, 600, 650, 700, 750, 800, 850, 900],
-            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
+            Tags.DO_FILE_COMPRESSION: True
         }
 
         self.settings = Settings(general_settings)

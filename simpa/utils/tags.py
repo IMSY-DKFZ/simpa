@@ -77,7 +77,7 @@ class Tags:
     Usage: module noise_simulation
     """
 
-    LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE = ("minimize_file_size", (bool, np.bool, np.bool_))
+    DO_FILE_COMPRESSION = ("minimize_file_size", (bool, np.bool, np.bool_))
     """
     If not set to False, the HDF5 file will be optimised after the simulations are done.
     Usage: simpa.core.simulation.simulate
