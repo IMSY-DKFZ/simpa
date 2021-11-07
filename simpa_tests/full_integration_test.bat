@@ -13,6 +13,7 @@ coverage run -a --source="simpa" manual_tests/image_reconstruction/SignedDelayMu
 coverage run -a --source="simpa" manual_tests/image_reconstruction/TimeReversalReconstruction.py
 coverage run -a --source="simpa" manual_tests/digital_device_twins/VisualiseDevices.py
 coverage run -a --source="simpa" manual_tests/digital_device_twins/SimulationWithMSOTInvision.py
+coverage run -a --source="simpa" manual_tests/volume_creation/SegmentationLoader.py
 
 
 coverage report
