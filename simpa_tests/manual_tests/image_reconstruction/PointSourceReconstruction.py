@@ -122,12 +122,12 @@ settings.set_optical_settings({
 settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.PROPERTY_ALPHA_POWER: 0.00,
-    Tags.SENSOR_RECORD: "p",
-    Tags.PMLInside: False,
-    Tags.PMLSize: [31, 32],
-    Tags.PMLAlpha: 1.5,
-    Tags.PlotPML: False,
+    Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+    Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+    Tags.KWAVE_PROPERTY_PMLInside: False,
+    Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+    Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+    Tags.KWAVE_PROPERTY_PlotPML: False,
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True
@@ -136,7 +136,7 @@ settings.set_acoustic_settings({
 settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.PROPERTY_ALPHA_POWER: 0.00,
+    Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
@@ -144,15 +144,15 @@ settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
-    Tags.SENSOR_RECORD: "p",
-    Tags.PMLInside: False,
-    Tags.PMLSize: [31, 32],
-    Tags.PMLAlpha: 1.5,
-    Tags.PlotPML: False,
+    Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+    Tags.KWAVE_PROPERTY_PMLInside: False,
+    Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+    Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+    Tags.KWAVE_PROPERTY_PlotPML: False,
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True,
-    Tags.PROPERTY_SPEED_OF_SOUND: SPEED_OF_SOUND,
+    Tags.DATA_FIELD_SPEED_OF_SOUND: SPEED_OF_SOUND,
     Tags.SPACING_MM: SPACING
 })
 
@@ -175,10 +175,10 @@ def simulate_and_evaluate_with_device(_device):
         wavelength = 700
 
     initial_pressure = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-                                       data_field=Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+                                       data_field=Tags.DATA_FIELD_INITIAL_PRESSURE,
                                        wavelength=wavelength)
     reconstruction = load_data_field(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-                                     data_field=Tags.RECONSTRUCTED_DATA,
+                                     data_field=Tags.DATA_FIELD_RECONSTRUCTED_DATA,
                                      wavelength=wavelength)
 
     p0_idx = np.unravel_index(np.argmax(initial_pressure), np.shape(initial_pressure))

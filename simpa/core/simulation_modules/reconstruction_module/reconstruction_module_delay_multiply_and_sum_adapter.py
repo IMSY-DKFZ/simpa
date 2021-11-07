@@ -87,8 +87,8 @@ def reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data: np.ndarr
         settings = Settings()
 
     # parse reconstruction settings if they are not given in the settings
-    if Tags.PROPERTY_SPEED_OF_SOUND not in settings or settings[Tags.PROPERTY_SPEED_OF_SOUND] is None:
-        settings[Tags.PROPERTY_SPEED_OF_SOUND] = speed_of_sound_in_m_per_s
+    if Tags.DATA_FIELD_SPEED_OF_SOUND not in settings or settings[Tags.DATA_FIELD_SPEED_OF_SOUND] is None:
+        settings[Tags.DATA_FIELD_SPEED_OF_SOUND] = speed_of_sound_in_m_per_s
 
     if Tags.SENSOR_SAMPLING_RATE_MHZ not in settings or settings[Tags.SENSOR_SAMPLING_RATE_MHZ] is None:
         settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = (1.0 / time_spacing_in_s) / 1000000

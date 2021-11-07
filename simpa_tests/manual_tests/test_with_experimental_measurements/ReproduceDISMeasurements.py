@@ -196,9 +196,9 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
         for wavelength in self.settings[Tags.WAVELENGTHS]:
 
             absorption = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
-                                         Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
+                                         Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength)
             fluence = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
-                                      Tags.OPTICAL_MODEL_FLUENCE, wavelength)
+                                      Tags.DATA_FIELD_FLUENCE, wavelength)
 
             start_z = int((self.VOLUME_HEIGHT_IN_MM / 2 - self.inclusion_thickness / 2 - 5 * self.SPACING) / self.SPACING)
             end_z = int((self.VOLUME_HEIGHT_IN_MM / 2 + self.inclusion_thickness / 2 + self.SPACING) / self.SPACING)

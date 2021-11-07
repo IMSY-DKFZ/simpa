@@ -112,12 +112,12 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
             Tags.ACOUSTIC_SIMULATION_3D: True,
             Tags.ACOUSTIC_MODEL_BINARY_PATH: self.path_manager.get_matlab_binary_path(),
             Tags.GPU: True,
-            Tags.PROPERTY_ALPHA_POWER: 1.05,
-            Tags.SENSOR_RECORD: "p",
-            Tags.PMLInside: False,
-            Tags.PMLSize: [31, 32],
-            Tags.PMLAlpha: 1.5,
-            Tags.PlotPML: False,
+            Tags.KWAVE_PROPERTY_ALPHA_POWER: 1.05,
+            Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+            Tags.KWAVE_PROPERTY_PMLInside: False,
+            Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+            Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+            Tags.KWAVE_PROPERTY_PlotPML: False,
             Tags.RECORDMOVIE: False,
             Tags.MOVIENAME: "visualization_log",
             Tags.ACOUSTIC_LOG_SCALE: True
@@ -133,19 +133,19 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
             Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_DIFFERENTIAL,
             Tags.SPACING_MM: self.settings[Tags.SPACING_MM],
-            Tags.SENSOR_RECORD: "p",
+            Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
             Tags.ACOUSTIC_SIMULATION_3D: False,
-            Tags.PROPERTY_ALPHA_POWER: 0.00,
-            Tags.PMLInside: False,
-            Tags.PMLSize: [31, 32],
-            Tags.PMLAlpha: 1.5,
-            Tags.PlotPML: False,
+            Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+            Tags.KWAVE_PROPERTY_PMLInside: False,
+            Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+            Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+            Tags.KWAVE_PROPERTY_PlotPML: False,
             Tags.RECORDMOVIE: False,
             Tags.MOVIENAME: "visualization_log",
             Tags.ACOUSTIC_LOG_SCALE: True,
-            Tags.PROPERTY_SPEED_OF_SOUND: 1540,
-            Tags.PROPERTY_ALPHA_COEFF: 0.01,
-            Tags.PROPERTY_DENSITY: 1000,
+            Tags.DATA_FIELD_SPEED_OF_SOUND: 1540,
+            Tags.DATA_FIELD_ALPHA_COEFF: 0.01,
+            Tags.DATA_FIELD_DENSITY: 1000,
             Tags.ACOUSTIC_MODEL_BINARY_PATH: self.path_manager.get_matlab_binary_path(),
         })
 
@@ -153,7 +153,7 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
             Tags.NOISE_MEAN: 1,
             Tags.NOISE_STD: 0.1,
             Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
-            Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
             Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
         }
 
@@ -226,7 +226,7 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         initial_pressure = load_data_field(
-            self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+            self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_INITIAL_PRESSURE,
             wavelength=self.settings[Tags.WAVELENGTH])
 
         plt.figure(figsize=(9, 3))

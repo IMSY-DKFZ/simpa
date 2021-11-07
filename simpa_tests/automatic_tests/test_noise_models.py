@@ -71,7 +71,7 @@ class TestNoiseModels(unittest.TestCase):
             simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
 
             absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_PATH],
-                                         data_field=Tags.PROPERTY_ABSORPTION_PER_CM,
+                                         data_field=Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                          wavelength=800)
             actual_mean = np.mean(absorption)
             actual_std = np.std(absorption)
@@ -111,7 +111,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test additive version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_MEAN: 1,
             Tags.NOISE_STD: 0.1,
             Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE
@@ -130,7 +130,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test multiplicative version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_MEAN: 1,
             Tags.NOISE_STD: 0.1,
             Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE
@@ -149,7 +149,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test with using non-negativity contraint
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_MEAN: 1,
             Tags.NOISE_STD: 0.1,
             Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
@@ -184,7 +184,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test additive version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_SCALE: 1,
             Tags.NOISE_SHAPE: 0.1,
             Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE
@@ -203,7 +203,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test additive version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_SCALE: 2.5,
             Tags.NOISE_SHAPE: 1.7,
             Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE
@@ -222,7 +222,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test multiplicative version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_SCALE: 1.0,
             Tags.NOISE_SHAPE: 1.7,
             Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE
@@ -256,7 +256,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test additive version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_MEAN: 1.7,
             Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE
         }
@@ -274,7 +274,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test additive version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_MEAN: 33.7,
             Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE
         }
@@ -292,7 +292,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test multiplicative version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_MEAN: 1.7,
             Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE
         }
@@ -325,7 +325,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test additive version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_MIN: 0,
             Tags.NOISE_MAX: 2,
             Tags.NOISE_FREQUENCY: 0.1
@@ -360,7 +360,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test additive version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_MIN: 5,
             Tags.NOISE_MAX: 12,
             Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE
@@ -380,7 +380,7 @@ class TestNoiseModels(unittest.TestCase):
 
         # Test multiplicative version
         settings = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.NOISE_MIN: 1,
             Tags.NOISE_MAX: 3,
             Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE

@@ -54,42 +54,42 @@ def visualise_data(wavelength: int = None,
     time_series_data = None
     reconstructed_data = None
 
-    absorption = get_data_field_from_simpa_output(file, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
-    scattering = get_data_field_from_simpa_output(file, Tags.PROPERTY_SCATTERING_PER_CM, wavelength)
-    anisotropy = get_data_field_from_simpa_output(file, Tags.PROPERTY_ANISOTROPY, wavelength)
-    segmentation_map = get_data_field_from_simpa_output(file, Tags.PROPERTY_SEGMENTATION)
-    speed_of_sound = get_data_field_from_simpa_output(file, Tags.PROPERTY_SPEED_OF_SOUND)
-    density = get_data_field_from_simpa_output(file, Tags.PROPERTY_DENSITY)
+    absorption = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength)
+    scattering = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SCATTERING_PER_CM, wavelength)
+    anisotropy = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_ANISOTROPY, wavelength)
+    segmentation_map = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SEGMENTATION)
+    speed_of_sound = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SPEED_OF_SOUND)
+    density = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_DENSITY)
 
     if show_fluence:
         try:
-            fluence = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_FLUENCE, wavelength)
+            fluence = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_FLUENCE, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.OPTICAL_MODEL_FLUENCE) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_FLUENCE) + " was not in the simpa output.")
             show_fluence = False
             fluence = None
 
     if show_initial_pressure:
         try:
-            initial_pressure = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength)
+            initial_pressure = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_INITIAL_PRESSURE, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.OPTICAL_MODEL_INITIAL_PRESSURE) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_INITIAL_PRESSURE) + " was not in the simpa output.")
             show_initial_pressure = False
             initial_pressure = None
 
     if show_time_series_data:
         try:
-            time_series_data = get_data_field_from_simpa_output(file, Tags.TIME_SERIES_DATA, wavelength)
+            time_series_data = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.TIME_SERIES_DATA) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_TIME_SERIES_DATA) + " was not in the simpa output.")
             show_time_series_data = False
             time_series_data = None
 
     if show_reconstructed_data:
         try:
-            reconstructed_data = get_data_field_from_simpa_output(file, Tags.RECONSTRUCTED_DATA, wavelength)
+            reconstructed_data = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_RECONSTRUCTED_DATA, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.RECONSTRUCTED_DATA) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_RECONSTRUCTED_DATA) + " was not in the simpa output.")
             show_reconstructed_data = False
             reconstructed_data = None
 

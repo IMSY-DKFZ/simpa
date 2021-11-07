@@ -59,7 +59,7 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         # We are interested in the blood oxygen saturation, so we have to execute linear unmixing with
         # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
         self.settings["linear_unmixing"] = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.VISUAL_WAVELENGTHS,
             Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.VISUAL_WAVELENGTHS,
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
@@ -92,8 +92,8 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         self.sO2 = self.lu_results["sO2"]
 
         # Load reference absorption for the first wavelength
-        self.mua = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
-                              wavelength=self.VISUAL_WAVELENGTHS[0])
+        self.mua = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
+                                   wavelength=self.VISUAL_WAVELENGTHS[0])
 
     def tear_down(self):
         # clean up file after testing

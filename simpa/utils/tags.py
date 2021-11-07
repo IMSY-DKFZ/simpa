@@ -71,7 +71,7 @@ class Tags:
     Usage: SIMPA package
     """
 
-    MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float, np.float))
+    MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float))
     """
     Temperature of the simulated volume.\n
     Usage: module noise_simulation
@@ -117,7 +117,7 @@ class Tags:
     Usage: adapter segmentation_based_volume_creator
     """
 
-    PRIORITY = ("priority", (int, np.integer, float, np.float))
+    PRIORITY = ("priority", (int, np.integer, float))
     """
     Number that corresponds to a priority of the assigned structure. If another structure occupies the same voxel 
     in a volume, the structure with a higher priority will be preferred.\n
@@ -200,13 +200,13 @@ class Tags:
     Usage: adapter versatile_volume_creation, class GeometricalStructure
     """
 
-    STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float, np.float, np.ndarray))
+    STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float, np.ndarray))
     """
     Radius of the structure.\n
     Usage: adapter versatile_volume_creation, class GeometricalStructure
     """
 
-    STRUCTURE_ECCENTRICITY = ("structure_excentricity", (int, np.integer, float, np.float, np.ndarray))
+    STRUCTURE_ECCENTRICITY = ("structure_excentricity", (int, np.integer, float, np.ndarray))
     """
     Eccentricity of the structure.\n
     Usage: adapter versatile_volume_creation, class EllipticalTubularStructure
@@ -230,37 +230,37 @@ class Tags:
     Usage: adapter versatile_volume_creation, class ParallelepipedStructure
     """
 
-    STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", (int, np.integer, float, np.float))
+    STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", (int, np.integer, float))
     """
     X-extent of the structure in the generated volume.\n
     Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
     """
 
-    STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", (int, np.integer, float, np.float))
+    STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", (int, np.integer, float))
     """
     Y-extent of the structure in the generated volume.\n
     Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
     """
 
-    STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", (int, np.integer, float, np.float))
+    STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", (int, np.integer, float))
     """
     Z-extent of the structure in the generated volume.\n
     Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
     """
 
-    STRUCTURE_BIFURCATION_LENGTH_MM = ("structure_bifurcation_length_mm", (int, np.integer, float, np.float))
+    STRUCTURE_BIFURCATION_LENGTH_MM = ("structure_bifurcation_length_mm", (int, np.integer, float))
     """
     Length after which a VesselStructure will bifurcate.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
     """
 
-    STRUCTURE_CURVATURE_FACTOR = ("structure_curvature_factor", (int, np.integer, float, np.float))
+    STRUCTURE_CURVATURE_FACTOR = ("structure_curvature_factor", (int, np.integer, float))
     """
     Factor that determines how strongly a vessel tree is curved.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
     """
 
-    STRUCTURE_RADIUS_VARIATION_FACTOR = ("structure_radius_variation_factor", (int, np.integer, float, np.float))
+    STRUCTURE_RADIUS_VARIATION_FACTOR = ("structure_radius_variation_factor", (int, np.integer, float))
     """
     Factor that determines how strongly a the radius of vessel tree varies.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
@@ -337,7 +337,7 @@ class Tags:
     Usage: module optical_simulation_module
     """
 
-    OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", (int, np.integer, float, np.float))
+    OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", (int, np.integer, float))
     """
     Number of photons used in the optical simulation.\n
     Usage: module optical_simulation_module
@@ -350,20 +350,20 @@ class Tags:
     Usage: module optical_simulation_module
     """
 
-    LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, np.float, list,
+    LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, list,
                                                                              range, tuple, np.ndarray))
     """
     Laser pulse energy used in the optical simulation.\n
     Usage: module optical_simulation_module
     """
 
-    OPTICAL_MODEL_FLUENCE = "fluence"
+    DATA_FIELD_FLUENCE = "fluence"
     """
     Name of the optical forward model output fluence field in the SIMPA output file.\n
     Usage: naming convention
     """
 
-    OPTICAL_MODEL_INITIAL_PRESSURE = "initial_pressure"
+    DATA_FIELD_INITIAL_PRESSURE = "initial_pressure"
     """
     Name of the optical forward model output initial pressure field in the SIMPA output file.\n
     Usage: naming convention
@@ -382,7 +382,7 @@ class Tags:
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
-    MCX_ASSUMED_ANISOTROPY = ("mcx_seed", (int, np.int, float, np.float))
+    MCX_ASSUMED_ANISOTROPY = ("mcx_seed", (int, np.int, float))
     """
     The anisotropy that should be assumed for the mcx simulations.
     If not set, a default value of 0.9 will be assumed.
@@ -420,13 +420,13 @@ class Tags:
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
-    TIME_STEP = ("time_step", (int, np.integer, float, np.float))
+    TIME_STEP = ("time_step", (int, np.integer, float))
     """
     Temporal resolution of mcx.\n
     Usage: adapter mcx_adapter
     """
 
-    TOTAL_TIME = ("total_time", (int, np.integer, float, np.float))
+    TOTAL_TIME = ("total_time", (int, np.integer, float))
     """
     Total simulated time in mcx.\n
     Usage: adapter mcx_adapter
@@ -562,13 +562,13 @@ class Tags:
     Usage: module acoustic_forward_module, naming convention
     """
 
-    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float, np.float))
+    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float))
     """
     Temporal resolution of kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter
     """
 
-    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float, np.float))
+    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float))
     """
     Total time steps simulated by kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter
@@ -615,15 +615,9 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel
     """
 
-    TIME_SERIES_DATA = "time_series_data"
+    DATA_FIELD_TIME_SERIES_DATA = "time_series_data"
     """
     Name of the time series data field in the SIMPA output file.\n
-    Usage: naming convention
-    """
-
-    TIME_SERIES_DATA_NOISE = "time_series_data_noise"
-    """
-    Name of the time series data with applied noise field in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -659,12 +653,6 @@ class Tags:
     RECONSTRUCTION_ALGORITHM_SDMAS = "sDMAS"
     """
     Corresponds to the reconstruction algorithm sDMAS with the MitkBeamformingAdapter.\n
-    Usage: module reconstruction_module, naming convention
-    """
-
-    RECONSTRUCTION_ALGORITHM_PYTORCH_DAS = "PyTorch_DAS"
-    """
-    Corresponds to the reconstruction algorithm DAS with the PyTorchDASAdapter.\n
     Usage: module reconstruction_module, naming convention
     """
 
@@ -759,34 +747,28 @@ class Tags:
     Usage: adapter PyTorchDASAdapter
     """
 
-    TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float, np.float))
+    TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float))
     """
     Sets alpha value of Tukey window between 0 (similar to box window) and 1 (similar to Hann window).
     Default is 0.5\n
     Usage: adapter PyTorchDASAdapter
     """
 
-    BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float, np.float))
+    BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float))
     """
     Sets the cutoff threshold in Hz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
-    BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", (int, np.integer, float, np.float))
+    BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", (int, np.integer, float))
     """
     Sets the cutoff threshold in Hz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
-    RECONSTRUCTED_DATA = "reconstructed_data"
+    DATA_FIELD_RECONSTRUCTED_DATA = "reconstructed_data"
     """
     Name of the reconstructed data field in the SIMPA output file.\n
-    Usage: naming convention
-    """
-
-    RECONSTRUCTED_DATA_NOISE = "reconstructed_data_noise"
-    """
-    Name of the reconstructed data with applied noise field in the SIMPA output file.\n
     Usage: naming convention
     """
 
@@ -815,37 +797,37 @@ class Tags:
     """
 
     # physical property volume types
-    PROPERTY_ABSORPTION_PER_CM = "mua"
+    DATA_FIELD_ABSORPTION_PER_CM = "mua"
     """
     Optical absorption of the generated volume/structure in 1/cm.\n
     Usage: SIMPA package, naming convention
     """
 
-    PROPERTY_SCATTERING_PER_CM = "mus"
+    DATA_FIELD_SCATTERING_PER_CM = "mus"
     """
     Optical scattering (NOT REDUCED SCATTERING mus'! mus'=mus*(1-g) ) of the generated volume/structure in 1/cm.\n
     Usage: SIMPA package, naming convention
     """
 
-    PROPERTY_ANISOTROPY = "g"
+    DATA_FIELD_ANISOTROPY = "g"
     """
     Optical scattering anisotropy of the generated volume/structure.\n
     Usage: SIMPA package, naming convention
     """
 
-    PROPERTY_OXYGENATION = "oxy"
+    DATA_FIELD_OXYGENATION = "oxy"
     """
     Oxygenation of the generated volume/structure.\n
     Usage: SIMPA package, naming convention
     """
 
-    PROPERTY_SEGMENTATION = "seg"
+    DATA_FIELD_SEGMENTATION = "seg"
     """
     Segmentation of the generated volume/structure.\n
     Usage: SIMPA package, naming convention
     """
 
-    PROPERTY_GRUNEISEN_PARAMETER = "gamma"
+    DATA_FIELD_GRUNEISEN_PARAMETER = "gamma"
     """
     We define PROPERTY_GRUNEISEN_PARAMETER to contain all wavelength-independent constituents of the PA signal.
     This means that it contains the percentage of absorbed light converted into heat.
@@ -854,107 +836,106 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
-    PROPERTY_SPEED_OF_SOUND = "sos"
+    DATA_FIELD_SPEED_OF_SOUND = "sos"
     """
     Speed of sound of the generated volume/structure in m/s.\n
     Usage: SIMPA package, naming convention
     """
 
-    PROPERTY_DENSITY = "density"
+    DATA_FIELD_DENSITY = "density"
     """
     Density of the generated volume/structure in kg/m³.\n
     Usage: SIMPA package, naming convention
     """
 
-    PROPERTY_ALPHA_COEFF = "alpha_coeff"
+    DATA_FIELD_ALPHA_COEFF = "alpha_coeff"
     """
     Acoustic attenuation of kwave of the generated volume/structure in dB/cm/MHz.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    PROPERTY_SENSOR_MASK = "sensor_mask"
+    KWAVE_PROPERTY_SENSOR_MASK = "sensor_mask"
     """
     Sensor mask of kwave of the used PA device.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    PROPERTY_DIRECTIVITY_ANGLE = "directivity_angle"
+    KWAVE_PROPERTY_DIRECTIVITY_ANGLE = "directivity_angle"
     """
     Directionality of the sensors in kwave of the used PA device.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    PROPERTY_INTRINSIC_EULER_ANGLE = "intrinsic_euler_angle"
+    KWAVE_PROPERTY_INTRINSIC_EULER_ANGLE = "intrinsic_euler_angle"
     """
     Intrinsic euler angles of the detector elements in the kWaveArray.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-
-    PROPERTY_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float, np.float))
+    KWAVE_PROPERTY_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float))
     """
     Exponent of the exponential acoustic attenuation law of kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
     # Volume geometry settings
-    SPACING_MM = ("voxel_spacing_mm", (int, np.integer, float, np.float))
+    SPACING_MM = ("voxel_spacing_mm", (int, np.integer, float))
     """
     Isotropic extent of one voxels in mm in the generated volume.\n
     Usage: SIMPA package
     """
 
-    DIM_VOLUME_X_MM = ("volume_x_dim_mm", (int, np.integer, float, np.float))
+    DIM_VOLUME_X_MM = ("volume_x_dim_mm", (int, np.integer, float))
     """
     Extent of the x-axis of the generated volume.\n
     Usage: SIMPA package
     """
 
-    DIM_VOLUME_Y_MM = ("volume_y_dim_mm", (int, np.integer, float, np.float))
+    DIM_VOLUME_Y_MM = ("volume_y_dim_mm", (int, np.integer, float))
     """
     Extent of the y-axis of the generated volume.\n
     Usage: SIMPA package
     """
 
-    DIM_VOLUME_Z_MM = ("volume_z_dim_mm", (int, np.integer, float, np.float))
+    DIM_VOLUME_Z_MM = ("volume_z_dim_mm", (int, np.integer, float))
     """
     Extent of the z-axis of the generated volume.\n
     Usage: SIMPA package
     """
 
     # PML parameters
-    PMLSize = ("pml_size", (list, tuple, np.ndarray))
+    KWAVE_PROPERTY_PMLSize = ("pml_size", (list, tuple, np.ndarray))
     """
     Size of the "perfectly matched layer" (PML) around the simulated volume in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    PMLAlpha = ("pml_alpha", (int, np.integer, float, np.float))
+    KWAVE_PROPERTY_PMLAlpha = ("pml_alpha", (int, np.integer, float))
     """
     Alpha coefficient of the "perfectly matched layer" (PML) around the simulated volume in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    PMLInside = ("pml_inside", (bool, np.bool, np.bool_))
+    KWAVE_PROPERTY_PMLInside = ("pml_inside", (bool, np.bool, np.bool_))
     """
     If True, the "perfectly matched layer" (PML) in kwave is located inside the volume.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    PlotPML = ("plot_pml", (bool, np.bool, np.bool_))
+    KWAVE_PROPERTY_PlotPML = ("plot_pml", (bool, np.bool, np.bool_))
     """
     If True, the "perfectly matched layer" (PML) around the simulated volume in kwave is plotted.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    INITIAL_PRESSURE_SMOOTHING = ("initial_pressure_smoothing", (bool, np.bool, np.bool_))
+    KWAVE_PROPERTY_INITIAL_PRESSURE_SMOOTHING = ("initial_pressure_smoothing", (bool, np.bool, np.bool_))
     """
     If True, the initial pressure is smoothed before simulated in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
     # Acoustic Sensor Properties
-    SENSOR_RECORD = ("sensor_record", str)
+    KWAVE_PROPERTY_SENSOR_RECORD = ("sensor_record", str)
     """
     Sensor Record mode of the sensor in kwave. Default should be "p".\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -966,19 +947,19 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer, float, np.float))
+    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer, float))
     """
     Sensor center frequency in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float, np.float))
+    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float))
     """
     Sensor bandwidth in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer, float, np.float))
+    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer, float))
     """
     Size of each detector element in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -990,7 +971,7 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer, float, np.float))
+    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer, float))
     """
     Sampling rate of the used PA device.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -1279,7 +1260,7 @@ class Tags:
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
-    DOWNSCALE_FACTOR = ("downscale_factor", (int, float, np.int_, np.float_))
+    DOWNSCALE_FACTOR = ("downscale_factor", (int, float, np.int_))
     """
     Downscale factor of the resampling in the qPAI reconstruction\n
     Usage: module algorithms (iterative_qPAI_algorithm.py)
@@ -1291,7 +1272,7 @@ class Tags:
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
-    ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float, np.float))
+    ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float))
     """
     Sigma value used for constant regularization of fluence.\n
     Usage: module algorithms (iterative_qPAI_algorithm.py)
@@ -1309,7 +1290,7 @@ class Tags:
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
-    ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float, np.float))
+    ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float))
     """
     Ratio of improvement and preceding error at which iteration method stops. 
     Usage: module algorithms (iterative_qPAI_algorithm.py)
@@ -1382,7 +1363,7 @@ class Tags:
     Usage: module algorithms (linear_unmixing)
     """
 
-    SIGNAL_THRESHOLD = ("linear_unmixing_signal_threshold", (int, np.integer, float, np.float))
+    SIGNAL_THRESHOLD = ("linear_unmixing_signal_threshold", (int, np.integer, float))
     """
     Number that specifies which fraction of the signal intensity is used for the specified processing algorithm.\n
     Usage: module algorithms (linear_unmixing)

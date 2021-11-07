@@ -84,11 +84,11 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
                                  f"were {det_elements_sensor_map}.")
 
         # TODO: Include possibility to
-        possible_acoustic_properties = [Tags.PROPERTY_SPEED_OF_SOUND,
-                                        Tags.PROPERTY_DENSITY,
-                                        Tags.PROPERTY_ALPHA_COEFF
+        possible_acoustic_properties = [Tags.DATA_FIELD_SPEED_OF_SOUND,
+                                        Tags.DATA_FIELD_DENSITY,
+                                        Tags.DATA_FIELD_ALPHA_COEFF
                                         ]
-        input_data[Tags.PROPERTY_SENSOR_MASK] = sensor_map
+        input_data[Tags.KWAVE_PROPERTY_SENSOR_MASK] = sensor_map
 
         for acoustic_property in possible_acoustic_properties:
             if acoustic_property in self.component_settings:
@@ -125,12 +125,12 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         if not isinstance(detection_geometry, LinearArrayDetectionGeometry):
             time_series_sensor_data = self.reorder_time_series_data(time_series_sensor_data, detection_geometry)
 
-        input_data[Tags.TIME_SERIES_DATA] = time_series_sensor_data
+        input_data[Tags.DATA_FIELD_TIME_SERIES_DATA] = time_series_sensor_data
         input_data, spacing_in_mm = self.get_acoustic_properties(input_data, detection_geometry)
         acoustic_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
 
         possible_k_wave_parameters = [Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
-                                      Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
+                                      Tags.KWAVE_PROPERTY_ALPHA_POWER, Tags.GPU, Tags.KWAVE_PROPERTY_PMLInside, Tags.KWAVE_PROPERTY_PMLAlpha, Tags.KWAVE_PROPERTY_PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME,
                                       Tags.SENSOR_DIRECTIVITY_PATTERN]
 
@@ -185,7 +185,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         self.logger.info(cmd)
         subprocess.run(cmd)
 
-        reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.RECONSTRUCTED_DATA]
+        reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.DATA_FIELD_RECONSTRUCTED_DATA]
 
         reconstructed_data = np.flipud(np.rot90(reconstructed_data, 1, axes))
 

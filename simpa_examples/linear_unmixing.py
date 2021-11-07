@@ -113,7 +113,7 @@ settings.set_optical_settings({
 # resulting blood oxygen saturation. We want to perform the algorithm using all three wavelengths defined above.
 # Please take a look at the component for more information.
 settings["linear_unmixing"] = {
-    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
     Tags.WAVELENGTHS: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: WAVELENGTHS,
     Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: WAVELENGTHS,
@@ -142,9 +142,9 @@ file_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
 lu_results = sp.load_data_field(file_path, Tags.LINEAR_UNMIXING_RESULT)
 sO2 = lu_results["sO2"]
 
-mua = sp.load_data_field(file_path, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength=WAVELENGTHS[0])
-p0 = sp.load_data_field(file_path, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=WAVELENGTHS[0])
-gt_oxy = sp.load_data_field(file_path, Tags.PROPERTY_OXYGENATION, wavelength=WAVELENGTHS[0])
+mua = sp.load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength=WAVELENGTHS[0])
+p0 = sp.load_data_field(file_path, Tags.DATA_FIELD_INITIAL_PRESSURE, wavelength=WAVELENGTHS[0])
+gt_oxy = sp.load_data_field(file_path, Tags.DATA_FIELD_OXYGENATION, wavelength=WAVELENGTHS[0])
 
 # Visualize linear unmixing result
 data_shape = mua.shape

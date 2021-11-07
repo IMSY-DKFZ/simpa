@@ -109,7 +109,7 @@ class TestDeviceUUID(unittest.TestCase):
         wavelengths = settings[Tags.WAVELENGTHS]
         simpa_time_series = []
         for wl in wavelengths:
-            simpa_time_series.append(load_simpa_datafield(simpa_path, Tags.TIME_SERIES_DATA, wl))
+            simpa_time_series.append(load_simpa_datafield(simpa_path, Tags.DATA_FIELD_TIME_SERIES_DATA, wl))
         simpa_time_series = np.reshape(np.asarray(simpa_time_series), (-1, ))
 
         ipasc_data = load_ipasc(ipasc_path)

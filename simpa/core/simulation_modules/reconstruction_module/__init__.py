@@ -44,7 +44,7 @@ class ReconstructionAdapterBase(SimulationModule):
         self.logger.info("Performing reconstruction...")
 
         time_series_sensor_data = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
-                                                  Tags.TIME_SERIES_DATA, self.global_settings[Tags.WAVELENGTH])
+                                                  Tags.DATA_FIELD_TIME_SERIES_DATA, self.global_settings[Tags.WAVELENGTH])
 
         _device = None
         if isinstance(device, DetectionGeometryBase):
@@ -78,7 +78,7 @@ class ReconstructionAdapterBase(SimulationModule):
             reconstruction = apply_b_mode(
                 reconstruction, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
-        reconstruction_output_path = generate_dict_path(Tags.RECONSTRUCTED_DATA, self.global_settings[Tags.WAVELENGTH])
+        reconstruction_output_path = generate_dict_path(Tags.DATA_FIELD_RECONSTRUCTED_DATA, self.global_settings[Tags.WAVELENGTH])
 
         save_hdf5(reconstruction, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
                   reconstruction_output_path)

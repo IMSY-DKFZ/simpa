@@ -76,7 +76,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
             Tags.NOISE_MEAN: 0.0,
             Tags.NOISE_STD: 0.4,
             Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
-            Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
             Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
         }
 
@@ -113,7 +113,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
         self.settings["iterative_qpai_reconstruction"] = component_settings
 
         self.wavelength = self.settings[Tags.WAVELENGTH]
-        absorption_gt = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ABSORPTION_PER_CM,
+        absorption_gt = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                         self.wavelength)
 
         # if the initial pressure is resampled the ground truth has to be resampled to allow for comparison

@@ -35,15 +35,15 @@ class MolecularComposition(SerializableSIMPAClass, list):
         FIXME
         """
         self.internal_properties = TissueProperties()
-        self.internal_properties[Tags.PROPERTY_SEGMENTATION] = self.segmentation_type
-        self.internal_properties[Tags.PROPERTY_OXYGENATION] = calculate_oxygenation(self)
+        self.internal_properties[Tags.DATA_FIELD_SEGMENTATION] = self.segmentation_type
+        self.internal_properties[Tags.DATA_FIELD_OXYGENATION] = calculate_oxygenation(self)
         for molecule in self:
             self.internal_properties.volume_fraction += molecule.volume_fraction
-            self.internal_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER] += \
+            self.internal_properties[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] += \
                 molecule.volume_fraction * molecule.gruneisen_parameter
-            self.internal_properties[Tags.PROPERTY_DENSITY] += molecule.volume_fraction * molecule.density
-            self.internal_properties[Tags.PROPERTY_SPEED_OF_SOUND] += molecule.volume_fraction * molecule.speed_of_sound
-            self.internal_properties[Tags.PROPERTY_ALPHA_COEFF] += molecule.volume_fraction * molecule.alpha_coefficient
+            self.internal_properties[Tags.DATA_FIELD_DENSITY] += molecule.volume_fraction * molecule.density
+            self.internal_properties[Tags.DATA_FIELD_SPEED_OF_SOUND] += molecule.volume_fraction * molecule.speed_of_sound
+            self.internal_properties[Tags.DATA_FIELD_ALPHA_COEFF] += molecule.volume_fraction * molecule.alpha_coefficient
 
         if np.abs(self.internal_properties.volume_fraction - 1.0) > 1e-3:
             raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
@@ -52,18 +52,18 @@ class MolecularComposition(SerializableSIMPAClass, list):
     def get_properties_for_wavelength(self, wavelength) -> TissueProperties:
 
         self.update_internal_properties()
-        self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] = 0
-        self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] = 0
-        self.internal_properties[Tags.PROPERTY_ANISOTROPY] = 0
+        self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0
+        self.internal_properties[Tags.DATA_FIELD_SCATTERING_PER_CM] = 0
+        self.internal_properties[Tags.DATA_FIELD_ANISOTROPY] = 0
 
         for molecule in self:
-            self.internal_properties[Tags.PROPERTY_ABSORPTION_PER_CM] += \
+            self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] += \
                 (molecule.volume_fraction * molecule.spectrum.get_value_for_wavelength(wavelength))
 
-            self.internal_properties[Tags.PROPERTY_SCATTERING_PER_CM] += \
+            self.internal_properties[Tags.DATA_FIELD_SCATTERING_PER_CM] += \
                 (molecule.volume_fraction * (molecule.scattering_spectrum.get_value_for_wavelength(wavelength)))
 
-            self.internal_properties[Tags.PROPERTY_ANISOTROPY] += \
+            self.internal_properties[Tags.DATA_FIELD_ANISOTROPY] += \
                 molecule.volume_fraction * molecule.anisotropy_spectrum.get_value_for_wavelength(wavelength)
 
         return self.internal_properties

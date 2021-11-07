@@ -43,10 +43,10 @@ class OpticalForwardModuleBase(SimulationModule):
                                              wavelength=self.global_settings[Tags.WAVELENGTH])
 
         optical_properties = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], properties_path)
-        absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
-        scattering = optical_properties[Tags.PROPERTY_SCATTERING_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
-        anisotropy = optical_properties[Tags.PROPERTY_ANISOTROPY][str(self.global_settings[Tags.WAVELENGTH])]
-        gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+        absorption = optical_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
+        scattering = optical_properties[Tags.DATA_FIELD_SCATTERING_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
+        anisotropy = optical_properties[Tags.DATA_FIELD_ANISOTROPY][str(self.global_settings[Tags.WAVELENGTH])]
+        gruneisen_parameter = optical_properties[Tags.DATA_FIELD_GRUNEISEN_PARAMETER]
         del optical_properties
         gc.collect()
 
@@ -96,8 +96,8 @@ class OpticalForwardModuleBase(SimulationModule):
         optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
 
         optical_output = {
-            Tags.OPTICAL_MODEL_FLUENCE: {self.global_settings[Tags.WAVELENGTH]: fluence},
-            Tags.OPTICAL_MODEL_INITIAL_PRESSURE: {self.global_settings[Tags.WAVELENGTH]: initial_pressure},
+            Tags.DATA_FIELD_FLUENCE: {self.global_settings[Tags.WAVELENGTH]: fluence},
+            Tags.DATA_FIELD_INITIAL_PRESSURE: {self.global_settings[Tags.WAVELENGTH]: initial_pressure},
             Tags.OPTICAL_MODEL_UNITS: {self.global_settings[Tags.WAVELENGTH]: units}
         }
 

@@ -50,7 +50,7 @@ class VolumeCreatorModuleBase(SimulationModule):
         volumes = self.create_simulation_volume()
         save_volumes = dict()
         for key, value in volumes.items():
-            if key in [Tags.PROPERTY_ABSORPTION_PER_CM, Tags.PROPERTY_SCATTERING_PER_CM, Tags.PROPERTY_ANISOTROPY]:
+            if key in [Tags.DATA_FIELD_ABSORPTION_PER_CM, Tags.DATA_FIELD_SCATTERING_PER_CM, Tags.DATA_FIELD_ANISOTROPY]:
                 save_volumes[key] = {self.global_settings[Tags.WAVELENGTH]: value}
             else:
                 save_volumes[key] = value

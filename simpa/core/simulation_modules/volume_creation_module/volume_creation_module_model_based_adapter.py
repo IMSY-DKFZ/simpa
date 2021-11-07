@@ -98,7 +98,7 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
             for key in volumes.keys():
                 if structure_properties[key] is None:
                     continue
-                if key == Tags.PROPERTY_SEGMENTATION:
+                if key == Tags.DATA_FIELD_SEGMENTATION:
                     added_fraction_greater_than_any_added_fraction = added_volume_fraction > max_added_fractions
                     volumes[key][added_fraction_greater_than_any_added_fraction & mask] = structure_properties[key]
                     max_added_fractions[added_fraction_greater_than_any_added_fraction & mask] = \

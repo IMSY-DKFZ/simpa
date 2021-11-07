@@ -77,7 +77,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
             Tags.NOISE_MEAN: 0.0,
             Tags.NOISE_STD: 0.4,
             Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
-            Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
             Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
         }
 
@@ -108,7 +108,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         # load initial pressure
         initial_pressure = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" +
                                            self.VOLUME_NAME + ".hdf5",
-                                           Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength=700)
+                                           Tags.DATA_FIELD_INITIAL_PRESSURE, wavelength=700)
         image_slice = np.s_[:, 40, :]
         self.initial_pressure = np.rot90(initial_pressure[image_slice], -1)
 
@@ -116,12 +116,12 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         acoustic_settings = {
             Tags.ACOUSTIC_SIMULATION_3D: True,
             Tags.ACOUSTIC_MODEL_BINARY_PATH: self.path_manager.get_matlab_binary_path(),
-            Tags.PROPERTY_ALPHA_POWER: 0.00,
-            Tags.SENSOR_RECORD: "p",
-            Tags.PMLInside: False,
-            Tags.PMLSize: [31, 32],
-            Tags.PMLAlpha: 1.5,
-            Tags.PlotPML: False,
+            Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+            Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+            Tags.KWAVE_PROPERTY_PMLInside: False,
+            Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+            Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+            Tags.KWAVE_PROPERTY_PlotPML: False,
             Tags.RECORDMOVIE: False,
             Tags.MOVIENAME: "visualization_log",
             Tags.ACOUSTIC_LOG_SCALE: True,
@@ -138,7 +138,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
             Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
             Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
-            Tags.PROPERTY_SPEED_OF_SOUND: 1540,
+            Tags.DATA_FIELD_SPEED_OF_SOUND: 1540,
             Tags.SPACING_MM: 0.25,
             Tags.SENSOR_SAMPLING_RATE_MHZ: 40,
         })

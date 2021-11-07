@@ -67,7 +67,7 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
 
         time_series_data = self.forward_model(_device)
 
-        acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
+        acoustic_output_path = generate_dict_path(Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 
         save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
 

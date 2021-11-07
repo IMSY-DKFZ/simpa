@@ -38,13 +38,13 @@ class SignedDelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseCla
 
         simulate(SIMUATION_PIPELINE, self.settings, self.device)
 
-        self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.RECONSTRUCTED_DATA,
-                                              self.settings[Tags.WAVELENGTH])
+        self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
+                                                            self.settings[Tags.WAVELENGTH])
 
     def test_convenience_function(self):
         # Load simulated time series data
         time_series_sensor_data = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
-                                                  Tags.TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
+                                                  Tags.DATA_FIELD_TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
 
         # reconstruct image using convenience function
         self.reconstructed_image_convenience = reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data,

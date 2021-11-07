@@ -80,8 +80,8 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         self.logger.debug(f"OPTICAL_PATH: {str(optical_path)}")
 
         data_dict = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-        if Tags.OPTICAL_MODEL_FLUENCE in data_dict:
-            del data_dict[Tags.OPTICAL_MODEL_FLUENCE]
+        if Tags.DATA_FIELD_FLUENCE in data_dict:
+            del data_dict[Tags.DATA_FIELD_FLUENCE]
         gc.collect()
 
         tmp_ac_data = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.SIMULATION_PROPERTIES,
@@ -108,21 +108,21 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
             image_slice = np.s_[:]
         
         wavelength = str(self.global_settings[Tags.WAVELENGTH])
-        data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.PROPERTY_SPEED_OF_SOUND][image_slice],
-                                                           3, axes=axes)
-        data_dict[Tags.PROPERTY_DENSITY] = np.rot90(tmp_ac_data[Tags.PROPERTY_DENSITY][image_slice],
-                                                    3, axes=axes)
-        data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.PROPERTY_ALPHA_COEFF][image_slice],
-                                                        3, axes=axes)
-        data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = np.rot90(data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE]
+        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice],
+                                                             3, axes=axes)
+        data_dict[Tags.DATA_FIELD_DENSITY] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_DENSITY][image_slice],
+                                                      3, axes=axes)
+        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_ALPHA_COEFF][image_slice],
+                                                          3, axes=axes)
+        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = np.rot90(data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE]
                                                                   [wavelength][image_slice], 3, axes=axes)
 
         time_series_data, global_settings = self.k_wave_acoustic_forward_model(
             detection_geometry,
-            data_dict[Tags.PROPERTY_SPEED_OF_SOUND],
-            data_dict[Tags.PROPERTY_DENSITY],
-            data_dict[Tags.PROPERTY_ALPHA_COEFF],
-            data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE],
+            data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND],
+            data_dict[Tags.DATA_FIELD_DENSITY],
+            data_dict[Tags.DATA_FIELD_ALPHA_COEFF],
+            data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE],
             optical_path=self.global_settings[Tags.SIMPA_OUTPUT_PATH])
         save_hdf5(global_settings, global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
@@ -167,10 +167,10 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         else:
             simulate_2d = False
 
-        data_dict[Tags.PROPERTY_SPEED_OF_SOUND] = np.ones_like(initial_pressure) * speed_of_sound
-        data_dict[Tags.PROPERTY_DENSITY] = np.ones_like(initial_pressure) * density
-        data_dict[Tags.PROPERTY_ALPHA_COEFF] = np.ones_like(initial_pressure) * alpha_coeff
-        data_dict[Tags.OPTICAL_MODEL_INITIAL_PRESSURE] = initial_pressure
+        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.ones_like(initial_pressure) * speed_of_sound
+        data_dict[Tags.DATA_FIELD_DENSITY] = np.ones_like(initial_pressure) * density
+        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.ones_like(initial_pressure) * alpha_coeff
+        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = initial_pressure
 
         if simulate_2d:
             detector_positions_mm_2d = np.delete(detector_positions_mm, 1, axis=1)
@@ -178,7 +178,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
             data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = detector_positions_mm_2d[[1, 0]]
             orientations = pa_device.get_detector_element_orientations()
             angles = np.arccos(np.dot(orientations, np.array([1, 0, 0])))
-            data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles[::-1]
+            data_dict[Tags.KWAVE_PROPERTY_DIRECTIVITY_ANGLE] = angles[::-1]
         else:
             detector_positions_mm = np.moveaxis(detector_positions_mm, 1, 0)
             data_dict[Tags.SENSOR_ELEMENT_POSITIONS] = detector_positions_mm[[2, 1, 0]]
@@ -195,16 +195,16 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
                 intrinsic_euler_angles.append(euler_angles)
             intrinsic_euler_angles.reverse()
             angles = np.array([z_angles[::-1], y_angles[::-1], x_angles[::-1]])
-            data_dict[Tags.PROPERTY_DIRECTIVITY_ANGLE] = angles
-            data_dict[Tags.PROPERTY_INTRINSIC_EULER_ANGLE] = intrinsic_euler_angles
+            data_dict[Tags.KWAVE_PROPERTY_DIRECTIVITY_ANGLE] = angles
+            data_dict[Tags.KWAVE_PROPERTY_INTRINSIC_EULER_ANGLE] = intrinsic_euler_angles
 
         optical_path = optical_path + ".mat"
         optical_path = os.path.abspath(optical_path)
 
         possible_k_wave_parameters = [Tags.SPACING_MM, Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
-                                      Tags.PROPERTY_ALPHA_POWER, Tags.GPU, Tags.PMLInside, Tags.PMLAlpha, Tags.PlotPML,
+                                      Tags.KWAVE_PROPERTY_ALPHA_POWER, Tags.GPU, Tags.KWAVE_PROPERTY_PMLInside, Tags.KWAVE_PROPERTY_PMLAlpha, Tags.KWAVE_PROPERTY_PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
-                                      Tags.SENSOR_DIRECTIVITY_PATTERN, Tags.INITIAL_PRESSURE_SMOOTHING]
+                                      Tags.SENSOR_DIRECTIVITY_PATTERN, Tags.KWAVE_PROPERTY_INITIAL_PRESSURE_SMOOTHING]
 
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
@@ -254,7 +254,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         self.logger.info(cmd)
         subprocess.run(cmd)
 
-        raw_time_series_data = sio.loadmat(optical_path)[Tags.TIME_SERIES_DATA]
+        raw_time_series_data = sio.loadmat(optical_path)[Tags.DATA_FIELD_TIME_SERIES_DATA]
 
         # reverse the order of detector elements from matlab to python order
         raw_time_series_data = raw_time_series_data[::-1, :]
@@ -322,20 +322,20 @@ def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array,
             acoustic_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] is None:
         acoustic_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH] = pm.get_matlab_binary_path()
 
-    if Tags.PROPERTY_ALPHA_POWER not in acoustic_settings or acoustic_settings[Tags.PROPERTY_ALPHA_POWER] is None:
-        acoustic_settings[Tags.PROPERTY_ALPHA_POWER] = alpha_power
+    if Tags.KWAVE_PROPERTY_ALPHA_POWER not in acoustic_settings or acoustic_settings[Tags.KWAVE_PROPERTY_ALPHA_POWER] is None:
+        acoustic_settings[Tags.KWAVE_PROPERTY_ALPHA_POWER] = alpha_power
 
-    if Tags.SENSOR_RECORD not in acoustic_settings or acoustic_settings[Tags.SENSOR_RECORD] is None:
-        acoustic_settings[Tags.SENSOR_RECORD] = sensor_record
+    if Tags.KWAVE_PROPERTY_SENSOR_RECORD not in acoustic_settings or acoustic_settings[Tags.KWAVE_PROPERTY_SENSOR_RECORD] is None:
+        acoustic_settings[Tags.KWAVE_PROPERTY_SENSOR_RECORD] = sensor_record
 
-    if Tags.PMLInside not in acoustic_settings or acoustic_settings[Tags.PMLInside] is None:
-        acoustic_settings[Tags.PMLInside] = pml_inside
+    if Tags.KWAVE_PROPERTY_PMLInside not in acoustic_settings or acoustic_settings[Tags.KWAVE_PROPERTY_PMLInside] is None:
+        acoustic_settings[Tags.KWAVE_PROPERTY_PMLInside] = pml_inside
 
-    if Tags.PMLAlpha not in acoustic_settings or acoustic_settings[Tags.PMLAlpha] is None:
-        acoustic_settings[Tags.PMLAlpha] = pml_alpha
+    if Tags.KWAVE_PROPERTY_PMLAlpha not in acoustic_settings or acoustic_settings[Tags.KWAVE_PROPERTY_PMLAlpha] is None:
+        acoustic_settings[Tags.KWAVE_PROPERTY_PMLAlpha] = pml_alpha
 
-    if Tags.PlotPML not in acoustic_settings or acoustic_settings[Tags.PlotPML] is None:
-        acoustic_settings[Tags.PlotPML] = plot_pml
+    if Tags.KWAVE_PROPERTY_PlotPML not in acoustic_settings or acoustic_settings[Tags.KWAVE_PROPERTY_PlotPML] is None:
+        acoustic_settings[Tags.KWAVE_PROPERTY_PlotPML] = plot_pml
 
     if Tags.RECORDMOVIE not in acoustic_settings or acoustic_settings[Tags.RECORDMOVIE] is None:
         acoustic_settings[Tags.RECORDMOVIE] = record_movie
