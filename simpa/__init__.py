@@ -52,3 +52,6 @@ from .io_handling.ipasc import export_to_ipasc
 
 from .visualisation.matplotlib_data_visualisation import visualise_data
 from .visualisation.matplotlib_device_visualisation import visualise_device
+
+from .utils.quality_assurance.data_sanity_testing import assert_equal_shapes
+from .utils.quality_assurance.data_sanity_testing import assert_array_well_defined
