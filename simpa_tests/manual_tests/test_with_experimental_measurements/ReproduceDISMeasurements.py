@@ -1,5 +1,4 @@
 """
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT
 
@@ -38,6 +37,9 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
+
+    def tear_down(self):
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
 
     def setup(self):
 
