@@ -77,7 +77,7 @@ VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 general_settings = {
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: RANDOM_SEED,
-            Tags.VOLUME_NAME: "CompletePipelineTestMSOT_" + str(RANDOM_SEED),
+            Tags.VOLUME_NAME: "CompletePipelineExample_" + str(RANDOM_SEED),
             Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
             Tags.SPACING_MM: SPACING,
             Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
@@ -85,9 +85,8 @@ general_settings = {
             Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.GPU: True,
-            # The following parameters set the optical forward model
             Tags.WAVELENGTHS: [700, 800],
-            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True,
+            Tags.DO_FILE_COMPRESSION: True,
             Tags.DO_IPASC_EXPORT: True
         }
 settings = sp.Settings(general_settings)
@@ -109,12 +108,12 @@ settings.set_optical_settings({
 settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.PROPERTY_ALPHA_POWER: 0.00,
-    Tags.SENSOR_RECORD: "p",
-    Tags.PMLInside: False,
-    Tags.PMLSize: [31, 32],
-    Tags.PMLAlpha: 1.5,
-    Tags.PlotPML: False,
+    Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+    Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+    Tags.KWAVE_PROPERTY_PMLInside: False,
+    Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+    Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+    Tags.KWAVE_PROPERTY_PlotPML: False,
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True
@@ -124,7 +123,7 @@ settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.ACOUSTIC_SIMULATION_3D: False,
-    Tags.PROPERTY_ALPHA_POWER: 0.00,
+    Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
@@ -132,17 +131,17 @@ settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
-    Tags.SENSOR_RECORD: "p",
-    Tags.PMLInside: False,
-    Tags.PMLSize: [31, 32],
-    Tags.PMLAlpha: 1.5,
-    Tags.PlotPML: False,
+    Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+    Tags.KWAVE_PROPERTY_PMLInside: False,
+    Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+    Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+    Tags.KWAVE_PROPERTY_PlotPML: False,
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True,
-    Tags.PROPERTY_SPEED_OF_SOUND: 1540,
-    Tags.PROPERTY_ALPHA_COEFF: 0.01,
-    Tags.PROPERTY_DENSITY: 1000,
+    Tags.DATA_FIELD_SPEED_OF_SOUND: 1540,
+    Tags.DATA_FIELD_ALPHA_COEFF: 0.01,
+    Tags.DATA_FIELD_DENSITY: 1000,
     Tags.SPACING_MM: SPACING
 })
 
@@ -150,14 +149,14 @@ settings["noise_initial_pressure"] = {
     Tags.NOISE_MEAN: 1,
     Tags.NOISE_STD: 0.01,
     Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
-    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
     Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
 }
 
 settings["noise_time_series"] = {
     Tags.NOISE_STD: 1,
     Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
-    Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
+    Tags.DATA_FIELD: Tags.DATA_FIELD_TIME_SERIES_DATA
 }
 
 # TODO: For the device choice, uncomment the undesired device
@@ -197,13 +196,10 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+    sp.visualise_data(path_to_hdf5_file=settings[Tags.SIMPA_OUTPUT_PATH],
                       wavelength=WAVELENGTH,
                       show_time_series_data=True,
                       show_initial_pressure=True,
-                      show_absorption=False,
-                      show_segmentation_map=False,
-                      show_tissue_density=False,
                       show_reconstructed_data=True,
-                      show_fluence=False,
-                      log_scale=False)
+                      log_scale=False,
+                      show_xz_only=True)

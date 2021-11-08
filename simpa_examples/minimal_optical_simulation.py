@@ -95,7 +95,7 @@ general_settings = {
     Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                    VOLUME_PLANAR_DIM_IN_MM/2,
                                    0],
-    Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
+    Tags.DO_FILE_COMPRESSION: True
 }
 
 settings = sp.Settings(general_settings)
@@ -115,7 +115,7 @@ settings["noise_model_1"] = {
     Tags.NOISE_MEAN: 1.0,
     Tags.NOISE_STD: 0.1,
     Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
-    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
     Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
 }
 

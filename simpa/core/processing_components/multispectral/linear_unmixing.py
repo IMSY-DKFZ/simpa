@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from simpa.utils import Tags
 from simpa.io_handling import save_data_field
 from simpa.core.processing_components.multispectral import MultispectralProcessingAlgorithm
-from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
+from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary
 import numpy as np
 import scipy.linalg as linalg
 from simpa.utils.settings import Settings
@@ -168,16 +168,15 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
             self.logger.critical(f"Linear unmixing should be performed with at least two wavelengths! "
                                  f"Unmixing is approached with just {len(self.component_settings[chromophore_tag])} "
                                  f"wavelength for {chromophore_name}.")
-        # TODO: refactor of Spectra Library and error handling
         try:
             self.chromophore_wavelengths_dict[chromophore_name] = self.component_settings[chromophore_tag]
-            spectra = SPECTRAL_LIBRARY.get_spectrum_by_name(chromophore_name)
+            spectra = AbsorptionSpectrumLibrary().get_spectrum_by_name(chromophore_name)
             self.chromophore_spectra_dict[chromophore_name] = [spectra.get_value_for_wavelength(wavelength)
                                                                 for wavelength in self.component_settings[chromophore_tag]]
         except Exception as e:
-            self.logger.warning("Loading of spectrum not successful.")
-            self.logger.debug(e)
-            raise ValueError("For details see above.")
+            self.logger.error("Loading of spectrum not successful.")
+            self.logger.error(e)
+            raise e
 
     def create_absorption_matrix(self) -> np.ndarray:
         """

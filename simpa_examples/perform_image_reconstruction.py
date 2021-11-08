@@ -34,7 +34,7 @@ device = sp.MSOTAcuityEcho()
 
 sp.DelayAndSumAdapter(settings).run(device)
 
-reconstructed_image = sp.load_data_field(PATH, Tags.RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
+reconstructed_image = sp.load_data_field(PATH, Tags.DATA_FIELD_RECONSTRUCTED_DATA, settings[Tags.WAVELENGTH])
 reconstructed_image = np.squeeze(reconstructed_image)
 
 sp.visualise_data(path_to_hdf5_file=PATH,

@@ -3,6 +3,18 @@ docs/.doctrees
 docs/.doctrees/*
 docs/test_coverage
 docs/test_coverage/*
+docs/full_coverage
+docs/full_coverage/*
+docs/*.html
+docs/.buildinfo
+docs/_images/*
+docs/_sources/*
+docs/_static/*
+docs/searchindex.js
+docs/objects.inv
+
+simpa_tests/figures
+simpa_tests/figures/*
 
 *.orig
 */*.orig
@@ -131,3 +143,4 @@ dmypy.json
 
 # numpy files
 *npy
+/.mailmap

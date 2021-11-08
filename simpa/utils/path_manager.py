@@ -31,17 +31,18 @@ class PathManager:
         :param environment_path: Per default, the config with the environment variables is located in /HOME/path_config.env
         """
         self.logger = Logger()
-        self.path_config_file_name = '/path_config.env'
+        self.path_config_file_name = 'path_config.env'
         if environment_path is None:
-            environment_path = str(Path.home()) + self.path_config_file_name
+            environment_path = os.path.join(str(Path.home()), self.path_config_file_name)
             self.logger.debug(f"Using $HOME$ path to search for config file: {environment_path}")
             if not os.path.exists(environment_path) or not os.path.isfile(environment_path):
+                self.logger.debug(f"Did not find path config in $HOME$: {environment_path}")
                 environment_path = self.detect_local_path_config()
         else:
             if not os.path.isfile(environment_path):
                 self.logger.debug(f"No file was supplied. Assuming a folder was given and looking "
                                   f"for {self.path_config_file_name}")
-                environment_path = environment_path + "/" + self.path_config_file_name
+                environment_path = os.path.join(environment_path, self.path_config_file_name)
             self.logger.debug(f"Using supplied path to search for config file: {environment_path}")
 
         if environment_path is None or not os.path.exists(environment_path) or not os.path.isfile(environment_path):
@@ -59,7 +60,7 @@ class PathManager:
 
         # Look in current working directory
         self.logger.debug("Searching for path config in current working directory...")
-        current_working_directory = os.getcwd() + "/" + self.path_config_file_name
+        current_working_directory = os.path.join(os.getcwd(), self.path_config_file_name)
         if os.path.exists(current_working_directory):
             self.logger.debug(f"Found {self.path_config_file_name} in current working directory: "
                               f"{current_working_directory}")
@@ -68,7 +69,7 @@ class PathManager:
         # Look in the SIMPA base directory
         self.logger.debug("Searching for path config in SIMPA base directory...")
         current_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        simpa_home = current_file_path + "/../../" + self.path_config_file_name
+        simpa_home = os.path.join(current_file_path, "..", "..", self.path_config_file_name)
 
         if os.path.exists(simpa_home):
             self.logger.debug(f"Found {self.path_config_file_name} in current working directory: "

@@ -15,6 +15,7 @@ from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
 from simpa.utils import Settings
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filtering, apply_b_mode
+from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
 class ReconstructionAdapterBase(SimulationModule):
@@ -44,7 +45,7 @@ class ReconstructionAdapterBase(SimulationModule):
         self.logger.info("Performing reconstruction...")
 
         time_series_sensor_data = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
-                                                  Tags.TIME_SERIES_DATA, self.global_settings[Tags.WAVELENGTH])
+                                                  Tags.DATA_FIELD_TIME_SERIES_DATA, self.global_settings[Tags.WAVELENGTH])
 
         _device = None
         if isinstance(device, DetectionGeometryBase):
@@ -78,7 +79,10 @@ class ReconstructionAdapterBase(SimulationModule):
             reconstruction = apply_b_mode(
                 reconstruction, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
-        reconstruction_output_path = generate_dict_path(Tags.RECONSTRUCTED_DATA, self.global_settings[Tags.WAVELENGTH])
+        if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
+            assert_array_well_defined(reconstruction, array_name="reconstruction")
+
+        reconstruction_output_path = generate_dict_path(Tags.DATA_FIELD_RECONSTRUCTED_DATA, self.global_settings[Tags.WAVELENGTH])
 
         save_hdf5(reconstruction, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
                   reconstruction_output_path)

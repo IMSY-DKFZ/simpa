@@ -19,8 +19,8 @@ class FieldOfViewCropping(ProcessingComponent):
             # TODO Extract from global settings all the fields that should be cropped
             global_settings["FieldOfViewCropping"] = Settings({
                       Tags.DATA_FIELD: TissueProperties.property_tags +
-                                           [Tags.OPTICAL_MODEL_FLUENCE,
-                                            Tags.OPTICAL_MODEL_INITIAL_PRESSURE]})
+                                           [Tags.DATA_FIELD_FLUENCE,
+                                            Tags.DATA_FIELD_INITIAL_PRESSURE]})
         super(FieldOfViewCropping, self).__init__(global_settings,
                                                                      "FieldOfViewCropping")
     """

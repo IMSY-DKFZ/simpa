@@ -19,26 +19,24 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     if data_field in [Tags.SIMULATIONS, Tags.SETTINGS]:
         return "/" + data_field + "/"
 
-    wavelength_dependent_properties = [Tags.PROPERTY_ABSORPTION_PER_CM,
-                                       Tags.PROPERTY_SCATTERING_PER_CM,
-                                       Tags.PROPERTY_ANISOTROPY]
+    wavelength_dependent_properties = [Tags.DATA_FIELD_ABSORPTION_PER_CM,
+                                       Tags.DATA_FIELD_SCATTERING_PER_CM,
+                                       Tags.DATA_FIELD_ANISOTROPY]
 
-    wavelength_independent_properties = [Tags.PROPERTY_OXYGENATION,
-                                         Tags.PROPERTY_SEGMENTATION,
-                                         Tags.PROPERTY_GRUNEISEN_PARAMETER,
-                                         Tags.PROPERTY_SPEED_OF_SOUND,
-                                         Tags.PROPERTY_DENSITY,
-                                         Tags.PROPERTY_ALPHA_COEFF,
-                                         Tags.PROPERTY_SENSOR_MASK,
-                                         Tags.PROPERTY_DIRECTIVITY_ANGLE]
+    wavelength_independent_properties = [Tags.DATA_FIELD_OXYGENATION,
+                                         Tags.DATA_FIELD_SEGMENTATION,
+                                         Tags.DATA_FIELD_GRUNEISEN_PARAMETER,
+                                         Tags.DATA_FIELD_SPEED_OF_SOUND,
+                                         Tags.DATA_FIELD_DENSITY,
+                                         Tags.DATA_FIELD_ALPHA_COEFF,
+                                         Tags.KWAVE_PROPERTY_SENSOR_MASK,
+                                         Tags.KWAVE_PROPERTY_DIRECTIVITY_ANGLE]
 
-    simulation_output = [Tags.OPTICAL_MODEL_FLUENCE,
-                         Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    simulation_output = [Tags.DATA_FIELD_FLUENCE,
+                         Tags.DATA_FIELD_INITIAL_PRESSURE,
                          Tags.OPTICAL_MODEL_UNITS,
-                         Tags.TIME_SERIES_DATA,
-                         Tags.TIME_SERIES_DATA_NOISE,
-                         Tags.RECONSTRUCTED_DATA,
-                         Tags.RECONSTRUCTED_DATA_NOISE]
+                         Tags.DATA_FIELD_TIME_SERIES_DATA,
+                         Tags.DATA_FIELD_RECONSTRUCTED_DATA]
 
     simulation_output_fields = [Tags.OPTICAL_MODEL_OUTPUT_NAME,
                                 Tags.SIMULATION_PROPERTIES]
@@ -56,7 +54,7 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     if data_field in wavelength_dependent_properties:
         dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + wl
     elif data_field in simulation_output:
-        if data_field in [Tags.OPTICAL_MODEL_FLUENCE, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS]:
+        if data_field in [Tags.DATA_FIELD_FLUENCE, Tags.DATA_FIELD_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS]:
             dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field + wl
         else:
             dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + wl

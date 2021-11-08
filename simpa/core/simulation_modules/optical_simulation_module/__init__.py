@@ -11,6 +11,7 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
 import gc
 from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
+from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
 class OpticalForwardModuleBase(SimulationModule):
@@ -43,10 +44,10 @@ class OpticalForwardModuleBase(SimulationModule):
                                              wavelength=self.global_settings[Tags.WAVELENGTH])
 
         optical_properties = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], properties_path)
-        absorption = optical_properties[Tags.PROPERTY_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
-        scattering = optical_properties[Tags.PROPERTY_SCATTERING_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
-        anisotropy = optical_properties[Tags.PROPERTY_ANISOTROPY][str(self.global_settings[Tags.WAVELENGTH])]
-        gruneisen_parameter = optical_properties[Tags.PROPERTY_GRUNEISEN_PARAMETER]
+        absorption = optical_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
+        scattering = optical_properties[Tags.DATA_FIELD_SCATTERING_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
+        anisotropy = optical_properties[Tags.DATA_FIELD_ANISOTROPY][str(self.global_settings[Tags.WAVELENGTH])]
+        gruneisen_parameter = optical_properties[Tags.DATA_FIELD_GRUNEISEN_PARAMETER]
         del optical_properties
         gc.collect()
 
@@ -82,6 +83,9 @@ class OpticalForwardModuleBase(SimulationModule):
                                          illumination_geometry=_device,
                                          probe_position_mm=device.device_position_mm)
 
+        if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
+            assert_array_well_defined(fluence, assume_non_negativity=True, array_name="fluence")
+
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.component_settings:
             units = Tags.UNITS_PRESSURE
             # Initial pressure should be given in units of Pascale
@@ -93,11 +97,14 @@ class OpticalForwardModuleBase(SimulationModule):
             units = Tags.UNITS_ARBITRARY
             initial_pressure = absorption * fluence
 
+        if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
+            assert_array_well_defined(initial_pressure, assume_non_negativity=True, array_name="initial_pressure")
+
         optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
 
         optical_output = {
-            Tags.OPTICAL_MODEL_FLUENCE: {self.global_settings[Tags.WAVELENGTH]: fluence},
-            Tags.OPTICAL_MODEL_INITIAL_PRESSURE: {self.global_settings[Tags.WAVELENGTH]: initial_pressure},
+            Tags.DATA_FIELD_FLUENCE: {self.global_settings[Tags.WAVELENGTH]: fluence},
+            Tags.DATA_FIELD_INITIAL_PRESSURE: {self.global_settings[Tags.WAVELENGTH]: initial_pressure},
             Tags.OPTICAL_MODEL_UNITS: {self.global_settings[Tags.WAVELENGTH]: units}
         }
 
