@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from simpa_tests.manual_tests import ManualIntegrationTestClass
+from simpa_tests.test_utils.tissue_models import create_simple_tissue_model
 
 
 class TestLinearUnmixingVisual(ManualIntegrationTestClass):
@@ -46,7 +47,7 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         self.settings = Settings(general_settings)
         self.settings.set_volume_creation_settings({
             Tags.SIMULATE_DEFORMED_LAYERS: True,
-            Tags.STRUCTURES: self.create_example_tissue()
+            Tags.STRUCTURES: create_simple_tissue_model(60, 60)
         })
 
         # Set component settings for linear unmixing.
@@ -97,17 +98,25 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         # Visualize linear unmixing result
         # The shape of the linear unmixing result should take after the reference absorption
+
+        ground_truth_sO2 = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_OXYGENATION)
+
         y_dim = int(self.mua.shape[1] / 2)
-        plt.figure(figsize=(15, 15))
+        plt.figure(figsize=(9, 3))
         plt.suptitle("Linear Unmixing - Visual Test")
-        plt.subplot(121)
-        plt.title("Absorption coefficients")
-        plt.imshow(np.rot90(self.mua[:, y_dim, :], -1))
+        plt.subplot(131)
+        plt.title("Ground Truth sO2 [%]")
+        plt.imshow(np.rot90(ground_truth_sO2[:, y_dim, :] * 100, -1), vmin=0, vmax=100)
         plt.colorbar(fraction=0.05)
-        plt.subplot(122)
-        plt.title("Blood oxygen saturation")
-        plt.imshow(np.rot90(self.sO2[:, y_dim, :], -1))
+        plt.subplot(132)
+        plt.title("Estimated sO2 [%]")
+        plt.imshow(np.rot90(self.sO2[:, y_dim, :] * 100, -1), vmin=0, vmax=100)
         plt.colorbar(fraction=0.05)
+        plt.subplot(133)
+        plt.title("Absolute Difference")
+        plt.imshow(np.rot90(np.abs(self.sO2 * 100 - ground_truth_sO2 * 100)[:, y_dim, :], -1), cmap="Reds", vmin=0)
+        plt.colorbar()
+        plt.tight_layout()
         if show_figure_on_screen:
             plt.show()
         else:
@@ -115,54 +124,6 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
                 save_path = ""
             plt.savefig(save_path + "linear_unmixing_test.png")
         plt.close()
-
-    def create_example_tissue(self):
-        """
-        This is a very simple example script of how to create a tissue definition.
-        It contains a muscular background, an epidermis layer on top of the muscles
-        and a blood vessel.
-        """
-        background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
-        background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
-
-        muscle_dictionary = Settings()
-        muscle_dictionary[Tags.PRIORITY] = 1
-        muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 10]
-        muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.muscle()
-        muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-        muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-        muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
-
-        vessel_1_dictionary = Settings()
-        vessel_1_dictionary[Tags.PRIORITY] = 3
-        vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [self.settings[Tags.DIM_VOLUME_X_MM] / 2,
-                                                        10,
-                                                        self.settings[Tags.DIM_VOLUME_Z_MM] / 2]
-        vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [self.settings[Tags.DIM_VOLUME_X_MM] / 2,
-                                                      12,
-                                                      self.settings[Tags.DIM_VOLUME_Z_MM] / 2]
-        vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood(oxygenation=0.99)
-        vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-        vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
-
-        epidermis_dictionary = Settings()
-        epidermis_dictionary[Tags.PRIORITY] = 8
-        epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 9]
-        epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 10]
-        epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.epidermis()
-        epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-        epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-        epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
-
-        tissue_dict = Settings()
-        tissue_dict[Tags.BACKGROUND] = background_dictionary
-        tissue_dict["muscle"] = muscle_dictionary
-        tissue_dict["epidermis"] = epidermis_dictionary
-        tissue_dict["vessel_1"] = vessel_1_dictionary
-        return tissue_dict
 
 
 if __name__ == '__main__':
