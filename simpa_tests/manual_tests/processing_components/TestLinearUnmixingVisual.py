@@ -4,17 +4,11 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Tags, TISSUE_LIBRARY, Settings
-from simpa.core.simulation import simulate
-from simpa.core.processing_components.multispectral import linear_unmixing as lu
+from simpa.utils import Tags, Settings
+import simpa as sp
 import numpy as np
-from simpa import ModelBasedVolumeCreationAdapter
-from simpa.utils.path_manager import PathManager
-from simpa.io_handling import load_data_field
 import matplotlib.pyplot as plt
-from simpa.log import Logger
 import os
-from simpa.core.device_digital_twins import PencilBeamIlluminationGeometry
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
@@ -28,10 +22,10 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         This function lays the foundation for the manual test.
         """
 
-        self.logger = Logger()
+        self.logger = sp.Logger()
         # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
         #  point to the correct file in the PathManager().
-        self.path_manager = PathManager()
+        self.path_manager = sp.PathManager()
 
         RANDOM_SEED = 471
         self.VISUAL_WAVELENGTHS = [750, 800, 850]  # the performance is checked using three wavelengths
@@ -60,18 +54,19 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
         self.settings["linear_unmixing"] = {
             Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
-            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN: self.VISUAL_WAVELENGTHS,
-            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN: self.VISUAL_WAVELENGTHS,
+            Tags.LINEAR_UNMIXING_SPECTRA:
+                sp.get_simpa_internal_absorption_spectra_by_names([Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN,
+                                                                   Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN]),
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
-            Tags.WAVELENGTHS: self.VISUAL_WAVELENGTHS
+            Tags.WAVELENGTHS: [800, 850]
         }
 
         # Define device for simulation
-        self.device = PencilBeamIlluminationGeometry()
+        self.device = sp.PencilBeamIlluminationGeometry()
 
         # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
         self.pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings)
+            sp.ModelBasedVolumeCreationAdapter(self.settings)
         ]
 
     def perform_test(self):
@@ -80,19 +75,19 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         The user has to check if the test was successful.
         """
 
-        simulate(self.pipeline, self.settings, self.device)
+        sp.simulate(self.pipeline, self.settings, self.device)
 
         # Run linear unmixing component with above specified settings
-        lu.LinearUnmixing(self.settings, "linear_unmixing").run()
+        sp.LinearUnmixing(self.settings, "linear_unmixing").run()
 
         self.logger.info("Testing linear unmixing...")
 
         # Load blood oxygen saturation
-        self.lu_results = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+        self.lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
         self.sO2 = self.lu_results["sO2"]
 
         # Load reference absorption for the first wavelength
-        self.mua = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
+        self.mua = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                    wavelength=self.VISUAL_WAVELENGTHS[0])
 
     def tear_down(self):
@@ -128,14 +123,14 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         and a blood vessel.
         """
         background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
         muscle_dictionary = Settings()
         muscle_dictionary[Tags.PRIORITY] = 1
         muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 10]
         muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.muscle()
         muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
         muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
@@ -149,7 +144,7 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
                                                       12,
                                                       self.settings[Tags.DIM_VOLUME_Z_MM] / 2]
         vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(oxygenation=0.99)
+        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood(oxygenation=0.99)
         vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -157,7 +152,7 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         epidermis_dictionary[Tags.PRIORITY] = 8
         epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 9]
         epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 10]
-        epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+        epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.epidermis()
         epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
         epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE

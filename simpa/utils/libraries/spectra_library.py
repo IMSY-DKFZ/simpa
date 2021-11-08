@@ -120,9 +120,6 @@ class AnisotropySpectrumLibrary(SpectraLibrary):
                         np.asarray([anisotropy, anisotropy]))
 
 
-
-
-
 class ScatteringSpectrumLibrary(SpectraLibrary):
 
     def __init__(self, additional_folder_path: str = None):
@@ -141,6 +138,7 @@ class ScatteringSpectrumLibrary(SpectraLibrary):
                       (1 - fraction_rayleigh_scattering) * (wavelengths / 500) ** -mie_power_law_coefficient))
         return Spectrum(name, wavelengths, scattering)
 
+
 class AbsorptionSpectrumLibrary(SpectraLibrary):
 
     def __init__(self, additional_folder_path: str = None):
@@ -150,6 +148,14 @@ class AbsorptionSpectrumLibrary(SpectraLibrary):
     def CONSTANT_ABSORBER_ARBITRARY(absorption_coefficient: float = 1):
         return Spectrum("Constant Absorber (arb)", np.asarray([450, 1000]),
                         np.asarray([absorption_coefficient, absorption_coefficient]))
+
+
+def get_simpa_internal_absorption_spectra_by_names(absorption_spectrum_names: list):
+    lib = AbsorptionSpectrumLibrary()
+    spectra = []
+    for spectrum_name in absorption_spectrum_names:
+        spectra.append(lib.get_spectrum_by_name(spectrum_name))
+    return spectra
 
 
 def view_saved_spectra(save_path=None, mode="absorption"):

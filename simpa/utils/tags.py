@@ -1345,10 +1345,16 @@ class Tags:
     Usage: module algorithms (linear_unmixing)
     """
 
+    LINEAR_UNMIXING_SPECTRA = ("linear_unmixing_spectra", list)
+    """
+    List of spectra to use for linear unmixing.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
     LINEAR_UNMIXING_COMPUTE_SO2 = ("linear_unmixing_compute_so2", bool)
     """
     If True the blood oxygen saturation is calculated and saved. This is only possible \n
-    if the tags LINEAR_UNMIXING_OXYHEMOGLOBIN and LINEAR_UNMIXING_DEOXYHEMOGLOBIN are set.\n
+    if the OXYHEMOGLOBIN and DEOXYHEMOGLOBIN spectra are used.\n
     Usage: module algorithms (linear_unmixing)
     """
 

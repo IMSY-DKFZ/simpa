@@ -19,6 +19,7 @@ from .libraries.spectra_library import Spectrum
 from .libraries.spectra_library import view_saved_spectra
 from .libraries.spectra_library import AnisotropySpectrumLibrary
 from .libraries.spectra_library import ScatteringSpectrumLibrary
+from .libraries.spectra_library import get_simpa_internal_absorption_spectra_by_names
 
 from .libraries.molecule_library import Molecule, MolecularCompositionGenerator
 from .libraries.molecule_library import MoleculeLibrary
