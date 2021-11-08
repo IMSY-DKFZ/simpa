@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
+from simpa.io_handling.ipasc import export_to_ipasc
 from simpa.utils.settings import Settings
 from simpa.log import Logger
 from .device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
@@ -82,5 +83,10 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
             settings[Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE]:
         all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
         save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH], file_compression="gzip")
+
+    # Export simulation result to IPASC-compatible format.
+    if Tags.DO_IPASC_EXPORT in settings and settings[Tags.DO_IPASC_EXPORT]:
+        logger.info("Exporting to IPASC....")
+        export_to_ipasc(settings[Tags.SIMPA_OUTPUT_PATH], device=digital_device_twin)
 
     logger.info(f"The entire simulation pipeline required {time.time() - start_time} seconds.")

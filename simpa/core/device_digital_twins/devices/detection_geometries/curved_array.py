@@ -24,7 +24,8 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
                  bandwidth_percent=55,
                  sampling_frequency_mhz=40,
                  angular_origin_offset=np.pi,
-                 device_position_mm=None):
+                 device_position_mm=None,
+                 field_of_view_extent_mm=None):
         """
 
         :param pitch_mm: In-plane distance between the beginning of one detector element to the next detector element.
@@ -39,33 +40,43 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         :param device_position_mm: Center (focus) of the curved array.
         """
 
-        super().__init__(number_detector_elements=number_detector_elements,
-                         detector_element_width_mm=detector_element_width_mm,
-                         detector_element_length_mm=detector_element_length_mm,
-                         center_frequency_hz=center_frequency_hz,
-                         bandwidth_percent=bandwidth_percent,
-                         sampling_frequency_mhz=sampling_frequency_mhz,
-                         probe_width_mm=2 * np.sin(pitch_mm / radius_mm * 128) * radius_mm,
-                         device_position_mm=device_position_mm)
+        super(CurvedArrayDetectionGeometry, self).__init__(
+             number_detector_elements=number_detector_elements,
+             detector_element_width_mm=detector_element_width_mm,
+             detector_element_length_mm=detector_element_length_mm,
+             center_frequency_hz=center_frequency_hz,
+             bandwidth_percent=bandwidth_percent,
+             sampling_frequency_mhz=sampling_frequency_mhz,
+             device_position_mm=device_position_mm)
 
         self.pitch_mm = pitch_mm
         self.radius_mm = radius_mm
         self.angular_origin_offset = angular_origin_offset
 
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        return np.asarray([-self.probe_width_mm/2,
-                           self.probe_width_mm/2,
-                           0, 0,
-                           0, 100])
+        detector_positions = self.get_detector_element_positions_base_mm()
+        min_x_coordinate = np.min(detector_positions[:, 0])
+        max_x_coordinate = np.max(detector_positions[:, 0])
+        self.probe_width_mm = max_x_coordinate - min_x_coordinate
+
+        min_z_coordinate = np.min(detector_positions[:, 2])
+        max_z_coordinate = np.max(detector_positions[:, 2])
+        self.probe_height_mm = max_z_coordinate - min_z_coordinate
+
+        if field_of_view_extent_mm is None:
+            self.field_of_view_extent_mm = np.asarray([-self.probe_width_mm/2,
+                                                       self.probe_width_mm/2,
+                                                       0, 0, 0, 100])
+        else:
+            self.field_of_view_extent_mm = field_of_view_extent_mm
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_Z_MM] <= (self.radius_mm + 1):
+        if global_settings[Tags.DIM_VOLUME_Z_MM] < (self.probe_height_mm + 1):
             self.logger.error("Volume z dimension is too small to encompass the device in simulation!"
                               "Must be at least {} mm but was {} mm"
-                              .format((self.radius_mm + 1),
+                              .format((self.probe_height_mm + 1),
                                       global_settings[Tags.DIM_VOLUME_Z_MM]))
             return False
-        if global_settings[Tags.DIM_VOLUME_X_MM] <= self.probe_width_mm:
+        if global_settings[Tags.DIM_VOLUME_X_MM] < (self.probe_width_mm + 1):
             self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
                               "Must be at least {} mm but was {} mm"
                               .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
@@ -85,7 +96,7 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
 
         return detector_positions
 
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
+    def get_detector_element_orientations(self) -> np.ndarray:
         detector_positions = self.get_detector_element_positions_base_mm()
         detector_orientations = np.subtract(0, detector_positions)
         norm = np.linalg.norm(detector_orientations, axis=-1)

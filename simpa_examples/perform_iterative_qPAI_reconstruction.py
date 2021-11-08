@@ -15,11 +15,11 @@ from simpa.utils.settings import Settings
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
-from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
+from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter, \
     GaussianNoiseProcessingComponent
 from simpa.algorithms.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
 from simpa.utils.path_manager import PathManager
-from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
+from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry, DiskIlluminationGeometry
 
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -148,7 +148,7 @@ class CustomDevice(PhotoacousticDevice):
         super(CustomDevice, self).__init__(device_position_mm=np.asarray([general_settings[Tags.DIM_VOLUME_X_MM] / 2,
                                                                           general_settings[Tags.DIM_VOLUME_Y_MM] / 2,
                                                                           0]))
-        self.add_illumination_geometry(PencilBeamIlluminationGeometry())
+        self.add_illumination_geometry(DiskIlluminationGeometry(beam_radius_mm=2))
 
 
 device = CustomDevice()

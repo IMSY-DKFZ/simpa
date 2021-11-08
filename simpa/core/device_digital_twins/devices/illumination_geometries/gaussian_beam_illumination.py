@@ -23,9 +23,6 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
 
         self.beam_radius_mm = beam_radius_mm
 
-    def get_field_of_view_extent_mm(self) -> np.ndarray:
-        pass
-
     def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_GAUSSIAN
 
@@ -35,7 +32,7 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
 
         source_direction = [0, 0, 1]
 
-        source_param1 = [self.beam_radius_mm, 0, 0, 0]
+        source_param1 = [int(round(self.beam_radius_mm / spacing)), 0, 0, 0]
 
         source_param2 = [0, 0, 0, 0]
 

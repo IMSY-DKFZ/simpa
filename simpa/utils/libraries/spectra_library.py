@@ -7,9 +7,10 @@ SPDX-License-Identifier: MIT
 import numpy as np
 import matplotlib.pylab as plt
 from simpa.utils.libraries.literature_values import OpticalTissueProperties
+from simpa.utils.serializer import SerializableSIMPAClass
 
 
-class Spectrum(object):
+class Spectrum(SerializableSIMPAClass, object):
     """
     An instance of this class represents the absorption spectrum over wavelength for a particular
     """
@@ -60,12 +61,16 @@ class Spectrum(object):
         else:
             return super().__eq__(other)
 
+    def serialize(self) -> dict:
+        serialized_spectrum = self.__dict__
+        return {"Spectrum": serialized_spectrum}
 
     @staticmethod
-    def from_settings(absorption_spectrum_settings: dict):
-        return Spectrum(spectrum_name=absorption_spectrum_settings["spectrum_name"],
-                        wavelengths=absorption_spectrum_settings["wavelengths"],
-                        values=absorption_spectrum_settings["values"])
+    def deserialize(dictionary_to_deserialize: dict):
+        deserialized_spectrum = Spectrum(spectrum_name=dictionary_to_deserialize["spectrum_name"],
+                                         wavelengths=dictionary_to_deserialize["wavelengths"],
+                                         values=dictionary_to_deserialize["values"])
+        return deserialized_spectrum
 
 
 class AnisotropySpectrumLibrary(object):

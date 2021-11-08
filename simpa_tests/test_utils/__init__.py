@@ -10,7 +10,10 @@ from simpa.utils.libraries.structure_library import Background, CircularTubularS
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 
+
 def assert_equals_recursive(a, b):
+    assert isinstance(a, type(b))
+    assert isinstance(b, type(a))
     if isinstance(a, dict):
         for item in a:
             assert item in a, (str(item) + " was not in a: " + str(a))
@@ -24,6 +27,14 @@ def assert_equals_recursive(a, b):
                     assert (a[item] == b[item]).all()
                 else:
                     assert a[item] == b[item], str(a[item]) + " is not the same as " + str(b[item])
+                    if (np.issubdtype(type(a[item]), np.int) or np.issubdtype(type(a[item]), np.float)) and \
+                            (np.issubdtype(type(b[item]), np.int) or np.issubdtype(type(b[item]), np.float)):
+                        assert (np.issubdtype(type(a[item]), np.int) & np.issubdtype(type(b[item]), np.int)) or \
+                               (np.issubdtype(type(a[item]), np.float) & np.issubdtype(type(b[item]), np.float))
+                    else:
+                        assert isinstance(a[item], type(b[item]))
+                        assert isinstance(b[item], type(a[item]))
+
     elif isinstance(a, list):
         for item1, item2 in zip(a, b):
             assert_equals_recursive(item1, item2)

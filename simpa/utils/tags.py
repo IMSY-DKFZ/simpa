@@ -272,6 +272,8 @@ class Tags:
     Usage: adapter versatile_volume_creation, class VesselStructure
     """
 
+    VESSEL_STRUCTURE = "VesselStructure"
+
     """
     Digital Device Twin Settings
     """
@@ -714,16 +716,16 @@ class Tags:
     Usage: adapter MitkBeamformingAdapter, naming convention
     """
 
-    RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION = "Envelope_Detection_before_Reconstruction"
+    RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION = ("Envelope_Detection_before_Reconstruction", (bool, np.bool, np.bool_))
     """
     Specifies whether an envelope detection should be performed before reconstruction, default is False
     Usage: adapter PyTorchDASAdapter, naming convention
     """
 
-    RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION = "Envelope_Detection_after_Reconstruction"
+    RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION = ("Envelope_Detection_after_Reconstruction", (bool, np.bool, np.bool_))
     """
     Specifies whether an envelope detection should be performed after reconstruction, default is False
-    Usage: adapter PyTorchDASAdapter, naming convention
+    Usage: adapter PyTorchDASAdapter
     """
 
     RECONSTRUCTION_APODIZATION_METHOD = ("reconstruction_apodization_method", str)
@@ -766,13 +768,13 @@ class Tags:
 
     BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float, np.float))
     """
-    Sets the cutoff threshold in MHz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
+    Sets the cutoff threshold in Hz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
     BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", (int, np.integer, float, np.float))
     """
-    Sets the cutoff threshold in MHz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
+    Sets the cutoff threshold in Hz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
@@ -1305,4 +1307,84 @@ class Tags:
     """
     Ratio of improvement and preceding error at which iteration method stops. 
     Usage: module algorithms (iterative_qPAI_algorithm.py)
+    """
+
+    LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS = ("linear_unmixing_oxyhemoglobin", list)
+    """
+    List of wavelengths used in linear unmixing for oxyhemoglobin chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS = ("linear_unmixing_deoxyhemoglobin", list)
+    """
+    List of wavelengths used in linear unmixing for deoxyhemoglobin chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_WATER_WAVELENGTHS = ("linear_unmixing_water", list)
+    """
+    List of wavelengths used in linear unmixing for water chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_FAT_WAVELENGTHS = ("linear_unmixing_fat", list)
+    """
+    List of wavelengths used in linear unmixing for fat chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_MELANIN_WAVELENGTHS = ("linear_unmixing_melanin", list)
+    """
+    List of wavelengths used in linear unmixing for melanin chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS = ("linear_unmixing_nickel_sulphide", list)
+    """
+    List of wavelengths used in linear unmixing for nickel sulphide chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS = ("linear_unmixing_copper_sulphide", list)
+    """
+    List of wavelengths used in linear unmixing for copper sulphide chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS = ("linear_unmixing_constant_zero", list)
+    """
+    List of wavelengths used in linear unmixing for constant absorber (zero) chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS = ("linear_unmixing_constant_one", list)
+    """
+    List of wavelengths used in linear unmixing for constant absorber (one) chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS = ("linear_unmixing_constant_ten", list)
+    """
+    List of wavelengths used in linear unmixing for constant absorber (ten) chromophore.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    LINEAR_UNMIXING_COMPUTE_SO2 = ("linear_unmixing_compute_so2", (bool, np.bool, np.bool_))
+    """
+    If True the blood oxygen saturation is calculated and saved. This is only possible \n
+    if the tags LINEAR_UNMIXING_OXYHEMOGLOBIN and LINEAR_UNMIXING_DEOXYHEMOGLOBIN are set.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    SIGNAL_THRESHOLD = ("linear_unmixing_signal_threshold", (int, np.integer, float, np.float))
+    """
+    Number that specifies which fraction of the signal intensity is used for the specified processing algorithm.\n
+    Usage: module algorithms (linear_unmixing)
+    """
+
+    DO_IPASC_EXPORT = ("do_ipasc_export", (bool, np.bool, np.bool_))
+    """
+    Flag which determines whether the simulated time series data (if available) will be
+    exported into the IPASC data format.
+    Usage: module io_handling, core
     """

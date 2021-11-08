@@ -16,7 +16,7 @@ from scipy.ndimage import zoom
 from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
-from simpa.core import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, \
+from simpa.simulation_components import OpticalForwardModelMcxAdapter, VolumeCreationModelModelBasedAdapter, \
     GaussianNoiseProcessingComponent
 from simpa.algorithms.monospectral.iterative_qPAI_algorithm import IterativeqPAIProcessingComponent
 from simpa.core.device_digital_twins import RSOMExplorerP50

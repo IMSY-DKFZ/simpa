@@ -12,16 +12,15 @@ from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary, Sca
 from simpa.utils import Spectrum
 from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
+from simpa.utils.serializer import SerializableSIMPAClass
 
 
-class MolecularComposition(list):
+class MolecularComposition(SerializableSIMPAClass, list):
 
     def __init__(self, segmentation_type=None, molecular_composition_settings=None):
         super().__init__()
         self.segmentation_type = segmentation_type
         self.internal_properties = TissueProperties()
-        self.cached_absorption = np.ones((5000, )) * -1
-        self.cached_scattering = np.ones((5000,)) * -1
 
         if molecular_composition_settings is None:
             return
@@ -68,8 +67,23 @@ class MolecularComposition(list):
 
         return self.internal_properties
 
+    def serialize(self) -> dict:
+        dict_items = self.__dict__
+        list_items = [molecule for molecule in self]
+        return {"MolecularComposition": {"dict_items": dict_items, "list_items": list_items}}
 
-class Molecule(object):
+    @staticmethod
+    def deserialize(dictionary_to_deserialize: dict):
+        deserialized_molecular_composition = MolecularCompositionGenerator()
+        for molecule in dictionary_to_deserialize["list_items"]:
+            deserialized_molecular_composition.append(molecule)
+        deserialized_molecular_composition = deserialized_molecular_composition.get_molecular_composition(
+            dictionary_to_deserialize["dict_items"]["segmentation_type"]
+        )
+        return deserialized_molecular_composition
+
+
+class Molecule(SerializableSIMPAClass, object):
 
     def __init__(self, name: str = None,
                  absorption_spectrum: Spectrum = None,
@@ -169,17 +183,22 @@ class Molecule(object):
         else:
             return super().__eq__(other)
 
+    def serialize(self):
+        serialized_molecule = self.__dict__
+        return {"Molecule": serialized_molecule}
+
     @staticmethod
-    def from_settings(settings):
-        return Molecule(name=settings["name"],
-                        absorption_spectrum=settings["spectrum"],
-                        volume_fraction=settings["volume_fraction"],
-                        scattering_spectrum=settings["scattering_spectrum"],
-                        alpha_coefficient=settings["alpha_coefficient"],
-                        speed_of_sound=settings["speed_of_sound"],
-                        gruneisen_parameter=settings["gruneisen_parameter"],
-                        anisotropy_spectrum=settings["anisotropy_spectrum"],
-                        density=settings["density"])
+    def deserialize(dictionary_to_deserialize: dict):
+        deserialized_molecule = Molecule(name=dictionary_to_deserialize["name"],
+                                         absorption_spectrum=dictionary_to_deserialize["spectrum"],
+                                         volume_fraction=dictionary_to_deserialize["volume_fraction"],
+                                         scattering_spectrum=dictionary_to_deserialize["scattering_spectrum"],
+                                         alpha_coefficient=dictionary_to_deserialize["alpha_coefficient"],
+                                         speed_of_sound=dictionary_to_deserialize["speed_of_sound"],
+                                         gruneisen_parameter=dictionary_to_deserialize["gruneisen_parameter"],
+                                         anisotropy_spectrum=dictionary_to_deserialize["anisotropy_spectrum"],
+                                         density=dictionary_to_deserialize["density"])
+        return deserialized_molecule
 
 
 class MoleculeLibrary(object):
