@@ -69,7 +69,7 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         time_series_data = self.forward_model(_device)
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
-            assert_array_well_defined(time_series_data)
+            assert_array_well_defined(time_series_data, array_name="time_series_data")
 
         acoustic_output_path = generate_dict_path(Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 

@@ -52,8 +52,11 @@ class VolumeCreatorModuleBase(SimulationModule):
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_equal_shapes(list(volumes.values()))
-            for _volume in volumes.values():
-                assert_array_well_defined(_volume)
+            for _volume_name in volumes.keys():
+                if _volume_name == Tags.DATA_FIELD_OXYGENATION:
+                    # oxygenation can have NaN by definition
+                    continue
+                assert_array_well_defined(volumes[_volume_name], array_name=_volume_name)
 
         save_volumes = dict()
         for key, value in volumes.items():

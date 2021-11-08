@@ -84,7 +84,7 @@ class OpticalForwardModuleBase(SimulationModule):
                                          probe_position_mm=device.device_position_mm)
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
-            assert_array_well_defined(fluence, assume_non_negativity=True)
+            assert_array_well_defined(fluence, assume_non_negativity=True, array_name="fluence")
 
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.component_settings:
             units = Tags.UNITS_PRESSURE
@@ -98,7 +98,7 @@ class OpticalForwardModuleBase(SimulationModule):
             initial_pressure = absorption * fluence
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
-            assert_array_well_defined(initial_pressure, assume_non_negativity=True)
+            assert_array_well_defined(initial_pressure, assume_non_negativity=True, array_name="initial_pressure")
 
         optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
 

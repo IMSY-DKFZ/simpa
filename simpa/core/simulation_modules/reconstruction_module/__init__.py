@@ -80,7 +80,7 @@ class ReconstructionAdapterBase(SimulationModule):
                 reconstruction, method=self.component_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
-            assert_array_well_defined(reconstruction)
+            assert_array_well_defined(reconstruction, array_name="reconstruction")
 
         reconstruction_output_path = generate_dict_path(Tags.DATA_FIELD_RECONSTRUCTED_DATA, self.global_settings[Tags.WAVELENGTH])
 

@@ -46,6 +46,7 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
             ret_dict[8] = sp.TISSUE_LIBRARY.heavy_water()
             ret_dict[9] = sp.TISSUE_LIBRARY.heavy_water()
             ret_dict[10] = sp.TISSUE_LIBRARY.heavy_water()
+            ret_dict[11] = sp.TISSUE_LIBRARY.heavy_water()
             return ret_dict
 
         self.settings = sp.Settings()
@@ -57,6 +58,7 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
         self.settings[Tags.DIM_VOLUME_X_MM] = 400 / (target_spacing / input_spacing)
         self.settings[Tags.DIM_VOLUME_Y_MM] = 128 / (target_spacing / input_spacing)
         self.settings[Tags.DIM_VOLUME_Z_MM] = 400 / (target_spacing / input_spacing)
+        # self.settings[Tags.IGNORE_QA_ASSERTIONS] = True
 
         self.settings.set_volume_creation_settings({
             Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,
@@ -86,6 +88,12 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
         os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
+
+        if show_figure_on_screen:
+            save_path = None
+        else:
+            save_path = save_path + "SegmentationLoaderExample.png"
+
         sp.visualise_data(path_to_hdf5_file=self.path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5",
                           wavelength=700,
                           show_initial_pressure=True,
@@ -94,8 +102,10 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
                           show_fluence=True,
                           show_tissue_density=True,
                           show_speed_of_sound=True,
-                          save_path=save_path + "SegmentationLoaderExample.png",
-                          log_scale=True)
+                          show_anisotropy=True,
+                          show_scattering=True,
+                          save_path=save_path,
+                          log_scale=False)
 
 
 if __name__ == "__main__":
