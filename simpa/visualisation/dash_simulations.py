@@ -475,7 +475,6 @@ def _load_data_fields():
                                                                                    wavelength)
     data.simpa_data_fields = data_fields
 
-
 @app.callback(
     Output("plot_11", "figure"),
     Output("plot_scaler1", "disabled"),
@@ -487,6 +486,25 @@ def _load_data_fields():
     Input("volume_axis", "value"),
     Input("volume_slider", "value"),
 )
+def update_plot_11(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
+    return plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind)
+
+
+@app.callback(
+    Output("plot_12", "figure"),
+    Output("plot_scaler2", "disabled"),
+    Input("param2", "value"),
+    Input("colorscale_picker", "colorscale"),
+    Input("channel_slider", "value"),
+    Input("plot_scaler2", "value"),
+    Input("plot_type2", "value"),
+    Input("volume_axis", "value"),
+    Input("volume_slider", "value")
+)
+def update_plot_12(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
+    return plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind)
+
+
 def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
     if data_field is None or wavelength is None:
         raise PreventUpdate
@@ -556,87 +574,6 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
                                      surface=dict(fill=0.5, pattern='odd', count=10)))
         for i, x in enumerate(data.click_points["x"]):
             figure.add_annotation(x=x, y=data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
-        disable_scaler = True
-    else:
-        raise PreventUpdate
-    return figure, disable_scaler
-
-
-@app.callback(
-    Output("plot_12", "figure"),
-    Output("plot_scaler2", "disabled"),
-    Input("param2", "value"),
-    Input("colorscale_picker", "colorscale"),
-    Input("channel_slider", "value"),
-    Input("plot_scaler2", "value"),
-    Input("plot_type2", "value"),
-    Input("volume_axis", "value"),
-    Input("volume_slider", "value")
-)
-def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
-    if data_field is None or wavelength is None:
-        raise PreventUpdate
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        component_id = None
-    else:
-        component_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    if len(data.simpa_data_fields[data_field][wavelength].shape) == 3:
-        plot_data = np.take(np.rot90(data.simpa_data_fields[data_field][wavelength], 1),
-                            indices=axis_ind, axis=axis)
-    elif len(data.simpa_data_fields[data_field][wavelength].shape) == 2:
-        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
-    else:
-        raise PreventUpdate
-    z_min = np.nanmin(plot_data) + (np.nanmax(plot_data) - np.nanmin(plot_data)) * z_range[0]
-    z_max = np.nanmax(plot_data) * z_range[1]
-    if plot_type == "imshow":
-        plot = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
-        figure = go.Figure(data=plot)
-        for i, x in enumerate(data.click_points["x"]):
-            figure.add_annotation(x=x, y=data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
-        disable_scaler = False
-    elif plot_type == "hist-2D":
-        df = pd.DataFrame()
-        df[data_field] = list(plot_data.flatten())
-        figure = px.histogram(data_frame=df, y=data_field, marginal="box")
-        disable_scaler = True
-    elif plot_type == "box":
-        df = pd.DataFrame()
-        df[data_field] = list(plot_data.flatten())
-        figure = px.box(data_frame=df, y=data_field, notched=True)
-        disable_scaler = True
-    elif plot_type == 'violin':
-        df = pd.DataFrame()
-        df[data_field] = list(plot_data.flatten())
-        figure = px.violin(data_frame=df, y=data_field, box=True)
-        disable_scaler = True
-    elif plot_type == "contour":
-        figure = go.Figure(data=go.Contour(z=plot_data, contours=dict(showlabels=True,
-                                                                      labelfont=dict(size=14, color="white")),
-                                           colorscale=colorscale),
-                           )
-        disable_scaler = True
-    elif plot_type == "hist-3D":
-        if component_id in PREVENT_3D_UPDATES:
-            raise PreventUpdate
-        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1).flatten()
-        if plot_data.size > 10000:
-            plot_data = np.random.choice(plot_data, 10000)
-        df = pd.DataFrame()
-        df[data_field] = list(plot_data)
-        figure = px.histogram(data_frame=df, y=data_field, marginal="box")
-        disable_scaler = True
-    elif plot_type == "contour-3D":
-        if component_id in PREVENT_3D_UPDATES:
-            raise PreventUpdate
-        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
-        x, y, z = np.where(plot_data)
-        v = plot_data[(x, y, z)]
-        figure = go.Figure(go.Volume(x=x, y=y, z=z, value=v, opacity=0.1, isomin=z_min,
-                                     isomax=z_max,
-                                     caps=dict(x_show=False, y_show=False, z_show=False),
-                                     surface=dict(fill=0.5, pattern='odd', count=10)))
         disable_scaler = True
     else:
         raise PreventUpdate
