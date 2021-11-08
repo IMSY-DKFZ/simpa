@@ -90,8 +90,8 @@ class TestLinearUnmixing(unittest.TestCase):
         # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
         self.settings["linear_unmixing"] = {
             Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
-            Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN: self.WAVELENGTHS,
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
             Tags.WAVELENGTHS: self.WAVELENGTHS,
             Tags.LINEAR_UNMIXING_NON_NEGATIVE: False
@@ -121,9 +121,9 @@ class TestLinearUnmixing(unittest.TestCase):
         # We are interested in the blood oxygen saturation, so we have to execute linear unmixing with
         # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
         self.settings["linear_unmixing"] = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
-            Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN: self.WAVELENGTHS,
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
             Tags.WAVELENGTHS: self.WAVELENGTHS,
             Tags.LINEAR_UNMIXING_NON_NEGATIVE: True
@@ -154,9 +154,9 @@ class TestLinearUnmixing(unittest.TestCase):
         # We are interested in the blood oxygen saturation, so we have to execute linear unmixing with
         # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
         self.settings["linear_unmixing"] = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
-            Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN: self.WAVELENGTHS,
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
             Tags.WAVELENGTHS: [23, 42] # Test random invalid wavelengths
         }
@@ -179,7 +179,7 @@ class TestLinearUnmixing(unittest.TestCase):
         # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2,
         # however in this test we forget to set the chromophores oxy- and deoxyhemoglobin
         self.settings["linear_unmixing"] = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
             Tags.WAVELENGTHS: self.WAVELENGTHS
         }
@@ -199,17 +199,14 @@ class TestLinearUnmixing(unittest.TestCase):
         # We are interested in the blood oxygen saturation, so we have to execute linear unmixing with
         # the chromophores oxy- and deoxyhemoglobin and we have to set the tag LINEAR_UNMIXING_COMPUTE_SO2
         self.settings["linear_unmixing"] = {
-            Tags.DATA_FIELD: Tags.PROPERTY_ABSORPTION_PER_CM,
-            Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_MELANIN_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_FAT_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_WATER_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
-            Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS: self.WAVELENGTHS,
+            Tags.DATA_FIELD: Tags.DATA_FIELD_ABSORPTION_PER_CM,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_COPPER_SULPHIDE: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_NICKEL_SULPHIDE: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_MELANIN: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_FAT: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_WATER: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN: self.WAVELENGTHS,
+            Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN: self.WAVELENGTHS,
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
             Tags.WAVELENGTHS: self.WAVELENGTHS
         }

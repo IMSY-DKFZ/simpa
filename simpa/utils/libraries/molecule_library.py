@@ -277,7 +277,7 @@ class MoleculeLibrary(object):
     def constant_scatterer(scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
                            volume_fraction: float = 1.0):
         return Molecule(name="constant_scatterer",
-                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Constant_Absorber_0"),
+                        absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
                         scattering_spectrum=
                         ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(scattering_coefficient),
@@ -290,7 +290,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def soft_tissue_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="soft_tissue_scatterer",
-                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Constant_Absorber_0"),
+                        absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("background_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
@@ -303,7 +303,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def muscle_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="muscle_scatterer",
-                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Constant_Absorber_0"),
+                        absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("muscle_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
@@ -316,7 +316,7 @@ class MoleculeLibrary(object):
     @staticmethod
     def epidermal_scatterer(volume_fraction: float = 1.0):
         return Molecule(name="epidermal_scatterer",
-                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Constant_Absorber_0"),
+                        absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
                         scattering_spectrum=ScatteringSpectrumLibrary.scattering_from_rayleigh_and_mie_theory(
                             "epidermis", OpticalTissueProperties.MUS500_EPIDERMIS, OpticalTissueProperties.FRAY_EPIDERMIS,

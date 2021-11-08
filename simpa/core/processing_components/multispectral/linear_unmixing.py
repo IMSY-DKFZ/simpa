@@ -10,7 +10,6 @@ from simpa.core.processing_components.multispectral import MultispectralProcessi
 from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary
 import numpy as np
 import scipy.linalg as linalg
-from simpa.utils.settings import Settings
 from scipy.optimize import nnls
 
 
@@ -135,30 +134,24 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
         This function might have to change drastically if the design of the spectral library changes in the future!
         """
 
-        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS, "Constant Absorber (10)")
-        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS, "Constant Absorber (1)")
-        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS, "Constant Absorber (0)")
-        if Tags.LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS, "Copper Sulphide")
-        if Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS, "Nickel Sulphide")
-        if Tags.LINEAR_UNMIXING_MELANIN_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_MELANIN_WAVELENGTHS, "Melanin")
-        if Tags.LINEAR_UNMIXING_FAT_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_FAT_WAVELENGTHS, "Fat")
-        if Tags.LINEAR_UNMIXING_WATER_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_WATER_WAVELENGTHS, "Water")
-        if Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS, "Oxyhemoglobin")
-        if Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS, "Deoxyhemoglobin")
+        if Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_COPPER_SULPHIDE in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_COPPER_SULPHIDE)
+        if Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_NICKEL_SULPHIDE in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_NICKEL_SULPHIDE)
+        if Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_MELANIN in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_MELANIN)
+        if Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_FAT in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_FAT)
+        if Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_WATER in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_WATER)
+        if Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN)
+        if Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN in self.component_settings:
+            self.create_chromophore_spectra_entry(Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN)
 
         return None
 
-    def create_chromophore_spectra_entry(self, chromophore_tag: tuple, chromophore_name: str):
+    def create_chromophore_spectra_entry(self, chromophore_tag: str):
         """
         This function builds the spectra for a chromophore specified by tag and name and saves it in
         self.chromophore_spectra_dict and creates a dictionary containing the corresponding wavelengths.
@@ -167,11 +160,11 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
         if len(self.component_settings[chromophore_tag]) < 2:
             self.logger.critical(f"Linear unmixing should be performed with at least two wavelengths! "
                                  f"Unmixing is approached with just {len(self.component_settings[chromophore_tag])} "
-                                 f"wavelength for {chromophore_name}.")
+                                 f"wavelength for {chromophore_tag}.")
         try:
-            self.chromophore_wavelengths_dict[chromophore_name] = self.component_settings[chromophore_tag]
-            spectra = AbsorptionSpectrumLibrary().get_spectrum_by_name(chromophore_name)
-            self.chromophore_spectra_dict[chromophore_name] = [spectra.get_value_for_wavelength(wavelength)
+            self.chromophore_wavelengths_dict[chromophore_tag] = self.component_settings[chromophore_tag]
+            spectra = AbsorptionSpectrumLibrary().get_spectrum_by_name(chromophore_tag)
+            self.chromophore_spectra_dict[chromophore_tag] = [spectra.get_value_for_wavelength(wavelength)
                                                                 for wavelength in self.component_settings[chromophore_tag]]
         except Exception as e:
             self.logger.error("Loading of spectrum not successful.")

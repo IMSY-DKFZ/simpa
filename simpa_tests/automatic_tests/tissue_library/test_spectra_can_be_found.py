@@ -13,8 +13,8 @@ from simpa.utils import AnisotropySpectrumLibrary
 class TestSpectraCanBeFound(unittest.TestCase):
 
     def test_absorption_spectra_valid(self):
-        names = ["Constant_Absorber_0", "Constant_Absorber_1", "Constant_Absorber_10", "Copper_Sulphide",
-                 "Deoxyhemoglobin", "Fat", "Melanin", "Nickel_Sulphide", "Oxyhemoglobin", "Skin_Baseline"]
+        names = ["Copper_Sulphide", "Deoxyhemoglobin", "Fat", "Melanin", "Nickel_Sulphide",
+                 "Oxyhemoglobin", "Skin_Baseline"]
         lib = AbsorptionSpectrumLibrary()
         for name in names:
             print(name)

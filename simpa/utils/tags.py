@@ -382,7 +382,7 @@ class Tags:
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
-    MCX_ASSUMED_ANISOTROPY = ("mcx_seed", (int, np.int, float))
+    MCX_ASSUMED_ANISOTROPY = ("mcx_seed", (int, float))
     """
     The anisotropy that should be assumed for the mcx simulations.
     If not set, a default value of 0.9 will be assumed.
@@ -916,19 +916,19 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    KWAVE_PROPERTY_PMLInside = ("pml_inside", (bool, np.bool, np.bool_))
+    KWAVE_PROPERTY_PMLInside = ("pml_inside", bool)
     """
     If True, the "perfectly matched layer" (PML) in kwave is located inside the volume.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    KWAVE_PROPERTY_PlotPML = ("plot_pml", (bool, np.bool, np.bool_))
+    KWAVE_PROPERTY_PlotPML = ("plot_pml", bool)
     """
     If True, the "perfectly matched layer" (PML) around the simulated volume in kwave is plotted.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    KWAVE_PROPERTY_INITIAL_PRESSURE_SMOOTHING = ("initial_pressure_smoothing", (bool, np.bool, np.bool_))
+    KWAVE_PROPERTY_INITIAL_PRESSURE_SMOOTHING = ("initial_pressure_smoothing", bool)
     """
     If True, the initial pressure is smoothed before simulated in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -1296,74 +1296,56 @@ class Tags:
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
-    LINEAR_UNMIXING_NON_NEGATIVE = ("linear_unmixing_nonnegative", (bool, np.bool, np.bool_))
+    LINEAR_UNMIXING_NON_NEGATIVE = ("linear_unmixing_nonnegative", bool)
     """
     If True, non-negative linear unmixing is performed which solves the 
     KKT (Karush-Kuhn-Tucker) conditions for the non-negative least squares problem. \n
-    Usage: module algorithms (linear unmixing)
+    Usage: module algorithms, linear unmixing
     """
 
-    LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS = ("linear_unmixing_oxyhemoglobin", list)
+    SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN = "Oxyhemoglobin"
     """
-    List of wavelengths used in linear unmixing for oxyhemoglobin chromophore.\n
-    Usage: module algorithms (linear_unmixing)
+    Name of the spectrum file for oxyhemoglobin chromophore.\n
+    Usage: module algorithms, spectra_library, linear_unmixing
     """
 
-    LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS = ("linear_unmixing_deoxyhemoglobin", list)
+    SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN = "Deoxyhemoglobin"
     """
     List of wavelengths used in linear unmixing for deoxyhemoglobin chromophore.\n
     Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_WATER_WAVELENGTHS = ("linear_unmixing_water", list)
+    SIMPA_NAMED_ABSORPTION_SPECTRUM_WATER = "Water"
     """
     List of wavelengths used in linear unmixing for water chromophore.\n
     Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_FAT_WAVELENGTHS = ("linear_unmixing_fat", list)
+    SIMPA_NAMED_ABSORPTION_SPECTRUM_FAT = "Fat"
     """
     List of wavelengths used in linear unmixing for fat chromophore.\n
     Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_MELANIN_WAVELENGTHS = ("linear_unmixing_melanin", list)
+    SIMPA_NAMED_ABSORPTION_SPECTRUM_MELANIN = "Melanin"
     """
     List of wavelengths used in linear unmixing for melanin chromophore.\n
     Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS = ("linear_unmixing_nickel_sulphide", list)
+    SIMPA_NAMED_ABSORPTION_SPECTRUM_NICKEL_SULPHIDE = "Nickel_Sulphide"
     """
     List of wavelengths used in linear unmixing for nickel sulphide chromophore.\n
     Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS = ("linear_unmixing_copper_sulphide", list)
+    SIMPA_NAMED_ABSORPTION_SPECTRUM_COPPER_SULPHIDE = "Copper_Sulphide"
     """
     List of wavelengths used in linear unmixing for copper sulphide chromophore.\n
     Usage: module algorithms (linear_unmixing)
     """
 
-    LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS = ("linear_unmixing_constant_zero", list)
-    """
-    List of wavelengths used in linear unmixing for constant absorber (zero) chromophore.\n
-    Usage: module algorithms (linear_unmixing)
-    """
-
-    LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS = ("linear_unmixing_constant_one", list)
-    """
-    List of wavelengths used in linear unmixing for constant absorber (one) chromophore.\n
-    Usage: module algorithms (linear_unmixing)
-    """
-
-    LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS = ("linear_unmixing_constant_ten", list)
-    """
-    List of wavelengths used in linear unmixing for constant absorber (ten) chromophore.\n
-    Usage: module algorithms (linear_unmixing)
-    """
-
-    LINEAR_UNMIXING_COMPUTE_SO2 = ("linear_unmixing_compute_so2", (bool, np.bool, np.bool_))
+    LINEAR_UNMIXING_COMPUTE_SO2 = ("linear_unmixing_compute_so2", bool)
     """
     If True the blood oxygen saturation is calculated and saved. This is only possible \n
     if the tags LINEAR_UNMIXING_OXYHEMOGLOBIN and LINEAR_UNMIXING_DEOXYHEMOGLOBIN are set.\n
