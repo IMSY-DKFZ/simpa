@@ -1,8 +1,10 @@
 simpa.core package
 ==================
 
-Subpackages
------------
+.. automodule:: simpa.core
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. toctree::
    :maxdepth: 4
@@ -11,21 +13,7 @@ Subpackages
    simpa.core.processing_components
    simpa.core.simulation_modules
 
-Submodules
-----------
-
-simpa.core.simulation module
-----------------------------
-
 .. automodule:: simpa.core.simulation
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: simpa.core
    :members:
    :undoc-members:
    :show-inheritance:
