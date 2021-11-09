@@ -111,7 +111,7 @@ settings["noise_model"] = {
     Tags.NOISE_MEAN: 1.0,
     Tags.NOISE_STD: 0.01,
     Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
-    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
     Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
 }
 settings["iterative_qpai_reconstruction"] = {
@@ -162,7 +162,7 @@ if VISUALIZE:
     absorption_reconstruction = sp.load_data_field(data_path, Tags.ITERATIVE_qPAI_RESULT, wavelength)
 
     # get ground truth absorption coefficients
-    absorption_gt = sp.load_data_field(data_path, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
+    absorption_gt = sp.load_data_field(data_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength)
 
     # rescale ground truth to same dimension as reconstruction (necessary due to resampling in iterative algorithm)
     scale = np.shape(absorption_reconstruction)[0] / np.shape(absorption_gt)[0]  # same as Tags.DOWNSCALE_FACTOR

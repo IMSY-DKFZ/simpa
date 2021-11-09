@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 from .log import Logger
 from .utils import *
 
-
 from .core.simulation_modules.volume_creation_module.volume_creation_module_model_based_adapter import \
     ModelBasedVolumeCreationAdapter
 from .core.simulation_modules.volume_creation_module.volume_creation_module_segmentation_based_adapter import \
@@ -52,3 +51,7 @@ from .io_handling.zenodo_download import download_from_zenodo
 from .io_handling.ipasc import export_to_ipasc
 
 from .visualisation.matplotlib_data_visualisation import visualise_data
+from .visualisation.matplotlib_device_visualisation import visualise_device
+
+from .utils.quality_assurance.data_sanity_testing import assert_equal_shapes
+from .utils.quality_assurance.data_sanity_testing import assert_array_well_defined

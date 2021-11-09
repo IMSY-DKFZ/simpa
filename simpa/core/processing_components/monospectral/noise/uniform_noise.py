@@ -5,10 +5,9 @@ SPDX-License-Identifier: MIT
 """
 
 from simpa.utils import Tags
-from simpa.utils import EPS
 from simpa.io_handling import load_data_field, save_data_field
 from simpa.core.processing_components import ProcessingComponent
-
+from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 import numpy as np
 
 
@@ -60,6 +59,9 @@ class UniformNoise(ProcessingComponent):
             data_array = data_array + (np.random.random(size=np.shape(data_array)) * (max_noise-min_noise) + min_noise)
         elif mode == Tags.NOISE_MODE_MULTIPLICATIVE:
             data_array = data_array * (np.random.random(size=np.shape(data_array)) * (max_noise-min_noise) + min_noise)
+
+        if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
+            assert_array_well_defined(data_array)
 
         save_data_field(data_array, self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
 

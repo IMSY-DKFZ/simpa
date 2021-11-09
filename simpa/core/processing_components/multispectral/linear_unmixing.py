@@ -7,9 +7,10 @@ SPDX-License-Identifier: MIT
 from simpa.utils import Tags
 from simpa.io_handling import save_data_field
 from simpa.core.processing_components.multispectral import MultispectralProcessingAlgorithm
-from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
+from simpa.utils.libraries.spectra_library import Spectrum
 import numpy as np
 import scipy.linalg as linalg
+from scipy.optimize import nnls
 
 
 class LinearUnmixing(MultispectralProcessingAlgorithm):
@@ -17,26 +18,22 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
         Performs linear spectral unmixing (LU) using Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI)
         on the defined data field for each chromophore specified in the component settings.
 
+        If tag LINEAR_UNMIXING_NON_NEGATIVE is set to True non-negative linear unmixing is performed, which solves the
+        KKT (Karush-Kuhn-Tucker) conditions for the non-negative least squares problem.
+
         This component saves a dictionary containing the chromophore concentrations and corresponding wavelengths for
         each chromophore. If the tag LINEAR_UNMIXING_COMPUTE_SO2 is set True the blood oxygen saturation
         is saved as well, however, this is only possible if the chromophores oxy- and deoxyhemoglobin are specified.
         IMPORTANT:
         Linear unmixing should only be performed with at least two wavelengths:
-        e.g. Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN: [750, 800]
+        e.g. Tags.WAVELENGTHS: [750, 800]
 
         :param kwargs:
            **Tags.DATA_FIELD (required)
-           **Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN
-           **Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN
-           **Tags.LINEAR_UNMIXING_WATER
-           **Tags.LINEAR_UNMIXING_FAT
-           **Tags.LINEAR_UNMIXING_MELANIN
-           **Tags.LINEAR_UNMIXING_NICKEL_SULPHITE
-           **Tags.LINEAR_UNMIXING_COPPER_SULPHITE
-           **Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO
-           **Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE
-           **Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN
+           **Tags.LINEAR_UNMIXING_SPECTRA (required)
+           **Tags.WAVELENGTHS (default: None, if None, then settings[Tags.WAVELENGTHS] will be used.)
            **Tags.LINEAR_UNMIXING_COMPUTE_SO2 (default: False)
+           **Tags.LINEAR_UNMIXING_NON_NEGATIVE (default: False)
            **settings (required)
            **component_settings_key (required)
         """
@@ -46,21 +43,33 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
                                              component_settings_key=component_settings_key)
 
         self.chromophore_spectra_dict = {}  # dictionary containing the spectrum for each chromophore and wavelength
-        self.pseudo_inverse_absorption_matrix = []  # endmember matrix needed in LU
+        self.absorption_matrix = []  # endmember matrix needed in LU
+        self.pseudo_inverse_absorption_matrix = []
 
         self.chromophore_concentrations = []  # list of LU results
         self.chromophore_concentrations_dict = {}  # dictionary of LU results
-        self.chromophore_wavelengths_dict = {}  # dictionary of corresponding wavelengths
+        self.wavelengths = []  # list of wavelengths
 
     def run(self):
 
         self.logger.info("Performing linear spectral unmixing...")
 
-        # get absorption values for all chromophores and wavelengths using SIMPAs spectral library
-        # the absorption values are saved in self.chromophore_spectra_dict
-        # e.g. {'Oxyhemoglobin': [2.77, 5.67], ...}
-        # the corresponding wavelengths for each chromophore are saved in self.chromophore_wavelengths_dict
-        # e.g. {'Oxyhemoglobin': [750, 850], ...}
+        if Tags.WAVELENGTHS in self.component_settings:
+            self.wavelengths = self.component_settings[Tags.WAVELENGTHS]
+        else:
+            if Tags.WAVELENGTHS in self.global_settings:
+                self.wavelengths = self.global_settings[Tags.WAVELENGTHS]
+            else:
+                msg = "Was not able to get wavelengths from component_settings or global_settings."
+                self.logger.critical(msg)
+                raise AssertionError(msg)
+
+        if len(self.wavelengths) < 2:
+            msg = "Linear unmixing should be performed with at least two wavelengths!"
+            self.logger.critical(msg)
+            raise AssertionError(msg)
+
+        # Build internal list of spectra based on Tags.LINEAR_UNMIXING_SPECTRA
         self.build_chromophore_spectra_dict()
 
         # check if absorption dictionary contains any spectra
@@ -69,15 +78,20 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
                            "Please specify at least one chromophore in the component settings by setting "
                            "the corresponding tag.")
 
-        # create the pseudo inverse absorption matrix needed by FLUPAI
-        # the matrix should have the shape [#chromophores, #global wavelengths]
-        self.pseudo_inverse_absorption_matrix = self.create_piv_absorption_matrix()
-        self.logger.debug(f"The pseudo inverse absorption matrix has shape {np.shape(self.pseudo_inverse_absorption_matrix)}.")
+        # check if non-negative contraint should be used for linear unmixing
+        non_negative = False
+        if Tags.LINEAR_UNMIXING_NON_NEGATIVE in self.component_settings:
+            non_negative = Tags.LINEAR_UNMIXING_NON_NEGATIVE
+
+        # create the absorption matrix needed by FLUPAI
+        # the matrix should have the shape [#global wavelengths, #chromophores]
+        self.absorption_matrix = self.create_absorption_matrix()
+        self.logger.debug(f"The absorption matrix has shape {np.shape(self.absorption_matrix)}.")
 
         # perform fast linear unmixing FLUPAI
         # the result saved in self.chromophore_concentrations is a list with the unmixed images
         # containing the chromophore concentration
-        self.chromophore_concentrations = self.flupai()
+        self.chromophore_concentrations = self.flupai(non_negative=non_negative)
         self.logger.debug(f"The unmixing result has shape {np.shape(self.chromophore_concentrations)}.")
 
         # split results to create dictionary which contains linear unmixing result for each chromophore
@@ -87,27 +101,14 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
                           f"{self.chromophore_concentrations_dict.keys()}")
 
         # compute blood oxygen saturation if selected
+        save_dict = {
+                    "chromophore_concentrations": self.chromophore_concentrations_dict,
+                    "wavelengths": self.wavelengths
+                    }
         if Tags.LINEAR_UNMIXING_COMPUTE_SO2 in self.component_settings:
             if self.component_settings[Tags.LINEAR_UNMIXING_COMPUTE_SO2]:
                 self.logger.info("Blood oxygen saturation is calculated and saved.")
-                sO2 = self.calculate_sO2()
-                save_dict = {
-                    "sO2": sO2,
-                    "chromophore_concentrations": self.chromophore_concentrations_dict,
-                    "chromophore_wavelengths": self.chromophore_wavelengths_dict
-                }
-            else:
-                self.logger.info("Blood oxygen saturation is not calculated.")
-                save_dict = {
-                    "chromophore_concentrations": self.chromophore_concentrations_dict,
-                    "chromophore_wavelengths": self.chromophore_wavelengths_dict
-                }
-        else:
-            self.logger.info("Blood oxygen saturation is not calculated.")
-            save_dict = {
-                "chromophore_concentrations": self.chromophore_concentrations_dict,
-                "chromophore_wavelengths": self.chromophore_wavelengths_dict
-            }
+                save_dict["sO2"] = self.calculate_sO2()
 
         # save linear unmixing result in hdf5
         save_data_field(save_dict, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
@@ -122,56 +123,31 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
         This function might have to change drastically if the design of the spectral library changes in the future!
         """
 
-        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_TEN_WAVELENGTHS, "Constant Absorber (10)")
-        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ONE_WAVELENGTHS, "Constant Absorber (1)")
-        if Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_CONSTANT_ABSORBER_ZERO_WAVELENGTHS, "Constant Absorber (0)")
-        if Tags.LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_COPPER_SULPHIDE_WAVELENGTHS, "Copper Sulphide")
-        if Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_NICKEL_SULPHIDE_WAVELENGTHS, "Nickel Sulphide")
-        if Tags.LINEAR_UNMIXING_MELANIN_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_MELANIN_WAVELENGTHS, "Melanin")
-        if Tags.LINEAR_UNMIXING_FAT_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_FAT_WAVELENGTHS, "Fat")
-        if Tags.LINEAR_UNMIXING_WATER_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_WATER_WAVELENGTHS, "Water")
-        if Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_OXYHEMOGLOBIN_WAVELENGTHS, "Oxyhemoglobin")
-        if Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS in self.component_settings:
-            self.create_chromophore_spectra_entry(Tags.LINEAR_UNMIXING_DEOXYHEMOGLOBIN_WAVELENGTHS, "Deoxyhemoglobin")
+        if Tags.LINEAR_UNMIXING_SPECTRA in self.component_settings:
+            spectra = self.component_settings[Tags.LINEAR_UNMIXING_SPECTRA]
+            if len(spectra) < 2:
+                raise AssertionError(f"Need at least two endmembers for unmixing! You provided {len(spectra)}.")
+            for spectrum in spectra:
+                self.create_chromophore_spectra_entry(spectrum)
+        else:
+            raise AssertionError("Tried to unmix without spectra definitions. Make sure that the"
+                                 " Tags.LINEAR_UNMIXING_SPECTRA tag is set in the linear unmixing settings.")
 
-        return None
-
-    def create_chromophore_spectra_entry(self, chromophore_tag: tuple, chromophore_name: str):
+    def create_chromophore_spectra_entry(self, spectrum: Spectrum):
         """
         This function builds the spectra for a chromophore specified by tag and name and saves it in
         self.chromophore_spectra_dict and creates a dictionary containing the corresponding wavelengths.
         The name must match the ones used in the spectral library of SIMPA.
         """
-        if len(self.component_settings[chromophore_tag]) < 2:
-            self.logger.critical(f"Linear unmixing should be performed with at least two wavelengths! "
-                                 f"Unmixing is approached with just {len(self.component_settings[chromophore_tag])} "
-                                 f"wavelength for {chromophore_name}.")
-        # TODO: refactor of Spectra Library and error handling
-        try:
-            self.chromophore_wavelengths_dict[chromophore_name] = self.component_settings[chromophore_tag]
-            spectra = SPECTRAL_LIBRARY.get_spectrum_by_name(chromophore_name)
-            self.chromophore_spectra_dict[chromophore_name] = [spectra.get_value_for_wavelength(wavelength)
-                                                                for wavelength in self.component_settings[chromophore_tag]]
-        except Exception as e:
-            self.logger.warning("Loading of spectrum not successful.")
-            self.logger.debug(e)
-            raise ValueError("For details see above.")
 
-    def create_piv_absorption_matrix(self) -> np.ndarray:
+        self.chromophore_spectra_dict[spectrum.spectrum_name] = [spectrum.get_value_for_wavelength(wavelength)
+                                                                 for wavelength in self.wavelengths]
+
+    def create_absorption_matrix(self) -> np.ndarray:
         """
-        Method that returns the pseudo inverse of the absorption (endmember) matrix
-        needed for linear unmixing.
+        Method that returns the absorption (endmember) matrix needed for linear unmixing.
 
-        :return: pseudo inverse absorption matrix
+        :return: absorption matrix
         """
 
         numberWavelengths = len(self.wavelengths)
@@ -183,13 +159,11 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
         # write absorption data for each chromophore and the corresponding wavelength into an array (matrix)
         for index, key in enumerate(self.chromophore_spectra_dict.keys()):
             for wave in range(numberWavelengths):
-                if self.wavelengths[wave] in self.chromophore_wavelengths_dict[key]:
-                    endmemberMatrix[wave][index] = self.chromophore_spectra_dict[key][
-                        self.chromophore_wavelengths_dict[key].index(self.wavelengths[wave])]
+                    endmemberMatrix[wave][index] = self.chromophore_spectra_dict[key][wave]
 
-        return linalg.pinv(endmemberMatrix)
+        return endmemberMatrix
 
-    def flupai(self) -> list:
+    def flupai(self, non_negative=False) -> list:
         """
         Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI) is based on
         SVD decomposition with a pseudo inverse, which is equivalent to a least squares
@@ -209,18 +183,30 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
                              "where the first dimension represents the wavelengths and the second, third and fourth "
                              "dimension are representing a single wavelength PA image.")
 
-        # matmul of x = PI * b with x chromophore information, PI pseudo inverse with absorber information and b
-        # containing the measured pixel
+        # if non_negative is False, matmul of x = PI * b with x chromophore information,
+        # PI pseudo inverse with absorber information and b containing the measured pixel,
+        # else non-negative least squares is performed.
         try:
-            output = np.matmul(self.pseudo_inverse_absorption_matrix, reshapedData)
-        except Exception:
-            self.logger.critical(f"Matrix multiplication failed probably caused by mismatching dimensions of pseudo"
-                                 f"inverse ({len(self.pseudo_inverse_absorption_matrix[0])}) and "
-                                 f"input data ({dims_raw[0]})!")
-            raise ValueError("Pseudo inverse (PI) and input data (b) must have matching sizes...")
+            if non_negative:
+                output = []
+                for i in range(np.shape(reshapedData)[1]):
+                    foo, ris = nnls(np.array(self.absorption_matrix), reshapedData[:, i])
+                    output.append(foo)
 
-        # write output into list of images containing the chromophore information
-        numberChromophores = len(self.pseudo_inverse_absorption_matrix)
+                output = np.swapaxes(output, axis1=0, axis2=1)
+            else:
+                self.pseudo_inverse_absorption_matrix = linalg.pinv(self.absorption_matrix)
+                output = np.matmul(self.pseudo_inverse_absorption_matrix, reshapedData)
+
+        except Exception as e:
+            self.logger.critical(f"Matrix multiplication failed probably caused by mismatching dimensions of absorption"
+                                 f"matrix ({len(self.absorption_matrix[1])}) and "
+                                 f"input data ({dims_raw[0]})!")
+            print(e)
+            raise ValueError("Absorption matrix and input data must have matching sizes...")
+
+    # write output into list of images containing the chromophore information
+        numberChromophores = np.shape(output)[0]
         chromophores_concentrations = []
         for chromophore in range(numberChromophores):
             chromophores_concentrations.append(np.reshape(output[chromophore, :], (dims_raw[1:])))

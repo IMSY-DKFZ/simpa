@@ -195,10 +195,10 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     # check settings dictionary for elements and read them in
 
     # speed of sound: use given speed of sound, otherwise use average from simulation if specified
-    if Tags.PROPERTY_SPEED_OF_SOUND in component_settings and component_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
-        speed_of_sound_in_m_per_s = component_settings[Tags.PROPERTY_SPEED_OF_SOUND]
+    if Tags.DATA_FIELD_SPEED_OF_SOUND in component_settings and component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]:
+        speed_of_sound_in_m_per_s = component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]
     elif Tags.WAVELENGTH in global_settings and global_settings[Tags.WAVELENGTH]:
-        sound_speed_m = load_data_field(global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
+        sound_speed_m = load_data_field(global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SPEED_OF_SOUND)
         speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
     else:
         raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND"

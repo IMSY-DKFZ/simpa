@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
+
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -17,9 +17,9 @@ def calculate_oxygenation(molecule_list):
     hbO2 = None
 
     for molecule in molecule_list:
-        if molecule.spectrum.spectrum_name == SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN.spectrum_name:
+        if molecule.spectrum.spectrum_name == "Deoxyhemoglobin":
             hb = molecule.volume_fraction
-        if molecule.spectrum.spectrum_name == SPECTRAL_LIBRARY.OXYHEMOGLOBIN.spectrum_name:
+        if molecule.spectrum.spectrum_name == "Oxyhemoglobin":
             hbO2 = molecule.volume_fraction
 
     if hb is None and hbO2 is None:

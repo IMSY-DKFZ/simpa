@@ -228,13 +228,13 @@ class IterativeqPAI(ProcessingComponent):
         self.logger.debug(f"Wavelength: {wavelength}")
         # get initial pressure and scattering
         initial_pressure = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
-                                           Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+                                           Tags.DATA_FIELD_INITIAL_PRESSURE,
                                            wavelength)
-        scattering = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SCATTERING_PER_CM,
-                              wavelength)
+        scattering = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SCATTERING_PER_CM,
+                                     wavelength)
 
-        anisotropy = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_ANISOTROPY,
-                            wavelength)
+        anisotropy = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ANISOTROPY,
+                                     wavelength)
 
         # function returns the last iteration result as a numpy array and all iteration results in a list
         return initial_pressure, scattering, anisotropy
@@ -368,16 +368,16 @@ class IterativeqPAI(ProcessingComponent):
         shape = np.shape(image_data)
 
         # scattering must be known a priori at the moment.
-        if Tags.PROPERTY_SCATTERING_PER_CM in self.global_settings:
-            scattering = float(self.global_settings[Tags.PROPERTY_SCATTERING_PER_CM]) * np.ones(shape)
+        if Tags.DATA_FIELD_SCATTERING_PER_CM in self.global_settings:
+            scattering = float(self.global_settings[Tags.DATA_FIELD_SCATTERING_PER_CM]) * np.ones(shape)
         else:
             background_dict = TISSUE_LIBRARY.muscle()
             scattering = float(MolecularComposition.get_properties_for_wavelength(background_dict,
                                                                                   wavelength=800)["mus"])
             scattering = scattering * np.ones(shape)
 
-        if Tags.PROPERTY_ANISOTROPY in self.global_settings:
-            anisotropy = float(self.global_settings[Tags.PROPERTY_ANISOTROPY]) * np.ones(shape)
+        if Tags.DATA_FIELD_ANISOTROPY in self.global_settings:
+            anisotropy = float(self.global_settings[Tags.DATA_FIELD_ANISOTROPY]) * np.ones(shape)
         else:
             anisotropy = float(OpticalTissueProperties.STANDARD_ANISOTROPY) * np.ones(shape)
 
@@ -455,8 +455,8 @@ class IterativeqPAI(ProcessingComponent):
         """
 
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.optical_settings:
-            if Tags.PROPERTY_GRUNEISEN_PARAMETER in self.global_settings:
-                gamma = self.global_settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
+            if Tags.DATA_FIELD_GRUNEISEN_PARAMETER in self.global_settings:
+                gamma = self.global_settings[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
             else:
                 gamma = calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS)
                 gamma = gamma * np.ones(np.shape(image_data))
@@ -480,8 +480,8 @@ class IterativeqPAI(ProcessingComponent):
         """
 
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.optical_settings:
-            if Tags.PROPERTY_GRUNEISEN_PARAMETER in self.global_settings:
-                gamma = self.global_settings[Tags.PROPERTY_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
+            if Tags.DATA_FIELD_GRUNEISEN_PARAMETER in self.global_settings:
+                gamma = self.global_settings[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] * np.ones(np.shape(image_data))
             else:
                 gamma = calculate_gruneisen_parameter_from_temperature(StandardProperties.BODY_TEMPERATURE_CELCIUS)
                 gamma = gamma * np.ones(np.shape(image_data))
