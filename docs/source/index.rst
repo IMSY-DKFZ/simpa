@@ -2,6 +2,8 @@
    :width: 12cm
    :align: center
 
+Welcome to the SIMPA documentation!
+
 .. toctree::
    :maxdepth: 5
    :caption: Contents
@@ -10,8 +12,6 @@
    contributing_link
 
 ===================================
-
-Welcome to the SIMPA documentation!
 
 .. toctree::
    :maxdepth: 5
