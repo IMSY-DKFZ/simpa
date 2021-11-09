@@ -6,8 +6,8 @@
    :maxdepth: 5
    :caption: Contents
 
-   ../../README.md
-   ../../developer_guide.md
+   readme_link
+   contributing_link
 
 ===================================
 
