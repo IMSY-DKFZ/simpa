@@ -1,4 +1,4 @@
-simpa.core.processing\_components.monospectral.noise package
+noise package
 ============================================================
 
 .. automodule:: simpa.core.processing_components.monospectral.noise

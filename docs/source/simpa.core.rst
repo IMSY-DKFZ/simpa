@@ -1,4 +1,4 @@
-simpa.core package
+core package
 ==================
 
 .. automodule:: simpa.core

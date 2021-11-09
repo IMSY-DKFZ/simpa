@@ -1,4 +1,4 @@
-simpa.utils.libraries.structure\_library package
+structure\_library package
 ================================================
 
 .. automodule:: simpa.utils.libraries.structure_library

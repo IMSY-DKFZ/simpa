@@ -1,4 +1,4 @@
-simpa.core.simulation\_modules.reconstruction\_module package
+reconstruction\_module package
 =============================================================
 
 .. automodule:: simpa.core.simulation_modules.reconstruction_module

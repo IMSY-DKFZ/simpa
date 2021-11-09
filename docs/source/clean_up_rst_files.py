@@ -25,6 +25,9 @@ for rst_file in rst_files:
         elif line == 'Subpackages\n':
             next(lines_iterator, None)
             next(lines_iterator, None)
+        elif " package" in line:
+            modules = line.split(".")
+            new_lines.append(modules[-1])
         else:
             new_lines.append(line)
     file.close()

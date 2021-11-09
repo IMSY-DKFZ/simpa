@@ -1,4 +1,4 @@
-simpa.log package
+log package
 =================
 
 .. automodule:: simpa.log

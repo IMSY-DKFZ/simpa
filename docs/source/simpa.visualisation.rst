@@ -1,4 +1,4 @@
-simpa.visualisation package
+visualisation package
 ===========================
 
 .. automodule:: simpa.visualisation

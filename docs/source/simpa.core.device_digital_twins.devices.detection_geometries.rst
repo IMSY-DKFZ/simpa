@@ -1,4 +1,4 @@
-simpa.core.device\_digital\_twins.devices.detection\_geometries package
+detection\_geometries package
 =======================================================================
 
 .. automodule:: simpa.core.device_digital_twins.devices.detection_geometries

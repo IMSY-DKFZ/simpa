@@ -1,4 +1,4 @@
-simpa.io\_handling package
+io\_handling package
 ==========================
 
 .. automodule:: simpa.io_handling

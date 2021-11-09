@@ -1,4 +1,4 @@
-simpa.utils package
+utils package
 ===================
 
 .. automodule:: simpa.utils

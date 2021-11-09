@@ -1,4 +1,4 @@
-simpa.utils.libraries package
+libraries package
 =============================
 
 .. automodule:: simpa.utils.libraries
