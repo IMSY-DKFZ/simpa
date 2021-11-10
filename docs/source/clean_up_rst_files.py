@@ -34,21 +34,21 @@ for rst_file in rst_files:
     file.writelines(new_lines)
     file.close()
 
-if os.path.exists("simpa_examples.rst"):
-    os.remove("simpa_examples.rst")
-simpa_examples_rst_file = open("simpa_examples.rst", "w")
+if os.path.exists("source/simpa_examples.rst"):
+    os.remove("source/simpa_examples.rst")
+simpa_examples_rst_file = open("source/simpa_examples.rst", "w")
 simpa_examples_rst_file.write("simpa\_examples\n=======================\n\n.. toctree::\n   :maxdepth: 2\n\n")
-examples = glob.glob("../../simpa_examples/*.py")
+examples = glob.glob("../simpa_examples/*.py")
 for example in examples:
     example_file_name = example.split("/")[-1]
     if example_file_name == "__init__.py":
         continue
     example_file_name = example_file_name.replace(".py", "")
     example_file_name_rst = example_file_name + ".rst"
-    if os.path.exists(example_file_name_rst):
-        os.remove(example_file_name_rst)
-    example_rst_file = open("{}.rst".format(example_file_name), "a")
-    example_rst_file.write("{}\n==================\n\n.. literalinclude:: {}\n   :language: python\n   :lines: 1-\n\n".format(example_file_name, example))
+    if os.path.exists("source/" + example_file_name_rst):
+        os.remove("source/" + example_file_name_rst)
+    example_rst_file = open("source/" + example_file_name_rst, "a")
+    example_rst_file.write("{}\n==================\n\n.. literalinclude:: ../{}\n   :language: python\n   :lines: 1-\n\n".format(example_file_name, example))
     example_rst_file.close()
     simpa_examples_rst_file.writelines("   {}\n".format(example_file_name))
 

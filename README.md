@@ -42,9 +42,11 @@ To this end, use the pytorch website tool to figure out which version to install
 When the installation succeeded, and you want to make sure that you have the latest documentation
 you should do the following steps in a command line:
 
-1. Navigate to the `simpa/` source directory (same level where the setup.py is in)
-2. Execute the command `sphinx-build -b html -a docs/src docs`
-3. Find the `HTML` file in `docs/index.html`
+1. Navigate to the `simpa/docs` directory
+2. Execute the command `sphinx-apidoc -EfTM -o ./source/ ../simpa`
+3. Execute the command `python source/clean_up_rst_files.py`
+4. Type `make html`
+5. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser. 
 
 ## External Tools installation instructions
 
