@@ -28,7 +28,7 @@ REQUIREMENTS:
 You will need to install the following packages in order to use this script. It is recommended to create a virtualenv
 to install this packages:
 
-`pip install dash dash-table dash-daq dash_colorscales plotly plotly-express dash-bootstrap-components pandas numpy`
+`pip install dash dash-table dash-daq dash_colorscales plotly plotly-express dash-bootstrap-components pandas numpy dash-slicer`
 
 USAGE:
 ===================================================================
@@ -132,235 +132,237 @@ app.layout = html.Div([
         ], width=1),
     ], style=dict(zIndex=0)),
     html.Br(),
-    dcc.Tabs([
-        dcc.Tab(label="Visualization", id="tab-1", children=[
-            html.Br(),
-            dbc.Row([
-                dbc.Col([
-                    dcc.Tabs([
-                        dcc.Tab(label="About", id="about-tab",children=[
-                            html.Br(),
-                            html.P("This is a dash app designed by the SIMPA developer team. For more information on "
-                                   "the SIMPA toolkit visit:", style={'text-align': 'justify'}),
-                            html.A("SIMPA", href=GITHUB_LINK),
-                            html.P("This app was developed based on the Dash framework from Plotly. It will allow you"
-                                   "to interactively visualize the simulated results that the SIMPA toolkit outputs. "
-                                   "If you encounter any problems please reach out to the developer team through the"
-                                   "GitHub page of SIMPA.",
-                                   style={'text-align': 'justify'}),
-                            dcc.Markdown("In the **Handlers** tab you will find a set of controllers that will help "
-                                         "you select the dataset you want to visualize and different visualization "
-                                         "controllers to select the correct displaying format.",
-                                         style={'text-align': 'justify'}),
-                            dcc.Markdown("In the *Data selection* subcategory you can choose which axis of the data "
-                                         "you want to visualize. In the *Visual settings* subcategory you can choose "
-                                         "the global color scale used for each subplot",
-                                         style={'text-align': 'justify'})
-                        ]),
-                        dcc.Tab(label="Handlers", id="handler-tab", children=[
-                            html.Hr(),
-                            html.H6("Plotting / Handling settings"),
-                            dbc.Input(
-                                id="data_path",
-                                type="text",
-                                pattern=None,
-                                placeholder="Path to simulation folder or file",
-                                persistence=True,
-                                persistence_type="session",
-                            ),
-                            dcc.Dropdown(
-                                id="file_selection",
-                                placeholder="Simulation files",
-                                persistence=True,
-                                persistence_type="session",
-                            ),
-                            html.Br(),
-                            html.Hr(),
-                            html.H6("Data selection"),
-                            dcc.Dropdown(
-                                id="volume_axis",
-                                multi=False,
-                                placeholder="Volume axis",
-                                persistence_type="session",
-                                options=[{'label': 'x', 'value': 0},
-                                         {'label': 'y', 'value': 1},
-                                         {'label': 'z', 'value': 2}],
-                                value=2
-                            ),
-                            html.Br(),
-                            html.Hr(),
-                            html.H6("Visual settings"),
-                            html.P("Color scale"),
-                            dcs.DashColorscales(
-                                id="colorscale_picker",
-                                nSwatches=7,
-                                fixSwatches=True,
-                                colorscale=DEFAULT_COLORSCALE
-                            ),
-                            html.Br(),
-                            html.Hr(),
-                            html.H6("General Information"),
-                            html.Div([
-
-                            ], id="general_info")
-                        ])
-                    ]),
-
-                ], width=2),
-                dbc.Col([
-                    dbc.Row([
-                        dbc.Col([
-                            html.H6("Parameter visualization"),
-                            html.Div(
-                                id="plot_div_1",
-                                children=[
-                                    html.Div([
-                                        dcc.RangeSlider(
-                                            id="plot_scaler1",
-                                            min=0,
-                                            max=1,
-                                            step=0.01,
-                                            value=[0., 1.],
-                                            marks={i: {'label': f'{i:1.1f}'} for i in np.arange(0, 1, 0.1)},
-                                            allowCross=False,
-                                            pushable=0.05,
-                                            tooltip=dict(always_visible=True, placement="left"),
-                                            persistence_type="session",
-                                            disabled=False,
-                                            vertical=True,
-                                        ),
-                                    ], style={"width": "5%", "display": 'inline-block'}
-                                    ),
-
-                                    dcc.Graph(id="plot_11",
-                                              hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                                              style={"width": "45%", "display": 'inline-block'},
-                                              config=config),
-                                    dcc.Graph(id="plot_12",
-                                              hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                                              style={"width": "45%", "display": 'inline-block'},
-                                              config=config),
-                                    html.Div([
-                                        dcc.RangeSlider(
-                                            id="plot_scaler2",
-                                            min=0,
-                                            max=1,
-                                            step=0.01,
-                                            value=[0., 1.],
-                                            marks={i: {'label': f'{i:1.1f}'} for i in np.arange(0, 1, 0.1)},
-                                            allowCross=False,
-                                            pushable=0.05,
-                                            tooltip=dict(always_visible=True, placement="left"),
-                                            persistence_type="session",
-                                            disabled=False,
-                                            vertical=True,
-                                        ),
-                                    ], style={"width": "5%", "display": 'inline-block'}
-                                    ),
-                                    html.Div([
-                                        dcc.Dropdown(
-                                            id="plot_type1",
-                                            multi=False,
-                                            placeholder="Plot type",
-                                            persistence_type="session",
-                                            disabled=False,
-                                            style=dict(width='150px', display='inline-block')
-                                        ),
-                                        dcc.Dropdown(
-                                            id="param1",
-                                            multi=False,
-                                            placeholder="Parameter to plot",
-                                            persistence_type="session",
-                                            disabled=True,
-                                            style={'width': '150px', 'display': 'inline-block', 'margin-left': '5px'}
-                                        ),
-                                        html.H6("Volume slice selector"),
-                                        dcc.Slider(
-                                            min=0,
-                                            max=100,
-                                            value=50,
-                                            step=1,
-                                            tooltip=dict(always_visible=True, placement="top"),
-                                            updatemode="mouseup",
-                                            persistence_type="session",
-                                            id="volume_slider",
-                                            marks={
-                                                0: {'label': '0', 'style': {'color': '#77b0b1'}},
-                                                26: {'label': '26'},
-                                                37: {'label': '37'},
-                                                100: {'label': '100', 'style': {'color': '#f50'}}
-                                            }
-                                        )
-                                    ], style={"width": "50%", "display": 'inline-block'}),
-                                    html.Div([
-                                        dcc.Dropdown(
-                                            id="plot_type2",
-                                            multi=False,
-                                            placeholder="Plot type",
-                                            persistence_type="session",
-                                            disabled=True,
-                                            style=dict(width='150px', display='inline-block')
-                                        ),
-                                        dcc.Dropdown(
-                                            id="param2",
-                                            multi=False,
-                                            placeholder="Parameter to plot",
-                                            persistence_type="session",
-                                            disabled=True,
-                                            style={'width': '150px', 'display': 'inline-block', 'margin-left': '5px'}
-                                        ),
-                                        html.H6("Wavelength selector"),
-                                        dcc.Slider(
-                                            min=0,
-                                            max=100,
-                                            value=50,
-                                            step=1,
-                                            tooltip=dict(always_visible=True, placement="top"),
-                                            updatemode="mouseup",
-                                            persistence_type="session",
-                                            id="channel_slider",
-                                            marks={
-                                                0: {'label': '0', 'style': {'color': '#77b0b1'}},
-                                                26: {'label': '26'},
-                                                37: {'label': '37'},
-                                                100: {'label': '100', 'style': {'color': '#f50'}}
-                                            }
-                                        )
-                                    ], style={"width": "50%", "display": 'inline-block'})
-                                ]
-                            )
-                        ])
-                    ]),
+    html.Br(),
+    dbc.Row([
+        dbc.Col([
+            dcc.Tabs([
+                dcc.Tab(label="About", id="about-tab", children=[
+                    html.Br(),
+                    html.P("This is a dash app designed by the SIMPA developer team. For more information on "
+                           "the SIMPA toolkit visit:", style={'text-align': 'justify'}),
+                    html.A("SIMPA", href=GITHUB_LINK),
+                    html.P("This app was developed based on the Dash framework from Plotly. It will allow you"
+                           "to interactively visualize the simulated results that the SIMPA toolkit outputs. "
+                           "If you encounter any problems please reach out to the developer team through the"
+                           "GitHub page of SIMPA.",
+                           style={'text-align': 'justify'}),
+                    dcc.Markdown("In the **Handlers** tab you will find a set of controllers that will help "
+                                 "you select the dataset you want to visualize and different visualization "
+                                 "controllers to select the correct displaying format.",
+                                 style={'text-align': 'justify'}),
+                    dcc.Markdown("In the *Data selection* subcategory you can choose which axis of the data "
+                                 "you want to visualize. In the *Visual settings* subcategory you can choose "
+                                 "the global color scale used for each subplot",
+                                 style={'text-align': 'justify'})
+                ]),
+                dcc.Tab(label="Handlers", id="handler-tab", children=[
                     html.Hr(),
-                    dbc.Row([
-                        dbc.Col([
-                            html.H6("Spectra visualization"),
-                            html.Div(
-                                id="plot_div_2",
-                                children=[
-                                    dcc.Dropdown(
-                                        id="param3",
-                                        multi=True,
-                                        placeholder="Parameter to plot over wavelengths",
-                                        persistence_type="session",
-                                        disabled=True,
-                                        style=dict(width='400px', display='inline-block')
-                                    ),
-                                    dbc.Button(
-                                        "Reset points",
-                                        id="reset_points",
-                                        style={'display': 'inline-block', 'verticalAlign': 'top', 'margin-left': '5px'},
-                                        outline=True,
-                                        color="primary",
-                                    ),
-                                    dcc.Graph(id="plot_21",
-                                              hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
-                                              style={"width": "100%", "display": 'inline-block'})
-                                ]
-                            )
+                    html.H6("Plotting / Handling settings"),
+                    dbc.Input(
+                        id="data_path",
+                        type="text",
+                        pattern=None,
+                        placeholder="Path to simulation folder or file",
+                        persistence=True,
+                        persistence_type="session",
+                    ),
+                    dcc.Dropdown(
+                        id="file_selection",
+                        placeholder="Simulation files",
+                        persistence=True,
+                        persistence_type="session",
+                    ),
+                    html.Hr(),
+                    html.H6("Data selection"),
+                    html.P("Axis"),
+                    dcc.RadioItems(
+                        id="volume_axis",
+                        persistence_type="session",
+                        options=[{'label': 'x', 'value': 0},
+                                 {'label': 'y', 'value': 1},
+                                 {'label': 'z', 'value': 2}],
+                        value=2,
+                        labelStyle={'display': 'inline-block'}
+                    ),
+                    html.Hr(),
+                    html.H6("Visual settings"),
+                    html.P("Color scale"),
+                    dcs.DashColorscales(
+                        id="colorscale_picker",
+                        nSwatches=7,
+                        fixSwatches=True,
+                        colorscale=DEFAULT_COLORSCALE
+                    ),
+                    html.Hr(),
+                    html.H6("General Information"),
+                    html.Div([
+
+                    ], id="general_info")
+                ])
+            ]),
+
+        ], width=2),
+        dbc.Col([
+            dcc.Tabs([
+                dcc.Tab(label="Visualization", id="tab-1", children=[
+                    dbc.Col([
+                        dbc.Row([
+                            dbc.Col([
+                                html.H6("Parameter visualization"),
+                                html.Div(
+                                    id="plot_div_1",
+                                    children=[
+                                        html.Div([
+                                            dcc.RangeSlider(
+                                                id="plot_scaler1",
+                                                min=0,
+                                                max=1,
+                                                step=0.01,
+                                                value=[0., 1.],
+                                                marks={i: {'label': f'{i:1.1f}'} for i in np.arange(0, 1, 0.1)},
+                                                allowCross=False,
+                                                pushable=0.05,
+                                                tooltip=dict(always_visible=True, placement="left"),
+                                                persistence_type="session",
+                                                disabled=False,
+                                                vertical=True,
+                                            ),
+                                        ], style={"width": "5%", "display": 'inline-block'}
+                                        ),
+
+                                        dcc.Graph(id="plot_11",
+                                                  hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
+                                                  style={"width": "45%", "display": 'inline-block'},
+                                                  config=config),
+                                        dcc.Graph(id="plot_12",
+                                                  hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
+                                                  style={"width": "45%", "display": 'inline-block'},
+                                                  config=config),
+                                        html.Div([
+                                            dcc.RangeSlider(
+                                                id="plot_scaler2",
+                                                min=0,
+                                                max=1,
+                                                step=0.01,
+                                                value=[0., 1.],
+                                                marks={i: {'label': f'{i:1.1f}'} for i in np.arange(0, 1, 0.1)},
+                                                allowCross=False,
+                                                pushable=0.05,
+                                                tooltip=dict(always_visible=True, placement="left"),
+                                                persistence_type="session",
+                                                disabled=False,
+                                                vertical=True,
+                                            ),
+                                        ], style={"width": "5%", "display": 'inline-block'}
+                                        ),
+                                        html.Div([
+                                            dcc.Dropdown(
+                                                id="plot_type1",
+                                                multi=False,
+                                                placeholder="Plot type",
+                                                persistence_type="session",
+                                                disabled=False,
+                                                style=dict(width='150px', display='inline-block')
+                                            ),
+                                            dcc.Dropdown(
+                                                id="param1",
+                                                multi=False,
+                                                placeholder="Parameter to plot",
+                                                persistence_type="session",
+                                                disabled=True,
+                                                style={'width': '150px', 'display': 'inline-block',
+                                                       'margin-left': '5px'}
+                                            ),
+                                            html.H6("Volume slice selector"),
+                                            dcc.Slider(
+                                                min=0,
+                                                max=100,
+                                                value=50,
+                                                step=1,
+                                                tooltip=dict(always_visible=True, placement="top"),
+                                                updatemode="mouseup",
+                                                persistence_type="session",
+                                                id="volume_slider",
+                                                marks={
+                                                    0: {'label': '0', 'style': {'color': '#77b0b1'}},
+                                                    26: {'label': '26'},
+                                                    37: {'label': '37'},
+                                                    100: {'label': '100', 'style': {'color': '#f50'}}
+                                                }
+                                            )
+                                        ], style={"width": "50%", "display": 'inline-block'}),
+                                        html.Div([
+                                            dcc.Dropdown(
+                                                id="plot_type2",
+                                                multi=False,
+                                                placeholder="Plot type",
+                                                persistence_type="session",
+                                                disabled=True,
+                                                style=dict(width='150px', display='inline-block')
+                                            ),
+                                            dcc.Dropdown(
+                                                id="param2",
+                                                multi=False,
+                                                placeholder="Parameter to plot",
+                                                persistence_type="session",
+                                                disabled=True,
+                                                style={'width': '150px', 'display': 'inline-block',
+                                                       'margin-left': '5px'}
+                                            ),
+                                            html.H6("Wavelength selector"),
+                                            dcc.Slider(
+                                                min=0,
+                                                max=100,
+                                                value=50,
+                                                step=1,
+                                                tooltip=dict(always_visible=True, placement="top"),
+                                                updatemode="mouseup",
+                                                persistence_type="session",
+                                                id="channel_slider",
+                                                marks={
+                                                    0: {'label': '0', 'style': {'color': '#77b0b1'}},
+                                                    26: {'label': '26'},
+                                                    37: {'label': '37'},
+                                                    100: {'label': '100', 'style': {'color': '#f50'}}
+                                                }
+                                            )
+                                        ], style={"width": "50%", "display": 'inline-block'})
+                                    ]
+                                )
+                            ])
+                        ]),
+                        html.Hr(),
+                        dbc.Row([
+                            dbc.Col([
+                                html.H6("Spectra visualization"),
+                                html.Div(
+                                    id="plot_div_2",
+                                    children=[
+                                        dcc.Dropdown(
+                                            id="param3",
+                                            multi=True,
+                                            placeholder="Parameter to plot over wavelengths",
+                                            persistence_type="session",
+                                            disabled=True,
+                                            style=dict(width='400px', display='inline-block')
+                                        ),
+                                        dbc.Button(
+                                            "Reset points",
+                                            id="reset_points",
+                                            style={'display': 'inline-block', 'verticalAlign': 'top',
+                                                   'margin-left': '5px'},
+                                            outline=True,
+                                            color="primary",
+                                        ),
+                                        dcc.Graph(id="plot_21",
+                                                  hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
+                                                  style={"width": "100%", "display": 'inline-block'})
+                                    ]
+                                )
+                            ])
                         ])
-                    ])
-                ], width=10),
+                    ], width=12),
+                ])
             ])
         ])
     ])
@@ -414,9 +416,36 @@ def populate_file_selection(_, data_path):
     Output("plot_type1", "disabled"),
     Output("plot_type2", "disabled"),
     Input("file_selection", "value"),
+    Input("volume_axis", "value")
 )
-def populate_file_params(file_path):
+def populate_file_params(file_path, axis):
     global data
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        button_id = None
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if button_id == "volume_axis" and data.shape is not None:
+        if len(data.shape) == 3:
+            n_slices = data.shape[axis]
+            disable_vol_slider = False
+            vol_slider_marks = {i: {'label': str(i)} for i in range(n_slices)[::int(n_slices / 10)]}
+            vol_slider_min = 0
+            vol_slider_max = n_slices - 1
+            vol_slider_value = 0
+        elif len(data.shape) == 2:
+            disable_vol_slider = True
+            vol_slider_marks = {i: {'label': str(i)} for i in range(0, 100, 10)}
+            vol_slider_min = 0
+            vol_slider_max = 100
+            vol_slider_value = 0
+        else:
+            raise ValueError(f"Number of dimensions of mua is not supported: {data.shape}")
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, \
+               dash.no_update, dash.no_update, \
+               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, disable_vol_slider, \
+               dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, \
+               dash.no_update, dash.no_update, dash.no_update, dash.no_update
     if file_path is None:
         raise PreventUpdate()
     if os.path.isfile(file_path):
@@ -451,7 +480,7 @@ def populate_file_params(file_path):
             wv_step = data.wavelengths[1] - data.wavelengths[0]
         return options_list, False, min(data.wavelengths), max(data.wavelengths), data.wavelengths[0], \
                wv_step, marks, \
-               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, disable_vol_slider,\
+               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, disable_vol_slider, \
                options_list, False, options_list, False, "imshow", plot_options, "imshow", plot_options, \
                False, False
 
@@ -465,15 +494,26 @@ def _load_data_fields():
     for data_field in sim_props:
         data_fields[data_field] = dict()
         for wavelength in data.wavelengths:
-            data_fields[data_field][wavelength] = get_data_field_from_simpa_output(data.simpa_output, data_field,
-                                                                                   wavelength)
+            data_wv = get_data_field_from_simpa_output(data.simpa_output, data_field, wavelength)
+            if isinstance(data_wv, np.ndarray):
+                data_wv = np.rot90(data_wv, 1)
+                data_fields[data_field][wavelength] = data_wv
 
     for data_field in simulations:
         data_fields[data_field] = dict()
         for wavelength in data.wavelengths:
-            data_fields[data_field][wavelength] = get_data_field_from_simpa_output(data.simpa_output, data_field,
-                                                                                   wavelength)
+            data_wv = get_data_field_from_simpa_output(data.simpa_output, data_field, wavelength)
+            if isinstance(data_wv, np.ndarray):
+                data_wv = np.rot90(data_wv, 1)
+                data_fields[data_field][wavelength] = data_wv
+    # data_fields['reconstructed_data'] = dict()
+    # for wavelength in data.wavelengths:
+    #     data_fields['reconstructed_data'][wavelength] = get_data_field_from_simpa_output(data.simpa_output,
+    #                                                                                      'reconstructed_data',
+    #                                                                                      wavelength)
+
     data.simpa_data_fields = data_fields
+
 
 @app.callback(
     Output("plot_11", "figure"),
@@ -516,10 +556,10 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
         component_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if len(data.simpa_data_fields[data_field][wavelength].shape) == 3:
-        plot_data = np.take(np.rot90(data.simpa_data_fields[data_field][wavelength], 1),
+        plot_data = np.take(data.simpa_data_fields[data_field][wavelength],
                             indices=axis_ind, axis=axis)
     elif len(data.simpa_data_fields[data_field][wavelength].shape) == 2:
-        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
+        plot_data = data.simpa_data_fields[data_field][wavelength]
     else:
         raise PreventUpdate
     z_min = np.nanmin(plot_data) + (np.nanmax(plot_data) - np.nanmin(plot_data)) * z_range[0]
@@ -555,7 +595,7 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
     elif plot_type == "hist-3D":
         if component_id in PREVENT_3D_UPDATES:
             raise PreventUpdate
-        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1).flatten()
+        plot_data = data.simpa_data_fields[data_field][wavelength].flatten()
         if plot_data.size > 10000:
             plot_data = np.random.choice(plot_data, 10000)
         df = pd.DataFrame()
@@ -565,7 +605,7 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
     elif plot_type == "contour-3D":
         if component_id in PREVENT_3D_UPDATES:
             raise PreventUpdate
-        plot_data = np.rot90(data.simpa_data_fields[data_field][wavelength], 1)
+        plot_data = data.simpa_data_fields[data_field][wavelength]
         x, y, z = np.where(plot_data)
         v = plot_data[(x, y, z)]
         figure = go.Figure(go.Volume(x=x, y=y, z=z, value=v, opacity=0.1, isomin=z_min,
@@ -632,10 +672,10 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis, n_clicks
                 spectral_values = list()
                 for wavelength in data.wavelengths:
                     if len(data.shape) == 3:
-                        array = np.take(np.rot90(data.simpa_data_fields[param][wavelength], 1), indices=axis_ind,
+                        array = np.take(data.simpa_data_fields[param][wavelength], indices=axis_ind,
                                         axis=axis)
                     else:
-                        array = np.rot90(data.simpa_data_fields[param][wavelength], 1)
+                        array = data.simpa_data_fields[param][wavelength]
                     spectral_values.append(array[y, x])
                 layout = go.Layout(xaxis={'autorange': True})
                 plot_data += [go.Scatter(x=data.wavelengths,
