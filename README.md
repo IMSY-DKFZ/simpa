@@ -17,15 +17,15 @@ and to assess all simulation results for plausibility.
 The recommended way to install simpa is a manual installation from the GitHub repository, please follow steps 1 - 3:
 
 1. `git clone https://github.com/CAMI-DKFZ/simpa.git`
-2. `git checkout master`
-3. `git pull`
+2. `cd simpa`
+3. `git checkout master`
+4. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
 virtual environment activated
-1. `cd simpa`
-2. `pip install -r requirements.txt`
-3. `python setup.py install` (for developement: `python setup.py develop`)
-4. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
+1. `pip install -r requirements.txt`
+2. `python setup.py install` (for developement: `python setup.py develop`)
+3. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
 If no error messages arise, you are now setup to use simpa in your project.
 
