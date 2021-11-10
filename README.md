@@ -1,3 +1,6 @@
+[![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=latest)](https://simpa.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://ci.mitk.org/buildStatus/icon?job=SIMPA%2FUnit+Tests+master)](https://ci.mitk.org/job/SIMPA/job/Unit%20Tests%20master/)
+
 # README
 
 The Simulation and Image Processing for Photoacoustic Imaging (SIMPA) toolkit.
