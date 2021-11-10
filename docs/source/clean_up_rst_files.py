@@ -24,7 +24,8 @@ for rst_file in rst_files:
             next(lines_iterator, None)
             next(lines_iterator, None)
         elif " package" in line:
-            modules = line.split(".")
+            new_line = line.replace(" package", "")
+            modules = new_line.split(".")
             new_lines.append(modules[-1])
         else:
             new_lines.append(line)

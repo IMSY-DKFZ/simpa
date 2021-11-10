@@ -36,10 +36,10 @@ To this end, use the pytorch website tool to figure out which version to install
 
 ## Building the documentation
 
-When the installation went fine and you want to make sure that you have the latest documentation
+When the installation succeeded, and you want to make sure that you have the latest documentation
 you should do the following steps in a command line:
 
-1. Navigate to the `simpa` source directory (same level where the setup.py is in)
+1. Navigate to the `simpa/` source directory (same level where the setup.py is in)
 2. Execute the command `sphinx-build -b html -a docs/src docs`
 3. Find the `HTML` file in `docs/index.html`
 
