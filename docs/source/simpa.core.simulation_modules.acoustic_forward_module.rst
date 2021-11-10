@@ -1,4 +1,4 @@
-acoustic\_forward\_module package
+acoustic\_forward\_module
 ================================================================
 
 .. automodule:: simpa.core.simulation_modules.acoustic_forward_module

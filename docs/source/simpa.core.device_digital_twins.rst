@@ -1,4 +1,4 @@
-device\_digital\_twins package
+device\_digital\_twins
 =========================================
 
 .. automodule:: simpa.core.device_digital_twins

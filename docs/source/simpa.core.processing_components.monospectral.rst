@@ -1,4 +1,4 @@
-monospectral package
+monospectral
 ======================================================
 
 .. automodule:: simpa.core.processing_components.monospectral

@@ -1,4 +1,4 @@
-simulation\_modules package
+simulation\_modules
 ======================================
 
 .. automodule:: simpa.core.simulation_modules

@@ -1,4 +1,4 @@
-volume\_creation\_module package
+volume\_creation\_module
 ===============================================================
 
 .. automodule:: simpa.core.simulation_modules.volume_creation_module

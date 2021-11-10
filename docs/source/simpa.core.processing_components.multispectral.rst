@@ -1,4 +1,4 @@
-multispectral package
+multispectral
 =======================================================
 
 .. automodule:: simpa.core.processing_components.multispectral

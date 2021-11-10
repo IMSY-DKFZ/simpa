@@ -1,4 +1,4 @@
-utils package
+utils
 ===================
 
 .. automodule:: simpa.utils
@@ -10,6 +10,7 @@ utils package
    :maxdepth: 4
 
    simpa.utils.libraries
+   simpa.utils.quality_assurance
 
 .. automodule:: simpa.utils.calculate
    :members:

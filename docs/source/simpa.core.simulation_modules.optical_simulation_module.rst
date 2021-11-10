@@ -1,4 +1,4 @@
-optical\_simulation\_module package
+optical\_simulation\_module
 ==================================================================
 
 .. automodule:: simpa.core.simulation_modules.optical_simulation_module

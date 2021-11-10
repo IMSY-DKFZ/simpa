@@ -1,4 +1,4 @@
-libraries package
+libraries
 =============================
 
 .. automodule:: simpa.utils.libraries
@@ -9,6 +9,9 @@ libraries package
 .. toctree::
    :maxdepth: 4
 
+   simpa.utils.libraries.absorption_spectra_data
+   simpa.utils.libraries.anisotropy_spectra_data
+   simpa.utils.libraries.scattering_spectra_data
    simpa.utils.libraries.structure_library
 
 .. automodule:: simpa.utils.libraries.literature_values

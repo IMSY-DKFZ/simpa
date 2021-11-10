@@ -22,3 +22,11 @@ Welcome to the SIMPA documentation!
    simpa.log
    simpa.utils
    simpa.visualisation
+
+===================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: SIMPA examples
+
+   simpa_examples

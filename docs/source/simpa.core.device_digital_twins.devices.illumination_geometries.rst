@@ -1,4 +1,4 @@
-illumination\_geometries package
+illumination\_geometries
 ==========================================================================
 
 .. automodule:: simpa.core.device_digital_twins.devices.illumination_geometries

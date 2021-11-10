@@ -1,4 +1,4 @@
-pa\_devices package
+pa\_devices
 =============================================================
 
 .. automodule:: simpa.core.device_digital_twins.devices.pa_devices

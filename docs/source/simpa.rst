@@ -1,4 +1,4 @@
-simpa package
+simpa
 =============
 
 .. automodule:: simpa
@@ -14,8 +14,3 @@ simpa package
    simpa.log
    simpa.utils
    simpa.visualisation
-
-.. automodule:: simpa.simulation_components
-   :members:
-   :undoc-members:
-   :show-inheritance:

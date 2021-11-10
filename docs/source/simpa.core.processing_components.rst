@@ -1,4 +1,4 @@
-processing\_components package
+processing\_components
 =========================================
 
 .. automodule:: simpa.core.processing_components
