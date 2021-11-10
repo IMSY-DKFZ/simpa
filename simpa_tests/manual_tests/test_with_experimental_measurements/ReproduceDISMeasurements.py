@@ -1,7 +1,8 @@
-"""
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+# SPDX-License-Identifier: MIT
 
+"""
 This test was designed to reproduce the total reflectance and total transmission of light on multiple
 wavelengths as determined with a Double integrating Sphere system.
 

@@ -1,8 +1,8 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+# SPDX-License-Identifier: MIT
 
+"""
 This Script uses the Lambert-Beer law to test mcx or mcxyz for the correct
 attenuation of a photon beam passing through a thin absorbing and/or scattering
 slab.
