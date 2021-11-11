@@ -9,7 +9,7 @@ In case you have any questions, do not hesitate to get in touch with the members
 
 Kris K. Dreher (k.dreher@dkfz-heidelberg.de)
 
-Janek Gröhl (janek.grohl@cruk.cam.ac.uk)
+Janek Groehl (janek.grohl@cruk.cam.ac.uk)
 
 
 
@@ -87,10 +87,10 @@ and then by last name.
 |Year|Name|Affiliation|
 |---|---|---|
 |2019 - today | Kris Dreher | German Cancer Research Center |
-|2020 - today | Janek Gröhl | Cancer Research UK, Cambridge Institute |
+|2020 - today | Janek Groehl | Cancer Research UK, Cambridge Institute |
 |2021 - today | Niklas Holzwarth | German Cancer Research Center |
 |2020 - today | Leonardo Menjivar | German Cancer Research Center |
 |2021 - today | Tom Rix | German Cancer Research Center |
 |2020 - today | Melanie Schellenberg | German Cancer Research Center |
 |2021 - today | Patricia Vieten | German Cancer Research Center |
-|2019 - 2020 | Janek Gröhl | German Cancer Research Center |
+|2019 - 2020 | Janek Groehl | German Cancer Research Center |

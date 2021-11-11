@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-# SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
+# SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
 # Configuration file for the Sphinx docs builder.
@@ -23,9 +23,9 @@ sys.path.insert(0, os.path.abspath('../src'))
 
 project = 'SIMPA'
 _copyright = '2020-2021, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and ' \
-            '2021, Cancer Research UK, Cambridge Institute (CRUK CI)'
+            'Janek Groehl'
 author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and ' \
-         'Cancer Research UK, Cambridge Institute (CRUK CI)'
+         'Janek Groehl'
 
 # The full version
 # SIMPA syntax: RELEASE.MAJOR.MINOR
