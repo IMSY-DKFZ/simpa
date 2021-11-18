@@ -7,6 +7,7 @@ from simpa.log import Logger
 from simpa.utils import Settings
 from simpa.utils import Tags
 import numpy as np
+from numpy import ndarray
 import hashlib
 import uuid
 
@@ -36,15 +37,19 @@ class DigitalDeviceTwinBase:
         self.logger = Logger()
 
     @abstractmethod
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
+    def check_settings_prerequisites(self, global_settings) -> bool:
         """
         It might be that certain device geometries need a certain dimensionality of the simulated PAI volume, or that
         it required the existence of certain Tags in the global global_settings.
         To this end, a  PAI device should use this method to inform the user about a mismatch of the desired device and
         throw a ValueError if that is the case.
 
+        :param global_settings: Settings for the entire simulation pipeline.
+        :type global_settings: Settings
+
         :raises ValueError: raises a value error if the prerequisites are not matched.
         :returns: True if the prerequisites are met, False if they are not met, but no exception has been raised.
+        :rtype: bool
 
         """
         pass
@@ -81,7 +86,22 @@ class DigitalDeviceTwinBase:
         return str(uuid.UUID(m.hexdigest()))
 
 
+from simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base import DetectionGeometryBase
+from simpa.core.device_digital_twins.devices.illumination_geometries.illumination_geometry_base import \
+    IlluminationGeometryBase
+
+
 class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
+    """Base class of a photoacoustic device. It consists of one detection geometry that describes the geometry of the
+    single detector elements and a list of illuminators.
+
+    :param detection_geometry: Detection geometry of the PA device.
+    :type detection_geometry: DetectionGeometryBase
+
+    Attributes:
+        detection_geometry (DetectionGeometryBase): Geometry of the detector elements.
+        illumination_geometries (list): List of illuminations defined by :py:class:`IlluminationGeometryBase`.
+    """
 
     def __init__(self,  device_position_mm: np.ndarray = None,
                  field_of_view_extent_mm: np.ndarray = None):
@@ -90,18 +110,41 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
         self.detection_geometry = None
         self.illumination_geometries = []
 
-    def set_detection_geometry(self, detection_geometry):
+    def set_detection_geometry(self, detection_geometry,
+                               detector_position_relative_to_pa_device=None):
+        """Sets the detection geometry for the PA device.
+
+        :param detection_geometry: Detection geometry of the PA device.
+        :type detection_geometry: DetectionGeometryBase
+        :param detector_position_relative_to_pa_device: Position of the detection geometry relative to the PA device.
+        :type detector_position_relative_to_pa_device: ndarray
+        :return:
+        """
         if detection_geometry is None:
             msg = "The given detection_geometry must not be None!"
             self.logger.critical(msg)
             raise ValueError(msg)
+        if detector_position_relative_to_pa_device is not None:
+            detection_geometry.device_position_mm = np.add(self.device_position_mm,
+                                                           detector_position_relative_to_pa_device)
         self.detection_geometry = detection_geometry
 
-    def add_illumination_geometry(self, illumination_geometry):
+    def add_illumination_geometry(self, illumination_geometry, illuminator_position_relative_to_pa_device=None):
+        """Adds an illuminator to the PA device.
+
+        :param illumination_geometry: Geometry of the illuminator.
+        :type illumination_geometry: IlluminationGeometryBase
+        :param illuminator_position_relative_to_pa_device: Position of the illuminator relative to the PA device.
+        :type illuminator_position_relative_to_pa_device: ndarray
+        :return:
+        """
         if illumination_geometry is None:
             msg = "The given illumination_geometry must not be None!"
             self.logger.critical(msg)
             raise ValueError(msg)
+        if illuminator_position_relative_to_pa_device is not None:
+            illumination_geometry.device_position_mm = np.add(self.device_position_mm,
+                                                              illuminator_position_relative_to_pa_device)
         self.illumination_geometries.append(illumination_geometry)
 
     def get_detection_geometry(self):
@@ -134,7 +177,7 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         """
-        This method can be overwritten by a photoacoustic device if the device poses special constraints to the
+        This method can be overwritten by a PA device if the device poses special constraints to the
         volume that should be considered by the model-based volume creator.
         """
         pass
