@@ -51,9 +51,10 @@ import os
 import pandas as pd
 from skimage import draw
 from scipy import ndimage
+from typing import *
 
 from simpa.io_handling import load_hdf5
-from simpa.utils import get_data_field_from_simpa_output
+from simpa.utils import get_data_field_from_simpa_output, SegmentationClasses
 
 external_stylesheets = [dbc.themes.JOURNAL, 'assets/dcc.css']
 app = dash.Dash(external_stylesheets=external_stylesheets, title="SIMPA")
@@ -81,7 +82,8 @@ class DataContainer:
     simpa_output = None
     simpa_data_fields = None
     wavelengths = None
-    plot_types = ['contour-3D', 'imshow', 'hist-3D', 'hist-2D', 'box', 'violin', 'contour']
+    segmentation_labels = None
+    plot_types = ['imshow', 'hist-3D', 'hist-2D', 'box', 'violin', 'contour']
     click_points = {'x': [], 'y': [], 'z': []}
 
 
@@ -91,10 +93,9 @@ data = DataContainer()
 config = {
     "modeBarButtonsToAdd": [
         "drawclosedpath",
-        "drawcircle",
         "drawrect",
         "eraseshape",
-    ]
+    ],
 }
 
 app.layout = html.Div([
@@ -208,7 +209,14 @@ app.layout = html.Div([
                     dbc.Col([
                         dbc.Row([
                             dbc.Col([
-                                html.H6("Parameter visualization"),
+                                dbc.Button(
+                                        "Visualizing",
+                                        id="annotate_button",
+                                        style={'display': 'inline-block', 'verticalAlign': 'top',
+                                               'margin-left': '5px'},
+                                        outline=True,
+                                        color="success",
+                                    ),
                                 html.Div(
                                     id="plot_div_1",
                                     children=[
@@ -237,7 +245,7 @@ app.layout = html.Div([
                                         dcc.Graph(id="plot_12",
                                                   hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
                                                   style={"width": "45%", "display": 'inline-block'},
-                                                  config=config),
+                                                  ),
                                         html.Div([
                                             dcc.RangeSlider(
                                                 id="plot_scaler2",
@@ -347,7 +355,7 @@ app.layout = html.Div([
                                             style=dict(width='400px', display='inline-block')
                                         ),
                                         dbc.Button(
-                                            "Reset points",
+                                            "Reset graph",
                                             id="reset_points",
                                             style={'display': 'inline-block', 'verticalAlign': 'top',
                                                    'margin-left': '5px'},
@@ -360,9 +368,9 @@ app.layout = html.Div([
                                     ]
                                 )
                             ])
-                        ])
+                        ], id="spectra-row")
                     ], width=12),
-                ])
+                ]),
             ])
         ])
     ])
@@ -487,6 +495,9 @@ def populate_file_params(file_path, axis):
 
 def _load_data_fields():
     data.wavelengths = data.simpa_output["settings"]["wavelengths"]
+    segment_class = SegmentationClasses()
+    data.segmentation_labels = [k for k in segment_class.__dir__() if '__' not in k]
+    data.segmentation_labels = {getattr(segment_class, k): k for k in data.segmentation_labels}
     data_fields = dict()
     sim_props = list(data.simpa_output["simulations"]["simulation_properties"].keys())
     simulations = list(data.simpa_output["simulations"]["optical_forward_model_output"].keys())
@@ -513,6 +524,19 @@ def _load_data_fields():
     #                                                                                      wavelength)
 
     data.simpa_data_fields = data_fields
+
+
+@app.callback(Output("annotate_button", "children"),
+              Output("annotate_button", "color"),
+              Input("annotate_button", "n_clicks"),
+              State("annotate_button", "children"))
+def update_layout_on_click(n_clicks, button_name):
+    new_name = "Visualizing"
+    color = "success"
+    if button_name[0] == "Visualizing":
+        new_name = "Annotating"
+        color = "info"
+    return [new_name], color
 
 
 @app.callback(
@@ -545,6 +569,37 @@ def update_plot_12(data_field, colorscale, wavelength, z_range, plot_type, axis,
     return plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind)
 
 
+def get_current_frame(data_field, wavelength, axis_ind, axis) -> Union[np.ndarray, Dict]:
+    plot_data = None
+    if isinstance(data_field, str):
+        if len(data.simpa_data_fields[data_field][wavelength].shape) == 3:
+            plot_data = np.take(data.simpa_data_fields[data_field][wavelength], indices=axis_ind, axis=axis)
+        elif len(data.simpa_data_fields[data_field][wavelength].shape) == 2:
+            plot_data = data.simpa_data_fields[data_field][wavelength]
+    elif isinstance(data_field, list):
+        plot_data = dict()
+        for k in data_field:
+            if len(data.simpa_data_fields[k][wavelength].shape) == 3:
+                plot_data[k] = np.take(data.simpa_data_fields[k][wavelength], indices=axis_ind, axis=axis)
+            elif len(data.simpa_data_fields[k][wavelength].shape) == 2:
+                plot_data[k] = data.simpa_data_fields[k][wavelength]
+    return plot_data
+
+
+def to_pandas(data_dict):
+    df = pd.DataFrame(data_dict)
+    df = df.melt(var_name="Parameter", value_name="Value")
+    return df
+
+
+def get_structure_names(array: np.ndarray):
+    names = array.copy().astype('str')
+    unique_values = np.unique(names)
+    for v in unique_values:
+        names[names == v] = data.segmentation_labels.get(float(v))
+    return names
+
+
 def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
     if data_field is None or wavelength is None:
         raise PreventUpdate
@@ -555,17 +610,17 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
     else:
         component_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    if len(data.simpa_data_fields[data_field][wavelength].shape) == 3:
-        plot_data = np.take(data.simpa_data_fields[data_field][wavelength],
-                            indices=axis_ind, axis=axis)
-    elif len(data.simpa_data_fields[data_field][wavelength].shape) == 2:
-        plot_data = data.simpa_data_fields[data_field][wavelength]
-    else:
+    plot_data = get_current_frame(data_field=data_field, wavelength=wavelength, axis_ind=axis_ind, axis=axis)
+    if plot_data is None:
         raise PreventUpdate
     z_min = np.nanmin(plot_data) + (np.nanmax(plot_data) - np.nanmin(plot_data)) * z_range[0]
     z_max = np.nanmax(plot_data) * z_range[1]
     if plot_type == "imshow":
-        plot = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max)]
+        kwargs = dict()
+        if data_field == "seg":
+            custom_data = get_structure_names(plot_data)
+            kwargs["hovertext"] = custom_data
+        plot = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max, **kwargs)]
         figure = go.Figure(data=plot)
         for i, x in enumerate(data.click_points["x"]):
             figure.add_annotation(x=x, y=data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
@@ -602,19 +657,6 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
         df[data_field] = list(plot_data)
         figure = px.histogram(data_frame=df, y=data_field, marginal="box")
         disable_scaler = True
-    elif plot_type == "contour-3D":
-        if component_id in PREVENT_3D_UPDATES:
-            raise PreventUpdate
-        plot_data = data.simpa_data_fields[data_field][wavelength]
-        x, y, z = np.where(plot_data)
-        v = plot_data[(x, y, z)]
-        figure = go.Figure(go.Volume(x=x, y=y, z=z, value=v, opacity=0.1, isomin=z_min,
-                                     isomax=z_max,
-                                     caps=dict(x_show=False, y_show=False, z_show=False),
-                                     surface=dict(fill=0.5, pattern='odd', count=10)))
-        for i, x in enumerate(data.click_points["x"]):
-            figure.add_annotation(x=x, y=data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
-        disable_scaler = True
     else:
         raise PreventUpdate
     return figure, disable_scaler
@@ -630,6 +672,46 @@ def rest_points(_):
     return [], {}, {}
 
 
+def get_data_from_last_shape(relayout_data, plot_data):
+    shapes = relayout_data.get('shapes')
+    results = dict()
+    for k in plot_data:
+        path = None
+        array = plot_data[k]
+        if shapes:
+            last_shape = relayout_data["shapes"][-1]
+            shape_type = last_shape.get("type")
+            if shape_type == "path":
+                path = last_shape.get("path")
+            elif shape_type == "rect":
+                x0, y0 = int(last_shape["x0"]), int(last_shape["y0"])
+                x1, y1 = int(last_shape["x1"]), int(last_shape["y1"])
+                x0, x1 = min([x0, x1]), max(x0, x1)
+                y0, y1 = min([y0, y1]), max(y0, y1)
+                roi_array = array[y0:y1, x0:x1]
+                return roi_array.ravel()
+        elif any(["shapes" in k and "path" in k for k in relayout_data]):
+            path = [relayout_data[k] for k in relayout_data if "shapes" in k][0]
+        elif any(["shapes" in k and "x0" in k for k in relayout_data]):
+            keys = {"x0": [k for k in relayout_data if "x0" in k][0],
+                    "x1": [k for k in relayout_data if "x1" in k][0],
+                    "y0": [k for k in relayout_data if "y0" in k][0],
+                    "y1": [k for k in relayout_data if "y1" in k][0]}
+            x0, y0 = int(relayout_data[keys["x0"]]), int(relayout_data[keys["y0"]])
+            x1, y1 = int(relayout_data[keys["x1"]]), int(relayout_data[keys["y1"]])
+            x0, x1 = min([x0, x1]), max(x0, x1)
+            y0, y1 = min([y0, y1]), max(y0, y1)
+            roi_array = array[y0:y1, x0:x1]
+            if not roi_array.size:
+                return None
+            else:
+                return roi_array.ravel()
+        if path:
+            mask = path_to_mask(path, array.shape)
+            results[k] = array[mask]
+    return results if results else None
+
+
 @app.callback(
     Output("plot_21", "figure"),
     Input("param3", "value"),
@@ -637,9 +719,12 @@ def rest_points(_):
     Input("plot_12", "clickData"),
     Input("volume_slider", "value"),
     Input("volume_axis", "value"),
-    Input("reset_points", "n_clicks")
+    Input("reset_points", "n_clicks"),
+    Input("annotate_button", "n_clicks"),
+    Input("plot_11", "relayoutData"),
+    Input("channel_slider", "value"),
 )
-def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis, n_clicks):
+def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis, n_clicks, annotate_n_clicks, relayout_data, wavelength):
     global data
     layout = {}
     ctx = dash.callback_context
@@ -649,6 +734,23 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis, n_clicks
         component_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if component_id == 'reset_points':
         return {}
+    if annotate_n_clicks is None:
+        annotate_n_clicks = 0
+    if annotate_n_clicks % 2 != 0:
+        print(annotate_n_clicks)
+        if data_field is None:
+            raise PreventUpdate
+        if "shapes" in relayout_data or any(["shapes" in k for k in relayout_data]):
+            plot_data = get_current_frame(data_field=data_field, wavelength=wavelength, axis_ind=axis_ind,
+                                          axis=axis)
+            if plot_data is None:
+                raise PreventUpdate
+            hist_data = get_data_from_last_shape(relayout_data, plot_data)
+            if hist_data is None:
+                raise PreventUpdate
+            hist_df = to_pandas(hist_data)
+            return px.histogram(data_frame=hist_df, color="Parameter", opacity=0.5, marginal="rug")
+
     if data_field is None or (click_data1 is None and click_data2 is None):
         raise PreventUpdate
     else:
@@ -660,6 +762,8 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis, n_clicks
             x_c = click_data["points"][0]["x"]
             y_c = click_data["points"][0]["y"]
             if not isinstance(x_c, int) or not isinstance(y_c, int):
+                continue
+            if point_already_in_data(x_c, y_c, data.click_points):
                 continue
             data.click_points["x"].append(x_c)
             data.click_points["y"].append(y_c)
@@ -685,6 +789,11 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis, n_clicks
                                          )
                               ]
         return go.Figure(data=plot_data, layout=layout)
+
+
+def point_already_in_data(x: int, y: int, points: dict):
+    tuples = [(a, b) for a, b in zip(points["x"], points["y"])]
+    return (x, y) in tuples
 
 
 @app.callback(
@@ -727,7 +836,7 @@ def path_to_indices(path):
     indices_str = [
         el.replace("M", "").replace("Z", "").split(",") for el in path.split("L")
     ]
-    return np.rint(np.array(indices_str, dtype=float)).astype(np.int)
+    return np.rint(np.array(indices_str, dtype=float)).astype(int)
 
 
 def path_to_mask(path, shape):
@@ -736,7 +845,7 @@ def path_to_mask(path, shape):
     """
     cols, rows = path_to_indices(path).T
     rr, cc = draw.polygon(rows, cols)
-    mask = np.zeros(shape, dtype=np.bool)
+    mask = np.zeros(shape, dtype=bool)
     mask[rr, cc] = True
     mask = ndimage.binary_fill_holes(mask)
     return mask
