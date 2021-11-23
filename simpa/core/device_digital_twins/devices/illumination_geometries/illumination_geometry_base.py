@@ -5,7 +5,7 @@
 from abc import abstractmethod
 from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 from simpa.utils import Settings
-import numpy as np
+from numpy import ndarray
 
 
 class IlluminationGeometryBase(DigitalDeviceTwinBase):
@@ -16,14 +16,19 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
         super().__init__()
 
     @abstractmethod
-    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm: np.ndarray) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm) -> dict:
         """
         IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
         mcx simulation tool to represent the illumination geometry of this device.
 
         :param global_settings: The global_settings instance containing the simulation instructions
+        :type global_settings: Settings
+
         :param probe_position_mm: the position of the probe in the volume
+        :type probe_position_mm: ndarray
+
         :return: Dictionary that includes all parameters needed for mcx.
+        :rtype: dict
         """
         pass
 

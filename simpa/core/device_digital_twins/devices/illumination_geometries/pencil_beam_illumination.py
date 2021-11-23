@@ -2,8 +2,6 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import numpy as np
-
 from simpa.core.device_digital_twins import IlluminationGeometryBase
 from simpa.utils import Settings, Tags
 
@@ -11,7 +9,7 @@ from simpa.utils import Settings, Tags
 class PencilBeamIlluminationGeometry(IlluminationGeometryBase):
     """
     This class represents a pencil beam illumination geometry.
-    The device position is defined as the middle of the slit.
+    The device position is defined as the exact position of the pencil beam.
     """
 
     def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
