@@ -67,7 +67,7 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         else:
             self.field_of_view_extent_mm = field_of_view_extent_mm
 
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
+    def check_settings_prerequisites(self, global_settings) -> bool:
         if global_settings[Tags.DIM_VOLUME_Z_MM] < (self.probe_height_mm + 1):
             self.logger.error("Volume z dimension is too small to encompass the device in simulation!"
                               "Must be at least {} mm but was {} mm"
