@@ -45,9 +45,6 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
             for prop_tag in TissueProperties.property_tags:
                 volumes[prop_tag][segmentation_volume == seg_class] = class_properties[prop_tag]
 
-        del self.global_settings[Tags.VOLUME_CREATION_MODEL_SETTINGS][Tags.INPUT_SEGMENTATION_VOLUME]
-        with h5py.File(self.global_settings[Tags.SIMPA_OUTPUT_PATH], "a") as f:
-            del f["/settings/"]
         save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
         return volumes
