@@ -10,7 +10,7 @@ from simpa.io_handling import save_hdf5
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import Background
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY, SPECTRAL_LIBRARY
 from simpa_tests.test_utils import assert_equals_recursive
 import os
 
@@ -50,6 +50,8 @@ class TestIOHandling(unittest.TestCase):
         structure_settings["background"] = background_dictionary
 
         save_dictionary[Tags.STRUCTURES] = structure_settings
+        save_dictionary["test_dictionary"] = {"test_spectrum": SPECTRAL_LIBRARY.WATER}
+
 
         try:
             save_hdf5(save_dictionary, "test.hdf5")

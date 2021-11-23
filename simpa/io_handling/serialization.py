@@ -4,22 +4,13 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Spectrum, Molecule
+from simpa.utils import Spectrum, Molecule, Settings
+from simpa.utils.libraries.molecule_library import MolecularComposition
 
+import inspect
+import sys
 
-class SIMPASerializer(object):
-    """
-    TODO
-    """
-
-    def serialize(self, _object: object):
-        """
-
-        """
-        if isinstance(_object, Molecule):
-            return _object.__dict__
-
-        if isinstance(_object, Spectrum):
-            return _object.__dict__
-
-        return _object
+members = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+SERIALIZATION_MAP = dict()
+for member in members:
+    SERIALIZATION_MAP[member[0]] = member[1]

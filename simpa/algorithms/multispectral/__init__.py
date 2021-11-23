@@ -3,9 +3,12 @@ SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT
 """
-from simpa.io_handling import load_hdf5
+from simpa.io_handling import load_data_field
+from simpa.utils import Tags
 from simpa.log import Logger
+import numpy as np
 from abc import ABC, abstractmethod
+import matplotlib.pyplot as plt
 
 
 class MultispectralProcessingAlgorithm(ABC):
@@ -13,37 +16,40 @@ class MultispectralProcessingAlgorithm(ABC):
     A MultispectralProcessingAlgorithm class represents an algorithm that works with multispectral input data.
     """
 
-    def __init__(self, hdf5_path: (str, dict)):
+    def __init__(self, global_settings, component_settings_key: str):
         """
         Instantiates a multispectral processing algorithm.
-        The data that is available to the algorithm will be read from a given hdf5 file.
-        In case multiple wavelengths are spread over multiple files, the hdf5_path argument can be a list.
 
-        The data will be available via self.data[i], with i being the ith loaded hdf5 file.
+        Per default, this methods loads all data from a certain
+        Tags.DATA_FIELD into a data array for all
+        Tags.WAVELENGTHS.
 
-        :param hdf5_path: The path to the hdf5 file
         """
+        if component_settings_key is None:
+            raise KeyError("The component settings must be set for a multispectral"
+                           "processing algorithm!")
+        self.component_settings = global_settings[component_settings_key]
+
+        if Tags.WAVELENGTHS not in self.component_settings:
+            raise KeyError("Tags.WAVELENGTHS must be in the component_settings of a multispectral processing algorithm")
+
+        if Tags.DATA_FIELD not in self.component_settings:
+            raise KeyError("Tags.DATA_FIELD must be in the component_settings of a multispectral processing algorithm")
+
         self.logger = Logger()
+        self.global_settings = global_settings
+        self.wavelengths = self.component_settings[Tags.WAVELENGTHS]
+        self.data_field = self.component_settings[Tags.DATA_FIELD]
 
-        self.data = dict()
+        self.data = list()
+        for i in range(len(self.wavelengths)):
+            self.data.append(load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+                                             self.data_field,
+                                             self.wavelengths[i]))
 
-        if isinstance(hdf5_path, str):
-            try:
-                self.data[0] = load_hdf5(hdf5_path)
-            except IOError as e:
-                self.logger.critical(e)
-                raise e
-        elif isinstance(hdf5_path, list):
-            for idx, hdf5_file_path in enumerate(hdf5_path):
-                try:
-                    self.data[idx] = load_hdf5(hdf5_file_path)
-                except IOError as e:
-                    self.logger.critical(e)
-                    raise e
-        else:
-            msg = f"Unsupported type argument {type(hdf5_path)} for hdf5_path. Expected list or str."
-            self.logger.critical(msg)
-            raise TypeError(msg)
+        self.data = np.asarray(self.data)
+        if Tags.SIGNAL_THRESHOLD in self.component_settings:
+            self.data[self.data < self.component_settings[Tags.SIGNAL_THRESHOLD]*np.max(self.data)] = 0
 
     @abstractmethod
     def run(self):
@@ -52,4 +58,3 @@ class MultispectralProcessingAlgorithm(ABC):
         any multispectral algorithm can be executed by invoking the run method.
         """
         pass
-

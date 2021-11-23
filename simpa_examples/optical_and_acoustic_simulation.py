@@ -4,14 +4,13 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.utils import Tags, TISSUE_LIBRARY
-
+from simpa.utils import Tags, TISSUE_LIBRARY, PathManager, Settings
 from simpa.core.simulation import simulate
-from simpa.utils.settings import Settings
+from simpa.utils.libraries.structure_library import define_horizontal_layer_structure_settings,\
+    define_circular_tubular_structure_settings
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
-from simpa.utils.path_manager import PathManager
-from simpa.core import ImageReconstructionModuleDelayAndSumAdapter, GaussianNoiseProcessingComponent, \
+from simpa.simulation_components import ImageReconstructionModuleDelayAndSumAdapter, GaussianNoiseProcessingComponent, \
     OpticalForwardModelMcxAdapter, AcousticForwardModelKWaveAdapter, VolumeCreationModelModelBasedAdapter, \
     FieldOfViewCroppingProcessingComponent, ImageReconstructionModuleSignedDelayMultiplyAndSumAdapter, \
     ReconstructionModuleTimeReversalAdapter
@@ -47,52 +46,34 @@ def create_example_tissue():
     background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-10, 1e-10, 1.0)
     background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
-    muscle_dictionary = Settings()
-    muscle_dictionary[Tags.PRIORITY] = 1
-    muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-    muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-    muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.05, 100, 0.9)
-    muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
-
-    vessel_1_dictionary = Settings()
-    vessel_1_dictionary[Tags.PRIORITY] = 3
-    vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                    0, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10]
-    vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
-    vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    vessel_1_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
-    vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
-
-    vessel_2_dictionary = Settings()
-    vessel_2_dictionary[Tags.PRIORITY] = 3
-    vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 -10,
-                                                    0, 5]
-    vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2 -10, VOLUME_PLANAR_DIM_IN_MM, 5]
-    vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
-    vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
-    vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    vessel_2_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
-    vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
-
-    epidermis_dictionary = Settings()
-    epidermis_dictionary[Tags.PRIORITY] = 8
-    epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 1]
-    epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1.1]
-    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
-    epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-    epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-    epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
-
     tissue_dict = Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
-    tissue_dict["muscle"] = muscle_dictionary
-    tissue_dict["epidermis"] = epidermis_dictionary
-    tissue_dict["vessel_1"] = vessel_1_dictionary
-    tissue_dict["vessel_2"] = vessel_2_dictionary
+    tissue_dict["muscle"] = define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
+                                                                       molecular_composition=
+                                                                       TISSUE_LIBRARY.constant(0.05, 100, 0.9),
+                                                                       priority=1,
+                                                                       consider_partial_volume=True,
+                                                                       adhere_to_deformation=True)
+    tissue_dict["epidermis"] = define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
+                                                                          molecular_composition=
+                                                                          TISSUE_LIBRARY.epidermis(),
+                                                                          priority=8,
+                                                                          consider_partial_volume=True,
+                                                                          adhere_to_deformation=True)
+    tissue_dict["vessel_1"] = define_circular_tubular_structure_settings(
+        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, 0, 5],
+        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, VOLUME_PLANAR_DIM_IN_MM, 5],
+        molecular_composition=TISSUE_LIBRARY.blood(),
+        radius_mm=2, priority=3, consider_partial_volume=True,
+        adhere_to_deformation=False
+    )
+    tissue_dict["vessel_2"] = define_circular_tubular_structure_settings(
+        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, 0, 10],
+        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10],
+        molecular_composition=TISSUE_LIBRARY.blood(),
+        radius_mm=3, priority=3, consider_partial_volume=True,
+        adhere_to_deformation=False
+    )
     return tissue_dict
 
 
@@ -114,10 +95,10 @@ general_settings = {
             Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.GPU: True,
-
             # The following parameters set the optical forward model
-            Tags.WAVELENGTHS: [700],
-            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True
+            Tags.WAVELENGTHS: [700, 800],
+            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True,
+            Tags.DO_IPASC_EXPORT: True
         }
 settings = Settings(general_settings)
 np.random.seed(RANDOM_SEED)
@@ -138,7 +119,7 @@ settings.set_optical_settings({
 settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.PROPERTY_ALPHA_POWER: 1.05,
+    Tags.PROPERTY_ALPHA_POWER: 0.00,
     Tags.SENSOR_RECORD: "p",
     Tags.PMLInside: False,
     Tags.PMLSize: [31, 32],
@@ -153,11 +134,11 @@ settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.ACOUSTIC_SIMULATION_3D: False,
-    Tags.PROPERTY_ALPHA_POWER: 1.05,
+    Tags.PROPERTY_ALPHA_POWER: 0.00,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
-    Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
+    Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: False,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
@@ -171,7 +152,8 @@ settings.set_reconstruction_settings({
     Tags.ACOUSTIC_LOG_SCALE: True,
     Tags.PROPERTY_SPEED_OF_SOUND: 1540,
     Tags.PROPERTY_ALPHA_COEFF: 0.01,
-    Tags.PROPERTY_DENSITY: 1000
+    Tags.PROPERTY_DENSITY: 1000,
+    Tags.SPACING_MM: SPACING
 })
 
 settings["noise_initial_pressure"] = {
@@ -197,9 +179,13 @@ settings["noise_time_series"] = {
 
 device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-                                                          0]))
-device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm, pitch_mm=0.25,
-                                                           number_detector_elements=200))
+                                                          0]),
+                             field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20]))
+device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+                                                           pitch_mm=0.25,
+                                                           number_detector_elements=200,
+                                                           field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20])))
+print(device.get_detection_geometry().get_detector_element_positions_base_mm())
 device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
 
@@ -210,6 +196,7 @@ SIMUATION_PIPELINE = [
     AcousticForwardModelKWaveAdapter(settings),
     GaussianNoiseProcessingComponent(settings, "noise_time_series"),
     ReconstructionModuleTimeReversalAdapter(settings),
+    FieldOfViewCroppingProcessingComponent(settings)
     ]
 
 simulate(SIMUATION_PIPELINE, settings, device)
@@ -220,7 +207,8 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", WAVELENGTH,
+    visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+                   wavelength=WAVELENGTH,
                    show_time_series_data=True,
                    show_initial_pressure=True,
                    show_absorption=False,

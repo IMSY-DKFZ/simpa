@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags, PathManager, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
-from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter
+from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 from simpa.io_handling import load_data_field
 import numpy as np

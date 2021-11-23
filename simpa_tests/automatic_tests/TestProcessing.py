@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute 
 SPDX-License-Identifier: MIT
 """
 
-from simpa.core.reconstruction_module.reconstruction_utils import apply_b_mode, get_apodization_factor, \
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import apply_b_mode, get_apodization_factor, \
     reconstruction_mode_transformation
 from simpa.utils.calculate import min_max_normalization
 from simpa.utils.tags import Tags

@@ -24,7 +24,7 @@ from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import *
 import numpy as np
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.core import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter
+from simpa.simulation_components import VolumeCreationModelModelBasedAdapter, OpticalForwardModelMcxAdapter
 from simpa_tests.manual_tests.test_with_experimental_measurements.utils import read_reference_spectra, read_rxt_file
 import inspect
 
@@ -209,7 +209,8 @@ for wavelength in settings[Tags.WAVELENGTHS]:
     print(f"Total Transmission: {total_transmission * 100:.2f}% (expected "
           f"{transmittance_spectrum.get_value_for_wavelength(wavelength) * 100:.2f}%)")
 
-visualise_data(path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5", wavelength=800,
+visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+               wavelength=800,
                show_segmentation_map=False,
                show_absorption=True,
                show_fluence=True,

@@ -16,7 +16,8 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
     """
     def __init__(self, number_detector_elements, detector_element_width_mm,
                  detector_element_length_mm, center_frequency_hz, bandwidth_percent,
-                 sampling_frequency_mhz, probe_width_mm, device_position_mm: np.ndarray = None):
+                 sampling_frequency_mhz, device_position_mm: np.ndarray = None,
+                 field_of_view_extent_mm: np.ndarray = None):
         """
 
         :param number_detector_elements: Total number of detector elements.
@@ -25,17 +26,16 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         :param center_frequency_hz:
         :param bandwidth_percent:
         :param sampling_frequency_mhz:
-        :param probe_width_mm: Total in-plane extent of the detector geometry.
         :param device_position_mm: Origin of the internal representation of the device.
         """
-        super().__init__(device_position_mm=device_position_mm)
+        super(DetectionGeometryBase, self).__init__(device_position_mm=device_position_mm,
+                                                    field_of_view_extent_mm=field_of_view_extent_mm)
         self.number_detector_elements = number_detector_elements
         self.detector_element_width_mm = detector_element_width_mm
         self.detector_element_length_mm = detector_element_length_mm
         self.center_frequency_Hz = center_frequency_hz
         self.bandwidth_percent = bandwidth_percent
         self.sampling_frequency_MHz = sampling_frequency_mhz
-        self.probe_width_mm = probe_width_mm
 
     @abstractmethod
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
@@ -84,8 +84,8 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         :returns: A numpy array containing the coordinates of the detection elements
 
         """
-        abstract_element_positions = self.get_detector_element_positions_base_mm()
-        field_of_view = self.get_field_of_view_mm()
+        abstract_element_positions = np.copy(self.get_detector_element_positions_base_mm())
+        field_of_view = self.field_of_view_extent_mm
         x_half = (field_of_view[1] - field_of_view[0]) / 2
         y_half = (field_of_view[3] - field_of_view[2]) / 2
         if np.abs(x_half) < 1e-10:
@@ -99,7 +99,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         return abstract_element_positions
 
     @abstractmethod
-    def get_detector_element_orientations(self, global_settings: Settings) -> np.ndarray:
+    def get_detector_element_orientations(self) -> np.ndarray:
         """
         This method yields a normalised orientation vector for each detection element. The length of
         this vector is the same as the one obtained via the position methods::

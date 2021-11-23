@@ -9,24 +9,41 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 from simpa.utils import SegmentationClasses, Tags
+from simpa.utils.path_manager import PathManager
 from simpa.utils.settings import Settings
 from simpa.utils import get_data_field_from_simpa_output
 from simpa.log import Logger
 
 
-def visualise_data(path_to_hdf5_file: str, wavelength: int,
-                   show_absorption=True,
+def visualise_data(wavelength: int = None,
+                   path_to_hdf5_file: str = None,
+                   settings: Settings = None,
+                   path_manager: PathManager = None,
+                   show_absorption=False,
                    show_scattering=False,
                    show_anisotropy=False,
                    show_speed_of_sound=False,
                    show_tissue_density=False,
                    show_fluence=False,
-                   show_initial_pressure=True,
-                   show_time_series_data=True,
-                   show_reconstructed_data=True,
-                   show_segmentation_map=True,
-                   log_scale=True,
+                   show_initial_pressure=False,
+                   show_time_series_data=False,
+                   show_reconstructed_data=False,
+                   show_segmentation_map=False,
+                   log_scale=False,
                    show_xz_only=False):
+
+    if settings is not None and Tags.WAVELENGTHS in settings:
+        if wavelength is None or wavelength not in settings[Tags.WAVELENGTHS]:
+            wavelength = settings[Tags.WAVELENGTHS][0]
+
+    if settings is not None and Tags.WAVELENGTH in settings:
+        wavelength = settings[Tags.WAVELENGTH]
+
+    if path_to_hdf5_file is None and (settings is None or path_manager is None):
+        raise ValueError("Either the path_to_hdf5_file or the given settings and path_manager must not be None!")
+
+    if path_to_hdf5_file is None:
+        path_to_hdf5_file = path_manager.get_hdf5_file_save_path() + "/" + settings[Tags.VOLUME_NAME] + ".hdf5"
 
     logger = Logger()
     file = load_hdf5(path_to_hdf5_file)
@@ -138,7 +155,7 @@ def visualise_data(path_to_hdf5_file: str, wavelength: int,
     else:
         num_rows = 2
 
-    plt.figure()
+    plt.figure(figsize=(len(data_to_show)*4, num_rows*3.5))
     for i in range(len(data_to_show)):
 
         plt.subplot(num_rows, len(data_to_show), i+1)
@@ -189,4 +206,3 @@ def get_segmentation_colormap():
         'Custom cmap', colors, len(names))
 
     return names, values, cmap
-

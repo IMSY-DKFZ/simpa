@@ -13,7 +13,7 @@ from simpa.utils import Tags
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
-from simpa.core import OpticalForwardModelMcxAdapter
+from simpa.simulation_components import OpticalForwardModelMcxAdapter
 from simpa.utils import Settings
 from simpa.io_handling import save_data_field, load_data_field
 from simpa.utils import TISSUE_LIBRARY
@@ -298,9 +298,9 @@ class IterativeqPAIProcessingComponent(ProcessingComponent):
 
         downscaling_method = "nearest"
 
-        downscaled_initial_pressure = zoom(initial_pressure, self.downscale_factor, order=1, mode=downscaling_method)
-        downscaled_scattering = zoom(scattering, self.downscale_factor, order=1, mode=downscaling_method)
-        downscaled_anisotropy = zoom(anisotropy, self.downscale_factor, order=1, mode=downscaling_method)
+        downscaled_initial_pressure = zoom(initial_pressure, self.downscale_factor, order=0, mode=downscaling_method)
+        downscaled_scattering = zoom(scattering, self.downscale_factor, order=0, mode=downscaling_method)
+        downscaled_anisotropy = zoom(anisotropy, self.downscale_factor, order=0, mode=downscaling_method)
 
         new_spacing = self.global_settings[Tags.SPACING_MM] / self.downscale_factor
         self.global_settings[Tags.SPACING_MM] = new_spacing

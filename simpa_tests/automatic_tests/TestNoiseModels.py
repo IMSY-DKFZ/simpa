@@ -13,14 +13,14 @@ from simpa.utils import Tags, Settings
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.core.simulation import simulate
 from simpa.utils import TISSUE_LIBRARY
-from simpa.utils.libraries.structure_library import Background
 from simpa.io_handling import load_data_field
-from simpa.core import VolumeCreationModelModelBasedAdapter
+from simpa.simulation_components import VolumeCreationModelModelBasedAdapter
 
 
 class TestNoiseModels(unittest.TestCase):
 
-    def create_background_parameters(self, background_value):
+    @staticmethod
+    def create_background_parameters(background_value):
         background_structure_dictionary = dict()
         background_structure_dictionary[Tags.PRIORITY] = 0
         background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(

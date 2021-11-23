@@ -15,7 +15,7 @@ from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from scipy.ndimage import zoom
 from simpa.utils.path_manager import PathManager
 from simpa.core.device_digital_twins import RSOMExplorerP50
-from simpa.core import VolumeCreationModuleSegmentationBasedAdapter, OpticalForwardModelMcxAdapter
+from simpa.simulation_components import VolumeCreationModuleSegmentationBasedAdapter, OpticalForwardModelMcxAdapter
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -97,4 +97,6 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    visualise_data(path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5", WAVELENGTH)
+    visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5", wavelength=WAVELENGTH,
+                   show_initial_pressure=True,
+                   show_segmentation_map=True)
