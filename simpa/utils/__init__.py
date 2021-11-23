@@ -1,23 +1,23 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 # First load everything without internal dependencies
 from .tags import Tags
 from .libraries.literature_values import MorphologicalTissueProperties
 from .libraries.literature_values import StandardProperties
 from .libraries.literature_values import OpticalTissueProperties
-from .constants import SaveFilePaths, SegmentationClasses
+from .constants import SegmentationClasses
 
 # Then load classes and methods with an <b>increasing</b> amount of internal dependencies.
 # If there are import errors in the tests, it is probably due to an incorrect
 # initialization order
 from .libraries.spectra_library import AbsorptionSpectrumLibrary
 from .libraries.spectra_library import Spectrum
-from .libraries.spectra_library import SPECTRAL_LIBRARY
-from .libraries.spectra_library import view_absorption_spectra
+from .libraries.spectra_library import view_saved_spectra
+from .libraries.spectra_library import AnisotropySpectrumLibrary
+from .libraries.spectra_library import ScatteringSpectrumLibrary
+from .libraries.spectra_library import get_simpa_internal_absorption_spectra_by_names
 
 from .libraries.molecule_library import Molecule, MolecularCompositionGenerator
 from .libraries.molecule_library import MoleculeLibrary
@@ -42,5 +42,19 @@ from .constants import EPS
 
 from .path_manager import PathManager
 
+from .libraries.structure_library.BackgroundStructure import Background, define_background_structure_settings
+from .libraries.structure_library.CircularTubularStructure import CircularTubularStructure, \
+    define_circular_tubular_structure_settings
+from .libraries.structure_library.EllipticalTubularStructure import EllipticalTubularStructure, \
+    define_elliptical_tubular_structure_settings
+from .libraries.structure_library.HorizontalLayerStructure import HorizontalLayerStructure, \
+    define_horizontal_layer_structure_settings
+from .libraries.structure_library.ParallelepipedStructure import ParallelepipedStructure, \
+    define_parallelepiped_structure_settings
+from .libraries.structure_library.RectangularCuboidStructure import RectangularCuboidStructure, \
+    define_rectangular_cuboid_structure_settings
+from .libraries.structure_library.SphericalStructure import SphericalStructure, define_spherical_structure_settings
+from .libraries.structure_library.VesselStructure import VesselStructure, define_vessel_structure_settings
+
 if __name__ == "__main__":
-    view_absorption_spectra()
+    view_saved_spectra()

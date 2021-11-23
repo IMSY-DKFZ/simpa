@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from simpa.core.device_digital_twins import PhotoacousticDevice, \
     CurvedArrayDetectionGeometry, MSOTAcuityIlluminationGeometry
@@ -173,45 +171,3 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             Tags.STRUCTURE_TYPE: Tags.BACKGROUND
         })
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
-
-
-if __name__ == "__main__":
-    import os
-    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-    device = MSOTAcuityEcho()
-    settings = Settings()
-    settings[Tags.DIM_VOLUME_X_MM] = 100
-    settings[Tags.DIM_VOLUME_Y_MM] = 50
-    settings[Tags.DIM_VOLUME_Z_MM] = 100
-    settings[Tags.SPACING_MM] = 0.5
-    settings[Tags.STRUCTURES] = {}
-    # settings[Tags.DIGITAL_DEVICE_POSITION] = [50, 50, 50]
-    device.update_settings_for_use_of_model_based_volume_creator(settings)
-
-    x_dim = int(round(settings[Tags.DIM_VOLUME_X_MM]/settings[Tags.SPACING_MM]))
-    z_dim = int(round(settings[Tags.DIM_VOLUME_Z_MM]/settings[Tags.SPACING_MM]))
-
-    positions = device.detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
-    orientations = device.detection_geometry.get_detector_element_orientations()
-    # detector_elements[:, 1] = detector_elements[:, 1] + device.probe_height_mm
-    # detector_positions = np.round(detector_positions / settings[Tags.SPACING_MM]).astype(int)
-    # position_map = np.zeros((x_dim, z_dim))
-    # position_map[detector_positions[:, 0], detector_positions[:, 2]] = 1
-    middle_point = int(positions.shape[0]/2)
-    import matplotlib.pyplot as plt
-    plt.figure()
-    plt.subplot(1, 2, 1)
-    plt.title("In Volume")
-    plt.scatter(positions[:, 0], positions[:, 2])
-    plt.quiver(positions[:, 0], positions[:, 2], orientations[:, 0], orientations[:, 2])
-    fov = device.detection_geometry.get_field_of_view_mm()
-    plt.plot([fov[0], fov[1], fov[1], fov[0], fov[0]], [fov[4], fov[4], fov[5], fov[5], fov[4]], color="red")
-    plt.subplot(1, 2, 2)
-    plt.title("Base")
-    positions = device.detection_geometry.get_detector_element_positions_base_mm()
-    fov = device.detection_geometry.field_of_view_extent_mm
-    plt.plot([fov[0], fov[1], fov[1], fov[0], fov[0]], [fov[4], fov[4], fov[5], fov[5], fov[4]], color="red")
-    plt.scatter(positions[:, 0], positions[:, 2])
-    plt.show()
-    # plt.imshow(map)
-    # plt.show()

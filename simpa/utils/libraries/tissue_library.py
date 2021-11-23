@@ -1,15 +1,13 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
-from simpa.utils import SPECTRAL_LIBRARY
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
 from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils.calculate import randomize_uniform
+from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary
 
 
 class TissueLibrary(object):
@@ -29,7 +27,7 @@ class TissueLibrary(object):
         """
         return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
                                                                 absorption_spectrum=
-                                                                SPECTRAL_LIBRARY.CONSTANT_ABSORBER_ARBITRARY(mua),
+                                                                AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
                                                                 volume_fraction=1.0,
                                                                 scattering_spectrum=
                                                                 ScatteringSpectrumLibrary.

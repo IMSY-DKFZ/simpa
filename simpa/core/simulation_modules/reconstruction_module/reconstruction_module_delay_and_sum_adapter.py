@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
@@ -14,7 +12,7 @@ from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils im
 from simpa.core.device_digital_twins import DetectionGeometryBase
 
 
-class ImageReconstructionModuleDelayAndSumAdapter(ReconstructionAdapterBase):
+class DelayAndSumAdapter(ReconstructionAdapterBase):
 
     def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry: DetectionGeometryBase):
         """
@@ -80,8 +78,8 @@ def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray,
         settings = Settings()
 
     # parse reconstruction settings if they are not given in the settings
-    if Tags.PROPERTY_SPEED_OF_SOUND not in settings or settings[Tags.PROPERTY_SPEED_OF_SOUND] is None:
-        settings[Tags.PROPERTY_SPEED_OF_SOUND] = speed_of_sound_in_m_per_s
+    if Tags.DATA_FIELD_SPEED_OF_SOUND not in settings or settings[Tags.DATA_FIELD_SPEED_OF_SOUND] is None:
+        settings[Tags.DATA_FIELD_SPEED_OF_SOUND] = speed_of_sound_in_m_per_s
 
     if Tags.SENSOR_SAMPLING_RATE_MHZ not in settings or settings[Tags.SENSOR_SAMPLING_RATE_MHZ] is None:
         settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = (1.0 / time_spacing_in_s) / 1000000
@@ -89,5 +87,5 @@ def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray,
     if Tags.SPACING_MM not in settings or settings[Tags.SPACING_MM] is None:
         settings[Tags.SPACING_MM] = sensor_spacing_in_mm
 
-    adapter = ImageReconstructionModuleDelayAndSumAdapter(settings)
+    adapter = DelayAndSumAdapter(settings)
     return adapter.reconstruction_algorithm(time_series_sensor_data, detection_geometry)

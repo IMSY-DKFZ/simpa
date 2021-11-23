@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from abc import abstractmethod
 import numpy as np
@@ -11,6 +9,7 @@ from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.core.device_digital_twins import PhotoacousticDevice, DetectionGeometryBase
+from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
 class AcousticForwardModelBaseAdapter(SimulationModule):
@@ -67,7 +66,10 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
 
         time_series_data = self.forward_model(_device)
 
-        acoustic_output_path = generate_dict_path(Tags.TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
+        if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
+            assert_array_well_defined(time_series_data, array_name="time_series_data")
+
+        acoustic_output_path = generate_dict_path(Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 
         save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
 

@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 
 class StandardProperties:
@@ -358,7 +356,7 @@ class MorphologicalTissueProperties:
     SUBCUTANEOUS_VEIN_DIAMETER_MEAN_MM = 0.8
     SUBCUTANEOUS_VEIN_DIAMETER_STD_MM = 0.6
 
-    # The following properties were experimentally determined based on data sets provided by Janek Gröhl
+    # The following properties were experimentally determined based on data sets provided by Janek Groehl
     # (Photoacoustic forearm images) and André Klein (Forearm CT images from full body CTs)
 
     RADIAL_ARTERY_DEPTH_MEAN_MM = 6.0
