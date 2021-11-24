@@ -5,7 +5,6 @@
 from abc import abstractmethod, ABC
 from simpa.log import Logger
 from simpa.utils import Settings
-from simpa.utils import Tags
 import numpy as np
 from numpy import ndarray
 import hashlib
@@ -86,17 +85,34 @@ class DigitalDeviceTwinBase:
         return str(uuid.UUID(m.hexdigest()))
 
 
-from simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base import DetectionGeometryBase
-from simpa.core.device_digital_twins.devices.illumination_geometries.illumination_geometry_base import \
-    IlluminationGeometryBase
-
-
 class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
     """Base class of a photoacoustic device. It consists of one detection geometry that describes the geometry of the
     single detector elements and a list of illuminators.
 
-    :param detection_geometry: Detection geometry of the PA device.
-    :type detection_geometry: DetectionGeometryBase
+    A Photoacoustic Device can be initialized as follows::
+
+        import simpa as sp
+        import numpy as np
+
+        # Initialise a PhotoacousticDevice with its position and field of view
+        device = sp.PhotoacousticDevice(device_position_mm=np.array([10, 10, 0]),
+            field_of_view_extent_mm=np.array([-20, 20, 0, 0, 0, 20]))
+
+        # Option 1) Set the detection geometry position relative to the PhotoacousticDevice
+        device.set_detection_geometry(sp.DetectionGeometry(),
+            detector_position_relative_to_pa_device=np.array([0, 0, -10]))
+
+        # Option 2) Set the detection geometry position absolute
+        device.set_detection_geometry(
+            sp.DetectionGeometryBase(device_position_mm=np.array([10, 10, -10])))
+
+        # Option 1) Add the illumination geometry position relative to the PhotoacousticDevice
+        device.add_illumination_geometry(sp.IlluminationGeometry(),
+            illuminator_position_relative_to_pa_device=np.array([0, 0, 0]))
+
+        # Option 2) Add the illumination geometry position absolute
+        device.add_illumination_geometry(
+            sp.IlluminationGeometryBase(device_position_mm=np.array([10, 10, 0]))
 
     Attributes:
         detection_geometry (DetectionGeometryBase): Geometry of the detector elements.
@@ -112,37 +128,47 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
 
     def set_detection_geometry(self, detection_geometry,
                                detector_position_relative_to_pa_device=None):
-        """Sets the detection geometry for the PA device.
+        """Sets the detection geometry for the PA device. The detection geometry can be instantiated with an absolute
+        position or it can be instantiated without the device_position_mm argument but a position relative to the
+        position of the PhotoacousticDevice. If both absolute and relative positions are given, the absolute position
+        is chosen as position of the detection geometry.
 
         :param detection_geometry: Detection geometry of the PA device.
         :type detection_geometry: DetectionGeometryBase
         :param detector_position_relative_to_pa_device: Position of the detection geometry relative to the PA device.
         :type detector_position_relative_to_pa_device: ndarray
-        :return:
+        :raises ValueError: if the detection_geometry is None
+
         """
         if detection_geometry is None:
             msg = "The given detection_geometry must not be None!"
             self.logger.critical(msg)
             raise ValueError(msg)
-        if detector_position_relative_to_pa_device is not None:
+        if np.linalg.norm(detection_geometry.device_position_mm) == 0 and \
+                detector_position_relative_to_pa_device is not None:
             detection_geometry.device_position_mm = np.add(self.device_position_mm,
                                                            detector_position_relative_to_pa_device)
         self.detection_geometry = detection_geometry
 
     def add_illumination_geometry(self, illumination_geometry, illuminator_position_relative_to_pa_device=None):
-        """Adds an illuminator to the PA device.
+        """Adds an illuminator to the PA device. The illumination geometry can be instantiated with an absolute
+        position or it can be instantiated without the device_position_mm argument but a position relative to the
+        position of the PhotoacousticDevice. If both absolute and relative positions are given, the absolute position
+        is chosen as position of the illumination geometry.
 
         :param illumination_geometry: Geometry of the illuminator.
         :type illumination_geometry: IlluminationGeometryBase
         :param illuminator_position_relative_to_pa_device: Position of the illuminator relative to the PA device.
         :type illuminator_position_relative_to_pa_device: ndarray
-        :return:
+        :raises ValueError: if the illumination_geometry is None
+
         """
         if illumination_geometry is None:
             msg = "The given illumination_geometry must not be None!"
             self.logger.critical(msg)
             raise ValueError(msg)
-        if illuminator_position_relative_to_pa_device is not None:
+        if np.linalg.norm(illumination_geometry.device_position_mm) == 0 and \
+                illuminator_position_relative_to_pa_device is not None:
             illumination_geometry.device_position_mm = np.add(self.device_position_mm,
                                                               illuminator_position_relative_to_pa_device)
         self.illumination_geometries.append(illumination_geometry)
