@@ -44,7 +44,8 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
-    'myst_parser'
+    'sphinx.ext.viewcode',
+    'myst_parser',
 ]
 
 # Napoleon settings
