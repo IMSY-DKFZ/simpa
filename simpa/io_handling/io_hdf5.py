@@ -110,6 +110,7 @@ def load_hdf5(file_path, file_dictionary_path="/"):
     :param file_path: Path of the file to load the dictionary from.
     :param file_dictionary_path: Path in dictionary structure of hdf5 file to lo the dictionary in.
     :returns: Dictionary
+    :rtype: dict
     """
 
     def data_grabber(file, path):
