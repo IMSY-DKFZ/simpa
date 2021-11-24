@@ -69,7 +69,7 @@ def create_example_tissue():
                                                   12,
                                                   5]
     vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
-    vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood(oxygenation=0.75)
+    vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood(oxygenation=0.75)
     vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
