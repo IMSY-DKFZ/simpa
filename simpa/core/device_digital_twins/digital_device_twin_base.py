@@ -13,16 +13,19 @@ import uuid
 
 class DigitalDeviceTwinBase:
     """
-    This class represents a device that can be used for illumination, detection or both.
+    This class represents a device that can be used for illumination, detection or a combined photoacoustic device
+    which has representations of both.
+
+    Attributes:
+        device_position_mm (ndarray): Each device has an internal position which serves as origin for internal \
+        representations of e.g. detector element positions or illuminator positions.
+        field_of_view_extent_mm (ndarray): Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+
     """
 
-    def __init__(self, device_position_mm: np.ndarray = None,
-                 field_of_view_extent_mm: np.ndarray = None):
-        """
-        Constructor of the base class for all digital devices.
-        :param device_position_mm: Each device has an internal position which serves as origin for internal
-        representations of e.g. detector element positions or illuminator positions.
-        """
+    def __init__(self, device_position_mm=None, field_of_view_extent_mm=None):
         if device_position_mm is None:
             self.device_position_mm = np.array([0, 0, 0])
         else:
@@ -55,11 +58,14 @@ class DigitalDeviceTwinBase:
 
     def get_field_of_view_mm(self) -> np.ndarray:
         """
-        returns the absolute field of view in mm where the probe position is already
+        Returns the absolute field of view in mm where the probe position is already
         accounted for.
         It is defined as a numpy array of the shape [xs, xe, ys, ye, zs, ze],
         where x, y, and z denote the coordinate axes and s and e denote the start and end
         positions.
+
+        :return: Absolute field of view in mm where the probe position is already accounted for.
+        :rtype: ndarray
         """
         position = self.device_position_mm
         field_of_view_extent = self.field_of_view_extent_mm
@@ -79,6 +85,10 @@ class DigitalDeviceTwinBase:
         return field_of_view
 
     def generate_uuid(self):
+        """
+        Generates a universally unique identifier (uuid) for each device.
+        :return:
+        """
         class_dict = self.__dict__
         m = hashlib.md5()
         m.update(str(class_dict).encode('utf-8'))
@@ -174,6 +184,10 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
         self.illumination_geometries.append(illumination_geometry)
 
     def get_detection_geometry(self):
+        """
+        :return: None if no detection geometry was set or an instance of DetectionGeometryBase.
+        :rtype: None, DetectionGeometryBase
+        """
         return self.detection_geometry
 
     def get_illumination_geometry(self):
@@ -181,6 +195,7 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
         :return: None, if no illumination geometry was defined,
             an instance of IlluminationGeometryBase if exactly one geometry was defined,
             a list of IlluminationGeometryBase instances if more than one device was defined.
+        :rtype: None, IlluminationGeometryBase
         """
         if len(self.illumination_geometries) == 0:
             return None
