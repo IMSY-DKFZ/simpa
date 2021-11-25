@@ -35,5 +35,5 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         return True
 
-    def adjust_simulation_volume_and_settings(self, global_settings: Settings) -> Settings:
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings) -> Settings:
         return global_settings

@@ -56,6 +56,16 @@ class DigitalDeviceTwinBase:
         """
         pass
 
+    @abstractmethod
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        """
+        This method can be overwritten by a PA device if the device poses special constraints to the
+        volume that should be considered by the model-based volume creator.
+        :param global_settings: Settings for the entire simulation pipeline.
+        :type global_settings: Settings
+        """
+        pass
+
     def get_field_of_view_mm(self) -> np.ndarray:
         """
         Returns the absolute field of view in mm where the probe position is already
@@ -205,7 +215,7 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
 
         return self.illumination_geometries
 
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
+    def check_settings_prerequisites(self, global_settings) -> bool:
         _result = True
         if self.detection_geometry is not None \
                 and not self.detection_geometry.check_settings_prerequisites(global_settings):
@@ -215,10 +225,3 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
                     and not illumination_geometry.check_settings_prerequisites(global_settings):
                 _result = False
         return _result
-
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
-        """
-        This method can be overwritten by a PA device if the device poses special constraints to the
-        volume that should be considered by the model-based volume creator.
-        """
-        pass
