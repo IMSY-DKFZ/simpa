@@ -85,6 +85,8 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     if not(Tags.DO_FILE_COMPRESSION in settings and
             not settings[Tags.DO_FILE_COMPRESSION]):
         all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
+        if Tags.INPUT_SEGMENTATION_VOLUME in all_data[Tags.SETTINGS][Tags.VOLUME_CREATION_MODEL_SETTINGS]:
+            del all_data[Tags.SETTINGS][Tags.VOLUME_CREATION_MODEL_SETTINGS][Tags.INPUT_SEGMENTATION_VOLUME]
         save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH], file_compression="gzip")
 
     # Export simulation result to the IPASC format.

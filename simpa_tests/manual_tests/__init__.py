@@ -6,7 +6,7 @@ import numpy as np
 from simpa.utils.path_manager import PathManager
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.io_handling import load_data_field
-from simpa.core.device_digital_twins.devices.pa_devices.ithera_msot_acuity import MSOTAcuityEcho
+from simpa.core.device_digital_twins import MSOTAcuityEcho
 import matplotlib.pyplot as plt
 from abc import abstractmethod
 

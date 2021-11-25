@@ -4,7 +4,7 @@
 
 from typing import Tuple
 from simpa.log.file_logger import Logger
-from simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base import DetectionGeometryBase
+from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils.settings import Settings
 from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.utils import Tags
