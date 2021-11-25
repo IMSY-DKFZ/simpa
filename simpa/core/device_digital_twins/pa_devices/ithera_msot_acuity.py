@@ -74,7 +74,12 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         illumination_geometry = MSOTAcuityIlluminationGeometry()
         self.add_illumination_geometry(illumination_geometry)
 
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        """
+        Updates the volume creation settings of the model based volume creator according to the size of the device.
+        :param global_settings: Settings for the entire simulation pipeline.
+        :type global_settings: Settings
+        """
         try:
             volume_creator_settings = Settings(global_settings.get_volume_creation_settings())
         except KeyError as e:
