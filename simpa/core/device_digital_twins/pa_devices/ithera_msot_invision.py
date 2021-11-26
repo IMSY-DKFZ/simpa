@@ -30,6 +30,15 @@ class InVision256TF(PhotoacousticDevice):
 
     def __init__(self, device_position_mm: np.ndarray = None,
                  field_of_view_extent_mm: np.ndarray = np.asarray([-20, 20, 0, 0, -20, 20])):
+        """
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of e.g. detector element positions or illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
+        """
         super(InVision256TF, self).__init__(device_position_mm=device_position_mm,
                                             field_of_view_extent_mm=field_of_view_extent_mm)
 
