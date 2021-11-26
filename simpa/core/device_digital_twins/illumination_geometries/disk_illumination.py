@@ -11,12 +11,20 @@ class DiskIlluminationGeometry(IlluminationGeometryBase):
     This class represents a disk illumination geometry.
     The device position is defined as the middle of the disk.
     """
-    def __init__(self, beam_radius_mm=None):
+    def __init__(self, beam_radius_mm=None, device_position_mm=None, field_of_view_extent_mm=None):
         """
-        Initializes a disk illumination source.
-        :param beam_radius_mm: Defines the radius of the disk
+        :param beam_radius_mm: Radius of the disk in mm.
+        :type beam_radius_mm: int, float
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
         """
-        super(DiskIlluminationGeometry, self).__init__()
+        super(DiskIlluminationGeometry, self).__init__(device_position_mm=device_position_mm,
+                                                       field_of_view_extent_mm=field_of_view_extent_mm)
         if beam_radius_mm is None:
             beam_radius_mm = 1
 

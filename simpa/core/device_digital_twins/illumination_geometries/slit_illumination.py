@@ -13,15 +13,25 @@ class SlitIlluminationGeometry(IlluminationGeometryBase):
     This class represents a slit illumination geometry.
     The device position is defined as the middle of the slit.
     """
-    def __init__(self, slit_vector_mm: list = None, direction_vector_mm: list = None):
+    def __init__(self, slit_vector_mm=None, direction_vector_mm=None, device_position_mm=None,
+                 field_of_view_extent_mm=None):
         """
-        Initializes a slit illumination source.
         :param slit_vector_mm: Defines the slit in vector form. For example a slit along the x-axis with length 5mm
-            would be defined as [5, 0, 0]
+            would be defined as [5, 0, 0].
+        :type slit_vector_mm: list
         :param direction_vector_mm: Direction vector in which the slit illuminates.
             Defined analogous to the slit vector.
+        :type direction_vector_mm: list
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
         """
-        super().__init__()
+        super(SlitIlluminationGeometry, self).__init__(device_position_mm=device_position_mm,
+                                                       field_of_view_extent_mm=field_of_view_extent_mm)
 
         if slit_vector_mm is None:
             slit_vector_mm = [5, 0, 0]

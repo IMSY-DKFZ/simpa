@@ -14,14 +14,27 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
     The position is defined as the middle of the beam.
     """
 
-    def __init__(self, beam_radius_mm=None):
-        super(GaussianBeamIlluminationGeometry, self).__init__()
+    def __init__(self, beam_radius_mm=None, device_position_mm=None, field_of_view_extent_mm=None):
+        """
+        :param beam_radius_mm: Radius of the gaussian beam at half maximum (full width at half maximum (FWHM)) in mm.
+        :type beam_radius_mm: int, float
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
+        """
+        super(GaussianBeamIlluminationGeometry, self).__init__(device_position_mm=device_position_mm,
+                                                               field_of_view_extent_mm=field_of_view_extent_mm)
+
         if beam_radius_mm is None:
             beam_radius_mm = 0
 
         self.beam_radius_mm = beam_radius_mm
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_GAUSSIAN
 
         spacing = global_settings[Tags.SPACING_MM]

@@ -11,6 +11,7 @@ from simpa.utils import Settings, Tags
 class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
     """
     This class represents the illumination geometry of the MSOT Acuity (Echo) photoacoustic device.
+    The position is defined as the middle of the illumination slit.
     """
 
     def __init__(self):

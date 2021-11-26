@@ -10,12 +10,13 @@ from simpa.utils import Settings, Tags
 
 class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
     """
-    This class represents the illumination geometry of the MSOT Acuity (Echo) photoacoustic device.
+    This class represents the illumination geometry of the MSOT InVision photoacoustic device.
     """
 
-    def __init__(self, geometry_id: int = 0):
+    def __init__(self, geometry_id=0):
         """
-        Initializes the illumination source.
+        :param geometry_id: ID of the specific InVision illuminator.
+        :type geometry_id: int
         """
         super().__init__()
         self.geometry_id = geometry_id

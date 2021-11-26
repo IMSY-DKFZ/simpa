@@ -43,7 +43,7 @@ class DigitalDeviceTwinBase:
     def check_settings_prerequisites(self, global_settings) -> bool:
         """
         It might be that certain device geometries need a certain dimensionality of the simulated PAI volume, or that
-        it required the existence of certain Tags in the global global_settings.
+        it requires the existence of certain Tags in the global global_settings.
         To this end, a  PAI device should use this method to inform the user about a mismatch of the desired device and
         throw a ValueError if that is the case.
 
@@ -62,6 +62,7 @@ class DigitalDeviceTwinBase:
         """
         This method can be overwritten by a PA device if the device poses special constraints to the
         volume that should be considered by the model-based volume creator.
+
         :param global_settings: Settings for the entire simulation pipeline.
         :type global_settings: Settings
         """
