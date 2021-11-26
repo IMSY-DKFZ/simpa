@@ -19,8 +19,7 @@ class FieldOfViewCropping(ProcessingComponent):
                       Tags.DATA_FIELD: TissueProperties.property_tags +
                                            [Tags.DATA_FIELD_FLUENCE,
                                             Tags.DATA_FIELD_INITIAL_PRESSURE]})
-        super(FieldOfViewCropping, self).__init__(global_settings,
-                                                                     "FieldOfViewCropping")
+        super(FieldOfViewCropping, self).__init__(global_settings, "FieldOfViewCropping")
     """
     Applies Gaussian noise to the defined data field.
     The noise will be applied to all wavelengths.
@@ -72,14 +71,28 @@ class FieldOfViewCropping(ProcessingComponent):
                 self.logger.warning(f"The data field {data_field} was not of type np.ndarray. Skipping...")
                 continue
             data_field_shape = np.shape(data_array)
-            if len(data_field_shape) != 3:
-                self.logger.warning(f"The data field {data_field} was not three-dimensional. Skipping...")
-                continue
+            if len(data_field_shape) == 3:
+                if (np.array([field_of_view_voxels[1] - field_of_view_voxels[0],
+                              field_of_view_voxels[3] - field_of_view_voxels[2],
+                              field_of_view_voxels[5] - field_of_view_voxels[4]]) - data_field_shape).all() == 0:
+                    self.logger.warning(f"The data field {data_field} is already cropped. Skipping...")
+                    continue
 
-            # crop
-            data_array = np.squeeze(data_array[field_of_view_voxels[0]:field_of_view_voxels[1] + x_offset_correct,
-                                    field_of_view_voxels[2]:field_of_view_voxels[3] + y_offset_correct,
-                                    field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
+                # crop
+                data_array = np.squeeze(data_array[field_of_view_voxels[0]:field_of_view_voxels[1] + x_offset_correct,
+                                        field_of_view_voxels[2]:field_of_view_voxels[3] + y_offset_correct,
+                                        field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
+
+            elif len(data_field_shape) == 2:
+                # Assumption that the data field is already in 2D shape in the y-plane
+                if (np.array([field_of_view_voxels[1] - field_of_view_voxels[0],
+                              field_of_view_voxels[5] - field_of_view_voxels[4]]) - data_field_shape == 0).all():
+                    self.logger.warning(f"The data field {data_field} is already cropped. Skipping...")
+                    continue
+
+                # crop
+                data_array = np.squeeze(data_array[field_of_view_voxels[0]:field_of_view_voxels[1] + x_offset_correct,
+                                        field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
 
             self.logger.debug(f"data array shape after cropping: {np.shape(data_array)}")
             # save
