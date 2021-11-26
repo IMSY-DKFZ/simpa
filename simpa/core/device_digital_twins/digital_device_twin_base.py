@@ -15,17 +15,18 @@ class DigitalDeviceTwinBase:
     """
     This class represents a device that can be used for illumination, detection or a combined photoacoustic device
     which has representations of both.
-
-    Attributes:
-        device_position_mm (ndarray): Each device has an internal position which serves as origin for internal \
-        representations of e.g. detector element positions or illuminator positions.
-        field_of_view_extent_mm (ndarray): Field of view which is defined as a numpy array of the shape \
-        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
-        positions.
-
     """
 
     def __init__(self, device_position_mm=None, field_of_view_extent_mm=None):
+        """
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of e.g. detector element positions or illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
+        """
         if device_position_mm is None:
             self.device_position_mm = np.array([0, 0, 0])
         else:
@@ -139,8 +140,16 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
         illumination_geometries (list): List of illuminations defined by :py:class:`IlluminationGeometryBase`.
     """
 
-    def __init__(self,  device_position_mm: np.ndarray = None,
-                 field_of_view_extent_mm: np.ndarray = None):
+    def __init__(self,  device_position_mm=None, field_of_view_extent_mm=None):
+        """
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of e.g. detector element positions or illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
+        """
         super(PhotoacousticDevice, self).__init__(device_position_mm=device_position_mm,
                                                   field_of_view_extent_mm=field_of_view_extent_mm)
         self.detection_geometry = None
