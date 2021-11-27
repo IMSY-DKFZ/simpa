@@ -28,22 +28,20 @@ REQUIREMENTS:
 You will need to install the following packages in order to use this script. It is recommended to create a virtualenv
 to install this packages:
 
-`pip install dash dash-table dash-daq dash_colorscales plotly plotly-express dash-bootstrap-components pandas numpy dash-slicer`
+`pip install dash dash-table dash-daq dash_colorscales plotly plotly-express dash-bootstrap-components pandas numpy
+dash-slicer`
 
 USAGE:
 ===================================================================
 
 """
 
-import dash
-from dash.dependencies import Input, Output, State
-import dash_core_components as dcc
+from dash import Dash, html, Input, Output, State, dcc, callback_context, no_update
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
-import dash_html_components as html
 import dash_colorscales as dcs
 import plotly_express as px
 import plotly.graph_objects as go
-from dash.exceptions import PreventUpdate
 import argparse
 import base64
 import numpy as np
@@ -56,8 +54,10 @@ from typing import *
 from simpa.io_handling import load_hdf5
 from simpa.utils import get_data_field_from_simpa_output, SegmentationClasses
 
-external_stylesheets = [dbc.themes.JOURNAL, 'assets/dcc.css']
-app = dash.Dash(external_stylesheets=external_stylesheets, title="SIMPA")
+EXTERNAL_STYLESHEETS = [dbc.themes.JOURNAL,
+                        # 'assets/dcc.css'
+                        ]
+app = Dash(__name__, external_stylesheets=EXTERNAL_STYLESHEETS, title="SIMPA")
 
 simpa_logo = './assets/simpa_logo.png'
 cami_logo = './assets/CAMIC_logo-wo_DKFZ.png'
@@ -136,7 +136,7 @@ app.layout = html.Div([
     html.Br(),
     dbc.Row([
         dbc.Col([
-            dcc.Tabs([
+            dcc.Tabs(children=[
                 dcc.Tab(label="About", id="about-tab", children=[
                     html.Br(),
                     html.P("This is a dash app designed by the SIMPA developer team. For more information on "
@@ -166,8 +166,11 @@ app.layout = html.Div([
                         placeholder="Path to simulation folder or file",
                         persistence=True,
                         persistence_type="session",
+                        invalid=True,
+                        autofocus=True
                     ),
                     dcc.Dropdown(
+                        multi=False,
                         id="file_selection",
                         placeholder="Simulation files",
                         persistence=True,
@@ -176,14 +179,14 @@ app.layout = html.Div([
                     html.Hr(),
                     html.H6("Data selection"),
                     html.P("Axis"),
-                    dcc.RadioItems(
+                    dbc.RadioItems(
                         id="volume_axis",
                         persistence_type="session",
                         options=[{'label': 'x', 'value': 0},
                                  {'label': 'y', 'value': 1},
                                  {'label': 'z', 'value': 2}],
                         value=2,
-                        labelStyle={'display': 'inline-block'}
+                        inline=True
                     ),
                     html.Hr(),
                     html.H6("Visual settings"),
@@ -209,14 +212,11 @@ app.layout = html.Div([
                     dbc.Col([
                         dbc.Row([
                             dbc.Col([
-                                dbc.Button(
-                                        "Visualizing",
-                                        id="annotate_button",
-                                        style={'display': 'inline-block', 'verticalAlign': 'top',
-                                               'margin-left': '5px'},
-                                        outline=True,
-                                        color="success",
-                                    ),
+                                dbc.Switch(
+                                    id="annotate_switch",
+                                    value=False,
+                                    label="Annotate"
+                                ),
                                 html.Div(
                                     id="plot_div_1",
                                     children=[
@@ -362,6 +362,20 @@ app.layout = html.Div([
                                             outline=True,
                                             color="primary",
                                         ),
+                                        dbc.Input(
+                                            id="n_bins",
+                                            type="number",
+                                            min=10,
+                                            max=100,
+                                            step=1,
+                                            value=10,
+                                            placeholder="N bins",
+                                            style={'display': 'inline-block',
+                                                   'verticalAlign': 'top',
+                                                   'margin-left': '8px',
+                                                   'width': '5%'
+                                                   },
+                                        ),
                                         dcc.Graph(id="plot_21",
                                                   hoverData={'points': [{'x': 0, 'y': 0, 'customdata': None}]},
                                                   style={"width": "100%", "display": 'inline-block'})
@@ -399,6 +413,21 @@ def populate_file_selection(_, data_path):
         raise PreventUpdate()
 
 
+@app.callback(Output('data_path', 'invalid'),
+              Output('data_path', 'valid'),
+              Input('data_path', 'value'),
+              )
+def update_data_path_validity(data_path: str):
+    valid = True if (os.path.isfile(data_path) and data_path.endswith('.hdf5')) or os.path.isdir(data_path) else False
+    return 1 - valid, valid
+
+
+@app.callback(Output("n_bins", "disabled"),
+              Input("annotate_switch", "value"))
+def deactivate_n_bins(annotate):
+    return 1 - annotate
+
+
 @app.callback(
     Output("param1", "options"),
     Output("param1", "disabled"),
@@ -428,7 +457,7 @@ def populate_file_selection(_, data_path):
 )
 def populate_file_params(file_path, axis):
     global data
-    ctx = dash.callback_context
+    ctx = callback_context
     if not ctx.triggered:
         button_id = None
     else:
@@ -449,11 +478,11 @@ def populate_file_params(file_path, axis):
             vol_slider_value = 0
         else:
             raise ValueError(f"Number of dimensions of mua is not supported: {data.shape}")
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, \
-               dash.no_update, dash.no_update, \
+        return no_update, no_update, no_update, no_update, no_update, \
+               no_update, no_update, \
                vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, disable_vol_slider, \
-               dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, \
-               dash.no_update, dash.no_update, dash.no_update, dash.no_update
+               no_update, no_update, no_update, no_update, no_update, no_update, \
+               no_update, no_update, no_update, no_update
     if file_path is None:
         raise PreventUpdate()
     if os.path.isfile(file_path):
@@ -526,19 +555,6 @@ def _load_data_fields():
     data.simpa_data_fields = data_fields
 
 
-@app.callback(Output("annotate_button", "children"),
-              Output("annotate_button", "color"),
-              Input("annotate_button", "n_clicks"),
-              State("annotate_button", "children"))
-def update_layout_on_click(n_clicks, button_name):
-    new_name = "Visualizing"
-    color = "success"
-    if button_name[0] == "Visualizing":
-        new_name = "Annotating"
-        color = "info"
-    return [new_name], color
-
-
 @app.callback(
     Output("plot_11", "figure"),
     Output("plot_scaler1", "disabled"),
@@ -549,8 +565,10 @@ def update_layout_on_click(n_clicks, button_name):
     Input("plot_type1", "value"),
     Input("volume_axis", "value"),
     Input("volume_slider", "value"),
+    Input("plot_11", "clickData"),
+    Input("plot_12", "clickData")
 )
-def update_plot_11(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
+def update_plot_11(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind, _, __):
     return plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind)
 
 
@@ -563,9 +581,11 @@ def update_plot_11(data_field, colorscale, wavelength, z_range, plot_type, axis,
     Input("plot_scaler2", "value"),
     Input("plot_type2", "value"),
     Input("volume_axis", "value"),
-    Input("volume_slider", "value")
+    Input("volume_slider", "value"),
+    Input("plot_11", "clickData"),
+    Input("plot_12", "clickData")
 )
-def update_plot_12(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind):
+def update_plot_12(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind, _, __):
     return plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis, axis_ind)
 
 
@@ -604,7 +624,7 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
     if data_field is None or wavelength is None:
         raise PreventUpdate
 
-    ctx = dash.callback_context
+    ctx = callback_context
     if not ctx.triggered:
         component_id = None
     else:
@@ -623,7 +643,15 @@ def plot_data_field(data_field, colorscale, wavelength, z_range, plot_type, axis
         plot = [go.Heatmap(z=plot_data, colorscale=colorscale, zmin=z_min, zmax=z_max, **kwargs)]
         figure = go.Figure(data=plot)
         for i, x in enumerate(data.click_points["x"]):
-            figure.add_annotation(x=x, y=data.click_points["y"], text=str(i), showarrow=True, arrowhead=6)
+            if x:
+                figure.add_annotation(x=x,
+                                      y=data.click_points["y"][i],
+                                      text=str(i),
+                                      showarrow=True,
+                                      arrowhead=6,
+                                      bgcolor="#ffffff",
+                                      opacity=0.8
+                                      )
         disable_scaler = False
     elif plot_type == "hist-2D":
         df = pd.DataFrame()
@@ -712,6 +740,23 @@ def get_data_from_last_shape(relayout_data, plot_data):
     return results if results else None
 
 
+@app.callback(Output("param3", "value"),
+              Input("param1", "value"),
+              State("param3", "value"),
+              prevent_initial_update=True
+              )
+def sync_data_fields(param1, param3):
+    if param1 is None:
+        param1 = []
+    if param3 is None:
+        param3 = []
+    if isinstance(param1, str):
+        param1 = [param1]
+    if isinstance(param3, str):
+        param3 = [param3]
+    return param1 + param3
+
+
 @app.callback(
     Output("plot_21", "figure"),
     Input("param3", "value"),
@@ -720,24 +765,31 @@ def get_data_from_last_shape(relayout_data, plot_data):
     Input("volume_slider", "value"),
     Input("volume_axis", "value"),
     Input("reset_points", "n_clicks"),
-    Input("annotate_button", "n_clicks"),
+    Input("annotate_switch", "value"),
     Input("plot_11", "relayoutData"),
     Input("channel_slider", "value"),
+    Input("n_bins", "value")
 )
-def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis, n_clicks, annotate_n_clicks, relayout_data, wavelength):
+def plot_spectrum(data_field,
+                  click_data1,
+                  click_data2,
+                  axis_ind,
+                  axis,
+                  n_clicks,
+                  annotate,
+                  relayout_data,
+                  wavelength,
+                  n_bins):
     global data
     layout = {}
-    ctx = dash.callback_context
+    ctx = callback_context
     if not ctx.triggered:
         component_id = None
     else:
         component_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if component_id == 'reset_points':
         return {}
-    if annotate_n_clicks is None:
-        annotate_n_clicks = 0
-    if annotate_n_clicks % 2 != 0:
-        print(annotate_n_clicks)
+    if annotate:
         if data_field is None:
             raise PreventUpdate
         if "shapes" in relayout_data or any(["shapes" in k for k in relayout_data]):
@@ -749,7 +801,11 @@ def plot_spectrum(data_field, click_data1, click_data2, axis_ind, axis, n_clicks
             if hist_data is None:
                 raise PreventUpdate
             hist_df = to_pandas(hist_data)
-            return px.histogram(data_frame=hist_df, color="Parameter", opacity=0.5, marginal="rug")
+            return px.histogram(data_frame=hist_df,
+                                color="Parameter",
+                                opacity=0.7,
+                                marginal="rug",
+                                nbins=n_bins)
 
     if data_field is None or (click_data1 is None and click_data2 is None):
         raise PreventUpdate
@@ -866,4 +922,4 @@ if __name__ == "__main__":
         port = arguments.port
     if arguments.host_name:
         host_name = arguments.host_name
-    app.run_server(debug=True, host=host_name, port=port)
+    app.run_server(debug=arguments.debug, host=host_name, port=port)
