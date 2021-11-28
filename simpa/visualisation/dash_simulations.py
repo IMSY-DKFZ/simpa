@@ -35,6 +35,7 @@ USAGE:
 ===================================================================
 
 """
+import warnings
 
 from dash import Dash, html, Input, Output, State, dcc, callback_context, no_update
 from dash.exceptions import PreventUpdate
@@ -434,7 +435,8 @@ def update_data_path_validity(data_path: Union[str, None]) -> Tuple[bool, bool]:
     :return: tuple of boolean values to update ``invalid`` and ``valid`` properties of ``data_path`` component
     """
     if isinstance(data_path, str):
-        valid = True if (os.path.isfile(data_path) and data_path.endswith('.hdf5')) or os.path.isdir(data_path) else False
+        valid = True if (os.path.isfile(data_path) and data_path.endswith('.hdf5')) or \
+                        os.path.isdir(data_path) else False
     else:
         valid = False
     return 1 - valid, valid
@@ -558,10 +560,28 @@ def populate_file_params(file_path: Union[None, str],
                False, False
 
 
+def _get_data_properties(data_dict: Dict) -> List:
+    """
+    extracts all keywords from ``data_dict`` that match properties from ``Tags`` which start with ``DATA_FIELD``. This
+    function iterates also in nested dictionaries of ``data_dict``
+
+    :param data_dict: dictionary containing SIMPA output
+    :return: list of keywords in ``data_dict`` also in nested dictionaries
+    """
+    expected_fields = [getattr(Tags, t) for t in Tags().__dir__() if t.startswith('DATA_FIELD')]
+    data_fields = []
+    for k, item in data_dict.items():
+        if k in expected_fields:
+            data_fields.append(k)
+        if isinstance(item, Dict):
+            data_fields += _get_data_properties(data_dict=item)
+    return data_fields
+
+
 def _load_data_fields() -> None:
     """
     extracts all data fields from ``DATA.simpa_output`` and stores them in ``DATA.simpa_data_fields. It iterates over
-    all tags in ``Tags`` and stores the ones that start with ``TODO`` and exist in ``simpa_output``
+    all tags in ``Tags`` and stores the ones that start with ``DATA_FIELD`` and exist in ``simpa_output``
 
     :return: None
     """
@@ -570,29 +590,22 @@ def _load_data_fields() -> None:
     DATA.segmentation_labels = [k for k in segment_class.__dir__() if '__' not in k]
     DATA.segmentation_labels = {getattr(segment_class, k): k for k in DATA.segmentation_labels}
     data_fields = dict()
-    sim_props = list(DATA.simpa_output["simulations"]["simulation_properties"].keys())
-    simulations = list(DATA.simpa_output["simulations"]["optical_forward_model_output"].keys())
+    sim_props = _get_data_properties(data_dict=DATA.simpa_output)
 
     for data_field in sim_props:
         data_fields[data_field] = dict()
         for wavelength in DATA.wavelengths:
-            data_wv = get_data_field_from_simpa_output(DATA.simpa_output, data_field, wavelength)
+            try:
+                data_wv = get_data_field_from_simpa_output(DATA.simpa_output, data_field, wavelength)
+            except ValueError as err:
+                warnings.warn(f"failed to query {data_field}, got error: \n{err}")
+                continue
             if isinstance(data_wv, np.ndarray):
                 data_wv = np.rot90(data_wv, 1)
                 data_fields[data_field][wavelength] = data_wv
-
-    for data_field in simulations:
-        data_fields[data_field] = dict()
-        for wavelength in DATA.wavelengths:
-            data_wv = get_data_field_from_simpa_output(DATA.simpa_output, data_field, wavelength)
-            if isinstance(data_wv, np.ndarray):
-                data_wv = np.rot90(data_wv, 1)
-                data_fields[data_field][wavelength] = data_wv
-    # data_fields['reconstructed_data'] = dict()
-    # for wavelength in data.wavelengths:
-    #     data_fields['reconstructed_data'][wavelength] = get_data_field_from_simpa_output(data.simpa_output,
-    #                                                                                      'reconstructed_data',
-    #                                                                                      wavelength)
+                data_fields[data_field]["shape"] = len(data_wv.shape)
+        if not data_fields[data_field]:
+            del data_fields[data_field]
 
     DATA.simpa_data_fields = data_fields
 
@@ -913,7 +926,7 @@ def plot_spectrum(data_field: Union[None, str],
     else:
         component_id = ctx.triggered[0]['prop_id'].split('.')[0]
     if component_id == 'reset_points':
-        return {}
+        return go.Figure(data={})
     if annotate:
         if data_field is None:
             raise PreventUpdate
@@ -956,7 +969,7 @@ def plot_spectrum(data_field: Union[None, str],
             for param in data_field:
                 spectral_values = list()
                 for wavelength in DATA.wavelengths:
-                    if len(DATA.shape) == 3:
+                    if DATA.simpa_data_fields[param]["shape"] == 3:
                         array = np.take(DATA.simpa_data_fields[param][wavelength], indices=axis_ind,
                                         axis=axis)
                     else:
