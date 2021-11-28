@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 import numpy as np
 import os
 import uuid
@@ -64,7 +62,7 @@ class IpascSimpaAdapter(BaseAdapter):
         # Load the data for the first wavelength just to get the number of elements and number of time steps
         try:
             num_elements, num_time_steps = np.shape(load_data_field(self.simpa_hdf5_file_path,
-                                                                    Tags.TIME_SERIES_DATA, self.wavelengths[0]))
+                                                                    Tags.DATA_FIELD_TIME_SERIES_DATA, self.wavelengths[0]))
         except KeyError as e:
             self.logger.error(e)
             raise AssertionError(e)
@@ -73,7 +71,7 @@ class IpascSimpaAdapter(BaseAdapter):
 
         for wl_idx, wavelength in enumerate(self.wavelengths):
             self.time_series_data[:, :, wl_idx, 0] = load_data_field(self.simpa_hdf5_file_path,
-                                                                     Tags.TIME_SERIES_DATA, wavelength)
+                                                                     Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength)
 
         self.time_series_data = self.time_series_data.astype(np.float32)
 

@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
@@ -79,12 +77,19 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
 
         logger.debug(f"Running pipeline for wavelength {wavelength}nm... [Done]")
 
-    if Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE in settings and \
-            settings[Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE]:
+    # If the dimenations of the simulation results are changed after calling the respective module
+    # adapter / processing components, the amount of space on the hard drive that is allocated by the HDF5
+    # code does not dynamically change. This can be remedied by re-writing the file after the simulation
+    # terminates. As it might have a negative impact on simulation performance, it must be activated
+    # by the user manually. Active by default.
+    if not(Tags.DO_FILE_COMPRESSION in settings and
+            not settings[Tags.DO_FILE_COMPRESSION]):
         all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
+        if Tags.INPUT_SEGMENTATION_VOLUME in all_data[Tags.SETTINGS][Tags.VOLUME_CREATION_MODEL_SETTINGS]:
+            del all_data[Tags.SETTINGS][Tags.VOLUME_CREATION_MODEL_SETTINGS][Tags.INPUT_SEGMENTATION_VOLUME]
         save_hdf5(all_data, settings[Tags.SIMPA_OUTPUT_PATH], file_compression="gzip")
 
-    # Export simulation result to IPASC-compatible format.
+    # Export simulation result to the IPASC format.
     if Tags.DO_IPASC_EXPORT in settings and settings[Tags.DO_IPASC_EXPORT]:
         logger.info("Exporting to IPASC....")
         export_to_ipasc(settings[Tags.SIMPA_OUTPUT_PATH], device=digital_device_twin)

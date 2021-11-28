@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from simpa.io_handling import load_hdf5
 import matplotlib.pyplot as plt
@@ -29,8 +27,11 @@ def visualise_data(wavelength: int = None,
                    show_time_series_data=False,
                    show_reconstructed_data=False,
                    show_segmentation_map=False,
+                   show_oxygenation=False,
+                   show_linear_unmixing_sO2=False,
                    log_scale=False,
-                   show_xz_only=False):
+                   show_xz_only=False,
+                   save_path=None):
 
     if settings is not None and Tags.WAVELENGTHS in settings:
         if wavelength is None or wavelength not in settings[Tags.WAVELENGTHS]:
@@ -52,45 +53,65 @@ def visualise_data(wavelength: int = None,
     initial_pressure = None
     time_series_data = None
     reconstructed_data = None
+    oxygenation = None
+    linear_unmixing_sO2 = None
 
-    absorption = get_data_field_from_simpa_output(file, Tags.PROPERTY_ABSORPTION_PER_CM, wavelength)
-    scattering = get_data_field_from_simpa_output(file, Tags.PROPERTY_SCATTERING_PER_CM, wavelength)
-    anisotropy = get_data_field_from_simpa_output(file, Tags.PROPERTY_ANISOTROPY, wavelength)
-    segmentation_map = get_data_field_from_simpa_output(file, Tags.PROPERTY_SEGMENTATION)
-    speed_of_sound = get_data_field_from_simpa_output(file, Tags.PROPERTY_SPEED_OF_SOUND)
-    density = get_data_field_from_simpa_output(file, Tags.PROPERTY_DENSITY)
+    absorption = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength)
+    scattering = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SCATTERING_PER_CM, wavelength)
+    anisotropy = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_ANISOTROPY, wavelength)
+    segmentation_map = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SEGMENTATION)
+    speed_of_sound = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SPEED_OF_SOUND)
+    density = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_DENSITY)
 
     if show_fluence:
         try:
-            fluence = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_FLUENCE, wavelength)
+            fluence = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_FLUENCE, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.OPTICAL_MODEL_FLUENCE) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_FLUENCE) + " was not in the simpa output.")
             show_fluence = False
             fluence = None
 
     if show_initial_pressure:
         try:
-            initial_pressure = get_data_field_from_simpa_output(file, Tags.OPTICAL_MODEL_INITIAL_PRESSURE, wavelength)
+            initial_pressure = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_INITIAL_PRESSURE, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.OPTICAL_MODEL_INITIAL_PRESSURE) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_INITIAL_PRESSURE) + " was not in the simpa output.")
             show_initial_pressure = False
             initial_pressure = None
 
     if show_time_series_data:
         try:
-            time_series_data = get_data_field_from_simpa_output(file, Tags.TIME_SERIES_DATA, wavelength)
+            time_series_data = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.TIME_SERIES_DATA) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_TIME_SERIES_DATA) + " was not in the simpa output.")
             show_time_series_data = False
             time_series_data = None
 
     if show_reconstructed_data:
         try:
-            reconstructed_data = get_data_field_from_simpa_output(file, Tags.RECONSTRUCTED_DATA, wavelength)
+            reconstructed_data = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_RECONSTRUCTED_DATA, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.RECONSTRUCTED_DATA) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_RECONSTRUCTED_DATA) + " was not in the simpa output.")
             show_reconstructed_data = False
             reconstructed_data = None
+
+    if show_oxygenation:
+        try:
+            oxygenation = get_data_field_from_simpa_output(file, Tags.PROPERTY_OXYGENATION, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.PROPERTY_OXYGENATION) + " was not in the simpa output.")
+            show_oxygenation = False
+            oxygenation = None
+
+    if show_linear_unmixing_sO2:
+        try:
+            linear_unmixing_output = get_data_field_from_simpa_output(file, Tags.LINEAR_UNMIXING_RESULT)
+            linear_unmixing_sO2 = linear_unmixing_output["sO2"]
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.LINEAR_UNMIXING_RESULT) + " was not in the simpa output or blood "
+                                                                            "oxygen saturation was not computed.")
+            show_linear_unmixing_sO2 = False
+            linear_unmixing_sO2 = None
 
     cmap_label_names, cmap_label_values, cmap = get_segmentation_colormap()
 
@@ -144,6 +165,16 @@ def visualise_data(wavelength: int = None,
         data_item_names.append("Reconstruction")
         cmaps.append("viridis")
         logscales.append(True and log_scale)
+    if oxygenation is not None and show_oxygenation:
+        data_to_show.append(oxygenation)
+        data_item_names.append("Oxygenation")
+        cmaps.append("viridis")
+        logscales.append(False and log_scale)
+    if linear_unmixing_sO2 is not None and show_linear_unmixing_sO2:
+        data_to_show.append(linear_unmixing_sO2)
+        data_item_names.append("Linear Unmixed Oxygenation")
+        cmaps.append("viridis")
+        logscales.append(False and log_scale)
     if segmentation_map is not None and show_segmentation_map:
         data_to_show.append(segmentation_map)
         data_item_names.append("Segmentation Map")
@@ -182,7 +213,10 @@ def visualise_data(wavelength: int = None,
             plt.colorbar()
 
     plt.tight_layout()
-    plt.show()
+    if save_path is not None:
+        plt.savefig(save_path, dpi=500)
+    else:
+        plt.show()
     plt.close()
 
 

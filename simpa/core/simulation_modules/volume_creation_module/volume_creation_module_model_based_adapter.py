@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils.libraries.structure_library import Structures
@@ -11,7 +9,7 @@ import numpy as np
 from simpa.utils import create_deformation_settings
 
 
-class VolumeCreationModelModelBasedAdapter(VolumeCreatorModuleBase):
+class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
     """
     The model-based volume creator uses a set of rules how to generate structures
     to create a simulation volume.
@@ -98,7 +96,7 @@ class VolumeCreationModelModelBasedAdapter(VolumeCreatorModuleBase):
             for key in volumes.keys():
                 if structure_properties[key] is None:
                     continue
-                if key == Tags.PROPERTY_SEGMENTATION:
+                if key == Tags.DATA_FIELD_SEGMENTATION:
                     added_fraction_greater_than_any_added_fraction = added_volume_fraction > max_added_fractions
                     volumes[key][added_fraction_greater_than_any_added_fraction & mask] = structure_properties[key]
                     max_added_fractions[added_fraction_greater_than_any_added_fraction & mask] = \

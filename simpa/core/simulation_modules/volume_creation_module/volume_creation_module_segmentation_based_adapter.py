@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils import Tags
@@ -12,7 +10,7 @@ import h5py
 import numpy as np
 
 
-class VolumeCreationModuleSegmentationBasedAdapter(VolumeCreatorModuleBase):
+class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
     """
     This volume creator expects a np.ndarray to be in the settigs
     under the Tags.INPUT_SEGMENTATION_VOLUME tag and uses this array
@@ -47,9 +45,6 @@ class VolumeCreationModuleSegmentationBasedAdapter(VolumeCreatorModuleBase):
             for prop_tag in TissueProperties.property_tags:
                 volumes[prop_tag][segmentation_volume == seg_class] = class_properties[prop_tag]
 
-        del self.global_settings[Tags.VOLUME_CREATION_MODEL_SETTINGS][Tags.INPUT_SEGMENTATION_VOLUME]
-        with h5py.File(self.global_settings[Tags.SIMPA_OUTPUT_PATH], "a") as f:
-            del f["/settings/"]
         save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
         return volumes

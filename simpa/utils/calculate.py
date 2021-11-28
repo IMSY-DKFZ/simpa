@@ -1,10 +1,8 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
-from simpa.utils.libraries.spectra_library import SPECTRAL_LIBRARY
+
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -17,9 +15,9 @@ def calculate_oxygenation(molecule_list):
     hbO2 = None
 
     for molecule in molecule_list:
-        if molecule.spectrum.spectrum_name == SPECTRAL_LIBRARY.DEOXYHEMOGLOBIN.spectrum_name:
+        if molecule.spectrum.spectrum_name == "Deoxyhemoglobin":
             hb = molecule.volume_fraction
-        if molecule.spectrum.spectrum_name == SPECTRAL_LIBRARY.OXYHEMOGLOBIN.spectrum_name:
+        if molecule.spectrum.spectrum_name == "Oxyhemoglobin":
             hbO2 = molecule.volume_fraction
 
     if hb is None and hbO2 is None:
@@ -209,3 +207,17 @@ def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
     output = (data - _min) / (_max - _min)
 
     return output
+
+def positive_Gauss(mean, std)-> np.float:
+    """
+    Generates a non-negative random sample (scalar) from a normal (Gaussian) distribution.
+
+    :param mean : float defining the mean ("centre") of the distribution. 
+    :param std: float defining the standard deviation (spread or "width") of the distribution. Must be non-negative.
+    :return: non-negative random sample from a normal (Gaussian) distribution.
+    """
+    random_value = np.random.normal(mean, std)
+    if random_value <=0:
+        return positive_Gauss(mean, std)
+    else: 
+        return random_value
