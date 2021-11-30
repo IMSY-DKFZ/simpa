@@ -51,11 +51,15 @@ class TestBandpassFilter(unittest.TestCase):
         # check if both bandpass filtering methods return the same result
         assert np.array_equal(filtered_time_series, filtered_time_series_with_settings)
 
-        assert ((base_time_series - filtered_time_series) < 1e-5).all()
+        assert (np.abs(base_time_series - filtered_time_series) < 1e-5).all()
 
         if Visualize:
+            labels = ["Base time series", "Low frequency time series", "High frequency time series",
+                      "Combined time series", "Filtered time series"]
             for i, time_series in enumerate([base_time_series, low_freq_time_series, high_freq_time_series,
                                              combined_time_series, filtered_time_series]):
                 plt.subplot(5, 1, i + 1)
+                plt.title(labels[i])
                 plt.plot(t_values, time_series)
+            plt.tight_layout()
             plt.show()
