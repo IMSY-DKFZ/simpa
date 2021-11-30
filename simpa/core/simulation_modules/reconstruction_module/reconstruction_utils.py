@@ -48,7 +48,7 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
     return output
 
 
-def bandpass_filtering(data: np.ndarray, time_spacing_in_s: float = None,
+def bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
                        cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
                        tukey_alpha: float = 0.5) -> np.ndarray:
     """
@@ -65,7 +65,7 @@ def bandpass_filtering(data: np.ndarray, time_spacing_in_s: float = None,
     """
 
     # construct bandpass filter given the cutoff values and time spacing
-    frequencies = np.fft.fftfreq(data.shape[-1], d=time_spacing_in_s)
+    frequencies = np.fft.fftfreq(data.shape[-1], d=time_spacing_in_ms/1000)
 
     if cutoff_highpass > cutoff_lowpass:
         raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
@@ -101,9 +101,9 @@ def bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings
     :return: (numpy array) filtered data
     """
     if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
-        time_spacing_in_s = global_settings[Tags.K_WAVE_SPECIFIC_DT]
+        time_spacing_in_sm = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
     elif device.sampling_frequency_MHz is not None:
-        time_spacing_in_s = 1.0 / device.sampling_frequency_MHz
+        time_spacing_in_ms = 1.0 / (device.sampling_frequency_MHz * 1000)
     else:
         raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
     cutoff_lowpass = component_settings[Tags.BANDPASS_CUTOFF_LOWPASS] \
@@ -113,10 +113,10 @@ def bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings
     tukey_alpha = component_settings[
         Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in component_settings else 0.5
 
-    if data is None or time_spacing_in_s is None:
+    if data is None or time_spacing_in_ms is None:
         raise AttributeError("data and time spacing must be specified")
 
-    return bandpass_filtering(data, time_spacing_in_s, cutoff_lowpass, cutoff_highpass, tukey_alpha)
+    return bandpass_filtering(data, time_spacing_in_ms, cutoff_lowpass, cutoff_highpass, tukey_alpha)
 
 
 def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
