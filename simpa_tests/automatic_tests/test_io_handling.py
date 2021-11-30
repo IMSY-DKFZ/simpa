@@ -11,11 +11,13 @@ from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY, AbsorptionSpect
 from simpa_tests.test_utils import assert_equals_recursive
 from simpa.core.device_digital_twins import *
 import os
+import numpy as np
 
 
 class TestIOHandling(unittest.TestCase):
 
-    def assert_save_and_read_dictionaries_equal(self, save_dict, save_string="test.hdf5"):
+    @staticmethod
+    def assert_save_and_read_dictionaries_equal(save_dict, save_string="test.hdf5"):
         try:
             save_hdf5(save_dict, save_string)
             read_dictionary = load_hdf5(save_string)
@@ -56,7 +58,6 @@ class TestIOHandling(unittest.TestCase):
         self.assert_save_and_read_dictionaries_equal(save_dictionary)
 
     def test_write_and_read_devices(self):
-        base_devices = [DigitalDeviceTwinBase, PhotoacousticDevice]
         pa_devices = [MSOTAcuityEcho, InVision256TF, RSOMExplorerP50]
         det_geometries = [CurvedArrayDetectionGeometry, LinearArrayDetectionGeometry, PlanarArrayDetectionGeometry]
         ill_geometries = [SlitIlluminationGeometry, GaussianBeamIlluminationGeometry, PencilArrayIlluminationGeometry,
@@ -64,5 +65,6 @@ class TestIOHandling(unittest.TestCase):
                           MSOTInVisionIlluminationGeometry]
         for device in pa_devices:
             save_dictionary = Settings()
-            save_dictionary[Tags.DIGITAL_DEVICE] = device
+            save_dictionary[Tags.DIGITAL_DEVICE] = device(device_position_mm=np.array([1, 2, 3]),
+                                                          field_of_view_extent_mm=np.array([1, 2, 3, 4, 5, 6]))
             self.assert_save_and_read_dictionaries_equal(save_dictionary)
