@@ -276,7 +276,7 @@ class Tags:
     Digital Device Twin Settings
     """
 
-    DIGITAL_DEVICE = ("digital_device", str)
+    DIGITAL_DEVICE = "digital_device"
     """
     Digital device that is chosen as illumination source and detector for the simulation.\n
     Usage: SIMPA package
