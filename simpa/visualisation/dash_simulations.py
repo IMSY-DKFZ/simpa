@@ -55,9 +55,10 @@ from typing import *
 from simpa.io_handling import load_hdf5
 from simpa.utils import get_data_field_from_simpa_output, SegmentationClasses, Tags
 
-EXTERNAL_STYLESHEETS = [dbc.themes.JOURNAL,
-                        # 'assets/dcc.css'
-                        ]
+EXTERNAL_STYLESHEETS = [
+    'assets/dcc.css',
+    dbc.themes.JOURNAL,
+    ]
 app = Dash(__name__, external_stylesheets=EXTERNAL_STYLESHEETS, title="SIMPA")
 
 SIMPA_LOGO = './assets/simpa_logo.png'
@@ -115,8 +116,8 @@ app.layout = html.Div([
     ], style=dict(zIndex=1, position="relative")),
     dbc.Row([
         dbc.Col([
-            html.H4("SIMPA Visualization Tool"),
-            html.H6("CAMI, Computer Assisted Medical Interventions"),
+            html.H1("SIMPA Visualization Tool"),
+            html.H4("Computer Assisted Medical Interventions (CAMI)"),
         ], width=8),
         dbc.Col([
             html.Img(src='data:image/png;base64,{}'.format(ENCODED_SIMPA_LOGO), width='100%')
