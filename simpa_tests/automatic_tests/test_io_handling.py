@@ -50,7 +50,6 @@ class TestIOHandling(unittest.TestCase):
         save_dictionary[Tags.STRUCTURES] = structure_settings
         save_dictionary["test_dictionary"] = {"test_spectrum": AbsorptionSpectrumLibrary().get_spectrum_by_name("Water")}
 
-
         try:
             save_hdf5(save_dictionary, "test.hdf5")
             read_dictionary = load_hdf5("test.hdf5")

@@ -9,9 +9,10 @@ import numpy as np
 from numpy import ndarray
 import hashlib
 import uuid
+from simpa.utils.serializer import SerializableSIMPAClass
 
 
-class DigitalDeviceTwinBase:
+class DigitalDeviceTwinBase(SerializableSIMPAClass):
     """
     This class represents a device that can be used for illumination, detection or a combined photoacoustic device
     which has representations of both.
@@ -106,8 +107,19 @@ class DigitalDeviceTwinBase:
         m.update(str(class_dict).encode('utf-8'))
         return str(uuid.UUID(m.hexdigest()))
 
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        return {"DigitalDeviceTwinBase": serialized_device}
 
-class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        deserialized_device = DigitalDeviceTwinBase(
+            device_position_mm=dictionary_to_deserialize["device_position_mm"],
+            field_of_view_extent_mm=dictionary_to_deserialize["field_of_view_extent_mm"])
+        return deserialized_device
+
+
+class PhotoacousticDevice(DigitalDeviceTwinBase, ABC):
     """Base class of a photoacoustic device. It consists of one detection geometry that describes the geometry of the
     single detector elements and a list of illuminators.
 
@@ -141,7 +153,7 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
         illumination_geometries (list): List of illuminations defined by :py:class:`IlluminationGeometryBase`.
     """
 
-    def __init__(self,  device_position_mm=None, field_of_view_extent_mm=None):
+    def __init__(self, device_position_mm=None, field_of_view_extent_mm=None):
         """
         :param device_position_mm: Each device has an internal position which serves as origin for internal \
         representations of e.g. detector element positions or illuminator positions.
@@ -235,3 +247,27 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
                     and not illumination_geometry.check_settings_prerequisites(global_settings):
                 _result = False
         return _result
+
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        pass
+
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        del serialized_device["logger"]
+        device_dict = {"PhotoacousticDevice": serialized_device}
+        return device_dict
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        print(dictionary_to_deserialize)
+        deserialized_device = PhotoacousticDevice(
+            device_position_mm=dictionary_to_deserialize["device_position_mm"],
+            field_of_view_extent_mm=dictionary_to_deserialize["field_of_view_extent_mm"])
+        det_geometry = dictionary_to_deserialize["detection_geometry"]
+        if det_geometry != "None":
+            deserialized_device.set_detection_geometry(dictionary_to_deserialize["detection_geometry"])
+        if "illumination_geometries" in dictionary_to_deserialize:
+            for illumination_geometry in dictionary_to_deserialize["illumination_geometries"]:
+                deserialized_device.illumination_geometries.append(illumination_geometry)
+
+        return deserialized_device

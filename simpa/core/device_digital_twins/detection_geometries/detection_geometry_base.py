@@ -51,7 +51,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
     @abstractmethod
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
         """
-        Defines the abstract positions of the detection elements in an arbitraty coordinate system.
+        Defines the abstract positions of the detection elements in an arbitrary coordinate system.
         Typically, the center of the field of view is defined as the origin.
 
         To obtain the positions in an interpretable coordinate system, please use the other method::
@@ -122,3 +122,15 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
         """
         pass
+
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        del serialized_device["logger"]
+        return {DetectionGeometryBase: serialized_device}
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        deserialized_device = DetectionGeometryBase()
+        for key, value in dictionary_to_deserialize.items():
+            deserialized_device.__dict__[key] = value
+        return deserialized_device

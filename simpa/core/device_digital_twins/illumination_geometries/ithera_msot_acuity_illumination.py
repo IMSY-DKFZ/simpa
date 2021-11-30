@@ -42,3 +42,15 @@ class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
             "Param1": source_param1,
             "Param2": source_param2
         }
+
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        del serialized_device["logger"]
+        return {"MSOTAcuityIlluminationGeometry": serialized_device}
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        deserialized_device = MSOTAcuityIlluminationGeometry()
+        for key, value in dictionary_to_deserialize.items():
+            deserialized_device.__dict__[key] = value
+        return deserialized_device

@@ -48,3 +48,17 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings) -> Settings:
         return global_settings
+
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        del serialized_device["logger"]
+        device_dict = {"IlluminationGeometryBase": serialized_device}
+        return device_dict
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        print(dictionary_to_deserialize)
+        deserialized_device = IlluminationGeometryBase()
+        for key, value in dictionary_to_deserialize.items():
+            deserialized_device.__dict__[key] = value
+        return deserialized_device
