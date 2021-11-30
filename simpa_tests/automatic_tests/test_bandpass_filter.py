@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
+from unittest.case import TestCase
 import numpy as np
 import matplotlib.pyplot as plt
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filtering
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filtering_with_settings, bandpass_filtering
 from simpa.utils import Settings, Tags
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
 
@@ -25,7 +26,7 @@ class TestBandpassFilter(unittest.TestCase):
         })
 
         device = LinearArrayDetectionGeometry(
-                 sampling_frequency_mhz=1)
+            sampling_frequency_mhz=1)
 
         # Calculate base sinus as time series datum
         t_values = np.arange(0, 20, 0.01)
@@ -41,17 +42,24 @@ class TestBandpassFilter(unittest.TestCase):
 
         combined_time_series = base_time_series + low_freq_time_series + high_freq_time_series
 
-        filtered_time_series = bandpass_filtering(combined_time_series, settings,
-                                                  settings[Tags.RECONSTRUCTION_MODEL_SETTINGS],
-                                                  device)
+        filtered_time_series_with_settings = bandpass_filtering_with_settings(combined_time_series, settings,
+                                                                              settings[Tags.RECONSTRUCTION_MODEL_SETTINGS],
+                                                                              device)
 
-        normalized_filtered_times_series = filtered_time_series/np.max(filtered_time_series)
+        filtered_time_series = bandpass_filtering(combined_time_series, 1e-3, int(11000), int(9000), 0)
 
-        assert np.abs(base_time_series - normalized_filtered_times_series).all() < 1e-5
+        # check if both bandpass filtering methods return the same result
+        assert np.array_equal(filtered_time_series, filtered_time_series_with_settings)
+
+        assert (np.abs(base_time_series - filtered_time_series) < 1e-5).all()
 
         if Visualize:
+            labels = ["Base time series", "Low frequency time series", "High frequency time series",
+                      "Combined time series", "Filtered time series"]
             for i, time_series in enumerate([base_time_series, low_freq_time_series, high_freq_time_series,
-                                             combined_time_series, normalized_filtered_times_series]):
+                                             combined_time_series, filtered_time_series]):
                 plt.subplot(5, 1, i + 1)
+                plt.title(labels[i])
                 plt.plot(t_values, time_series)
+            plt.tight_layout()
             plt.show()
