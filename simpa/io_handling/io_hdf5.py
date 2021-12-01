@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 import h5py
 from simpa.io_handling.serialization import SERIALIZATION_MAP
@@ -112,6 +110,7 @@ def load_hdf5(file_path, file_dictionary_path="/"):
     :param file_path: Path of the file to load the dictionary from.
     :param file_dictionary_path: Path in dictionary structure of hdf5 file to lo the dictionary in.
     :returns: Dictionary
+    :rtype: dict
     """
 
     def data_grabber(file, path):

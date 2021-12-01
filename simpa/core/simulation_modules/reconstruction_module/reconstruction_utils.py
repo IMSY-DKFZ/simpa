@@ -1,17 +1,16 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from typing import Tuple
 from simpa.log.file_logger import Logger
-from simpa.core.device_digital_twins.devices.detection_geometries.detection_geometry_base import DetectionGeometryBase
+from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils.settings import Settings
 from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.utils import Tags
 import torch
 import torch.fft
+from torch import Tensor
 import numpy as np
 from scipy.signal import hilbert
 from scipy.signal.windows import tukey
@@ -50,11 +49,51 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
     return output
 
 
-def bandpass_filtering(data: np.ndarray, global_settings: Settings, component_settings: Settings,
-                        device: DetectionGeometryBase) -> np.ndarray:
+def bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
+                       cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
+                       tukey_alpha: float = 0.5) -> np.ndarray:
+    """
+    Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz 
+    and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
+    Note that the filter operates on both, negative and positive frequencies similarly.
+
+    :param data: (numpy array) data to be filtered
+    :param time_spacing_in_ms: (float) time spacing in milliseconds, e.g. 2.5e-5
+    :param cutoff_lowpass: (int) Signal above this value will be ignored (in MHz)
+    :param cutoff_highpass: (int) Signal below this value will be ignored (in MHz)
+    :param tukey_alpha: (float) transition value between 0 (rectangular) and 1 (Hann window)
+    :return: (numpy array) filtered data
+    """
+
+    # construct bandpass filter given the cutoff values and time spacing
+    frequencies = np.fft.fftfreq(data.shape[-1], d=time_spacing_in_ms/1000)
+
+    if cutoff_highpass > cutoff_lowpass:
+        raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
+
+    # find closest indices for frequencies
+    small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
+    large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
+
+    # filter negative and positive frequencies with same window
+    win = tukey(large_index - small_index, alpha=tukey_alpha)
+    window = np.zeros(frequencies.shape)
+    window[small_index:large_index] = win
+    window[-large_index:-small_index] = win
+
+    # transform data into Fourier space, multiply filter and transform back
+    data_in_fourier_space = np.fft.fft(data)
+    filtered_data_in_fourier_space = data_in_fourier_space * np.broadcast_to(window, np.shape(data_in_fourier_space))
+    return np.fft.ifft(filtered_data_in_fourier_space).real
+
+
+def bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
+                                     device: DetectionGeometryBase) -> np.ndarray:
     """
     Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
+    Those values are obtained from the `global_settings`, `component_settings`, and `device`.
+    Note that the filter operates on both, negative and positive frequencies similarly.
 
     :param data: (numpy array) data to be filtered
     :param global_settings: (Settings) settings for the whole simulation
@@ -63,7 +102,7 @@ def bandpass_filtering(data: np.ndarray, global_settings: Settings, component_se
     :return: (numpy array) filtered data
     """
     if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
-        time_spacing_in_ms = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
+        time_spacing_in_sm = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
     elif device.sampling_frequency_MHz is not None:
         time_spacing_in_ms = 1.0 / (device.sampling_frequency_MHz * 1000)
     else:
@@ -78,26 +117,7 @@ def bandpass_filtering(data: np.ndarray, global_settings: Settings, component_se
     if data is None or time_spacing_in_ms is None:
         raise AttributeError("data and time spacing must be specified")
 
-    time_series_index = len(data.shape) - 1
-
-    # construct bandpass filter given the cutoff values and time spacing
-    frequencies = np.fft.fftfreq(data.shape[time_series_index], d=time_spacing_in_ms/1000)
-
-    if cutoff_highpass > cutoff_lowpass:
-        raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
-
-    # find closest indices for frequencies
-    small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
-    large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
-
-    win = tukey(large_index - small_index, alpha=tukey_alpha)
-    window = np.zeros(frequencies.shape)
-    window[small_index:large_index] = win
-
-    # transform data into Fourier space, multiply filter and transform back
-    data_in_fourier_space = np.fft.fft(data)
-    filtered_data_in_fourier_space = data_in_fourier_space * np.broadcast_to(window, np.shape(data_in_fourier_space))
-    return np.fft.ifft(filtered_data_in_fourier_space).real
+    return bandpass_filtering(data, time_spacing_in_ms, cutoff_lowpass, cutoff_highpass, tukey_alpha)
 
 
 def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
@@ -195,10 +215,10 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     # check settings dictionary for elements and read them in
 
     # speed of sound: use given speed of sound, otherwise use average from simulation if specified
-    if Tags.PROPERTY_SPEED_OF_SOUND in component_settings and component_settings[Tags.PROPERTY_SPEED_OF_SOUND]:
-        speed_of_sound_in_m_per_s = component_settings[Tags.PROPERTY_SPEED_OF_SOUND]
+    if Tags.DATA_FIELD_SPEED_OF_SOUND in component_settings and component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]:
+        speed_of_sound_in_m_per_s = component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]
     elif Tags.WAVELENGTH in global_settings and global_settings[Tags.WAVELENGTH]:
-        sound_speed_m = load_data_field(global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.PROPERTY_SPEED_OF_SOUND)
+        sound_speed_m = load_data_field(global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SPEED_OF_SOUND)
         speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
     else:
         raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND"
@@ -305,7 +325,7 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
     return xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end
 
 
-def compute_delay_and_sum_values(time_series_sensor_data: torch.tensor, sensor_positions: torch.tensor, xdim: int,
+def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positions: torch.tensor, xdim: int,
                                  ydim: int, zdim: int, xdim_start: int, xdim_end: int, ydim_start: int, ydim_end: int,
                                  zdim_start: int, zdim_end: int, spacing_in_mm: float, speed_of_sound_in_m_per_s: float,
                                  time_spacing_in_ms: float, logger: Logger, torch_device: torch.device,

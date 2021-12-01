@@ -1,23 +1,21 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
 
 
 class TissueProperties(dict):
 
-    property_tags = [Tags.PROPERTY_ABSORPTION_PER_CM,
-                     Tags.PROPERTY_SCATTERING_PER_CM,
-                     Tags.PROPERTY_ANISOTROPY,
-                     Tags.PROPERTY_GRUNEISEN_PARAMETER,
-                     Tags.PROPERTY_SEGMENTATION,
-                     Tags.PROPERTY_OXYGENATION,
-                     Tags.PROPERTY_DENSITY,
-                     Tags.PROPERTY_SPEED_OF_SOUND,
-                     Tags.PROPERTY_ALPHA_COEFF]
+    property_tags = [Tags.DATA_FIELD_ABSORPTION_PER_CM,
+                     Tags.DATA_FIELD_SCATTERING_PER_CM,
+                     Tags.DATA_FIELD_ANISOTROPY,
+                     Tags.DATA_FIELD_GRUNEISEN_PARAMETER,
+                     Tags.DATA_FIELD_SEGMENTATION,
+                     Tags.DATA_FIELD_OXYGENATION,
+                     Tags.DATA_FIELD_DENSITY,
+                     Tags.DATA_FIELD_SPEED_OF_SOUND,
+                     Tags.DATA_FIELD_ALPHA_COEFF]
 
     def __init__(self):
         super().__init__()

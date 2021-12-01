@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 import numpy as np
 import struct
@@ -14,7 +12,7 @@ import os
 import gc
 
 
-class OpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
+class MCXAdapter(OpticalForwardModuleBase):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA.
     MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue::
