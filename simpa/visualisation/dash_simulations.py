@@ -122,21 +122,24 @@ app.layout = html.Div([
         dbc.Col([
             html.H1("SIMPA Visualization Tool"),
             html.H4("Computer Assisted Medical Interventions (CAMI)"),
-        ], width=8),
+        ], width=9),
         dbc.Col([
-            html.Img(src='data:image/png;base64,{}'.format(ENCODED_SIMPA_LOGO), width='100%')
-        ], width=1),
-        dbc.Col([
-            html.Img(src='data:image/png;base64,{}'.format(ENCODED_CAMI_LOGO), width='100%')
-        ], width=2),
-        dbc.Col([
+            html.Img(src='data:image/png;base64,{}'.format(ENCODED_SIMPA_LOGO),
+                     width='25%',
+                     style={'display': 'inline-block', 'padding-right': '10px'}
+                     ),
+            html.Img(src='data:image/png;base64,{}'.format(ENCODED_CAMI_LOGO),
+                     width='50%',
+                     style={'display': 'inline-block', 'padding-right': '10px'}
+                     ),
             html.A(
                 href=GITHUB_LINK,
                 children=[
-                    html.Img(src='data:image/png;base64,{}'.format(ENCODED_GITHUB_LOGO), width='75%')
-                ]
+                    html.Img(src='data:image/png;base64,{}'.format(ENCODED_GITHUB_LOGO), width='100%')
+                ],
+                style={'display': 'inline-block'}
             )
-        ], width=1),
+        ], width=3),
     ], style=dict(zIndex=0)),
     html.Br(),
     html.Br(),
