@@ -17,3 +17,4 @@ ipasc-tool==0.1.3       # Uses BSD-License (MIT compatible)
 requests==2.26.0        # Uses Apache 2.0-License (MIT compatible)
 wget==3.2               # Is Public Domain (MIT compatible)
 sphinx-rtd-theme==1.0.0 # Uses MIT-License (MIT compatible)
+jdata==0.3.7            # Uses Apache 2.0-License

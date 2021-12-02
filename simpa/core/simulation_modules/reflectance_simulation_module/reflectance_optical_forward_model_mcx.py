@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT
 """
+import logging
 
 import numpy as np
 import struct
@@ -10,11 +11,12 @@ import subprocess
 from simpa.utils import Tags
 from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
 import json
+import jdata
 import os
 import gc
 
 
-class ReflectanceOpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
+class ReflectanceMcxAdapter(OpticalForwardModuleBase):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA.
     MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue::
@@ -31,8 +33,8 @@ class ReflectanceOpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
                       anisotropy,
                       illumination_geometry,
                       probe_position_mm,
-                      saveexit: bool = False,
-                      saveref: bool = True):
+                      save_exit: bool = True,
+                      save_ref: bool = True):
 
         if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
             _assumed_anisotropy = self.component_settings[Tags.MCX_ASSUMED_ANISOTROPY]
@@ -147,22 +149,17 @@ class ReflectanceOpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
         cmd.append(tmp_json_filename)
         cmd.append("-O")
         cmd.append("F")
-        if saveexit:
-            cmd.append("-x")  # save photon exit position and direction
-            cmd.append("1")
-        if saveref:
-            cmd.append("-X")  # save diffuse reflectance at 0 filled voxels outside of domain
-            cmd.append("1")
+        cmd.append("-F")  # save detected photons in JSON formatted file .mch
+        cmd.append("jnii")
+        if save_exit:
+            cmd.append("--saveexit")  # save photon exit position and direction
+        if save_ref:
+            cmd.append("--saveref")  # save diffuse reflectance at 0 filled voxels outside of domain
         res = subprocess.run(cmd)
+        logging.info(res)
 
         # Read output
-
-        with open(tmp_output_file+".mc2", 'rb') as f:
-            data = f.read()
-        data = struct.unpack('%df' % (len(data) / 4), data)
-        fluence = np.asarray(data).reshape([nx, ny, nz, frames], order='F')
-        if np.shape(fluence)[3] == 1:
-            fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
+        fluence = self.read_mcx_results(tmp_output_file, nx=nx, ny=ny, nz=nz, frames=frames)
 
         struct._clearcache()
 
@@ -172,68 +169,18 @@ class ReflectanceOpticalForwardModelMcxAdapter(OpticalForwardModuleBase):
 
         return fluence
 
-    def get_surface_from_volume(volume: np.ndarray, ax: int = 2) -> (np.ndarray, np.ndarray, np.ndarray):
-        """
-        Locates the position at which diffuse reflectance is stored in volume. That is the first layer along last axis along
-        which all values are different than 0. a surface is defined as the collection of values along an axis with values
-        different than 0. If all values along specified axis are 0 for one location, the position of surface at that
-        location is set to `volume.shape[ax] - 1`.
-
-        :param volume: array from which the surface wants to be obtained along a given axis
-        :param ax: default=2, axis along which surface is desired
-        :return: tuple containing the position of the surface along specified axis, can be used to slice volume
-        """
-        volume_non_zero = volume != 0
-        pos = np.argmax(volume_non_zero, axis=ax)
-        #TODO: apply_along_axis is too slow, needs to be replaced
-        all_zero_lines = np.where(np.apply_along_axis(np.all, ax, volume == 0))
-        pos[all_zero_lines] = volume.shape[ax] - 1
-        pos = np.where(np.isreal(pos)) + (pos.flatten(),)
-        if ax == 0:
-            pos = (pos[2], pos[0], pos[1])
-        elif ax == 1:
-            pos = (pos[0], pos[2], pos[1])
-        return pos
-
-    def check_volumes(self, volumes: dict) -> None:
-        """
-        Checks consistency of volumes. Helpful when parsing custom volumes to simulations. Checks that all volumes have same
-        shape, that the minimum required volumes are defined and that values are meaningful for specific volumes.
-        For example: `np.all(volumes['mua'] >= 0)`. It also checks that there are no nan or inf values in all volumes.
-        :param volumes: dictionary containing the volumes to check
-        :return: None
-        """
-        shapes = []
-        required_vol_keys = Tags.MINIMUM_REQUIRED_VOLUMES
-        for key in volumes:
-            vol = volumes[key]
-            if np.any(np.isnan(vol)) or np.any(np.isinf(vol)):
-                raise ValueError(f"Found nan or inf value in volume: {key}")
-            if key in ["mua", "mus"] and not np.all(vol >= 0):
-                raise ValueError(f"Found negative value in volume: {key}")
-            shapes.append(vol.shape)
-        g = groupby(shapes)
-        shapes_equal = next(g, True) and not next(g, False)
-        if not shapes_equal:
-            raise ValueError(f"Not all shapes of custom volumes are equal: {shapes}")
-        for key in required_vol_keys:
-            if key not in volumes.keys():
-                raise ValueError(f"Could not find required key in custom volumes {key}")
-
-    def extract_diffuse_reflectance(self, volumes: dict) -> dict:
-        """
-        Extracts the diffuse reflectance layer from fluence volume and stores in a new key inside volumes. Then sets all
-        values in volumes where the diffuse reflectance is located to 0.
-        :param volumes: dictionary with original volumes
-        :return: dictionary containing the corrected volumes and the diffuse reflectance
-        """
-        fluence = volumes[Tags.OPTICAL_MODEL_FLUENCE]
-        dr_layer_pos = calculate.get_surface_from_volume(fluence)
-        diffuse_reflectance = fluence[dr_layer_pos]
-        diffuse_reflectance = diffuse_reflectance.reshape(fluence.shape[:2])
-        for key in volumes:
-            volume = volumes[key]
-            volume[dr_layer_pos] -= volume[dr_layer_pos]
-        volumes[Tags.OPTICAL_MODEL_DIFFUSE_REFLECTANCE] = diffuse_reflectance
-        volumes[Tags.SURFACE_LAYER_POSITION] = dr_layer_pos
-        return volumes
+    @staticmethod
+    def read_mcx_results(file_name, nx, ny, nz, frames):
+        if os.path.isfile(file_name + ".jnii"):
+            content = jdata.load(file_name+'.jnii')
+            fluence = content['NIFTIData']
+        elif os.path.isfile(file_name + ".mc2"):
+            with open(file_name + ".mc2", "rb") as handle:
+                content = handle.read()
+            content = struct.unpack('%df' % (len(content) / 4), content)
+            fluence = np.asarray(content).reshape([nx, ny, nz, frames], order='F')
+            if np.shape(fluence)[3] == 1:
+                fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
+        else:
+            raise FileNotFoundError(f"Could not find .jnii nor .mc2 file for {file_name}")
+        return fluence

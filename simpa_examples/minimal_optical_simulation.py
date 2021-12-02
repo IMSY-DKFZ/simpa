@@ -20,6 +20,8 @@ VOLUME_HEIGHT_IN_MM = 60
 SPACING = 0.5
 RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
+SAVE_REFLECTANCE = True
+SAVE_PHOTON_DIRECTION = True
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = False
@@ -117,11 +119,17 @@ settings["noise_model_1"] = {
     Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
 }
 
-pipeline = [
-    sp.ModelBasedVolumeCreationAdapter(settings),
-    sp.MCXAdapter(settings),
-    sp.GaussianNoise(settings, "noise_model_1")
-]
+if not SAVE_REFLECTANCE and not SAVE_PHOTON_DIRECTION:
+    pipeline = [
+        sp.ModelBasedVolumeCreationAdapter(settings),
+        sp.MCXAdapter(settings),
+        sp.GaussianNoise(settings, "noise_model_1")
+    ]
+else:
+    pipeline = [
+        sp.ModelBasedVolumeCreationAdapter(settings),
+        sp.ReflectanceMcxAdapter(settings),
+    ]
 
 
 class ExampleDeviceSlitIlluminationLinearDetector(sp.PhotoacousticDevice):
