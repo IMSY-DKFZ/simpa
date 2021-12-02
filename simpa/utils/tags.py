@@ -380,7 +380,7 @@ class Tags:
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
-    MCX_ASSUMED_ANISOTROPY = ("mcx_seed", (int, float))
+    MCX_ASSUMED_ANISOTROPY = ("mcx_assumed_anisotropy", (int, float))
     """
     The anisotropy that should be assumed for the mcx simulations.
     If not set, a default value of 0.9 will be assumed.
