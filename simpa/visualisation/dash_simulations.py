@@ -28,8 +28,7 @@ REQUIREMENTS:
 You will need to install the following packages in order to use this script. It is recommended to create a virtualenv
 to install this packages:
 
-`pip install dash dash-table dash-daq dash_colorscales plotly plotly-express dash-bootstrap-components pandas numpy
-dash-slicer`
+`pip install dash dash-table dash_colorscales plotly plotly-express dash-bootstrap-components pandas numpy`
 
 USAGE:
 ===================================================================
@@ -521,15 +520,15 @@ def plot_data_field(plot_name: str,
                     plot_type: Union[None, str],
                     axis: int,
                     axis_ind: int,
-                    clicked_data1: Dict,
-                    clicked_data2: Dict,
+                    _: Dict,
+                    __: Dict,
                     equal_aspect_ratio: bool,
-                    origin_data_field: str,
                     fix_ranges: bool) -> Tuple[go.Figure, bool]:
     """
     generates plot to update ``plot_11`` and ``plot_12`` in ``app.layout``. In addition, it determines if the scaler
     sliders are activated or deactivated. All data used for plotting is extracted from ``DATA``
 
+    :param plot_name: name of the plot in layout of app that triggered this function. Used to query the correct layout.
     :param data_field: parameter from simpa output to be plotted
     :param colorscale: colorscale used for plot
     :param wavelength: wavelength to be extracted
@@ -537,11 +536,12 @@ def plot_data_field(plot_name: str,
     :param plot_type: type of plot to be generated
     :param axis: axis along which data is extracted
     :param axis_ind: index along ``axis`` from which data is extracted
-    :param clicked_data1: dictionary containing clicked data from plot_11
-    :param clicked_data2: dictionary containing clicked data from plot_12
+    :param _: dictionary containing clicked data from plot_11. Dummy parameter used to trigger callback
+        on click
+    :param __: dictionary containing clicked data from plot_12. Dummy parameter used to trigger callback
+        on click
     :param equal_aspect_ratio: bool that indicates if plot should reflect equal aspect ratio in both axis
-    :param origin_data_field: originating data field, used when clicking data on ``time_series_Data`` or
-        ``reconstructed_data``
+    :param fix_ranges: boolean value used to fix the ranges (zoom) on displayed plots
     :return: go.Figure and bool indicating if sliders for scaling are deactivated or activated
     """
     if data_field is None or wavelength is None:
@@ -588,8 +588,8 @@ def plot_data_field(plot_name: str,
         for i, x in enumerate(DATA.click_points["x"]):
             if x:
                 if (DATA.click_points["param"][
-                        i] in PROPERTIES_TO_IGNORE_ON_CLICK or data_field in PROPERTIES_TO_IGNORE_ON_CLICK) and data_field != \
-                        DATA.click_points["param"][i]:
+                        i] in PROPERTIES_TO_IGNORE_ON_CLICK or data_field in PROPERTIES_TO_IGNORE_ON_CLICK) \
+                        and data_field != DATA.click_points["param"][i]:
                     continue
                 figure.add_annotation(x=x,
                                       y=DATA.click_points["y"][i],
@@ -677,8 +677,9 @@ def get_data_from_last_shape(relayout_data: Dict,
                              plot_data: Dict,
                              data_field: str) -> Union[None, Dict]:
     """
-    It extracts the data from ``plot_data`` given ``relayout_data`` incoming from updates in a plotly Figure. It extracts
-    the data based on the last shape in ``relayout_data``. Only supports shapes of type ``path`` and ``rect``.
+    It extracts the data from ``plot_data`` given ``relayout_data`` incoming from updates in a plotly Figure.
+    It extracts the data based on the last shape in ``relayout_data``. Only supports shapes of type
+    ``path`` and ``rect``
 
     :param relayout_data: dictionary containing all relayout data from a plotly Figure
     :param plot_data: dictionary containing all the data to be plotted
@@ -785,7 +786,15 @@ def update_relayout(relayout: Dict, p: str):
         DATA.relayout_data['relayout'] = relayout
 
 
-def get_zoom_layout(plot_name):
+def get_zoom_layout(plot_name: str) -> Dict:
+    """
+    queries the range layout from ``DATA.plot_layout`` based on the name of a plot component in the app layout. If the
+    axis ranges are not found in ``DATA.plot_layout``, that axis is set to ``autorange``. The output cna be used to
+    update the layout of a plotly plot by calling ``figure.plotly_relayout``
+
+    :param plot_name: name of a plot in the layout of the app, e.g. plot_11
+    :return: dictionary containing the layout of the axis ranges
+    """
     keys_to_update = ['xaxis.range[0]',
                       'xaxis.range[1]',
                       'yaxis.range[0]',
@@ -808,7 +817,17 @@ def get_zoom_layout(plot_name):
               Input("plot_21", "relayoutData"),
               Input("fix_ranges", "value"),
               )
-def update_plot_layouts(layout1, layout2, layout3, _):
+def update_plot_layouts(layout1: Dict, layout2: Dict, layout3: Dict, _) -> []:
+    """
+    updates layouts in ``DATA.plot_layouts`` based on ``relayoutData`` triggered by ``Graph`` components in app and on
+    switch controlling if axis ranges should be kept fixed in each plot.
+
+    :param layout1: dictionary with relayout data from plot_11
+    :param layout2: dictionary with relayout data from plot_12
+    :param layout3: dictionary with relayout data from plot_13
+    :param _: Dummy used to trigger callback when switch controlling plot axis ranges changes position
+    :return: empty list, dummy used because all callbacks need to have an output
+    """
     plot_names = ['plot_11', 'plot_12', 'plot_21']
     for i, layout in enumerate([layout1, layout2, layout3]):
         if layout and any(['xaxis.range' in k or 'yaxis.range' for k in layout]):
@@ -940,11 +959,9 @@ def populate_file_params(file_path: Union[None, str],
             vol_slider_value = 0
         else:
             raise ValueError(f"Number of dimensions of mua is not supported: {DATA.shape}")
-        return no_update, no_update, no_update, no_update, no_update, \
-               no_update, no_update, \
-               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, disable_vol_slider, \
-               no_update, no_update, no_update, no_update, no_update, no_update, \
-               no_update, no_update, no_update, no_update
+        return (no_update, no_update, no_update, no_update, no_update, no_update, no_update, vol_slider_min,
+                vol_slider_max, vol_slider_value, 1, vol_slider_marks, disable_vol_slider, no_update, no_update,
+                no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update)
     if file_path is None:
         raise PreventUpdate()
     if os.path.isfile(file_path):
@@ -977,11 +994,9 @@ def populate_file_params(file_path: Union[None, str],
             wv_step = 1
         else:
             wv_step = DATA.wavelengths[1] - DATA.wavelengths[0]
-        return options_list, False, min(DATA.wavelengths), max(DATA.wavelengths), DATA.wavelengths[0], \
-               wv_step, marks, \
-               vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, disable_vol_slider, \
-               options_list, False, options_list, False, "imshow", plot_options, "imshow", plot_options, \
-               False, False
+        return (options_list, False, min(DATA.wavelengths), max(DATA.wavelengths), DATA.wavelengths[0], wv_step, marks,
+                vol_slider_min, vol_slider_max, vol_slider_value, 1, vol_slider_marks, disable_vol_slider, options_list,
+                False, options_list, False, "imshow", plot_options, "imshow", plot_options, False, False)
 
 
 @app.callback(
@@ -997,7 +1012,6 @@ def populate_file_params(file_path: Union[None, str],
     Input("plot_11", "clickData"),
     Input("plot_12", "clickData"),
     Input("aspect_ratio_switch", "value"),
-    State("param2", "value"),
     State("fix_ranges", "value"),
 )
 def update_plot_11(*args, **kwargs):
@@ -1017,7 +1031,6 @@ def update_plot_11(*args, **kwargs):
     Input("plot_11", "clickData"),
     Input("plot_12", "clickData"),
     Input("aspect_ratio_switch", "value"),
-    State("param1", "value"),
     State("fix_ranges", "value"),
 )
 def update_plot_12(*args, **kwargs):
@@ -1085,7 +1098,7 @@ def plot_spectrum(data_field: Union[None, str],
                   click_data2: Dict,
                   axis_ind: int,
                   axis: int,
-                  n_clicks: Union[None, int],
+                  _: Union[None, int],
                   annotate: bool,
                   relayout_data: Union[None, Dict],
                   wavelength: Union[float, int],
@@ -1103,13 +1116,15 @@ def plot_spectrum(data_field: Union[None, str],
     :param click_data2: clicked data from ``plot_12``
     :param axis_ind: index along axis from which to extract data
     :param axis: axis from which to extract data
-    :param n_clicks: dummy parameter used to trigger plot reset functionality
+    :param _: dummy parameter used to trigger plot reset functionality when button RESET_GRAPH is clicked
     :param annotate: indicates if the data extracted from last annotated shape should be plotted as histogram
     :param relayout_data: relayout data extracted from plotly Figure
     :param wavelength: wavelength to be extracted
     :param n_bins: number of binds used to plot histogram if ``annotate==True``,
     :param data_field1: data field in plot_11
     :param data_field2: data field in plot_12
+    :param fix_ranges: boolean controlling if the ranges of the plots should be kept constant even when slicing a
+    different volume axis or wavelength
     :return: ``go.Figure``
     """
     global DATA
