@@ -68,3 +68,14 @@ class TestIOHandling(unittest.TestCase):
             save_dictionary[Tags.DIGITAL_DEVICE] = device(device_position_mm=np.array([1, 2, 3]),
                                                           field_of_view_extent_mm=np.array([1, 2, 3, 4, 5, 6]))
             self.assert_save_and_read_dictionaries_equal(save_dictionary)
+
+        for device in det_geometries:
+            save_dictionary = Settings()
+            save_dictionary[Tags.DIGITAL_DEVICE] = device(device_position_mm=np.array([1, 2, 3]),
+                                                          field_of_view_extent_mm=np.array([1, 2, 3, 4, 5, 6]))
+            self.assert_save_and_read_dictionaries_equal(save_dictionary)
+
+        for device in ill_geometries:
+            save_dictionary = Settings()
+            save_dictionary[Tags.DIGITAL_DEVICE] = device()
+            self.assert_save_and_read_dictionaries_equal(save_dictionary)
