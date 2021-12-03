@@ -40,6 +40,26 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
 
         self.logger = Logger()
 
+    def __eq__(self, other):
+        """
+        Checks each key, value pair in the devices.
+        """
+        if isinstance(other, DigitalDeviceTwinBase):
+            if self.__dict__.keys() != other.__dict__.keys():
+                return False
+            for self_key, self_value in self.__dict__.items():
+                other_value = other.__dict__[self_key]
+                if isinstance(self_value, np.ndarray):
+                    boolean = (other_value != self_value).all()
+                else:
+                    boolean = other_value != self_value
+                if boolean:
+                    return False
+                else:
+                    continue
+            return True
+        return False
+
     @abstractmethod
     def check_settings_prerequisites(self, global_settings) -> bool:
         """

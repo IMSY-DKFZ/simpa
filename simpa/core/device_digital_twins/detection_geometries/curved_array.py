@@ -107,7 +107,6 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
-        del serialized_device["logger"]
         return {"CurvedArrayDetectionGeometry": serialized_device}
 
     @staticmethod

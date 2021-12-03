@@ -35,7 +35,6 @@ class PencilBeamIlluminationGeometry(IlluminationGeometryBase):
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
-        del serialized_device["logger"]
         return {"PencilBeamIlluminationGeometry": serialized_device}
 
     @staticmethod

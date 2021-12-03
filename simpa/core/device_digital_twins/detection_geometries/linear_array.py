@@ -80,7 +80,6 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
-        del serialized_device["logger"]
         return {"LinearArrayDetectionGeometry": serialized_device}
 
     @staticmethod

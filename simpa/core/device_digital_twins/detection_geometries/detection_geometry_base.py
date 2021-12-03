@@ -125,7 +125,6 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
-        del serialized_device["logger"]
         return {DetectionGeometryBase: serialized_device}
 
     @staticmethod

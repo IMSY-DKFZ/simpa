@@ -45,7 +45,6 @@ class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
-        del serialized_device["logger"]
         return {"MSOTAcuityIlluminationGeometry": serialized_device}
 
     @staticmethod
