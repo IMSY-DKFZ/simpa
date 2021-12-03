@@ -63,19 +63,48 @@ class TestIOHandling(unittest.TestCase):
         ill_geometries = [SlitIlluminationGeometry, GaussianBeamIlluminationGeometry, PencilArrayIlluminationGeometry,
                           PencilBeamIlluminationGeometry, DiskIlluminationGeometry, MSOTAcuityIlluminationGeometry,
                           MSOTInVisionIlluminationGeometry]
+
+        # Test all predefined PA devices
         for device in pa_devices:
             save_dictionary = Settings()
             save_dictionary[Tags.DIGITAL_DEVICE] = device(device_position_mm=np.array([1, 2, 3]),
                                                           field_of_view_extent_mm=np.array([1, 2, 3, 4, 5, 6]))
             self.assert_save_and_read_dictionaries_equal(save_dictionary)
 
+        # Test all detection geometries
         for device in det_geometries:
             save_dictionary = Settings()
             save_dictionary[Tags.DIGITAL_DEVICE] = device(device_position_mm=np.array([1, 2, 3]),
                                                           field_of_view_extent_mm=np.array([1, 2, 3, 4, 5, 6]))
             self.assert_save_and_read_dictionaries_equal(save_dictionary)
 
+        # Test all illumination geometries
         for device in ill_geometries:
             save_dictionary = Settings()
             save_dictionary[Tags.DIGITAL_DEVICE] = device()
             self.assert_save_and_read_dictionaries_equal(save_dictionary)
+
+        # Test a custom PA device without illumination geometries
+        device = PhotoacousticDevice(device_position_mm=np.array([1, 2, 3]),
+                                     field_of_view_extent_mm=np.array([1, 2, 3, 4, 5, 6]))
+        device.set_detection_geometry(LinearArrayDetectionGeometry(),
+                                      detector_position_relative_to_pa_device=np.array([-1, -2, -3]))
+        save_dictionary = Settings()
+        save_dictionary[Tags.DIGITAL_DEVICE] = device
+        self.assert_save_and_read_dictionaries_equal(save_dictionary)
+
+        # Test a custom PA device with illumination geometries
+        device.add_illumination_geometry(PencilBeamIlluminationGeometry())
+        device.add_illumination_geometry(SlitIlluminationGeometry())
+        device.add_illumination_geometry(MSOTInVisionIlluminationGeometry())
+        save_dictionary = Settings()
+        save_dictionary[Tags.DIGITAL_DEVICE] = device
+        self.assert_save_and_read_dictionaries_equal(save_dictionary)
+
+        # Test a custom PA device without detection geometries
+        device = PhotoacousticDevice(device_position_mm=np.array([1, 2, 3]),
+                                     field_of_view_extent_mm=np.array([1, 2, 3, 4, 5, 6]))
+        device.add_illumination_geometry(PencilArrayIlluminationGeometry())
+        save_dictionary = Settings()
+        save_dictionary[Tags.DIGITAL_DEVICE] = device
+        self.assert_save_and_read_dictionaries_equal(save_dictionary)

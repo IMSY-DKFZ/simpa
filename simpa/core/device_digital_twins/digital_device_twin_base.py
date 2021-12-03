@@ -273,13 +273,11 @@ class PhotoacousticDevice(DigitalDeviceTwinBase, ABC):
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
-        del serialized_device["logger"]
         device_dict = {"PhotoacousticDevice": serialized_device}
         return device_dict
 
     @staticmethod
     def deserialize(dictionary_to_deserialize):
-        print(dictionary_to_deserialize)
         deserialized_device = PhotoacousticDevice(
             device_position_mm=dictionary_to_deserialize["device_position_mm"],
             field_of_view_extent_mm=dictionary_to_deserialize["field_of_view_extent_mm"])
