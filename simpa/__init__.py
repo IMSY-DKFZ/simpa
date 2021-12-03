@@ -2,8 +2,8 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from .log import Logger
 from .utils import *
+from .log import Logger
 
 from .core.simulation_modules.volume_creation_module.volume_creation_module_model_based_adapter import \
     ModelBasedVolumeCreationAdapter
