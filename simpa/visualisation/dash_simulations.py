@@ -72,6 +72,8 @@ DEFAULT_COLORSCALE = ['rgb(5,48,97)', 'rgb(33,102,172)', 'rgb(67,147,195)', 'rgb
                       'rgb(247,247,247)', 'rgb(253,219,199)', 'rgb(244,165,130)', 'rgb(214,96,77)',
                       'rgb(178,24,43)', 'rgb(103,0,31)']
 GITHUB_LINK = 'https://github.com/CAMI-DKFZ/simpa'
+SIMPA_DOCU_LINK = 'https://simpa.readthedocs.io/en/latest/'
+CAMI_LINK = 'https://www.dkfz.de/en/cami/research/index.html'
 BG_COLOR = "#506784"
 FONT_COLOR = "#F3F6FA"
 APP_TITLE = "SIMPA"
@@ -104,6 +106,31 @@ GRAPH_CONFIG = {
 }
 
 app.layout = html.Div([
+    dbc.Tooltip(
+        "Select the shape tool on left Plotly Figure and draw a shape",
+        target='annotate_switch',
+        placement='top'
+    ),
+    dbc.Tooltip(
+        "Set equal aspect ratio in Plotly Figures",
+        target='aspect_ratio_switch',
+        placement='top'
+    ),
+    dbc.Tooltip(
+        "Fix the ranges in both axis for all Plotly Figures",
+        target='fix_ranges',
+        placement='top'
+    ),
+    dbc.Tooltip(
+        "Number of bins to use for spectral histogram plot",
+        target='n_bins',
+        placement='right'
+    ),
+    dbc.Tooltip(
+        "Clear spectra and histogram visualization",
+        target='reset_points',
+        placement='top'
+    ),
     html.Div(id='dummy', style={'display': None}),
     html.Div(id='dummy2', style={'display': None}),
     html.Div([
@@ -124,20 +151,56 @@ app.layout = html.Div([
             html.H4("Computer Assisted Medical Interventions (CAMI)"),
         ], width=9),
         dbc.Col([
-            html.Img(src='data:image/png;base64,{}'.format(ENCODED_SIMPA_LOGO),
-                     width='25%',
-                     style={'display': 'inline-block', 'padding-right': '10px'}
-                     ),
-            html.Img(src='data:image/png;base64,{}'.format(ENCODED_CAMI_LOGO),
-                     width='50%',
-                     style={'display': 'inline-block', 'padding-right': '10px'}
-                     ),
+            html.A(
+                href=SIMPA_DOCU_LINK,
+                children=[
+                    html.Img(src='data:image/png;base64,{}'.format(ENCODED_SIMPA_LOGO),
+                             width='100%',
+                             ),
+                ],
+                style={'display': 'inline-block', 'padding-right': '10px', 'width': '20%'},
+                id='simpa_logo'
+            ),
+            html.A(
+                href=CAMI_LINK,
+                children=[
+                    html.Img(src='data:image/png;base64,{}'.format(ENCODED_CAMI_LOGO),
+                             width='100%',
+                             ),
+                ],
+                style={'display': 'inline-block', 'padding-right': '10px', 'width': '40%'},
+                id='cami_logo'
+            ),
+
             html.A(
                 href=GITHUB_LINK,
                 children=[
-                    html.Img(src='data:image/png;base64,{}'.format(ENCODED_GITHUB_LOGO), width='100%')
+                    html.Img(src='data:image/png;base64,{}'.format(ENCODED_GITHUB_LOGO),
+                             width='100%')
                 ],
-                style={'display': 'inline-block'}
+                style={'display': 'inline-block'},
+                id='github_logo'
+            ),
+            dbc.Popover(
+                [dbc.PopoverHeader('Documentation'),
+                 dbc.PopoverBody('SIMPA documentation')],
+                target='simpa_logo',
+                trigger='hover',
+                placement='bottom',
+            ),
+            dbc.Popover(
+                [dbc.PopoverHeader('CAMI'),
+                 dbc.PopoverBody('CAMI research @ DKFZ')],
+                target='cami_logo',
+                trigger='hover',
+                placement='bottom',
+            ),
+            dbc.Popover(
+                [dbc.PopoverHeader('Repository'),
+                 dbc.PopoverBody('SIMPA GitHub repository')],
+                target='github_logo',
+                trigger='hover',
+                placement='bottom',
             )
         ], width=3),
     ], style=dict(zIndex=0)),
@@ -220,30 +283,27 @@ app.layout = html.Div([
                 dcc.Tab(label="Visualization", id="tab-1", children=[
                     dbc.Col([
                         dbc.Row([
-                            dbc.Col([
+                            html.Div([
                                 dbc.Switch(
                                     id="annotate_switch",
                                     value=False,
                                     label="Annotate",
-                                    style={'display': 'inline-block', 'width': '100%'}
+                                    style={'display': 'inline-block', 'padding-right': '10px'}
                                 ),
-                            ], width=1),
-                            dbc.Col([
                                 dbc.Switch(
                                     id="aspect_ratio_switch",
                                     value=False,
                                     label="Equal aspect ratio",
-                                    style={'display': 'inline-block', 'width': '100%'}
+                                    style={'display': 'inline-block', 'padding-right': '10px'}
                                 ),
-                            ], width=2),
-                            dbc.Col([
                                 dbc.Switch(
                                     id="fix_ranges",
                                     value=False,
                                     label="Fix ranges",
-                                    style={'display': 'inline-block', 'width': '100%'}
+                                    style={'display': 'inline-block', 'padding-right': '10px'}
                                 ),
-                            ], width=2)
+                            ]),
+
                         ]),
                         dbc.Row([
                             dbc.Col([
@@ -373,7 +433,7 @@ app.layout = html.Div([
                         html.Hr(),
                         dbc.Row([
                             dbc.Col([
-                                html.H6("Spectra visualization"),
+                                html.H6("Spectra and annotation visualization"),
                                 html.Div(
                                     id="plot_div_2",
                                     children=[
@@ -383,7 +443,7 @@ app.layout = html.Div([
                                             placeholder="Parameter to plot over wavelengths",
                                             persistence_type="session",
                                             disabled=True,
-                                            style=dict(width='400px', display='inline-block')
+                                            style=dict(width='500px', display='inline-block')
                                         ),
                                         dbc.Button(
                                             "Reset graph",
