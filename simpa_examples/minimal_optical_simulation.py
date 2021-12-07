@@ -81,7 +81,7 @@ def create_example_tissue():
 np.random.seed(RANDOM_SEED)
 
 general_settings = {
-    # These parameters set the general propeties of the simulated volume
+    # These parameters set the general properties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
     Tags.VOLUME_NAME: VOLUME_NAME,
     Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
@@ -135,7 +135,8 @@ class ExampleDeviceSlitIlluminationLinearDetector(sp.PhotoacousticDevice):
                                                         VOLUME_PLANAR_DIM_IN_MM/2, 0]))
         self.set_detection_geometry(sp.LinearArrayDetectionGeometry())
         self.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
-                                                                direction_vector_mm=[0, 0, 5]))
+                                                                   direction_vector_mm=[0, 0, 5]))
+
 
 device = ExampleDeviceSlitIlluminationLinearDetector()
 

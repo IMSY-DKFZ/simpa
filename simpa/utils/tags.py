@@ -27,6 +27,12 @@ class Tags:
     Usage: SIMPA package
     """
 
+    SIMULATION_PIPELINE = "simulation_pipeline"
+    """
+    List of SimulationModules that are used within a simulation pipeline.\n
+    Usage: SIMPA package
+    """
+
     VOLUME_NAME = ("volume_name", str)
     """
     Name of the SIMPA output file.\n
