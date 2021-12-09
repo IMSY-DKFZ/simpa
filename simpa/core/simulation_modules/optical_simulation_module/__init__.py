@@ -20,6 +20,13 @@ class OpticalForwardModuleBase(SimulationModule):
     def __init__(self, global_settings: Settings):
         super(OpticalForwardModuleBase, self).__init__(global_settings=global_settings)
         self.component_settings = self.global_settings.get_optical_settings()
+        self.nx = None
+        self.ny = None
+        self.nz = None
+        self.frames = None
+        self.mcx_json_config_file = None
+        self.mcx_volumetric_data_file = None
+        self.temporary_output = []
 
     @abstractmethod
     def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
