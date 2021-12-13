@@ -64,9 +64,9 @@ class HorizontalLayerStructure(GeometricalStructure):
                                                                    self.voxel_spacing,
                                                                    np.arange(self.volume_dimensions_voxels[1], step=1) *
                                                                    self.voxel_spacing).T
-            target_vector_voxels = target_vector_voxels + (deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
-                                                                                         self.volume_dimensions_voxels[1], 1)
-                                                           / self.voxel_spacing)
+            target_vector_voxels = target_vector_voxels + (deformation_values_mm.reshape(
+                self.volume_dimensions_voxels[0],
+                self.volume_dimensions_voxels[1], 1) / self.voxel_spacing)
 
         volume_fractions = np.zeros(self.volume_dimensions_voxels)
 
@@ -86,7 +86,7 @@ class HorizontalLayerStructure(GeometricalStructure):
         if partial_volume:
             bools_fully_filled_layers = ((target_vector_voxels >= 0) & (target_vector_voxels < floored_depth_voxels))
         else:
-            bools_fully_filled_layers = ((target_vector_voxels >= -0.5) & (target_vector_voxels < floored_depth_voxels + 0.5))
+            bools_fully_filled_layers = ((target_vector_voxels >= -0.5) & (target_vector_voxels < 1 + 0.5))
         volume_fractions[bools_fully_filled_layers] = 1
 
         if partial_volume:
