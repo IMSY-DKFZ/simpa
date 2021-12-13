@@ -153,6 +153,7 @@ app.layout = html.Div([
         dbc.Col([
             html.A(
                 href=SIMPA_DOCU_LINK,
+                target='_blank',
                 children=[
                     html.Img(src='data:image/png;base64,{}'.format(ENCODED_SIMPA_LOGO),
                              width='100%',
@@ -163,6 +164,7 @@ app.layout = html.Div([
             ),
             html.A(
                 href=CAMI_LINK,
+                target='_blank',
                 children=[
                     html.Img(src='data:image/png;base64,{}'.format(ENCODED_CAMI_LOGO),
                              width='100%',
@@ -174,6 +176,7 @@ app.layout = html.Div([
 
             html.A(
                 href=GITHUB_LINK,
+                target='_blank',
                 children=[
                     html.Img(src='data:image/png;base64,{}'.format(ENCODED_GITHUB_LOGO),
                              width='100%')
@@ -213,7 +216,7 @@ app.layout = html.Div([
                     html.Br(),
                     html.P("This is a dash app designed by the SIMPA developer team. For more information on "
                            "the SIMPA toolkit visit:", style={'text-align': 'justify'}),
-                    html.A("SIMPA", href=GITHUB_LINK),
+                    html.A("SIMPA", href=GITHUB_LINK, target='_blank'),
                     html.P("This app was developed based on the Dash framework from Plotly. It will allow you"
                            "to interactively visualize the simulated results that the SIMPA toolkit outputs. "
                            "If you encounter any problems please reach out to the developer team through the"
