@@ -19,7 +19,7 @@ from simpa.utils import Tags, TISSUE_LIBRARY, SegmentationClasses
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.molecule_library import MolecularCompositionGenerator, Molecule
-from simpa.utils.libraries.spectra_library import Spectrum, AnisotropySpectrumLibrary
+from simpa.utils.libraries.spectrum_library import Spectrum, AnisotropySpectrumLibrary
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import *
 import numpy as np

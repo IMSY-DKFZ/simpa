@@ -5,8 +5,6 @@ import numpy as np
 
 from simpa.core.device_digital_twins import PhotoacousticDevice, CurvedArrayDetectionGeometry, \
     MSOTInVisionIlluminationGeometry
-from simpa.utils.settings import Settings
-from simpa.utils import Tags
 
 
 class InVision256TF(PhotoacousticDevice):

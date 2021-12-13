@@ -4,7 +4,7 @@
 import numpy as np
 
 from simpa.core.device_digital_twins import DetectionGeometryBase
-from simpa.utils import Settings, Tags
+from simpa.utils import Tags
 
 
 class CurvedArrayDetectionGeometry(DetectionGeometryBase):

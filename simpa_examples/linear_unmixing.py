@@ -2,14 +2,14 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa import Tags
-import simpa as sp
-import numpy as np
-import matplotlib.pyplot as plt
-from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-
-# FIXME temporary workaround for newest Intel architectures
 import os
+
+import numpy as np
+
+import simpa as sp
+from simpa import Tags
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
+# FIXME temporary workaround for newest Intel architectures
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you

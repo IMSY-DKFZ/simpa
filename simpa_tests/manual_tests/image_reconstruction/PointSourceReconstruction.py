@@ -7,7 +7,7 @@ from simpa.utils import Tags
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.molecule_library import Molecule, MolecularCompositionGenerator
-from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary, AnisotropySpectrumLibrary, \
+from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary, AnisotropySpectrumLibrary, \
     ScatteringSpectrumLibrary
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np

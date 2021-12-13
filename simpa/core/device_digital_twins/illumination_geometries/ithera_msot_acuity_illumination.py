@@ -2,8 +2,6 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import numpy as np
-
 from simpa.core.device_digital_twins import IlluminationGeometryBase
 from simpa.utils import Settings, Tags
 
