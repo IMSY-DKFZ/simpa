@@ -37,7 +37,7 @@ for rst_file in rst_files:
 if os.path.exists("source/simpa_examples.rst"):
     os.remove("source/simpa_examples.rst")
 simpa_examples_rst_file = open("source/simpa_examples.rst", "w")
-simpa_examples_rst_file.write("simpa\_examples\n=======================\n\n.. toctree::\n   :maxdepth: 2\n\n")
+simpa_examples_rst_file.write("simpa\_examples\n=========================================\n\n.. toctree::\n   :maxdepth: 2\n\n")
 examples = glob.glob("../simpa_examples/*.py")
 for example in examples:
     example_file_name = example.split("/")[-1]
@@ -48,7 +48,7 @@ for example in examples:
     if os.path.exists("source/" + example_file_name_rst):
         os.remove("source/" + example_file_name_rst)
     example_rst_file = open("source/" + example_file_name_rst, "a")
-    example_rst_file.write("{}\n==================\n\n.. literalinclude:: ../{}\n   :language: python\n   :lines: 1-\n\n".format(example_file_name, example))
+    example_rst_file.write("{}\n=========================================\n\n.. literalinclude:: ../{}\n   :language: python\n   :lines: 1-\n\n".format(example_file_name, example))
     example_rst_file.close()
     simpa_examples_rst_file.writelines("   {}\n".format(example_file_name))
 
