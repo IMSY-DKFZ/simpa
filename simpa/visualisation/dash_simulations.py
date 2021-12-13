@@ -903,10 +903,10 @@ def update_plot_layouts(layout1: Dict, layout2: Dict, layout3: Dict, _) -> []:
 
 @app.callback(
     Output("file_selection", "options"),
-    [Input("data_path", "n_submit")],
+    [Input("data_path", "valid")],
     [State("data_path", "value")]
 )
-def populate_file_selection(_, data_path: Union[None, str]) -> List[Dict]:
+def populate_file_selection(valid, data_path: Union[bool, str]) -> List[Dict]:
     """
     queries all files in directory and filters them according to ending: ``.hdf5``. Creates a list of dictionaries
     based on such files: ``[{'label': ..., 'value': ...}, ...]``. If data path is invalid then ``PreventUpdate`` is
@@ -916,7 +916,7 @@ def populate_file_selection(_, data_path: Union[None, str]) -> List[Dict]:
     :param data_path: path to file or folder containing ``.hdf5`` simulations
     :return: List of dictionaries ``[{'label': ..., 'value': ...}, ...]``
     """
-    if isinstance(data_path, str):
+    if valid:
         if os.path.isdir(data_path):
             file_list = os.listdir(data_path)
             file_list = [f for f in file_list if f.endswith('.hdf5')]
@@ -927,7 +927,7 @@ def populate_file_selection(_, data_path: Union[None, str]) -> List[Dict]:
             options_list = [{'label': i, 'value': data_path} for i in file_list]
             return options_list
         else:
-            raise PreventUpdate("Please select a file or folder!")
+            raise PreventUpdate("Please select a file or folder!")     
     else:
         raise PreventUpdate()
 
