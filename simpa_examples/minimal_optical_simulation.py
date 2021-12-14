@@ -90,9 +90,6 @@ general_settings = {
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
     Tags.WAVELENGTHS: [798],
-    Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                   VOLUME_PLANAR_DIM_IN_MM/2,
-                                   0],
     Tags.DO_FILE_COMPRESSION: True
 }
 
@@ -103,11 +100,8 @@ settings.set_volume_creation_settings({
     Tags.STRUCTURES: create_example_tissue()
 })
 settings.set_optical_settings({
-    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
-    Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
 })
 settings["noise_model_1"] = {
     Tags.NOISE_MEAN: 1.0,
