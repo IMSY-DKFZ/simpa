@@ -81,6 +81,9 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
             return False
         return True
 
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        pass
+
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
 
         pitch_angle = self.pitch_mm / self.radius_mm
@@ -101,3 +104,14 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         for dim in range(3):
             detector_orientations[:, dim] = detector_orientations[:, dim] / norm
         return detector_orientations
+
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        return {"CurvedArrayDetectionGeometry": serialized_device}
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        deserialized_device = CurvedArrayDetectionGeometry()
+        for key, value in dictionary_to_deserialize.items():
+            deserialized_device.__dict__[key] = value
+        return deserialized_device

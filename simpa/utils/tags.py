@@ -27,6 +27,12 @@ class Tags:
     Usage: SIMPA package
     """
 
+    SIMULATION_PIPELINE = "simulation_pipeline"
+    """
+    List of SimulationModules that are used within a simulation pipeline.\n
+    Usage: SIMPA package
+    """
+
     VOLUME_NAME = ("volume_name", str)
     """
     Name of the SIMPA output file.\n
@@ -276,7 +282,7 @@ class Tags:
     Digital Device Twin Settings
     """
 
-    DIGITAL_DEVICE = ("digital_device", str)
+    DIGITAL_DEVICE = "digital_device"
     """
     Digital device that is chosen as illumination source and detector for the simulation.\n
     Usage: SIMPA package

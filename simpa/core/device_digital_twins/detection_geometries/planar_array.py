@@ -78,6 +78,9 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
             return False
         return True
 
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        pass
+
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
         detector_element_positions_mm = np.zeros((self.number_detector_elements, 3))
         for x in range(self.number_detector_elements_x):
@@ -92,3 +95,14 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
         detector_element_orientations = np.zeros((self.number_detector_elements, 3))
         detector_element_orientations[:, 2] = 1
         return detector_element_orientations
+
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        return {"PlanarArrayDetectionGeometry": serialized_device}
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        deserialized_device = PlanarArrayDetectionGeometry()
+        for key, value in dictionary_to_deserialize.items():
+            deserialized_device.__dict__[key] = value
+        return deserialized_device

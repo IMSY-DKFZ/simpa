@@ -56,6 +56,8 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     settings[Tags.SIMPA_OUTPUT_PATH] = simpa_output_path + ".hdf5"
 
     simpa_output[Tags.SETTINGS] = settings
+    simpa_output[Tags.DIGITAL_DEVICE] = digital_device_twin
+    simpa_output[Tags.SIMULATION_PIPELINE] = [type(x).__name__ for x in simulation_pipeline]
 
     logger.debug("Saving settings dictionary...")
     save_hdf5(simpa_output, settings[Tags.SIMPA_OUTPUT_PATH])
@@ -77,7 +79,7 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
 
         logger.debug(f"Running pipeline for wavelength {wavelength}nm... [Done]")
 
-    # If the dimenations of the simulation results are changed after calling the respective module
+    # If the dimensions of the simulation results are changed after calling the respective module
     # adapter / processing components, the amount of space on the hard drive that is allocated by the HDF5
     # code does not dynamically change. This can be remedied by re-writing the file after the simulation
     # terminates. As it might have a negative impact on simulation performance, it must be activated

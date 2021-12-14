@@ -59,6 +59,9 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
             return False
         return True
 
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        pass
+
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
 
         detector_positions = np.zeros((self.number_detector_elements, 3))
@@ -74,3 +77,14 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
         detector_orientations = np.zeros((self.number_detector_elements, 3))
         detector_orientations[:, 2] = -1
         return detector_orientations
+
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        return {"LinearArrayDetectionGeometry": serialized_device}
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        deserialized_device = LinearArrayDetectionGeometry()
+        for key, value in dictionary_to_deserialize.items():
+            deserialized_device.__dict__[key] = value
+        return deserialized_device
