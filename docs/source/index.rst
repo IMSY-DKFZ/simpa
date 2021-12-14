@@ -16,6 +16,7 @@ pipeline according to their specific use cases and tool requirements.
    :caption: Contents
 
    intro_link
+   contributing_link
 
 ===================================
 

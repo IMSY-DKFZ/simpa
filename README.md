@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=latest)](https://simpa.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=develop)](https://simpa.readthedocs.io/en/develop/?badge=develop)
 [![Build Status](https://ci.mitk.org/buildStatus/icon?job=SIMPA%2FUnit+Tests+master)](https://ci.mitk.org/job/SIMPA/job/Unit%20Tests%20master/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CAMI-DKFZ/simpa/blob/master/LICENSE.md)
 
