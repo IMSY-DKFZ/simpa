@@ -13,8 +13,9 @@ that implement optical and acoustic forward and inverse models.
 Non-experts can use the toolkit to create sensible simulations from default parameters in an end-to-end fashion. Domain experts are provided with the functionality to set up a highly customisable
 pipeline according to their specific use cases and tool requirements.
 
-* [Installation](##SIMPA Install Instructions)
-* [Documentation](##Building the documentation)
+* [Installation](#simpa-install-instructions)
+* [External tools](#external-tools-installation-instructions)
+* [Documentation](#building-the-documentation)
 
 **(!) Alpha Version 0.4.0 (!)** 
 
@@ -23,7 +24,7 @@ Please report any issues that you find in our Issue Tracker: https://github.com/
 Also make sure to double check all value ranges of the optical and acoustic tissue properties 
 and to assess all simulation results for plausibility.
 
-## SIMPA Install Instructions
+## SIMPA install instructions
 
 The recommended way to install simpa is a manual installation from the GitHub repository, please follow steps 1 - 3:
 
@@ -59,7 +60,7 @@ you should do the following steps in a command line:
 4. Type `make html`
 5. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser. 
 
-## External Tools installation instructions
+## External tools installation instructions
 
 ### mcx (Optical Forward Model)
 
