@@ -79,6 +79,9 @@ def bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     win = tukey(large_index - small_index, alpha=tukey_alpha)
     window = np.zeros(frequencies.shape)
     window[small_index:large_index] = win
+    if small_index == 0:
+        small_index = 1
+        win = win[:-1]
     window[-large_index:-small_index] = win
 
     # transform data into Fourier space, multiply filter and transform back
@@ -102,7 +105,7 @@ def bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings
     :return: (numpy array) filtered data
     """
     if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
-        time_spacing_in_sm = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
+        time_spacing_in_ms = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
     elif device.sampling_frequency_MHz is not None:
         time_spacing_in_ms = 1.0 / (device.sampling_frequency_MHz * 1000)
     else:
