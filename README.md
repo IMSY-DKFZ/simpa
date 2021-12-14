@@ -4,7 +4,7 @@
 
 ![Alt text](docs/source/images/simpa_logo.png?raw=true "Logo")
 
-# The toolkit for Simulation and Image Processing for Photonics and Acoustics (SIMPA).
+# The toolkit for Simulation and Image Processing for Photonics and Acoustics (SIMPA)
 
 SIMPA aims to facilitate realistic image simulation for optical and acoustic imaging modalities by
 providing adapters to crucial modelling steps, such as volume generation; optical modelling; acoustic
@@ -13,20 +13,29 @@ that implement optical and acoustic forward and inverse models.
 Non-experts can use the toolkit to create sensible simulations from default parameters in an end-to-end fashion. Domain experts are provided with the functionality to set up a highly customisable
 pipeline according to their specific use cases and tool requirements.
 
-* [Installation](#simpa-install-instructions)
-* [External tools](#external-tools-installation-instructions)
+* [Getting started](#getting-started)
 * [Documentation](#building-the-documentation)
-
-**(!) Alpha Version 0.4.0 (!)** 
+* [Contributing](#how_to_contribute)
+* [Troubleshooting](#troubleshooting)
 
 The toolkit is still under development and is thus not fully tested and may contain bugs. 
 Please report any issues that you find in our Issue Tracker: https://github.com/CAMI-DKFZ/simpa/issues. 
 Also make sure to double check all value ranges of the optical and acoustic tissue properties 
 and to assess all simulation results for plausibility.
 
-## SIMPA install instructions
+# Getting started
 
-The recommended way to install simpa is a manual installation from the GitHub repository, please follow steps 1 - 3:
+In order to use SIMPA in your project, SIMPA has to be installed as well as the external tools that make the actual simulations possible.
+Finally, to connect everything, SIMPA has to find all the binaries of the simulation modules you would like to use.
+The SIMPA path management takes care of that.
+
+* [SIMPA installation](#simpa-installation-instructions)
+* [External tools installation](#external-tools-installation-instructions)
+* [Path Management](#path-management)
+
+## SIMPA installation instructions
+
+The recommended way to install SIMPA is a manual installation from the GitHub repository, please follow steps 1 - 3:
 
 1. `git clone https://github.com/CAMI-DKFZ/simpa.git`
 2. `cd simpa`
@@ -39,9 +48,9 @@ virtual environment activated
 2. `python setup.py install` (for developement: `python setup.py develop`)
 3. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
-If no error messages arise, you are now setup to use simpa in your project.
+If no error messages arise, you are now setup to use SIMPA in your project.
 
-You can also install simpa with pip. Simply run:
+You can also install SIMPA with pip. Simply run:
 
 `pip install simpa`
 
@@ -49,18 +58,10 @@ You also need to manually install the pytorch library to use all features of SIM
 To this end, use the pytorch website tool to figure out which version to install:
 `https://pytorch.org/get-started/locally/`
 
-## Building the documentation
-
-When the installation succeeded, and you want to make sure that you have the latest documentation
-you should do the following steps in a command line:
-
-1. Navigate to the `simpa/docs` directory
-2. Execute the command `sphinx-apidoc -EfTM -o ./source/ ../simpa`
-3. Execute the command `python source/clean_up_rst_files.py`
-4. Type `make html`
-5. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser. 
-
 ## External tools installation instructions
+
+In order to get the full SIMPA functionality, you should install all third party toolkits that make the optical and 
+acoustic simulations possible. 
 
 ### mcx (Optical Forward Model)
 
@@ -91,17 +92,7 @@ http://www.k-wave.org/
 6. If wanted: Download the CPP and CUDA binary files and place them inthe k-Wave/binaries folder
 7. Note down the system path to the `matlab` executable file.
 
-## Overview
-
-The main use case for the simpa framework is the simulation of photoacoustic images.
-However, it can also be used for image processing.
-
-### Simulating photoacoustic images
-
-A basic example on how to use simpa in your project to run an optical forward simulation is given in the 
-samples/minimal_optical_simulation.py file.
-
-### Path Management
+## Path management
 
 As a pipelining tool that serves as a communication layer between different numerical forward models and
 processing tools, SIMPA needs to be configured with the paths to these tools on your local hard drive.
@@ -112,6 +103,28 @@ one we provided in the `simpa_examples`) in the following places in this order:
 2. Your $HOME$ directory
 3. The current working directory
 4. The SIMPA home directory path
+
+# Building the documentation
+
+When the installation succeeded, and you want to make sure that you have the latest documentation
+you should do the following steps in a command line:
+
+1. Navigate to the `simpa/docs` directory
+2. If you would like the documentation to have the https://readthedocs.org/ style, type `pip install sphinx-rtd-theme`
+3. Execute the command `sphinx-apidoc -EfTM -o ./source/ ../simpa`
+4. Execute the command `python source/clean_up_rst_files.py`
+5. Type `make html`
+6. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser.
+
+## Overview
+
+The main use case for the SIMPA framework is the simulation of photoacoustic images.
+However, it can also be used for image processing.
+
+### Simulating photoacoustic images
+
+A basic example on how to use SIMPA in your project to run an optical forward simulation is given in the 
+samples/minimal_optical_simulation.py file.
 
 ## How to contribute
 
