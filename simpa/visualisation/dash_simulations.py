@@ -217,9 +217,9 @@ app.layout = html.Div([
                     html.P("This is a dash app designed by the SIMPA developer team. For more information on "
                            "the SIMPA toolkit visit:", style={'text-align': 'justify'}),
                     html.A("SIMPA", href=GITHUB_LINK, target='_blank'),
-                    html.P("This app was developed based on the Dash framework from Plotly. It will allow you"
+                    html.P("This app was developed based on the Dash framework from Plotly. It will allow you "
                            "to interactively visualize the simulated results that the SIMPA toolkit outputs. "
-                           "If you encounter any problems please reach out to the developer team through the"
+                           "If you encounter any problems please reach out to the developer team through the "
                            "GitHub page of SIMPA.",
                            style={'text-align': 'justify'}),
                     dcc.Markdown("In the **Handlers** tab you will find a set of controllers that will help "
@@ -228,7 +228,7 @@ app.layout = html.Div([
                                  style={'text-align': 'justify'}),
                     dcc.Markdown("In the *Data selection* subcategory you can choose which axis of the data "
                                  "you want to visualize. In the *Visual settings* subcategory you can choose "
-                                 "the global color scale used for each subplot",
+                                 "the global color scale used for each subplot.",
                                  style={'text-align': 'justify'})
                 ]),
                 dcc.Tab(label="Handlers", id="handler-tab", children=[
