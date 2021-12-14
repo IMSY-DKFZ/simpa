@@ -1,9 +1,20 @@
 [![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=latest)](https://simpa.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://ci.mitk.org/buildStatus/icon?job=SIMPA%2FUnit+Tests+master)](https://ci.mitk.org/job/SIMPA/job/Unit%20Tests%20master/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CAMI-DKFZ/simpa/blob/master/LICENSE.md)
 
-# README
+![Alt text](docs/source/images/simpa_logo.png?raw=true "Logo")
 
-The Simulation and Image Processing for Photoacoustic Imaging (SIMPA) toolkit.
+# The toolkit for Simulation and Image Processing for Photonics and Acoustics (SIMPA).
+
+SIMPA aims to facilitate realistic image simulation for optical and acoustic imaging modalities by
+providing adapters to crucial modelling steps, such as volume generation; optical modelling; acoustic
+modelling; and image reconstruction. SIMPA provides a communication layer between various modules
+that implement optical and acoustic forward and inverse models.
+Non-experts can use the toolkit to create sensible simulations from default parameters in an end-to-end fashion. Domain experts are provided with the functionality to set up a highly customisable
+pipeline according to their specific use cases and tool requirements.
+
+* [Installation](##SIMPA Install Instructions)
+* [Documentation](##Building the documentation)
 
 **(!) Alpha Version 0.4.0 (!)** 
 
@@ -58,7 +69,7 @@ http://mcx.space/
 
 In order to obtain access to all custom sources that we implemented, please build mcx yourself from the
 following mcx Github fork:
-https://www.github.com/jgroehl/mcx
+https://github.com/CAMI-DKFZ/mcx
 
 For the installation, please follow the instructions from the original repository.
 Please note that there might be compatiblity issues using mcx-cl with the MCX Adapter as this use case is not 
