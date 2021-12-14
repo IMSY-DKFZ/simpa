@@ -22,7 +22,7 @@ and you are very welcome to participate and raise any issues or discuss your or 
 Once you reached out, you will be provided with the information on how to join.
 In general the following steps are involved during a contribution:
 
-### Contribution Process
+### Contribution process
 1.	Create feature request / bug report on https://github.com/CAMI-DKFZ/simpa
 2.	Discuss potential contribution with core development team
 3.	Fork the https://github.com/CAMI-DKFZ/simpa repository
@@ -57,7 +57,7 @@ Each commit / patch needs to be equipped with a “sign-off” statement
 which certifies that you wrote the contribution or otherwise have the right to pass it on as open-source 
 as defined in the following:
 
-```
+```text
 Developer's Certificate of Origin 1.1
 
 By making a contribution to this project, I certify that:
