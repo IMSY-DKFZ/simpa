@@ -113,4 +113,7 @@ html_theme_options = {
 
 add_module_names = False
 
+autoclass_content = "both"
+autodoc_inherit_docstrings = True
+
 master_doc = "index"

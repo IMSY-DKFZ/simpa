@@ -13,15 +13,19 @@ import uuid
 
 class DigitalDeviceTwinBase:
     """
-    This class represents a device that can be used for illumination, detection or both.
+    This class represents a device that can be used for illumination, detection or a combined photoacoustic device
+    which has representations of both.
     """
 
-    def __init__(self, device_position_mm: np.ndarray = None,
-                 field_of_view_extent_mm: np.ndarray = None):
+    def __init__(self, device_position_mm=None, field_of_view_extent_mm=None):
         """
-        Constructor of the base class for all digital devices.
-        :param device_position_mm: Each device has an internal position which serves as origin for internal
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
         representations of e.g. detector element positions or illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
         """
         if device_position_mm is None:
             self.device_position_mm = np.array([0, 0, 0])
@@ -39,7 +43,7 @@ class DigitalDeviceTwinBase:
     def check_settings_prerequisites(self, global_settings) -> bool:
         """
         It might be that certain device geometries need a certain dimensionality of the simulated PAI volume, or that
-        it required the existence of certain Tags in the global global_settings.
+        it requires the existence of certain Tags in the global global_settings.
         To this end, a  PAI device should use this method to inform the user about a mismatch of the desired device and
         throw a ValueError if that is the case.
 
@@ -53,13 +57,27 @@ class DigitalDeviceTwinBase:
         """
         pass
 
+    @abstractmethod
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        """
+        This method can be overwritten by a PA device if the device poses special constraints to the
+        volume that should be considered by the model-based volume creator.
+
+        :param global_settings: Settings for the entire simulation pipeline.
+        :type global_settings: Settings
+        """
+        pass
+
     def get_field_of_view_mm(self) -> np.ndarray:
         """
-        returns the absolute field of view in mm where the probe position is already
+        Returns the absolute field of view in mm where the probe position is already
         accounted for.
         It is defined as a numpy array of the shape [xs, xe, ys, ye, zs, ze],
         where x, y, and z denote the coordinate axes and s and e denote the start and end
         positions.
+
+        :return: Absolute field of view in mm where the probe position is already accounted for.
+        :rtype: ndarray
         """
         position = self.device_position_mm
         field_of_view_extent = self.field_of_view_extent_mm
@@ -79,6 +97,10 @@ class DigitalDeviceTwinBase:
         return field_of_view
 
     def generate_uuid(self):
+        """
+        Generates a universally unique identifier (uuid) for each device.
+        :return:
+        """
         class_dict = self.__dict__
         m = hashlib.md5()
         m.update(str(class_dict).encode('utf-8'))
@@ -119,8 +141,16 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
         illumination_geometries (list): List of illuminations defined by :py:class:`IlluminationGeometryBase`.
     """
 
-    def __init__(self,  device_position_mm: np.ndarray = None,
-                 field_of_view_extent_mm: np.ndarray = None):
+    def __init__(self,  device_position_mm=None, field_of_view_extent_mm=None):
+        """
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of e.g. detector element positions or illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
+        """
         super(PhotoacousticDevice, self).__init__(device_position_mm=device_position_mm,
                                                   field_of_view_extent_mm=field_of_view_extent_mm)
         self.detection_geometry = None
@@ -174,6 +204,10 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
         self.illumination_geometries.append(illumination_geometry)
 
     def get_detection_geometry(self):
+        """
+        :return: None if no detection geometry was set or an instance of DetectionGeometryBase.
+        :rtype: None, DetectionGeometryBase
+        """
         return self.detection_geometry
 
     def get_illumination_geometry(self):
@@ -181,6 +215,7 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
         :return: None, if no illumination geometry was defined,
             an instance of IlluminationGeometryBase if exactly one geometry was defined,
             a list of IlluminationGeometryBase instances if more than one device was defined.
+        :rtype: None, IlluminationGeometryBase
         """
         if len(self.illumination_geometries) == 0:
             return None
@@ -190,7 +225,7 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
 
         return self.illumination_geometries
 
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
+    def check_settings_prerequisites(self, global_settings) -> bool:
         _result = True
         if self.detection_geometry is not None \
                 and not self.detection_geometry.check_settings_prerequisites(global_settings):
@@ -200,10 +235,3 @@ class PhotoacousticDevice(ABC, DigitalDeviceTwinBase):
                     and not illumination_geometry.check_settings_prerequisites(global_settings):
                 _result = False
         return _result
-
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
-        """
-        This method can be overwritten by a PA device if the device poses special constraints to the
-        volume that should be considered by the model-based volume creator.
-        """
-        pass

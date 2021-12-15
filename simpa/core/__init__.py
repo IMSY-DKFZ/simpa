@@ -13,10 +13,10 @@ class SimulationModule:
     Defines a simulation module that is callable via the SIMPA core.simulation.simulate method.
     """
 
-    def __init__(self, global_settings: Settings):
+    def __init__(self, global_settings):
         """
-        Initialises the SimulationModule given the global settings dictionary.
          :param global_settings: The SIMPA settings dictionary
+         :type global_settings: Settings
         """
         self.logger = Logger()
         self.global_settings = global_settings

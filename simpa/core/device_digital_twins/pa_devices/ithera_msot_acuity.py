@@ -35,8 +35,13 @@ class MSOTAcuityEcho(PhotoacousticDevice):
     def __init__(self, device_position_mm: np.ndarray = None,
                  field_of_view_extent_mm: np.ndarray = None):
         """
-
-        :param device_position_mm: Outer center of the membrane.
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of e.g. detector element positions or illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
         """
         super(MSOTAcuityEcho, self).__init__(device_position_mm=device_position_mm)
 
@@ -74,7 +79,12 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         illumination_geometry = MSOTAcuityIlluminationGeometry()
         self.add_illumination_geometry(illumination_geometry)
 
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        """
+        Updates the volume creation settings of the model based volume creator according to the size of the device.
+        :param global_settings: Settings for the entire simulation pipeline.
+        :type global_settings: Settings
+        """
         try:
             volume_creator_settings = Settings(global_settings.get_volume_creation_settings())
         except KeyError as e:

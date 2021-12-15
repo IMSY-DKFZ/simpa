@@ -41,6 +41,22 @@ class RSOMExplorerP50(PhotoacousticDevice):
                  number_elements_y=10,
                  device_position_mm: np.ndarray = None,
                  field_of_view_extent_mm: np.ndarray = None):
+        """
+        :param element_spacing_mm: Detection element pitch in both x- and y-direction. It is an isotropic spacing \
+        assumed.
+        :type element_spacing_mm: float
+        :param number_elements_x: Number of detection elements in x-direction.
+        :type number_elements_x: int
+        :param number_elements_y: Number of detection elements in y-direction.
+        :type number_elements_y: int
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of e.g. detector element positions or illuminator positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
+        """
         super(RSOMExplorerP50, self).__init__(device_position_mm=device_position_mm)
 
         detection_geometry = PlanarArrayDetectionGeometry(pitch_mm=element_spacing_mm,

@@ -3,14 +3,13 @@
 # SPDX-License-Identifier: MIT
 
 from abc import abstractmethod
-from simpa.utils import Settings, Tags
 from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 import numpy as np
 
 
 class DetectionGeometryBase(DigitalDeviceTwinBase):
     """
-    This class represents a detector geometry.
+    This class is the base class for representing all detector geometries.
     """
     def __init__(self, number_detector_elements, detector_element_width_mm,
                  detector_element_length_mm, center_frequency_hz, bandwidth_percent,
@@ -19,12 +18,26 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
         """
 
         :param number_detector_elements: Total number of detector elements.
-        :param detector_element_width_mm: In-plane width of one detector element (pitch - distance between two elements).
-        :param detector_element_length_mm: Out-of-plane length of one detector element.
-        :param center_frequency_hz:
-        :param bandwidth_percent:
-        :param sampling_frequency_mhz:
-        :param device_position_mm: Origin of the internal representation of the device.
+        :type number_detector_elements: int
+        :param detector_element_width_mm: In-plane width of one detector element (pitch - distance between two
+            elements) in mm.
+        :type detector_element_width_mm: int, float
+        :param detector_element_length_mm: Out-of-plane length of one detector element in mm.
+        :type detector_element_length_mm: int, float
+        :param center_frequency_hz: Center frequency of the detector with approximately gaussian frequency response in
+            Hz.
+        :type center_frequency_hz: int, float
+        :param bandwidth_percent: Full width at half maximum in percent of the center frequency.
+        :type bandwidth_percent: int, float
+        :param sampling_frequency_mhz: Sampling frequency of the detector in MHz.
+        :type sampling_frequency_mhz: int, float
+        :param device_position_mm: Each device has an internal position which serves as origin for internal \
+        representations of detector positions.
+        :type device_position_mm: ndarray
+        :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
+        [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
+        positions.
+        :type field_of_view_extent_mm: ndarray
         """
         super(DetectionGeometryBase, self).__init__(device_position_mm=device_position_mm,
                                                     field_of_view_extent_mm=field_of_view_extent_mm)
@@ -45,7 +58,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
             get_detector_element_positions_accounting_for_device_position_mm
 
-        :returns: A numpy array containing the position vestors of the detection elements.
+        :returns: A numpy array containing the position vectors of the detection elements.
 
         """
         pass
@@ -109,5 +122,3 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
 
         """
         pass
-
-
