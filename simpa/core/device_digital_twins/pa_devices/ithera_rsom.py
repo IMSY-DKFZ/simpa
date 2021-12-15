@@ -2,11 +2,10 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+import numpy as np
+
 from simpa.core.device_digital_twins import PhotoacousticDevice, PlanarArrayDetectionGeometry, \
     PencilArrayIlluminationGeometry
-from simpa.utils.settings import Settings
-from simpa.utils import Tags
-import numpy as np
 
 
 class RSOMExplorerP50(PhotoacousticDevice):
@@ -77,3 +76,15 @@ class RSOMExplorerP50(PhotoacousticDevice):
                                                                 number_illuminators_y=number_elements_y)
 
         self.add_illumination_geometry(illumination_geometry)
+
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        device_dict = {"RSOMExplorerP50": serialized_device}
+        return device_dict
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        deserialized_device = RSOMExplorerP50()
+        for key, value in dictionary_to_deserialize.items():
+            deserialized_device.__dict__[key] = value
+        return deserialized_device

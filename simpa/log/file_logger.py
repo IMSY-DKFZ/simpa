@@ -5,9 +5,10 @@
 import logging
 from pathlib import Path
 import sys
+from simpa.utils.serializer import SerializableSIMPAClass
 
 
-class Logger:
+class Logger(SerializableSIMPAClass):
     """
     The SIMPA Logger.
     The purpose of this class is to guarantee that the logging Config has been set and that logging strings are written
@@ -27,7 +28,7 @@ class Logger:
     _simpa_default_logging_path = str(Path.home())+"/simpa.log"
     _logger = None
 
-    def __new__(cls, path=None, force_new_instance=False):
+    def __new__(cls, path=None, force_new_instance=False, startup_verbose=False):
         # This pattern can be used to realise a singleton implementation in Python
         if cls._instance is None or force_new_instance:
             cls._instance = super(Logger, cls).__new__(cls)
@@ -50,9 +51,10 @@ class Logger:
             cls._logger.addHandler(console_handler)
             cls._logger.addHandler(file_handler)
 
-            cls._logger.debug("##############################")
-            cls._logger.debug("NEW SIMULATION SESSION STARTED")
-            cls._logger.debug("##############################")
+            if startup_verbose:
+                cls._logger.debug("##############################")
+                cls._logger.debug("NEW SIMULATION SESSION STARTED")
+                cls._logger.debug("##############################")
 
         return cls._instance
 
@@ -101,3 +103,11 @@ class Logger:
         :param msg: the message to log
         """
         self._logger.critical(msg)
+
+    def serialize(self) -> dict:
+        return {"Logger": {"Logger": 1}}
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        deserialized_logger = Logger()
+        return deserialized_logger

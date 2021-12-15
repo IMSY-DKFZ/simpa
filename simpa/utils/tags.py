@@ -27,6 +27,12 @@ class Tags:
     Usage: SIMPA package
     """
 
+    SIMULATION_PIPELINE = "simulation_pipeline"
+    """
+    List of SimulationModules that are used within a simulation pipeline.\n
+    Usage: SIMPA package
+    """
+
     VOLUME_NAME = ("volume_name", str)
     """
     Name of the SIMPA output file.\n
@@ -276,7 +282,7 @@ class Tags:
     Digital Device Twin Settings
     """
 
-    DIGITAL_DEVICE = ("digital_device", str)
+    DIGITAL_DEVICE = "digital_device"
     """
     Digital device that is chosen as illumination source and detector for the simulation.\n
     Usage: SIMPA package
@@ -380,7 +386,7 @@ class Tags:
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
-    MCX_ASSUMED_ANISOTROPY = ("mcx_seed", (int, float))
+    MCX_ASSUMED_ANISOTROPY = ("mcx_assumed_anisotropy", (int, float))
     """
     The anisotropy that should be assumed for the mcx simulations.
     If not set, a default value of 0.9 will be assumed.

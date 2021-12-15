@@ -39,7 +39,11 @@ class VolumeCreatorModuleBase(SimulationModule):
     @abstractmethod
     def create_simulation_volume(self) -> dict:
         """
-        This method will be called to create a simulation volume.
+        This method creates an in silico representation of a tissue as described in the settings file that is given.
+
+        :return: A dictionary containing optical and acoustic properties as well as other characteristics of the
+            simulated volume such as oxygenation, and a segmentation mask. All of these are given as 3d numpy arrays.
+        :rtype: dict
         """
         pass
 
@@ -58,7 +62,8 @@ class VolumeCreatorModuleBase(SimulationModule):
 
         save_volumes = dict()
         for key, value in volumes.items():
-            if key in [Tags.DATA_FIELD_ABSORPTION_PER_CM, Tags.DATA_FIELD_SCATTERING_PER_CM, Tags.DATA_FIELD_ANISOTROPY]:
+            if key in [Tags.DATA_FIELD_ABSORPTION_PER_CM, Tags.DATA_FIELD_SCATTERING_PER_CM,
+                       Tags.DATA_FIELD_ANISOTROPY]:
                 save_volumes[key] = {self.global_settings[Tags.WAVELENGTH]: value}
             else:
                 save_volumes[key] = value

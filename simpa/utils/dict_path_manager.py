@@ -14,7 +14,7 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     :return: String which defines the path to the data_field.
     """
 
-    if data_field in [Tags.SIMULATIONS, Tags.SETTINGS]:
+    if data_field in [Tags.SIMULATIONS, Tags.SETTINGS, Tags.DIGITAL_DEVICE, Tags.SIMULATION_PIPELINE]:
         return "/" + data_field + "/"
 
     wavelength_dependent_properties = [Tags.DATA_FIELD_ABSORPTION_PER_CM,

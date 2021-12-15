@@ -23,17 +23,18 @@ Please read the description of every test and run them one after the other.
 Be aware that by running multiple tests at once, the previous tests are overwritten.
 """
 
-from simpa.utils import Tags, Settings, PathManager, TISSUE_LIBRARY
-from simpa.io_handling import load_data_field
-from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter
-from simpa.core.simulation import simulate
-from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
+
+from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter
+from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
+from simpa.core.simulation import simulate
+from simpa.io_handling import load_data_field
+from simpa.utils import Tags, Settings, PathManager, TISSUE_LIBRARY
 from simpa_tests.manual_tests import ManualIntegrationTestClass
-import os
 # FIXME temporary workaround for newest Intel architectures
-import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 

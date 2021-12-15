@@ -8,7 +8,7 @@ from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
 from simpa.utils.calculate import calculate_oxygenation
 from simpa.utils.calculate import randomize_uniform
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
-from simpa.utils.calculate import positive_Gauss
+from simpa.utils.calculate import positive_gauss
 import numpy as np
 
 
@@ -60,7 +60,8 @@ class TestCalculationUtils(unittest.TestCase):
             mcg.append(MOLECULE_LIBRARY.fat(1.0))
             mcg.append(MOLECULE_LIBRARY.deoxyhemoglobin(deoxy))
             mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(oxy))
-            sO2_value = calculate_oxygenation(mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC))
+            sO2_value = calculate_oxygenation(mcg.get_molecular_composition(
+                segmentation_type=SegmentationClasses.GENERIC))
 
             assert abs(sO2_value - (oxy / (oxy + deoxy))) < 1e-10
 
@@ -83,5 +84,5 @@ class TestCalculationUtils(unittest.TestCase):
         for _ in range(1000):
             mean = np.random.rand(1)[0]
             std = np.random.rand(1)[0]
-            random_value = positive_Gauss(mean, std)
-            assert random_value > np.float(0), "positive Gauss value outside the desired range and negative"
+            random_value = positive_gauss(mean, std)
+            assert random_value > float(0), "positive Gauss value outside the desired range and negative"

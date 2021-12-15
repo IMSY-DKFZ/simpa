@@ -101,11 +101,12 @@ def calculate_gruneisen_parameter_from_temperature(temperature_in_celcius):
             title={Biomedical optics: principles and imaging},
             author={Wang, Lihong V and Wu, Hsin-i},
             year={2012},
-            publisher={John Wiley \& Sons}
+            publisher={John Wiley & Sons}
         }
 
     :param temperature_in_celcius: the temperature in degrees celcius
-    :return: a floating point number, if temperature_in_celcius is a number or a float array, if temperature_in_celcius is an array
+    :return: a floating point number, if temperature_in_celcius is a number or a float array, if temperature_in_celcius
+        is an array
 
     """
     return 0.0043 + 0.0053 * temperature_in_celcius
@@ -131,8 +132,8 @@ def rotation_x(theta):
     :return: rotation matrix
     """
     return np.array([[1, 0, 0],
-                      [0, np.cos(theta), -np.sin(theta)],
-                      [0, np.sin(theta), np.cos(theta)]])
+                    [0, np.cos(theta), -np.sin(theta)],
+                    [0, np.sin(theta), np.cos(theta)]])
 
 
 def rotation_y(theta):
@@ -143,8 +144,8 @@ def rotation_y(theta):
     :return: rotation matrix
     """
     return np.array([[np.cos(theta), 0, np.sin(theta)],
-                      [0, 1, 0],
-                      [-np.sin(theta), 0, np.cos(theta)]])
+                    [0, 1, 0],
+                    [-np.sin(theta), 0, np.cos(theta)]])
 
 
 def rotation_z(theta):
@@ -155,8 +156,8 @@ def rotation_z(theta):
     :return: rotation matrix
     """
     return np.array([[np.cos(theta), -np.sin(theta), 0],
-                      [np.sin(theta), np.cos(theta), 0],
-                      [0, 0, 1]])
+                    [np.sin(theta), np.cos(theta), 0],
+                    [0, 0, 1]])
 
 
 def rotation(angles):
@@ -208,7 +209,8 @@ def min_max_normalization(data: np.ndarray = None) -> np.ndarray:
 
     return output
 
-def positive_Gauss(mean, std)-> np.float:
+
+def positive_gauss(mean, std) -> float:
     """
     Generates a non-negative random sample (scalar) from a normal (Gaussian) distribution.
 
@@ -217,7 +219,7 @@ def positive_Gauss(mean, std)-> np.float:
     :return: non-negative random sample from a normal (Gaussian) distribution.
     """
     random_value = np.random.normal(mean, std)
-    if random_value <=0:
-        return positive_Gauss(mean, std)
+    if random_value <= 0:
+        return positive_gauss(mean, std)
     else: 
         return random_value

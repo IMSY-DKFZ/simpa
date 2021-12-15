@@ -12,12 +12,12 @@ from .constants import SegmentationClasses
 # Then load classes and methods with an <b>increasing</b> amount of internal dependencies.
 # If there are import errors in the tests, it is probably due to an incorrect
 # initialization order
-from .libraries.spectra_library import AbsorptionSpectrumLibrary
-from .libraries.spectra_library import Spectrum
-from .libraries.spectra_library import view_saved_spectra
-from .libraries.spectra_library import AnisotropySpectrumLibrary
-from .libraries.spectra_library import ScatteringSpectrumLibrary
-from .libraries.spectra_library import get_simpa_internal_absorption_spectra_by_names
+from .libraries.spectrum_library import AbsorptionSpectrumLibrary
+from .libraries.spectrum_library import Spectrum
+from .libraries.spectrum_library import view_saved_spectra
+from .libraries.spectrum_library import AnisotropySpectrumLibrary
+from .libraries.spectrum_library import ScatteringSpectrumLibrary
+from .libraries.spectrum_library import get_simpa_internal_absorption_spectra_by_names
 
 from .libraries.molecule_library import Molecule, MolecularCompositionGenerator
 from .libraries.molecule_library import MoleculeLibrary
