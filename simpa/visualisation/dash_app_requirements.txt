@@ -1,0 +1,6 @@
+dash
+dash-table
+dash_colorscales
+plotly
+plotly-express
+dash-bootstrap-components
