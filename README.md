@@ -31,8 +31,8 @@ In order to use SIMPA in your project, SIMPA has to be installed as well as the 
 Finally, to connect everything, SIMPA has to find all the binaries of the simulation modules you would like to use.
 The SIMPA path management takes care of that.
 
-* [SIMPA installation](#simpa-installation-instructions)
-* [External tools installation](#external-tools-installation-instructions)
+* [SIMPA installation instructions](#simpa-installation-instructions)
+* [External tools installation instructions](#external-tools-installation-instructions)
 * [Path Management](#path-management)
 
 ## SIMPA installation instructions
@@ -58,7 +58,7 @@ You can also install SIMPA with pip. Simply run:
 
 You also need to manually install the pytorch library to use all features of SIMPA.
 To this end, use the pytorch website tool to figure out which version to install:
-`https://pytorch.org/get-started/locally/`
+[https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
 
 ## External tools installation instructions
 
@@ -69,11 +69,11 @@ acoustic simulations possible.
 
 Either download suitable executables or build yourself from the following sources:
 
-http://mcx.space/
+[http://mcx.space/](http://mcx.space/)
 
 In order to obtain access to all custom sources that we implemented, please build mcx yourself from the
 following mcx Github fork:
-https://github.com/CAMI-DKFZ/mcx
+[https://github.com/CAMI-DKFZ/mcx](https://github.com/CAMI-DKFZ/mcx)
 
 For the installation, please follow the instructions from the original repository.
 Please note that there might be compatibility issues using mcx-cl with the MCX Adapter as this use case is not 
@@ -84,12 +84,12 @@ being tested and supported by the SIMPA developers.
 Please follow the following steps and use the k-Wave install instructions 
 for further (and much better) guidance under:
 
-http://www.k-wave.org/
+[http://www.k-wave.org/](http://www.k-wave.org/)
 
 1. Install MATLAB with the core and parallel computing toolboxes activated at the minimum.
 2. Download the kWave toolbox
 3. Add the kWave toolbox base path to the toolbox paths in MATLAB
-4. Download the kWaveArray addition from the link given in this user forum post http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources
+4. Download the kWaveArray addition from the link given in this user forum post [http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources](http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources)
 5. Add the kWaveArray folder to the toolbox paths in MATLAB as well
 6. If wanted: Download the CPP and CUDA binary files and place them in the k-Wave/binaries folder
 7. Note down the system path to the `matlab` executable file.
@@ -142,7 +142,7 @@ sp.simulate(simulation_pipeline, settings, device)
 
 # Documentation
 
-The updated version of the SIMPA documentation can be found at https://simpa.readthedocs.io/en/develop.
+The updated version of the SIMPA documentation can be found at [https://simpa.readthedocs.io/en/develop](https://simpa.readthedocs.io/en/develop).
 
 ## Building the documentation
 
@@ -171,7 +171,7 @@ Please make sure that you have included unit tests for your code and that all pr
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST, and you are very welcome to participate and
 raise any issues or suggest new features. If you want to join this meeting, write one of the core developers.
 
-Please see the github guidelines for creating pull requests: https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests
+Please see the github guidelines for creating pull requests: [https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)
 
 
 # Performance profiling

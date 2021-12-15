@@ -1,3 +1,7 @@
+===================================
+SIMPA
+===================================
+
 .. image:: images/simpa_logo.png
    :width: 12cm
    :align: center
@@ -13,7 +17,7 @@ pipeline according to their specific use cases and tool requirements.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents
+   :caption: SIMPA toolkit
 
    intro_link
    contributing_link
