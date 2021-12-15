@@ -32,6 +32,12 @@ libraries
    :show-inheritance:
 
 
+.. automodule:: simpa.utils.libraries.structure_library
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 .. automodule:: simpa.utils.libraries.tissue_library
    :members:
    :undoc-members:
