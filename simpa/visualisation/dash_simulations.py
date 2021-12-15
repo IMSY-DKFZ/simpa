@@ -55,14 +55,14 @@ from simpa.io_handling import load_hdf5
 from simpa.utils import get_data_field_from_simpa_output, SegmentationClasses, Tags
 
 EXTERNAL_STYLESHEETS = [
-    'assets/dcc.css',
+    '../../docs/source/_static/dcc.css',
     dbc.themes.JOURNAL,
 ]
 app = Dash(__name__, external_stylesheets=EXTERNAL_STYLESHEETS, title="SIMPA")
 
-SIMPA_LOGO = './assets/simpa_logo.png'
-CAMI_LOGO = './assets/CAMIC_logo-wo_DKFZ.png'
-GITHUB_LOGO = './assets/GitHub-Mark-64px.png'
+SIMPA_LOGO = '../../docs/source/images/simpa_logo.png'
+CAMI_LOGO = '../../docs/source/images/CAMIC_logo-wo_DKFZ.png'
+GITHUB_LOGO = '../../docs/source/images/GitHub-Mark-64px.png'
 
 ENCODED_GITHUB_LOGO = (base64.b64encode(open(GITHUB_LOGO, 'rb').read())).decode()
 ENCODED_SIMPA_LOGO = (base64.b64encode(open(SIMPA_LOGO, 'rb').read())).decode()
@@ -72,7 +72,7 @@ DEFAULT_COLORSCALE = ['rgb(5,48,97)', 'rgb(33,102,172)', 'rgb(67,147,195)', 'rgb
                       'rgb(247,247,247)', 'rgb(253,219,199)', 'rgb(244,165,130)', 'rgb(214,96,77)',
                       'rgb(178,24,43)', 'rgb(103,0,31)']
 GITHUB_LINK = 'https://github.com/CAMI-DKFZ/simpa'
-SIMPA_DOCU_LINK = 'https://simpa.readthedocs.io/en/latest/'
+SIMPA_DOCU_LINK = 'https://simpa.readthedocs.io/en/develop/'
 CAMI_LINK = 'https://www.dkfz.de/en/cami/research/index.html'
 BG_COLOR = "#506784"
 FONT_COLOR = "#F3F6FA"
@@ -159,7 +159,7 @@ app.layout = html.Div([
                              width='100%',
                              ),
                 ],
-                style={'display': 'inline-block', 'padding-right': '10px', 'width': '20%'},
+                style={'display': 'inline-block', 'padding-right': '10px', 'width': '40%'},
                 id='simpa_logo'
             ),
             html.A(
