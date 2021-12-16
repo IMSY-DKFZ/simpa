@@ -45,7 +45,7 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 4. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
-virtual environment activated
+virtual environment activated (we also recommend python 3.8)
 1. `pip install -r requirements.txt`
 2. `python setup.py install` (for developement: `python setup.py develop`)
 3. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
