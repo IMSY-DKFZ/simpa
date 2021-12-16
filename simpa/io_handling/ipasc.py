@@ -109,9 +109,9 @@ class IpascSimpaAdapter(BaseAdapter):
             return str(type(self.time_series_data[0, 0, 0, 0].item()))
         elif metadata_tag == MetadataAcquisitionTags.AD_SAMPLING_RATE:
             if Tags.K_WAVE_SPECIFIC_DT in self.settings and self.settings[Tags.K_WAVE_SPECIFIC_DT]:
-                return float(self.settings[Tags.K_WAVE_SPECIFIC_DT])
+                return float(1.0 / self.settings[Tags.K_WAVE_SPECIFIC_DT])
             elif self.device.get_detection_geometry().sampling_frequency_MHz is not None:
-                return float(1.0 / (self.device.get_detection_geometry().sampling_frequency_MHz * 1000000))
+                return float(self.device.get_detection_geometry().sampling_frequency_MHz * 1000000)
         elif metadata_tag == MetadataAcquisitionTags.ACQUISITION_OPTICAL_WAVELENGTHS:
             return np.asarray(self.wavelengths)
         elif metadata_tag == MetadataAcquisitionTags.DIMENSIONALITY:
