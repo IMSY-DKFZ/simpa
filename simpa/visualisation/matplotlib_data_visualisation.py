@@ -97,9 +97,9 @@ def visualise_data(wavelength: int = None,
 
     if show_oxygenation:
         try:
-            oxygenation = get_data_field_from_simpa_output(file, Tags.PROPERTY_OXYGENATION, wavelength)
+            oxygenation = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_OXYGENATION, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.PROPERTY_OXYGENATION) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_OXYGENATION) + " was not in the simpa output.")
             show_oxygenation = False
             oxygenation = None
 
