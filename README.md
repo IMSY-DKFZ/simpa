@@ -106,6 +106,8 @@ one we provided in the `simpa_examples`) in the following places in this order:
 3. The current working directory
 4. The SIMPA home directory path
 
+Please follow the instructions in the `path_config.env` file in the `simpa_examples` folder. 
+
 # Simulation examples
 
 To get started with actual simulations, SIMPA provides an [example package](simpa_examples) of simple simulation 
