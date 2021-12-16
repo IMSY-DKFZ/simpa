@@ -22,7 +22,7 @@ RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
 
 # If VISUALIZE is set to True, the simulation result will be plotted
-VISUALIZE = False
+VISUALIZE = True
 
 
 def create_example_tissue():
