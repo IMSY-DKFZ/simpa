@@ -1375,3 +1375,19 @@ class Tags:
     False by default. Only set to True if the pipeline is thoroughly tested.
     Usage: core
     """
+
+    COMPUTE_DIFFUSE_REFLECTANCE = ("save_diffuse_reflectance", bool)
+    """
+    Flag that indicates if the diffuse reflectance should be stored in voxels that are filled with 0 in the surrounding
+    of the volume. 
+    """
+
+    COMPUTE_PHOTON_DIRECTION_AT_EXIT = ("save_dir_at_exit", bool)
+    """
+    Flag that indicates if the direction of photons when they exit the volume should be stored
+    """
+
+    DATA_FIELD_VOLUME_SURFACE_ALONG_Z = ("volume_surface_along_z", np.ndarray)
+    """
+    Identifier for the location along Z axis where the values of volume change from zero to non-zero.
+    """

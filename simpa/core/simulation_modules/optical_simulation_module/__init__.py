@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import numpy as np
 
 from simpa.utils import Tags, Settings
 from abc import abstractmethod
@@ -29,7 +30,12 @@ class OpticalForwardModuleBase(SimulationModule):
         self.temporary_output = []
 
     @abstractmethod
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
+    def forward_model(self,
+                      absorption_cm: np.ndarray,
+                      scattering_cm: np.ndarray,
+                      anisotropy: np.ndarray,
+                      illumination_geometry: IlluminationGeometryBase,
+                      probe_position_mm: np.ndarray):
         """
         A deriving class needs to implement this method according to its model.
 
@@ -37,6 +43,7 @@ class OpticalForwardModuleBase(SimulationModule):
         :param scattering_cm: Scattering in units of per centimeter
         :param anisotropy: Dimensionless scattering anisotropy
         :param illumination_geometry: A device that represents a detection geometry
+        :param probe_position_mm: parameters defining the position of a probe if any
         :return: Fluence in units of J/cm^2
         """
         pass

@@ -20,8 +20,8 @@ VOLUME_HEIGHT_IN_MM = 60
 SPACING = 0.5
 RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
-SAVE_REFLECTANCE = False
-SAVE_PHOTON_DIRECTION = False
+SAVE_REFLECTANCE = True
+SAVE_PHOTON_DIRECTION = True
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = False
@@ -69,7 +69,7 @@ def create_example_tissue():
     epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     tissue_dict = sp.Settings()
-    if not SAVE_REFLECTANCE:
+    if not SAVE_REFLECTANCE and not SAVE_PHOTON_DIRECTION:
         tissue_dict[Tags.BACKGROUND] = background_dictionary
     tissue_dict["muscle"] = muscle_dictionary
     tissue_dict["epidermis"] = epidermis_dictionary
@@ -96,7 +96,7 @@ general_settings = {
     Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                    VOLUME_PLANAR_DIM_IN_MM/2,
                                    0],
-    Tags.DO_FILE_COMPRESSION: True
+    Tags.DO_FILE_COMPRESSION: True,
 }
 
 settings = sp.Settings(general_settings)
@@ -110,7 +110,9 @@ settings.set_optical_settings({
     Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
     Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+    Tags.COMPUTE_DIFFUSE_REFLECTANCE: SAVE_REFLECTANCE,
+    Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT: SAVE_PHOTON_DIRECTION
 })
 settings["noise_model_1"] = {
     Tags.NOISE_MEAN: 1.0,

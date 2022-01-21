@@ -7,9 +7,11 @@ import struct
 import subprocess
 from simpa.utils import Tags
 from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
+from simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base import IlluminationGeometryBase
 import json
 import os
 import gc
+from typing import List, Dict
 
 
 class MCXAdapter(OpticalForwardModuleBase):
@@ -23,7 +25,12 @@ class MCXAdapter(OpticalForwardModuleBase):
 
     """
 
-    def forward_model(self, absorption_cm, scattering_cm, anisotropy, illumination_geometry, probe_position_mm):
+    def forward_model(self,
+                      absorption_cm: np.ndarray,
+                      scattering_cm: np.ndarray,
+                      anisotropy: np.ndarray,
+                      illumination_geometry: IlluminationGeometryBase,
+                      probe_position_mm: np.ndarray) -> np.ndarray:
         if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
             _assumed_anisotropy = self.component_settings[Tags.MCX_ASSUMED_ANISOTROPY]
         else:
@@ -34,61 +41,9 @@ class MCXAdapter(OpticalForwardModuleBase):
                                      anisotropy=_assumed_anisotropy,
                                      assumed_anisotropy=_assumed_anisotropy)
 
-        mcx_volumetric_data_file = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                                   self.global_settings[Tags.VOLUME_NAME] + "_output"
-        self.temporary_output.append(mcx_volumetric_data_file + '.mc2')
-        self.mcx_volumetric_data_file = mcx_volumetric_data_file + '.mc2'
-
-        # write settings to json
-        # time = 1.16e-09
-        # dt = 8e-12
-        if Tags.TIME_STEP and Tags.TOTAL_TIME in self.component_settings:
-            dt = self.component_settings[Tags.TIME_STEP]
-            time = self.component_settings[Tags.TOTAL_TIME]
-        else:
-            time = 5e-09
-            dt = 5e-09
-        self.frames = int(time/dt)
-
-        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings, probe_position_mm)
-
-        settings_dict = {
-            "Session": {
-                "ID": mcx_volumetric_data_file,
-                "DoAutoThread": 1,
-                "Photons": self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
-                "DoMismatch": 0
-             },
-            "Forward": {
-                "T0": 0,
-                "T1": time,
-                "Dt": dt
-            },
-            "Optode": {
-              "Source": source
-            },
-            "Domain": {
-                "OriginType": 0,
-                "LengthUnit": self.global_settings[Tags.SPACING_MM],
-                "Media": [
-                    {
-                        "mua": 0,
-                        "mus": 0,
-                        "g": 1,
-                        "n": 1
-                    },
-                    {
-                        "mua": 1,
-                        "mus": 1,
-                        "g": _assumed_anisotropy,
-                        "n": 1
-                    }
-                ],
-                "MediaFormat": "muamus_float",
-                "Dim": [self.nx, self.ny, self.nz],
-                "VolumeFile": self.global_settings[Tags.SIMULATION_PATH] + "/" +
-                              self.global_settings[Tags.VOLUME_NAME] + ".bin"
-            }}
+        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
+                                              probe_position_mm=probe_position_mm,
+                                              assumed_anisotropy=_assumed_anisotropy)
 
         if Tags.MCX_SEED not in self.component_settings:
             if Tags.RANDOM_SEED in self.global_settings:
@@ -117,11 +72,67 @@ class MCXAdapter(OpticalForwardModuleBase):
 
         struct._clearcache()
 
-        self.clean_mcx_output()
-
+        self.remove_mcx_output()
         return fluence
 
-    def get_command(self):
+    def get_mcx_settings(self,
+                         illumination_geometry: IlluminationGeometryBase,
+                         probe_position_mm: np.ndarray,
+                         assumed_anisotropy: np.ndarray,
+                         **kwargs) -> Dict:
+        mcx_volumetric_data_file = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
+                                   self.global_settings[Tags.VOLUME_NAME] + "_output"
+        self.temporary_output.append(mcx_volumetric_data_file + '.mc2')
+        self.mcx_volumetric_data_file = mcx_volumetric_data_file + '.mc2'
+        if Tags.TIME_STEP and Tags.TOTAL_TIME in self.component_settings:
+            dt = self.component_settings[Tags.TIME_STEP]
+            time = self.component_settings[Tags.TOTAL_TIME]
+        else:
+            time = 5e-09
+            dt = 5e-09
+        self.frames = int(time/dt)
+
+        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings, probe_position_mm)
+        settings_dict = {
+            "Session": {
+                "ID": mcx_volumetric_data_file,
+                "DoAutoThread": 1,
+                "Photons": self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
+                "DoMismatch": 0
+             },
+            "Forward": {
+                "T0": 0,
+                "T1": time,
+                "Dt": dt
+            },
+            "Optode": {
+              "Source": source
+            },
+            "Domain": {
+                "OriginType": 0,
+                "LengthUnit": self.global_settings[Tags.SPACING_MM],
+                "Media": [
+                    {
+                        "mua": 0,
+                        "mus": 0,
+                        "g": 1,
+                        "n": 1
+                    },
+                    {
+                        "mua": 1,
+                        "mus": 1,
+                        "g": assumed_anisotropy,
+                        "n": 1
+                    }
+                ],
+                "MediaFormat": "muamus_float",
+                "Dim": [self.nx, self.ny, self.nz],
+                "VolumeFile": self.global_settings[Tags.SIMULATION_PATH] + "/" +
+                              self.global_settings[Tags.VOLUME_NAME] + ".bin"
+            }}
+        return settings_dict
+
+    def get_command(self) -> List:
         cmd = list()
         cmd.append(self.component_settings[Tags.OPTICAL_MODEL_BINARY_PATH])
         cmd.append("-f")
@@ -130,7 +141,11 @@ class MCXAdapter(OpticalForwardModuleBase):
         cmd.append("F")
         return cmd
 
-    def generate_mcx_input_file(self, absorption_cm, scattering_cm, anisotropy, assumed_anisotropy):
+    def generate_mcx_input_file(self,
+                                absorption_cm: np.ndarray,
+                                scattering_cm: np.ndarray,
+                                anisotropy: np.ndarray,
+                                assumed_anisotropy: np.ndarray) -> Dict:
         absorption_mm = absorption_cm / 10
         scattering_mm = scattering_cm / 10
 
@@ -142,7 +157,8 @@ class MCXAdapter(OpticalForwardModuleBase):
         given_reduced_scattering = (scattering_mm * (1 - anisotropy))
         scattering_mm = given_reduced_scattering / (1 - assumed_anisotropy)
         scattering_mm[scattering_mm < 1e-10] = 1e-10
-
+        absorption_mm = self.pre_process_volumes(absorption_mm)
+        scattering_mm = self.pre_process_volumes(absorption_mm)
         op_array = np.asarray([absorption_mm, scattering_mm])
 
         [_, self.nx, self.ny, self.nz] = np.shape(op_array)
@@ -164,8 +180,9 @@ class MCXAdapter(OpticalForwardModuleBase):
         del mcx_input, input_file
         struct._clearcache()
         gc.collect()
+        return {}
 
-    def read_mcx_output(self):
+    def read_mcx_output(self) -> np.ndarray:
         with open(self.mcx_volumetric_data_file, 'rb') as f:
             data = f.read()
         data = struct.unpack('%df' % (len(data) / 4), data)
@@ -174,7 +191,12 @@ class MCXAdapter(OpticalForwardModuleBase):
             fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
         return fluence
 
-    def clean_mcx_output(self):
+    def remove_mcx_output(self) -> None:
         for f in self.temporary_output:
             if os.path.isfile(f):
                 os.remove(f)
+
+    @staticmethod
+    def pre_process_volumes(array: np.ndarray) -> np.ndarray:
+        return array
+
