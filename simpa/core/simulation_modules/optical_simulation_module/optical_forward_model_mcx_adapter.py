@@ -5,13 +5,13 @@
 import numpy as np
 import struct
 import subprocess
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
 from simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base import IlluminationGeometryBase
 import json
 import os
 import gc
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 
 class MCXAdapter(OpticalForwardModuleBase):
@@ -24,6 +24,12 @@ class MCXAdapter(OpticalForwardModuleBase):
         Optics express 17.22 (2009): 20178-20190.
 
     """
+
+    def __init__(self, global_settings: Settings):
+        super(MCXAdapter, self).__init__(global_settings=global_settings)
+        self.mcx_json_config_file = None
+        self.mcx_volumetric_data_file = None
+        self.frames = None
 
     def forward_model(self,
                       absorption_cm: np.ndarray,
@@ -61,17 +67,14 @@ class MCXAdapter(OpticalForwardModuleBase):
             json.dump(settings_dict, json_file, indent="\t")
 
         # run the simulation
-
         cmd = self.get_command()
-
-        _ = subprocess.run(cmd)
+        self.run_mcx(cmd)
 
         # Read output
-
         fluence = self.read_mcx_output()
-
         struct._clearcache()
 
+        # clean temporary files
         self.remove_mcx_output()
         return fluence
 
@@ -90,7 +93,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         else:
             time = 5e-09
             dt = 5e-09
-        self.frames = int(time/dt)
+        self.frames = int(time / dt)
 
         source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings, probe_position_mm)
         settings_dict = {
@@ -99,14 +102,14 @@ class MCXAdapter(OpticalForwardModuleBase):
                 "DoAutoThread": 1,
                 "Photons": self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
                 "DoMismatch": 0
-             },
+            },
             "Forward": {
                 "T0": 0,
                 "T1": time,
                 "Dt": dt
             },
             "Optode": {
-              "Source": source
+                "Source": source
             },
             "Domain": {
                 "OriginType": 0,
@@ -141,24 +144,23 @@ class MCXAdapter(OpticalForwardModuleBase):
         cmd.append("F")
         return cmd
 
+    @staticmethod
+    def run_mcx(cmd):
+        results = None
+        try:
+            results = subprocess.run(cmd)
+        except:
+            raise RuntimeError(f"MCX failed to run: {results}")
+
     def generate_mcx_input_file(self,
                                 absorption_cm: np.ndarray,
                                 scattering_cm: np.ndarray,
                                 anisotropy: np.ndarray,
-                                assumed_anisotropy: np.ndarray) -> Dict:
-        absorption_mm = absorption_cm / 10
-        scattering_mm = scattering_cm / 10
-
-        # FIXME Currently, mcx only accepts a single value for the anisotropy.
-        #   In order to use the correct reduced scattering coefficient throughout the simulation,
-        #   we adjust the scattering parameter to be more accurate in the diffuse regime.
-        #   This will lead to errors, especially in the quasi-ballistic regime.
-
-        given_reduced_scattering = (scattering_mm * (1 - anisotropy))
-        scattering_mm = given_reduced_scattering / (1 - assumed_anisotropy)
-        scattering_mm[scattering_mm < 1e-10] = 1e-10
-        absorption_mm = self.pre_process_volumes(absorption_mm)
-        scattering_mm = self.pre_process_volumes(absorption_mm)
+                                assumed_anisotropy: np.ndarray) -> None:
+        absorption_mm, scattering_mm = self.pre_process_volumes(**{'absorption_cm': absorption_cm,
+                                                                   'scattering_cm': scattering_cm,
+                                                                   'anisotropy': anisotropy,
+                                                                   'assumed_anisotropy': assumed_anisotropy})
         op_array = np.asarray([absorption_mm, scattering_mm])
 
         [_, self.nx, self.ny, self.nz] = np.shape(op_array)
@@ -180,9 +182,8 @@ class MCXAdapter(OpticalForwardModuleBase):
         del mcx_input, input_file
         struct._clearcache()
         gc.collect()
-        return {}
 
-    def read_mcx_output(self) -> np.ndarray:
+    def read_mcx_output(self, **kwargs) -> np.ndarray:
         with open(self.mcx_volumetric_data_file, 'rb') as f:
             data = f.read()
         data = struct.unpack('%df' % (len(data) / 4), data)
@@ -197,6 +198,23 @@ class MCXAdapter(OpticalForwardModuleBase):
                 os.remove(f)
 
     @staticmethod
-    def pre_process_volumes(array: np.ndarray) -> np.ndarray:
-        return array
+    def pre_process_volumes(**kwargs) -> Tuple:
+        scattering_cm = kwargs.get('scattering_cm')
+        absorption_cm = kwargs.get('absorption_cm')
+        absorption_mm = absorption_cm / 10
+        scattering_mm = scattering_cm / 10
 
+        # FIXME Currently, mcx only accepts a single value for the anisotropy.
+        #   In order to use the correct reduced scattering coefficient throughout the simulation,
+        #   we adjust the scattering parameter to be more accurate in the diffuse regime.
+        #   This will lead to errors, especially in the quasi-ballistic regime.
+
+        given_reduced_scattering = (scattering_mm * (1 - kwargs.get('anisotropy')))
+        scattering_mm = given_reduced_scattering / (1 - kwargs.get('assumed_anisotropy'))
+        scattering_mm[scattering_mm < 1e-10] = 1e-10
+        return absorption_mm, scattering_mm
+
+    @staticmethod
+    def post_process_volumes(**kwargs) -> Tuple:
+        arrays = kwargs.get('arrays')
+        return tuple(a for a in arrays)

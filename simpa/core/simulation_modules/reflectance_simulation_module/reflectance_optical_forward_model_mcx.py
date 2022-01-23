@@ -3,17 +3,15 @@ SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
 SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
 SPDX-License-Identifier: MIT
 """
-import logging
 import numpy as np
 import struct
-import subprocess
 import json
 import jdata
 import os
 import gc
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import MCXAdapter
 from simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base import IlluminationGeometryBase
 
@@ -29,6 +27,11 @@ class ReflectanceMcxAdapter(MCXAdapter):
         Optics express 17.22 (2009): 20178-20190.
 
     """
+
+    def __init__(self, global_settings: Settings):
+        super(ReflectanceMcxAdapter, self).__init__(global_settings=global_settings)
+        self.mcx_photon_data_file = None
+        self.padded = None
 
     def forward_model(self,
                       absorption_cm: np.ndarray,
@@ -67,17 +70,14 @@ class ReflectanceMcxAdapter(MCXAdapter):
             json.dump(settings_dict, json_file, indent="\t")
 
         # run the simulation
-
         cmd = self.get_command()
-
-        _ = subprocess.run(cmd)
+        self.run_mcx(cmd)
 
         # Read output
-
         fluence = self.read_mcx_output()
-
         struct._clearcache()
 
+        # clean temporary files
         self.remove_mcx_output()
         return fluence
 
@@ -178,18 +178,11 @@ class ReflectanceMcxAdapter(MCXAdapter):
                                 scattering_cm: np.ndarray,
                                 anisotropy: np.ndarray,
                                 assumed_anisotropy: np.ndarray) -> Dict:
-        absorption_mm = absorption_cm / 10
-        scattering_mm = scattering_cm / 10
-
-        # FIXME Currently, mcx only accepts a single value for the anisotropy.
-        #   In order to use the correct reduced scattering coefficient throughout the simulation,
-        #   we adjust the scattering parameter to be more accurate in the diffuse regime.
-        #   This will lead to errors, especially in the quasi-ballistic regime.
-
-        given_reduced_scattering = (scattering_mm * (1 - anisotropy))
-        scattering_mm = given_reduced_scattering / (1 - assumed_anisotropy)
-        absorption_mm = self.pre_process_volumes(absorption_mm)
-        scattering_mm = self.pre_process_volumes(scattering_mm)
+        absorption_mm, scattering_mm = self.pre_process_volumes(**{'absorption_cm': absorption_cm,
+                                                                   'scattering_cm': scattering_cm,
+                                                                   'anisotropy': anisotropy,
+                                                                   'assumed_anisotropy': assumed_anisotropy})
+        absorption_mm, scattering_mm = self.pad_volumes(**{'arrays': [absorption_mm, scattering_mm]})
         surface = self.get_volume_surface(absorption_mm)
         op_array = np.asarray([absorption_mm, scattering_mm])
 
@@ -214,26 +207,49 @@ class ReflectanceMcxAdapter(MCXAdapter):
         gc.collect()
         return {Tags.DATA_FIELD_VOLUME_SURFACE_ALONG_Z[0]: surface}
 
-    def read_mcx_output(self):
+    def read_mcx_output(self, **kwargs):
         if os.path.isfile(self.mcx_volumetric_data_file) and self.mcx_volumetric_data_file.endswith('.jnii'):
             content = jdata.load(self.mcx_volumetric_data_file)
             fluence = content['NIFTIData']
         else:
             raise FileNotFoundError(f"Could not find .jnii file for {self.mcx_volumetric_data_file}")
+        if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
+                self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
+            ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
-                self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT] and \
-                os.path.isfile(self.mcx_photon_data_file):
+                self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
             content = jdata.load(self.mcx_photon_data_file)
             photon_pos = content['MCXData']['PhotonData']['p']
             photon_dir = content['MCXData']['PhotonData']['v']
         return fluence
 
-    @staticmethod
-    def pre_process_volumes(array: np.ndarray) -> np.ndarray:
-        if len(array.shape) == 3 and not np.all(array[:, :, 0] == 0):
-            array = np.pad(array, ((0, 0), (0, 0), (1, 0)), "constant", constant_values=0)
-        return array
+    def extract_reflectance_from_fluence(self, fluence: np.ndarray):
+        if np.any(fluence < 0):
+            pos = np.where(fluence < 0)
+            new_fluence = self.post_process_volumes(**{'arrays': (fluence,)})
+            return fluence[pos], pos, new_fluence
+        else:
+            return None, None, fluence
+
+    def pad_volumes(self, **kwargs) -> Tuple:
+        arrays = kwargs.get('arrays')
+        assert np.all([len(a.shape) == 3] for a in arrays)
+        if np.any([np.all(a[:, :, 0] == 0)] for a in arrays):
+            results = tuple(np.pad(a, ((0, 0), (0, 0), (1, 0)), "constant", constant_values=0) for a in arrays)
+            self.padded = True
+        else:
+            results = tuple(arrays)
+            self.padded = False
+        return results
+
+    def post_process_volumes(self, **kwargs):
+        arrays = kwargs.get('arrays')
+        if self.padded:
+            results = tuple(a[..., 1:] for a in arrays)
+        else:
+            results = tuple(arrays)
+        return results
 
     @staticmethod
-    def get_volume_surface(array: np.ndarray) -> np.ndarray:
-        return np.argmax(array, axis=-1) - 1
+    def get_volume_surface(array: np.ndarray, axis: int = -1) -> np.ndarray:
+        return np.argmax(array, axis=axis) - 1

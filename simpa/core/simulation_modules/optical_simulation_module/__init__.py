@@ -24,9 +24,6 @@ class OpticalForwardModuleBase(SimulationModule):
         self.nx = None
         self.ny = None
         self.nz = None
-        self.frames = None
-        self.mcx_json_config_file = None
-        self.mcx_volumetric_data_file = None
         self.temporary_output = []
 
     @abstractmethod
