@@ -1387,7 +1387,25 @@ class Tags:
     Flag that indicates if the direction of photons when they exit the volume should be stored
     """
 
-    DATA_FIELD_VOLUME_SURFACE_ALONG_Z = ("volume_surface_along_z", np.ndarray)
+    DATA_FIELD_DIFFUSE_REFLECTANCE = ("diffuse_reflectance", np.ndarray)
     """
-    Identifier for the location along Z axis where the values of volume change from zero to non-zero.
+    Identifier for the diffuse reflectance values at the surface of the volume (interface to 0-values voxels) 
+    """
+
+    DATA_FIELD_DIFFUSE_REFLECTANCE_POS = ("diffuse_reflectance_pos", np.ndarray)
+    """
+    Identified for the position within the volumes where the diffuse reflectance was originally stored, interface to
+    0-values voxels
+    """
+
+    DATA_FIELD_PHOTON_EXIT_POS = ("photon_exit_pos", np.ndarray)
+    """
+    Identifier for the position where photons exit the volume. Currently only photon exiting along the Z axis are
+    detected. 
+    """
+
+    DATA_FIELD_PHOTON_EXIT_DIR = ("photon_exit_dir", np.ndarray)
+    """
+    Identifier for the direction of photons when they exit the volume. Currently only photon exiting along the Z axis 
+    are detected. 
     """

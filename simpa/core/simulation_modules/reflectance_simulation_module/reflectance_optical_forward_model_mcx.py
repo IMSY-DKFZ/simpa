@@ -5,11 +5,9 @@ SPDX-License-Identifier: MIT
 """
 import numpy as np
 import struct
-import json
 import jdata
 import os
-import gc
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import MCXAdapter
@@ -19,9 +17,14 @@ from simpa.core.device_digital_twins.illumination_geometries.illumination_geomet
 class ReflectanceMcxAdapter(MCXAdapter):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA. This class targets specifically
-    diffuse reflectance simulations
-    MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue:
+    diffuse reflectance simulations. Specifically, it implements the capability to run diffuse reflectance simulations.
 
+    .. warning::
+        This MCX adapter requires a version of MCX containing the revision: `Rev::077060`, which was published in the
+        Nightly build  on `2022-01-26`.
+
+    .. note::
+        MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue:
         Fang, Qianqian, and David A. Boas. "Monte Carlo simulation of photon migration in 3D
         turbid media accelerated by graphics processing units."
         Optics express 17.22 (2009): 20178-20190.
@@ -29,131 +32,73 @@ class ReflectanceMcxAdapter(MCXAdapter):
     """
 
     def __init__(self, global_settings: Settings):
+        """
+        initializes MCX-specific configuration and clean-up instances
+
+        :param global_settings: global settings used during simulations
+        """
         super(ReflectanceMcxAdapter, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
+        self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii',
+                                    'mcx_photon_data_file': '_detp.jdat'}
 
     def forward_model(self,
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
                       illumination_geometry: IlluminationGeometryBase,
-                      probe_position_mm: np.ndarray) -> np.ndarray:
+                      probe_position_mm: np.ndarray) -> Settings:
+        """
+        runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
+        input for MCX. A JSON serializable file containing the configuration required by MCx is also generated.
+        The set of flags parsed to MCX is built based on the Tags declared in `self.component_settings`, the results
+        from MCX are used to populate an instance of Settings and returned.
+
+        :param absorption_cm: array containing the absorption of the tissue in `cm` units
+        :param scattering_cm: array containing the scattering of the tissue in `cm` units
+        :param anisotropy: array containing the anisotropy of the volume defined by `absorption_cm` and `scattering_cm`
+        :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
+        :param probe_position_mm: position of a probe in `mm` units. This is parsed to
+            `illumination_geometry.get_mcx_illuminator_definition`
+        :return: `Settings` containing the results of optical simulations, the keys in this dictionary-like object
+            depend on the Tags defined in `self.component_settings`
+        """
         if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
             _assumed_anisotropy = self.component_settings[Tags.MCX_ASSUMED_ANISOTROPY]
         else:
             _assumed_anisotropy = 0.9
 
-        res = self.generate_mcx_input_file(absorption_cm=absorption_cm,
-                                           scattering_cm=scattering_cm,
-                                           anisotropy=_assumed_anisotropy,
-                                           assumed_anisotropy=_assumed_anisotropy)
+        self.generate_mcx_bin_input(absorption_cm=absorption_cm,
+                                    scattering_cm=scattering_cm,
+                                    anisotropy=_assumed_anisotropy,
+                                    assumed_anisotropy=_assumed_anisotropy)
 
         settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
                                               probe_position_mm=probe_position_mm,
                                               assumed_anisotropy=_assumed_anisotropy,
-                                              **res)
-
-        if Tags.MCX_SEED not in self.component_settings:
-            if Tags.RANDOM_SEED in self.global_settings:
-                settings_dict["Session"]["RNGSeed"] = self.global_settings[Tags.RANDOM_SEED]
-        else:
-            settings_dict["Session"]["RNGSeed"] = self.component_settings[Tags.MCX_SEED]
+                                              )
 
         print(settings_dict)
-
-        tmp_json_filename = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                            self.global_settings[Tags.VOLUME_NAME] + ".json"
-        self.mcx_json_config_file = tmp_json_filename
-        self.temporary_output.append(tmp_json_filename)
-        with open(tmp_json_filename, "w") as json_file:
-            json.dump(settings_dict, json_file, indent="\t")
-
+        self.generate_mcx_json_input(settings_dict=settings_dict)
         # run the simulation
         cmd = self.get_command()
         self.run_mcx(cmd)
 
         # Read output
-        fluence = self.read_mcx_output()
+        results = self.read_mcx_output()
         struct._clearcache()
 
         # clean temporary files
         self.remove_mcx_output()
-        return fluence
-
-    def get_mcx_settings(self,
-                         illumination_geometry: IlluminationGeometryBase,
-                         probe_position_mm: np.ndarray,
-                         assumed_anisotropy: np.ndarray,
-                         **kwargs) -> Dict:
-        mcx_volumetric_data_file = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                                   self.global_settings[Tags.VOLUME_NAME] + "_output"
-        self.mcx_volumetric_data_file = mcx_volumetric_data_file + '.jnii'
-        self.mcx_photon_data_file = mcx_volumetric_data_file + '_detp.jdat'
-        self.temporary_output.append(self.mcx_volumetric_data_file)
-        self.temporary_output.append(self.mcx_photon_data_file)
-        if Tags.TIME_STEP and Tags.TOTAL_TIME in self.component_settings:
-            dt = self.component_settings[Tags.TIME_STEP]
-            time = self.component_settings[Tags.TOTAL_TIME]
-        else:
-            time = 5e-09
-            dt = 5e-09
-        self.frames = int(time / dt)
-
-        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings, probe_position_mm)
-        settings_dict = {
-            "Session": {
-                "ID": mcx_volumetric_data_file,
-                "DoAutoThread": 1,
-                "Photons": self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS],
-                "DoMismatch": 0
-            },
-            "Forward": {
-                "T0": 0,
-                "T1": time,
-                "Dt": dt
-            },
-            "Optode": {
-                "Source": source,
-                "Detector": self.get_detectors(kwargs.get(Tags.DATA_FIELD_VOLUME_SURFACE_ALONG_Z[0])),
-            },
-            "Domain": {
-                "OriginType": 0,
-                "LengthUnit": self.global_settings[Tags.SPACING_MM],
-                "Media": [
-                    {
-                        "mua": 0,
-                        "mus": 0,
-                        "g": 1,
-                        "n": 1
-                    },
-                    {
-                        "mua": 1,
-                        "mus": 1,
-                        "g": assumed_anisotropy,
-                        "n": 1
-                    }
-                ],
-                "MediaFormat": "muamus_float",
-                "Dim": [self.nx, self.ny, self.nz],
-                "VolumeFile": self.global_settings[Tags.SIMULATION_PATH] + "/" +
-                              self.global_settings[Tags.VOLUME_NAME] + ".bin"
-            }}
-        return settings_dict
-
-    def get_detectors(self, surface: np.ndarray) -> List:
-        detectors = []
-        if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
-                self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
-            for i in range(self.nx):
-                for j in range(self.ny):
-                    detector = {"Pos": [i, j, int(surface[i, j])],
-                                "R": 1}
-                    detectors.append(detector)
-            detectors = []
-        return detectors
+        return results
 
     def get_command(self) -> List:
+        """
+        generates list of commands to be parse to MCX in a subprocess
+
+        :return: list of MCX commands
+        """
         cmd = list()
         cmd.append(self.component_settings[Tags.OPTICAL_MODEL_BINARY_PATH])
         cmd.append("-f")
@@ -162,6 +107,8 @@ class ReflectanceMcxAdapter(MCXAdapter):
         cmd.append("F")
         cmd.append("-F")
         cmd.append("jnii")
+        cmd.append("-H")
+        cmd.append(f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}")
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
             cmd.append("--bc")  # save photon exit position and direction
@@ -173,66 +120,65 @@ class ReflectanceMcxAdapter(MCXAdapter):
             cmd.append("--saveref")  # save diffuse reflectance at 0 filled voxels outside of domain
         return cmd
 
-    def generate_mcx_input_file(self,
-                                absorption_cm: np.ndarray,
-                                scattering_cm: np.ndarray,
-                                anisotropy: np.ndarray,
-                                assumed_anisotropy: np.ndarray) -> Dict:
-        absorption_mm, scattering_mm = self.pre_process_volumes(**{'absorption_cm': absorption_cm,
-                                                                   'scattering_cm': scattering_cm,
-                                                                   'anisotropy': anisotropy,
-                                                                   'assumed_anisotropy': assumed_anisotropy})
-        absorption_mm, scattering_mm = self.pad_volumes(**{'arrays': [absorption_mm, scattering_mm]})
-        surface = self.get_volume_surface(absorption_mm)
-        op_array = np.asarray([absorption_mm, scattering_mm])
+    def read_mcx_output(self, **kwargs) -> Settings:
+        """
+        reads the temporary output generated with MCX
 
-        [_, self.nx, self.ny, self.nz] = np.shape(op_array)
-
-        # create a binary of the volume
-
-        optical_properties_list = list(np.reshape(op_array, op_array.size, "F"))
-        del absorption_cm, absorption_mm, scattering_cm, scattering_mm, op_array
-        gc.collect()
-        mcx_input = struct.pack("f" * len(optical_properties_list), *optical_properties_list)
-        del optical_properties_list
-        gc.collect()
-        tmp_input_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                         self.global_settings[Tags.VOLUME_NAME] + ".bin"
-        self.temporary_output.append(tmp_input_path)
-        with open(tmp_input_path, "wb") as input_file:
-            input_file.write(mcx_input)
-
-        del mcx_input, input_file
-        struct._clearcache()
-        gc.collect()
-        return {Tags.DATA_FIELD_VOLUME_SURFACE_ALONG_Z[0]: surface}
-
-    def read_mcx_output(self, **kwargs):
+        :param kwargs: dummy, used for class inheritance compatibility
+        :return: `Settings` instance containing the MCX output
+        """
+        results = Settings()
         if os.path.isfile(self.mcx_volumetric_data_file) and self.mcx_volumetric_data_file.endswith('.jnii'):
             content = jdata.load(self.mcx_volumetric_data_file)
             fluence = content['NIFTIData']
+            fluence = self.post_process_volumes(**{'arrays': (fluence,)})[0]
+            ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
+            results[Tags.DATA_FIELD_FLUENCE] = fluence
         else:
             raise FileNotFoundError(f"Could not find .jnii file for {self.mcx_volumetric_data_file}")
         if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
-            ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
+            results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = ref
+            results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = ref_pos
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
             content = jdata.load(self.mcx_photon_data_file)
             photon_pos = content['MCXData']['PhotonData']['p']
             photon_dir = content['MCXData']['PhotonData']['v']
-        return fluence
+            results[Tags.DATA_FIELD_PHOTON_EXIT_POS] = photon_pos
+            results[Tags.DATA_FIELD_PHOTON_EXIT_DIR] = photon_dir
+        return results
 
-    def extract_reflectance_from_fluence(self, fluence: np.ndarray):
+    @staticmethod
+    def extract_reflectance_from_fluence(fluence: np.ndarray) -> Tuple:
+        """
+        extracts diffuse reflectance from volumes. MCX stores diffuse reflectance as negative values in the fluence
+        volume. The position where the reflectance is stored is also returned. If there are no negative values in the
+        fluence, `None` is returned instead of reflectance and reflectance position. Negative values in fluence are
+        set to `0` after extraction of the reflectance.
+
+        :param fluence: array containing fluence as generated by MCX
+        :return: tuple of reflectance, reflectance position and transformed fluence
+        """
         if np.any(fluence < 0):
-            pos = np.where(fluence < 0)
-            new_fluence = self.post_process_volumes(**{'arrays': (fluence,)})
-            return fluence[pos], pos, new_fluence
+            pos = np.array(np.where(fluence < 0)).T
+            ref = fluence[pos] * -1
+            fluence[fluence < 0] = 0
+            return ref, pos, fluence
         else:
             return None, None, fluence
 
-    def pad_volumes(self, **kwargs) -> Tuple:
-        arrays = kwargs.get('arrays')
+    def pre_process_volumes(self, **kwargs) -> Tuple:
+        """
+        pre-process volumes before running simulations with MCX. The volumes are transformed to `mm` units and pads
+        a 0-values layer along the z-axis in order to save diffuse reflectance values. All 0-valued voxels are then
+        transformed to `np.nan`. This last transformation `0->np.nan` is a requirement form MCX.
+
+        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy` and
+            `assumed_anisotropy`
+        :return: `Tuple` of volumes after transformation
+        """
+        arrays = self.volumes_to_mm(**kwargs)
         assert np.all([len(a.shape) == 3] for a in arrays)
         if np.any([np.all(a[:, :, 0] == 0)] for a in arrays):
             results = tuple(np.pad(a, ((0, 0), (0, 0), (1, 0)), "constant", constant_values=0) for a in arrays)
@@ -240,16 +186,25 @@ class ReflectanceMcxAdapter(MCXAdapter):
         else:
             results = tuple(arrays)
             self.padded = False
+        for a in results:
+            # MCX requires NAN values to store photon direction and reflectance when using float mus and mua
+            a[a == 0] = np.nan
         return results
 
     def post_process_volumes(self, **kwargs):
+        """
+        post-processes volumes after MCX simulations. Dummy function implemented for compatibility with inherited
+        classes. Removes layer padded by `self.pre_process_volumes` if it was added and transforms `np.nan -> 0`.
+
+        :param kwargs: dictionary containing at least the key `volumes` to be transformed
+        :return:
+        """
         arrays = kwargs.get('arrays')
         if self.padded:
             results = tuple(a[..., 1:] for a in arrays)
         else:
             results = tuple(arrays)
+        for a in results:
+            # revert nan transformation that was done while pre-processing volumes
+            a[np.isnan(a)] = 0.
         return results
-
-    @staticmethod
-    def get_volume_surface(array: np.ndarray, axis: int = -1) -> np.ndarray:
-        return np.argmax(array, axis=axis) - 1

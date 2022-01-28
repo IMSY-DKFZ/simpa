@@ -2,13 +2,14 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
+from typing import List, Union
+from abc import abstractmethod
+import gc
 
 from simpa.utils import Tags, Settings
-from abc import abstractmethod
 from simpa.core import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
-import gc
 from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
@@ -45,7 +46,14 @@ class OpticalForwardModuleBase(SimulationModule):
         """
         pass
 
-    def run(self, device):
+    def run(self, device: Union[IlluminationGeometryBase, PhotoacousticDevice]) -> None:
+        """
+        runs optical simulations. Volumes are first loaded from HDF5 file and parsed to `self.forward_model`, the output
+        is aggregated in case multiple illuminations are defined by `device` and stored in the same HDF5 file.
+
+        :param device: Illumination or Photoacoustic device that defines the illumination geometry
+        :return: None
+        """
 
         self.logger.info("Simulating the optical forward process...")
 
@@ -70,28 +78,24 @@ class OpticalForwardModuleBase(SimulationModule):
 
         if isinstance(_device, list):
             # per convention this list has at least two elements
-            fluence = self.forward_model(absorption_cm=absorption,
-                                         scattering_cm=scattering,
-                                         anisotropy=anisotropy,
-                                         illumination_geometry=_device[0],
-                                         probe_position_mm=device.device_position_mm)
-            for idx in range(len(_device)-1):
+            results_l = []
+            for idx in range(len(_device)):
                 # we already looked at the 0th element, so go from 1 to n-1
-                fluence += self.forward_model(absorption_cm=absorption,
-                                              scattering_cm=scattering,
-                                              anisotropy=anisotropy,
-                                              illumination_geometry=_device[idx+1],
-                                              probe_position_mm=device.device_position_mm)
-
-            fluence = fluence / len(_device)
+                results = self.forward_model(absorption_cm=absorption,
+                                             scattering_cm=scattering,
+                                             anisotropy=anisotropy,
+                                             illumination_geometry=_device[idx],
+                                             probe_position_mm=device.device_position_mm)
+                results_l.append(results)
+            results = self.agg_optical_results(results_l)
 
         else:
-            fluence = self.forward_model(absorption_cm=absorption,
+            results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
                                          illumination_geometry=_device,
                                          probe_position_mm=device.device_position_mm)
-
+        fluence = results[Tags.DATA_FIELD_FLUENCE]
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_array_well_defined(fluence, assume_non_negativity=True, array_name="fluence")
 
@@ -109,14 +113,48 @@ class OpticalForwardModuleBase(SimulationModule):
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_array_well_defined(initial_pressure, assume_non_negativity=True, array_name="initial_pressure")
 
+        results[Tags.DATA_FIELD_FLUENCE] = fluence
+        results[Tags.OPTICAL_MODEL_UNITS] = units
+        results[Tags.DATA_FIELD_INITIAL_PRESSURE] = initial_pressure
+        optical_output = {}
+        for k, item in results.items():
+            optical_output[k] = {self.global_settings[Tags.WAVELENGTH]: item}
+
         optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
-
-        optical_output = {
-            Tags.DATA_FIELD_FLUENCE: {self.global_settings[Tags.WAVELENGTH]: fluence},
-            Tags.DATA_FIELD_INITIAL_PRESSURE: {self.global_settings[Tags.WAVELENGTH]: initial_pressure},
-            Tags.OPTICAL_MODEL_UNITS: {self.global_settings[Tags.WAVELENGTH]: units}
-        }
-
         save_hdf5(optical_output, self.global_settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
-
         self.logger.info("Simulating the optical forward process...[Done]")
+
+    @staticmethod
+    def agg_optical_results(results: List[Settings]) -> Settings:
+        """
+        aggregates the results from a list of `Settings` that was generated with the MCX optical forward models. The
+        fluence is averaged over the list, if diffuse reflectances are present in each element of the list, the arrays
+        are concatenated along firs dimension. Same procedure for diffuse reflectance is used for diffuse reflectance
+        position, photon exit position and photon exit direction.
+
+        :param results: list of optical simulation results, each element of the list should inherit form `Settings`
+        :return: `Settings` object
+        """
+        fluence = []
+        ref = []
+        ref_pos = []
+        photon_pos = []
+        photon_dir = []
+        aggregated_results = Settings()
+        for r in results:
+            fluence.append(r[Tags.DATA_FIELD_FLUENCE])
+            if Tags.DATA_FIELD_DIFFUSE_REFLECTANCE in r:
+                ref.append(r[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE])
+                ref_pos.append(r[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS])
+            if Tags.DATA_FIELD_PHOTON_EXIT_POS in r:
+                photon_pos.append(r[Tags.DATA_FIELD_PHOTON_EXIT_POS])
+                photon_dir.append(r[Tags.DATA_FIELD_PHOTON_EXIT_DIR])
+        fluence = np.sum(fluence, axis=0) / len(results)
+        aggregated_results[Tags.DATA_FIELD_FLUENCE] = fluence
+        if ref:
+            aggregated_results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = np.concatenate(ref, axis=0)
+            aggregated_results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = np.concatenate(ref_pos, axis=0)
+        if photon_pos:
+            aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_POS] = np.concatenate(photon_pos, axis=0)
+            aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_DIR] = np.concatenate(photon_dir, axis=0)
+        return aggregated_results

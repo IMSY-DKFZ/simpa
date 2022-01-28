@@ -82,7 +82,7 @@ class IterativeqPAI(ProcessingComponent):
 
         if Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS in self.iterative_method_settings:
             self.logger.debug(f"Save intermediate absorptions:"
-                    f" {self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS]}")
+                              f" {self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS]}")
         else:
             self.logger.debug("Save intermediate absorptions: False")
 
@@ -159,7 +159,6 @@ class IterativeqPAI(ProcessingComponent):
             intial_pressure=target_intial_pressure,
             scattering=scattering,
             anisotropy=anisotropy)
-
 
         # regularization parameter sigma
         sigma = self.regularization_sigma(target_intial_pressure, stacked_to_volume)
@@ -415,27 +414,30 @@ class IterativeqPAI(ProcessingComponent):
 
         if isinstance(_device, list):
             # per convention this list has at least two elements
-            fluence = forward_model_implementation.forward_model(absorption_cm=absorption,
+            results = forward_model_implementation.forward_model(absorption_cm=absorption,
                                                                  scattering_cm=scattering,
                                                                  anisotropy=anisotropy,
                                                                  illumination_geometry=_device[0],
                                                                  probe_position_mm=pa_device.device_position_mm)
-            for idx in range(len(_device) - 1):
+            fluence = results[Tags.DATA_FIELD_FLUENCE]
+            for idx in range(1, len(_device)):
                 # we already looked at the 0th element, so go from 1 to n-1
-                fluence += forward_model_implementation.forward_model(absorption_cm=absorption,
-                                                                      scattering_cm=scattering,
-                                                                      anisotropy=anisotropy,
-                                                                      illumination_geometry=_device[idx + 1],
-                                                                      probe_position_mm=pa_device.device_position_mm)
+                results = forward_model_implementation.forward_model(absorption_cm=absorption,
+                                                                     scattering_cm=scattering,
+                                                                     anisotropy=anisotropy,
+                                                                     illumination_geometry=_device[idx + 1],
+                                                                     probe_position_mm=pa_device.device_position_mm)
+                fluence += results[Tags.DATA_FIELD_FLUENCE]
 
             fluence = fluence / len(_device)
 
         else:
-            fluence = forward_model_implementation.forward_model(absorption_cm=absorption,
+            results = forward_model_implementation.forward_model(absorption_cm=absorption,
                                                                  scattering_cm=scattering,
                                                                  anisotropy=anisotropy,
                                                                  illumination_geometry=_device,
                                                                  probe_position_mm=pa_device.device_position_mm)
+            fluence = results[Tags.DATA_FIELD_FLUENCE]
 
         print("Simulating the optical forward process...[Done]")
 
