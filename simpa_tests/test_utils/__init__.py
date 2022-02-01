@@ -25,10 +25,10 @@ def assert_equals_recursive(a, b):
                     assert (a[item] == b[item]).all()
                 else:
                     assert a[item] == b[item], str(a[item]) + " is not the same as " + str(b[item])
-                    if (np.issubdtype(type(a[item]), np.int) or np.issubdtype(type(a[item]), np.float)) and \
-                            (np.issubdtype(type(b[item]), np.int) or np.issubdtype(type(b[item]), np.float)):
-                        assert (np.issubdtype(type(a[item]), np.int) & np.issubdtype(type(b[item]), np.int)) or \
-                               (np.issubdtype(type(a[item]), np.float) & np.issubdtype(type(b[item]), np.float))
+                    if (np.issubdtype(type(a[item]), int) or np.issubdtype(type(a[item]), float)) and \
+                            (np.issubdtype(type(b[item]), int) or np.issubdtype(type(b[item]), float)):
+                        assert (np.issubdtype(type(a[item]), int) & np.issubdtype(type(b[item]), int)) or \
+                               (np.issubdtype(type(a[item]), float) & np.issubdtype(type(b[item]), float))
                     else:
                         assert isinstance(a[item], type(b[item]))
                         assert isinstance(b[item], type(a[item]))
@@ -91,12 +91,12 @@ def create_vessel_of_molecule(global_settings, molecule, prio, structure_start):
 
 def create_test_structure_of_molecule(global_settings, molecule1, molecule2, molecule3, key):
     structures_dict = dict()
-    if key =="setting1":
+    if key == "setting1":
         structures_dict["background"] = create_background_of_molecule(global_settings, molecule1)
-    if key =="setting2":
+    if key == "setting2":
         structures_dict["background"] = create_background_of_molecule(global_settings, molecule1)
         structures_dict["vessel"] = create_vessel_of_molecule(global_settings, molecule2, prio=1, structure_start=1)
-    if key =="setting3":
+    if key == "setting3":
         structures_dict["background"] = create_background_of_molecule(global_settings, molecule1)
         structures_dict["vessel"] = create_vessel_of_molecule(global_settings, molecule2, prio=1, structure_start=1)
         structures_dict["vessel2"] = create_vessel_of_molecule(global_settings, molecule3, prio=2, structure_start=1.25)

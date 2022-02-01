@@ -18,6 +18,9 @@ class ExampleDeviceSlitIlluminationLinearDetector(sp.PhotoacousticDevice):
 
     def __init__(self):
         super().__init__()
+        # You can choose your detection geometries from simpa/core/device_digital_twins/detection_geometries
+        # You can choose your illumination geometries from simpa/core/device_digital_twins/illumination_geometries
+
         self.set_detection_geometry(sp.LinearArrayDetectionGeometry())
         self.add_illumination_geometry(sp.SlitIlluminationGeometry())
 

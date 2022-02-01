@@ -45,16 +45,9 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
     """
 
     def create_simulation_volume(self) -> dict:
-        """
-        This method creates a in silico respresentation of a tissue as described in the settings file that is given.
 
-        :param settings: a dictionary containing all relevant Tags for the simulation to be able to instantiate a tissue.
-        :return: a path to a npz file containing characteristics of the simulated volume:
-                absorption, scattering, anisotropy, oxygenation, and a segmentation mask. All of these are given as 3d
-                numpy arrays.
-        """
-
-        if Tags.SIMULATE_DEFORMED_LAYERS in self.component_settings and self.component_settings[Tags.SIMULATE_DEFORMED_LAYERS]:
+        if Tags.SIMULATE_DEFORMED_LAYERS in self.component_settings \
+                and self.component_settings[Tags.SIMULATE_DEFORMED_LAYERS]:
             self.logger.debug("Tags.SIMULATE_DEFORMED_LAYERS in self.component_settings is TRUE")
             if Tags.DEFORMED_LAYERS_SETTINGS not in self.component_settings:
                 np.random.seed(self.global_settings[Tags.RANDOM_SEED])

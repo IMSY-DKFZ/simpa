@@ -26,7 +26,7 @@ libraries
    :show-inheritance:
 
 
-.. automodule:: simpa.utils.libraries.spectra_library
+.. automodule:: simpa.utils.libraries.spectrum_library
    :members:
    :undoc-members:
    :show-inheritance:

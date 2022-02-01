@@ -10,7 +10,7 @@ import numpy as np
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 path_manager = sp.PathManager()
-PATH = path_manager.get_hdf5_file_save_path() + "/CompletePipelineTestMSOT_4711.hdf5"
+PATH = path_manager.get_hdf5_file_save_path() + "/CompletePipelineExample_4711.hdf5"
 
 file = sp.load_hdf5(PATH)
 settings = sp.Settings(file["settings"])

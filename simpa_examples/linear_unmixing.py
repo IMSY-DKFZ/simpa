@@ -2,14 +2,14 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa import Tags
-import simpa as sp
-import numpy as np
-import matplotlib.pyplot as plt
-from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-
-# FIXME temporary workaround for newest Intel architectures
 import os
+
+import numpy as np
+
+import simpa as sp
+from simpa import Tags
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
+# FIXME temporary workaround for newest Intel architectures
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -129,8 +129,9 @@ settings.set_optical_settings({
 settings["linear_unmixing"] = {
     Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
     Tags.WAVELENGTHS: WAVELENGTHS,
-    Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN: WAVELENGTHS,
-    Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN: WAVELENGTHS,
+    Tags.LINEAR_UNMIXING_SPECTRA: sp.get_simpa_internal_absorption_spectra_by_names(
+        [Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN, Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN]
+    ),
     Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
     Tags.LINEAR_UNMIXING_NON_NEGATIVE: True
 }

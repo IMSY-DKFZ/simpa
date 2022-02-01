@@ -5,8 +5,6 @@ import numpy as np
 
 from simpa.core.device_digital_twins import PhotoacousticDevice, CurvedArrayDetectionGeometry, \
     MSOTInVisionIlluminationGeometry
-from simpa.utils.settings import Settings
-from simpa.utils import Tags
 
 
 class InVision256TF(PhotoacousticDevice):
@@ -59,3 +57,14 @@ class InVision256TF(PhotoacousticDevice):
         for i in range(10):
             self.add_illumination_geometry(MSOTInVisionIlluminationGeometry(i))
 
+    def serialize(self) -> dict:
+        serialized_device = self.__dict__
+        device_dict = {"InVision256TF": serialized_device}
+        return device_dict
+
+    @staticmethod
+    def deserialize(dictionary_to_deserialize):
+        deserialized_device = InVision256TF()
+        for key, value in dictionary_to_deserialize.items():
+            deserialized_device.__dict__[key] = value
+        return deserialized_device

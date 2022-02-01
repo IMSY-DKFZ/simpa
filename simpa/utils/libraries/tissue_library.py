@@ -5,9 +5,9 @@
 from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
-from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
+from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils.calculate import randomize_uniform
-from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary
+from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
 
 
 class TissueLibrary(object):

@@ -24,7 +24,7 @@ SAVE_REFLECTANCE = True
 SAVE_PHOTON_DIRECTION = True
 
 # If VISUALIZE is set to True, the simulation result will be plotted
-VISUALIZE = False
+VISUALIZE = True
 
 
 def create_example_tissue():
@@ -84,7 +84,7 @@ def create_example_tissue():
 np.random.seed(RANDOM_SEED)
 
 general_settings = {
-    # These parameters set the general propeties of the simulated volume
+    # These parameters set the general properties of the simulated volume
     Tags.RANDOM_SEED: RANDOM_SEED,
     Tags.VOLUME_NAME: VOLUME_NAME,
     Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
@@ -93,10 +93,7 @@ general_settings = {
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
     Tags.WAVELENGTHS: [798],
-    Tags.DIGITAL_DEVICE_POSITION: [VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                   VOLUME_PLANAR_DIM_IN_MM/2,
-                                   0],
-    Tags.DO_FILE_COMPRESSION: True,
+    Tags.DO_FILE_COMPRESSION: True
 }
 
 settings = sp.Settings(general_settings)
@@ -106,11 +103,8 @@ settings.set_volume_creation_settings({
     Tags.STRUCTURES: create_example_tissue()
 })
 settings.set_optical_settings({
-    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
-    Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
-    Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-    Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
     Tags.COMPUTE_DIFFUSE_REFLECTANCE: SAVE_REFLECTANCE,
     Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT: SAVE_PHOTON_DIRECTION
 })
@@ -146,7 +140,8 @@ class ExampleDeviceSlitIlluminationLinearDetector(sp.PhotoacousticDevice):
                                                         VOLUME_PLANAR_DIM_IN_MM/2, 0]))
         self.set_detection_geometry(sp.LinearArrayDetectionGeometry())
         self.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
-                                                                direction_vector_mm=[0, 0, 5]))
+                                                                   direction_vector_mm=[0, 0, 5]))
+
 
 device = ExampleDeviceSlitIlluminationLinearDetector()
 

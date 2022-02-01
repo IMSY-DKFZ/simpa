@@ -7,11 +7,11 @@ from simpa.utils import Tags
 
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
-from simpa.utils.libraries.spectra_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
+from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils import Spectrum
 from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
 from simpa.utils.serializer import SerializableSIMPAClass
-from simpa.utils.libraries.spectra_library import AbsorptionSpectrumLibrary
+from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
 
 
 class MolecularComposition(SerializableSIMPAClass, list):

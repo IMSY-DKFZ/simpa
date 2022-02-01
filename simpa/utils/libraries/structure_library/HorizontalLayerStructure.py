@@ -64,35 +64,37 @@ class HorizontalLayerStructure(GeometricalStructure):
                                                                    self.voxel_spacing,
                                                                    np.arange(self.volume_dimensions_voxels[1], step=1) *
                                                                    self.voxel_spacing).T
-            target_vector_voxels = target_vector_voxels + (deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
-                                                                                         self.volume_dimensions_voxels[1], 1)
-                                                           / self.voxel_spacing)
+            target_vector_voxels = target_vector_voxels + (deformation_values_mm.reshape(
+                self.volume_dimensions_voxels[0],
+                self.volume_dimensions_voxels[1], 1) / self.voxel_spacing)
 
         volume_fractions = np.zeros(self.volume_dimensions_voxels)
 
-        bools_first_layer = ((target_vector_voxels >= -1) & (target_vector_voxels < 0))
-        volume_fractions[bools_first_layer] = 1-np.abs(target_vector_voxels[bools_first_layer])
-
-        initial_fractions = np.max(volume_fractions, axis=2, keepdims=True)
-        floored_depth_voxels = np.floor(depth_voxels-initial_fractions)
-
-        bools_last_layer = ((target_vector_voxels >= floored_depth_voxels) &
-                            (target_vector_voxels <= floored_depth_voxels + 1))
-
-        volume_fractions[bools_last_layer] = depth_voxels - target_vector_voxels[bools_last_layer]
-        volume_fractions[volume_fractions > depth_voxels] = depth_voxels
-        volume_fractions[volume_fractions < 0] = 0
-
         if partial_volume:
+            bools_first_layer = ((target_vector_voxels >= -1) & (target_vector_voxels < 0))
+
+            volume_fractions[bools_first_layer] = 1 - np.abs(target_vector_voxels[bools_first_layer])
+
+            initial_fractions = np.max(volume_fractions, axis=2, keepdims=True)
+            floored_depth_voxels = np.floor(depth_voxels - initial_fractions)
+
             bools_fully_filled_layers = ((target_vector_voxels >= 0) & (target_vector_voxels < floored_depth_voxels))
-        else:
-            bools_fully_filled_layers = ((target_vector_voxels >= -0.5) & (target_vector_voxels < floored_depth_voxels + 0.5))
-        volume_fractions[bools_fully_filled_layers] = 1
 
-        if partial_volume:
+            bools_last_layer = ((target_vector_voxels >= floored_depth_voxels) &
+                                (target_vector_voxels <= floored_depth_voxels + 1))
+
+            volume_fractions[bools_last_layer] = depth_voxels - target_vector_voxels[bools_last_layer]
+            volume_fractions[volume_fractions > depth_voxels] = depth_voxels
+            volume_fractions[volume_fractions < 0] = 0
+
             bools_all_layers = bools_first_layer | bools_last_layer | bools_fully_filled_layers
+
         else:
+            bools_fully_filled_layers = ((target_vector_voxels >= -0.5) & (target_vector_voxels < depth_voxels - 0.5))
+
             bools_all_layers = bools_fully_filled_layers
+
+        volume_fractions[bools_fully_filled_layers] = 1
 
         return bools_all_layers, volume_fractions[bools_all_layers]
 
