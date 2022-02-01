@@ -128,33 +128,15 @@ class OpticalForwardModuleBase(SimulationModule):
     def agg_optical_results(results: List[Settings]) -> Settings:
         """
         aggregates the results from a list of `Settings` that was generated with the MCX optical forward models. The
-        fluence is averaged over the list, if diffuse reflectances are present in each element of the list, the arrays
-        are concatenated along firs dimension. Same procedure for diffuse reflectance is used for diffuse reflectance
-        position, photon exit position and photon exit direction.
+        fluence is averaged over the list.
 
         :param results: list of optical simulation results, each element of the list should inherit form `Settings`
         :return: `Settings` object
         """
         fluence = []
-        ref = []
-        ref_pos = []
-        photon_pos = []
-        photon_dir = []
         aggregated_results = Settings()
         for r in results:
             fluence.append(r[Tags.DATA_FIELD_FLUENCE])
-            if Tags.DATA_FIELD_DIFFUSE_REFLECTANCE in r:
-                ref.append(r[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE])
-                ref_pos.append(r[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS])
-            if Tags.DATA_FIELD_PHOTON_EXIT_POS in r:
-                photon_pos.append(r[Tags.DATA_FIELD_PHOTON_EXIT_POS])
-                photon_dir.append(r[Tags.DATA_FIELD_PHOTON_EXIT_DIR])
         fluence = np.sum(fluence, axis=0) / len(results)
         aggregated_results[Tags.DATA_FIELD_FLUENCE] = fluence
-        if ref:
-            aggregated_results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = np.concatenate(ref, axis=0)
-            aggregated_results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = np.concatenate(ref_pos, axis=0)
-        if photon_pos:
-            aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_POS] = np.concatenate(photon_pos, axis=0)
-            aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_DIR] = np.concatenate(photon_dir, axis=0)
         return aggregated_results
