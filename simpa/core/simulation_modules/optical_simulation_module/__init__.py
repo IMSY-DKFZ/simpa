@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
-from typing import List, Union
+from typing import List, Union, Dict
 from abc import abstractmethod
 import gc
 
@@ -125,16 +125,16 @@ class OpticalForwardModuleBase(SimulationModule):
         self.logger.info("Simulating the optical forward process...[Done]")
 
     @staticmethod
-    def agg_optical_results(results: List[Settings]) -> Settings:
+    def agg_optical_results(results: List[Dict]) -> Dict:
         """
         aggregates the results from a list of `Settings` that was generated with the MCX optical forward models. The
         fluence is averaged over the list.
 
         :param results: list of optical simulation results, each element of the list should inherit form `Settings`
-        :return: `Settings` object
+        :return: `Dict` object
         """
         fluence = []
-        aggregated_results = Settings()
+        aggregated_results = dict()
         for r in results:
             fluence.append(r[Tags.DATA_FIELD_FLUENCE])
         fluence = np.sum(fluence, axis=0) / len(results)

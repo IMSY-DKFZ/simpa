@@ -44,12 +44,12 @@ class MCXAdapter(OpticalForwardModuleBase):
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
                       illumination_geometry: IlluminationGeometryBase,
-                      probe_position_mm: np.ndarray) -> Settings:
+                      probe_position_mm: np.ndarray) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
         input for MCX. A JSON serializable file containing the configuration required by MCx is also generated.
         The set of flags parsed to MCX is built based on the Tags declared in `self.component_settings`, the results
-        from MCX are used to populate an instance of Settings and returned.
+        from MCX are used to populate an instance of Dict and returned.
 
         :param absorption_cm: array containing the absorption of the tissue in `cm` units
         :param scattering_cm: array containing the scattering of the tissue in `cm` units
@@ -57,7 +57,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
         :param probe_position_mm: position of a probe in `mm` units. This is parsed to
             `illumination_geometry.get_mcx_illuminator_definition`
-        :return: `Settings` containing the results of optical simulations, the keys in this dictionary-like object
+        :return: `Dict` containing the results of optical simulations, the keys in this dictionary-like object
             depend on the Tags defined in `self.component_settings`
         """
         if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
@@ -246,20 +246,21 @@ class MCXAdapter(OpticalForwardModuleBase):
         struct._clearcache()
         gc.collect()
 
-    def read_mcx_output(self, **kwargs) -> Settings:
+    def read_mcx_output(self, **kwargs) -> Dict:
         """
         reads the temporary output generated with MCX
 
         :param kwargs: dummy, used for class inheritance compatibility
-        :return: `Settings` instance containing the MCX output
+        :return: `Dict` instance containing the MCX output
         """
         with open(self.mcx_volumetric_data_file, 'rb') as f:
             data = f.read()
         data = struct.unpack('%df' % (len(data) / 4), data)
         fluence = np.asarray(data).reshape([self.nx, self.ny, self.nz, self.frames], order='F')
+        fluence *= 100  # Convert from J/mm^2 to J/cm^2
         if np.shape(fluence)[3] == 1:
-            fluence = np.squeeze(fluence, 3) * 100  # Convert from J/mm^2 to J/cm^2
-        results = Settings()
+            fluence = np.squeeze(fluence, 3)
+        results = dict()
         results[Tags.DATA_FIELD_FLUENCE] = fluence
         return results
 

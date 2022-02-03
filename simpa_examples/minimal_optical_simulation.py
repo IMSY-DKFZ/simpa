@@ -21,7 +21,7 @@ SPACING = 0.5
 RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
 SAVE_REFLECTANCE = True
-SAVE_PHOTON_DIRECTION = True
+SAVE_PHOTON_DIRECTION = False
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
@@ -69,8 +69,7 @@ def create_example_tissue():
     epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     tissue_dict = sp.Settings()
-    if not SAVE_REFLECTANCE and not SAVE_PHOTON_DIRECTION:
-        tissue_dict[Tags.BACKGROUND] = background_dictionary
+    tissue_dict[Tags.BACKGROUND] = background_dictionary
     tissue_dict["muscle"] = muscle_dictionary
     tissue_dict["epidermis"] = epidermis_dictionary
     tissue_dict["vessel_1"] = vessel_1_dictionary
@@ -125,7 +124,7 @@ if not SAVE_REFLECTANCE and not SAVE_PHOTON_DIRECTION:
 else:
     pipeline = [
         sp.ModelBasedVolumeCreationAdapter(settings),
-        sp.ReflectanceMcxAdapter(settings),
+        sp.ReflectanceMCXAdapter(settings),
     ]
 
 
@@ -157,4 +156,5 @@ if VISUALIZE:
                       wavelength=WAVELENGTH,
                       show_initial_pressure=True,
                       show_absorption=True,
+                      show_diffuse_reflectance=True,
                       log_scale=True)

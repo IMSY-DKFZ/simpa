@@ -7,14 +7,14 @@ import numpy as np
 import struct
 import jdata
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import MCXAdapter
 from simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base import IlluminationGeometryBase
 
 
-class ReflectanceMcxAdapter(MCXAdapter):
+class ReflectanceMCXAdapter(MCXAdapter):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA. This class targets specifically
     diffuse reflectance simulations. Specifically, it implements the capability to run diffuse reflectance simulations.
@@ -37,7 +37,7 @@ class ReflectanceMcxAdapter(MCXAdapter):
 
         :param global_settings: global settings used during simulations
         """
-        super(ReflectanceMcxAdapter, self).__init__(global_settings=global_settings)
+        super(ReflectanceMCXAdapter, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
         self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii',
@@ -48,7 +48,7 @@ class ReflectanceMcxAdapter(MCXAdapter):
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
                       illumination_geometry: IlluminationGeometryBase,
-                      probe_position_mm: np.ndarray) -> Settings:
+                      probe_position_mm: np.ndarray) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
         input for MCX. A JSON serializable file containing the configuration required by MCx is also generated.
@@ -107,10 +107,10 @@ class ReflectanceMcxAdapter(MCXAdapter):
         cmd.append("F")
         cmd.append("-F")
         cmd.append("jnii")
-        cmd.append("-H")
-        cmd.append(f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}")
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
+            cmd.append("-H")
+            cmd.append(f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}")
             cmd.append("--bc")  # save photon exit position and direction
             cmd.append("______000010")
             cmd.append("--savedetflag")
@@ -120,19 +120,20 @@ class ReflectanceMcxAdapter(MCXAdapter):
             cmd.append("--saveref")  # save diffuse reflectance at 0 filled voxels outside of domain
         return cmd
 
-    def read_mcx_output(self, **kwargs) -> Settings:
+    def read_mcx_output(self, **kwargs) -> Dict:
         """
         reads the temporary output generated with MCX
 
         :param kwargs: dummy, used for class inheritance compatibility
         :return: `Settings` instance containing the MCX output
         """
-        results = Settings()
-        if os.path.isfile(self.mcx_volumetric_data_file) and self.mcx_volumetric_data_file.endswith('.jnii'):
+        results = dict()
+        if os.path.isfile(self.mcx_volumetric_data_file) and self.mcx_volumetric_data_file.endswith(self.mcx_output_suffixes['mcx_volumetric_data_file']):
             content = jdata.load(self.mcx_volumetric_data_file)
             fluence = content['NIFTIData']
-            fluence = self.post_process_volumes(**{'arrays': (fluence,)})[0]
             ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
+            fluence = self.post_process_volumes(**{'arrays': (fluence,)})[0]
+            fluence *= 100  # Convert from J/mm^2 to J/cm^2
             results[Tags.DATA_FIELD_FLUENCE] = fluence
         else:
             raise FileNotFoundError(f"Could not find .jnii file for {self.mcx_volumetric_data_file}")
@@ -161,8 +162,9 @@ class ReflectanceMcxAdapter(MCXAdapter):
         :return: tuple of reflectance, reflectance position and transformed fluence
         """
         if np.any(fluence < 0):
-            pos = np.array(np.where(fluence < 0)).T
+            pos = np.where(fluence < 0)
             ref = fluence[pos] * -1
+            pos = np.array(pos).T  # reformatting to aggregate results after for multi illuminant geometries
             fluence[fluence < 0] = 0
             return ref, pos, fluence
         else:
@@ -180,7 +182,11 @@ class ReflectanceMcxAdapter(MCXAdapter):
         """
         arrays = self.volumes_to_mm(**kwargs)
         assert np.all([len(a.shape) == 3] for a in arrays)
-        if np.any([np.all(a[:, :, 0] == 0)] for a in arrays):
+        check_padding = (Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and
+                         self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]) or \
+                        (Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and
+                         self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT])
+        if np.any([~np.all(a[:, :, 0] == 0)] for a in arrays) and check_padding:
             results = tuple(np.pad(a, ((0, 0), (0, 0), (1, 0)), "constant", constant_values=0) for a in arrays)
             self.padded = True
         else:
@@ -210,22 +216,22 @@ class ReflectanceMcxAdapter(MCXAdapter):
         return results
 
     @staticmethod
-    def agg_optical_results(results: List[Settings]) -> Settings:
+    def agg_optical_results(results: List[Dict]) -> Dict:
         """
-        aggregates the results from a list of `Settings` that was generated with the MCX optical forward models. The
+        aggregates the results from a list of `Dict` that was generated with the MCX optical forward models. The
         fluence is averaged over the list, if diffuse reflectances are present in each element of the list, the arrays
         are concatenated along firs dimension. Same procedure for diffuse reflectance is used for diffuse reflectance
         position, photon exit position and photon exit direction.
 
-        :param results: list of optical simulation results, each element of the list should inherit form `Settings`
-        :return: `Settings` object
+        :param results: list of optical simulation results, each element of the list should inherit form `Dict`
+        :return: `Dict` object
         """
         fluence = []
         ref = []
         ref_pos = []
         photon_pos = []
         photon_dir = []
-        aggregated_results = Settings()
+        aggregated_results = dict()
         for r in results:
             fluence.append(r[Tags.DATA_FIELD_FLUENCE])
             if Tags.DATA_FIELD_DIFFUSE_REFLECTANCE in r:
