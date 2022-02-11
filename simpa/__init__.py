@@ -11,8 +11,8 @@ from .core.simulation_modules.volume_creation_module.volume_creation_module_segm
     SegmentationBasedVolumeCreationAdapter
 from .core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import \
     MCXAdapter
-from .core.simulation_modules.optical_simulation_module.reflectance_optical_forward_model_mcx import \
-    ReflectanceMCXAdapter
+from .core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter import \
+    MCXAdapterReflectance
 from .core.simulation_modules.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import \
     KWaveAdapter
 from .core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \

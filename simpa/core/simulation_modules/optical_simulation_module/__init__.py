@@ -17,6 +17,8 @@ from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_
 class OpticalForwardModuleBase(SimulationModule):
     """
     Use this class as a base for implementations of optical forward models.
+    This class has the attributes `self.temporary_output_files` which stores file paths that are temporarily created as
+    input to the optical simulator, e.g. MCX. The class attributes `nx, ny & nz` represent the volume dimensions
     """
 
     def __init__(self, global_settings: Settings):
@@ -25,7 +27,7 @@ class OpticalForwardModuleBase(SimulationModule):
         self.nx = None
         self.ny = None
         self.nz = None
-        self.temporary_output = []
+        self.temporary_output_files = []
 
     @abstractmethod
     def forward_model(self,
@@ -76,25 +78,11 @@ class OpticalForwardModuleBase(SimulationModule):
         else:
             raise TypeError(f"The optical forward modelling does not support devices of type {type(device)}")
 
-        if isinstance(_device, list):
-            # per convention this list has at least two elements
-            results_l = []
-            for idx in range(len(_device)):
-                # we already looked at the 0th element, so go from 1 to n-1
-                results = self.forward_model(absorption_cm=absorption,
-                                             scattering_cm=scattering,
-                                             anisotropy=anisotropy,
-                                             illumination_geometry=_device[idx],
-                                             probe_position_mm=device.device_position_mm)
-                results_l.append(results)
-            results = self.agg_optical_results(results_l)
-
-        else:
-            results = self.forward_model(absorption_cm=absorption,
-                                         scattering_cm=scattering,
-                                         anisotropy=anisotropy,
-                                         illumination_geometry=_device,
-                                         probe_position_mm=device.device_position_mm)
+        results = self.run_forward_model(_device=_device,
+                                         device=device,
+                                         absorption=absorption,
+                                         scattering=scattering,
+                                         anisotropy=anisotropy)
         fluence = results[Tags.DATA_FIELD_FLUENCE]
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_array_well_defined(fluence, assume_non_negativity=True, array_name="fluence")
@@ -124,19 +112,46 @@ class OpticalForwardModuleBase(SimulationModule):
         save_hdf5(optical_output, self.global_settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
         self.logger.info("Simulating the optical forward process...[Done]")
 
-    @staticmethod
-    def agg_optical_results(results: List[Dict]) -> Dict:
+    def run_forward_model(self,
+                          _device,
+                          device: Union[IlluminationGeometryBase, PhotoacousticDevice],
+                          absorption: np.ndarray,
+                          scattering: np.ndarray,
+                          anisotropy: np.ndarray) -> Dict:
         """
-        aggregates the results from a list of `Settings` that was generated with the MCX optical forward models. The
-        fluence is averaged over the list.
+        runs `self.forward_model` as many times as defined by `device` and aggregates the results.
 
-        :param results: list of optical simulation results, each element of the list should inherit form `Settings`
-        :return: `Dict` object
+        :param _device: device illumination geometry
+        :param device: class defining illumination
+        :param absorption: Absorption volume
+        :param scattering: Scattering volume
+        :param anisotropy: Dimensionless scattering anisotropy
+        :return:
         """
-        fluence = []
-        aggregated_results = dict()
-        for r in results:
-            fluence.append(r[Tags.DATA_FIELD_FLUENCE])
-        fluence = np.sum(fluence, axis=0) / len(results)
-        aggregated_results[Tags.DATA_FIELD_FLUENCE] = fluence
-        return aggregated_results
+        if isinstance(_device, list):
+            # per convention this list has at least two elements
+            results = self.forward_model(absorption_cm=absorption,
+                                         scattering_cm=scattering,
+                                         anisotropy=anisotropy,
+                                         illumination_geometry=_device[0],
+                                         probe_position_mm=device.device_position_mm)
+            fluence = results[Tags.DATA_FIELD_FLUENCE]
+            for idx in range(1, len(_device)):
+                # we already looked at the 0th element, so go from 1 to n-1
+                results = self.forward_model(absorption_cm=absorption,
+                                             scattering_cm=scattering,
+                                             anisotropy=anisotropy,
+                                             illumination_geometry=_device[idx],
+                                             probe_position_mm=device.device_position_mm)
+                fluence += results[Tags.DATA_FIELD_FLUENCE]
+
+            fluence = fluence / len(_device)
+
+        else:
+            results = self.forward_model(absorption_cm=absorption,
+                                         scattering_cm=scattering,
+                                         anisotropy=anisotropy,
+                                         illumination_geometry=_device,
+                                         probe_position_mm=device.device_position_mm)
+            fluence = results[Tags.DATA_FIELD_FLUENCE]
+        return {Tags.DATA_FIELD_FLUENCE: fluence}

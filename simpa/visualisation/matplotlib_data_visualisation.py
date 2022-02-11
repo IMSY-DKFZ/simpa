@@ -56,8 +56,8 @@ def visualise_data(wavelength: int = None,
     reconstructed_data = None
     oxygenation = None
     linear_unmixing_sO2 = None
-    dr = None
-    dr_pos = None
+    diffuse_reflectance = None
+    diffuse_reflectance_position = None
 
     absorption = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength)
     scattering = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SCATTERING_PER_CM, wavelength)
@@ -76,8 +76,12 @@ def visualise_data(wavelength: int = None,
 
     if show_diffuse_reflectance:
         try:
-            dr = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_DIFFUSE_REFLECTANCE, wavelength)
-            dr_pos = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS, wavelength)
+            diffuse_reflectance = get_data_field_from_simpa_output(file,
+                                                                   Tags.DATA_FIELD_DIFFUSE_REFLECTANCE,
+                                                                   wavelength)
+            diffuse_reflectance_position = get_data_field_from_simpa_output(file,
+                                                                            Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
+                                                                            wavelength)
         except KeyError as e:
             logger.critical("The key " + str(Tags.DATA_FIELD_FLUENCE) + " was not in the simpa output.")
             show_fluence = False
@@ -132,10 +136,15 @@ def visualise_data(wavelength: int = None,
     cmaps = []
     logscales = []
 
-    if dr is not None and show_diffuse_reflectance:
+    if diffuse_reflectance is not None and show_diffuse_reflectance:
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
         plt.title("Diffuse reflectance")
-        ax.scatter(dr_pos[:, 0], dr_pos[:, 1], dr_pos[:, 2], c=dr, cmap='RdBu', antialiased=False)
+        ax.scatter(diffuse_reflectance_position[:, 0],
+                   diffuse_reflectance_position[:, 1],
+                   diffuse_reflectance_position[:, 2],
+                   c=diffuse_reflectance,
+                   cmap='RdBu',
+                   antialiased=False)
         ax.set_box_aspect((2, 1, 1))
         plt.show()
 

@@ -7,14 +7,14 @@ import numpy as np
 import struct
 import jdata
 import os
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import MCXAdapter
-from simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base import IlluminationGeometryBase
+from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
 
 
-class ReflectanceMCXAdapter(MCXAdapter):
+class MCXAdapterReflectance(MCXAdapter):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA. This class targets specifically
     diffuse reflectance simulations. Specifically, it implements the capability to run diffuse reflectance simulations.
@@ -37,7 +37,7 @@ class ReflectanceMCXAdapter(MCXAdapter):
 
         :param global_settings: global settings used during simulations
         """
-        super(ReflectanceMCXAdapter, self).__init__(global_settings=global_settings)
+        super(MCXAdapterReflectance, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
         self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii',
@@ -128,7 +128,8 @@ class ReflectanceMCXAdapter(MCXAdapter):
         :return: `Settings` instance containing the MCX output
         """
         results = dict()
-        if os.path.isfile(self.mcx_volumetric_data_file) and self.mcx_volumetric_data_file.endswith(self.mcx_output_suffixes['mcx_volumetric_data_file']):
+        if os.path.isfile(self.mcx_volumetric_data_file) and self.mcx_volumetric_data_file.endswith(
+                self.mcx_output_suffixes['mcx_volumetric_data_file']):
             content = jdata.load(self.mcx_volumetric_data_file)
             fluence = content['NIFTIData']
             ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
@@ -186,7 +187,8 @@ class ReflectanceMCXAdapter(MCXAdapter):
                          self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]) or \
                         (Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and
                          self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT])
-        if np.any([~np.all(a[:, :, 0] == 0)] for a in arrays) and check_padding:
+        # check that all volumes on first layer along z have only 0 values
+        if np.any([np.any(a[:, :, 0] != 0)] for a in arrays) and check_padding:
             results = tuple(np.pad(a, ((0, 0), (0, 0), (1, 0)), "constant", constant_values=0) for a in arrays)
             self.padded = True
         else:
@@ -215,37 +217,87 @@ class ReflectanceMCXAdapter(MCXAdapter):
             a[np.isnan(a)] = 0.
         return results
 
-    @staticmethod
-    def agg_optical_results(results: List[Dict]) -> Dict:
+    def run_forward_model(self,
+                          _device,
+                          device: Union[IlluminationGeometryBase, PhotoacousticDevice],
+                          absorption: np.ndarray,
+                          scattering: np.ndarray,
+                          anisotropy: np.ndarray
+                          ) -> Dict:
         """
-        aggregates the results from a list of `Dict` that was generated with the MCX optical forward models. The
-        fluence is averaged over the list, if diffuse reflectances are present in each element of the list, the arrays
-        are concatenated along firs dimension. Same procedure for diffuse reflectance is used for diffuse reflectance
-        position, photon exit position and photon exit direction.
+        runs `self.forward_model` as many times as defined by `device` and aggregates the results.
 
-        :param results: list of optical simulation results, each element of the list should inherit form `Dict`
-        :return: `Dict` object
+        :param _device: device illumination geometry
+        :param device: class defining illumination
+        :param absorption: Absorption volume
+        :param scattering: Scattering volume
+        :param anisotropy: Dimensionless scattering anisotropy
+        :return:
         """
-        fluence = []
-        ref = []
-        ref_pos = []
-        photon_pos = []
-        photon_dir = []
+        reflectance = []
+        reflectance_position = []
+        photon_position = []
+        photon_direction = []
+        if isinstance(_device, list):
+            # per convention this list has at least two elements
+            results = self.forward_model(absorption_cm=absorption,
+                                         scattering_cm=scattering,
+                                         anisotropy=anisotropy,
+                                         illumination_geometry=_device[0],
+                                         probe_position_mm=device.device_position_mm)
+            self._append_results(results=results,
+                                 reflectance=reflectance,
+                                 reflectance_position=reflectance_position,
+                                 photon_position=photon_position,
+                                 photon_direction=photon_direction)
+            fluence = results[Tags.DATA_FIELD_FLUENCE]
+            for idx in range(1, len(_device)):
+                # we already looked at the 0th element, so go from 1 to n-1
+                results = self.forward_model(absorption_cm=absorption,
+                                             scattering_cm=scattering,
+                                             anisotropy=anisotropy,
+                                             illumination_geometry=_device[idx],
+                                             probe_position_mm=device.device_position_mm)
+                self._append_results(results=results,
+                                     reflectance=reflectance,
+                                     reflectance_position=reflectance_position,
+                                     photon_position=photon_position,
+                                     photon_direction=photon_direction)
+                fluence += results[Tags.DATA_FIELD_FLUENCE]
+
+            fluence = fluence / len(_device)
+
+        else:
+            results = self.forward_model(absorption_cm=absorption,
+                                         scattering_cm=scattering,
+                                         anisotropy=anisotropy,
+                                         illumination_geometry=_device,
+                                         probe_position_mm=device.device_position_mm)
+            self._append_results(results=results,
+                                 reflectance=reflectance,
+                                 reflectance_position=reflectance_position,
+                                 photon_position=photon_position,
+                                 photon_direction=photon_direction)
+            fluence = results[Tags.DATA_FIELD_FLUENCE]
         aggregated_results = dict()
-        for r in results:
-            fluence.append(r[Tags.DATA_FIELD_FLUENCE])
-            if Tags.DATA_FIELD_DIFFUSE_REFLECTANCE in r:
-                ref.append(r[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE])
-                ref_pos.append(r[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS])
-            if Tags.DATA_FIELD_PHOTON_EXIT_POS in r:
-                photon_pos.append(r[Tags.DATA_FIELD_PHOTON_EXIT_POS])
-                photon_dir.append(r[Tags.DATA_FIELD_PHOTON_EXIT_DIR])
-        fluence = np.sum(fluence, axis=0) / len(results)
         aggregated_results[Tags.DATA_FIELD_FLUENCE] = fluence
-        if ref:
-            aggregated_results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = np.concatenate(ref, axis=0)
-            aggregated_results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = np.concatenate(ref_pos, axis=0)
-        if photon_pos:
-            aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_POS] = np.concatenate(photon_pos, axis=0)
-            aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_DIR] = np.concatenate(photon_dir, axis=0)
+        if reflectance:
+            aggregated_results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = np.concatenate(reflectance, axis=0)
+            aggregated_results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = np.concatenate(reflectance_position, axis=0)
+        if photon_position:
+            aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_POS] = np.concatenate(photon_position, axis=0)
+            aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_DIR] = np.concatenate(photon_direction, axis=0)
         return aggregated_results
+
+    @staticmethod
+    def _append_results(results,
+                        reflectance,
+                        reflectance_position,
+                        photon_position,
+                        photon_direction):
+        if Tags.DATA_FIELD_DIFFUSE_REFLECTANCE in results:
+            reflectance.append(results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE])
+            reflectance_position.append(results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS])
+        if Tags.DATA_FIELD_PHOTON_EXIT_POS in results:
+            photon_position.append(results[Tags.DATA_FIELD_PHOTON_EXIT_POS])
+            photon_direction.append(results[Tags.DATA_FIELD_PHOTON_EXIT_DIR])

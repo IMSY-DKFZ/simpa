@@ -99,7 +99,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         tmp_json_filename = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
                             self.global_settings[Tags.VOLUME_NAME] + ".json"
         self.mcx_json_config_file = tmp_json_filename
-        self.temporary_output.append(tmp_json_filename)
+        self.temporary_output_files.append(tmp_json_filename)
         with open(tmp_json_filename, "w") as json_file:
             json.dump(settings_dict, json_file, indent="\t")
 
@@ -123,7 +123,7 @@ class MCXAdapter(OpticalForwardModuleBase):
                                    self.global_settings[Tags.VOLUME_NAME] + "_output"
         for name, suffix in self.mcx_output_suffixes.items():
             self.__setattr__(name, mcx_volumetric_data_file + suffix)
-            self.temporary_output.append(mcx_volumetric_data_file + suffix)
+            self.temporary_output_files.append(mcx_volumetric_data_file + suffix)
         if Tags.TIME_STEP and Tags.TOTAL_TIME in self.component_settings:
             dt = self.component_settings[Tags.TIME_STEP]
             time = self.component_settings[Tags.TOTAL_TIME]
@@ -238,7 +238,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         gc.collect()
         tmp_input_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
                          self.global_settings[Tags.VOLUME_NAME] + ".bin"
-        self.temporary_output.append(tmp_input_path)
+        self.temporary_output_files.append(tmp_input_path)
         with open(tmp_input_path, "wb") as input_file:
             input_file.write(mcx_input)
 
@@ -270,7 +270,7 @@ class MCXAdapter(OpticalForwardModuleBase):
 
         :return: None
         """
-        for f in self.temporary_output:
+        for f in self.temporary_output_files:
             if os.path.isfile(f):
                 os.remove(f)
 

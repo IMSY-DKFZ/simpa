@@ -20,7 +20,7 @@ VOLUME_HEIGHT_IN_MM = 60
 SPACING = 0.5
 RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
-SAVE_REFLECTANCE = True
+SAVE_REFLECTANCE = False
 SAVE_PHOTON_DIRECTION = False
 
 # If VISUALIZE is set to True, the simulation result will be plotted
@@ -124,7 +124,7 @@ if not SAVE_REFLECTANCE and not SAVE_PHOTON_DIRECTION:
 else:
     pipeline = [
         sp.ModelBasedVolumeCreationAdapter(settings),
-        sp.ReflectanceMCXAdapter(settings),
+        sp.MCXAdapterReflectance(settings),
     ]
 
 
@@ -156,5 +156,5 @@ if VISUALIZE:
                       wavelength=WAVELENGTH,
                       show_initial_pressure=True,
                       show_absorption=True,
-                      show_diffuse_reflectance=True,
+                      show_diffuse_reflectance=SAVE_REFLECTANCE,
                       log_scale=True)
