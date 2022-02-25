@@ -51,7 +51,7 @@ for example in examples:
     if os.path.exists(os.path.join(current_dir, example_file_name_rst)):
         os.remove(os.path.join(current_dir, example_file_name_rst))
     example_rst_file = open(os.path.join(current_dir, example_file_name_rst), "a")
-    example_rst_file.write("{}\n=========================================\n\n.. literalinclude:: ../{}\n   :language: python\n   :lines: 1-\n\n".format(example_file_name, example))
+    example_rst_file.write("{}\n=========================================\n\n.. literalinclude:: ../{}\n   :language: python\n   :lines: 1-\n\n".format(example_file_name, f'../simpa_examples/{example_file_name}.py'))
     example_rst_file.close()
     simpa_examples_rst_file.writelines("   {}\n".format(example_file_name))
 
