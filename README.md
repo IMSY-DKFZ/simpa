@@ -45,7 +45,7 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 4. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
-virtual environment activated
+virtual environment activated (we also recommend python 3.8)
 1. `pip install -r requirements.txt`
 2. `python setup.py install` (for developement: `python setup.py develop`)
 3. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
@@ -106,6 +106,8 @@ one we provided in the `simpa_examples`) in the following places in this order:
 3. The current working directory
 4. The SIMPA home directory path
 
+Please follow the instructions in the `path_config.env` file in the `simpa_examples` folder. 
+
 # Simulation examples
 
 To get started with actual simulations, SIMPA provides an [example package](simpa_examples) of simple simulation 
@@ -152,10 +154,8 @@ you should do the following steps in a command line:
 
 1. Navigate to the `simpa/docs` directory
 2. If you would like the documentation to have the https://readthedocs.org/ style, type `pip install sphinx-rtd-theme`
-3. Execute the command `sphinx-apidoc -EfTM -o ./source/ ../simpa`
-4. Execute the command `python source/clean_up_rst_files.py`
-5. Type `make html`
-6. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser.
+3. Type `make html`
+4. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser.
 
 # How to contribute
 

@@ -20,9 +20,11 @@ VOLUME_HEIGHT_IN_MM = 60
 SPACING = 0.5
 RANDOM_SEED = 471
 VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
+SAVE_REFLECTANCE = False
+SAVE_PHOTON_DIRECTION = False
 
 # If VISUALIZE is set to True, the simulation result will be plotted
-VISUALIZE = False
+VISUALIZE = True
 
 
 def create_example_tissue():
@@ -102,6 +104,8 @@ settings.set_volume_creation_settings({
 settings.set_optical_settings({
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
+    Tags.COMPUTE_DIFFUSE_REFLECTANCE: SAVE_REFLECTANCE,
+    Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT: SAVE_PHOTON_DIRECTION
 })
 settings["noise_model_1"] = {
     Tags.NOISE_MEAN: 1.0,
@@ -111,11 +115,17 @@ settings["noise_model_1"] = {
     Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
 }
 
-pipeline = [
-    sp.ModelBasedVolumeCreationAdapter(settings),
-    sp.MCXAdapter(settings),
-    sp.GaussianNoise(settings, "noise_model_1")
-]
+if not SAVE_REFLECTANCE and not SAVE_PHOTON_DIRECTION:
+    pipeline = [
+        sp.ModelBasedVolumeCreationAdapter(settings),
+        sp.MCXAdapter(settings),
+        sp.GaussianNoise(settings, "noise_model_1")
+    ]
+else:
+    pipeline = [
+        sp.ModelBasedVolumeCreationAdapter(settings),
+        sp.MCXAdapterReflectance(settings),
+    ]
 
 
 class ExampleDeviceSlitIlluminationLinearDetector(sp.PhotoacousticDevice):
@@ -146,4 +156,5 @@ if VISUALIZE:
                       wavelength=WAVELENGTH,
                       show_initial_pressure=True,
                       show_absorption=True,
+                      show_diffuse_reflectance=SAVE_REFLECTANCE,
                       log_scale=True)

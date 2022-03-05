@@ -29,6 +29,7 @@ def visualise_data(wavelength: int = None,
                    show_segmentation_map=False,
                    show_oxygenation=False,
                    show_linear_unmixing_sO2=False,
+                   show_diffuse_reflectance=False,
                    log_scale=False,
                    show_xz_only=False,
                    save_path=None):
@@ -55,6 +56,8 @@ def visualise_data(wavelength: int = None,
     reconstructed_data = None
     oxygenation = None
     linear_unmixing_sO2 = None
+    diffuse_reflectance = None
+    diffuse_reflectance_position = None
 
     absorption = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength)
     scattering = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SCATTERING_PER_CM, wavelength)
@@ -66,6 +69,19 @@ def visualise_data(wavelength: int = None,
     if show_fluence:
         try:
             fluence = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_FLUENCE, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.DATA_FIELD_FLUENCE) + " was not in the simpa output.")
+            show_fluence = False
+            fluence = None
+
+    if show_diffuse_reflectance:
+        try:
+            diffuse_reflectance = get_data_field_from_simpa_output(file,
+                                                                   Tags.DATA_FIELD_DIFFUSE_REFLECTANCE,
+                                                                   wavelength)
+            diffuse_reflectance_position = get_data_field_from_simpa_output(file,
+                                                                            Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
+                                                                            wavelength)
         except KeyError as e:
             logger.critical("The key " + str(Tags.DATA_FIELD_FLUENCE) + " was not in the simpa output.")
             show_fluence = False
@@ -97,9 +113,9 @@ def visualise_data(wavelength: int = None,
 
     if show_oxygenation:
         try:
-            oxygenation = get_data_field_from_simpa_output(file, Tags.PROPERTY_OXYGENATION, wavelength)
+            oxygenation = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_OXYGENATION, wavelength)
         except KeyError as e:
-            logger.critical("The key " + str(Tags.PROPERTY_OXYGENATION) + " was not in the simpa output.")
+            logger.critical("The key " + str(Tags.DATA_FIELD_OXYGENATION) + " was not in the simpa output.")
             show_oxygenation = False
             oxygenation = None
 
@@ -119,6 +135,18 @@ def visualise_data(wavelength: int = None,
     data_item_names = []
     cmaps = []
     logscales = []
+
+    if diffuse_reflectance is not None and show_diffuse_reflectance:
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+        plt.title("Diffuse reflectance")
+        ax.scatter(diffuse_reflectance_position[:, 0],
+                   diffuse_reflectance_position[:, 1],
+                   diffuse_reflectance_position[:, 2],
+                   c=diffuse_reflectance,
+                   cmap='RdBu',
+                   antialiased=False)
+        ax.set_box_aspect((2, 1, 1))
+        plt.show()
 
     if absorption is not None and show_absorption:
         data_to_show.append(absorption)
