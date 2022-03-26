@@ -134,7 +134,7 @@ class OpticalForwardModuleBase(SimulationModule):
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
                                          illumination_geometry=_device[0],
-                                         probe_position_mm=_device.device_position_mm)
+                                         probe_position_mm=_device[0].device_position_mm)
             fluence = results[Tags.DATA_FIELD_FLUENCE]
             for idx in range(1, len(_device)):
                 # we already looked at the 0th element, so go from 1 to n-1
