@@ -28,28 +28,30 @@ label_mask = np.digitize(label_mask, bins=np.linspace(0.0, 1.0, 11), right=True)
 label_mask = np.reshape(label_mask, (400, 1, 400))
 
 input_spacing = 0.2
-segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
+segmentation_volume_tiled = np.tile(label_mask, (1, 400, 1))
 segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
                                          order=0)).astype(int)
 
 
 def segmentation_class_mapping():
     ret_dict = dict()
-    ret_dict[0] = sp.TISSUE_LIBRARY.heavy_water()
-    ret_dict[1] = sp.TISSUE_LIBRARY.blood()
-    ret_dict[2] = sp.TISSUE_LIBRARY.epidermis()
-    ret_dict[3] = sp.TISSUE_LIBRARY.muscle()
-    ret_dict[4] = sp.TISSUE_LIBRARY.mediprene()
-    ret_dict[5] = sp.TISSUE_LIBRARY.ultrasound_gel()
-    ret_dict[6] = sp.TISSUE_LIBRARY.heavy_water()
-    ret_dict[7] = (sp.MolecularCompositionGenerator()
-                   .append(sp.MOLECULE_LIBRARY.oxyhemoglobin(0.01))
-                   .append(sp.MOLECULE_LIBRARY.deoxyhemoglobin(0.01))
-                   .append(sp.MOLECULE_LIBRARY.water(0.98))
-                   .get_molecular_composition(sp.SegmentationClasses.COUPLING_ARTIFACT))
-    ret_dict[8] = sp.TISSUE_LIBRARY.heavy_water()
-    ret_dict[9] = sp.TISSUE_LIBRARY.heavy_water()
-    ret_dict[10] = sp.TISSUE_LIBRARY.heavy_water()
+    for i in range(11):
+        ret_dict[i] = sp.TISSUE_LIBRARY.constant(mua=0.01)
+    # ret_dict[0] = sp.TISSUE_LIBRARY.constant()
+    # ret_dict[1] = sp.TISSUE_LIBRARY.blood()
+    # ret_dict[2] = sp.TISSUE_LIBRARY.heavy_water()
+    # ret_dict[3] = sp.TISSUE_LIBRARY.muscle()
+    # ret_dict[4] = sp.TISSUE_LIBRARY.mediprene()
+    # ret_dict[5] = sp.TISSUE_LIBRARY.ultrasound_gel()
+    # ret_dict[6] = sp.TISSUE_LIBRARY.heavy_water()
+    # ret_dict[7] = (sp.MolecularCompositionGenerator()
+    #                .append(sp.MOLECULE_LIBRARY.oxyhemoglobin(0.01))
+    #                .append(sp.MOLECULE_LIBRARY.deoxyhemoglobin(0.01))
+    #                .append(sp.MOLECULE_LIBRARY.water(0.98))
+    #                .get_molecular_composition(sp.SegmentationClasses.COUPLING_ARTIFACT))
+    # ret_dict[8] = sp.TISSUE_LIBRARY.heavy_water()
+    # ret_dict[9] = sp.TISSUE_LIBRARY.heavy_water()
+    # ret_dict[10] = sp.TISSUE_LIBRARY.heavy_water()
     return ret_dict
 
 
@@ -60,7 +62,7 @@ settings[Tags.RANDOM_SEED] = 1234
 settings[Tags.WAVELENGTHS] = [700]
 settings[Tags.SPACING_MM] = target_spacing
 settings[Tags.DIM_VOLUME_X_MM] = 400 / (target_spacing / input_spacing)
-settings[Tags.DIM_VOLUME_Y_MM] = 128 / (target_spacing / input_spacing)
+settings[Tags.DIM_VOLUME_Y_MM] = 400 / (target_spacing / input_spacing)
 settings[Tags.DIM_VOLUME_Z_MM] = 400 / (target_spacing / input_spacing)
 
 settings.set_volume_creation_settings({
@@ -81,7 +83,15 @@ pipeline = [
     sp.MCXAdapter(settings)
 ]
 
-sp.simulate(pipeline, settings, sp.RSOMExplorerP50(element_spacing_mm=1.0))
+device = sp.MSOTAcuityEcho(device_position_mm=np.array([settings[Tags.DIM_VOLUME_X_MM] / 2,
+                                                        settings[Tags.DIM_VOLUME_Y_MM] / 2,
+                                                        43.2]))
+
+# device.illumination_geometries = []
+# device.add_illumination_geometry(illumination_geometry=sp.SlitIlluminationGeometry(slit_vector_mm=[10, 0, 0]),
+#                                  illuminator_position_relative_to_pa_device=np.array([0, 0, 0]))
+
+sp.simulate(pipeline, settings, device)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]

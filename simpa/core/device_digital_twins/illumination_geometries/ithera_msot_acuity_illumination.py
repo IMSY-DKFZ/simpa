@@ -4,6 +4,7 @@
 
 from simpa.core.device_digital_twins import IlluminationGeometryBase
 from simpa.utils import Settings, Tags
+import numpy as np
 
 
 class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
@@ -23,11 +24,16 @@ class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
         source_type = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
         spacing = global_settings[Tags.SPACING_MM]
         source_position = [probe_position_mm[0]/spacing + 0.5,
-                           probe_position_mm[1]/spacing + 0.5 - 16.46 / spacing,
-                           probe_position_mm[2]/spacing + 0.5 + 5] # FIXME: This seems to be a bug
+                           probe_position_mm[1]/spacing + 0.5,
+                           probe_position_mm[2]/spacing + 0.5]
 
-        # source_direction = [0, 0.381070, 0.9245460]       earlier calculation
-        source_direction = [0, 0.356091613, 0.934451049]       # new calculation TODO: Check for correctness
+        # y position relative to the membrane:
+        # The laser is located 43.2 mm  behind the membrane with an angle of 22.4 degrees.
+        # However, the incident of laser and image plane is located 2.8 behind the membrane (outside of the device).
+        y_pos_relative_to_membrane = np.tan(np.deg2rad(22.4)) * (43.2 + 2.8)
+
+        direction_vector = np.array([0, y_pos_relative_to_membrane, 43.2 + 2.8])
+        source_direction = list(direction_vector/np.linalg.norm(direction_vector))
 
         source_param1 = [30 / spacing, 0, 0, 0]
 

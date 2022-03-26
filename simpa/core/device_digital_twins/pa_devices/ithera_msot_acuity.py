@@ -77,7 +77,15 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
         self.set_detection_geometry(detection_geometry)
         illumination_geometry = MSOTAcuityIlluminationGeometry()
-        self.add_illumination_geometry(illumination_geometry)
+
+        # y position relative to the membrane:
+        # The laser is located 43.2 mm  behind the membrane with an angle of 22.4 degrees.
+        # However, the incident of laser and image plane is located 2.8 behind the membrane (outside of the device).
+        y_pos_relative_to_membrane = np.tan(np.deg2rad(22.4)) * (43.2 + 2.8)
+        self.add_illumination_geometry(illumination_geometry,
+                                       illuminator_position_relative_to_pa_device=np.array([0,
+                                                                                            -y_pos_relative_to_membrane,
+                                                                                            -43.2]))
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
         """
@@ -111,24 +119,6 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) + 1 -
                                              global_settings[Tags.DIM_VOLUME_X_MM]) / 2
             global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + 1
-            self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0, 0]))
-            self.detection_geometry_position_vector = np.add(self.device_position_mm,
-                                                             np.array([0, 0,
-                                                                       self.probe_height_mm +
-                                                                       self.focus_in_field_of_view_mm]))
-            detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.34,
-                                                              radius_mm=40,
-                                                              number_detector_elements=256,
-                                                              detector_element_width_mm=0.24,
-                                                              detector_element_length_mm=13,
-                                                              center_frequency_hz=3.96e6,
-                                                              bandwidth_percent=55,
-                                                              sampling_frequency_mhz=40,
-                                                              angular_origin_offset=np.pi,
-                                                              device_position_mm=self.detection_geometry_position_vector,
-                                                              field_of_view_extent_mm=self.field_of_view_extent_mm)
-
-            self.set_detection_geometry(detection_geometry)
             self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
         else:
             width_shift_for_structures_mm = 0
@@ -161,7 +151,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                 Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
             })
 
-            volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
+            # volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
         else:
             us_gel_thickness = 0
 
@@ -174,10 +164,32 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
         })
 
-        volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
+        # volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
+
+        self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0, probe_size_mm]))
+        self.detection_geometry_position_vector = np.add(self.device_position_mm,
+                                                         np.array([0, 0,
+                                                                   self.probe_height_mm +
+                                                                   self.focus_in_field_of_view_mm]))
+        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.34,
+                                                          radius_mm=40,
+                                                          number_detector_elements=256,
+                                                          detector_element_width_mm=0.24,
+                                                          detector_element_length_mm=13,
+                                                          center_frequency_hz=3.96e6,
+                                                          bandwidth_percent=55,
+                                                          sampling_frequency_mhz=40,
+                                                          angular_origin_offset=np.pi,
+                                                          device_position_mm=self.detection_geometry_position_vector,
+                                                          field_of_view_extent_mm=self.field_of_view_extent_mm)
+
+        self.set_detection_geometry(detection_geometry)
+        for illumination_geom in self.illumination_geometries:
+            illumination_geom.device_position_mm = np.add(illumination_geom.device_position_mm,
+                                                          np.array([0, 0, probe_size_mm]))
 
         background_settings = Settings({
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.constant(mua=0.1),
             Tags.STRUCTURE_TYPE: Tags.BACKGROUND
         })
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
