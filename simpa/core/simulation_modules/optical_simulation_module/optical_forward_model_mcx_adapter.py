@@ -43,8 +43,7 @@ class MCXAdapter(OpticalForwardModuleBase):
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
-                      illumination_geometry: IlluminationGeometryBase,
-                      probe_position_mm: np.ndarray) -> Dict:
+                      illumination_geometry: IlluminationGeometryBase) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
         input for MCX. A JSON serializable file containing the configuration required by MCx is also generated.
@@ -55,8 +54,6 @@ class MCXAdapter(OpticalForwardModuleBase):
         :param scattering_cm: array containing the scattering of the tissue in `cm` units
         :param anisotropy: array containing the anisotropy of the volume defined by `absorption_cm` and `scattering_cm`
         :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
-        :param probe_position_mm: position of a probe in `mm` units. This is parsed to
-            `illumination_geometry.get_mcx_illuminator_definition`
         :return: `Dict` containing the results of optical simulations, the keys in this dictionary-like object
             depend on the Tags defined in `self.component_settings`
         """
@@ -71,7 +68,6 @@ class MCXAdapter(OpticalForwardModuleBase):
                                     assumed_anisotropy=_assumed_anisotropy)
 
         settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
-                                              probe_position_mm=probe_position_mm,
                                               assumed_anisotropy=_assumed_anisotropy)
 
         print(settings_dict)
@@ -105,7 +101,6 @@ class MCXAdapter(OpticalForwardModuleBase):
 
     def get_mcx_settings(self,
                          illumination_geometry: IlluminationGeometryBase,
-                         probe_position_mm: np.ndarray,
                          assumed_anisotropy: np.ndarray,
                          **kwargs) -> Dict:
         """
@@ -113,8 +108,6 @@ class MCXAdapter(OpticalForwardModuleBase):
         `self.component_settings` . Among others, it defines the volume type, dimensions and path to binary file.
 
         :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
-        :param probe_position_mm: position of a probe in `mm` units. This is parsed to
-            `illumination_geometry.get_mcx_illuminator_definition`
         :param assumed_anisotropy:
         :param kwargs: dummy, used for class inheritance
         :return: dictionary with settings to be used by MCX
@@ -132,7 +125,7 @@ class MCXAdapter(OpticalForwardModuleBase):
             dt = 5e-09
         self.frames = int(time / dt)
 
-        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings, probe_position_mm)
+        source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings)
         settings_dict = {
             "Session": {
                 "ID": mcx_volumetric_data_file,

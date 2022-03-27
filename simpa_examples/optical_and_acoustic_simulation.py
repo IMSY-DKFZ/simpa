@@ -12,7 +12,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
-VOLUME_HEIGHT_IN_MM = 15
+VOLUME_HEIGHT_IN_MM = 25
 SPACING = 0.2
 RANDOM_SEED = 4711
 
@@ -31,37 +31,37 @@ def create_example_tissue():
     and a blood vessel.
     """
     background_dictionary = sp.Settings()
-    background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(0.1, 1e-10, 1.0)
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-10, 1e-10, 1.0)
     background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
     tissue_dict = sp.Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
-    # tissue_dict["muscle"] = sp.define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
-    #                                                                       molecular_composition=
-    #                                                                       sp.TISSUE_LIBRARY.constant(0.05, 100, 0.9),
-    #                                                                       priority=1,
-    #                                                                       consider_partial_volume=True,
-    #                                                                       adhere_to_deformation=True)
-    # tissue_dict["epidermis"] = sp.define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
-    #                                                                          molecular_composition=
-    #                                                                          sp.TISSUE_LIBRARY.epidermis(),
-    #                                                                          priority=8,
-    #                                                                          consider_partial_volume=True,
-    #                                                                          adhere_to_deformation=True)
-    # tissue_dict["vessel_1"] = sp.define_circular_tubular_structure_settings(
-    #     tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, 0, 5],
-    #     tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, VOLUME_PLANAR_DIM_IN_MM, 5],
-    #     molecular_composition=sp.TISSUE_LIBRARY.blood(),
-    #     radius_mm=2, priority=3, consider_partial_volume=True,
-    #     adhere_to_deformation=False
-    # )
-    # tissue_dict["vessel_2"] = sp.define_circular_tubular_structure_settings(
-    #     tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, 0, 10],
-    #     tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10],
-    #     molecular_composition=sp.TISSUE_LIBRARY.blood(),
-    #     radius_mm=3, priority=3, consider_partial_volume=True,
-    #     adhere_to_deformation=False
-    # )
+    tissue_dict["muscle"] = sp.define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
+                                                                          molecular_composition=
+                                                                          sp.TISSUE_LIBRARY.constant(0.05, 100, 0.9),
+                                                                          priority=1,
+                                                                          consider_partial_volume=True,
+                                                                          adhere_to_deformation=True)
+    tissue_dict["epidermis"] = sp.define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
+                                                                             molecular_composition=
+                                                                             sp.TISSUE_LIBRARY.epidermis(),
+                                                                             priority=8,
+                                                                             consider_partial_volume=True,
+                                                                             adhere_to_deformation=True)
+    tissue_dict["vessel_1"] = sp.define_circular_tubular_structure_settings(
+        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, 0, 5],
+        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, VOLUME_PLANAR_DIM_IN_MM, 5],
+        molecular_composition=sp.TISSUE_LIBRARY.blood(),
+        radius_mm=2, priority=3, consider_partial_volume=True,
+        adhere_to_deformation=False
+    )
+    tissue_dict["vessel_2"] = sp.define_circular_tubular_structure_settings(
+        tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, 0, 10],
+        tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10],
+        molecular_composition=sp.TISSUE_LIBRARY.blood(),
+        radius_mm=3, priority=3, consider_partial_volume=True,
+        adhere_to_deformation=False
+    )
     return tissue_dict
 
 
@@ -83,9 +83,9 @@ general_settings = {
             Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
             Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.GPU: True,
-            Tags.WAVELENGTHS: [800],
+            Tags.WAVELENGTHS: [700, 800],
             Tags.DO_FILE_COMPRESSION: True,
-            Tags.DO_IPASC_EXPORT: False
+            Tags.DO_IPASC_EXPORT: True
         }
 settings = sp.Settings(general_settings)
 np.random.seed(RANDOM_SEED)
@@ -96,7 +96,7 @@ settings.set_volume_creation_settings({
 })
 
 settings.set_optical_settings({
-    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e9,
+    Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
     Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
     Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
     Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
@@ -159,31 +159,31 @@ settings["noise_time_series"] = {
 
 # TODO: For the device choice, uncomment the undesired device
 
-device = sp.MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                        VOLUME_PLANAR_DIM_IN_MM/2,
-                                                        0]))
-device.update_settings_for_use_of_model_based_volume_creator(settings)
+# device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+#                                                      VOLUME_PLANAR_DIM_IN_MM/2,
+#                                                      0]))
+# device.update_settings_for_use_of_model_based_volume_creator(settings)
 
-# device = sp.PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                              VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                              0]),
-#                                 field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20]))
-# device.set_detection_geometry(sp.LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
-#                                                               pitch_mm=0.25,
-#                                                               number_detector_elements=100,
-#                                                               field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20])))
-# print(device.get_detection_geometry().get_detector_element_positions_base_mm())
-# device.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
+device = sp.PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                             VOLUME_PLANAR_DIM_IN_MM/2,
+                                                             0]),
+                                field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20]))
+device.set_detection_geometry(sp.LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+                                                              pitch_mm=0.25,
+                                                              number_detector_elements=100,
+                                                              field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20])))
+print(device.get_detection_geometry().get_detector_element_positions_base_mm())
+device.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
 
 SIMUATION_PIPELINE = [
     sp.ModelBasedVolumeCreationAdapter(settings),
     sp.MCXAdapter(settings),
-    # sp.GaussianNoise(settings, "noise_initial_pressure"),
-    # sp.KWaveAdapter(settings),
-    # sp.GaussianNoise(settings, "noise_time_series"),
-    # sp.DelayAndSumAdapter(settings),
-    # sp.FieldOfViewCropping(settings)
+    sp.GaussianNoise(settings, "noise_initial_pressure"),
+    sp.KWaveAdapter(settings),
+    sp.GaussianNoise(settings, "noise_time_series"),
+    sp.TimeReversalAdapter(settings),
+    sp.FieldOfViewCropping(settings)
     ]
 
 sp.simulate(SIMUATION_PIPELINE, settings, device)
@@ -191,14 +191,13 @@ sp.simulate(SIMUATION_PIPELINE, settings, device)
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]
 else:
-    WAVELENGTH = 800
+    WAVELENGTH = 700
 
 if VISUALIZE:
     sp.visualise_data(path_to_hdf5_file=settings[Tags.SIMPA_OUTPUT_PATH],
                       wavelength=WAVELENGTH,
-                      show_time_series_data=False,
+                      show_time_series_data=True,
                       show_initial_pressure=True,
-                      show_reconstructed_data=False,
-                      show_absorption=True,
+                      show_reconstructed_data=True,
                       log_scale=False,
                       show_xz_only=False)

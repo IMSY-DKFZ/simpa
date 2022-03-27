@@ -32,14 +32,14 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
 
         self.beam_radius_mm = beam_radius_mm
 
-    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm, source_direction_vector) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_GAUSSIAN
 
         spacing = global_settings[Tags.SPACING_MM]
 
-        device_position = probe_position_mm / spacing + 0.5
+        device_position = list(self.device_position_mm / spacing + 0.5)
 
-        source_direction = [0, 0, 1]
+        source_direction = list(self.normalized_source_direction_vector)
 
         source_param1 = [int(round(self.beam_radius_mm / spacing)), 0, 0, 0]
 
@@ -47,7 +47,7 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
 
         return {
             "Type": source_type,
-            "Pos": list(device_position),
+            "Pos": device_position,
             "Dir": source_direction,
             "Param1": source_param1,
             "Param2": source_param2
