@@ -13,12 +13,17 @@ class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
     This class represents the illumination geometry of the MSOT InVision photoacoustic device.
     """
 
-    def __init__(self, geometry_id=0):
+    def __init__(self, invision_position=None, geometry_id=0):
         """
         :param geometry_id: ID of the specific InVision illuminator.
         :type geometry_id: int
         """
         super().__init__()
+
+        if invision_position is None:
+            self.invision_position = [0, 0, 0]
+        else:
+            self.invision_position = invision_position
 
         self.geometry_id = geometry_id
 
@@ -58,16 +63,16 @@ class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
             det_sep_half = -det_sep_half
             illumination_angle = -illumination_angle
 
-        self.invision_position = self.device_position_mm
-
-        self.device_position_mm = [self.device_position_mm[0] + np.sin(angle) * detector_iso_distance,
-                                   self.device_position_mm[1] + det_sep_half,
-                                   self.device_position_mm[2] + np.cos(angle) * detector_iso_distance]
+        self.device_position_mm = [self.invision_position[0] + np.sin(angle) * detector_iso_distance,
+                                   self.invision_position[1] + det_sep_half,
+                                   self.invision_position[2] + np.cos(angle) * detector_iso_distance]
 
         self.source_direction_vector = np.array([-np.sin(angle),
                                                  np.sin(illumination_angle),
                                                  np.cos(angle)])
-        self.normalized_source_direction_vector /= np.linalg.norm(self.source_direction_vector)
+
+        self.normalized_source_direction_vector = self.source_direction_vector / np.linalg.norm(
+            self.source_direction_vector)
 
     def get_mcx_illuminator_definition(self, global_settings):
         self.logger.debug(self.invision_position)

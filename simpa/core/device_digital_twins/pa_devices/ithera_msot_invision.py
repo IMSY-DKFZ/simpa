@@ -55,7 +55,8 @@ class InVision256TF(PhotoacousticDevice):
         self.field_of_view_extent_mm = detection_geometry.field_of_view_extent_mm
         self.set_detection_geometry(detection_geometry)
         for i in range(10):
-            self.add_illumination_geometry(MSOTInVisionIlluminationGeometry(i))
+            self.add_illumination_geometry(MSOTInVisionIlluminationGeometry(invision_position=self.device_position_mm,
+                                                                            geometry_id=i))
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
