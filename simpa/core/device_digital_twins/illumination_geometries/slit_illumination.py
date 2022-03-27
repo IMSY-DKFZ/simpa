@@ -45,7 +45,7 @@ class SlitIlluminationGeometry(IlluminationGeometryBase):
         direction_vector_mm[2] = direction_vector_mm[2] / np.linalg.norm(direction_vector_mm)
         self.direction_vector_norm = direction_vector_mm
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm, source_direction_vector) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_SLIT
 
         spacing = global_settings[Tags.SPACING_MM]

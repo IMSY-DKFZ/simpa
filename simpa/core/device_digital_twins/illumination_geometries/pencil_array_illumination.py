@@ -37,7 +37,7 @@ class PencilArrayIlluminationGeometry(IlluminationGeometryBase):
         self.number_illuminators_x = number_illuminators_x
         self.number_illuminators_y = number_illuminators_y
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm, source_direction_vector) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_PENCILARRAY
 
         spacing = global_settings[Tags.SPACING_MM]

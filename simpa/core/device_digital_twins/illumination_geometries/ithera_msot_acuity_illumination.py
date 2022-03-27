@@ -19,7 +19,7 @@ class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
         """
         super().__init__()
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm):
+    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm, source_direction_vector):
 
         source_type = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
         spacing = global_settings[Tags.SPACING_MM]

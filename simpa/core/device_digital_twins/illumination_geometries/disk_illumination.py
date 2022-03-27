@@ -30,7 +30,7 @@ class DiskIlluminationGeometry(IlluminationGeometryBase):
 
         self.beam_radius_mm = beam_radius_mm
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm, source_direction_vector) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_DISK
 
         spacing = global_settings[Tags.SPACING_MM]
