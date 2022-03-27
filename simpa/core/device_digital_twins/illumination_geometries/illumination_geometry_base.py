@@ -27,16 +27,19 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
                                                        field_of_view_extent_mm=field_of_view_extent_mm)
 
     @abstractmethod
-    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm, source_direction_vector) -> dict:
         """
         IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
         mcx simulation tool to represent the illumination geometry of this device.
 
-        :param global_settings: The global_settings instance containing the simulation instructions
+        :param global_settings: The global_settings instance containing the simulation instructions.
         :type global_settings: Settings
 
-        :param probe_position_mm: the position of the probe in the volume
+        :param probe_position_mm: The position of the probe in the volume.
         :type probe_position_mm: ndarray
+
+        :param source_direction_vector: Direction of the illumination source.
+        :type source_direction_vector: ndarray
 
         :return: Dictionary that includes all parameters needed for mcx.
         :rtype: dict
