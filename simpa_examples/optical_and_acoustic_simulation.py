@@ -176,7 +176,7 @@ print(device.get_detection_geometry().get_detector_element_positions_base_mm())
 device.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
 
-SIMUATION_PIPELINE = [
+SIMULATION_PIPELINE = [
     sp.ModelBasedVolumeCreationAdapter(settings),
     sp.MCXAdapter(settings),
     sp.GaussianNoise(settings, "noise_initial_pressure"),
@@ -186,7 +186,7 @@ SIMUATION_PIPELINE = [
     sp.FieldOfViewCropping(settings)
     ]
 
-sp.simulate(SIMUATION_PIPELINE, settings, device)
+sp.simulate(SIMULATION_PIPELINE, settings, device)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]
