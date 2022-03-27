@@ -19,58 +19,65 @@ class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
         :type geometry_id: int
         """
         super().__init__()
+
         self.geometry_id = geometry_id
 
-    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm, source_direction_vector):
-        self.logger.debug(probe_position_mm)
+        angle = 0.0
+        det_sep_half = 24.74 / 2
+        detector_iso_distance = 74.05 / 2
+        illumination_angle = -0.41608649
+
+        if geometry_id == 0:
+            angle = 0.0
+        elif geometry_id == 1:
+            angle = 0.0
+            det_sep_half = -det_sep_half
+            illumination_angle = -illumination_angle
+        elif geometry_id == 2:
+            angle = 1.25664
+        elif geometry_id == 3:
+            angle = 1.25664
+            det_sep_half = -det_sep_half
+            illumination_angle = -illumination_angle
+        elif geometry_id == 4:
+            angle = -1.25664
+        elif geometry_id == 5:
+            angle = -1.25664
+            det_sep_half = -det_sep_half
+            illumination_angle = -illumination_angle
+        elif geometry_id == 6:
+            angle = 2.51327
+        elif geometry_id == 7:
+            angle = 2.51327
+            det_sep_half = -det_sep_half
+            illumination_angle = -illumination_angle
+        elif geometry_id == 8:
+            angle = -2.51327
+        elif geometry_id == 9:
+            angle = -2.51327
+            det_sep_half = -det_sep_half
+            illumination_angle = -illumination_angle
+
+        self.invision_position = self.device_position_mm
+
+        self.device_position_mm = [self.device_position_mm[0] + np.sin(angle) * detector_iso_distance,
+                                   self.device_position_mm[1] + det_sep_half,
+                                   self.device_position_mm[2] + np.cos(angle) * detector_iso_distance]
+
+        self.source_direction_vector = np.array([-np.sin(angle),
+                                                 np.sin(illumination_angle),
+                                                 np.cos(angle)])
+        self.normalized_source_direction_vector /= np.linalg.norm(self.source_direction_vector)
+
+    def get_mcx_illuminator_definition(self, global_settings):
+        self.logger.debug(self.invision_position)
         source_type = Tags.ILLUMINATION_TYPE_MSOT_INVISION
 
         spacing = global_settings[Tags.SPACING_MM]
 
-        angle = 0.0
-        det_sep_half = 24.74 / (2 * spacing)
-        detector_iso_distance = 74.05 / (2 * spacing)
-        illumination_angle = -0.41608649
+        source_position = list(np.array(self.device_position_mm) / spacing + 1)
 
-        if self.geometry_id == 0:
-            angle = 0.0
-        elif self.geometry_id == 1:
-            angle = 0.0
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
-        elif self.geometry_id == 2:
-            angle = 1.25664
-        elif self.geometry_id == 3:
-            angle = 1.25664
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
-        elif self.geometry_id == 4:
-            angle = -1.25664
-        elif self.geometry_id == 5:
-            angle = -1.25664
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
-        elif self.geometry_id == 6:
-            angle = 2.51327
-        elif self.geometry_id == 7:
-            angle = 2.51327
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
-        elif self.geometry_id == 8:
-            angle = -2.51327
-        elif self.geometry_id == 9:
-            angle = -2.51327
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
-
-        source_position = [probe_position_mm[0]/spacing + 1 + np.sin(angle) * detector_iso_distance,
-                           probe_position_mm[1]/spacing + 1 + det_sep_half,
-                           probe_position_mm[2]/spacing + 1 + np.cos(angle) * detector_iso_distance]
-
-        length = np.sqrt(np.sin(angle) ** 2 + np.sin(illumination_angle) ** 2 + np.cos(angle) ** 2)
-        source_direction = [-np.sin(angle) / length,
-                            np.sin(illumination_angle) / length,
-                            np.cos(angle) / length]
+        source_direction = list(self.normalized_source_direction_vector)
 
         source_param1 = [spacing, self.geometry_id, 0, 0]
 
