@@ -174,7 +174,6 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                                             z_dim_position_shift_mm]))
         self.detection_geometry_position_vector = np.add(self.device_position_mm,
                                                          np.array([0, 0,
-                                                                   self.probe_height_mm +
                                                                    self.focus_in_field_of_view_mm]))
         detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.34,
                                                           radius_mm=40,
