@@ -28,7 +28,7 @@ settings.set_reconstruction_settings({
 })
 
 # TODO use the correct device definition here
-device = sp.MSOTAcuityEcho()
+device = file["digital_device"]
 
 sp.DelayAndSumAdapter(settings).run(device)
 
