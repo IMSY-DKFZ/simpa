@@ -12,7 +12,7 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
 from simpa.utils import Settings
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filtering_with_settings, apply_b_mode
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filter_with_settings, apply_b_mode
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
@@ -54,13 +54,14 @@ class ReconstructionAdapterBase(SimulationModule):
             raise TypeError(f"Type {type(device)} is not supported for performing image reconstruction.")
 
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING in self.component_settings and \
-                self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is True:
+                self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] and \
+                    Tags.BANDPASS_FILTER_METHOD in self.component_settings:
 
-            time_series_sensor_data = bandpass_filtering_with_settings(time_series_sensor_data,
+            time_series_sensor_data = bandpass_filter_with_settings(time_series_sensor_data,
                                                                        self.global_settings,
                                                                        self.component_settings,
                                                                        _device)
-
+            
         # check for B-mode methods and perform envelope detection on time series data if specified
         if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in self.component_settings \
                 and self.component_settings[Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION] \

@@ -133,6 +133,7 @@ settings.set_acoustic_settings({
 
 settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
+    Tags.BANDPASS_FILTER_METHOD: Tags.TUKEY_BANDPASS_FILTER,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,

@@ -18,6 +18,7 @@ settings[Tags.WAVELENGTH] = settings[Tags.WAVELENGTHS][0]
 
 settings.set_reconstruction_settings({
     Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
+    Tags.BANDPASS_FILTER_METHOD: Tags.TUKEY_BANDPASS_FILTER,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
     Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
     Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),

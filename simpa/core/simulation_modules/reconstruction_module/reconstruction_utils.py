@@ -12,7 +12,7 @@ import torch
 import torch.fft
 from torch import Tensor
 import numpy as np
-from scipy.signal import hilbert
+from scipy.signal import hilbert, butter, lfilter
 from scipy.signal.windows import tukey
 from scipy.ndimage import zoom
 
@@ -49,12 +49,100 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
 
     return output
 
+def bandpass_filter_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
+                                           device: DetectionGeometryBase) -> np.ndarray:
+        """
+        Applies corresponding bandpass filter which needs to be set in 
+        `component_settings[Tags.BANDPASS_FILTER_METHOD]`.
 
-def bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
+        :param data: (numpy array) data to be filtered
+        :param global_settings: (Settings) settings for the whole simulation
+        :param component_settings: (Settings) settings for the reconstruction module
+        :param device:
+        :return: (numpy array) filtered data
+        """
+
+        # select corresponding filtering method depending on tag in settings
+        if component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.TUKEY_BANDPASS_FILTER:
+            return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
+        elif component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.BUTTERWORTH_BANDPASS_FILTER:
+            return butter_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
+        else:
+            raise AttributeError("Please specify filtering methods as either Tukey or Butterworth bandpass filter")
+
+def butter_bandpass_filtering(data: np.array,  time_spacing_in_ms: float = None,
+                              cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
+                              order: int = 1) -> np.ndarray:
+    """
+    Apply a butterworth bandpass filter of `order` with cutoff values at `cutoff_lowpass`
+    and `cutoff_highpass` MHz on the `data` using the scipy.signal.butter filter.
+
+    :param data: (numpy array) data to be filtered
+    :param time_spacing_in_ms: (float) time spacing in milliseconds, e.g. 2.5e-5
+    :param cutoff_lowpass: (int) Signal above this value will be ignored (in MHz)
+    :param cutoff_highpass: (int) Signal below this value will be ignored (in MHz)
+    :param order: (int) order of the filter
+    :return: (numpy array) filtered data
+    """
+
+    # determines nyquist frequency
+    nyquist = 0.5 / time_spacing_in_ms*1000
+
+    # computes the critical frequencies
+    if cutoff_lowpass is None:
+        low = 0.000001
+    else:
+        low = (cutoff_lowpass / nyquist)
+    if cutoff_highpass is None:
+        high = 0.999999999
+    else:
+        high = (cutoff_highpass / nyquist)
+    
+    b, a = butter(N=order, Wn=[high, low], btype='band')
+    y = lfilter(b, a, data)
+    
+    return y
+
+def butter_bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
+                                           device: DetectionGeometryBase) -> np.ndarray:
+    """
+    Apply a butterworth bandpass filter of `order` with cutoff values at `cutoff_lowpass`
+    and `cutoff_highpass` MHz on the `data` using the scipy.signal.butter filter.
+    Those values are obtained from the `global_settings`, `component_settings`, and `device`.
+
+    :param data: (numpy array) data to be filtered
+    :param global_settings: (Settings) settings for the whole simulation
+    :param component_settings: (Settings) settings for the reconstruction module
+    :param device:
+    :return: (numpy array) filtered data
+    """
+
+    if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
+        time_spacing_in_ms = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
+    elif device.sampling_frequency_MHz is not None:
+        time_spacing_in_ms = 1.0 / (device.sampling_frequency_MHz * 1000)
+    else:
+        raise AttributeError("Please specify a value for SENSOR_SAMPLING_RATE_MHZ or K_WAVE_SPECIFIC_DT")
+
+    cutoff_lowpass = component_settings[Tags.BANDPASS_CUTOFF_LOWPASS] \
+        if Tags.BANDPASS_CUTOFF_LOWPASS in component_settings else int(8e6)
+    cutoff_highpass = component_settings[Tags.BANDPASS_CUTOFF_HIGHPASS] \
+        if Tags.BANDPASS_CUTOFF_HIGHPASS in component_settings else int(0.1e6)
+    filter_order = component_settings[
+        Tags.BUTTERWORTH_FILTER_ORDER] if Tags.BUTTERWORTH_FILTER_ORDER in component_settings else 1
+
+    if data is None or time_spacing_in_ms is None:
+        raise AttributeError("data and time spacing must be specified")
+
+    return butter_bandpass_filtering(data, time_spacing_in_ms, cutoff_lowpass, cutoff_highpass, filter_order)
+
+
+
+def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
                        cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
                        tukey_alpha: float = 0.5, resampling_for_fft: bool =False) -> np.ndarray:
     """
-    Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz 
+    Apply a tukey bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz 
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
     Note that the filter operates on both, negative and positive frequencies similarly.
     Filtering is performed along the last dimension.
@@ -118,10 +206,10 @@ def bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
         return filtered_data
 
 
-def bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
-                                     device: DetectionGeometryBase) -> np.ndarray:
+def tukey_bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
+                                           device: DetectionGeometryBase) -> np.ndarray:
     """
-    Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz
+    Apply a tukey bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
     Those values are obtained from the `global_settings`, `component_settings`, and `device`.
     Note that the filter operates on both, negative and positive frequencies similarly.
@@ -150,7 +238,7 @@ def bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings
     if data is None or time_spacing_in_ms is None:
         raise AttributeError("data and time spacing must be specified")
 
-    return bandpass_filtering(data, time_spacing_in_ms, cutoff_lowpass, cutoff_highpass, tukey_alpha, resampling_for_fft)
+    return tukey_bandpass_filtering(data, time_spacing_in_ms, cutoff_lowpass, cutoff_highpass, tukey_alpha, resampling_for_fft)
 
 
 def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
