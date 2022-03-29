@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import os
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
+
 class MinimalKWaveTest(ManualIntegrationTestClass):
 
     def setup(self):
