@@ -269,8 +269,7 @@ class MCXAdapterReflectance(MCXAdapter):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device,
-                                         probe_position_mm=device.device_position_mm)
+                                         illumination_geometry=_device)
             self._append_results(results=results,
                                  reflectance=reflectance,
                                  reflectance_position=reflectance_position,
