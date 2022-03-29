@@ -47,8 +47,7 @@ class MCXAdapterReflectance(MCXAdapter):
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
-                      illumination_geometry: IlluminationGeometryBase,
-                      probe_position_mm: np.ndarray) -> Dict:
+                      illumination_geometry: IlluminationGeometryBase) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
         input for MCX. A JSON serializable file containing the configuration required by MCx is also generated.
@@ -75,7 +74,6 @@ class MCXAdapterReflectance(MCXAdapter):
                                     assumed_anisotropy=_assumed_anisotropy)
 
         settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
-                                              probe_position_mm=probe_position_mm,
                                               assumed_anisotropy=_assumed_anisotropy,
                                               )
 
