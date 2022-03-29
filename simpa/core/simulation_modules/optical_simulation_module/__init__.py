@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
-from typing import List, Union, Dict
+from typing import Union, Dict
 from abc import abstractmethod
 import gc
 
