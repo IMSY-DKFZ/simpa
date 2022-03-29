@@ -159,7 +159,7 @@ settings["noise_time_series"] = {
 
 # TODO: For the device choice, uncomment the undesired device
 
-# device = MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+# device = sp.MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
 #                                                      VOLUME_PLANAR_DIM_IN_MM/2,
 #                                                      0]))
 # device.update_settings_for_use_of_model_based_volume_creator(settings)
