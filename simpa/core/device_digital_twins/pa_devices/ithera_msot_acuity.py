@@ -189,7 +189,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           np.array([0, 0, probe_size_mm]))
 
         background_settings = Settings({
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.constant(mua=0.1),
+            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
             Tags.STRUCTURE_TYPE: Tags.BACKGROUND
         })
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
