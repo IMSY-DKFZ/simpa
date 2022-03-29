@@ -104,7 +104,13 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         probe_size_mm = self.probe_height_mm
         mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
-        z_dim_position_shift_mm = mediprene_layer_height_mm + heavy_water_layer_height_mm
+
+        if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
+            us_gel_thickness = np.random.normal(0.4, 0.1)
+        else:
+            us_gel_thickness = 0
+
+        z_dim_position_shift_mm = mediprene_layer_height_mm + heavy_water_layer_height_mm + us_gel_thickness
 
         new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + z_dim_position_shift_mm
 
@@ -132,41 +138,40 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                 structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
                                                                  0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                                 2] + self.probe_height_mm
+                                                                 2] + z_dim_position_shift_mm
             if Tags.STRUCTURE_END_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
                                                                0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                               2] + self.probe_height_mm
+                                                               2] + z_dim_position_shift_mm
 
         if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
-            us_gel_thickness = np.random.normal(0.4, 0.1)
             us_gel_layer_settings = Settings({
                 Tags.PRIORITY: 5,
                 Tags.STRUCTURE_START_MM: [0, 0,
-                                          heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
-                Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
+                                          heavy_water_layer_height_mm + mediprene_layer_height_mm],
+                Tags.STRUCTURE_END_MM: [0, 0,
+                                        heavy_water_layer_height_mm + mediprene_layer_height_mm + us_gel_thickness],
                 Tags.CONSIDER_PARTIAL_VOLUME: True,
                 Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
                 Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
             })
 
-            # volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
-        else:
-            us_gel_thickness = 0
+            volume_creator_settings[Tags.STRUCTURES]["us_gel"] = us_gel_layer_settings
 
         mediprene_layer_settings = Settings({
             Tags.PRIORITY: 5,
-            Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness],
-            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm - us_gel_thickness + mediprene_layer_height_mm],
+            Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
+            Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
             Tags.CONSIDER_PARTIAL_VOLUME: True,
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
             Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
         })
 
-        # volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
+        volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
 
-        self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0, probe_size_mm]))
+        self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0,
+                                                                            z_dim_position_shift_mm]))
         self.detection_geometry_position_vector = np.add(self.device_position_mm,
                                                          np.array([0, 0,
                                                                    self.probe_height_mm +
