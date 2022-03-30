@@ -171,7 +171,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         volume_creator_settings[Tags.STRUCTURES]["mediprene"] = mediprene_layer_settings
 
         self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0,
-                                                                            z_dim_position_shift_mm]))
+                                                                            probe_size_mm]))
         self.detection_geometry_position_vector = np.add(self.device_position_mm,
                                                          np.array([0, 0,
                                                                    self.focus_in_field_of_view_mm]))
