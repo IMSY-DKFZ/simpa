@@ -60,12 +60,6 @@ utils
    :show-inheritance:
 
 
-.. automodule:: simpa.utils.test
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 .. automodule:: simpa.utils.tissue_properties
    :members:
    :undoc-members:

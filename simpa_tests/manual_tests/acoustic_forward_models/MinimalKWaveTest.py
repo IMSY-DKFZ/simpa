@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import os
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
+
 class MinimalKWaveTest(ManualIntegrationTestClass):
 
     def setup(self):
@@ -26,8 +27,8 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
         if os.path.exists(p0_path):
             self.initial_pressure = np.load(p0_path)["initial_pressure"]
         else:
-            initial_pressure = np.zeros((100, 100, 100))
-            initial_pressure[50, :, 50] = 1
+            self.initial_pressure = np.zeros((100, 100, 100))
+            self.initial_pressure[50, :, 50] = 1
         self.speed_of_sound = np.ones((100, 30, 100)) * self.SPEED_OF_SOUND
         self.density = np.ones((100, 30, 100)) * 1000
         self.alpha = np.ones((100, 30, 100)) * 0.01
@@ -75,6 +76,7 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
             _settings = Settings(general_settings)
             _settings.set_acoustic_settings(acoustic_settings)
             _settings.set_reconstruction_settings(reconstruction_settings)
+            _settings.set_volume_creation_settings({})
             return _settings
 
         self.settings = get_settings()

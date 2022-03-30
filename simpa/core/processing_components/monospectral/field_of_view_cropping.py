@@ -72,9 +72,9 @@ class FieldOfViewCropping(ProcessingComponent):
                 continue
             data_field_shape = np.shape(data_array)
             if len(data_field_shape) == 3:
-                if (np.array([field_of_view_voxels[1] - field_of_view_voxels[0],
+                if ((np.array([field_of_view_voxels[1] - field_of_view_voxels[0],
                               field_of_view_voxels[3] - field_of_view_voxels[2],
-                              field_of_view_voxels[5] - field_of_view_voxels[4]]) - data_field_shape).all() == 0:
+                              field_of_view_voxels[5] - field_of_view_voxels[4]]) - data_field_shape) == 0).all():
                     self.logger.warning(f"The data field {data_field} is already cropped. Skipping...")
                     continue
 

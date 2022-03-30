@@ -154,10 +154,8 @@ you should do the following steps in a command line:
 
 1. Navigate to the `simpa/docs` directory
 2. If you would like the documentation to have the https://readthedocs.org/ style, type `pip install sphinx-rtd-theme`
-3. Execute the command `sphinx-apidoc -EfTM -o ./source/ ../simpa`
-4. Execute the command `python source/clean_up_rst_files.py`
-5. Type `make html`
-6. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser.
+3. Type `make html`
+4. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser.
 
 # How to contribute
 

@@ -1381,3 +1381,43 @@ class Tags:
     False by default. Only set to True if the pipeline is thoroughly tested.
     Usage: core
     """
+
+    COMPUTE_DIFFUSE_REFLECTANCE = "save_diffuse_reflectance"
+    """
+    Flag that indicates if the diffuse reflectance should be stored in voxels that are filled with 0 in the surrounding
+    of the volume. 
+    Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    COMPUTE_PHOTON_DIRECTION_AT_EXIT = "save_dir_at_exit"
+    """
+    Flag that indicates if the direction of photons when they exit the volume should be stored
+    Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    DATA_FIELD_DIFFUSE_REFLECTANCE = "diffuse_reflectance"
+    """
+    Identifier for the diffuse reflectance values at the surface of the volume (interface to 0-values voxels) 
+    Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+  """
+
+    DATA_FIELD_DIFFUSE_REFLECTANCE_POS = "diffuse_reflectance_pos"
+    """
+    Identified for the position within the volumes where the diffuse reflectance was originally stored, interface to
+    0-values voxels
+    Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    DATA_FIELD_PHOTON_EXIT_POS = "photon_exit_pos"
+    """
+    Identifier for the position where photons exit the volume. Currently only photon exiting along the Z axis are
+    detected. 
+    Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    DATA_FIELD_PHOTON_EXIT_DIR = "photon_exit_dir"
+    """
+    Identifier for the direction of photons when they exit the volume. Currently only photon exiting along the Z axis 
+    are detected.
+    Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """

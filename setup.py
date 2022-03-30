@@ -17,10 +17,11 @@ setuptools.setup(
     name="simpa",
     version=version,
     url="https://github.com/CAMI-DKFZ/simpa",
-    author="Computer Assisted Medical Interventions (CAMI), DKFZ \n"
-           "Janek Groehl",
-    description="Simulation and Image Processing for Photoacoustic Imaging",
+    author="Computer Assisted Medical Interventions (CAMI), DKFZ and Janek Groehl",
+    description="Simulation and Image Processing for Photonics and Acoustics",
     long_description=long_description,
-    packages=setuptools.find_packages(exclude=["simpa_tests", "simpa_examples",]),
-    install_requires=requirements
+    long_description_content_type="text/markdown",
+    packages=setuptools.find_packages(exclude=["simpa_tests", "simpa_examples", ]),
+    install_requires=requirements,
+    include_package_data=True
 )

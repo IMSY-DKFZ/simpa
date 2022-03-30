@@ -16,9 +16,3 @@ acoustic\_forward\_module
    :members:
    :undoc-members:
    :show-inheritance:
-
-
-.. automodule:: simpa.core.simulation_modules.acoustic_forward_module.test
-   :members:
-   :undoc-members:
-   :show-inheritance:

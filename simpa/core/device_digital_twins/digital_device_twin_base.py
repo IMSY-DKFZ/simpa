@@ -229,10 +229,12 @@ class PhotoacousticDevice(DigitalDeviceTwinBase, ABC):
             msg = "The given illumination_geometry must not be None!"
             self.logger.critical(msg)
             raise ValueError(msg)
-        if np.linalg.norm(illumination_geometry.device_position_mm) == 0 and \
-                illuminator_position_relative_to_pa_device is not None:
-            illumination_geometry.device_position_mm = np.add(self.device_position_mm,
-                                                              illuminator_position_relative_to_pa_device)
+        if np.linalg.norm(illumination_geometry.device_position_mm) == 0:
+            if illuminator_position_relative_to_pa_device is not None:
+                illumination_geometry.device_position_mm = np.add(self.device_position_mm,
+                                                                  illuminator_position_relative_to_pa_device)
+            else:
+                illumination_geometry.device_position_mm = self.device_position_mm
         self.illumination_geometries.append(illumination_geometry)
 
     def get_detection_geometry(self):

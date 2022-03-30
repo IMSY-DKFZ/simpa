@@ -25,6 +25,9 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
+sphinx-apidoc -EfTM -o %SOURCEDIR% ../simpa
+python %SOURCEDIR%/clean_up_rst_files.py
+
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 goto end
 

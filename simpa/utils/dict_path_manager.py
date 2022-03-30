@@ -34,7 +34,11 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
                          Tags.DATA_FIELD_INITIAL_PRESSURE,
                          Tags.OPTICAL_MODEL_UNITS,
                          Tags.DATA_FIELD_TIME_SERIES_DATA,
-                         Tags.DATA_FIELD_RECONSTRUCTED_DATA]
+                         Tags.DATA_FIELD_RECONSTRUCTED_DATA,
+                         Tags.DATA_FIELD_DIFFUSE_REFLECTANCE,
+                         Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
+                         Tags.DATA_FIELD_PHOTON_EXIT_POS,
+                         Tags.DATA_FIELD_PHOTON_EXIT_DIR]
 
     simulation_output_fields = [Tags.OPTICAL_MODEL_OUTPUT_NAME,
                                 Tags.SIMULATION_PROPERTIES]
@@ -52,7 +56,9 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     if data_field in wavelength_dependent_properties:
         dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + wl
     elif data_field in simulation_output:
-        if data_field in [Tags.DATA_FIELD_FLUENCE, Tags.DATA_FIELD_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS]:
+        if data_field in [Tags.DATA_FIELD_FLUENCE, Tags.DATA_FIELD_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS,
+                          Tags.DATA_FIELD_DIFFUSE_REFLECTANCE, Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
+                          Tags.DATA_FIELD_PHOTON_EXIT_POS, Tags.DATA_FIELD_PHOTON_EXIT_DIR]:
             dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field + wl
         else:
             dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + wl

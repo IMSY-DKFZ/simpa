@@ -6,6 +6,7 @@ from abc import abstractmethod
 from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 from simpa.utils import Settings
 from numpy import ndarray
+import numpy as np
 
 
 class IlluminationGeometryBase(DigitalDeviceTwinBase):
@@ -13,11 +14,15 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
     This class is the base class for representing all illumination geometries.
     """
 
-    def __init__(self, device_position_mm=None, field_of_view_extent_mm=None):
+    def __init__(self, device_position_mm=None, source_direction_vector=None, field_of_view_extent_mm=None):
         """
         :param device_position_mm: Each device has an internal position which serves as origin for internal \
         representations of illuminator positions.
         :type device_position_mm: ndarray
+
+        :param source_direction_vector: Direction of the illumination source.
+        :type source_direction_vector: ndarray
+
         :param field_of_view_extent_mm: Field of view which is defined as a numpy array of the shape \
         [xs, xe, ys, ye, zs, ze], where x, y, and z denote the coordinate axes and s and e denote the start and end \
         positions.
@@ -26,17 +31,21 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
         super(IlluminationGeometryBase, self).__init__(device_position_mm=device_position_mm,
                                                        field_of_view_extent_mm=field_of_view_extent_mm)
 
+        if source_direction_vector is None:
+            self.source_direction_vector = [0, 0, 1]
+        else:
+            self.source_direction_vector = source_direction_vector
+        self.normalized_source_direction_vector = self.source_direction_vector / np.linalg.norm(
+            self.source_direction_vector)
+
     @abstractmethod
-    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings) -> dict:
         """
         IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
         mcx simulation tool to represent the illumination geometry of this device.
 
-        :param global_settings: The global_settings instance containing the simulation instructions
+        :param global_settings: The global_settings instance containing the simulation instructions.
         :type global_settings: Settings
-
-        :param probe_position_mm: the position of the probe in the volume
-        :type probe_position_mm: ndarray
 
         :return: Dictionary that includes all parameters needed for mcx.
         :rtype: dict
