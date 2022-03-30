@@ -139,7 +139,7 @@ class ExampleDeviceSlitIlluminationLinearDetector(sp.PhotoacousticDevice):
                                                         VOLUME_PLANAR_DIM_IN_MM/2, 0]))
         self.set_detection_geometry(sp.LinearArrayDetectionGeometry())
         self.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
-                                                                   direction_vector_mm=[0, 0, 5]))
+                                                                   direction_vector_mm=[0, 0, 1]))
 
 
 device = ExampleDeviceSlitIlluminationLinearDetector()

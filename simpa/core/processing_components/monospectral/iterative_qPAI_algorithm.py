@@ -417,16 +417,14 @@ class IterativeqPAI(ProcessingComponent):
             results = forward_model_implementation.forward_model(absorption_cm=absorption,
                                                                  scattering_cm=scattering,
                                                                  anisotropy=anisotropy,
-                                                                 illumination_geometry=_device[0],
-                                                                 probe_position_mm=pa_device.device_position_mm)
+                                                                 illumination_geometry=_device[0])
             fluence = results[Tags.DATA_FIELD_FLUENCE]
             for idx in range(1, len(_device)):
                 # we already looked at the 0th element, so go from 1 to n-1
                 results = forward_model_implementation.forward_model(absorption_cm=absorption,
                                                                      scattering_cm=scattering,
                                                                      anisotropy=anisotropy,
-                                                                     illumination_geometry=_device[idx + 1],
-                                                                     probe_position_mm=pa_device.device_position_mm)
+                                                                     illumination_geometry=_device[idx + 1])
                 fluence += results[Tags.DATA_FIELD_FLUENCE]
 
             fluence = fluence / len(_device)
@@ -435,8 +433,7 @@ class IterativeqPAI(ProcessingComponent):
             results = forward_model_implementation.forward_model(absorption_cm=absorption,
                                                                  scattering_cm=scattering,
                                                                  anisotropy=anisotropy,
-                                                                 illumination_geometry=_device,
-                                                                 probe_position_mm=pa_device.device_position_mm)
+                                                                 illumination_geometry=_device)
             fluence = results[Tags.DATA_FIELD_FLUENCE]
 
         print("Simulating the optical forward process...[Done]")

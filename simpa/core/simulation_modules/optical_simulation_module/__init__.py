@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
-from typing import List, Union, Dict
+from typing import Union, Dict
 from abc import abstractmethod
 import gc
 
@@ -34,8 +34,7 @@ class OpticalForwardModuleBase(SimulationModule):
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
-                      illumination_geometry: IlluminationGeometryBase,
-                      probe_position_mm: np.ndarray):
+                      illumination_geometry: IlluminationGeometryBase):
         """
         A deriving class needs to implement this method according to its model.
 
@@ -43,7 +42,6 @@ class OpticalForwardModuleBase(SimulationModule):
         :param scattering_cm: Scattering in units of per centimeter
         :param anisotropy: Dimensionless scattering anisotropy
         :param illumination_geometry: A device that represents a detection geometry
-        :param probe_position_mm: parameters defining the position of a probe if any
         :return: Fluence in units of J/cm^2
         """
         pass
@@ -133,16 +131,14 @@ class OpticalForwardModuleBase(SimulationModule):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device[0],
-                                         probe_position_mm=device.device_position_mm)
+                                         illumination_geometry=_device[0])
             fluence = results[Tags.DATA_FIELD_FLUENCE]
             for idx in range(1, len(_device)):
                 # we already looked at the 0th element, so go from 1 to n-1
                 results = self.forward_model(absorption_cm=absorption,
                                              scattering_cm=scattering,
                                              anisotropy=anisotropy,
-                                             illumination_geometry=_device[idx],
-                                             probe_position_mm=device.device_position_mm)
+                                             illumination_geometry=_device[idx])
                 fluence += results[Tags.DATA_FIELD_FLUENCE]
 
             fluence = fluence / len(_device)
@@ -151,7 +147,6 @@ class OpticalForwardModuleBase(SimulationModule):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device,
-                                         probe_position_mm=device.device_position_mm)
+                                         illumination_geometry=_device)
             fluence = results[Tags.DATA_FIELD_FLUENCE]
         return {Tags.DATA_FIELD_FLUENCE: fluence}

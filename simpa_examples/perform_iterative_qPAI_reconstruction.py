@@ -35,37 +35,39 @@ def create_example_tissue():
     and a blood vessel.
     """
     background_dictionary = sp.Settings()
-    background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(0.05, 30, 0.8)
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(0.05, 30, 0.9)
     background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
     epidermis_structure = sp.Settings()
     epidermis_structure[Tags.PRIORITY] = 1
-    epidermis_structure[Tags.STRUCTURE_START_MM] = [0, 0, VOLUME_HEIGHT_IN_MM / 10]
-    epidermis_structure[Tags.STRUCTURE_END_MM] = [0, 0, (VOLUME_HEIGHT_IN_MM / 10) + 1]
-    epidermis_structure[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(3, 45, 0.92)
+    epidermis_structure[Tags.STRUCTURE_START_MM] = [0, 0, 2]
+    epidermis_structure[Tags.STRUCTURE_END_MM] = [0, 0, 2.5]
+    epidermis_structure[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(2.2, 100.0, 0.9)
     epidermis_structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_structure[Tags.ADHERE_TO_DEFORMATION] = True
     epidermis_structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
 
     vessel_structure_1 = sp.Settings()
     vessel_structure_1[Tags.PRIORITY] = 2
-    vessel_structure_1[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2.5, 0, VOLUME_HEIGHT_IN_MM / 2]
-    vessel_structure_1[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2.5, VOLUME_PLANAR_DIM_IN_MM,
-                                                 VOLUME_HEIGHT_IN_MM / 2]
-    vessel_structure_1[Tags.STRUCTURE_RADIUS_MM] = 2
-    vessel_structure_1[Tags.STRUCTURE_ECCENTRICITY] = 0.75
-    vessel_structure_1[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(5, 40, 0.9)
+    vessel_structure_1[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2.5, 0,
+                                                   VOLUME_HEIGHT_IN_MM / 2]
+    vessel_structure_1[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2.5,
+                                                 VOLUME_PLANAR_DIM_IN_MM, VOLUME_HEIGHT_IN_MM / 2]
+    vessel_structure_1[Tags.STRUCTURE_RADIUS_MM] = 1.75
+    vessel_structure_1[Tags.STRUCTURE_ECCENTRICITY] = 0.85
+    vessel_structure_1[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(5.2, 100.0, 0.9)
     vessel_structure_1[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_structure_1[Tags.ADHERE_TO_DEFORMATION] = True
     vessel_structure_1[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
 
     vessel_structure_2 = sp.Settings()
     vessel_structure_2[Tags.PRIORITY] = 3
-    vessel_structure_2[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2, 0, VOLUME_HEIGHT_IN_MM / 3]
-    vessel_structure_2[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2, VOLUME_PLANAR_DIM_IN_MM,
-                                                 VOLUME_HEIGHT_IN_MM / 3]
+    vessel_structure_2[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2, 0,
+                                                   VOLUME_HEIGHT_IN_MM / 3]
+    vessel_structure_2[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+                                                 VOLUME_PLANAR_DIM_IN_MM, VOLUME_HEIGHT_IN_MM / 3]
     vessel_structure_2[Tags.STRUCTURE_RADIUS_MM] = 0.75
-    vessel_structure_2[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(2, 50, 0.95)
+    vessel_structure_2[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(3.0, 100.0, 0.9)
     vessel_structure_2[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_structure_2[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -121,7 +123,7 @@ settings["iterative_qpai_reconstruction"] = {
     Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER: 20,
     # for this example, we are not interested in all absorption updates
     Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS: False,
-    Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL: 0.03
+    Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL: 1e-3
 }
 
 # run pipeline including iterative qPAI method
@@ -139,7 +141,7 @@ class CustomDevice(sp.PhotoacousticDevice):
         super(CustomDevice, self).__init__(device_position_mm=np.asarray([general_settings[Tags.DIM_VOLUME_X_MM] / 2,
                                                                           general_settings[Tags.DIM_VOLUME_Y_MM] / 2,
                                                                           0]))
-        self.add_illumination_geometry(sp.DiskIlluminationGeometry(beam_radius_mm=2))
+        self.add_illumination_geometry(sp.DiskIlluminationGeometry(beam_radius_mm=20))
 
 
 device = CustomDevice()
