@@ -751,6 +751,14 @@ class Tags:
     Usage: adapter PyTorchDASAdapter
     """
 
+    RECONSTRUCTION_PERFORM_RESAMPLING_FOR_FFT = ("reconstruction_perform_resampling_for_fft",
+                                    (bool, np.bool, np.bool_))
+    """
+    Whether the data is resampled to a power of 2 in time dimension before applying the FFT 
+    and resampled back after filtering for performance reasons. Default should be False\n
+    Usage: adapter reconstruction_utils
+    """
+
     TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float))
     """
     Sets alpha value of Tukey window between 0 (similar to box window) and 1 (similar to Hann window).

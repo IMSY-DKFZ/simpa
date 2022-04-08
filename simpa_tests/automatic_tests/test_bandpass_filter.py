@@ -46,12 +46,16 @@ class TestBandpassFilter(unittest.TestCase):
                                                                               settings[Tags.RECONSTRUCTION_MODEL_SETTINGS],
                                                                               device)
 
+        filtered_time_series_with_resampling = bandpass_filtering(combined_time_series, 1e-3, int(11000), int(9000), 0, True)
+
         filtered_time_series = bandpass_filtering(combined_time_series, 1e-3, int(11000), int(9000), 0)
 
         # check if both bandpass filtering methods return the same result
         assert np.array_equal(filtered_time_series, filtered_time_series_with_settings)
 
         assert (np.abs(base_time_series - filtered_time_series) < 1e-5).all()
+
+        assert (np.abs(base_time_series - filtered_time_series_with_resampling) < 1e-1).all()
 
         if Visualize:
             labels = ["Base time series", "Low frequency time series", "High frequency time series",
