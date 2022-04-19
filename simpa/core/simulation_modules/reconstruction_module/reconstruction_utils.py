@@ -14,6 +14,7 @@ from torch import Tensor
 import numpy as np
 from scipy.signal import hilbert
 from scipy.signal.windows import tukey
+from scipy.ndimage import zoom
 
 
 def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZATION_BOX,
@@ -51,33 +52,53 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
 
 def bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
                        cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
-                       tukey_alpha: float = 0.5) -> np.ndarray:
+                       tukey_alpha: float = 0.5, resampling_for_fft: bool =False) -> np.ndarray:
     """
     Apply a bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz 
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
     Note that the filter operates on both, negative and positive frequencies similarly.
+    Filtering is performed along the last dimension.
 
     :param data: (numpy array) data to be filtered
     :param time_spacing_in_ms: (float) time spacing in milliseconds, e.g. 2.5e-5
     :param cutoff_lowpass: (int) Signal above this value will be ignored (in MHz)
     :param cutoff_highpass: (int) Signal below this value will be ignored (in MHz)
     :param tukey_alpha: (float) transition value between 0 (rectangular) and 1 (Hann window)
+    :param resampling_for_fft: (bool) whether the data is resampled to a power of 2 in time dimension 
+    before applying the FFT and resampled back after filtering
     :return: (numpy array) filtered data
     """
 
-    # construct bandpass filter given the cutoff values and time spacing
-    frequencies = np.fft.fftfreq(data.shape[-1], d=time_spacing_in_ms/1000)
-
+    # input checking
     if cutoff_highpass > cutoff_lowpass:
         raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
 
-    # find closest indices for frequencies
-    small_index = (np.abs(frequencies - cutoff_highpass)).argmin()
-    large_index = (np.abs(frequencies - cutoff_lowpass)).argmin()
+    # no resampling by default
+    resampling_factor = 1 
+    original_size = data.shape[-1]
+    target_size = original_size
 
-    # filter negative and positive frequencies with same window
+    # resampling if requested
+    if resampling_for_fft:
+        # resampling settings
+        order = 0
+        mode = 'constant'
+
+        target_size = int(2**(np.ceil(np.log2(original_size)))) # compute next larger power of 2
+        resampling_factor = original_size/target_size
+        zoom_factors = [1]*data.ndim # resampling factor for each dimension
+        zoom_factors[-1] = 1.0/resampling_factor
+
+        data = zoom(data, zoom_factors, order=order, mode=mode)
+
+    # compute closest indices for cutoff frequencies, limited by the Nyquist frequency
+    single_voxel = resampling_factor / (time_spacing_in_ms/1000 * target_size)
+    small_index = int(np.minimum((cutoff_highpass / single_voxel), target_size/2.0))
+    large_index = int(np.minimum((cutoff_lowpass / single_voxel), target_size/2.0))
+
+    # construct bandpass filter given the cutoff values with tukey window in negative and positive frequencies
     win = tukey(large_index - small_index, alpha=tukey_alpha)
-    window = np.zeros(frequencies.shape)
+    window = np.zeros(target_size)
     window[small_index:large_index] = win
     if small_index == 0:
         small_index = 1
@@ -87,7 +108,14 @@ def bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     # transform data into Fourier space, multiply filter and transform back
     data_in_fourier_space = np.fft.fft(data)
     filtered_data_in_fourier_space = data_in_fourier_space * np.broadcast_to(window, np.shape(data_in_fourier_space))
-    return np.fft.ifft(filtered_data_in_fourier_space).real
+    filtered_data =  np.fft.ifft(filtered_data_in_fourier_space).real
+
+    # resample back to original size if necessary
+    if resampling_for_fft:
+        inverse_zoom_factors = [1.0/factor for factor in zoom_factors]
+        return zoom(filtered_data, inverse_zoom_factors, order=order, mode=mode)
+    else:
+        return filtered_data
 
 
 def bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
@@ -116,11 +144,13 @@ def bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings
         if Tags.BANDPASS_CUTOFF_HIGHPASS in component_settings else int(0.1e6)
     tukey_alpha = component_settings[
         Tags.TUKEY_WINDOW_ALPHA] if Tags.TUKEY_WINDOW_ALPHA in component_settings else 0.5
+    resampling_for_fft = component_settings[Tags.RECONSTRUCTION_PERFORM_RESAMPLING_FOR_FFT] \
+        if Tags.RECONSTRUCTION_PERFORM_RESAMPLING_FOR_FFT in component_settings else False
 
     if data is None or time_spacing_in_ms is None:
         raise AttributeError("data and time spacing must be specified")
 
-    return bandpass_filtering(data, time_spacing_in_ms, cutoff_lowpass, cutoff_highpass, tukey_alpha)
+    return bandpass_filtering(data, time_spacing_in_ms, cutoff_lowpass, cutoff_highpass, tukey_alpha, resampling_for_fft)
 
 
 def apply_b_mode(data: np.ndarray = None, method: str = None) -> np.ndarray:
