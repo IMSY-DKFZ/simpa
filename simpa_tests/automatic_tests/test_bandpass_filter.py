@@ -46,6 +46,7 @@ class TestBandpassFilter(unittest.TestCase):
 
         # generate random noisy signal
         random_t_values = np.arange(0, 10, 0.01)
+        np.random.seed = 4117
         noisy_frequency = np.random.rand(len(random_t_values))
         self.noisy_signal = np.sin(2 * np.pi * noisy_frequency * random_t_values)
         
@@ -56,12 +57,11 @@ class TestBandpassFilter(unittest.TestCase):
         self.frequencies = np.fft.fftshift(np.fft.fftfreq(len(random_t_values), self.time_spacing))
 
     def test_butter_bandpass_filter(self):
+        self.settings.get_reconstruction_settings()[Tags.BANDPASS_FILTER_METHOD] = Tags.BUTTERWORTH_BANDPASS_FILTER
+        self.settings.get_reconstruction_settings()[Tags.BUTTERWORTH_FILTER_ORDER] = 1
         filtered_time_series_with_settings = butter_bandpass_filtering_with_settings(self.combined_time_series, self.settings, self.settings[Tags.RECONSTRUCTION_MODEL_SETTINGS], self.device)
-
-
-        filtered_time_series_with_resampling = butter_bandpass_filtering(self.combined_time_series, 1e-3, int(11000), int(9000), 0, True)
-
-        filtered_time_series = butter_bandpass_filtering(self.combined_time_series, 1e-3, int(11000), int(9000), 0)
+        
+        filtered_time_series = butter_bandpass_filtering(self.combined_time_series, 1e-3, int(11000), int(9000), 1)
 
         # check if both bandpass filtering methods return the same result
         assert np.array_equal(filtered_time_series, filtered_time_series_with_settings)
@@ -69,7 +69,6 @@ class TestBandpassFilter(unittest.TestCase):
         # compare after 500 steps as the filter does not work perfectly before
         assert (np.abs(self.base_time_series[500:] - filtered_time_series[500:]) < 0.2).all()
 
-        assert (np.abs(self.base_time_series - filtered_time_series_with_resampling) < 1e-1).all()
 
         if Visualize:
             labels = ["Base time series", "Low frequency time series", "High frequency time series",
@@ -86,12 +85,16 @@ class TestBandpassFilter(unittest.TestCase):
                                                                                     self.settings[Tags.RECONSTRUCTION_MODEL_SETTINGS],
                                                                                     self.device)
 
+        filtered_time_series_with_resampling = tukey_bandpass_filtering(self.combined_time_series, 1e-3, int(11000), int(9000), 0, True)
+
         filtered_time_series = tukey_bandpass_filtering(self.combined_time_series, 1e-3, int(11000), int(9000), 0)
 
         # check if both bandpass filtering methods return the same result
         assert np.array_equal(filtered_time_series, filtered_time_series_with_settings)
 
         assert (np.abs(self.base_time_series - filtered_time_series) < 1e-5).all()
+
+        assert (np.abs(self.base_time_series - filtered_time_series_with_resampling) < 1e-1).all()
 
         if Visualize:
             labels = ["Base time series", "Low frequency time series", "High frequency time series",
@@ -148,12 +151,12 @@ class TestBandpassFilter(unittest.TestCase):
         # expected to be not zero within the band
         assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>-low_cutoff_point, self.frequencies < high_cutoff_point))], atol=1e-5)
         assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>high_cutoff_point, self.frequencies<low_cutoff_point))], atol=1e-5)
-
+        
         self.visualize_filtered_spectrum(FILTERED_SIGNAL)
 
 
 if __name__ == '__main__':
-    Visualize = True
+    Visualize = False
     test = TestBandpassFilter()
     test.setUp()
     test.test_tukey_bandpass_filter()
