@@ -91,9 +91,78 @@ class TestBandpassFilter(unittest.TestCase):
             plt.tight_layout()
             plt.show()
 
+    def test_tukey_filter_with_random_signal(self):
+
+        # generate random noisy signal
+        t_values = np.arange(0, 10, 0.01)
+        noisy_frequency = np.random.rand(len(t_values))
+        noisy_signal = np.sin(2 * np.pi * noisy_frequency * t_values)
+        
+        # filter signal
+        cutoff_highpass = 40000
+        cutoff_lowpass = 400000
+        time_spacing = 1e-3
+        frequencies = np.fft.fftshift(np.fft.fftfreq(len(t_values), time_spacing))
+        filtered_signal = tukey_bandpass_filtering(noisy_signal, time_spacing, cutoff_lowpass, cutoff_highpass, tukey_alpha=0.5)
+
+        # compute frequency spectrum
+        FILTERED_SIGNAL = np.fft.fftshift(np.fft.fft(filtered_signal))
+
+        # expected to be close to zero outside of the band
+        assert np.allclose(0, FILTERED_SIGNAL[frequencies < -cutoff_lowpass*time_spacing], atol=1e-5)
+        assert np.allclose(0, FILTERED_SIGNAL[frequencies > cutoff_lowpass*time_spacing], atol=1e-5)
+        assert np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(frequencies>-cutoff_highpass*time_spacing, frequencies<cutoff_highpass*time_spacing))], atol=1e-5)
+    
+        # expected to be not zero within the band
+        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(frequencies>-cutoff_lowpass*time_spacing, frequencies<-cutoff_highpass*time_spacing))], atol=1e-5)
+        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(frequencies>cutoff_highpass*time_spacing, frequencies<cutoff_lowpass*time_spacing))], atol=1e-5)
+
+        if Visualize:
+            plt.plot(frequencies, FILTERED_SIGNAL, label="filtered")
+            plt.xlabel("frequency")
+            plt.legend()
+            plt.show()
+
+    def test_butter_filter_with_random_signal(self):
+
+        # generate random noisy signal
+        t_values = np.arange(0, 10, 0.01)
+        noisy_frequency = np.random.rand(len(t_values))
+        noisy_signal = np.sin(2 * np.pi * noisy_frequency * t_values)
+        
+        # filter signal
+        cutoff_highpass = 40000
+        cutoff_lowpass = 400000
+        time_spacing = 1e-3
+        frequencies = np.fft.fftshift(np.fft.fftfreq(len(t_values), time_spacing))
+
+        filtered_signal = butter_bandpass_filtering(noisy_signal, time_spacing, cutoff_lowpass, cutoff_highpass, order=9)
+
+        # compute frequency spectrum
+        FILTERED_SIGNAL = np.fft.fftshift(np.fft.fft(filtered_signal))
+
+        # expected to be close to zero outside of the band with some tolerance margin
+        assert np.allclose(0, FILTERED_SIGNAL[frequencies < -cutoff_lowpass*time_spacing*1.1], atol=1)
+        assert np.allclose(0, FILTERED_SIGNAL[frequencies > cutoff_lowpass*time_spacing*1.1], atol=1)
+        assert np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(frequencies>-cutoff_highpass*time_spacing/2, frequencies<cutoff_highpass*time_spacing/2))], atol=1)
+    
+        # expected to be not zero within the band
+        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(frequencies>-cutoff_lowpass*time_spacing, frequencies<-cutoff_highpass*time_spacing))], atol=1e-5)
+        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(frequencies>cutoff_highpass*time_spacing, frequencies<cutoff_lowpass*time_spacing))], atol=1e-5)
+
+        if Visualize:
+            plt.plot(frequencies, FILTERED_SIGNAL, label="filtered")
+            plt.xlabel("frequency")
+            plt.legend()
+            plt.show()
+
+
+
 if __name__ == '__main__':
     Visualize = True
     test = TestBandpassFilter()
     test.setUp()
     test.test_tukey_bandpass_filter()
     test.test_butter_bandpass_filter()
+    test.test_tukey_filter_with_random_signal()
+    test.test_butter_filter_with_random_signal()
