@@ -345,7 +345,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         sound_speed_m = load_data_field(global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SPEED_OF_SOUND)
         speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
     else:
-        raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND"
+        raise AttributeError("Please specify a value for DATA_FIELD_SPEED_OF_SOUND "
                              "or WAVELENGTH to obtain the average speed of sound")
 
     # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
