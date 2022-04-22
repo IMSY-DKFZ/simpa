@@ -52,8 +52,8 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
 def bandpass_filter_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
                                            device: DetectionGeometryBase) -> np.ndarray:
         """
-        Applies corresponding bandpass filter which needs to be set in 
-        `component_settings[Tags.BANDPASS_FILTER_METHOD]`.
+        Applies corresponding bandpass filter which can be set in 
+        `component_settings[Tags.BANDPASS_FILTER_METHOD]`, using Tukey window-based filter as default.
 
         :param data: (numpy array) data to be filtered
         :param global_settings: (Settings) settings for the whole simulation
@@ -68,7 +68,7 @@ def bandpass_filter_with_settings(data: np.ndarray, global_settings: Settings, c
         elif component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.BUTTERWORTH_BANDPASS_FILTER:
             return butter_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
         else:
-            raise AttributeError("Please specify filtering methods as either Tukey or Butterworth bandpass filter")
+            return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
 
 def butter_bandpass_filtering(data: np.array,  time_spacing_in_ms: float = None,
                               cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),

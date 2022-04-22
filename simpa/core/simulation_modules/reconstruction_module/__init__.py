@@ -54,8 +54,7 @@ class ReconstructionAdapterBase(SimulationModule):
             raise TypeError(f"Type {type(device)} is not supported for performing image reconstruction.")
 
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING in self.component_settings and \
-                self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] and \
-                    Tags.BANDPASS_FILTER_METHOD in self.component_settings:
+                self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING]:
 
             time_series_sensor_data = bandpass_filter_with_settings(time_series_sensor_data,
                                                                        self.global_settings,
