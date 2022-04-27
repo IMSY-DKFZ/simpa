@@ -40,10 +40,10 @@ class InVision256TF(PhotoacousticDevice):
         super(InVision256TF, self).__init__(device_position_mm=device_position_mm,
                                             field_of_view_extent_mm=field_of_view_extent_mm)
 
-        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.74,
+        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.735,
                                                           radius_mm=40,
                                                           number_detector_elements=256,
-                                                          detector_element_width_mm=0.64,
+                                                          detector_element_width_mm=0.635,
                                                           detector_element_length_mm=15,
                                                           center_frequency_hz=5e6,
                                                           bandwidth_percent=55,
