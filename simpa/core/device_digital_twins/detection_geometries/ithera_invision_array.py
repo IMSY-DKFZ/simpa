@@ -343,11 +343,11 @@ class iTheraInvision256TFDetectionGeometry(DetectionGeometryBase):
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
-        return {"CurvedArrayDetectionGeometry": serialized_device}
+        return {"iTheraInvision256TFDetectionGeometry": serialized_device}
 
     @staticmethod
     def deserialize(dictionary_to_deserialize):
-        deserialized_device = CurvedArrayDetectionGeometry()
+        deserialized_device = iTheraInvision256TFDetectionGeometry()
         for key, value in dictionary_to_deserialize.items():
             deserialized_device.__dict__[key] = value
         return deserialized_device

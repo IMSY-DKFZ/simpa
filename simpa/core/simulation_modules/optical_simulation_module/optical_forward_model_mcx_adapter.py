@@ -7,11 +7,12 @@ import struct
 import subprocess
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
+from simpa.core.device_digital_twins import PhotoacousticDevice
 from simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base import IlluminationGeometryBase
 import json
 import os
 import gc
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 
 
 class MCXAdapter(OpticalForwardModuleBase):
@@ -39,11 +40,30 @@ class MCXAdapter(OpticalForwardModuleBase):
         self.frames = None
         self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.mc2'}
 
+
+    def define_settings_and_execute(self, 
+                                    _illumination_geometry, 
+                                    _assumed_anisotropy):
+        """
+        Defines the settigs and runs mcx
+        """
+        settings_dict = self.get_mcx_settings(illumination_geometry=_illumination_geometry,
+                              assumed_anisotropy=_assumed_anisotropy)
+
+        self.generate_mcx_json_input(settings_dict=settings_dict)
+        # run the simulation
+        cmd = self.get_command()
+        self.run_mcx(cmd)
+
+        # Read output
+        return self.read_mcx_output()[Tags.DATA_FIELD_FLUENCE]
+
+
     def forward_model(self,
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
-                      illumination_geometry: IlluminationGeometryBase) -> Dict:
+                      illumination_geometry: Union[IlluminationGeometryBase, PhotoacousticDevice]) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
         input for MCX. A JSON serializable file containing the configuration required by MCx is also generated.
@@ -66,24 +86,26 @@ class MCXAdapter(OpticalForwardModuleBase):
                                     scattering_cm=scattering_cm,
                                     anisotropy=_assumed_anisotropy,
                                     assumed_anisotropy=_assumed_anisotropy)
+                                    
+        fluence = None
+        
+        if isinstance(illumination_geometry, list):
+            # per convention this list has at least two elements
+            fluence = self.define_settings_and_execute(illumination_geometry[0], _assumed_anisotropy)
+            for idx in range(1, len(illumination_geometry)):
+                # we already looked at the 0th element, so go from 1 to n-1
+                fluence += self.define_settings_and_execute(illumination_geometry[idx], _assumed_anisotropy)
+            fluence = fluence / len(illumination_geometry)
 
-        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
-                                              assumed_anisotropy=_assumed_anisotropy)
-
-        print(settings_dict)
-        self.generate_mcx_json_input(settings_dict=settings_dict)
-        # run the simulation
-        cmd = self.get_command()
-        self.run_mcx(cmd)
-
-        # Read output
-        results = self.read_mcx_output()
+        else:
+            fluence = self.define_settings_and_execute(illumination_geometry, _assumed_anisotropy)
+ 
 
         struct._clearcache()
 
         # clean temporary files
         self.remove_mcx_output()
-        return results
+        return {Tags.DATA_FIELD_FLUENCE: fluence}
 
     def generate_mcx_json_input(self, settings_dict: Dict) -> None:
         """

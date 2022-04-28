@@ -126,27 +126,10 @@ class OpticalForwardModuleBase(SimulationModule):
         :param anisotropy: Dimensionless scattering anisotropy
         :return:
         """
-        if isinstance(_device, list):
-            # per convention this list has at least two elements
-            results = self.forward_model(absorption_cm=absorption,
-                                         scattering_cm=scattering,
-                                         anisotropy=anisotropy,
-                                         illumination_geometry=_device[0])
-            fluence = results[Tags.DATA_FIELD_FLUENCE]
-            for idx in range(1, len(_device)):
-                # we already looked at the 0th element, so go from 1 to n-1
-                results = self.forward_model(absorption_cm=absorption,
-                                             scattering_cm=scattering,
-                                             anisotropy=anisotropy,
-                                             illumination_geometry=_device[idx])
-                fluence += results[Tags.DATA_FIELD_FLUENCE]
-
-            fluence = fluence / len(_device)
-
-        else:
-            results = self.forward_model(absorption_cm=absorption,
-                                         scattering_cm=scattering,
-                                         anisotropy=anisotropy,
-                                         illumination_geometry=_device)
-            fluence = results[Tags.DATA_FIELD_FLUENCE]
+        
+        results = self.forward_model(absorption_cm=absorption,
+                                 scattering_cm=scattering,
+                                 anisotropy=anisotropy,
+                                 illumination_geometry=_device)
+        fluence = results[Tags.DATA_FIELD_FLUENCE]
         return {Tags.DATA_FIELD_FLUENCE: fluence}
