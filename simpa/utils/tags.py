@@ -767,13 +767,13 @@ class Tags:
 
     TUKEY_BANDPASS_FILTER = "tukey_bandpass_filter"
     """
-    Corresponds to the tukey bandpass filter
+    Corresponds to the tukey bandpass filter\n
     Usage: reconstruction utils
     """
 
     BUTTERWORTH_BANDPASS_FILTER = "tukey_bandpass_filter"
     """
-    Corresponds to the tukey bandpass filter
+    Corresponds to the tukey bandpass filter\n
     Usage: reconstruction utils
     """
 
@@ -788,6 +788,7 @@ class Tags:
     """
     Sets the order of the filter, usually between 1 and 5.
     Default is 1\n
+    Usage: reconstruction utils
     """
 
     BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float))

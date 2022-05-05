@@ -9,9 +9,6 @@ from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils im
 from simpa.utils import Settings, Tags
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
 
-Visualize = False
-
-
 class TestBandpassFilter(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -46,7 +43,7 @@ class TestBandpassFilter(unittest.TestCase):
 
         # generate random noisy signal
         random_t_values = np.arange(0, 10, 0.01)
-        np.random.seed = 4117
+        np.random.seed(4117)
         noisy_frequency = np.random.rand(len(random_t_values))
         self.noisy_signal = np.sin(2 * np.pi * noisy_frequency * random_t_values)
         
@@ -56,7 +53,7 @@ class TestBandpassFilter(unittest.TestCase):
         self.time_spacing = 1e-3
         self.frequencies = np.fft.fftshift(np.fft.fftfreq(len(random_t_values), self.time_spacing))
 
-    def test_butter_bandpass_filter(self):
+    def test_butter_bandpass_filter(self, show_figure_on_screen=False):
         self.settings.get_reconstruction_settings()[Tags.BANDPASS_FILTER_METHOD] = Tags.BUTTERWORTH_BANDPASS_FILTER
         self.settings.get_reconstruction_settings()[Tags.BUTTERWORTH_FILTER_ORDER] = 1
         filtered_time_series_with_settings = butter_bandpass_filtering_with_settings(self.combined_time_series, self.settings, self.settings[Tags.RECONSTRUCTION_MODEL_SETTINGS], self.device)
@@ -70,7 +67,7 @@ class TestBandpassFilter(unittest.TestCase):
         assert (np.abs(self.base_time_series[500:] - filtered_time_series[500:]) < 0.2).all()
 
 
-        if Visualize:
+        if show_figure_on_screen:
             labels = ["Base time series", "Low frequency time series", "High frequency time series",
                       "Combined time series", "Filtered time series"]
             for i, time_series in enumerate([self.base_time_series, self.low_freq_time_series, self.high_freq_time_series, self.combined_time_series, filtered_time_series]):
@@ -80,7 +77,7 @@ class TestBandpassFilter(unittest.TestCase):
             plt.tight_layout()
             plt.show()
 
-    def test_tukey_bandpass_filter(self):
+    def test_tukey_bandpass_filter(self, show_figure_on_screen=False):
         filtered_time_series_with_settings = tukey_bandpass_filtering_with_settings(self.combined_time_series, self.settings,
                                                                                     self.settings[Tags.RECONSTRUCTION_MODEL_SETTINGS],
                                                                                     self.device)
@@ -96,7 +93,7 @@ class TestBandpassFilter(unittest.TestCase):
 
         assert (np.abs(self.base_time_series - filtered_time_series_with_resampling) < 1e-1).all()
 
-        if Visualize:
+        if show_figure_on_screen:
             labels = ["Base time series", "Low frequency time series", "High frequency time series",
                       "Combined time series", "Filtered time series"]
             for i, time_series in enumerate([self.base_time_series, self.low_freq_time_series, self.high_freq_time_series, self.combined_time_series, filtered_time_series]):
@@ -107,13 +104,31 @@ class TestBandpassFilter(unittest.TestCase):
             plt.show()
 
     def visualize_filtered_spectrum(self, filtered_spectrum: np.ndarray):
-        if Visualize:
-            plt.plot(self.frequencies, filtered_spectrum, label="filtered")
-            plt.xlabel("frequency")
-            plt.legend()
-            plt.show()
+        '''
+        Visualizes the filtered spectrum and the intervals which are marked as passing or filtering areas.
+        '''
+        
+        def plot_region(low_limit: int, high_limit:int, label:str = '', color:str = 'red'):
+            interval = np.arange(low_limit, high_limit, self.time_spacing)
+            plt.plot(interval, np.zeros_like(interval), label=label, linewidth=5, color=color )
+        
+        # passing intervals
+        plot_region(self.cutoff_highpass*self.time_spacing, self.cutoff_lowpass*self.time_spacing, \
+             label="bandwidth of passed filter",color="green")
+        plot_region(-self.cutoff_lowpass*self.time_spacing, -self.cutoff_highpass*self.time_spacing,color="green")
 
-    def test_tukey_filter_with_random_signal(self):
+        # filtered intervals
+        plot_region(-self.cutoff_highpass*self.time_spacing, self.cutoff_highpass*self.time_spacing, \
+            label="signal should be close to zero",color="red")
+        plot_region(self.frequencies[0], -self.cutoff_lowpass*self.time_spacing)
+        plot_region(self.cutoff_lowpass*self.time_spacing, self.frequencies[-1])
+
+        plt.plot(self.frequencies, filtered_spectrum, label="filtered signal")
+        plt.xlabel("frequency")
+        plt.legend()
+        plt.show()
+
+    def test_tukey_filter_with_random_signal(self, show_figure_on_screen=False):
 
         filtered_signal = tukey_bandpass_filtering(self.noisy_signal, self.time_spacing, self.cutoff_lowpass, self.cutoff_highpass, tukey_alpha=0.5)
 
@@ -131,9 +146,10 @@ class TestBandpassFilter(unittest.TestCase):
         assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>-low_cutoff_point, self.frequencies<-high_cutoff_point))], atol=1e-5)
         assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>high_cutoff_point, self.frequencies<low_cutoff_point))], atol=1e-5)
 
-        self.visualize_filtered_spectrum(FILTERED_SIGNAL)
+        if show_figure_on_screen:
+            self.visualize_filtered_spectrum(FILTERED_SIGNAL) 
 
-    def test_butter_filter_with_random_signal(self):
+    def test_butter_filter_with_random_signal(self, show_figure_on_screen=False):
 
         filtered_signal = butter_bandpass_filtering(self.noisy_signal, self.time_spacing, self.cutoff_lowpass, self.cutoff_highpass, order=9)
 
@@ -152,14 +168,14 @@ class TestBandpassFilter(unittest.TestCase):
         assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>-low_cutoff_point, self.frequencies < high_cutoff_point))], atol=1e-5)
         assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>high_cutoff_point, self.frequencies<low_cutoff_point))], atol=1e-5)
         
-        self.visualize_filtered_spectrum(FILTERED_SIGNAL)
+        if show_figure_on_screen:
+            self.visualize_filtered_spectrum(FILTERED_SIGNAL)
 
 
 if __name__ == '__main__':
-    Visualize = False
     test = TestBandpassFilter()
     test.setUp()
-    test.test_tukey_bandpass_filter()
-    test.test_butter_bandpass_filter()
-    test.test_tukey_filter_with_random_signal()
-    test.test_butter_filter_with_random_signal()
+    test.test_tukey_bandpass_filter(show_figure_on_screen=False)
+    test.test_butter_bandpass_filter(show_figure_on_screen=False)
+    test.test_tukey_filter_with_random_signal(show_figure_on_screen=False)
+    test.test_butter_filter_with_random_signal(show_figure_on_screen=False)
