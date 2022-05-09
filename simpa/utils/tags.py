@@ -759,11 +759,36 @@ class Tags:
     Usage: adapter reconstruction_utils
     """
 
+    BANDPASS_FILTER_METHOD = ("bandpass_filtering_method", str)
+    """
+    Choice of the bandpass filtering method used, i.e. tukey or butterworth filter .\n
+    Usage: ReconstructionAdapterBase
+    """
+
+    TUKEY_BANDPASS_FILTER = "tukey_bandpass_filter"
+    """
+    Corresponds to the tukey bandpass filter\n
+    Usage: reconstruction utils
+    """
+
+    BUTTERWORTH_BANDPASS_FILTER = "butterworth_bandpass_filter"
+    """
+    Corresponds to the tukey bandpass filter\n
+    Usage: reconstruction utils
+    """
+
     TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float))
     """
     Sets alpha value of Tukey window between 0 (similar to box window) and 1 (similar to Hann window).
     Default is 0.5\n
     Usage: adapter PyTorchDASAdapter
+    """
+
+    BUTTERWORTH_FILTER_ORDER = ("butterworth_filter_order", (int, np.integer))
+    """
+    Sets the order of the filter, usually between 1 and 5.
+    Default is 1\n
+    Usage: reconstruction utils
     """
 
     BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float))
