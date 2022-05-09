@@ -771,7 +771,7 @@ class Tags:
     Usage: reconstruction utils
     """
 
-    BUTTERWORTH_BANDPASS_FILTER = "tukey_bandpass_filter"
+    BUTTERWORTH_BANDPASS_FILTER = "butterworth_bandpass_filter"
     """
     Corresponds to the tukey bandpass filter\n
     Usage: reconstruction utils
