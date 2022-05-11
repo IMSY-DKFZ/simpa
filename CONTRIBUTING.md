@@ -25,9 +25,9 @@ Once you reached out to us, you will be provided with the information on how to 
 In general the following steps are involved during a contribution:
 
 ### Contribution process
-1.	Create feature request / bug report on the [SIMPA issues page](https://github.com/CAMI-DKFZ/simpa/issues)
+1.	Create feature request / bug report on the [SIMPA issues page](https://github.com/IMSY-DKFZ/simpa/issues)
 2.	Discuss potential contribution with core development team
-3.	Fork the [SIMPA repository](https://github.com/CAMI-DKFZ/simpa)
+3.	Fork the [SIMPA repository](https://github.com/IMSY-DKFZ/simpa)
 4.	Create feature branch from develop using the naming convention T<Issue#>_<FeatureName>, 
       where <Issue#> represent the number github assigned the created issue and <FeatureName> describes 
       what is being developed in CamelCaseNotation.

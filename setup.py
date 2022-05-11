@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -16,8 +16,8 @@ with open('requirements.txt', 'r') as requirements_file:
 setuptools.setup(
     name="simpa",
     version=version,
-    url="https://github.com/CAMI-DKFZ/simpa",
-    author="Computer Assisted Medical Interventions (CAMI), DKFZ and Janek Groehl",
+    url="https://github.com/IMSY-DKFZ/simpa",
+    author="Division of Intelligent Medical Systems (IMSY), DKFZ and Janek Groehl",
     description="Simulation and Image Processing for Photonics and Acoustics",
     long_description=long_description,
     long_description_content_type="text/markdown",

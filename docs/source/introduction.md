@@ -12,7 +12,7 @@ The SIMPA path management takes care of that.
 
 The recommended way to install SIMPA is a manual installation from the GitHub repository, please follow steps 1 - 3:
 
-1. `git clone https://github.com/CAMI-DKFZ/simpa.git`
+1. `git clone https://github.com/IMSY-DKFZ/simpa.git`
 2. `cd simpa`
 3. `git checkout master`
 4. `git pull`
@@ -46,7 +46,7 @@ Either download suitable executables or build yourself from the following source
 
 In order to obtain access to all custom sources that we implemented, please build mcx yourself from the
 following mcx Github fork:
-[https://github.com/CAMI-DKFZ/mcx](https://github.com/CAMI-DKFZ/mcx)
+[https://github.com/IMSY-DKFZ/mcx](https://github.com/IMSY-DKFZ/mcx)
 
 For the installation, please follow the instructions from the original repository.
 Please note that there might be compatibility issues using mcx-cl with the MCX Adapter as this use case is not 

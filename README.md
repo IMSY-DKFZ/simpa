@@ -1,6 +1,6 @@
 [![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=develop)](https://simpa.readthedocs.io/en/develop/?badge=develop)
 [![Build Status](https://ci.mitk.org/buildStatus/icon?job=SIMPA%2FUnit+Tests+master)](https://ci.mitk.org/job/SIMPA/job/Unit%20Tests%20master/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CAMI-DKFZ/simpa/blob/master/LICENSE.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/IMSY-DKFZ/simpa/blob/master/LICENSE.md)
 
 ![Logo](docs/source/images/simpa_logo.png?raw=true "Logo")
 
@@ -21,7 +21,7 @@ pipeline according to their specific use cases and tool requirements.
 * [Troubleshooting](#troubleshooting)
 
 The toolkit is still under development and is thus not fully tested and may contain bugs. 
-Please report any issues that you find in our Issue Tracker: https://github.com/CAMI-DKFZ/simpa/issues. 
+Please report any issues that you find in our Issue Tracker: https://github.com/IMSY-DKFZ/simpa/issues. 
 Also make sure to double check all value ranges of the optical and acoustic tissue properties 
 and to assess all simulation results for plausibility.
 
@@ -39,7 +39,7 @@ The SIMPA path management takes care of that.
 
 The recommended way to install SIMPA is a manual installation from the GitHub repository, please follow steps 1 - 3:
 
-1. `git clone https://github.com/CAMI-DKFZ/simpa.git`
+1. `git clone https://github.com/IMSY-DKFZ/simpa.git`
 2. `cd simpa`
 3. `git checkout master`
 4. `git pull`
@@ -73,7 +73,7 @@ Either download suitable executables or build yourself from the following source
 
 In order to obtain access to all custom sources that we implemented, please build mcx yourself from the
 following mcx Github fork:
-[https://github.com/CAMI-DKFZ/mcx](https://github.com/CAMI-DKFZ/mcx)
+[https://github.com/IMSY-DKFZ/mcx](https://github.com/IMSY-DKFZ/mcx)
 
 For the installation, please follow the instructions from the original repository.
 Please note that there might be compatibility issues using mcx-cl with the MCX Adapter as this use case is not 
