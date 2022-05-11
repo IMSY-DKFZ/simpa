@@ -12,6 +12,7 @@ modelling; and image reconstruction. SIMPA provides a communication layer betwee
 that implement optical and acoustic forward and inverse models.
 Non-experts can use the toolkit to create sensible simulations from default parameters in an end-to-end fashion. Domain experts are provided with the functionality to set up a highly customisable
 pipeline according to their specific use cases and tool requirements.
+The paper that introduces SIMPA including visualisations and explanations can be found here: [https://doi.org/10.1117/1.JBO.27.8.083010](https://doi.org/10.1117/1.JBO.27.8.083010)
 
 * [Getting started](#getting-started)
 * [Simulation examples](#simulation-examples)
