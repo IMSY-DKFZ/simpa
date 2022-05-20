@@ -64,7 +64,7 @@ def bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     :param cutoff_lowpass: (int) Signal above this value will be ignored (in MHz)
     :param cutoff_highpass: (int) Signal below this value will be ignored (in MHz)
     :param tukey_alpha: (float) transition value between 0 (rectangular) and 1 (Hann window)
-    :param resampling_for_fft: (bool) whether the data is resampled to a power of 2 in time dimension 
+    :param resampling_for_fft: (bool) whether the data is resampled to a power of 2 in time dimension
     before applying the FFT and resampled back after filtering
     :return: (numpy array) filtered data
     """
@@ -277,9 +277,6 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     else:
         raise AttributeError("Please specify a value for SPACING_MM in either the component_settings or"
                              "the global_settings.")
-
-    # get device specific sensor positions
-    detection_geometry.check_settings_prerequisites(global_settings)
 
     sensor_positions = detection_geometry.get_detector_element_positions_base_mm()
 
