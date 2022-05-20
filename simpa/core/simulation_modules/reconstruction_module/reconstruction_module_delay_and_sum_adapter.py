@@ -56,36 +56,33 @@ class DelayAndSumAdapter(ReconstructionAdapterBase):
 
 def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray,
                                       detection_geometry: DetectionGeometryBase,
-                                      settings: dict = None) -> np.ndarray:
+                                      speed_of_sound_in_m_per_s: int = 1540,
+                                      time_spacing_in_s: float = 2.5e-8,
+                                      sensor_spacing_in_mm: float = 0.1,
+                                      recon_mode: str = Tags.RECONSTRUCTION_MODE_PRESSURE,
+                                      apodization: str = Tags.RECONSTRUCTION_APODIZATION_BOX) -> np.ndarray:
     """
     Convenience function for reconstructing time series data using Delay and Sum algorithm implemented in PyTorch
 
     :param time_series_sensor_data: (2D numpy array) sensor data of shape (sensor elements, time steps)
     :param detection_geometry: The DetectionGeometryBase that should be used to reconstruct the given time series data
-    :param settings: (dict) settings dictionary: by default there is none and the other parameters are used instead,
-                     but if parameters are given in the settings those will be used instead of parsed arguments)
+    :param speed_of_sound_in_m_per_s: (int) speed of sound in medium in meters per second (default: 1540 m/s)
+    :param time_spacing_in_s: (float) time between sampling points in seconds (default: 2.5e-8 s which is equal to 40 MHz)
+    :param sensor_spacing_in_mm: (float) space between sensor elements in millimeters (default: 0.1 mm)
+    :param recon_mode: SIMPA Tag defining the reconstruction mode - pressure default OR differential
+    :param apodization: SIMPA Tag defining the apodization function (default box)
     :return: (2D numpy array) reconstructed image as 2D numpy array
     """
 
-    # create settings if they don't exist yet
-    if settings is None:
-        settings = Settings()
-
-    # parse reconstruction settings if they are not given in the settings
-    component_settings = settings.get_reconstruction_settings()
-    if Tags.DATA_FIELD_SPEED_OF_SOUND not in component_settings or component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]\
-            is None:
-        if Tags.DATA_FIELD_SPEED_OF_SOUND in settings and settings[Tags.DATA_FIELD_SPEED_OF_SOUND] is not None:
-            component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND] = settings[Tags.DATA_FIELD_SPEED_OF_SOUND]
-
-    if Tags.SENSOR_SAMPLING_RATE_MHZ not in component_settings or component_settings[Tags.SENSOR_SAMPLING_RATE_MHZ]\
-            is None:
-        if Tags.SENSOR_SAMPLING_RATE_MHZ in settings and settings[Tags.SENSOR_SAMPLING_RATE_MHZ] is not None:
-            component_settings[Tags.SENSOR_SAMPLING_RATE_MHZ] = settings[Tags.SENSOR_SAMPLING_RATE_MHZ]
-
-    if Tags.SPACING_MM not in component_settings or component_settings[Tags.SPACING_MM] is None:
-        if Tags.SPACING_MM in settings and settings[Tags.SPACING_MM] is not None:
-            component_settings[Tags.SPACING_MM] = settings[Tags.SPACING_MM]
+    # create settings
+    settings = Settings()
+    settings.set_reconstruction_settings({
+        Tags.DATA_FIELD_SPEED_OF_SOUND: speed_of_sound_in_m_per_s,
+        Tags.SPACING_MM: sensor_spacing_in_mm,
+        Tags.RECONSTRUCTION_APODIZATION_METHOD: apodization,
+        Tags.RECONSTRUCTION_MODE: recon_mode,
+        Tags.SENSOR_SAMPLING_RATE_MHZ: (1.0 / time_spacing_in_s) / 1000000
+    })
 
     adapter = DelayAndSumAdapter(settings)
     return adapter.reconstruction_algorithm(time_series_sensor_data, detection_geometry)
