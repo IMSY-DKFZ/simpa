@@ -421,12 +421,12 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
     field_of_view = detection_geometry.field_of_view_extent_mm
     logger.debug(f"Field of view: {field_of_view}")
 
-    xdim_start = int(field_of_view[0] / spacing_in_mm)
-    xdim_end = int(field_of_view[1] / spacing_in_mm)
-    zdim_start = int(field_of_view[2] / spacing_in_mm)
-    zdim_end = int(field_of_view[3] / spacing_in_mm)
-    ydim_start = int(field_of_view[4] / spacing_in_mm)
-    ydim_end = int(field_of_view[5] / spacing_in_mm)
+    xdim_start = int(np.round(field_of_view[0] / spacing_in_mm))
+    xdim_end = int(np.round(field_of_view[1] / spacing_in_mm))
+    zdim_start = int(np.round(field_of_view[2] / spacing_in_mm))
+    zdim_end = int(np.round(field_of_view[3] / spacing_in_mm))
+    ydim_start = int(np.round(field_of_view[4] / spacing_in_mm))
+    ydim_end = int(np.round(field_of_view[5] / spacing_in_mm))
 
     xdim = (xdim_end - xdim_start)
     ydim = (ydim_end - ydim_start)
