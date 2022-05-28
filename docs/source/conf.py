@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -22,9 +22,9 @@ sys.path.insert(0, os.path.abspath('../src'))
 # -- Project information -----------------------------------------------------
 
 project = 'SIMPA'
-_copyright = '2020-2021, CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and ' \
+_copyright = '2020-2021, IMSY (Division of Intelligent Medical Systems), DKFZ, Heidelberg and ' \
             'Janek Groehl'
-author = 'CAMI (Computer Assisted Medical Interventions), DKFZ, Heidelberg and ' \
+author = 'IMSY (Division of Intelligent Medical Systems), DKFZ, Heidelberg and ' \
          'Janek Groehl'
 
 # The full version

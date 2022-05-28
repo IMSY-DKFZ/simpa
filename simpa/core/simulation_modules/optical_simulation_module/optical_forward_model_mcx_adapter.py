@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -84,7 +84,7 @@ class MCXAdapter(OpticalForwardModuleBase):
 
         self.generate_mcx_bin_input(absorption_cm=absorption_cm,
                                     scattering_cm=scattering_cm,
-                                    anisotropy=_assumed_anisotropy,
+                                    anisotropy=anisotropy,
                                     assumed_anisotropy=_assumed_anisotropy)
                                     
         fluence = None

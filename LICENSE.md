@@ -1,6 +1,6 @@
 # License
 
-&copy; 2021 Computer Assisted Medical Interventions Group, DKFZ
+&copy; 2021 Division of Intelligent Medical Systems, DKFZ
 
 &copy; 2021 Janek Groehl
 
