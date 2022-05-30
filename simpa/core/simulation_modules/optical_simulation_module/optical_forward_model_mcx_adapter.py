@@ -64,7 +64,7 @@ class MCXAdapter(OpticalForwardModuleBase):
 
         self.generate_mcx_bin_input(absorption_cm=absorption_cm,
                                     scattering_cm=scattering_cm,
-                                    anisotropy=_assumed_anisotropy,
+                                    anisotropy=anisotropy,
                                     assumed_anisotropy=_assumed_anisotropy)
 
         settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
