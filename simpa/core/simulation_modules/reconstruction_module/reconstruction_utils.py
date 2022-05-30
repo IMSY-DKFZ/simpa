@@ -63,10 +63,13 @@ def bandpass_filter_with_settings(data: np.ndarray, global_settings: Settings, c
         """
 
         # select corresponding filtering method depending on tag in settings
-        if component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.TUKEY_BANDPASS_FILTER:
-            return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
-        elif component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.BUTTERWORTH_BANDPASS_FILTER:
-            return butter_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
+        if Tags.BANDPASS_FILTER_METHOD in component_settings:
+            if component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.TUKEY_BANDPASS_FILTER:
+                return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
+            elif component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.BUTTERWORTH_BANDPASS_FILTER:
+                return butter_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
+            else:
+                return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
         else:
             return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
 
