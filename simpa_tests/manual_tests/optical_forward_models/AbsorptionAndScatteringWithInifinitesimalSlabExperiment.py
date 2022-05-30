@@ -205,8 +205,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
                                                         anisotropy_value=anisotropy_value)
         })
 
-        # TODO: Check this when anisotropy values is 1.0, NaN values appear in scattering in such case
-        # self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value
+        self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value
 
         pipeline = [
             ModelBasedVolumeCreationAdapter(self.settings),
