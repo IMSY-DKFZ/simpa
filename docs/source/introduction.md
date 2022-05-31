@@ -14,7 +14,7 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 
 1. `git clone https://github.com/IMSY-DKFZ/simpa.git`
 2. `cd simpa`
-3. `git checkout master`
+3. `git checkout main`
 4. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
@@ -48,7 +48,15 @@ In order to obtain access to all custom sources that we implemented, please buil
 following mcx Github fork:
 [https://github.com/IMSY-DKFZ/mcx](https://github.com/IMSY-DKFZ/mcx)
 
-For the installation, please follow the instructions from the original repository.
+For the installation, please follow steps 1-4:
+1. `git clone https://github.com/IMSY-DKFZ/mcx.git`
+2. `cd mcx/src`
+3. In `MAKEFILE` adapt line 111 the sm version [according to your GPU](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/).
+4. `make`
+
+The built binary can be found in `src/bin`.
+Note, in case you can’t build mcx with the GPU-specific sm version you need to install a more recent NVIDIA driver and nvcc toolkit. 
+One option would be to install cuda in a conda environment via `conda install cuda -c nvidia`.
 Please note that there might be compatibility issues using mcx-cl with the MCX Adapter as this use case is not 
 being tested and supported by the SIMPA developers.
 
