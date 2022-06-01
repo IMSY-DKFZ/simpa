@@ -152,7 +152,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                           heavy_water_layer_height_mm + mediprene_layer_height_mm],
                 Tags.STRUCTURE_END_MM: [0, 0,
                                         heavy_water_layer_height_mm + mediprene_layer_height_mm + us_gel_thickness],
-                Tags.CONSIDER_PARTIAL_VOLUME: True,
+                Tags.CONSIDER_PARTIAL_VOLUME: volume_creator_settings[Tags.CONSIDER_PARTIAL_VOLUME],
                 Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
                 Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
             })
@@ -163,7 +163,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             Tags.PRIORITY: 5,
             Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
             Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
-            Tags.CONSIDER_PARTIAL_VOLUME: True,
+            Tags.CONSIDER_PARTIAL_VOLUME: volume_creator_settings[Tags.CONSIDER_PARTIAL_VOLUME],
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
             Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
         })
