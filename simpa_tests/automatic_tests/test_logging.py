@@ -34,5 +34,5 @@ class TestLogging(unittest.TestCase):
         logger.error("Test")
         logger.critical("Test")
 
-        self.assertFalse(os.path.exists(self.path))
+        self.assertTrue(os.path.exists(self.path))
         self.assertTrue(os.stat(self.path).st_size > 0)
