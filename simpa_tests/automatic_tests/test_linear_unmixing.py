@@ -24,7 +24,6 @@ class TestLinearUnmixing(unittest.TestCase):
         self.logger = sp.Logger()
         # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
         #  point to the correct file in the PathManager().
-        self.path_manager = sp.PathManager()
         RANDOM_SEED = 471
         self.WAVELENGTHS = [650, 700, 750, 800, 850, 900]  # the performance is checked using two wavelengths
         # Set general settings which are needed by the linear unmixing component
@@ -32,7 +31,7 @@ class TestLinearUnmixing(unittest.TestCase):
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: RANDOM_SEED,
             Tags.VOLUME_NAME: "LinearUnmixingAutomaticTest_" + str(RANDOM_SEED),
-            Tags.SIMULATION_PATH: self.path_manager.get_hdf5_file_save_path(),
+            Tags.SIMULATION_PATH: ".",
             # It is sufficient to look at only five voxels
             Tags.SPACING_MM: 1,
             Tags.DIM_VOLUME_Z_MM: 50,
@@ -134,7 +133,7 @@ class TestLinearUnmixing(unittest.TestCase):
                 sp.get_simpa_internal_absorption_spectra_by_names([Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN,
                                                                    Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN]),
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
-            Tags.WAVELENGTHS: [23, 42] # Test random invalid wavelengths
+            Tags.WAVELENGTHS: [23, 42]  # Test random invalid wavelengths
         }
 
         # Run linear unmixing component
