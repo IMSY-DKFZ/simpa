@@ -1,5 +1,5 @@
 [![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=develop)](https://simpa.readthedocs.io/en/develop/?badge=develop)
-[![Build Status](https://ci.mitk.org/buildStatus/icon?job=SIMPA%2FUnit+Tests+master)](https://ci.mitk.org/job/SIMPA/job/Unit%20Tests%20master/)
+![Build Status](https://github.com/IMSY-DKFZ/simpa/actions/workflows/automatic_testing.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/IMSY-DKFZ/simpa/blob/main/LICENSE.md)
 
 ![Logo](docs/source/images/simpa_logo.png?raw=true "Logo")
