@@ -47,7 +47,7 @@ class FieldOfViewCropping(ProcessingComponent):
         else:
             field_of_view_mm = device.get_field_of_view_mm()
         self.logger.debug(f"FOV (mm): {field_of_view_mm}")
-        field_of_view_voxels = (field_of_view_mm / self.global_settings[Tags.SPACING_MM]).astype(np.int32)
+        field_of_view_voxels = np.round(field_of_view_mm / self.global_settings[Tags.SPACING_MM]).astype(np.int32)
         self.logger.debug(f"FOV (voxels): {field_of_view_voxels}")
 
         # In case it should be cropped from A to A, then crop from A to A+1
