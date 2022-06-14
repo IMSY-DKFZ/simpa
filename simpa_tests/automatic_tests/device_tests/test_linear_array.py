@@ -42,7 +42,7 @@ class TestCurvedArray(unittest.TestCase):
     def test_simple_detection_geometry_prerequisite_check(self):
         self.VOLUME_WIDTH_IN_MM = 3 + self.SPACING
 
-        settings = Settings({Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM})
+        settings = Settings({Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM, Tags.SPACING_MM: self.SPACING})
 
         detection_geometry = LinearArrayDetectionGeometry(pitch_mm=1,
                                                           number_detector_elements=4,

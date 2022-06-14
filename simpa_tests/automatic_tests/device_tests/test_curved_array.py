@@ -46,7 +46,8 @@ class TestCurvedArray(unittest.TestCase):
         self.VOLUME_HEIGHT_IN_MM = 2 + self.SPACING
 
         settings = Settings({Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM,
-                             Tags.DIM_VOLUME_Z_MM: self. VOLUME_HEIGHT_IN_MM})
+                             Tags.DIM_VOLUME_Z_MM: self. VOLUME_HEIGHT_IN_MM,
+                             Tags.SPACING_MM: self.SPACING})
 
         detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=np.pi/2,
                                                           radius_mm=1,

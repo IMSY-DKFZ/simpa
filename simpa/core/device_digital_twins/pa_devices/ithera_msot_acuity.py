@@ -116,13 +116,16 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
 
         # adjust the x-dim to msot probe width
-        # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
+        # 1 voxel is added (0.5 on both sides) to make sure no rounding errors lead to a detector element being outside
         # of the simulated volume.
 
-        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + 1:
-            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) + 1 -
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + \
+                global_settings[Tags.SPACING_MM]:
+            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) +
+                                             global_settings[Tags.SPACING_MM] -
                                              global_settings[Tags.DIM_VOLUME_X_MM]) / 2
-            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + 1
+            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + \
+                                                    global_settings[Tags.SPACING_MM]
             self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
         else:
             width_shift_for_structures_mm = 0
