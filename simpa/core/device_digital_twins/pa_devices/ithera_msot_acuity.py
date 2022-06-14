@@ -49,9 +49,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         self.probe_height_mm = 43.2
         self.focus_in_field_of_view_mm = 8
         self.detection_geometry_position_vector = np.add(self.device_position_mm,
-                                                         np.array([0, 0,
-                                                                   self.probe_height_mm +
-                                                                   self.focus_in_field_of_view_mm]))
+                                                         np.array([0, 0, self.focus_in_field_of_view_mm]))
 
         if field_of_view_extent_mm is None:
             self.field_of_view_extent_mm = np.asarray([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
@@ -193,7 +191,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         self.set_detection_geometry(detection_geometry)
         for illumination_geom in self.illumination_geometries:
             illumination_geom.device_position_mm = np.add(illumination_geom.device_position_mm,
-                                                          np.array([0, 0, probe_size_mm]))
+                                                          np.array([width_shift_for_structures_mm, 0, probe_size_mm]))
 
         background_settings = Settings({
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
