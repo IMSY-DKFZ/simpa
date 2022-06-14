@@ -52,10 +52,11 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
         self.probe_width_mm = (number_detector_elements - 1) * self.pitch_mm
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + 1:
+        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + global_settings[Tags.SPACING_MM]:
             self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
                               "Must be at least {} mm but was {} mm"
-                              .format(self.probe_width_mm + 1, global_settings[Tags.DIM_VOLUME_X_MM]))
+                              .format(self.probe_width_mm + global_settings[Tags.SPACING_MM],
+                                      global_settings[Tags.DIM_VOLUME_X_MM]))
             return False
         return True
 
