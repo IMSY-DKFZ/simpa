@@ -6,10 +6,10 @@ from simpa.utils import Tags
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 import numpy as np
 import torch
-from simpa.utils.settings import Settings
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values, compute_image_dimensions, \
-    preparing_reconstruction_and_obtaining_reconstruction_settings
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values,\
+    compute_image_dimensions, preparing_reconstruction_and_obtaining_reconstruction_settings
 from simpa.core.device_digital_twins import DetectionGeometryBase
+from simpa.core.simulation_modules.reconstruction_module import create_reconstruction_settings
 
 
 class DelayAndSumAdapter(ReconstructionAdapterBase):
@@ -73,16 +73,8 @@ def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray,
     :param apodization: SIMPA Tag defining the apodization function (default box)
     :return: (2D numpy array) reconstructed image as 2D numpy array
     """
-
     # create settings
-    settings = Settings()
-    settings.set_reconstruction_settings({
-        Tags.DATA_FIELD_SPEED_OF_SOUND: speed_of_sound_in_m_per_s,
-        Tags.SPACING_MM: sensor_spacing_in_mm,
-        Tags.RECONSTRUCTION_APODIZATION_METHOD: apodization,
-        Tags.RECONSTRUCTION_MODE: recon_mode,
-        Tags.SENSOR_SAMPLING_RATE_MHZ: (1.0 / time_spacing_in_s) / 1000000
-    })
-
+    settings = create_reconstruction_settings(speed_of_sound_in_m_per_s, time_spacing_in_s, sensor_spacing_in_mm,
+                                              recon_mode, apodization)
     adapter = DelayAndSumAdapter(settings)
     return adapter.reconstruction_algorithm(time_series_sensor_data, detection_geometry)
