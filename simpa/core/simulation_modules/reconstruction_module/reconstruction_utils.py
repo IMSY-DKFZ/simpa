@@ -409,7 +409,7 @@ def get_reconstruction_processing_unit(global_settings):
     :param global_settings: global SIMPA settings
     :return: device for reconstruction
     """
-
+    logger = Logger()
     # if no tag is set, try to use GPU if available
     if Tags.GPU not in global_settings:
         if torch.cuda.is_available():
