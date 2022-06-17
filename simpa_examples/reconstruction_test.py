@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 
 from simpa import Tags
 import simpa as sp
@@ -14,13 +12,13 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
-VOLUME_HEIGHT_IN_MM = 40
+VOLUME_HEIGHT_IN_MM = 25
 SPACING = 0.2
 RANDOM_SEED = 4711
 
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
-path_manager = sp.PathManager()
+path_manager = sp.PathManager('/home/melanie/workplace/simpa_reco_tests/simpa/simpa_examples/path_config.env')
 
 # If VISUALIZE is set to True, the simulation result will be plotted
 VISUALIZE = True
@@ -93,7 +91,6 @@ general_settings = {
             Tags.GPU: True,
             # The following parameters set the optical forward model
             Tags.WAVELENGTHS: [700],#, 800],
-            Tags.LOAD_AND_SAVE_HDF5_FILE_AT_THE_END_OF_SIMULATION_TO_MINIMISE_FILESIZE: True,
             Tags.DO_IPASC_EXPORT: True
         }
 settings = sp.Settings(general_settings)
@@ -115,36 +112,55 @@ settings.set_optical_settings({
 settings.set_acoustic_settings({
     Tags.ACOUSTIC_SIMULATION_3D: False,
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
-    Tags.PROPERTY_ALPHA_POWER: 0.00,
-    Tags.SENSOR_RECORD: "p",
-    Tags.PMLInside: False,
-    Tags.PMLSize: [31, 32],
-    Tags.PMLAlpha: 1.5,
-    Tags.PlotPML: False,
+    Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+    Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+    Tags.KWAVE_PROPERTY_PMLInside: False,
+    Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+    Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+    Tags.KWAVE_PROPERTY_PlotPML: False,
     Tags.RECORDMOVIE: False,
     Tags.MOVIENAME: "visualization_log",
     Tags.ACOUSTIC_LOG_SCALE: True
 })
 
 settings.set_reconstruction_settings({
-    Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: True,
+    Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
+    Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+    Tags.ACOUSTIC_SIMULATION_3D: False,
+    Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+    Tags.TUKEY_WINDOW_ALPHA: 0.5,
+    Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
+    Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
+    Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: False,
+    Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
     Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
-    Tags.SPACING_MM: settings[Tags.SPACING_MM]
+    Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+    Tags.KWAVE_PROPERTY_PMLInside: False,
+    Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+    Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+    Tags.KWAVE_PROPERTY_PlotPML: False,
+    Tags.RECORDMOVIE: False,
+    Tags.MOVIENAME: "visualization_log",
+    Tags.ACOUSTIC_LOG_SCALE: True,
+    Tags.DATA_FIELD_SPEED_OF_SOUND: 1540,
+    Tags.DATA_FIELD_ALPHA_COEFF: 0.01,
+    Tags.DATA_FIELD_DENSITY: 1000,
+    Tags.SPACING_MM: SPACING
 })
 
 settings["noise_initial_pressure"] = {
     Tags.NOISE_MEAN: 1,
     Tags.NOISE_STD: 0.01,
     Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
-    Tags.DATA_FIELD: Tags.OPTICAL_MODEL_INITIAL_PRESSURE,
+    Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
     Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
 }
 
 settings["noise_time_series"] = {
     Tags.NOISE_STD: 1,
     Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
-    Tags.DATA_FIELD: Tags.TIME_SERIES_DATA
+    Tags.DATA_FIELD: Tags.DATA_FIELD_TIME_SERIES_DATA
 }
 
 # TODO: For the device choice, uncomment the undesired device
@@ -152,22 +168,10 @@ settings["noise_time_series"] = {
 device = sp.MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                      VOLUME_PLANAR_DIM_IN_MM/2,
                                                      0]),
-                           field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20]))
+                           field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, -4, 16]))
 device.update_settings_for_use_of_model_based_volume_creator(settings)
-#
-# device = sp.PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                              VOLUME_PLANAR_DIM_IN_MM/2,
-#                                                              0]),
-#                                 field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20]))
-# device.set_detection_geometry(sp.LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
-#                                                               pitch_mm=0.25,
-#                                                               number_detector_elements=100,
-#                                                               field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20])))
-# print(device.get_detection_geometry().get_detector_element_positions_base_mm())
-# device.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
-
-SIMUATION_PIPELINE = [
+SIMULATION_PIPELINE = [
     sp.ModelBasedVolumeCreationAdapter(settings),
     sp.MCXAdapter(settings),
     sp.GaussianNoise(settings, "noise_initial_pressure"),
@@ -177,7 +181,7 @@ SIMUATION_PIPELINE = [
     sp.FieldOfViewCropping(settings)
     ]
 
-sp.simulate(SIMUATION_PIPELINE, settings, device)
+sp.simulate(SIMULATION_PIPELINE, settings, device)
 
 if Tags.WAVELENGTH in settings:
     WAVELENGTH = settings[Tags.WAVELENGTH]
@@ -185,13 +189,13 @@ else:
     WAVELENGTH = 700
 
 if VISUALIZE:
-    sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+    sp.visualise_data(path_to_hdf5_file=settings[Tags.SIMPA_OUTPUT_PATH],
                       wavelength=WAVELENGTH,
-                      show_time_series_data=False,
+                      show_time_series_data=True,
                       show_initial_pressure=True,
                       show_absorption=True,
                       show_segmentation_map=True,
                       show_tissue_density=False,
                       show_reconstructed_data=True,
                       show_fluence=False,
-                      log_scale=True)
+                      log_scale=False)
