@@ -140,7 +140,6 @@ def butter_bandpass_filtering_with_settings(data: np.ndarray, global_settings: S
     return butter_bandpass_filtering(data, time_spacing_in_ms, cutoff_lowpass, cutoff_highpass, filter_order)
 
 
-
 def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
                        cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
                        tukey_alpha: float = 0.5, resampling_for_fft: bool =False) -> np.ndarray:
@@ -381,13 +380,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         'The time series sensor data must have been converted to a tensor'
 
     # move tensors to GPU if available, otherwise use CPU
-    if Tags.GPU not in global_settings:
-        if torch.cuda.is_available():
-            dev = "cuda"
-        else:
-            dev = "cpu"
-    else:
-        dev = "cuda" if global_settings[Tags.GPU] else "cpu"
+    dev = get_reconstruction_processing_unit(global_settings)
 
     torch_device = torch.device(dev)
     sensor_positions = sensor_positions.to(torch_device)
@@ -408,6 +401,31 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
 
     return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
             time_spacing_in_ms, torch_device)
+
+
+def get_reconstruction_processing_unit(global_settings):
+    """
+    Get device (CPU/GPU) for reconstructing the image.
+    :param global_settings: global SIMPA settings
+    :return: device for reconstruction
+    """
+
+    # if no tag is set, try to use GPU if available
+    if Tags.GPU not in global_settings:
+        if torch.cuda.is_available():
+            dev = "cuda"
+        else:
+            dev = "cpu"
+    else:  # else set tag as user wants
+        dev = "cuda" if global_settings[Tags.GPU] else "cpu"
+
+    if dev == 'cuda' and not torch.cuda.is_available():
+        # torch will likely raise an error if no GPU is available but set as device -> log it to SIMPA log
+        logger.error('Cuda is not available! Check your torch/cuda version.')
+
+    if dev == 'cpu':  # warn the user that CPU reconstruction is slow
+        logger.warning(f"Reconstructing on CPU is slow. Check if cuda is available 'torch.cuda.is_available()'.")
+    return dev
 
 
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
