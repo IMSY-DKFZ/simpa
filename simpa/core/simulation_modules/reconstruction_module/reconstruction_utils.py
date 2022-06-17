@@ -369,6 +369,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         raise AttributeError("Please specify a value for SPACING_MM in either the component_settings or"
                              "the global_settings.")
 
+    # get device specific sensor positions
     sensor_positions = detection_geometry.get_detector_element_positions_base_mm()
 
     # time series sensor data must be numpy array
