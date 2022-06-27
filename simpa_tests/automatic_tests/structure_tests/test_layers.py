@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.utils.deformation_manager import create_deformation_settings
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
@@ -27,7 +27,7 @@ class TestLayers(unittest.TestCase):
         self.layer_settings = Settings()
         self.layer_settings[Tags.STRUCTURE_START_MM] = [0, 0, 0]
         self.layer_settings[Tags.STRUCTURE_END_MM] = [0, 0, 0]
-        self.layer_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        self.layer_settings[Tags.MOLECULE_COMPOSITION] = TissueLibrary().muscle()
         self.layer_settings[Tags.ADHERE_TO_DEFORMATION] = True
         self.layer_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 

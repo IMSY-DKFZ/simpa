@@ -69,7 +69,7 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
         for structure in priority_sorted_structures:
             self.logger.debug(type(structure))
 
-            structure_properties = structure.properties_for_wavelength(wavelength)
+            structure_properties = structure.properties_for_wavelength(self.global_settings, wavelength)
 
             structure_volume_fractions = structure.get_volume_fractions()
             structure_indexes_mask = structure_volume_fractions > 0

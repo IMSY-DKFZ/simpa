@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings
 
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
@@ -19,7 +19,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
     def __init__(self, segmentation_type=None, molecular_composition_settings=None):
         super().__init__()
         self.segmentation_type = segmentation_type
-        self.internal_properties = TissueProperties()
+        self.internal_properties = None
 
         if molecular_composition_settings is None:
             return
@@ -28,28 +28,28 @@ class MolecularComposition(SerializableSIMPAClass, list):
         for molecule_name in _keys:
             self.append(molecular_composition_settings[molecule_name])
 
-    def update_internal_properties(self):
+    def update_internal_properties(self, settings):
         """
-        FIXME
+        Re-defines the internal properties of the molecular composition
         """
-        self.internal_properties = TissueProperties()
+        self.internal_properties = TissueProperties(settings)
         self.internal_properties[Tags.DATA_FIELD_SEGMENTATION] = self.segmentation_type
         self.internal_properties[Tags.DATA_FIELD_OXYGENATION] = calculate_oxygenation(self)
         for molecule in self:
-            self.internal_properties.volume_fraction += molecule.volume_fraction
+            self.internal_properties.volume_fraction += molecule.get_volume_fraction()
             self.internal_properties[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] += \
                 molecule.volume_fraction * molecule.gruneisen_parameter
             self.internal_properties[Tags.DATA_FIELD_DENSITY] += molecule.volume_fraction * molecule.density
             self.internal_properties[Tags.DATA_FIELD_SPEED_OF_SOUND] += molecule.volume_fraction * molecule.speed_of_sound
             self.internal_properties[Tags.DATA_FIELD_ALPHA_COEFF] += molecule.volume_fraction * molecule.alpha_coefficient
 
-        if np.abs(self.internal_properties.volume_fraction - 1.0) > 1e-3:
+        if (np.abs(self.internal_properties.volume_fraction - 1.0) > 1e-5).any():
             raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
                                  "exactly 100%!")
 
-    def get_properties_for_wavelength(self, wavelength) -> TissueProperties:
+    def get_properties_for_wavelength(self, settings, wavelength) -> TissueProperties:
 
-        self.update_internal_properties()
+        self.update_internal_properties(settings)
         self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0
         self.internal_properties[Tags.DATA_FIELD_SCATTERING_PER_CM] = 0
         self.internal_properties[Tags.DATA_FIELD_ANISOTROPY] = 0
@@ -122,8 +122,9 @@ class Molecule(SerializableSIMPAClass, object):
 
         if volume_fraction is None:
             volume_fraction = 0.0
-        if not isinstance(volume_fraction, (int, float, np.int64)):
-            raise TypeError(f"The given volume_fraction was not of type float instead of {type(volume_fraction)}!")
+        if not isinstance(volume_fraction, (float, np.ndarray)):
+            raise TypeError(f"The given volume_fraction was not of type float or array instead of "
+                            f"{type(volume_fraction)}!")
         self.volume_fraction = volume_fraction
 
         if scattering_spectrum is None:
@@ -181,6 +182,9 @@ class Molecule(SerializableSIMPAClass, object):
                     )
         else:
             return super().__eq__(other)
+
+    def get_volume_fraction(self):
+        return self.volume_fraction
 
     def serialize(self):
         serialized_molecule = self.__dict__

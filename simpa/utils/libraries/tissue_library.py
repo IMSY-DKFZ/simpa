@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+from simpa.utils import Settings
 from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
@@ -26,16 +27,15 @@ class TissueLibrary(object):
         TODO
         """
         return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
-                                                                absorption_spectrum=
-                                                                AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
-                                                                volume_fraction=1.0,
-                                                                scattering_spectrum=
-                                                                ScatteringSpectrumLibrary.
-                                                                CONSTANT_SCATTERING_ARBITRARY(mus),
-                                                                anisotropy_spectrum=
-                                                                AnisotropySpectrumLibrary.
-                                                                CONSTANT_ANISOTROPY_ARBITRARY(g)))
-                .get_molecular_composition(SegmentationClasses.GENERIC))
+                absorption_spectrum=
+                AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
+                volume_fraction=1.0,
+                scattering_spectrum=
+                ScatteringSpectrumLibrary.
+                CONSTANT_SCATTERING_ARBITRARY(mus),
+                anisotropy_spectrum=
+                AnisotropySpectrumLibrary.
+                CONSTANT_ANISOTROPY_ARBITRARY(g))).get_molecular_composition(SegmentationClasses.GENERIC))
 
     def muscle(self, background_oxy=None, blood_volume_fraction=None):
         """
@@ -246,6 +246,3 @@ class TissueLibrary(object):
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.water())
                 .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
-
-
-TISSUE_LIBRARY = TissueLibrary()

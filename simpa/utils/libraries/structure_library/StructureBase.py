@@ -65,7 +65,7 @@ class GeometricalStructure:
             self.partial_volume = False
 
         self.molecule_composition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
-        self.molecule_composition.update_internal_properties()
+        self.molecule_composition.update_internal_properties(global_settings)
 
         self.geometrical_volume = np.zeros(self.volume_dimensions_voxels)
         self.params = self.get_params_from_settings(single_structure_settings)
@@ -101,13 +101,13 @@ class GeometricalStructure:
         """
         pass
 
-    def properties_for_wavelength(self, wavelength) -> TissueProperties:
+    def properties_for_wavelength(self, settings, wavelength) -> TissueProperties:
         """
         Returns the values corresponding to each optical/acoustic property used in SIMPA.
         :param wavelength: Wavelength of the queried properties
         :return: optical/acoustic properties
         """
-        return self.molecule_composition.get_properties_for_wavelength(wavelength)
+        return self.molecule_composition.get_properties_for_wavelength(settings, wavelength)
 
     @abstractmethod
     def to_settings(self) -> Settings:

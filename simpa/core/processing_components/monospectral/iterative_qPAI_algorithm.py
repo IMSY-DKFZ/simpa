@@ -15,7 +15,7 @@ from simpa.core.simulation_modules.optical_simulation_module.optical_forward_mod
     MCXAdapter
 from simpa.utils import Settings
 from simpa.io_handling import save_data_field, load_data_field
-from simpa.utils import TISSUE_LIBRARY
+from simpa.utils import TissueLibrary
 from simpa.core.processing_components import ProcessingComponent
 import os
 
@@ -368,8 +368,9 @@ class IterativeqPAI(ProcessingComponent):
         if Tags.DATA_FIELD_SCATTERING_PER_CM in self.global_settings:
             scattering = float(self.global_settings[Tags.DATA_FIELD_SCATTERING_PER_CM]) * np.ones(shape)
         else:
-            background_dict = TISSUE_LIBRARY.muscle()
+            background_dict = TissueLibrary().muscle()
             scattering = float(MolecularComposition.get_properties_for_wavelength(background_dict,
+                                                                                  self.global_settings,
                                                                                   wavelength=800)["mus"])
             scattering = scattering * np.ones(shape)
 

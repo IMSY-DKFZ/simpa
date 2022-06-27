@@ -4,6 +4,8 @@
 
 # First load everything without internal dependencies
 from .tags import Tags
+from .settings import Settings
+
 from .libraries.literature_values import MorphologicalTissueProperties
 from .libraries.literature_values import StandardProperties
 from .libraries.literature_values import OpticalTissueProperties
@@ -24,7 +26,6 @@ from .libraries.molecule_library import MoleculeLibrary
 from .libraries.molecule_library import MOLECULE_LIBRARY
 
 from .libraries.tissue_library import TissueLibrary
-from .libraries.tissue_library import TISSUE_LIBRARY
 
 from .calculate import calculate_oxygenation
 from .calculate import calculate_gruneisen_parameter_from_temperature
@@ -32,8 +33,6 @@ from .calculate import randomize_uniform
 
 from .deformation_manager import create_deformation_settings
 from .deformation_manager import get_functional_from_deformation_settings
-
-from .settings import Settings
 
 from .dict_path_manager import generate_dict_path
 from .dict_path_manager import get_data_field_from_simpa_output
