@@ -23,6 +23,7 @@ class TestEpidermis(unittest.TestCase):
         print("tear_down")
 
     def test_epidermis_parameters(self):
+        print("EPIDERMIS")
         compare_molecular_composition_against_expected_values(
             molecular_composition=TissueLibrary().epidermis(0.014),
             expected_values=get_epidermis_reference_dictionary(),
@@ -31,6 +32,7 @@ class TestEpidermis(unittest.TestCase):
         )
 
     def test_dermis_parameters(self):
+        print("DERMIS")
         compare_molecular_composition_against_expected_values(
             molecular_composition=TissueLibrary().dermis(),
             expected_values=get_dermis_reference_dictionary(),
@@ -39,6 +41,7 @@ class TestEpidermis(unittest.TestCase):
         )
 
     def test_muscle_parameters(self):
+        print("MUSCLE")
         compare_molecular_composition_against_expected_values(
             molecular_composition=TissueLibrary().muscle(),
             expected_values=get_muscle_reference_dictionary(),
@@ -47,6 +50,7 @@ class TestEpidermis(unittest.TestCase):
         )
 
     def test_blood_oxy_parameters(self):
+        print("100 OXY")
         compare_molecular_composition_against_expected_values(
             molecular_composition=TissueLibrary().blood(1.0),
             expected_values=get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=True),
@@ -55,6 +59,7 @@ class TestEpidermis(unittest.TestCase):
         )
 
     def test_blood_deoxy_parameters(self):
+        print("0 OXY")
         compare_molecular_composition_against_expected_values(
             molecular_composition=TissueLibrary().blood(0.0),
             expected_values=get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=True),

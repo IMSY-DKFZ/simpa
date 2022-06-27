@@ -104,6 +104,7 @@ class GeometricalStructure:
     def properties_for_wavelength(self, settings, wavelength) -> TissueProperties:
         """
         Returns the values corresponding to each optical/acoustic property used in SIMPA.
+        :param wavelength: The global settings that contains the info on the volume dimensions.
         :param wavelength: Wavelength of the queried properties
         :return: optical/acoustic properties
         """

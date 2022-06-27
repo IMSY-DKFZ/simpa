@@ -87,6 +87,9 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                 added_volume_fraction[selector_more_than_1] = np.min([remaining_volume_fraction_to_fill,
                                                                       fraction_to_be_filled], axis=0)
             for key in volumes.keys():
+                print(key)
+                print(np.shape(added_volume_fraction[mask]))
+                print(np.shape(structure_properties[key]))
                 if structure_properties[key] is None:
                     continue
                 if key == Tags.DATA_FIELD_SEGMENTATION:
@@ -95,7 +98,10 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                     max_added_fractions[added_fraction_greater_than_any_added_fraction & mask] = \
                         added_volume_fraction[added_fraction_greater_than_any_added_fraction & mask]
                 else:
-                    volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
+                    if isinstance(structure_properties[key], np.ndarray):
+                        volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key][mask]
+                    else:
+                        volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
 
             global_volume_fractions[mask] += added_volume_fraction[mask]
 
