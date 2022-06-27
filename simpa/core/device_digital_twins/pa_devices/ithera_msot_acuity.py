@@ -146,6 +146,11 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                 structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
                                                                2] + z_dim_position_shift_mm
 
+        if Tags.CONSIDER_PARTIAL_VOLUME_IN_DEVICE in volume_creator_settings:
+            consider_partial_volume = volume_creator_settings[Tags.CONSIDER_PARTIAL_VOLUME_IN_DEVICE]
+        else:
+            consider_partial_volume = False
+        
         if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
             us_gel_layer_settings = Settings({
                 Tags.PRIORITY: 5,
@@ -153,7 +158,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                           heavy_water_layer_height_mm + mediprene_layer_height_mm],
                 Tags.STRUCTURE_END_MM: [0, 0,
                                         heavy_water_layer_height_mm + mediprene_layer_height_mm + us_gel_thickness],
-                Tags.CONSIDER_PARTIAL_VOLUME: True,
+                Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
                 Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
                 Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
             })
@@ -164,7 +169,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             Tags.PRIORITY: 5,
             Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
             Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
-            Tags.CONSIDER_PARTIAL_VOLUME: True,
+            Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
             Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
         })
