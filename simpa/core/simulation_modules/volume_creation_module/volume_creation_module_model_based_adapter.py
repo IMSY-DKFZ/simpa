@@ -71,7 +71,7 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
 
             structure_properties = structure.properties_for_wavelength(wavelength)
 
-            structure_volume_fractions = structure.geometrical_volume
+            structure_volume_fractions = structure.get_volume_fractions()
             structure_indexes_mask = structure_volume_fractions > 0
             global_volume_fractions_mask = global_volume_fractions < 1
             mask = structure_indexes_mask & global_volume_fractions_mask

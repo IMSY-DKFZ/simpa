@@ -78,6 +78,12 @@ class GeometricalStructure:
         indices, values = self.get_enclosed_indices()
         self.geometrical_volume[indices] = values
 
+    def get_volume_fractions(self):
+        """
+        Get the volume fraction this structure takes per voxel.
+        """
+        return self.geometrical_volume
+
     @abstractmethod
     def get_enclosed_indices(self):
         """
