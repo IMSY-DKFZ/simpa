@@ -11,6 +11,11 @@ from .libraries.literature_values import StandardProperties
 from .libraries.literature_values import OpticalTissueProperties
 from .constants import SegmentationClasses
 
+# Heterogeneity
+
+from .libraries.heterogeneity_generator import RandomHeterogeneity
+from .libraries.heterogeneity_generator import BlobHeterogeneity
+
 # Then load classes and methods with an <b>increasing</b> amount of internal dependencies.
 # If there are import errors in the tests, it is probably due to an incorrect
 # initialization order
