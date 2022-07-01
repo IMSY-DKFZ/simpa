@@ -92,7 +92,7 @@ class ReconstructionAdapterBase(SimulationModule):
 def create_reconstruction_settings(speed_of_sound_in_m_per_s: int = 1540, time_spacing_in_s: float = 2.5e-8,
                                    sensor_spacing_in_mm: float = 0.1,
                                    recon_mode: str = Tags.RECONSTRUCTION_MODE_PRESSURE,
-                                   apodization: str = Tags.RECONSTRUCTION_APODIZATION_BOX) -> np.ndarray:
+                                   apodization: str = Tags.RECONSTRUCTION_APODIZATION_BOX) -> Settings:
     """
     Function that creates SIMPA settings for reconstruction convenience function.
 
