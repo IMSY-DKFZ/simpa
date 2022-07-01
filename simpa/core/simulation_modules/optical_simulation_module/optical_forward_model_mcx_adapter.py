@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -64,7 +64,7 @@ class MCXAdapter(OpticalForwardModuleBase):
 
         self.generate_mcx_bin_input(absorption_cm=absorption_cm,
                                     scattering_cm=scattering_cm,
-                                    anisotropy=_assumed_anisotropy,
+                                    anisotropy=anisotropy,
                                     assumed_anisotropy=_assumed_anisotropy)
 
         settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
@@ -297,7 +297,12 @@ class MCXAdapter(OpticalForwardModuleBase):
         #   This will lead to errors, especially in the quasi-ballistic regime.
 
         given_reduced_scattering = (scattering_mm * (1 - kwargs.get('anisotropy')))
-        scattering_mm = given_reduced_scattering / (1 - kwargs.get('assumed_anisotropy'))
+
+        # If the anisotropy is 1, all scattering is forward scattering which is equal to no scattering at all
+        if kwargs.get("assumed_anisotropy") == 1:
+            scattering_mm = given_reduced_scattering * 0
+        else:
+            scattering_mm = given_reduced_scattering / (1 - kwargs.get('assumed_anisotropy'))
         scattering_mm[scattering_mm < 1e-10] = 1e-10
         return absorption_mm, scattering_mm
 

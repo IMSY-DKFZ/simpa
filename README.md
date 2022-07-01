@@ -1,6 +1,9 @@
 [![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=develop)](https://simpa.readthedocs.io/en/develop/?badge=develop)
-[![Build Status](https://ci.mitk.org/buildStatus/icon?job=SIMPA%2FUnit+Tests+master)](https://ci.mitk.org/job/SIMPA/job/Unit%20Tests%20master/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/CAMI-DKFZ/simpa/blob/master/LICENSE.md)
+![Build Status](https://github.com/IMSY-DKFZ/simpa/actions/workflows/automatic_testing.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/IMSY-DKFZ/simpa/blob/main/LICENSE.md)
+
+[![Pypi Badge](https://img.shields.io/pypi/v/simpa)](https://pypi.org/project/simpa/)
+[![PyPI downloads](https://img.shields.io/pypi/dw/simpa?color=gr&label=pypi%20downloads)](https://pypi.org/project/simpa/)
 
 ![Logo](docs/source/images/simpa_logo.png?raw=true "Logo")
 
@@ -12,6 +15,7 @@ modelling; and image reconstruction. SIMPA provides a communication layer betwee
 that implement optical and acoustic forward and inverse models.
 Non-experts can use the toolkit to create sensible simulations from default parameters in an end-to-end fashion. Domain experts are provided with the functionality to set up a highly customisable
 pipeline according to their specific use cases and tool requirements.
+The paper that introduces SIMPA including visualisations and explanations can be found here: [https://doi.org/10.1117/1.JBO.27.8.083010](https://doi.org/10.1117/1.JBO.27.8.083010)
 
 * [Getting started](#getting-started)
 * [Simulation examples](#simulation-examples)
@@ -21,7 +25,7 @@ pipeline according to their specific use cases and tool requirements.
 * [Troubleshooting](#troubleshooting)
 
 The toolkit is still under development and is thus not fully tested and may contain bugs. 
-Please report any issues that you find in our Issue Tracker: https://github.com/CAMI-DKFZ/simpa/issues. 
+Please report any issues that you find in our Issue Tracker: https://github.com/IMSY-DKFZ/simpa/issues. 
 Also make sure to double check all value ranges of the optical and acoustic tissue properties 
 and to assess all simulation results for plausibility.
 
@@ -39,9 +43,9 @@ The SIMPA path management takes care of that.
 
 The recommended way to install SIMPA is a manual installation from the GitHub repository, please follow steps 1 - 3:
 
-1. `git clone https://github.com/CAMI-DKFZ/simpa.git`
+1. `git clone https://github.com/IMSY-DKFZ/simpa.git`
 2. `cd simpa`
-3. `git checkout master`
+3. `git checkout main`
 4. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
@@ -73,9 +77,17 @@ Either download suitable executables or build yourself from the following source
 
 In order to obtain access to all custom sources that we implemented, please build mcx yourself from the
 following mcx Github fork:
-[https://github.com/CAMI-DKFZ/mcx](https://github.com/CAMI-DKFZ/mcx)
+[https://github.com/IMSY-DKFZ/mcx](https://github.com/IMSY-DKFZ/mcx)
 
-For the installation, please follow the instructions from the original repository.
+For the installation, please follow steps 1-4:
+1. `git clone https://github.com/IMSY-DKFZ/mcx.git`
+2. `cd mcx/src`
+3. In `MAKEFILE` adapt line 111 the sm version [according to your GPU](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/).
+4. `make`
+
+The built binary can be found in `src/bin`.
+Note, in case you can’t build mcx with the GPU-specific sm version you need to install a more recent NVIDIA driver and nvcc toolkit. 
+One option would be to install cuda in a conda environment via `conda install cuda -c nvidia`.
 Please note that there might be compatibility issues using mcx-cl with the MCX Adapter as this use case is not 
 being tested and supported by the SIMPA developers.
 

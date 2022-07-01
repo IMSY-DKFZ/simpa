@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -59,7 +59,10 @@ class GeometricalStructure:
         if Tags.PRIORITY in single_structure_settings:
             self.priority = single_structure_settings[Tags.PRIORITY]
 
-        self.partial_volume = single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME]
+        if Tags.CONSIDER_PARTIAL_VOLUME in single_structure_settings:
+            self.partial_volume = single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME]
+        else:
+            self.partial_volume = False
 
         self.molecule_composition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
         self.molecule_composition.update_internal_properties()

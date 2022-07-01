@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -49,9 +49,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         self.probe_height_mm = 43.2
         self.focus_in_field_of_view_mm = 8
         self.detection_geometry_position_vector = np.add(self.device_position_mm,
-                                                         np.array([0, 0,
-                                                                   self.probe_height_mm +
-                                                                   self.focus_in_field_of_view_mm]))
+                                                         np.array([0, 0, self.focus_in_field_of_view_mm]))
 
         if field_of_view_extent_mm is None:
             self.field_of_view_extent_mm = np.asarray([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
@@ -118,13 +116,16 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
 
         # adjust the x-dim to msot probe width
-        # 1 mm is added (0.5 mm on both sides) to make sure no rounding errors lead to a detector element being outside
+        # 1 voxel is added (0.5 on both sides) to make sure no rounding errors lead to a detector element being outside
         # of the simulated volume.
 
-        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + 1:
-            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) + 1 -
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + \
+                global_settings[Tags.SPACING_MM]:
+            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) +
+                                             global_settings[Tags.SPACING_MM] -
                                              global_settings[Tags.DIM_VOLUME_X_MM]) / 2
-            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + 1
+            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + \
+                                                    global_settings[Tags.SPACING_MM]
             self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
         else:
             width_shift_for_structures_mm = 0
@@ -145,6 +146,11 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                 structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
                                                                2] + z_dim_position_shift_mm
 
+        if Tags.CONSIDER_PARTIAL_VOLUME_IN_DEVICE in volume_creator_settings:
+            consider_partial_volume = volume_creator_settings[Tags.CONSIDER_PARTIAL_VOLUME_IN_DEVICE]
+        else:
+            consider_partial_volume = False
+        
         if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
             us_gel_layer_settings = Settings({
                 Tags.PRIORITY: 5,
@@ -152,7 +158,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                           heavy_water_layer_height_mm + mediprene_layer_height_mm],
                 Tags.STRUCTURE_END_MM: [0, 0,
                                         heavy_water_layer_height_mm + mediprene_layer_height_mm + us_gel_thickness],
-                Tags.CONSIDER_PARTIAL_VOLUME: True,
+                Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
                 Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
                 Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
             })
@@ -163,7 +169,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             Tags.PRIORITY: 5,
             Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
             Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
-            Tags.CONSIDER_PARTIAL_VOLUME: True,
+            Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
             Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
         })
@@ -190,7 +196,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         self.set_detection_geometry(detection_geometry)
         for illumination_geom in self.illumination_geometries:
             illumination_geom.device_position_mm = np.add(illumination_geom.device_position_mm,
-                                                          np.array([0, 0, probe_size_mm]))
+                                                          np.array([width_shift_for_structures_mm, 0, probe_size_mm]))
 
         background_settings = Settings({
             Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),

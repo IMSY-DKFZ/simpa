@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
@@ -66,14 +66,14 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
                            0, 100])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + 1:
+        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + global_settings[Tags.SPACING_MM]:
             self.logger.error(f"Volume x dimension is too small to encompass RSOM device in simulation!"
-                              f"Must be at least {self.probe_width_mm + 1} mm but "
+                              f"Must be at least {self.probe_width_mm + global_settings[Tags.SPACING_MM]} mm but "
                               f"was {global_settings[Tags.DIM_VOLUME_X_MM]} mm")
             return False
-        if global_settings[Tags.DIM_VOLUME_Y_MM] < self.probe_depth_mm + 1:
+        if global_settings[Tags.DIM_VOLUME_Y_MM] < self.probe_depth_mm + global_settings[Tags.SPACING_MM]:
             self.logger.error(f"Volume y dimension is too small to encompass RSOM device in simulation!"
-                              f"Must be at least {self.probe_depth_mm + 1} mm but "
+                              f"Must be at least {self.probe_depth_mm + global_settings[Tags.SPACING_MM]} mm but "
                               f"was {global_settings[Tags.DIM_VOLUME_X_MM]} mm")
             return False
         return True

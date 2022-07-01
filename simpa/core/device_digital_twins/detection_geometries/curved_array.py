@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
@@ -68,13 +68,13 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
             self.field_of_view_extent_mm = field_of_view_extent_mm
 
     def check_settings_prerequisites(self, global_settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_Z_MM] < (self.probe_height_mm + 1):
+        if global_settings[Tags.DIM_VOLUME_Z_MM] < (self.probe_height_mm + global_settings[Tags.SPACING_MM]):
             self.logger.error("Volume z dimension is too small to encompass the device in simulation!"
                               "Must be at least {} mm but was {} mm"
-                              .format((self.probe_height_mm + 1),
+                              .format((self.probe_height_mm + global_settings[Tags.SPACING_MM]),
                                       global_settings[Tags.DIM_VOLUME_Z_MM]))
             return False
-        if global_settings[Tags.DIM_VOLUME_X_MM] < (self.probe_width_mm + 1):
+        if global_settings[Tags.DIM_VOLUME_X_MM] < (self.probe_width_mm + global_settings[Tags.SPACING_MM]):
             self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
                               "Must be at least {} mm but was {} mm"
                               .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
