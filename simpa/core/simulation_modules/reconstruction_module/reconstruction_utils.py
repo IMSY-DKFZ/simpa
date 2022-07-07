@@ -140,7 +140,6 @@ def butter_bandpass_filtering_with_settings(data: np.ndarray, global_settings: S
     return butter_bandpass_filtering(data, time_spacing_in_ms, cutoff_lowpass, cutoff_highpass, filter_order)
 
 
-
 def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
                        cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
                        tukey_alpha: float = 0.5, resampling_for_fft: bool =False) -> np.ndarray:
@@ -155,7 +154,7 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     :param cutoff_lowpass: (int) Signal above this value will be ignored (in MHz)
     :param cutoff_highpass: (int) Signal below this value will be ignored (in MHz)
     :param tukey_alpha: (float) transition value between 0 (rectangular) and 1 (Hann window)
-    :param resampling_for_fft: (bool) whether the data is resampled to a power of 2 in time dimension 
+    :param resampling_for_fft: (bool) whether the data is resampled to a power of 2 in time dimension
     before applying the FFT and resampled back after filtering
     :return: (numpy array) filtered data
     """
@@ -345,7 +344,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         sound_speed_m = load_data_field(global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SPEED_OF_SOUND)
         speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
     else:
-        raise AttributeError("Please specify a value for PROPERTY_SPEED_OF_SOUND"
+        raise AttributeError("Please specify a value for DATA_FIELD_SPEED_OF_SOUND "
                              "or WAVELENGTH to obtain the average speed of sound")
 
     # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
@@ -370,8 +369,6 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
                              "the global_settings.")
 
     # get device specific sensor positions
-    detection_geometry.check_settings_prerequisites(global_settings)
-
     sensor_positions = detection_geometry.get_detector_element_positions_base_mm()
 
     # time series sensor data must be numpy array
@@ -383,13 +380,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         'The time series sensor data must have been converted to a tensor'
 
     # move tensors to GPU if available, otherwise use CPU
-    if Tags.GPU not in global_settings:
-        if torch.cuda.is_available():
-            dev = "cuda"
-        else:
-            dev = "cpu"
-    else:
-        dev = "cuda" if global_settings[Tags.GPU] else "cpu"
+    dev = get_reconstruction_processing_unit(global_settings)
 
     torch_device = torch.device(dev)
     sensor_positions = sensor_positions.to(torch_device)
@@ -410,6 +401,31 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
 
     return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
             time_spacing_in_ms, torch_device)
+
+
+def get_reconstruction_processing_unit(global_settings):
+    """
+    Get device (CPU/GPU) for reconstructing the image.
+    :param global_settings: global SIMPA settings
+    :return: device for reconstruction
+    """
+    logger = Logger()
+    # if no tag is set, try to use GPU if available
+    if Tags.GPU not in global_settings:
+        if torch.cuda.is_available():
+            dev = "cuda"
+        else:
+            dev = "cpu"
+    else:  # else set tag as user wants
+        dev = "cuda" if global_settings[Tags.GPU] else "cpu"
+
+    if dev == 'cuda' and not torch.cuda.is_available():
+        # torch will likely raise an error if no GPU is available but set as device -> log it to SIMPA log
+        logger.error('Cuda is not available! Check your torch/cuda version.')
+
+    if dev == 'cpu':  # warn the user that CPU reconstruction is slow
+        logger.warning(f"Reconstructing on CPU is slow. Check if cuda is available 'torch.cuda.is_available()'.")
+    return dev
 
 
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
