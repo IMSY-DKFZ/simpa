@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
+from typing import Union
 
 
-def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
+def generate_dict_path(data_field, wavelength: Union[int, float] = None) -> str:
     """
     Generates a path within an hdf5 file in the SIMPA convention
 
@@ -77,7 +78,7 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     return dict_path
 
 
-def get_data_field_from_simpa_output(simpa_output: dict, data_field: (tuple, str), wavelength: (int, float) = None):
+def get_data_field_from_simpa_output(simpa_output: dict, data_field: Union[tuple, str], wavelength: Union[int, float] = None):
     """
     Navigates through a dictionary in the standard simpa output format to a specific data field.
 
