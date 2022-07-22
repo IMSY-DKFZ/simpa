@@ -14,6 +14,7 @@ import numpy as np
 from simpa.utils import Settings
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filter_with_settings, apply_b_mode
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
+from typing import Union
 
 
 class ReconstructionAdapterBase(SimulationModule):
@@ -89,14 +90,14 @@ class ReconstructionAdapterBase(SimulationModule):
         self.logger.info("Performing reconstruction...[Done]")
 
 
-def create_reconstruction_settings(speed_of_sound_in_m_per_s: int = 1540, time_spacing_in_s: float = 2.5e-8,
+def create_reconstruction_settings(speed_of_sound_in_m_per_s: Union[int, np.ndarray] = 1540, time_spacing_in_s: float = 2.5e-8,
                                    sensor_spacing_in_mm: float = 0.1,
                                    recon_mode: str = Tags.RECONSTRUCTION_MODE_PRESSURE,
                                    apodization: str = Tags.RECONSTRUCTION_APODIZATION_BOX) -> Settings:
     """
     Function that creates SIMPA settings for reconstruction convenience function.
 
-    :param speed_of_sound_in_m_per_s: (int) speed of sound in medium in meters per second (default: 1540 m/s)
+    :param speed_of_sound_in_m_per_s: (int or np.ndarry) speed of sound in medium in meters per second (default: 1540 m/s)
     :param time_spacing_in_s: (float) time between sampling points in seconds (default: 2.5e-8 s which is equal to 40 MHz)
     :param sensor_spacing_in_mm: (float) space between sensor elements in millimeters (default: 0.1 mm)
     :param recon_mode: SIMPA Tag defining the reconstruction mode - pressure default OR differential
