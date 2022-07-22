@@ -2,7 +2,10 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from typing import Tuple
+from asyncio.log import logger
+from typing import Tuple, Union
+
+from matplotlib import projections
 from simpa.log.file_logger import Logger
 from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils.settings import Settings
@@ -328,7 +331,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
 
     time_series_sensor_data: (torch tensor) potentially preprocessed time series data
     sensor_positions: (torch tensor) sensor element positions of PA device
-    speed_of_sound_in_m_per_s: (float) speed of sound in m/s
+    speed_of_sound_in_m_per_s: (float or np.ndarray) speed of sound in m/s
     spacing_in_mm: (float) spacing of voxels in reconstructed image in mm
     time_spacing_in_ms: (float) temporal spacing of the time series data in ms
     torch_device: (torch device) either cpu or cuda GPU device used for the tensors
@@ -337,15 +340,21 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     ### INPUT CHECKING AND VALIDATION ###
     # check settings dictionary for elements and read them in
 
-    # speed of sound: use given speed of sound, otherwise use average from simulation if specified
-    if Tags.DATA_FIELD_SPEED_OF_SOUND in component_settings and component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]:
+    # speed of sound: use given speed of sound
+    if Tags.DATA_FIELD_SPEED_OF_SOUND in component_settings:
         speed_of_sound_in_m_per_s = component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]
-    elif Tags.WAVELENGTH in global_settings and global_settings[Tags.WAVELENGTH]:
-        sound_speed_m = load_data_field(global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SPEED_OF_SOUND)
-        speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
+        if Tags.SOS_HETEROGENOUS not in global_settings or not global_settings[Tags.SOS_HETEROGENOUS]:
+            speed_of_sound_in_m_per_s = np.mean(speed_of_sound_in_m_per_s)
+        else:
+            logger.debug(f"Using a heterogenous speed-of-sound map")
     else:
-        raise AttributeError("Please specify a value for DATA_FIELD_SPEED_OF_SOUND "
-                             "or WAVELENGTH to obtain the average speed of sound")
+        speed_of_sound_in_m_per_s = load_data_field(
+            global_settings[Tags.SIMPA_OUTPUT_PATH],
+            Tags.DATA_FIELD_SPEED_OF_SOUND) 
+        if Tags.SOS_HETEROGENOUS not in global_settings or not global_settings[Tags.SOS_HETEROGENOUS]:
+            speed_of_sound_in_m_per_s = np.mean(speed_of_sound_in_m_per_s)
+        else:
+            logger.debug(f"Using a heterogenous speed-of-sound map")
 
     # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
     if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
@@ -368,7 +377,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         raise AttributeError("Please specify a value for SPACING_MM in either the component_settings or"
                              "the global_settings.")
 
-    # get device specific sensor positions
+    # get device specific sensor positions (in FOV coordinate system, where origin = device_base_position)
     sensor_positions = detection_geometry.get_detector_element_positions_base_mm()
 
     # time series sensor data must be numpy array
@@ -429,8 +438,8 @@ def get_reconstruction_processing_unit(global_settings):
 
 
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
-                             speed_of_sound_in_m_per_s: float, logger: Logger) -> Tuple[int, int, int, int, int,
-                                                                                        int, int, int, int]:
+                             speed_of_sound_in_m_per_s: Union[float, np.ndarray],
+                             logger: Logger) -> Tuple[int, int, int, int, int, int, int, int, int]:
     """
     compute size of beamformed image from field of view of detection geometry
 
@@ -440,6 +449,7 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
     field_of_view = detection_geometry.field_of_view_extent_mm
     logger.debug(f"Field of view: {field_of_view}")
 
+    #if isinstance(speed_of_sound_in_m_per_s, float):  
     xdim_start = int(np.round(field_of_view[0] / spacing_in_mm))
     xdim_end = int(np.round(field_of_view[1] / spacing_in_mm))
     zdim_start = int(np.round(field_of_view[2] / spacing_in_mm))
@@ -467,9 +477,11 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
 
 def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positions: torch.tensor, xdim: int,
                                  ydim: int, zdim: int, xdim_start: int, xdim_end: int, ydim_start: int, ydim_end: int,
-                                 zdim_start: int, zdim_end: int, spacing_in_mm: float, speed_of_sound_in_m_per_s: float,
+                                 zdim_start: int, zdim_end: int, spacing_in_mm: float,
+                                 speed_of_sound_in_m_per_s: Union[float,np.ndarray],
                                  time_spacing_in_ms: float, logger: Logger, torch_device: torch.device,
-                                 component_settings: Settings) -> Tuple[torch.tensor, int]:
+                                 component_settings: Settings, global_settings: Settings, 
+                                 device_base_position_mm: np.ndarray) -> Tuple[torch.tensor, int]:
     """
     Perform the core computation of Delay and Sum, without summing up the delay dependend values.
 
@@ -487,21 +499,26 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
     logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
                  f',number of sensor elements: {n_sensor_elements}')
 
-    if zdim == 1:
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
-                                        torch.arange(ydim_start, ydim_end, device=torch_device),
-                                        torch.arange(zdim, device=torch_device),
-                                        torch.arange(n_sensor_elements, device=torch_device))
-    else:
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
-                                        torch.arange(ydim_start, ydim_end, device=torch_device),
-                                        torch.arange(zdim_start, zdim_end, device=torch_device),
-                                        torch.arange(n_sensor_elements, device=torch_device))
+    if not isinstance(speed_of_sound_in_m_per_s, np.ndarray):
+        if zdim == 1:
+            xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
+                                            torch.arange(ydim_start, ydim_end, device=torch_device),
+                                            torch.arange(zdim, device=torch_device),
+                                            torch.arange(n_sensor_elements, device=torch_device))
+        else:
+            xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
+                                            torch.arange(ydim_start, ydim_end, device=torch_device),
+                                            torch.arange(zdim_start, zdim_end, device=torch_device),
+                                            torch.arange(n_sensor_elements, device=torch_device))
 
-    delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
-                        (xx * spacing_in_mm - sensor_positions[:, 0][jj]) ** 2 +
-                        (zz * spacing_in_mm - sensor_positions[:, 1][jj]) ** 2) \
-        / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
+        delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
+                            (xx * spacing_in_mm - sensor_positions[:, 0][jj]) ** 2 +
+                            (zz * spacing_in_mm - sensor_positions[:, 1][jj]) ** 2) \
+            / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
+    else:
+        delays = calculate_delays_for_heterogen_sos(sensor_positions, xdim, ydim, zdim, xdim_start, xdim_end,
+            ydim_start, ydim_end, zdim_start, zdim_end, spacing_in_mm, time_spacing_in_ms, speed_of_sound_in_m_per_s, 
+            n_sensor_elements, global_settings, device_base_position_mm, logger, torch_device)
 
     # perform index validation
     invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
@@ -528,3 +545,113 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
     del delays  # free memory of delays
 
     return values, n_sensor_elements
+
+def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int, ydim: int, zdim: int,
+                                       xdim_start: int, xdim_end: int, ydim_start: int, ydim_end: int,
+                                       zdim_start: int, zdim_end: int, spacing_in_mm: float,
+                                       time_spacing_in_ms: float, speed_of_sound_in_m_per_s: np.ndarray,
+                                       n_sensor_elements: int, global_settings: Settings, 
+                                       device_base_position_mm: np.ndarray, logger: Logger,
+                                       torch_device: torch.device) -> torch.tensor:
+    """
+    
+    
+    xdim: number of x values of sources in FOV
+    ydim:
+    sensor_positions: sensor positions in mm in the FOV coordinate system, where the origin is at the device
+                      base positition
+    """
+    
+    print('HETERO CALCULATION')
+
+    print(sensor_positions)
+
+    STEPS_MIN = 2
+
+    if zdim == 1:
+        # get relevant sos slice
+        transducer_plane = int(round((device_base_position_mm[1]/global_settings[Tags.SPACING_MM]))) - 1
+        # take wanted sos slice and invert values
+        sos_map = 1/speed_of_sound_in_m_per_s[:,transducer_plane,:]
+        # convert it to tensor and desired shape
+        sos_tensor = torch.from_numpy(sos_map) # TODO: torch.from_numpy(sos.T) 
+        #I DONT UNDERSTAND THIS BUT IT HAS TO BE transposed in order to work! # CHECK THIS
+        sos_tensor = sos_tensor.unsqueeze(0) # 1 x H x W
+        sos_tensor = sos_tensor.unsqueeze(0) # 1 x 1 x H x W
+        sos_tensor = sos_tensor.to(torch_device)
+
+        # calculate absolute positions, where origin is  the origin of the whole volume (volume coordinate system)
+        xx, yy = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
+                                torch.arange(ydim_start, ydim_end, device=torch_device)
+                            )
+
+        device_base_position_mm = torch.from_numpy(device_base_position_mm)
+        device_base_position_mm = device_base_position_mm.to(torch_device)
+
+        # global position according to whole image in mm
+        xx = xx*spacing_in_mm + device_base_position_mm[0]
+        yy = yy*spacing_in_mm + device_base_position_mm[2]
+        sensor_positions = sensor_positions + device_base_position_mm
+        sensor_positions = sensor_positions[:,::2] # leave out 3rd dimension
+
+        # calculate the number of steps per ray, we want that for the longest ray that the ray is sampled at least
+        # at every pixel
+        steps = int(max((xdim**2+ydim**2)**0.5, STEPS_MIN))
+
+        # calculate the step size of the different rays
+        source_pos_in_mm = torch.dstack([xx,yy])
+        ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()/(steps-1)              
+
+        # scale the source and the sensor positions to [-1,1] range (needed for interpolator-function),
+        #  where -1 denotes x=0 and 1 denots x = 'volume_x_dim_mm' and same for y
+        volume_dim_mm_vector = torch.tensor([global_settings[Tags.DIM_VOLUME_X_MM],
+                                            global_settings[Tags.DIM_VOLUME_Z_MM]],
+                                            device=torch_device)
+        source_pos_scaled = 2*source_pos_in_mm/volume_dim_mm_vector-1 
+        sensor_positions_scaled = 2*sensor_positions/volume_dim_mm_vector-1
+        #del volume_dim_mm_vector
+        #del source_pos_in_mm
+        #del sensor_positions
+
+        # steps        
+        s = torch.linspace(0, 1, steps, device=torch_device)
+        
+        """
+        # needs to much memory
+        rays = (1-s[None, None, None, :, None])* source_pos_scaled[:, :, None, None, :] +  \
+               (s[None, None, None, :, None] * sensor_positions_scaled[None, None, :, None, :]) # shape: xdim x ydim x #sensors x #steps x 2 
+
+        rays = rays.reshape((1, 1, xdim*ydim*n_sensor_elements*steps, 2)) # 1 x 1 x (xdim*ydim*#sensors*#steps) x 2
+
+
+        interpolated_sos = torch.nn.functional.grid_sample(sos_tensor, rays, mode="bilinear", padding_mode="border", align_corners=True)
+        interpolated_sos = interpolated_sos.reshape((xdim*ydim*n_sensor_elements, steps))
+
+        integrals = torch.trapezoid(interpolated_sos)
+
+        integrals = integrals.reshape((xdim, ydim, n_sensor_elements))
+
+        delays = integrals * ds
+        return delays
+        """
+
+        delays = torch.FloatTensor(xdim, ydim, n_sensor_elements)
+
+        for sensor in range(n_sensor_elements):
+            # calculate the sampled positions (#steps samples) for all rays coming from all source points to a given sensor
+            rays = (1-s[None, None, :, None])* source_pos_scaled[:, :, None, :] +  \
+                (s[None, None, :, None] * sensor_positions_scaled[None, None, sensor, None, :]) # shape: xdim x ydim x #steps x 2
+            #rays = rays.reshape(1,1,xdim*ydim*steps,2)
+            rays = rays.reshape(1, xdim*ydim, steps, 2)
+            # calculate the corresponding interpolated sos values at those points
+            interpolated_sos =  torch.nn.functional.grid_sample(sos_tensor, rays, mode="bilinear", padding_mode="border", align_corners=True)
+            #print(interpolated_sos.shape)
+            #interpolated_sos = interpolated_sos.reshape((xdim*ydim, steps))
+            integrals = torch.trapezoid(interpolated_sos)
+            integrals = integrals.reshape((xdim, ydim))
+            delays[:,:, sensor] = integrals*ds[:,:,sensor]/time_spacing_in_ms
+
+        return delays
+
+    else:
+        logger.warning("3 dimensional heterogenous SoS calculation is not implemented yet.")
