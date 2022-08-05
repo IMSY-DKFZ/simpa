@@ -503,7 +503,11 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
     logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
                  f',number of sensor elements: {n_sensor_elements}')
 
+    print("\nChristoph DAS time series shape", time_series_sensor_data.shape)
+
     if not isinstance(speed_of_sound_in_m_per_s, np.ndarray):
+        # TODO: delete print
+        print("\n Christoph\nHOMO CALCULATION\n")
         if zdim == 1:
             xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
                                             torch.arange(ydim_start, ydim_end, device=torch_device),
@@ -520,7 +524,9 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
                             (zz * spacing_in_mm - sensor_positions[:, 1][jj]) ** 2) \
             / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
     else:
-        delays = calculate_delays_for_heterogen_sos(sensor_positions, xdim, ydim, zdim, xdim_start, xdim_end,
+        # TODO: delete print
+        print("\n Christoph\nHETERO CALCULATION\n")
+        delays, jj = calculate_delays_for_heterogen_sos(sensor_positions, xdim, ydim, zdim, xdim_start, xdim_end,
             ydim_start, ydim_end, zdim_start, zdim_end, spacing_in_mm, time_spacing_in_ms, speed_of_sound_in_m_per_s, 
             n_sensor_elements, global_settings, device_base_position_mm, logger, torch_device)
 
@@ -595,7 +601,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
         # take wanted sos slice and invert values
         sos_map = 1/speed_of_sound_in_m_per_s[:,transducer_plane,:]
         # convert it to tensor and desired shape
-        sos_tensor = torch.from_numpy(sos_map) # TODO: test whether it has to be torch.from_numpy(sos.T) 
+        sos_tensor = torch.from_numpy(sos_map.T) # TODO: test whether it has to be torch.from_numpy(sos.T) 
         # CHECK whether transposed or not
         sos_tensor = sos_tensor.unsqueeze(0) # 1 x H x W
         sos_tensor = sos_tensor.unsqueeze(0) # 1 x 1 x H x W
@@ -627,6 +633,9 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             device_base_position_xy_mm = device_base_position_mm[::2] # leave out second component
             source_pos_scaled = 2*(source_pos_in_mm+device_base_position_xy_mm)/volume_dim_mm_vector-1 
             sensor_positions_scaled = 2*(sensor_positions+device_base_position_xy_mm)/volume_dim_mm_vector-1
+            #del volume_dim_mm_vector
+            del source_pos_in_mm
+            del sensor_positions
         else:
             # global position according to whole image in mm
             xx = xx*spacing_in_mm + device_base_position_mm[0]
@@ -646,8 +655,8 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             source_pos_scaled = 2*source_pos_in_mm/volume_dim_mm_vector-1 
             sensor_positions_scaled = 2*sensor_positions/volume_dim_mm_vector-1
             #del volume_dim_mm_vector
-            #del source_pos_in_mm
-            #del sensor_positions
+            del source_pos_in_mm
+            del sensor_positions
 
         # calculate the number of steps per ray, we want that for the longest ray that the ray is sampled at least
         # at every pixel
@@ -665,7 +674,8 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             #rays = rays.reshape(1,1,xdim*ydim*steps,2)
             rays = rays.reshape(1, xdim*ydim, steps, 2)
             # calculate the corresponding interpolated sos values at those points
-            interpolated_sos =  torch.nn.functional.grid_sample(sos_tensor, rays, mode="bilinear", padding_mode="border", align_corners=True)
+            interpolated_sos =  torch.nn.functional.grid_sample(sos_tensor, rays, mode="bilinear",
+                                                                padding_mode="border", align_corners=True)
             # integrate the interpolated inverse sos-values
             integrals = torch.trapezoid(interpolated_sos)
             integrals = integrals.reshape((xdim, ydim))
@@ -673,7 +683,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             # in order to get the delay indices for the time series data
             delays[:,:, sensor] = integrals*ds[:,:,sensor]/((steps-1) * time_spacing_in_ms)
 
-        return delays
+        return delays.unsqueeze(2), torch.arange(n_sensor_elements, device=torch_device) # xdim x ydim x 1 x #sensors
 
     else:
         logger.warning("3 dimensional heterogenous SoS calculation is not implemented yet.")
