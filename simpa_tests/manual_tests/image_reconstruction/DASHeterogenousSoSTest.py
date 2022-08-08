@@ -16,6 +16,18 @@ from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
 class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
+    """
+    Time series data are simulated using KWave and a heterogenous SoS-map and a initital pressure with just 
+    1 non-zero entry (point source).
+    Reconstruction assuming a fixed speed-of-sound-value (homogenous SoS-map) and reconstruction considering 
+    the correct heterogenous SoS-map are performed. 
+    For this, one can choose between predefined "toy SoS-maps" with gradients, steps or noise:
+        - vertical gradient
+        - horizontal gradient
+        - 2 horizontal regions
+        - 2 diagonal regions
+        - gaussian noise
+    """
 
     def setup(self):
         path_manager = PathManager()
@@ -23,26 +35,25 @@ class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
         self.SPEED_OF_SOUND = 1470
         self.pa_device = InVision256TF(device_position_mm=np.asarray([50, 15, 50]))
 
-        """
-        self.initial_pressure = np.zeros((20, 6, 30))
-        self.initial_pressure[8:13, :, 14:17] = 1
-        self.speed_of_sound_map = np.ones((20, 6, 30)) * self.SPEED_OF_SOUND
-        # idea: forward model with hetero sos map, reconstruct with homogenous and hetero sos map and compare results
-        self.speed_of_sound_map_hetero = np.ones((20, 6, 30)) * self.SPEED_OF_SOUND
-        self.speed_of_sound_map_hetero[10:,:,:] = 4*self.SPEED_OF_SOUND
-        self.density = np.ones((20, 6, 30)) * 1000
-        self.alpha = np.ones((20, 6, 30)) * 0.01
-        """
-
         # Hyperparam to change:
         self.SIMULATE_HETERO = True
+        self.HETERO_OPTION = "gaussian_noise"
 
 
         self.initial_pressure = np.zeros((100, 30, 100))
         self.initial_pressure[50, :, 50] = 1
         self.speed_of_sound_map = np.ones((100, 30, 100)) * self.SPEED_OF_SOUND
-        self.speed_of_sound_map_hetero = self.speed_of_sound_map.copy()
-        self.speed_of_sound_map_hetero = self.speed_of_sound_map_hetero * np.linspace(0.5,1.5,100)[None, None, :] 
+        np.random.seed(4711)
+        heterogenous_map = {"vertical_gradient": self.speed_of_sound_map * np.linspace(0.5,1.5,100)[None, None, :],
+                            "horizontal_gradient": self.speed_of_sound_map * np.linspace(0.5,1.5,100)[:, None, None],
+                            "horizontal_2_regions": self.speed_of_sound_map * np.hstack((np.ones(50)*0.5, np.ones(50)*1.5))[:, None, None],
+                            "diagonaL_2_regions": self.speed_of_sound_map * 0.5 + np.triu(self.speed_of_sound_map[:,14,:])[:,None,:],
+                            "gaussian_noise": self.speed_of_sound_map + np.random.randn(100, 30, 100) * 142}
+        
+        self.speed_of_sound_map_hetero = heterogenous_map[self.HETERO_OPTION]
+        # scale to mean = self.SPEED_OF_SOUND
+        self.speed_of_sound_map_hetero *= self.SPEED_OF_SOUND/self.speed_of_sound_map_hetero.mean()
+
         self.density = np.ones((100, 30, 100)) * 1000
         self.alpha = np.ones((100, 30, 100)) * 0.01
 
@@ -59,7 +70,7 @@ class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
                 Tags.DIM_VOLUME_Y_MM: 30,
                 Tags.GPU: True,
                 Tags.WAVELENGTHS: [700],
-                Tags.SOS_HETEROGENOUS: True
+                Tags.SOS_HETEROGENOUS: True # in order to reconstruct using the heterogen. map
             }
 
             acoustic_settings = {
@@ -123,7 +134,7 @@ class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
                                                         wavelength=self.settings[Tags.WAVELENGTHS][0])
 
 
-        # Homogenous reconstruction
+        # Homogenous reconstruction (for this reset the settings for homogenous reconstruction)
         self.settings.get_reconstruction_settings()[Tags.DATA_FIELD_SPEED_OF_SOUND] = self.SPEED_OF_SOUND
         self.settings.get_reconstruction_settings()[Tags.SOS_HETEROGENOUS] = False
         DelayAndSumAdapter(self.settings).run(self.pa_device)
@@ -140,43 +151,39 @@ class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
 
         slice = self.speed_of_sound_map.shape[1]//2
 
-    
-        plt.figure(figsize=(18, 6))
-        plt.subplot(3, 2, 1)
-        plt.title(f"Hom. SoS map")
-        plt.imshow(self.speed_of_sound_map[:,slice,:].T)
-        plt.colorbar()
-        plt.subplot(3, 2, 2)
-        plt.title(f"Hetero SoS map\nmean = {self.speed_of_sound_map_hetero[:,slice,:].mean():.1f}")
-        plt.imshow(self.speed_of_sound_map_hetero[:,slice,:].T)
-        plt.xlabel("x")
-        plt.ylabel("z")
-        plt.colorbar()
+        fig, axes = plt.subplots(2, 2)#, figsize=(12,12))
+        axes[0,0].set_title(f"Initial pressure")
+        im = axes[0,0].imshow(self.initial_pressure[:, slice, :].T)
+        plt.colorbar(im, ax=axes[0,0])
+   
+
+        axes[0,1].set_title(f"""Hetero SoS map\nmean = {
+            self.speed_of_sound_map_hetero[:,slice,:].mean():.1f}""")
+        im = axes[0,1].imshow(self.speed_of_sound_map_hetero[:,slice,:].T)
+        plt.colorbar(im, ax=axes[0,1])
+
+        axes[1,0].set_title(f"DAS Reconstruction\nwith SoS={self.SPEED_OF_SOUND}")
+        im = axes[1,0].imshow(self.reconstructed_image_homo.T)
+        plt.colorbar(im, ax=axes[1,0])
+
+        axes[1,1].set_title(f"hDAS Reconstruction")
+        im = axes[1,1].imshow(self.reconstructed_image_hetero.T)
+        plt.colorbar(im, ax=axes[1,1])
+
         plt.tight_layout()
-        plt.subplot(3, 2, 3)
-        plt.title(f"Set Initial pressure")
-        plt.imshow(self.initial_pressure[:,self.initial_pressure.shape[1]//2,:].T)
-        plt.colorbar()
-        plt.subplot(3, 2, 5)
-        plt.title(f"Reconstructed image\n with homogenous SoS {self.SPEED_OF_SOUND} m/s")
-        try:
-            plt.imshow(np.rot90(self.reconstructed_image_homo, 3))
-        except:
-            print("no image reconstructed")
-        plt.subplot(3, 2, 6)
-        plt.title(f"Reconstructed image\n with heterogenous SoS")
-        try:
-            plt.imshow(np.rot90(self.reconstructed_image_hetero, 3))
-        except:
-            print("no image reconstructed")
+
+        for ax in axes.flatten():
+            ax.set_xlabel("x")
+            ax.set_ylabel("z")
+
         if show_figure_on_screen:
             plt.show()
         else:
             if save_path is None:
                 save_path = ""
-            plt.savefig(save_path + f"minimal_kwave_test_with_heterogenous_sos.png")
+            plt.savefig(save_path + f"minimal_kwave_test_with_heterogenous_sos_{self.HETERO_OPTION}.png", dpi=300)
         plt.close()
 
 if __name__ == "__main__":
     test = HeterogenousSoSKWaveTest()
-    test.run_test(show_figure_on_screen=True)
+    test.run_test(show_figure_on_screen=False)
