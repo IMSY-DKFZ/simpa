@@ -15,13 +15,13 @@ import os
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
-class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
+class DASToyHeterogenousSoSTest(ManualIntegrationTestClass):
     """
     Time series data are simulated using KWave and a heterogenous SoS-map and a initital pressure with just 
     1 non-zero entry (point source).
-    Reconstruction assuming a fixed speed-of-sound-value (homogenous SoS-map) and reconstruction considering 
+    DAS-Reconstruction assuming a fixed speed-of-sound-value (homogenous SoS-map) and hDAS-reconstruction considering 
     the correct heterogenous SoS-map are performed. 
-    For this, one can choose between predefined "toy SoS-maps" with gradients, steps or noise:
+    For this, one can choose between predefined "toy examples of SoS-maps" with gradients, steps or noise:
         - vertical gradient
         - horizontal gradient
         - 2 horizontal regions
@@ -37,7 +37,7 @@ class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
 
         # Hyperparam to change:
         self.SIMULATE_HETERO = True
-        self.HETERO_OPTION = "gaussian_noise"
+        self.HETERO_OPTION = "vertical_gradient"
 
 
         self.initial_pressure = np.zeros((100, 30, 100))
@@ -56,7 +56,6 @@ class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
 
         self.density = np.ones((100, 30, 100)) * 1000
         self.alpha = np.ones((100, 30, 100)) * 0.01
-
         
 
         def get_settings():
@@ -136,7 +135,7 @@ class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
 
         # Homogenous reconstruction (for this reset the settings for homogenous reconstruction)
         self.settings.get_reconstruction_settings()[Tags.DATA_FIELD_SPEED_OF_SOUND] = self.SPEED_OF_SOUND
-        self.settings.get_reconstruction_settings()[Tags.SOS_HETEROGENOUS] = False
+        self.settings[Tags.SOS_HETEROGENOUS] = False
         DelayAndSumAdapter(self.settings).run(self.pa_device)
 
         self.reconstructed_image_homo = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
@@ -185,5 +184,5 @@ class HeterogenousSoSKWaveTest(ManualIntegrationTestClass):
         plt.close()
 
 if __name__ == "__main__":
-    test = HeterogenousSoSKWaveTest()
-    test.run_test(show_figure_on_screen=False)
+    test = DASToyHeterogenousSoSTest()
+    test.run_test(show_figure_on_screen=True)
