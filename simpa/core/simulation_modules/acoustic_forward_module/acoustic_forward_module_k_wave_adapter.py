@@ -17,6 +17,7 @@ import scipy.io as sio
 from scipy.spatial.transform import Rotation
 from simpa.core.simulation_modules.acoustic_forward_module import AcousticForwardModelBaseAdapter
 import gc
+from typing import Union
 
 
 class KWaveAdapter(AcousticForwardModelBaseAdapter):
@@ -34,16 +35,16 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         The initial pressure distribution:
             Tags.OPTICAL_MODEL_INITIAL_PRESSURE
         Acoustic tissue properties:
-            Tags.PROPERTY_SPEED_OF_SOUND
-            Tags.PROPERTY_DENSITY
-            Tags.PROPERTY_ALPHA_COEFF
+            Tags.DATA_FIELD_SPEED_OF_SOUND
+            Tags.DATA_FIELD_DENSITY
+            Tags.DATA_FIELD_ALPHA_COEFF
         The digital twin of the imaging device:
             Tags.DIGITAL_DEVICE
         Other parameters:
             Tags.PERFORM_UPSAMPLING
             Tags.SPACING_MM
             Tags.UPSCALE_FACTOR
-            Tags.PROPERTY_ALPHA_POWER
+            Tags.DATA_FIELD_ALPHA_POWER
             Tags.GPU
             Tags.PMLInside
             Tags.PMLAlpha
@@ -127,11 +128,11 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         return time_series_data
 
     def k_wave_acoustic_forward_model(self, detection_geometry: DetectionGeometryBase,
-                                      speed_of_sound: float, density: float,
+                                      speed_of_sound: Union[float, np.ndarray], density: float,
                                       alpha_coeff: float, initial_pressure: np.ndarray,
                                       optical_path: str = "temporary") -> tuple:
         """
-        Runs the acoustic forward model with the given parameters speed_of_sound (float), density (float),
+        Runs the acoustic forward model with the given parameters speed_of_sound (float or np.ndarray), density (float),
         alpha_coeff (float) for the initial_pressure distribution (numpy array) and a given detection geometry.
         Uses the given optical_path (str) or if none is given a temporary one for saving temporary files.
         Note, that in order to work properly, this function assumes that several settings mentioned above are set.
@@ -165,7 +166,15 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         else:
             simulate_2d = False
 
-        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.ones_like(initial_pressure) * speed_of_sound
+        self.logger.debug(f"Input SoS has shape {speed_of_sound.shape} and std {np.std(speed_of_sound)}")
+
+        if isinstance(speed_of_sound, float):
+            data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.ones_like(initial_pressure) * speed_of_sound
+        elif isinstance(speed_of_sound, np.ndarray):
+            data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = speed_of_sound
+        else:
+            self.logger.warning("Speed-of-sound has unsuported type (neither float nor np.ndarray)")
+
         data_dict[Tags.DATA_FIELD_DENSITY] = np.ones_like(initial_pressure) * density
         data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.ones_like(initial_pressure) * alpha_coeff
         data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = initial_pressure
@@ -272,7 +281,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
 def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array,
                                                detection_geometry: DetectionGeometryBase,
-                                               speed_of_sound: float = 1540.0,
+                                               speed_of_sound: Union[float, np.ndarray] = 1540.0,
                                                density: float = 1000.0,
                                                alpha_coeff: float = 0.02,
                                                acoustic_settings: Settings = None,
@@ -288,9 +297,9 @@ def perform_k_wave_acoustic_forward_simulation(initial_pressure: np.array,
                                                spacing_mm: float = 0.5) -> np.array:
     """
     Convenience function for performing a k-Wave acoustic forward simulation using a given detection geometry and
-    initial pressure distribution (numpy array) with the following parameters speed_of_sound (float), density (float),
-    alpha_coeff (float) as well as acoustic_settings (Settings). The acoustic settings may be parsed individually,
-    however, they will be overwritten if they are also set in the acoustic_settings.
+    initial pressure distribution (numpy array) with the following parameters speed_of_sound (float or np.ndarray),
+    density (float), alpha_coeff (float) as well as acoustic_settings (Settings). The acoustic settings may be parsed
+    individually. However, they will be overwritten if they are also set in the acoustic_settings.
 
     :param initial_pressure:
     :param detection_geometry:
