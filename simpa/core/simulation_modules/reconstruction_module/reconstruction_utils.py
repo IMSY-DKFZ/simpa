@@ -345,20 +345,21 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         speed_of_sound_in_m_per_s = component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]
         if Tags.SOS_HETEROGENOUS not in global_settings or not global_settings[Tags.SOS_HETEROGENOUS]:
             speed_of_sound_in_m_per_s = np.mean(speed_of_sound_in_m_per_s)
+            logger.debug(f"Using a fixed SoS-value of {speed_of_sound_in_m_per_s:.2f}")
         else:
-            logger.debug(f"Using a heterogenous speed-of-sound map")
+            logger.debug(f"Using a heterogenous SoS-map ({type(speed_of_sound_in_m_per_s)}) " \
+                         f"with shape {speed_of_sound_in_m_per_s.shape}")
     else:
-        # TODO: check whether this loads really the sos-map based on volume generation
-        # or just the map stored by the KWaveAdapter (see )
-        # ANSWER: YES IT DOES BUT I DONT UNDERSTAND HOW ITS ENSURED THAT THE "sos" of
-        # the reconstruction_model_settings - path is not taken
+        # this loads the sos-map based on volume generation
         speed_of_sound_in_m_per_s = load_data_field(
             global_settings[Tags.SIMPA_OUTPUT_PATH],
             Tags.DATA_FIELD_SPEED_OF_SOUND) 
         if Tags.SOS_HETEROGENOUS not in global_settings or not global_settings[Tags.SOS_HETEROGENOUS]:
             speed_of_sound_in_m_per_s = np.mean(speed_of_sound_in_m_per_s)
+            logger.debug(f"Using a fixed SoS-value of {speed_of_sound_in_m_per_s:.2f}")
         else:
-            logger.debug(f"Using a heterogenous speed-of-sound map")
+            logger.debug(f"Using a heterogenous SoS-map ({type(speed_of_sound_in_m_per_s)}) " \
+                         f"with shape {speed_of_sound_in_m_per_s.shape}")
 
     # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
     if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
@@ -503,11 +504,8 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
     logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
                  f',number of sensor elements: {n_sensor_elements}')
 
-    print("\nChristoph DAS time series shape", time_series_sensor_data.shape)
-
     if not isinstance(speed_of_sound_in_m_per_s, np.ndarray):
-        # TODO: delete print
-        print("\n Christoph\nHOMO CALCULATION\n")
+        logger.debug("Considering fixed SoS-value in reconstruction algorithm")
         if zdim == 1:
             xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
                                             torch.arange(ydim_start, ydim_end, device=torch_device),
@@ -524,8 +522,6 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
                             (zz * spacing_in_mm - sensor_positions[:, 1][jj]) ** 2) \
             / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
     else:
-        # TODO: delete print
-        print("\n Christoph\nHETERO CALCULATION\n")
         delays, jj = calculate_delays_for_heterogen_sos(sensor_positions, xdim, ydim, zdim, xdim_start, xdim_end,
             ydim_start, ydim_end, zdim_start, zdim_end, spacing_in_mm, time_spacing_in_ms, speed_of_sound_in_m_per_s, 
             n_sensor_elements, global_settings, device_base_position_mm, logger, torch_device)
@@ -590,7 +586,8 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
     :return: (torch tensor) delays indices indicating which time series data
              one has to sum up
     """
-    
+    logger.debug("Considering heterogenous SoS-map in reconstruction algorithm")
+
     STEPS_MIN = 2
     mixed_coordinate_system_calculation = True #TODO: decide for one implementation,
     # so far mixed_coordinate_system_calculation is more accurate!!!!
@@ -601,8 +598,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
         # take wanted sos slice and invert values
         sos_map = 1/speed_of_sound_in_m_per_s[:,transducer_plane,:]
         # convert it to tensor and desired shape
-        sos_tensor = torch.from_numpy(sos_map.T) # TODO: test whether it has to be torch.from_numpy(sos.T) 
-        # CHECK whether transposed or not
+        sos_tensor = torch.from_numpy(sos_map.T) # has to be transposed!
         sos_tensor = sos_tensor.unsqueeze(0) # 1 x H x W
         sos_tensor = sos_tensor.unsqueeze(0) # 1 x 1 x H x W
         sos_tensor = sos_tensor.to(torch_device)
@@ -661,6 +657,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
         # calculate the number of steps per ray, we want that for the longest ray that the ray is sampled at least
         # at every pixel
         steps = int(max((xdim**2+ydim**2)**0.5 + 0.5, ds.max()/(2**0.5*spacing_in_mm) + 0.5, STEPS_MIN))
+        logger.debug(f"Using {steps} steps for numerical calculation of the line integrals")
         # steps        
         s = torch.linspace(0, 1, steps, device=torch_device)
 
@@ -686,4 +683,4 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
         return delays.unsqueeze(2), torch.arange(n_sensor_elements, device=torch_device) # xdim x ydim x 1 x #sensors
 
     else:
-        logger.warning("3 dimensional heterogenous SoS calculation is not implemented yet.")
+        logger.warning("3-dimensional heterogenous SoS reconstruction is not implemented yet.")
