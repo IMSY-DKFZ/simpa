@@ -5,7 +5,7 @@
 
 import numpy as np
 from scipy.interpolate import interp1d
-
+import torch
 
 def calculate_oxygenation(molecule_list):
     """
@@ -223,3 +223,96 @@ def positive_gauss(mean, std) -> float:
         return positive_gauss(mean, std)
     else: 
         return random_value
+
+def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor, z: torch.tensor = None) -> torch.tensor:
+    """
+    Returns interpolated values of an 2 dimensional or 3 dimensional map/image at the positions (x,y) or (x,y,z) respectively.
+    For this bilinear interpolation (in every dimension) is used.
+    This function is based on https://gist.github.com/peteflorence/a1da2c759ca1ac2b74af9a83f69ce20e.
+    
+    :param image: (torch.tensor) 2-dim./3-dim image which values shall be interpolated
+    :param x: (torch.tensor) pixel positions in x-direction 
+    :param y: (torch.tensor) pixel positions in y-direction
+    :param z: (torch.tensor) pixel positions in z-direction
+    
+    :return: (torch.tensor) interpolated values of the input image at given positions
+    """
+    dtype = torch.cuda.DoubleTensor
+    dtype_long = torch.cuda.LongTensor
+    
+    if image.ndim < 3 or z == None: # 2dim case
+        
+        # compute the indices of the neighbors            
+        x0 = torch.floor(x).type(dtype_long)
+        x1 = x0 + 1
+
+        y0 = torch.floor(y).type(dtype_long)
+        y1 = y0 + 1
+
+        x0 = torch.clamp(x0, 0, image.shape[0]-2)
+        x1 = torch.clamp(x1, 1, image.shape[0]-1)
+        y0 = torch.clamp(y0, 0, image.shape[1]-2)
+        y1 = torch.clamp(y1, 1, image.shape[1]-1)
+        
+        # read out the neighboring values
+        f_tl = image[x0, y0] # top left neighbor value
+        f_bl = image[x0, y1] # bottom left neighbor value
+        f_tr = image[x1, y0] # top right neighbor value
+        f_br = image[x1, y1] # bottom right neighbor value
+
+        # calculate the weights
+        w_tl = (x1.type(dtype)-x) * (y1.type(dtype)-y)
+        w_bl = (x1.type(dtype)-x) * (y-y0.type(dtype))
+        w_tr = (x-x0.type(dtype)) * (y1.type(dtype)-y)
+        w_br = (x-x0.type(dtype)) * (y-y0.type(dtype))
+        
+        return f_tl*w_tl + f_bl*w_bl + f_tr*w_tr + f_br*w_br
+    
+    elif image.ndim == 2: # 3dim case #TODO: NOT TESTED YET
+        # in the 3dim case one has 8 neighbors that are the corners of a cube 
+        
+        # compute the indices of the neighbors            
+        x0 = torch.floor(x).type(dtype_long)
+        x1 = x0 + 1
+
+        y0 = torch.floor(y).type(dtype_long)
+        y1 = y0 + 1
+        
+        z0 = torch.floor(z).type(dtype_long)
+        z1 = z0 + 1
+
+        x0 = torch.clamp(x0, 0, image.shape[0]-2)
+        x1 = torch.clamp(x1, 1, image.shape[0]-1)
+        y0 = torch.clamp(y0, 0, image.shape[1]-2)
+        y1 = torch.clamp(y1, 1, image.shape[1]-1)
+        z0 = torch.clamp(z0, 0, image.shape[2]-2)
+        z1 = torch.clamp(z1, 1, image.shape[2]-1)
+        
+        # read out the neighboring values
+        # front plane
+        f_tlf = image[x0, y0, z0] # top left front neighbor value
+        f_blf = image[x0, y1, z0] # bottom left front neighbor value
+        f_trf = image[x1, y0, z0] # top right front neighbor value
+        f_brf = image[x1, y1, z0] # bottom right front neighbor value
+        # back plane
+        f_tlb = image[x0, y0, z0] # top left front neighbor value
+        f_blb = image[x0, y1, z0] # bottom left front neighbor value
+        f_trb = image[x1, y0, z0] # top right front neighbor value
+        f_brb = image[x1, y1, z0] # bottom right front neighbor value
+
+        # calculate the weights
+        # front plane
+        w_tlf = (x1.type(dtype)-x) * (y1.type(dtype)-y) * (z1.type(dtype)-z)
+        w_blf = (x1.type(dtype)-x) * (y-y0.type(dtype)) * (z1.type(dtype)-z)
+        w_trf = (x-x0.type(dtype)) * (y1.type(dtype)-y) * (z1.type(dtype)-z)
+        w_brf = (x-x0.type(dtype)) * (y-y0.type(dtype)) * (z1.type(dtype)-z)
+        # back plane
+        w_tlb = (x1.type(dtype)-x) * (y1.type(dtype)-y) * (z-z0.type(dtype))
+        w_blb = (x1.type(dtype)-x) * (y-y0.type(dtype)) * (z-z0.type(dtype))
+        w_trb = (x-x0.type(dtype)) * (y1.type(dtype)-y) * (z-z0.type(dtype))
+        w_brb = (x-x0.type(dtype)) * (y-y0.type(dtype)) * (z-z0.type(dtype))
+
+        return f_tlf*w_tlf + f_blf*w_blf + f_trf*w_trf + f_brf*w_brf + f_tlb*w_tlb + f_blb*w_blb + f_trb*w_trb + f_brf*w_brb
+        
+    else:
+        return None
