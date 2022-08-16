@@ -5,7 +5,6 @@
 from asyncio.log import logger
 from typing import Tuple, Union
 
-from matplotlib import projections
 from simpa.log.file_logger import Logger
 from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils.settings import Settings
@@ -614,7 +613,6 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
         if mixed_coordinate_system_calculation: #TODO: MORE ACCURATE
             xx = xx*spacing_in_mm
             yy = yy*spacing_in_mm
-            sensor_positions = sensor_positions
             sensor_positions = sensor_positions[:,::2] # leave out 3rd dimension
 
             # calculate the step size of the different rays
@@ -672,7 +670,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             rays = rays.reshape(1, xdim*ydim, steps, 2)
             # calculate the corresponding interpolated sos values at those points
             interpolated_sos =  torch.nn.functional.grid_sample(sos_tensor, rays, mode="bilinear",
-                                                                padding_mode="border", align_corners=True)
+                                                                padding_mode="border", align_corners=False)
             # integrate the interpolated inverse sos-values
             integrals = torch.trapezoid(interpolated_sos)
             integrals = integrals.reshape((xdim, ydim))
