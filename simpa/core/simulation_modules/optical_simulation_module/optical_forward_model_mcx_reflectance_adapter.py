@@ -116,6 +116,7 @@ class MCXAdapterReflectance(MCXAdapter):
         if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
             cmd.append("--saveref")  # save diffuse reflectance at 0 filled voxels outside of domain
+        cmd += self.get_additional_flags()
         return cmd
 
     def read_mcx_output(self, **kwargs) -> Dict:

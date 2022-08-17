@@ -150,3 +150,11 @@ class OpticalForwardModuleBase(SimulationModule):
                                          illumination_geometry=_device)
             fluence = results[Tags.DATA_FIELD_FLUENCE]
         return {Tags.DATA_FIELD_FLUENCE: fluence}
+
+    def get_additional_flags(self):
+        cmd = []
+        if Tags.MCX_ADDITIONAL_FLAGS in self.global_settings:
+            for flag in self.global_settings.get(Tags.MCX_ADDITIONAL_FLAGS[0]):
+                if flag not in cmd:
+                    cmd.append(flag)
+        return cmd

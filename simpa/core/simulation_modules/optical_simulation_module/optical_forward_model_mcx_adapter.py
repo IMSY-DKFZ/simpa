@@ -182,6 +182,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         cmd.append(self.mcx_json_config_file)
         cmd.append("-O")
         cmd.append("F")
+        cmd += self.get_additional_flags()
         return cmd
 
     @staticmethod
