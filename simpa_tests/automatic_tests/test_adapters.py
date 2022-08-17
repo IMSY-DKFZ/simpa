@@ -1,10 +1,7 @@
 import unittest
 import numpy as np
 
-from simpa import MCXAdapterReflectance, Tags, PathManager, Settings
-
-path_manager = PathManager()
-
+from simpa import MCXAdapterReflectance, Tags, Settings
 
 class TestMCXReflectanceAdapter(unittest.TestCase):
     def setUp(self) -> None:
