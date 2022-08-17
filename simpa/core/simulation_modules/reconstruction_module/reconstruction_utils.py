@@ -5,6 +5,7 @@
 from typing import Tuple
 from simpa.log.file_logger import Logger
 from simpa.core.device_digital_twins import DetectionGeometryBase
+from simpa.utils.processing_device import get_processing_device
 from simpa.utils.settings import Settings
 from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.utils import Tags
@@ -380,9 +381,8 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         'The time series sensor data must have been converted to a tensor'
 
     # move tensors to GPU if available, otherwise use CPU
-    dev = get_reconstruction_processing_unit(global_settings)
+    torch_device = get_reconstruction_processing_unit(global_settings)
 
-    torch_device = torch.device(dev)
     sensor_positions = sensor_positions.to(torch_device)
     time_series_sensor_data = time_series_sensor_data.to(torch_device)
 
@@ -403,29 +403,21 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
             time_spacing_in_ms, torch_device)
 
 
-def get_reconstruction_processing_unit(global_settings):
+def get_reconstruction_processing_unit(global_settings: Settings) -> torch.device:
     """
-    Get device (CPU/GPU) for reconstructing the image.
+    Get torch device (CPU/GPU) for reconstructing the image. Warns if CPU is used that the reconstruction will be slow.
     :param global_settings: global SIMPA settings
-    :return: device for reconstruction
+    :type global_settings: Settings
+    :return: torch device for reconstruction
     """
-    logger = Logger()
-    # if no tag is set, try to use GPU if available
-    if Tags.GPU not in global_settings:
-        if torch.cuda.is_available():
-            dev = "cuda"
-        else:
-            dev = "cpu"
-    else:  # else set tag as user wants
-        dev = "cuda" if global_settings[Tags.GPU] else "cpu"
 
-    if dev == 'cuda' and not torch.cuda.is_available():
-        # torch will likely raise an error if no GPU is available but set as device -> log it to SIMPA log
-        logger.error('Cuda is not available! Check your torch/cuda version.')
-
-    if dev == 'cpu':  # warn the user that CPU reconstruction is slow
+    device = get_processing_device(global_settings)
+    
+    if device == torch.device('cpu'):  # warn the user that CPU reconstruction is slow
+        logger = Logger()
         logger.warning(f"Reconstructing on CPU is slow. Check if cuda is available 'torch.cuda.is_available()'.")
-    return dev
+
+    return device
 
 
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
