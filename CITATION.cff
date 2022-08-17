@@ -46,7 +46,7 @@ preferred-citation:
     given-names: "Alexander"
   - family-names: "Maier-Hein"
     given-names: "Lena"
-  doi: "0.1117/1.JBO.27.8.083010"
+  doi: "10.1117/1.JBO.27.8.083010"
   journal: "Journal of Biomedical Optics"
   month: 4
   title: "SIMPA: an open-source toolkit for simulation and image processing for photonics and acoustics"
