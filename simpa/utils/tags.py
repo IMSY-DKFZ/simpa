@@ -864,6 +864,13 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
+
+    DATA_FIELD_BLOOD_VOLUME_FRACTION = "bvf"
+    """
+    Blood volume fraction of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DATA_FIELD_SEGMENTATION = "seg"
     """
     Segmentation of the generated volume/structure.\n

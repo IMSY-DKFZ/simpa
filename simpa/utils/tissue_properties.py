@@ -13,6 +13,7 @@ class TissueProperties(dict):
                      Tags.DATA_FIELD_GRUNEISEN_PARAMETER,
                      Tags.DATA_FIELD_SEGMENTATION,
                      Tags.DATA_FIELD_OXYGENATION,
+                     Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION,
                      Tags.DATA_FIELD_DENSITY,
                      Tags.DATA_FIELD_SPEED_OF_SOUND,
                      Tags.DATA_FIELD_ALPHA_COEFF]

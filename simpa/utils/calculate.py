@@ -34,6 +34,30 @@ def calculate_oxygenation(molecule_list):
     return hbO2 / (hb + hbO2)
 
 
+def calculate_bvf(molecule_list):
+    """
+    :return: the blood volume fraction value between 0 and 1, or 0, if oxy and deoxy not present.
+    """
+    hb = None
+    hbO2 = None
+
+    for molecule in molecule_list:
+        if molecule.spectrum.spectrum_name == "Deoxyhemoglobin":
+            hb = molecule.volume_fraction
+        if molecule.spectrum.spectrum_name == "Oxyhemoglobin":
+            hbO2 = molecule.volume_fraction
+
+    if hb is None and hbO2 is None:
+        return 0
+
+    if hb is None:
+        return hbO2
+    elif hbO2 is None:
+        return hb
+
+    return (hb + hbO2)
+
+    
 def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spacing=0.1):
     """
     Creates a functional that simulates distortion along the y position
