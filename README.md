@@ -214,7 +214,7 @@ Look up the solution in [this thread of the k-Wave forum](http://www.k-wave.org/
 
 If you use the SIMPA tool, we would appreciate if you cite our Journal publication in the Journal of Biomedical Optics:
 
-Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, Patricia Vieten, Leonardo Ayala, Sarah E. Bohndiek, Alexander Seitel, and Lena Maier-Hein. *"SIMPA: an open-source toolkit for simulation and image processing for photonics and acoustics."* **Journal of Biomedical Optics** 27, no. 8 (2022): 083010.
+Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, Patricia Vieten, Leonardo Ayala, Sarah E. Bohndiek, Alexander Seitel, and Lena Maier-Hein. *"SIMPA: an open-source toolkit for simulation and image processing for photonics and acoustics."* **Journal of Biomedical Optics** 27, no. 8 (2022).
 
 ```Bibtex
 @article{2022simpatoolkit,
@@ -223,7 +223,6 @@ Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, 
   journal={Journal of Biomedical Optics},
   volume={27},
   number={8},
-  pages={083010},
   year={2022},
   publisher={SPIE}
 }
