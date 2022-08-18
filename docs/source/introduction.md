@@ -67,7 +67,7 @@ for further (and much better) guidance under:
 
 [http://www.k-wave.org/](http://www.k-wave.org/)
 
-1. Install MATLAB with the core and parallel computing toolboxes activated at the minimum.
+1. Install MATLAB with the core, image processing and parallel computing toolboxes activated at the minimum.
 2. Download the kWave toolbox
 3. Add the kWave toolbox base path to the toolbox paths in MATLAB
 4. Download the kWaveArray addition from the link given in this user forum post [http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources](http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources)
