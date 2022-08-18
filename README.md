@@ -23,6 +23,7 @@ The paper that introduces SIMPA including visualisations and explanations can be
 * [Contributing](#how-to-contribute)
 * [Performance profiling](#performance-profiling)
 * [Troubleshooting](#troubleshooting)
+* [Citation](#citation)
 
 The toolkit is still under development and is thus not fully tested and may contain bugs. 
 Please report any issues that you find in our Issue Tracker: https://github.com/IMSY-DKFZ/simpa/issues. 
@@ -209,3 +210,20 @@ If you encounter an error similar to:
 
 Look up the solution in [this thread of the k-Wave forum](http://www.k-wave.org/forum/topic/error-reading-h5-files-when-using-binaries).  
       
+# Citation
+
+If you use the SIMPA tool, we would appreciate if you cite our Journal publication in the Journal of Biomedical Optics:
+
+Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, Patricia Vieten, Leonardo Ayala, Sarah E. Bohndiek, Alexander Seitel, and Lena Maier-Hein. *"SIMPA: an open-source toolkit for simulation and image processing for photonics and acoustics."* **Journal of Biomedical Optics** 27, no. 8 (2022).
+
+```Bibtex
+@article{2022simpatoolkit,
+  title={SIMPA: an open-source toolkit for simulation and image processing for photonics and acoustics},
+  author={Gr{\"o}hl, Janek and Dreher, Kris K and Schellenberg, Melanie and Rix, Tom and Holzwarth, Niklas and Vieten, Patricia and Ayala, Leonardo and Bohndiek, Sarah E and Seitel, Alexander and Maier-Hein, Lena},
+  journal={Journal of Biomedical Optics},
+  volume={27},
+  number={8},
+  year={2022},
+  publisher={SPIE}
+}
+```
