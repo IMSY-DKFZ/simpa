@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "simpa"
+version = "0.8.7"
+description = "Simulation and Image Processing for Photonics and Acoustics"
+authors = [
+    "Division of Intelligent Medical Systems (IMSY), DKFZ <k.dreher@dkfz-heidelberg.de>",
+    "Janek Groehl <>"]
+license = "MIT"
+readme = "README.md"
+# requires-python = ">=3.7"
+keywords = ["simulation", "photonics", "acoustics",]
+
+homepage = "https://github.com/IMSY-DKFZ/simpa"
+documentation = "https://simpa.readthedocs.io/en/develop/"
+repository = "https://github.com/IMSY-DKFZ/simpa"
+
+packages = [
+    { include = "simpa" },
+    { include = "simpa_tests" },
+]
+
+# Requirements
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+matplotlib = ">=3.5.0"       # Uses PSF-License (MIT compatible)
+numpy = ">=1.21.4"           # Uses BSD-License (MIT compatible)
+scipy = ">=1.7.2"            # Uses BSD-like-License (MIT compatible)
+pynrrd = ">=0.4.2"           # Uses MIT-License (MIT compatible)
+scikit-image = ">=0.18.3"    # Uses BSD-License (MIT compatible)
+xmltodict = ">=0.12.0"       # Uses MIT-License (MIT compatible)
+h5py = ">=3.6.0"             # Uses BSD-License (MIT compatible)
+pandas = ">=1.3.4"           # Uses BSD-License (MIT compatible)
+coverage = ">=6.1.2"         # Uses Apache 2.0-License (MIT compatible)
+Deprecated = ">=1.2.13"      # Uses MIT-License (MIT compatible)
+torch = ">=1.10.0"           # Uses BSD-License (MIT compatible)
+python-dotenv = ">=0.19.2"   # Uses BSD-License (MIT compatible)
+ipasc-tool = ">=0.1.3"       # Uses BSD-License (MIT compatible)
+requests = ">=2.26.0"        # Uses Apache 2.0-License (MIT compatible)
+wget = ">=3.2"               # Is Public Domain (MIT compatible)
+jdata = ">=0.3.7"            # Uses Apache 2.0-License (MIT compatible)
+
+[build-system]
+requires = [
+    "poetry >= 0.12"
+]
+build-backend = "poetry.masonry.api"

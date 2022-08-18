@@ -191,6 +191,12 @@ class Tags:
     If True, the structure will be generated with its edges only occupying a partial volume of the voxel.\n
     Usage: adapter versatile_volume_creation
     """
+    CONSIDER_PARTIAL_VOLUME_IN_DEVICE = ("consider_partial_volume_in_device", bool)
+    """
+    If True, the structures inside the device (i.e. US gel and membrane) will be generated with its edges
+    only occupying a partial volume of the voxel. \n
+    Usage: adapter versatile_volume_creation 
+    """
 
     STRUCTURE_START_MM = ("structure_start", (list, tuple, np.ndarray))
     """
@@ -1233,6 +1239,11 @@ class Tags:
     """
     Default filename of the SIMPA output if not specified otherwise.\n
     Usage: SIMPA package, naming convention
+    """
+    SIMPA_VERSION = ("simpa_version", str)
+    """
+    Version number of the currently installed simpa package
+    Usage: SIMPA package
     """
 
     SETTINGS = "settings"
