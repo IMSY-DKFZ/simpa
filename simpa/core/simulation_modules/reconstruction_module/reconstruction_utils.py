@@ -381,7 +381,10 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         'The time series sensor data must have been converted to a tensor'
 
     # move tensors to GPU if available, otherwise use CPU
-    torch_device = get_reconstruction_processing_unit(global_settings)
+    torch_device = get_processing_device(global_settings)
+    
+    if torch_device == torch.device('cpu'):  # warn the user that CPU reconstruction is slow
+        logger.warning(f"Reconstructing on CPU is slow. Check if cuda is available 'torch.cuda.is_available()'.")
 
     sensor_positions = sensor_positions.to(torch_device)
     time_series_sensor_data = time_series_sensor_data.to(torch_device)
@@ -401,24 +404,6 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
 
     return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
             time_spacing_in_ms, torch_device)
-
-
-def get_reconstruction_processing_unit(global_settings: Settings) -> torch.device:
-    """
-    Get torch device (CPU/GPU) for reconstructing the image. Warns if CPU is used that the reconstruction will be slow.
-    :param global_settings: global SIMPA settings
-    :type global_settings: Settings
-    :return: torch device for reconstruction
-    """
-
-    device = get_processing_device(global_settings)
-    
-    if device == torch.device('cpu'):  # warn the user that CPU reconstruction is slow
-        logger = Logger()
-        logger.warning(f"Reconstructing on CPU is slow. Check if cuda is available 'torch.cuda.is_available()'.")
-
-    return device
-
 
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
                              speed_of_sound_in_m_per_s: float, logger: Logger) -> Tuple[int, int, int, int, int,
