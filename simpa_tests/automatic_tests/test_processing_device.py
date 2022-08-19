@@ -41,7 +41,7 @@ class TestProcessing(unittest.TestCase):
         assert torch.cuda.is_available(), "Check that CUDA is avilable, otherwise the CPU will always be used"
 
         # actual test case
-        device = get_processing_device(used_settings=None)
+        device = get_processing_device(global_settings=None)
         assert device == torch.device("cuda"), f"Processing device is not the assumed torch GPU device, but {device}"
 
         # mock pre-requisite for this test case that cuda is not available
@@ -49,7 +49,7 @@ class TestProcessing(unittest.TestCase):
         assert not torch.cuda.is_available(), "Check that CUDA is not avilable"
 
         # actual test case
-        device = get_processing_device(used_settings=None)
+        device = get_processing_device(global_settings=None)
         assert device == torch.device("cpu"), f"Processing device is not the assumed torch CPU device, but {device}"
 
         # restore torch.cuda
@@ -70,7 +70,7 @@ class TestProcessing(unittest.TestCase):
         assert torch.cuda.is_available(), "Check that CUDA is avilable, otherwise the CPU will always be used"
 
         # actual test case
-        device = get_processing_device(used_settings=self.settings_without_tag)
+        device = get_processing_device(global_settings=self.settings_without_tag)
         assert device == torch.device("cuda"), f"Processing device is not the assumed torch GPU device, but {device}"
 
         # mock pre-requisite for this test case that cuda is not available
@@ -78,7 +78,7 @@ class TestProcessing(unittest.TestCase):
         assert not torch.cuda.is_available(), "Check that CUDA is not avilable"
 
         # actual test case
-        device = get_processing_device(used_settings=self.settings_without_tag)
+        device = get_processing_device(global_settings=self.settings_without_tag)
         assert device == torch.device("cpu"), f"Processing device is not the assumed torch CPU device, but {device}"
 
         # restore torch.cuda
@@ -100,7 +100,7 @@ class TestProcessing(unittest.TestCase):
         assert torch.cuda.is_available(), "Check that CUDA is avilable, otherwise the CPU will always be used"
 
         # actual test case
-        device = get_processing_device(used_settings=self.settings_with_GPU)
+        device = get_processing_device(global_settings=self.settings_with_GPU)
         assert device == torch.device("cuda"), f"Processing device is not the assumed torch GPU device, but {device}"
 
         # mock pre-requisite for this test case that cuda is not available
@@ -109,7 +109,7 @@ class TestProcessing(unittest.TestCase):
 
         # actual test case
         with self.assertLogs("SIMPA Logger", level='WARN') as context_manager:
-            device = get_processing_device(used_settings=self.settings_with_GPU)
+            device = get_processing_device(global_settings=self.settings_with_GPU)
             
             assert device == torch.device("cpu"), f"Processing device is not the assumed torch CPU device, but {device}"
 
@@ -134,7 +134,7 @@ class TestProcessing(unittest.TestCase):
         assert torch.cuda.is_available(), "Check that CUDA is avilable, otherwise the CPU will always be used"
 
         # actual test case
-        device = get_processing_device(used_settings=self.settings_with_CPU)
+        device = get_processing_device(global_settings=self.settings_with_CPU)
         assert device == torch.device("cpu"), f"Processing device is not the assumed torch CPU device, but {device}"
 
         # mock pre-requisite for this test case that cuda is not available
@@ -142,7 +142,7 @@ class TestProcessing(unittest.TestCase):
         assert not torch.cuda.is_available(), "Check that CUDA is not avilable"
 
         # actual test case
-        device = get_processing_device(used_settings=self.settings_with_CPU)
+        device = get_processing_device(global_settings=self.settings_with_CPU)
         assert device == torch.device("cpu"), f"Processing device is not the assumed torch CPU device, but {device}"
 
         # restore torch.cuda
