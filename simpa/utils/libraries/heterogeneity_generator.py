@@ -12,27 +12,15 @@ class HeterogeneityGeneratorBase(object):
                  target_std=None, target_min=None, target_max=None,
                  eps=1e-5):
         """
-
-        Parameters
-        ----------
-        xdim:
-            the x dimension of the volume in voxels
-        ydim:
-            the y dimension of the volume in voxels
-        zdim:
-            the z dimension of the volume in voxels
-        spacing_mm:
-            the spacing of the volume in mm
-        target_mean:
-            (optional) the mean of the created heterogeneity map
-        target_std:
-            (optional) the standard deviation of the created heterogeneity map
-        target_min:
-            (optional) the minimum of the created heterogeneity map
-        target_max:
-            (optional) the maximum of the created heterogeneity map
-        eps:
-            (optional) the threshold when a re-normalisation should be triggered (default: 1e-5)
+        :param xdim: the x dimension of the volume in voxels
+        :param ydim: the y dimension of the volume in voxels
+        :param zdim: the z dimension of the volume in voxels
+        :param spacing_mm: the spacing of the volume in mm
+        :param target_mean: (optional) the mean of the created heterogeneity map
+        :param target_std: (optional) the standard deviation of the created heterogeneity map
+        :param target_min: (optional) the minimum of the created heterogeneity map
+        :param target_max: (optional) the maximum of the created heterogeneity map
+        :param eps: (optional) the threshold when a re-normalisation should be triggered (default: 1e-5)
         """
         self._xdim = xdim
         self._ydim = ydim
@@ -96,29 +84,16 @@ class RandomHeterogeneity(HeterogeneityGeneratorBase):
     def __init__(self, xdim, ydim, zdim, spacing_mm, gaussian_blur_size_mm=None, target_mean=None, target_std=None,
                  target_min=None, target_max=None, eps=1e-5):
         """
-
-        Parameters
-        ----------
-        xdim:
-            the x dimension of the volume in voxels
-        ydim:
-            the y dimension of the volume in voxels
-        zdim:
-            the z dimension of the volume in voxels
-        spacing_mm:
-            the spacing of the volume in mm
-        gaussian_blur_size_mm:
-            the size of the standard deviation for the Gaussian blur
-        target_mean:
-            (optional) the mean of the created heterogeneity map
-        target_std:
-            (optional) the standard deviation of the created heterogeneity map
-        target_min:
-            (optional) the minimum of the created heterogeneity map
-        target_max:
-            (optional) the maximum of the created heterogeneity map
-        eps:
-            (optional) the threshold when a re-normalisation should be triggered (default: 1e-5)
+        :param xdim: the x dimension of the volume in voxels
+        :param ydim: the y dimension of the volume in voxels
+        :param zdim: the z dimension of the volume in voxels
+        :param spacing_mm: the spacing of the volume in mm
+        :param gaussian_blur_size_mm: the size of the standard deviation for the Gaussian blur
+        :param target_mean: (optional) the mean of the created heterogeneity map
+        :param target_std: (optional) the standard deviation of the created heterogeneity map
+        :param target_min: (optional) the minimum of the created heterogeneity map
+        :param target_max: (optional) the maximum of the created heterogeneity map
+        :param eps: (optional) the threshold when a re-normalisation should be triggered (default: 1e-5)
         """
         super().__init__(xdim, ydim, zdim, spacing_mm, target_mean, target_std, target_min, target_max, eps)
 
@@ -138,31 +113,17 @@ class BlobHeterogeneity(HeterogeneityGeneratorBase):
     def __init__(self, xdim, ydim, zdim, spacing_mm, num_centers=None, cluster_std=None, target_mean=None,
                  target_std=None, target_min=None, target_max=None, random_state=None):
         """
-
-        Parameters
-        ----------
-        xdim:
-            the x dimension of the volume in voxels
-        ydim:
-            the y dimension of the volume in voxels
-        zdim:
-            the z dimension of the volume in voxels
-        spacing_mm:
-            the spacing of the volume in mm
-        num_centers:
-            the number of blobs
-        cluster_std:
-            the size of the blobs
-        target_mean:
-            (optional) the mean of the created heterogeneity map
-        target_std:
-            (optional) the standard deviation of the created heterogeneity map
-        target_min:
-            (optional) the minimum of the created heterogeneity map
-        target_max:
-            (optional) the maximum of the created heterogeneity map
-        eps:
-            (optional) the threshold when a re-normalisation should be triggered (default: 1e-5)
+        :param xdim: the x dimension of the volume in voxels
+        :param ydim: the y dimension of the volume in voxels
+        :param zdim: the z dimension of the volume in voxels
+        :param spacing_mm: the spacing of the volume in mm
+        :param num_centers: the number of blobs
+        :param cluster_std: the size of the blobs
+        :param target_mean: (optional) the mean of the created heterogeneity map
+        :param target_std: (optional) the standard deviation of the created heterogeneity map
+        :param target_min: (optional) the minimum of the created heterogeneity map
+        :param target_max: (optional) the maximum of the created heterogeneity map
+        :param eps: (optional) the threshold when a re-normalisation should be triggered (default: 1e-5)
         """
         super().__init__(xdim, ydim, zdim, spacing_mm, target_mean, target_std, target_min, target_max)
 
