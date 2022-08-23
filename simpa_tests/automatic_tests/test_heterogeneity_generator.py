@@ -20,21 +20,21 @@ class TestHeterogeneityGenerator(unittest.TestCase):
                                         })
         dimx, dimy, dimz = self.TEST_SETTINGS.get_volume_dimensions_voxels()
         self.HETEROGENEITY_GENERATORS = [
-            sp.RandomHeterogeneity(dimx, dimy, dimz, _spacing_mm=self.spacing),
-            sp.RandomHeterogeneity(dimx, dimy, dimz, _spacing_mm=self.spacing, _gaussian_blur_size_mm=3),
-            sp.BlobHeterogeneity(dimx, dimy, dimz, _spacing_mm=self.spacing)
+            sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing),
+            sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, gaussian_blur_size_mm=3),
+            sp.BlobHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing)
         ]
         self.HETEROGENEITY_GENERATORS_MIN_MAX = [
-            sp.RandomHeterogeneity(dimx, dimy, dimz, _spacing_mm=self.spacing, _min=self.MIN, _max=self.MAX),
-            sp.RandomHeterogeneity(dimx, dimy, dimz, _spacing_mm=self.spacing, _min=self.MIN, _max=self.MAX,
-                                   _gaussian_blur_size_mm=3),
-            sp.BlobHeterogeneity(dimx, dimy, dimz, _spacing_mm=self.spacing, _min=self.MIN, _max=self.MAX)
+            sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_min=self.MIN, target_max=self.MAX),
+            sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_min=self.MIN, target_max=self.MAX,
+                                   gaussian_blur_size_mm=3),
+            sp.BlobHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_min=self.MIN, target_max=self.MAX)
         ]
         self.HETEROGENEITY_GENERATORS_MEAN_STD = [
-            sp.RandomHeterogeneity(dimx, dimy, dimz, _spacing_mm=self.spacing, _mean=self.MEAN, _std=self.STD),
-            sp.RandomHeterogeneity(dimx, dimy, dimz, _spacing_mm=self.spacing, _mean=self.MEAN, _std=self.STD,
-                                   _gaussian_blur_size_mm=3),
-            sp.BlobHeterogeneity(dimx, dimy, dimz, _spacing_mm=self.spacing, _mean=self.MEAN, _std=self.STD),
+            sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_mean=self.MEAN, target_std=self.STD),
+            sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_mean=self.MEAN, target_std=self.STD,
+                                   gaussian_blur_size_mm=3),
+            sp.BlobHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_mean=self.MEAN, target_std=self.STD),
         ]
 
     def tearDown(self) -> None:
