@@ -17,6 +17,23 @@ from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
 class MolecularComposition(SerializableSIMPAClass, list):
 
     def __init__(self, segmentation_type=None, molecular_composition_settings=None, filler=None):
+        """
+        Parameters
+        ----------
+        segmentation_type
+            The segmentation class associated with this molecular composition
+        molecular_composition_settings
+            A settings dictionary or dict containing the molecules that consitute this composition
+        filler
+            A designated molecule that is supposed to act as the filler molecule for this composition. The purpose
+            of this filler molecule is to facilitate the calculation of the individual molecule's volume fractions.
+            The filler molecule's volume fraction is automatically scaled such that the total volume fraction of the
+            composition is equal to 100%. This makes e.g. the assignment of multiple randomised blood volume fractions
+            or heterogeneous volume fractions possible without the user needing to manually compute the volume fractions
+            for one of the molecules.
+
+            The filler molecule can additionally be part of the molecular_composition_settings.
+        """
         super().__init__()
         self.segmentation_type = segmentation_type
         self.internal_properties = None
@@ -27,11 +44,14 @@ class MolecularComposition(SerializableSIMPAClass, list):
 
         _keys = molecular_composition_settings.keys()
         for molecule_name in _keys:
-                self.append(molecular_composition_settings[molecule_name])
+            self.append(molecular_composition_settings[molecule_name])
 
     def update_internal_properties(self, settings):
         """
-        Re-defines the internal properties of the molecular composition
+        Re-defines the internal properties of the molecular composition.
+        For each data field and molecule, a linear mixing model is used to arrive at the final parameters.
+        if a filler molecule is defined, this molecule's volume fraction is adjusted dynamically to ensure that the
+        total volume fraction is equal to 100%.
         """
         self.internal_properties = TissueProperties(settings)
         self.internal_properties[Tags.DATA_FIELD_SEGMENTATION] = self.segmentation_type
@@ -103,6 +123,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
 
     def serialize(self) -> dict:
         dict_items = self.__dict__
+        dict_items["internal_properties"] = None
         list_items = [molecule for molecule in self]
         return {"MolecularComposition": {"dict_items": dict_items, "list_items": list_items}}
 
@@ -206,14 +227,14 @@ class Molecule(SerializableSIMPAClass, object):
     def __eq__(self, other):
         if isinstance(other, Molecule):
             return (self.name == other.name and
-                    self.spectrum == other.spectrum and
-                    self.volume_fraction == other.volume_fraction and
-                    self.scattering_spectrum == other.scattering_spectrum and
-                    self.alpha_coefficient == other.alpha_coefficient and
-                    self.speed_of_sound == other.speed_of_sound and
-                    self.gruneisen_parameter == other.gruneisen_parameter and
-                    self.anisotropy_spectrum == other.anisotropy_spectrum and
-                    self.density == other.density
+                    np.all(self.spectrum == other.spectrum) and
+                    np.all(self.volume_fraction == other.volume_fraction) and
+                    np.all(self.scattering_spectrum == other.scattering_spectrum) and
+                    np.all(self.alpha_coefficient == other.alpha_coefficient) and
+                    np.all(self.speed_of_sound == other.speed_of_sound) and
+                    np.all(self.gruneisen_parameter == other.gruneisen_parameter) and
+                    np.all(self.anisotropy_spectrum == other.anisotropy_spectrum) and
+                    np.all(self.density == other.density)
                     )
         else:
             return super().__eq__(other)

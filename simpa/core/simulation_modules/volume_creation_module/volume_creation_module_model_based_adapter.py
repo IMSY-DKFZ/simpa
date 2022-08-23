@@ -87,9 +87,6 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                 added_volume_fraction[selector_more_than_1] = np.min([remaining_volume_fraction_to_fill,
                                                                       fraction_to_be_filled], axis=0)
             for key in volumes.keys():
-                print(key)
-                print(np.shape(added_volume_fraction[mask]))
-                print(np.shape(structure_properties[key]))
                 if structure_properties[key] is None:
                     continue
                 if key == Tags.DATA_FIELD_SEGMENTATION:
@@ -100,8 +97,11 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                 else:
                     if isinstance(structure_properties[key], np.ndarray):
                         volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key][mask]
-                    else:
+                    elif isinstance(structure_properties[key], (float, np.float64, int, np.int64)):
                         volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
+                    else:
+                        raise ValueError(f"Unsupported type of structure property. "
+                                         f"Was {type(structure_properties[key])}.")
 
             global_volume_fractions[mask] += added_volume_fraction[mask]
 

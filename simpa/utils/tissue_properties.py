@@ -7,6 +7,14 @@ import numpy as np
 
 
 class TissueProperties(dict):
+    """
+    The tissue properties contain a volumetric representation of each tissue parameter currently
+    modelled in the SIMPA framework.
+
+    It is a dictionary that is populated with each of the parameters.
+    The values of the parameters can be either numbers or numpy arrays.
+    It also contains a volume fraction field.
+    """
 
     property_tags = [Tags.DATA_FIELD_ABSORPTION_PER_CM,
                      Tags.DATA_FIELD_SCATTERING_PER_CM,

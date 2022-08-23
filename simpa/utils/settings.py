@@ -73,6 +73,7 @@ class Settings(dict, SerializableSIMPAClass):
         """
         returns: tuple
              the x, y, and z dimension of the volumes as a tuple
+             the volume dimension gets rounded after converting from a mm grid to a voxel grid of unit Tags.SPACING_MM.
         """
         if Tags.SPACING_MM not in self:
             raise AssertionError("The simpa.Tags.SPACING_MM tag must be set "

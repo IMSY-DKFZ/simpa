@@ -1,6 +1,12 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+#
+# This file should give an example how heterogeneity can be used in the SIMPA framework to model non-homogeneous
+# structures.
+# The result of this simulation should be a optical simulation results with spatially varying absorption coefficients
+# that is induced by a heterogeneous map of blood volume fraction and oxygenation both in the simulated vessel and
+# the background.
 
 from simpa import Tags
 import simpa as sp
@@ -45,9 +51,9 @@ def create_example_tissue(settings):
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
     muscle_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.muscle(
         background_oxy=sp.BlobHeterogeneity(dim_x, dim_y, dim_z, SPACING,
-                                            _min=0.5, _max=0.8).get_map(),
+                                            target_min=0.5, target_max=0.8).get_map(),
         blood_volume_fraction=sp.BlobHeterogeneity(dim_x, dim_y, dim_z, SPACING,
-                                                   _min=0.01, _max=0.1).get_map())
+                                                   target_min=0.01, target_max=0.1).get_map())
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
@@ -63,7 +69,7 @@ def create_example_tissue(settings):
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
     vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.blood(
                                                         oxygenation=sp.RandomHeterogeneity(dim_x, dim_y, dim_z, SPACING,
-                                                                                           _min=0.9, _max=1.0).get_map())
+                                                                                           target_min=0.9, target_max=1.0).get_map())
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -73,7 +79,7 @@ def create_example_tissue(settings):
     epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 10]
     epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.epidermis(
         melanosom_volume_fraction=sp.RandomHeterogeneity(dim_x, dim_y, dim_z, SPACING,
-                                                         _min=0.1, _max=0.2).get_map())
+                                                         target_min=0.1, target_max=0.2).get_map())
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE

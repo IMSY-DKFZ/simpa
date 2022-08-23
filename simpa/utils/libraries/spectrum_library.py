@@ -51,9 +51,9 @@ class Spectrum(SerializableSIMPAClass, object):
 
     def __eq__(self, other):
         if isinstance(other, Spectrum):
-            return (self.spectrum_name == other.spectrum_name,
-                    self.wavelengths == other.wavelengths,
-                    self.values == other.values)
+            return (self.spectrum_name == other.spectrum_name and
+                    np.all(self.wavelengths == other.wavelengths) and
+                    np.all(self.values == other.values))
         else:
             return super().__eq__(other)
 
