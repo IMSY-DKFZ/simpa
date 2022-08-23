@@ -87,13 +87,13 @@ disp(estimated_cfl_number);
 % A minimum CFL of 0.3 is advised in the kwave handbook.
 % In case we specify something larger, we use a higher sampling rate than anticipated.
 % Otherwise we simulate with the target sampling rate
-if estimated_cfl_number < 0.3
-    kgrid.setTime(Nt, dt);
-    disp("Setting custom time!");
-else
-    kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);
-    disp("Making time!");
-end
+%if estimated_cfl_number < 0.3
+kgrid.setTime(Nt, dt);
+disp("Setting custom time!");
+%else
+%    kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);
+%    disp("Making time!");
+%end
 
 %% Define sensor
 

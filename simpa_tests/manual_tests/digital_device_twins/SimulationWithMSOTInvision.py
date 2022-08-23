@@ -12,7 +12,7 @@ from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary, An
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.utils.path_manager import PathManager
-from simpa import DelayAndSumAdapter, MCXAdapter, KWaveAdapter, ModelBasedVolumeCreationAdapter, FieldOfViewCropping
+from simpa import TimeReversalAdapter, MCXAdapter, KWaveAdapter, ModelBasedVolumeCreationAdapter, FieldOfViewCropping
 from simpa.core.device_digital_twins import *
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 import os
@@ -30,7 +30,7 @@ class MSOTInvisionSimulationTest(ManualIntegrationTestClass):
             MCXAdapter(_settings),
             KWaveAdapter(_settings),
             FieldOfViewCropping(_settings),
-            DelayAndSumAdapter(_settings)
+            TimeReversalAdapter(_settings)
         ]
 
     def get_device(self):
