@@ -159,7 +159,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                 Tags.STRUCTURE_END_MM: [0, 0,
                                         heavy_water_layer_height_mm + mediprene_layer_height_mm + us_gel_thickness],
                 Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
-                Tags.MOLECULE_COMPOSITION: TissueLibrary(global_settings).ultrasound_gel(),
+                Tags.MOLECULE_COMPOSITION: TissueLibrary().ultrasound_gel(),
                 Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
             })
 
@@ -170,7 +170,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
             Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
             Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
-            Tags.MOLECULE_COMPOSITION: TissueLibrary(global_settings).mediprene(),
+            Tags.MOLECULE_COMPOSITION: TissueLibrary().mediprene(),
             Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
         })
 
@@ -199,7 +199,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           np.array([width_shift_for_structures_mm, 0, probe_size_mm]))
 
         background_settings = Settings({
-            Tags.MOLECULE_COMPOSITION: TissueLibrary(global_settings).heavy_water(),
+            Tags.MOLECULE_COMPOSITION: TissueLibrary().heavy_water(),
             Tags.STRUCTURE_TYPE: Tags.BACKGROUND
         })
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings

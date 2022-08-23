@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils import Tags, PathManager, Settings, TISSUE_LIBRARY
+from simpa.utils import Tags, PathManager, Settings, TissueLibrary
 from simpa.core.simulation import simulate
 from simpa import ModelBasedVolumeCreationAdapter, MCXAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
@@ -24,7 +24,7 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
         and two blood vessels. It is used for volume creation.
         """
         background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(self.mua, self.mus, self.g)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary().constant(self.mua, self.mus, self.g)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
         tissue_dict = Settings()
         tissue_dict[Tags.BACKGROUND] = background_dictionary

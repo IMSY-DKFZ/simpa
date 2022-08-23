@@ -29,22 +29,22 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
 
         def segmentation_class_mapping():
             ret_dict = dict()
-            ret_dict[0] = sp.TISSUE_LIBRARY.heavy_water()
-            ret_dict[1] = sp.TISSUE_LIBRARY.blood()
-            ret_dict[2] = sp.TISSUE_LIBRARY.epidermis()
-            ret_dict[3] = sp.TISSUE_LIBRARY.muscle()
-            ret_dict[4] = sp.TISSUE_LIBRARY.mediprene()
-            ret_dict[5] = sp.TISSUE_LIBRARY.ultrasound_gel()
-            ret_dict[6] = sp.TISSUE_LIBRARY.heavy_water()
+            ret_dict[0] = sp.TissueLibrary().heavy_water()
+            ret_dict[1] = sp.TissueLibrary().blood()
+            ret_dict[2] = sp.TissueLibrary().epidermis()
+            ret_dict[3] = sp.TissueLibrary().muscle()
+            ret_dict[4] = sp.TissueLibrary().mediprene()
+            ret_dict[5] = sp.TissueLibrary().ultrasound_gel()
+            ret_dict[6] = sp.TissueLibrary().heavy_water()
             ret_dict[7] = (sp.MolecularCompositionGenerator()
                            .append(sp.MOLECULE_LIBRARY.oxyhemoglobin(0.01))
                            .append(sp.MOLECULE_LIBRARY.deoxyhemoglobin(0.01))
                            .append(sp.MOLECULE_LIBRARY.water(0.98))
                            .get_molecular_composition(sp.SegmentationClasses.COUPLING_ARTIFACT))
-            ret_dict[8] = sp.TISSUE_LIBRARY.heavy_water()
-            ret_dict[9] = sp.TISSUE_LIBRARY.heavy_water()
-            ret_dict[10] = sp.TISSUE_LIBRARY.heavy_water()
-            ret_dict[11] = sp.TISSUE_LIBRARY.heavy_water()
+            ret_dict[8] = sp.TissueLibrary().heavy_water()
+            ret_dict[9] = sp.TissueLibrary().heavy_water()
+            ret_dict[10] = sp.TissueLibrary().heavy_water()
+            ret_dict[11] = sp.TissueLibrary().heavy_water()
             return ret_dict
 
         self.settings = sp.Settings()
@@ -103,7 +103,7 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
                           show_anisotropy=True,
                           show_scattering=True,
                           save_path=save_path,
-                          log_scale=False)
+                          log_scale=True)
 
 
 if __name__ == "__main__":
