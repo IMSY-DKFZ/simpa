@@ -49,29 +49,31 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
 
     return output
 
+
 def bandpass_filter_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
-                                           device: DetectionGeometryBase) -> np.ndarray:
-        """
-        Applies corresponding bandpass filter which can be set in 
-        `component_settings[Tags.BANDPASS_FILTER_METHOD]`, using Tukey window-based filter as default.
+                                  device: DetectionGeometryBase) -> np.ndarray:
+    """
+    Applies corresponding bandpass filter which can be set in 
+    `component_settings[Tags.BANDPASS_FILTER_METHOD]`, using Tukey window-based filter as default.
 
-        :param data: (numpy array) data to be filtered
-        :param global_settings: (Settings) settings for the whole simulation
-        :param component_settings: (Settings) settings for the reconstruction module
-        :param device:
-        :return: (numpy array) filtered data
-        """
+    :param data: (numpy array) data to be filtered
+    :param global_settings: (Settings) settings for the whole simulation
+    :param component_settings: (Settings) settings for the reconstruction module
+    :param device:
+    :return: (numpy array) filtered data
+    """
 
-        # select corresponding filtering method depending on tag in settings
-        if Tags.BANDPASS_FILTER_METHOD in component_settings:
-            if component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.TUKEY_BANDPASS_FILTER:
-                return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
-            elif component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.BUTTERWORTH_BANDPASS_FILTER:
-                return butter_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
-            else:
-                return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
+    # select corresponding filtering method depending on tag in settings
+    if Tags.BANDPASS_FILTER_METHOD in component_settings:
+        if component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.TUKEY_BANDPASS_FILTER:
+            return tukey_bandpass_filtering_with_settings(data, global_settings, component_settings, device)
+        elif component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.BUTTERWORTH_BANDPASS_FILTER:
+            return butter_bandpass_filtering_with_settings(data, global_settings, component_settings, device)
         else:
-            return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
+            return tukey_bandpass_filtering_with_settings(data, global_settings, component_settings, device)
+    else:
+        return tukey_bandpass_filtering_with_settings(data, global_settings, component_settings, device)
+
 
 def butter_bandpass_filtering(data: np.array,  time_spacing_in_ms: float = None,
                               cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
@@ -100,14 +102,15 @@ def butter_bandpass_filtering(data: np.array,  time_spacing_in_ms: float = None,
         high = 0.999999999
     else:
         high = (cutoff_highpass / nyquist)
-    
+
     b, a = butter(N=order, Wn=[high, low], btype='band')
     y = lfilter(b, a, data)
-    
+
     return y
 
+
 def butter_bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
-                                           device: DetectionGeometryBase) -> np.ndarray:
+                                            device: DetectionGeometryBase) -> np.ndarray:
     """
     Apply a butterworth bandpass filter of `order` with cutoff values at `cutoff_lowpass`
     and `cutoff_highpass` MHz on the `data` using the scipy.signal.butter filter.
@@ -141,8 +144,8 @@ def butter_bandpass_filtering_with_settings(data: np.ndarray, global_settings: S
 
 
 def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
-                       cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
-                       tukey_alpha: float = 0.5, resampling_for_fft: bool =False) -> np.ndarray:
+                             cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
+                             tukey_alpha: float = 0.5, resampling_for_fft: bool = False) -> np.ndarray:
     """
     Apply a tukey bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz 
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
@@ -164,7 +167,7 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
         raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
 
     # no resampling by default
-    resampling_factor = 1 
+    resampling_factor = 1
     original_size = data.shape[-1]
     target_size = original_size
 
@@ -174,9 +177,9 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
         order = 0
         mode = 'constant'
 
-        target_size = int(2**(np.ceil(np.log2(original_size)))) # compute next larger power of 2
+        target_size = int(2**(np.ceil(np.log2(original_size))))  # compute next larger power of 2
         resampling_factor = original_size/target_size
-        zoom_factors = [1]*data.ndim # resampling factor for each dimension
+        zoom_factors = [1]*data.ndim  # resampling factor for each dimension
         zoom_factors[-1] = 1.0/resampling_factor
 
         data = zoom(data, zoom_factors, order=order, mode=mode)
@@ -198,7 +201,7 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     # transform data into Fourier space, multiply filter and transform back
     data_in_fourier_space = np.fft.fft(data)
     filtered_data_in_fourier_space = data_in_fourier_space * np.broadcast_to(window, np.shape(data_in_fourier_space))
-    filtered_data =  np.fft.ifft(filtered_data_in_fourier_space).real
+    filtered_data = np.fft.ifft(filtered_data_in_fourier_space).real
 
     # resample back to original size if necessary
     if resampling_for_fft:
@@ -429,27 +432,52 @@ def get_reconstruction_processing_unit(global_settings):
 
 
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
-                             speed_of_sound_in_m_per_s: float, logger: Logger) -> Tuple[int, int, int, int, int,
-                                                                                        int, int, int, int]:
+                             logger: Logger) -> Tuple[int, int, int, np.float64, np.float64,
+                                                      np.float64, np.float64, np.float64, np.float64]:
     """
-    compute size of beamformed image from field of view of detection geometry
+    Computes size of beamformed image from field of view of detection geometry given the spacing.
 
-    Returns x,z,y dimensions of reconstructed image volume in pixels as well 
-    as the range for each dimension as start and end pixels.
+    :param detection_geometry: detection geometry with specified field of view
+    :type detection_geometry: DetectionGeometryBase
+    :param spacing_in_mm: space betwenn pixels in mm
+    :type spacing_in_mm: float
+    :param logger: logger for debugging purposes
+    :type logger: Logger
+    :returns: tuple with x,z,y dimensions of reconstructed image volume in pixels as well as the range for
+    each dimension as start and end pixels (xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, 
+    zdim_start, zdim_end)
+    :rtype: Tuple[int, int, int, np.float64, np.float64, np.float64, np.float64, np.float64, np.float64]
     """
+
     field_of_view = detection_geometry.field_of_view_extent_mm
     logger.debug(f"Field of view: {field_of_view}")
 
-    xdim_start = int(np.round(field_of_view[0] / spacing_in_mm))
-    xdim_end = int(np.round(field_of_view[1] / spacing_in_mm))
-    zdim_start = int(np.round(field_of_view[2] / spacing_in_mm))
-    zdim_end = int(np.round(field_of_view[3] / spacing_in_mm))
-    ydim_start = int(np.round(field_of_view[4] / spacing_in_mm))
-    ydim_end = int(np.round(field_of_view[5] / spacing_in_mm))
+    def compute_for_one_dimension(start_in_mm: float, end_in_mm: float) -> Tuple[int, np.float64, np.float64]:
+        """
+        Helper function to compute the image dimensions for a single dimension given a start and end point in mm.
+        Makes sure that image dimesion is an integer by flooring. 
+        Spaces the pixels symmetrically between start and end.
 
-    xdim = (xdim_end - xdim_start)
-    ydim = (ydim_end - ydim_start)
-    zdim = (zdim_end - zdim_start)
+        :param start_in_mm: lower limit of the field of view in this dimension
+        :type start_in_mm: float
+        :param start_in_mm: upper limit of the field of view in this dimension
+        :type start_in_mm: float
+        :returns: tuple with number of pixels in dimension, lower and upper limit in pixels
+        :rtype: Tuple[int, np.float64, np.float64]
+        """
+
+        start_temp = start_in_mm / spacing_in_mm
+        end_temp = end_in_mm / spacing_in_mm
+        dim_temp = np.abs(end_temp - start_temp)
+        dim = int(np.floor(dim_temp))
+        diff = np.abs(dim_temp - dim)
+        start = start_temp - np.sign(start_temp) * diff/2
+        end = end_temp - np.sign(end_temp) * diff/2
+        return dim, start, end
+
+    xdim, xdim_start, xdim_end = compute_for_one_dimension(field_of_view[0], field_of_view[1])
+    zdim, zdim_start, zdim_end = compute_for_one_dimension(field_of_view[2], field_of_view[3])
+    ydim, ydim_start, ydim_end = compute_for_one_dimension(field_of_view[4], field_of_view[5])
 
     if xdim < 1:
         xdim = 1
