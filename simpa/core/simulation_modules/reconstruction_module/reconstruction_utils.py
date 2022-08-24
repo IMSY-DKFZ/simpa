@@ -515,16 +515,19 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
     logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
                  f',number of sensor elements: {n_sensor_elements}')
 
+    x_offset = 0.5 if xdim % 2 == 0 else 0  # to ensure pixels are symmetrically arranged around the 0 like the
+    # sensor positions, add an offset of 0.5 pixels if the dimension is even
+
+    x = xdim_start + torch.arange(xdim, device=torch_device, dtype=torch.float32) + x_offset
+    y = ydim_start + torch.arange(ydim, device=torch_device, dtype=torch.float32)
     if zdim == 1:
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
-                                        torch.arange(ydim_start, ydim_end, device=torch_device),
-                                        torch.arange(zdim, device=torch_device),
-                                        torch.arange(n_sensor_elements, device=torch_device))
+        z = torch.arange(zdim, device=torch_device, dtype=torch.float32)
     else:
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
-                                        torch.arange(ydim_start, ydim_end, device=torch_device),
-                                        torch.arange(zdim_start, zdim_end, device=torch_device),
-                                        torch.arange(n_sensor_elements, device=torch_device))
+        z = zdim_start + torch.arange(zdim, device=torch_device, dtype=torch.float32)
+    j = torch.arange(n_sensor_elements, device=torch_device, dtype=torch.float32)
+
+    xx, yy, zz, jj = torch.meshgrid(x, y, z, j)
+    jj = jj.long()
 
     delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
                         (xx * spacing_in_mm - sensor_positions[:, 0][jj]) ** 2 +
