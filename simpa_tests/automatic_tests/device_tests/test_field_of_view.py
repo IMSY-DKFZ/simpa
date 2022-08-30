@@ -20,7 +20,7 @@ class TestFieldOfView(unittest.TestCase):
                                                                    number_detector_elements=99)
         self.logger = Logger()
 
-    def test(self, field_of_view_extent_mm: list, spacing_in_mm: float, detection_geometry: DetectionGeometryBase):
+    def _test(self, field_of_view_extent_mm: list, spacing_in_mm: float, detection_geometry: DetectionGeometryBase):
         detection_geometry.field_of_view_extent_mm = field_of_view_extent_mm
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
             detection_geometry, spacing_in_mm, self.logger)
@@ -32,7 +32,7 @@ class TestFieldOfView(unittest.TestCase):
         
 
     def symmetric_test(self):
-        image_dimensions = self.test([-25,25,0,0,-12,8], 0.2, self.detection_geometry)
+        image_dimensions = self._test([-25,25,0,0,-12,8], 0.2, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
         assert zdim == 1, "With no FOV extend in z dimension only one slice should be created"
@@ -46,7 +46,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_end, 0)
 
     def symmetric_test_with_small_spacing(self):
-        image_dimensions = self.test([-25,25,0,0,-12,8], 0.1, self.detection_geometry)
+        image_dimensions = self._test([-25,25,0,0,-12,8], 0.1, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
         assert zdim == 1, "With no FOV extend in z dimension only one slice should be created"
@@ -60,7 +60,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_end, 0)
 
     def unsymmetric_test_with_small_spacing(self):
-        image_dimensions = self.test([-25,24.9,0,0,-12,8], 0.1, self.detection_geometry)
+        image_dimensions = self._test([-25,24.9,0,0,-12,8], 0.1, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
         assert zdim == 1, "With no FOV extend in z dimension only one slice should be created"
@@ -74,7 +74,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_end, 0)
 
     def unsymmetric_test(self):
-        image_dimensions = self.test([-25,24.9,0,0,-12,8], 0.2, self.detection_geometry)
+        image_dimensions = self._test([-25,24.9,0,0,-12,8], 0.2, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
         assert zdim == 1, "With no FOV extend in z dimension only one slice should be created"
@@ -91,7 +91,7 @@ class TestFieldOfView(unittest.TestCase):
         """
         The number of sensor elements should not affect the image dimensionality
         """
-        image_dimensions = self.test([-25,25,0,0,-12,8], 0.2, self.odd_detection_geometry)
+        image_dimensions = self._test([-25,25,0,0,-12,8], 0.2, self.odd_detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
         assert zdim == 1, "With no FOV extend in z dimension only one slice should be created"
