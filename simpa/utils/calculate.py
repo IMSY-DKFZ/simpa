@@ -230,12 +230,17 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
     For this bilinear interpolation (in every dimension) is used.
     This function is based on https://gist.github.com/peteflorence/a1da2c759ca1ac2b74af9a83f69ce20e.
     
-    :param image: (torch.tensor) 2-dim./3-dim image which values shall be interpolated
-    :param x: (torch.tensor) pixel positions in x-direction 
-    :param y: (torch.tensor) pixel positions in y-direction
-    :param z: (torch.tensor) pixel positions in z-direction
+    :param image: 2-dim./3-dim image which values shall be interpolated
+    :type image: torch.tensor
+    :param x: pixel positions in x-direction
+    :type x: torch.tensor
+    :param y: pixel positions in y-direction
+    :type y: torch.tensor
+    :param z: pixel positions in z-direction
+    :type z: torch.tensor
     
-    :return: (torch.tensor) interpolated values of the input image at given positions
+    :return: interpolated values of the input image at given positions
+    :rtype: torch.tensor
     """
     dtype = torch.cuda.DoubleTensor
     dtype_long = torch.cuda.LongTensor
@@ -253,6 +258,10 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         x1 = torch.clamp(x1, 1, image.shape[0]-1)
         y0 = torch.clamp(y0, 0, image.shape[1]-2)
         y1 = torch.clamp(y1, 1, image.shape[1]-1)
+
+        # ensures, that at the boundary the nearest boundary values are taken into account
+        x = torch.clamp(x, 0, image.shape[0]-1)
+        y = torch.clamp(y, 0, image.shape[1]-1)
         
         # read out the neighboring values
         f_tl = image[x0, y0] # top left neighbor value
@@ -268,7 +277,7 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         
         return f_tl*w_tl + f_bl*w_bl + f_tr*w_tr + f_br*w_br
     
-    elif image.ndim == 2: # 3dim case #TODO: NOT TESTED YET
+    elif image.ndim == 3: # 3dim case #TODO: NOT TESTED YET
         # in the 3dim case one has 8 neighbors that are the corners of a cube 
         
         # compute the indices of the neighbors            
@@ -287,6 +296,11 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         y1 = torch.clamp(y1, 1, image.shape[1]-1)
         z0 = torch.clamp(z0, 0, image.shape[2]-2)
         z1 = torch.clamp(z1, 1, image.shape[2]-1)
+
+        # ensures, that at the boundary the nearest boundary values are taken into account
+        x = torch.clamp(x, 0, image.shape[0]-1)
+        y = torch.clamp(y, 0, image.shape[1]-1)
+        z = torch.clamp(z, 0, image.shape[2]-1)
         
         # read out the neighboring values
         # front plane
@@ -312,7 +326,7 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         w_trb = (x-x0.type(dtype)) * (y1.type(dtype)-y) * (z-z0.type(dtype))
         w_brb = (x-x0.type(dtype)) * (y-y0.type(dtype)) * (z-z0.type(dtype))
 
-        return f_tlf*w_tlf + f_blf*w_blf + f_trf*w_trf + f_brf*w_brf + f_tlb*w_tlb + f_blb*w_blb + f_trb*w_trb + f_brf*w_brb
+        return f_tlf*w_tlf + f_blf*w_blf + f_trf*w_trf + f_brf*w_brf + f_tlb*w_tlb + f_blb*w_blb + f_trb*w_trb + f_brb*w_brb
         
     else:
         return None
