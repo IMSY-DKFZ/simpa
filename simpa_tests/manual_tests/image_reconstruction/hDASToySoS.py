@@ -15,7 +15,7 @@ import os
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
-class DASToyHeterogenousSoSTest(ManualIntegrationTestClass):
+class hDASToySoS(ManualIntegrationTestClass):
     """
     Time series data are simulated using KWave and a heterogenous SoS-map and a initital pressure with just 
     1 non-zero entry (point source).
@@ -27,6 +27,8 @@ class DASToyHeterogenousSoSTest(ManualIntegrationTestClass):
         - 2 horizontal regions
         - 2 diagonal regions
         - gaussian noise
+    The two outcoming reconstruction can be compared in one image. Whereby, in the hDAS reconstruction the signal
+    maximum should remain in the center of the image, while in the DAS reconstruction the signal maximum off.
     """
 
     def setup(self):
@@ -35,9 +37,10 @@ class DASToyHeterogenousSoSTest(ManualIntegrationTestClass):
         self.SPEED_OF_SOUND = 1470
         self.pa_device = InVision256TF(device_position_mm=np.asarray([50, 15, 50]))
 
-        # Hyperparam to change:
+        #############################################################################
+        #  Hyperparam to change:
         self.SIMULATE_HETERO = True
-        self.HETERO_OPTION = "vertical_gradient"
+        self.HETERO_OPTION = "gaussian_noise"
 
 
         self.initial_pressure = np.zeros((100, 30, 100))
@@ -47,7 +50,7 @@ class DASToyHeterogenousSoSTest(ManualIntegrationTestClass):
         heterogenous_map = {"vertical_gradient": self.speed_of_sound_map * np.linspace(0.5,1.5,100)[None, None, :],
                             "horizontal_gradient": self.speed_of_sound_map * np.linspace(0.5,1.5,100)[:, None, None],
                             "horizontal_2_regions": self.speed_of_sound_map * np.hstack((np.ones(50)*0.5, np.ones(50)*1.5))[:, None, None],
-                            "diagonaL_2_regions": self.speed_of_sound_map * 0.5 + np.triu(self.speed_of_sound_map[:,14,:])[:,None,:],
+                            "diagonal_2_regions": self.speed_of_sound_map * 0.5 + np.triu(self.speed_of_sound_map[:,14,:])[:,None,:],
                             "gaussian_noise": self.speed_of_sound_map + np.random.randn(100, 30, 100) * 142}
         
         self.speed_of_sound_map_hetero = heterogenous_map[self.HETERO_OPTION]
@@ -61,7 +64,7 @@ class DASToyHeterogenousSoSTest(ManualIntegrationTestClass):
         def get_settings():
             general_settings = {
                 Tags.RANDOM_SEED: 4711,
-                Tags.VOLUME_NAME: "HeteroggenousSpeedOfSoundBug",
+                Tags.VOLUME_NAME: "HeterogenousSpeedOfSoundToyTest",
                 Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
                 Tags.SPACING_MM: 1.0,
                 Tags.DIM_VOLUME_Z_MM: 100,
@@ -184,5 +187,5 @@ class DASToyHeterogenousSoSTest(ManualIntegrationTestClass):
         plt.close()
 
 if __name__ == "__main__":
-    test = DASToyHeterogenousSoSTest()
+    test = hDASToySoS()
     test.run_test(show_figure_on_screen=True)
