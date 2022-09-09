@@ -6,6 +6,7 @@
 import numpy as np
 from scipy.interpolate import interp1d
 import torch
+import itertools
 
 def calculate_oxygenation(molecule_list):
     """
@@ -263,6 +264,9 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         x = torch.clamp(x, 0, image.shape[0]-1)
         y = torch.clamp(y, 0, image.shape[1]-1)
         
+        """
+        MEMORY EXPENSIVE
+
         # read out the neighboring values
         f_tl = image[x0, y0] # top left neighbor value
         f_bl = image[x0, y1] # bottom left neighbor value
@@ -274,8 +278,21 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         w_bl = (x1.type(dtype)-x) * (y-y0.type(dtype))
         w_tr = (x-x0.type(dtype)) * (y1.type(dtype)-y)
         w_br = (x-x0.type(dtype)) * (y-y0.type(dtype))
+        return f_tl*w_tl + f_bl*w_bl + f_tr*w_tr + f_br*w_br"""
         
-        return f_tl*w_tl + f_bl*w_bl + f_tr*w_tr + f_br*w_br
+        # in order to reduce needed memory loop over neigbours an sum it up
+        # TODO: to be made nice withour if conditions
+        for neighbor_index in itertools.product(range(2),repeat=2):
+            if neighbor_index == (0,0): # top left neighbor
+                f_int = image[x0, y0] * (x1.type(dtype)-x) * (y1.type(dtype)-y)
+            elif neighbor_index == (0,1): # bottom left neighbor
+                f_int += image[x0, y1] * (x1.type(dtype)-x) * (y-y0.type(dtype))
+            elif neighbor_index == (1,0): # top right neighbor
+                f_int += image[x1, y0] * (x-x0.type(dtype)) * (y1.type(dtype)-y)
+            else:
+                f_int += image[x1, y1] * (x-x0.type(dtype)) * (y-y0.type(dtype))
+        return f_int
+
     
     elif image.ndim == 3: # 3dim case #TODO: NOT TESTED YET
         # in the 3dim case one has 8 neighbors that are the corners of a cube 
