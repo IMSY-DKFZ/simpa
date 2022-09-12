@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-import torch
 
 from simpa.utils import Tags
 from simpa.utils.calculate import rotation
@@ -11,7 +10,7 @@ from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.libraries.structure_library.StructureBase import GeometricalStructure
 
 
-class VesselStructure(GeometricalStructure):
+class VesselStructureNumpy(GeometricalStructure):
     """
     Defines a vessel tree that is generated randomly in the simulation volume. The generation process begins at the
     start with a specified radius. The vessel grows roughly in the specified direction. The deviation is specified by
@@ -37,9 +36,9 @@ class VesselStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM]).to(self.torch_device),
+        params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
                   single_structure_settings[Tags.STRUCTURE_RADIUS_MM],
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_DIRECTION]).to(self.torch_device),
+                  np.asarray(single_structure_settings[Tags.STRUCTURE_DIRECTION]),
                   single_structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM],
                   single_structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR],
                   single_structure_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR],
@@ -66,17 +65,17 @@ class VesselStructure(GeometricalStructure):
         radius_array = [radius]
         samples = 0
 
-        while torch.all(position < torch.tensor(volume_dimensions).to(self.torch_device)) and torch.all(0 <= position):
+        while np.all(position < volume_dimensions) and np.all(0 <= position):
             if samples >= bifurcation_length:
                 vessel_branch_positions1 = position
                 vessel_branch_positions2 = position
-                angles = torch.random.normal(torch.pi / 16, torch.pi / 8, 3)
-                vessel_branch_directions1 = torch.squeeze(torch.tensor(torch.matmul(rotation(angles), direction)))
-                vessel_branch_directions2 = torch.squeeze(torch.tensor(torch.matmul(rotation(-angles), direction)))
-                vessel_branch_radius1 = 1 / torch.sqrt(2) * radius
-                vessel_branch_radius2 = 1 / torch.sqrt(2) * radius
-                vessel_branch_radius_variation1 = 1 / torch.sqrt(2) * radius_variation
-                vessel_branch_radius_variation2 = 1 / torch.sqrt(2) * radius_variation
+                angles = np.random.normal(np.pi / 16, np.pi / 8, 3)
+                vessel_branch_directions1 = np.squeeze(np.array(np.matmul(rotation(angles), direction)))
+                vessel_branch_directions2 = np.squeeze(np.array(np.matmul(rotation(-angles), direction)))
+                vessel_branch_radius1 = 1 / np.sqrt(2) * radius
+                vessel_branch_radius2 = 1 / np.sqrt(2) * radius
+                vessel_branch_radius_variation1 = 1 / np.sqrt(2) * radius_variation
+                vessel_branch_radius_variation2 = 1 / np.sqrt(2) * radius_variation
 
                 if vessel_branch_radius1 >= 0.5:
                     vessel1_pos, vessel1_rad = self.calculate_vessel_samples(vessel_branch_positions1,
@@ -99,13 +98,13 @@ class VesselStructure(GeometricalStructure):
                     radius_array += vessel2_rad
                 break
 
-            position = torch.add(position, direction)
+            position = np.add(position, direction)
             position_array.append(position)
             radius_array.append(np.random.uniform(-1, 1) * radius_variation + radius)
 
-            step_vector = torch.from_numpy(np.random.uniform(-1, 1, 3)).to(self.torch_device)
+            step_vector = np.random.uniform(-1, 1, 3)
             step_vector = direction + curvature_factor * step_vector
-            direction = step_vector / torch.linalg.norm(step_vector)
+            direction = step_vector / np.linalg.norm(step_vector)
             samples += 1
 
         return position_array, radius_array
@@ -116,7 +115,7 @@ class VesselStructure(GeometricalStructure):
         start_voxels = start_mm / self.voxel_spacing
         radius_voxels = radius_mm / self.voxel_spacing
         direction_voxels = direction_mm / self.voxel_spacing
-        direction_vector_voxels = direction_voxels / torch.linalg.norm(direction_voxels)
+        direction_vector_voxels = direction_voxels / np.linalg.norm(direction_voxels)
         bifurcation_length_voxels = bifurcation_length_mm / self.voxel_spacing
 
         position_array, radius_array = self.calculate_vessel_samples(start_voxels, direction_vector_voxels,
@@ -125,12 +124,13 @@ class VesselStructure(GeometricalStructure):
                                                                      self.volume_dimensions_voxels,
                                                                      curvature_factor)
 
-        # creates open grid like np.ogrid
-        x = torch.arange(self.volume_dimensions_voxels[0])[:, None, None].to(self.torch_device)
-        y = torch.arange(self.volume_dimensions_voxels[1])[None, :, None].to(self.torch_device)
-        z = torch.arange(self.volume_dimensions_voxels[2])[None, None, :].to(self.torch_device)
+        position_array = np.array(position_array)
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.double).to(self.torch_device)
+        x, y, z = np.ogrid[0:self.volume_dimensions_voxels[0],
+                           0:self.volume_dimensions_voxels[1],
+                           0:self.volume_dimensions_voxels[2]]
+
+        volume_fractions = np.zeros(self.volume_dimensions_voxels)
 
         if partial_volume:
             radius_margin = 0.5
@@ -138,7 +138,8 @@ class VesselStructure(GeometricalStructure):
             radius_margin = 0.7071
 
         for position, radius in zip(position_array, radius_array):
-            target_radius = torch.sqrt((x - position[0]) ** 2 + (y - position[1]) ** 2 + (z - position[2]) ** 2)
+            target_radius = np.sqrt((x - position[0]) ** 2 + (y - position[1]) ** 2 + (z - position[2]) ** 2)
+
             filled_mask = target_radius <= radius - 1 + radius_margin
             border_mask = (target_radius > radius - 1 + radius_margin) & \
                           (target_radius < radius + 2 * radius_margin)
@@ -146,9 +147,9 @@ class VesselStructure(GeometricalStructure):
             volume_fractions[filled_mask] = 1
             old_border_values = volume_fractions[border_mask]
             new_border_values = 1 - (target_radius - (radius - radius_margin))[border_mask]
-            volume_fractions[border_mask] = torch.maximum(old_border_values, new_border_values)
+            volume_fractions[border_mask] = np.maximum(old_border_values, new_border_values)
 
-        return volume_fractions.detach().cpu().numpy()
+        return volume_fractions
 
 
 def define_vessel_structure_settings(vessel_start_mm: list,

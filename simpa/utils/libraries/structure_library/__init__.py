@@ -12,18 +12,25 @@ from simpa.utils.libraries.structure_library.BackgroundStructure import Backgrou
     define_background_structure_settings
 from simpa.utils.libraries.structure_library.CircularTubularStructure import CircularTubularStructure, \
     define_circular_tubular_structure_settings
+from simpa.utils.libraries.structure_library.CircularTubularStructureNumpy import CircularTubularStructureNumpy
 from simpa.utils.libraries.structure_library.EllipticalTubularStructure import EllipticalTubularStructure, \
     define_elliptical_tubular_structure_settings
+from simpa.utils.libraries.structure_library.EllipticalTubularStructureNumpy import EllipticalTubularStructureNumpy
 from simpa.utils.libraries.structure_library.HorizontalLayerStructure import HorizontalLayerStructure, \
     define_horizontal_layer_structure_settings
+from simpa.utils.libraries.structure_library.HorizontalLayerStructureNumpy import HorizontalLayerStructureNumpy
 from simpa.utils.libraries.structure_library.ParallelepipedStructure import ParallelepipedStructure, \
     define_parallelepiped_structure_settings
+from simpa.utils.libraries.structure_library.ParallelepipedStructureNumpy import ParallelepipedStructureNumpy
 from simpa.utils.libraries.structure_library.RectangularCuboidStructure import RectangularCuboidStructure, \
     define_rectangular_cuboid_structure_settings
+from simpa.utils.libraries.structure_library.RectangularCuboidStructureNumpy import RectangularCuboidStructureNumpy
 from simpa.utils.libraries.structure_library.SphericalStructure import SphericalStructure, \
     define_spherical_structure_settings
+from simpa.utils.libraries.structure_library.SphericalStructureNumpy import SphericalStructureNumpy
 from simpa.utils.libraries.structure_library.VesselStructure import VesselStructure, \
     define_vessel_structure_settings
+from simpa.utils.libraries.structure_library.VesselStructureNumpy import VesselStructureNumpy
 
 
 class Structures:

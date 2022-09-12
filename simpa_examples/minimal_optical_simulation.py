@@ -59,6 +59,58 @@ def create_example_tissue():
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
+    ellipsis_dictionary = sp.Settings()
+    ellipsis_dictionary[Tags.PRIORITY] = 3
+    ellipsis_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2-10,10,VOLUME_HEIGHT_IN_MM/2]
+    ellipsis_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2-10,12,VOLUME_HEIGHT_IN_MM/2]
+    ellipsis_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
+    ellipsis_dictionary[Tags.STRUCTURE_ECCENTRICITY] = 0.9
+    ellipsis_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood()
+    ellipsis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    ellipsis_dictionary[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
+
+    parallel_structure = sp.Settings()
+    parallel_structure[Tags.PRIORITY] = 8
+    parallel_structure[Tags.STRUCTURE_START_MM] = [45, 10, 25]
+    parallel_structure[Tags.STRUCTURE_FIRST_EDGE_MM] = [5, 1, 1]
+    parallel_structure[Tags.STRUCTURE_SECOND_EDGE_MM] = [1, 5, 1]
+    parallel_structure[Tags.STRUCTURE_THIRD_EDGE_MM] = [1, 1, 5]
+    parallel_structure[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood()
+    parallel_structure[Tags.STRUCTURE_TYPE] = Tags.PARALLELEPIPED_STRUCTURE
+
+
+    rect_structure = sp.Settings()
+    rect_structure[Tags.PRIORITY] = 9
+    rect_structure[Tags.STRUCTURE_START_MM] = [55, 10, 25]
+    rect_structure[Tags.STRUCTURE_X_EXTENT_MM] = 40
+    rect_structure[Tags.STRUCTURE_Y_EXTENT_MM] = 50
+    rect_structure[Tags.STRUCTURE_Z_EXTENT_MM] = 60
+    rect_structure[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood()
+    rect_structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    rect_structure[Tags.ADHERE_TO_DEFORMATION] = True
+    rect_structure[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
+
+    spehrical_structure = sp.Settings()
+    spehrical_structure[Tags.PRIORITY] = 9
+    spehrical_structure[Tags.STRUCTURE_START_MM] = [5, 10, 50]
+    spehrical_structure[Tags.STRUCTURE_RADIUS_MM] = 10
+    spehrical_structure[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood()
+    spehrical_structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    spehrical_structure[Tags.ADHERE_TO_DEFORMATION] = True
+    spehrical_structure[Tags.STRUCTURE_TYPE] = Tags.SPHERICAL_STRUCTURE
+
+    vessel_structure_settings = sp.Settings()
+    vessel_structure_settings[Tags.PRIORITY] = 10
+    vessel_structure_settings[Tags.STRUCTURE_START_MM] = [15, 10, 50]
+    vessel_structure_settings[Tags.STRUCTURE_DIRECTION] = [0, 1, 0]
+    vessel_structure_settings[Tags.STRUCTURE_RADIUS_MM] = 4
+    vessel_structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.05
+    vessel_structure_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
+    vessel_structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 70
+    vessel_structure_settings[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood()
+    vessel_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    vessel_structure_settings[Tags.STRUCTURE_TYPE] = Tags.VESSEL_STRUCTURE
+
     epidermis_dictionary = sp.Settings()
     epidermis_dictionary[Tags.PRIORITY] = 8
     epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 9]
@@ -73,6 +125,11 @@ def create_example_tissue():
     tissue_dict["muscle"] = muscle_dictionary
     tissue_dict["epidermis"] = epidermis_dictionary
     tissue_dict["vessel_1"] = vessel_1_dictionary
+    tissue_dict["ellipsis"] = ellipsis_dictionary
+    tissue_dict["parallel"] = parallel_structure
+    tissue_dict["rect"] = rect_structure
+    tissue_dict["sphere"] = spehrical_structure
+    tissue_dict["vess"] = vessel_structure_settings
     return tissue_dict
 
 
