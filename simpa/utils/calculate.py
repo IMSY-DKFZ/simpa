@@ -302,12 +302,14 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         # ensures, that at the boundary the nearest boundary values are taken into account
         x = torch.clamp(x, 0, image.shape[0]-1)
         y = torch.clamp(y, 0, image.shape[1]-1)
-        
+     
         # in order to reduce needed memory loop over 4 neigbours (i,j) \in {(0,0), (1,0), (0,1), (1,1)} 
         # and sum the weighted image values of the neighbors up
         f_int = 0
         for i,j in zip(itertools.product(range(2),repeat=2), itertools.product(range(1,-1,-1),repeat=2)):
-            f_int += image[x_int[i[0]], y_int[i[1]]] * torch.abs((x_int[j[0]].type(dtype)-x) * (y_int[j[1]].type(dtype)-y))
+            weights = torch.abs((x_int[j[0]].type(dtype)-x) * (y_int[j[1]].type(dtype)-y))
+            neighbor_values = image[x_int[i[0]], y_int[i[1]]]
+            f_int += neighbor_values * weights
 
         return f_int
 
@@ -366,7 +368,7 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
     else:
         return None
 
-def print_memory_stats(unit="kiB"):
+def print_memory_stats(unit="MiB"):
            
     t = torch.cuda.get_device_properties(0).total_memory
     r = torch.cuda.memory_reserved(0)
