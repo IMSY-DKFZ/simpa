@@ -10,7 +10,7 @@ from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils.settings import Settings
 from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.utils import Tags
-from simpa.utils.calculate import bilinear_interpolation
+from simpa.utils.calculate import bilinear_interpolation, print_memory_stats
 import torch
 import torch.fft
 from torch import Tensor
@@ -780,22 +780,16 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
     """
     logger.debug("Considering heterogenous SoS-map in reconstruction algorithm")
 
-    ###################TODO:DELETE#############
-    def print_memory_stats():
-        #t = torch.cuda.get_device_properties(0).total_memory
-        r = torch.cuda.memory_reserved(0)
-        a = torch.cuda.memory_allocated(0)
-        f = r-a  # free inside reserved
-        print("Reserved", r)
-        print("Used", a)
-        print("Free", f)
-        print()
 
-    memo_debug = False
+
+    #################################
+    #torch.cuda.empty_cache()
+    memo_debug = True
+    print("MEMORY CORRECTED (ACTUALLY WORSE")
     if memo_debug:
         print("AT BEGINNING:")
         print_memory_stats()
-        print(torch.cuda.mem_get_info())
+
     ############################
 
     STEPS_MIN = 2
@@ -825,7 +819,6 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
         if memo_debug:
             print("Before ds:")
             print_memory_stats()
-            print(torch.cuda.mem_get_info())
 
         if mixed_coordinate_system_calculation: #TODO: MORE ACCURATE
             xx = xx*spacing_in_mm
@@ -836,7 +829,210 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             source_pos_in_mm = torch.dstack([xx,yy])
 
             # calculate the distances  
-            ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()              
+            #ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()   # memory problem           
+            ################# NO CALCULATION IN FOV system ########
+
+
+            device_base_position_xy_mm = device_base_position_mm[::2] # leave out second component
+            # get global positions (in mm)
+            source_pos_in_mm += device_base_position_xy_mm
+            sensor_positions += device_base_position_xy_mm
+            # get the global pixel indices
+            #if grid_points_middle:
+            #    source_pos_scaled = source_pos_in_mm/global_settings[Tags.SPACING_MM] - 0.5
+            #    sensor_positions_scaled = sensor_positions/global_settings[Tags.SPACING_MM] - 0.5  
+            #else:
+            #    source_pos_scaled = source_pos_in_mm/global_settings[Tags.SPACING_MM]
+            #    sensor_positions_scaled = sensor_positions/global_settings[Tags.SPACING_MM]  
+        else:
+            # global position according to whole image in mm
+            xx = xx*spacing_in_mm + device_base_position_mm[0]
+            yy = yy*spacing_in_mm + device_base_position_mm[2]
+            sensor_positions = sensor_positions + device_base_position_mm
+            sensor_positions = sensor_positions[:,::2] # leave out 3rd dimension
+
+            # calculate the distances ds of all sources and detector sensors size (i.e. for all rays)
+            source_pos_in_mm = torch.dstack([xx,yy]) 
+
+            # ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()   # memory problem     
+            
+            # get the global pixel indices
+            #if grid_points_middle:
+                # take into account that the position of sos-map-pixel (i,j) is [i*spacing+spacing/2, j*spacing+spacing/2]
+            #    source_pos_scaled = source_pos_in_mm/global_settings[Tags.SPACING_MM] - 0.5 
+            #    sensor_positions_scaled = sensor_positions/global_settings[Tags.SPACING_MM] - 0.5  
+            #else:
+            #    source_pos_scaled = source_pos_in_mm/global_settings[Tags.SPACING_MM]
+            #    sensor_positions_scaled = sensor_positions/global_settings[Tags.SPACING_MM]
+
+        # free some unneeded gpu memory
+        del xx, yy
+
+        ######################## TODO:DELETE
+        if memo_debug:
+            print("after ds:")
+            print_memory_stats()
+        #########################
+
+        # calculate the number of steps per ray, we want that for the longest ray that the ray is sampled at least
+        # at every pixel
+        #steps = int(max((xdim**2+ydim**2)**0.5 + 0.5, ds.max()/(2**0.5*spacing_in_mm) + 0.5, STEPS_MIN)) # MEMORY PROBLEM
+        steps = int(max((xdim**2+ydim**2)**0.5 + 0.5, STEPS_MIN))
+        logger.debug(f"Using {steps} steps for numerical calculation of the line integrals")
+        # steps        
+        s = torch.linspace(0, 1, steps, device=torch_device)
+
+        delays = torch.zeros(xdim, ydim, n_sensor_elements, dtype=torch.float64, device=torch_device)
+
+        # loop over the sensors because vectorization of the loop needs too much memory
+        for sensor in range(n_sensor_elements):
+            # calculate the sampled positions (#steps samples) for all rays coming from all source points to a given sensor
+            rays = (1-s[None, None, :, None])* source_pos_in_mm[:, :, None, :] +  \
+                (s[None, None, :, None] * sensor_positions[None, None, sensor, None, :]) # shape: xdim x ydim x #steps x 2           
+            
+            # translate mm into pixel values
+            rays = rays/global_settings[Tags.SPACING_MM]
+
+            if grid_points_middle:
+                rays -= 0.5
+
+            rays = rays.reshape(xdim*ydim*steps,2)
+            
+            ###########TODO:Delete######
+            if memo_debug:  
+                print("Before interpolation:")
+                print_memory_stats()
+                #sys.exit()
+
+            # calculate the corresponding interpolated sos values at those points
+            interpolated_sos = bilinear_interpolation(sos_tensor, rays[:,0], rays[:,1])
+            interpolated_sos = interpolated_sos.reshape(xdim*ydim, steps)
+            ##########TODO: Delete##############
+            if debug:
+                print(interpolated_sos)
+                print(rays.reshape(xdim*ydim,steps,2))
+            ########################
+            # integrate the interpolated inverse sos-values
+            integrals = torch.trapezoid(interpolated_sos)
+            integrals = integrals.reshape((xdim, ydim))
+            # calculate the delays by multiplying it with the step size ds/(steps-1) and divide it by the time spacing
+            # in order to get the delay indices for the time series data
+            #delays[:,:, sensor] = integrals*ds[:,:,sensor]/((steps-1) * time_spacing_in_ms) #MEMORY PROBLEM
+            
+            # MEMORY PROBLEM FIX ATTEMPT ############
+            # problem : always in global system calculation!!
+            ds = (source_pos_in_mm - sensor_positions[None, None, sensor, :]).pow(2).sum(-1).sqrt()
+            
+            
+            delays[:,:, sensor] = integrals*ds/((steps-1) * time_spacing_in_ms)
+            print("HERE", ds.max())
+            
+
+        if debug:
+            return delays.unsqueeze(2), ds #TODO: delete
+        else:
+            return delays.unsqueeze(2) # xdim x ydim x 1 x #sensors
+
+    else:
+        logger.warning("3-dimensional heterogenous SoS reconstruction is not implemented yet.")
+
+        xx, yy, zz = torch.meshgrid(x, y, z)
+
+
+def calculate_delays_for_heterogen_sos_mem(sensor_positions: torch.tensor, xdim: int, ydim: int, zdim: int,
+                                       x: torch.tensor, y: torch.tensor, z: torch.tensor,
+                                       spacing_in_mm: float, time_spacing_in_ms: float,
+                                       speed_of_sound_in_m_per_s: np.ndarray,
+                                       n_sensor_elements: int, global_settings: Settings, 
+                                       device_base_position_mm: np.ndarray, logger: Logger,
+                                       torch_device: torch.device,
+                                       grid_points_middle: bool = True, debug: bool = False) -> torch.tensor:
+    """
+    Returns the delays indicating which time series data has to be summed up taking a heterogenous 
+    speed-of-sound-map into account, i.e. performing a line integral over the inverse speed-of-sound map.
+    
+    :param sensor_positions: sensor positions in mm in the FOV coordinate system,
+                             where the origin is at the device base position
+    :type sensor_positions: torch.tensor
+    :param xdim: number of x values of sources in FOV
+    :type xdim: int
+    :param ydim: number of y values of sources in FOV
+    :type ydim: int
+    :param zdim: number of z values of sources in FOV
+    :type zdim: int
+    :param x: pixel indices in x-direction in FOV coordinate system
+    :type x: torch.tensor
+    :param y: pixel indices in y-direction in FOV coordinate system
+    :type y: torch.tensor
+    :param z: pixel indices in z-direction in FOV coordinate system
+    :param spacing_in_mm: spacing of voxels in reconstructed image (FOV) in mm
+    :type spacing_in_mm: float
+    :param time_spacing_in_ms: temporal spacing of the time series data in ms
+    :type time_spacing_in_ms: float
+    :param speed_of_sound_in_m_per_s: (heterogenous) speed-of-sound map
+    :type speed_of_sound_in_m_per_s: np.ndarray
+    :param n_sensor_elements: number of sensor elements of the given 
+    :type 
+    :param global settings: (Settings) settings for the whole simulation
+    :param device_base_position_mm: (np.ndarray) position of the device base in mm
+    :param logger: (logger) logger instance in order to log and print warnings/errors/debug hints
+    :param torch_device: (torch.device) either cpu or cuda GPU device used for the tensors
+
+    :return: delays indices indicating which time series data
+             one has to sum up
+    :rtype: torch.tensor
+    """
+    logger.debug("Considering heterogenous SoS-map in reconstruction algorithm")
+
+    ############################
+    #torch.cuda.empty_cache()
+    memo_debug = True
+    print("NOT MEMORY CORRECTED (ACTUALLY BETTER)")
+    if memo_debug:
+        print("AT BEGINNING:")
+        print_memory_stats()
+        #print(torch.cuda.mem_get_info())
+    ############################
+
+    STEPS_MIN = 2
+    
+    ############################ TODO:Decide
+    mixed_coordinate_system_calculation = True #TODO: decide for one implementation,
+    # so far mixed_coordinate_system_calculation is more accurate!!!!
+    if debug:
+        mixed_coordinate_system_calculation = False
+
+
+    if zdim == 1:
+        # get relevant sos slice
+        transducer_plane = int(round((device_base_position_mm[1]/global_settings[Tags.SPACING_MM]))) - 1
+        # take wanted sos slice and invert values
+        sos_map = 1/speed_of_sound_in_m_per_s[:,transducer_plane,:]
+        # convert it to tensor and desired shape
+        sos_tensor = torch.from_numpy(sos_map) # IMPORTANT: check whether to be or not transposed!
+        sos_tensor = sos_tensor.to(torch_device)
+
+        # calculate absolute positions, where origin is  the origin of the whole volume (volume coordinate system)
+        xx, yy = torch.meshgrid(x, y)
+
+        device_base_position_mm = torch.from_numpy(device_base_position_mm)
+        device_base_position_mm = device_base_position_mm.to(torch_device)
+
+        if memo_debug:
+            print("Before ds:")
+            print_memory_stats()
+            #print(torch.cuda.mem_get_info())
+
+        if mixed_coordinate_system_calculation: #TODO: MORE ACCURATE
+            xx = xx*spacing_in_mm
+            yy = yy*spacing_in_mm
+            sensor_positions = sensor_positions[:,::2] # leave out 3rd dimension
+
+            # calculate the step size of the different rays
+            source_pos_in_mm = torch.dstack([xx,yy])
+
+            # calculate the distances  
+            ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()          
 
             device_base_position_xy_mm = device_base_position_mm[::2] # leave out second component
             # get global positions (in mm)
@@ -859,7 +1055,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             # calculate the distances ds of all sources and detector sensors size (i.e. for all rays)
             source_pos_in_mm = torch.dstack([xx,yy]) 
 
-            ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()        
+            ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()
             
             # get the global pixel indices
             if grid_points_middle:
@@ -878,7 +1074,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
         if memo_debug:
             print("after ds:")
             print_memory_stats()
-            print(torch.cuda.mem_get_info())
+            #print(torch.cuda.mem_get_info())
         """for obj in gc.get_objects():
             try:
                 if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
@@ -890,7 +1086,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
 
         # calculate the number of steps per ray, we want that for the longest ray that the ray is sampled at least
         # at every pixel
-        steps = int(max((xdim**2+ydim**2)**0.5 + 0.5, ds.max()/(2**0.5*spacing_in_mm) + 0.5, STEPS_MIN))
+        steps = int(max((xdim**2+ydim**2)**0.5 + 0.5, ds.max()/(2**0.5*spacing_in_mm) + 0.5, STEPS_MIN)) # MEMORY PROBLEM
         logger.debug(f"Using {steps} steps for numerical calculation of the line integrals")
         # steps        
         s = torch.linspace(0, 1, steps, device=torch_device)
@@ -908,8 +1104,8 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             if memo_debug:  
                 print("Before interpolation:")
                 print_memory_stats()
-                print(torch.cuda.mem_get_info())
-                sys.exit()
+                #print(torch.cuda.mem_get_info())
+                #sys.exit()
             ####
 
             # calculate the corresponding interpolated sos values at those points
@@ -925,7 +1121,8 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             integrals = integrals.reshape((xdim, ydim))
             # calculate the delays by multiplying it with the step size ds/(steps-1) and divide it by the time spacing
             # in order to get the delay indices for the time series data
-            delays[:,:, sensor] = integrals*ds[:,:,sensor]/((steps-1) * time_spacing_in_ms)
+            delays[:,:, sensor] = integrals*ds[:,:,sensor]/((steps-1) * time_spacing_in_ms) #MEMORY PROBLEM
+            
 
         if debug:
             return delays.unsqueeze(2), ds #TODO: delete
