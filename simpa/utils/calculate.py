@@ -243,10 +243,13 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
     :return: interpolated values of the input image at given positions
     :rtype: torch.tensor
     """
-    dtype = torch.cuda.DoubleTensor
-    dtype_long = torch.cuda.LongTensor
+    dtype = torch.float64
+    dtype_long = torch.long
     
     if image.ndim < 3 or z == None: # 2dim case
+
+        """
+        MEMORY EXPENSIVE
         
         # compute the indices of the neighbors            
         x0 = torch.floor(x).type(dtype_long)
@@ -264,8 +267,7 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         x = torch.clamp(x, 0, image.shape[0]-1)
         y = torch.clamp(y, 0, image.shape[1]-1)
         
-        """
-        MEMORY EXPENSIVE
+ 
 
         # read out the neighboring values
         f_tl = image[x0, y0] # top left neighbor value
@@ -279,18 +281,33 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         w_tr = (x-x0.type(dtype)) * (y1.type(dtype)-y)
         w_br = (x-x0.type(dtype)) * (y-y0.type(dtype))
         return f_tl*w_tl + f_bl*w_bl + f_tr*w_tr + f_br*w_br"""
+
+        x_int = torch.empty([2]+list(x.shape), dtype=dtype_long, device=x.device)
+        y_int = torch.empty([2]+list(y.shape), dtype=dtype_long, device=y.device)
+        # compute the indices of the neighbors
+        # for x dimension           
+        x_int[0] = torch.floor(x)
+        x_int[1] = x_int[0] + 1
+        # for y dimension
+        y_int[0] = torch.floor(y)
+        y_int[1] = y_int[0] + 1
+
+        # for lower indices clamp at 0 and image.shape[*]-2
+        # for higher indices clamp at 1 and image.shape[*]-1
+        for i in range(2):
+            x_int[i] = torch.clamp(x_int[i], i, image.shape[0]-2+i)
+            y_int[i] = torch.clamp(y_int[i], i, image.shape[1]-2+i)
+
+        # ensures, that at the boundary the nearest boundary values are taken into account
+        x = torch.clamp(x, 0, image.shape[0]-1)
+        y = torch.clamp(y, 0, image.shape[1]-1)
         
-        # in order to reduce needed memory loop over neigbours an sum it up
-        # TODO: to be made nice withour if conditions
-        for neighbor_index in itertools.product(range(2),repeat=2):
-            if neighbor_index == (0,0): # top left neighbor
-                f_int = image[x0, y0] * (x1.type(dtype)-x) * (y1.type(dtype)-y)
-            elif neighbor_index == (0,1): # bottom left neighbor
-                f_int += image[x0, y1] * (x1.type(dtype)-x) * (y-y0.type(dtype))
-            elif neighbor_index == (1,0): # top right neighbor
-                f_int += image[x1, y0] * (x-x0.type(dtype)) * (y1.type(dtype)-y)
-            else:
-                f_int += image[x1, y1] * (x-x0.type(dtype)) * (y-y0.type(dtype))
+        # in order to reduce needed memory loop over 4 neigbours (i,j) \in {(0,0), (1,0), (0,1), (1,1)} 
+        # and sum the weighted image values of the neighbors up
+        f_int = 0
+        for i,j in zip(itertools.product(range(2),repeat=2), itertools.product(range(1,-1,-1),repeat=2)):
+            f_int += image[x_int[i[0]], y_int[i[1]]] * torch.abs((x_int[j[0]].type(dtype)-x) * (y_int[j[1]].type(dtype)-y))
+
         return f_int
 
     
@@ -347,3 +364,28 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         
     else:
         return None
+
+def print_memory_stats(unit="kiB"):
+           
+    t = torch.cuda.get_device_properties(0).total_memory
+    r = torch.cuda.memory_reserved(0)
+    a = torch.cuda.memory_allocated(0)
+    if unit=="kiB":
+        t /= 2**10
+        r /= 2**10
+        a /= 2**10
+    elif unit=="MiB":
+        t /= 1048576 #2**20
+        r /= 1048576
+        a /= 1048576
+    else:
+        unit = "B"
+    print(f"""##########GPU-Memory-Stats##########
+Allocated : {a:20.3f} {unit}
+Theo. Free: {t-a:20.3f} {unit}
+(Total-allocated)
+Reserved  : {r:20.3f} {unit}
+Free Cache: {r-a:20.3f} {unit}
+(Not used in reserved)
+Total     : {t:20.3f} {unit}
+####################################""")
