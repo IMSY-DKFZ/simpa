@@ -247,42 +247,7 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
     dtype = torch.float64
     dtype_long = torch.long
     
-    if image.ndim < 3 or z == None: # 2dim case
-
-        """
-        MEMORY EXPENSIVE
-        
-        # compute the indices of the neighbors            
-        x0 = torch.floor(x).type(dtype_long)
-        x1 = x0 + 1
-
-        y0 = torch.floor(y).type(dtype_long)
-        y1 = y0 + 1
-
-        x0 = torch.clamp(x0, 0, image.shape[0]-2)
-        x1 = torch.clamp(x1, 1, image.shape[0]-1)
-        y0 = torch.clamp(y0, 0, image.shape[1]-2)
-        y1 = torch.clamp(y1, 1, image.shape[1]-1)
-
-        # ensures, that at the boundary the nearest boundary values are taken into account
-        x = torch.clamp(x, 0, image.shape[0]-1)
-        y = torch.clamp(y, 0, image.shape[1]-1)
-        
- 
-
-        # read out the neighboring values
-        f_tl = image[x0, y0] # top left neighbor value
-        f_bl = image[x0, y1] # bottom left neighbor value
-        f_tr = image[x1, y0] # top right neighbor value
-        f_br = image[x1, y1] # bottom right neighbor value
-
-        # calculate the weights
-        w_tl = (x1.type(dtype)-x) * (y1.type(dtype)-y)
-        w_bl = (x1.type(dtype)-x) * (y-y0.type(dtype))
-        w_tr = (x-x0.type(dtype)) * (y1.type(dtype)-y)
-        w_br = (x-x0.type(dtype)) * (y-y0.type(dtype))
-        return f_tl*w_tl + f_bl*w_bl + f_tr*w_tr + f_br*w_br"""
-
+    if image.ndim < 3 or z == None: # 2dim case        
         x_int = torch.empty([2]+list(x.shape), dtype=dtype_long, device=x.device)
         y_int = torch.empty([2]+list(y.shape), dtype=dtype_long, device=y.device)
         # compute the indices of the neighbors
