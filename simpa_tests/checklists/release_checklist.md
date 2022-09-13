@@ -38,7 +38,7 @@ of the new release:
 
 1. Commit the code to the master branch and ensure that the Jenkins
 build runs successfully.
-2. Open Github mirror page and validate that the  changes are pushed.
+2. Open Github mirror page and validate that the changes are pushed.
 3. Create a release tag with the correct version on Github.
 4. Update the code on zenodo.
 5. Upload the code to pypi.
