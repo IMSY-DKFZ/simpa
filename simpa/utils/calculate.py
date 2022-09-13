@@ -310,7 +310,7 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
             weights = torch.abs((x_int[j[0]].type(dtype)-x) * (y_int[j[1]].type(dtype)-y))
             neighbor_values = image[x_int[i[0]], y_int[i[1]]]
             f_int += neighbor_values * weights
-
+            del weights, neighbor_values
         return f_int
 
     
