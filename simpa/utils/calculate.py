@@ -230,6 +230,7 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
     Returns interpolated values of an 2 dimensional or 3 dimensional map/image at the positions (x,y) or (x,y,z) respectively.
     For this bilinear interpolation (in every dimension) is used.
     This function is based on https://gist.github.com/peteflorence/a1da2c759ca1ac2b74af9a83f69ce20e.
+    If the sample point is outside the image, one uses the next nearest 2 or 3 neighbors for interpolation!
     
     :param image: 2-dim./3-dim image which values shall be interpolated
     :type image: torch.tensor
@@ -343,10 +344,10 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         f_trf = image[x1, y0, z0] # top right front neighbor value
         f_brf = image[x1, y1, z0] # bottom right front neighbor value
         # back plane
-        f_tlb = image[x0, y0, z0] # top left front neighbor value
-        f_blb = image[x0, y1, z0] # bottom left front neighbor value
-        f_trb = image[x1, y0, z0] # top right front neighbor value
-        f_brb = image[x1, y1, z0] # bottom right front neighbor value
+        f_tlb = image[x0, y0, z1] # top left front neighbor value
+        f_blb = image[x0, y1, z1] # bottom left front neighbor value
+        f_trb = image[x1, y0, z1] # top right front neighbor value
+        f_brb = image[x1, y1, z1] # bottom right front neighbor value
 
         # calculate the weights
         # front plane

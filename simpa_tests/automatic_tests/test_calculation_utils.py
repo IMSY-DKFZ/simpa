@@ -10,7 +10,7 @@ from simpa.utils.calculate import randomize_uniform
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
 from simpa.utils.calculate import positive_gauss
 from simpa.utils.calculate import bilinear_interpolation
-from scipy.interpolate import interp2d
+from scipy.interpolate import interp2d, interpn
 import numpy as np
 import torch
 
@@ -91,27 +91,37 @@ class TestCalculationUtils(unittest.TestCase):
             assert random_value > float(0), "positive Gauss value outside the desired range and negative"
 
     def test_bilinear_interpolation(self):
-        # test 2 dimensional interpolation:
+        ### 2D Interpolation: ###
+        # randomly select dimensions
         xdim = np.random.randint(10,200)
         ydim = np.random.randint(10,200)
         n_samples = 1000
-
+        # randomly create an image
         image_2d = torch.rand((xdim, ydim), device="cpu")
-
+        # sample points at which we want to interpolate
         # want also samples outside the image to test nearest neighbors interpolation
         x_samples = torch.FloatTensor(n_samples).uniform_(-1, xdim)
         y_samples = torch.FloatTensor(n_samples).uniform_(-1, ydim)
-        
+        # compute interpolated values with the function to be tested
         interpolated_values = bilinear_interpolation(image_2d, x_samples, y_samples)
-        
-        f = interp2d(np.arange(xdim), np.arange(ydim), image_2d.numpy().T, kind='linear')
-        # loop over the samples since the interp2d function restructeres the output randomly for non-1-dim inputs
-        for i, (x_samp, y_samp) in enumerate(zip(x_samples.numpy(), y_samples.numpy())):
-            ref = f(x_samp, y_samp)
-            self.assertAlmostEqual(ref, interpolated_values[i].item()+1e6)
+        # compute desired values using scipy
+        sample_points = np.stack((x_samples.numpy(), y_samples.numpy())).T
+        # since interpn does not support bilinear interpolation of the next nearest neighbors for samples outside the image
+        # the grid and the image are padded resulting into the same calculation
+        scipy_values = interpn((np.arange(-1,xdim+1), np.arange(-1,ydim+1)),
+                                np.pad(image_2d.numpy(), pad_width=1, mode="edge"), sample_points,
+                                method="linear", bounds_error=True)
 
-        #TODO: Test 3dimensional interpolation
-        #zdim = np.random.randint(10,200)
-        #image_3d = torch.rand()
-        #z_samples = torch.FloatTensor(n_samples).uniform_(-1, zdim)
-        #interpolated_values_3d = bilinear_interpolation(image_3d, x_samples, y_samples, z_samples)
+        np.testing.assert_array_almost_equal(interpolated_values.numpy(), scipy_values, decimal=12)
+        # same as np.testing.assert_almost_equal()
+
+        ### 3D Interpolation: ###
+        zdim = np.random.randint(10,200)
+        image_3d = torch.rand((xdim,ydim,zdim))
+        z_samples = torch.FloatTensor(n_samples).uniform_(-1, zdim)
+        interpolated_values_3d = bilinear_interpolation(image_3d, x_samples, y_samples, z_samples)
+        sample_points_3d = np.stack((x_samples.numpy(), y_samples.numpy(), z_samples.numpy())).T
+        scipy_values_3d = interpn((np.arange(-1,xdim+1), np.arange(-1,ydim+1), np.arange(-1,zdim+1)),
+                                np.pad(image_3d.numpy(), pad_width=1, mode="edge"), sample_points_3d,
+                                method="linear", bounds_error=True)
+        np.testing.assert_array_almost_equal(interpolated_values_3d.numpy(), scipy_values_3d, decimal=12)
