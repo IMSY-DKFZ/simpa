@@ -32,16 +32,15 @@ class hDASToySoS(ManualIntegrationTestClass):
     """
 
     def setup(self):
+        ###########  Hyperparam to change: ##############
+        self.HETERO_OPTION = "vertical_gradient"
+        #################################################
+
         path_manager = PathManager()
 
         self.SPEED_OF_SOUND = 1470
-        self.pa_device = InVision256TF(device_position_mm=np.asarray([50, 15, 50]))
-
-        #############################################################################
-        #  Hyperparam to change:
         self.SIMULATE_HETERO = True
-        self.HETERO_OPTION = "gaussian_noise"
-
+        self.pa_device = InVision256TF(device_position_mm=np.asarray([50, 15, 50]))
 
         self.initial_pressure = np.zeros((100, 30, 100))
         self.initial_pressure[50, :, 50] = 1
