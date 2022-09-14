@@ -49,7 +49,7 @@ class DASTissueBasedHeterogenousSoSTest(ManualIntegrationTestClass):
         point to the correct file in the PathManager().
         :return:
         """
-        device = "Linear"
+        DEVICE = "Acuity"
 
         self.path_manager = PathManager()
         self.VOLUME_TRANSDUCER_DIM_IN_MM = 75
@@ -58,7 +58,7 @@ class DASTissueBasedHeterogenousSoSTest(ManualIntegrationTestClass):
         self.SPACING = 0.25
         self.RANDOM_SEED = 4711
         np.random.seed(self.RANDOM_SEED)
-        if device == "Acuity":
+        if DEVICE == "Acuity":
             self.device = MSOTAcuityEcho(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                   self.VOLUME_PLANAR_DIM_IN_MM/2, 0]))
         else:
@@ -164,7 +164,7 @@ class DASTissueBasedHeterogenousSoSTest(ManualIntegrationTestClass):
     # first volume i tried out
     def create_example_tissue_big_vessels(self):
         """
-        3 vessesl
+        1 circular 2 rectancular vessels
         """
         background_dictionary = Settings()
         background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
@@ -248,7 +248,7 @@ class DASTissueBasedHeterogenousSoSTest(ManualIntegrationTestClass):
     # better for visualization
     def create_example_tissue(self):
         """
-        3 point like vessel, no deformation
+        4 circular shaped vessesl with increasing radius, no deformation
         """
         background_dictionary = Settings()
         background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.subcutaneous_fat()
@@ -280,40 +280,52 @@ class DASTissueBasedHeterogenousSoSTest(ManualIntegrationTestClass):
                                                         0, 15]
         vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 10,
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 15]
-        vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 0.25
+        vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 0.1
         vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
         vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
         vessel_2_dictionary = Settings()
         vessel_2_dictionary[Tags.PRIORITY] = 3
-        vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+        vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 2.5,
                                                         0, 15]
-        vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+        vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 2.5,
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 15]
-        vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3.75
+        vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 0.5
         vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
         vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
         vessel_3_dictionary = Settings()
         vessel_3_dictionary[Tags.PRIORITY] = 3
-        vessel_3_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 10,
+        vessel_3_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 2.5,
                                                         0, 15]
-        vessel_3_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 10,
+        vessel_3_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 2.5,
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 15]
-        vessel_3_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2.25
+        vessel_3_dictionary[Tags.STRUCTURE_RADIUS_MM] = 1.
         vessel_3_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
         vessel_3_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_3_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+
+        vessel_4_dictionary = Settings()
+        vessel_4_dictionary[Tags.PRIORITY] = 3
+        vessel_4_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 10,
+                                                        0, 15]
+        vessel_4_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 10,
+                                                      self.VOLUME_PLANAR_DIM_IN_MM, 15]
+        vessel_4_dictionary[Tags.STRUCTURE_RADIUS_MM] = 1.5
+        vessel_4_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        vessel_4_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        vessel_4_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
         tissue_dict = Settings()
         tissue_dict[Tags.BACKGROUND] = background_dictionary
         tissue_dict["muscle"] = muscle_dictionary
         tissue_dict["fat"] = fat_dictionary
-        #tissue_dict["vessel_1"] = vessel_1_dictionary
+        tissue_dict["vessel_1"] = vessel_1_dictionary
         tissue_dict["vessel_2"] = vessel_2_dictionary
-        #tissue_dict["vessel_3"] = vessel_3_dictionary
+        tissue_dict["vessel_3"] = vessel_3_dictionary
+        tissue_dict["vessel_4"] = vessel_4_dictionary
         return tissue_dict
 
 
@@ -413,4 +425,4 @@ class DASTissueBasedHeterogenousSoSTest(ManualIntegrationTestClass):
 
 if __name__ == '__main__':
     test = DASTissueBasedHeterogenousSoSTest()
-    test.run_test(show_figure_on_screen=False)
+    test.run_test(show_figure_on_screen=True)
