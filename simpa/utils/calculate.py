@@ -246,17 +246,17 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
     """
     dtype = torch.float64
     dtype_long = torch.long
-    
+   
     if image.ndim < 3 or z == None: # 2dim case        
-        x_int = torch.empty([2]+list(x.shape), dtype=dtype_long, device=x.device)
-        y_int = torch.empty([2]+list(y.shape), dtype=dtype_long, device=y.device)
+        x_int = []
+        y_int = []
         # compute the indices of the neighbors
         # for x dimension           
-        x_int[0] = torch.floor(x)
-        x_int[1] = x_int[0] + 1
+        x_int.append(torch.floor(x).type(dtype_long))
+        x_int.append(x_int[0] + 1)
         # for y dimension
-        y_int[0] = torch.floor(y)
-        y_int[1] = y_int[0] + 1
+        y_int.append(torch.floor(y).type(dtype_long))
+        y_int.append(y_int[0] + 1)
 
         # for lower indices clamp at 0 and image.shape[*]-2
         # for higher indices clamp at 1 and image.shape[*]-1
@@ -279,7 +279,7 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         return f_int
 
     
-    elif image.ndim == 3: # 3dim case #TODO: NOT TESTED YET
+    elif image.ndim == 3: # 3dim case #TODO: Make it less memory expensive - probably not possible
         # in the 3dim case one has 8 neighbors that are the corners of a cube 
         
         # compute the indices of the neighbors            
