@@ -519,31 +519,17 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
     x = xdim_start + torch.arange(xdim, device=torch_device, dtype=torch.float32) + x_offset
     y = ydim_start + torch.arange(ydim, device=torch_device, dtype=torch.float32)
     if zdim == 1:
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
-                                        torch.arange(ydim_start, ydim_end, device=torch_device),
-                                        torch.arange(zdim, device=torch_device),
-                                        torch.arange(n_sensor_elements, device=torch_device))
         z = torch.arange(zdim, device=torch_device, dtype=torch.float32)
     else:
-        xx, yy, zz, jj = torch.meshgrid(torch.arange(xdim_start, xdim_end, device=torch_device),
-                                        torch.arange(ydim_start, ydim_end, device=torch_device),
-                                        torch.arange(zdim_start, zdim_end, device=torch_device),
-                                        torch.arange(n_sensor_elements, device=torch_device))
         z = zdim_start + torch.arange(zdim, device=torch_device, dtype=torch.float32)
-    j = torch.arange(n_sensor_elements, device=torch_device, dtype=torch.float32)
+    j = torch.arange(n_sensor_elements, device=torch_device, dtype=torch.float32) # TODO: ask tom why not integer?
 
     if not isinstance(speed_of_sound_in_m_per_s, np.ndarray):
-        xx, yy, zz, jj = torch.meshgrid(x, y, z, j)
-        jj = jj.long()
-        logger.debug("Considering fixed SoS-value in reconstruction algorithm")
-        delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
-                            (xx * spacing_in_mm - sensor_positions[:, 0][jj]) ** 2 +
-                            (zz * spacing_in_mm - sensor_positions[:, 1][jj]) ** 2) \
-            / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
+        delays = calculate_delays_for_homogen_sos(sensor_positions, x, y, z, j, spacing_in_mm, time_spacing_in_ms,
+                                                  speed_of_sound_in_m_per_s)
     else:
-        jj = j.long()
         start = time.time() #TODO: DELETE
-        OWN_INTERPOLATION = True # TODO ########################################################################
+        OWN_INTERPOLATION = False # TODO ########################################################################
         if OWN_INTERPOLATION: #slower but probably more senseful
             delays = calculate_delays_for_heterogen_sos(sensor_positions, xdim, ydim, zdim,
                         x, y, z, spacing_in_mm, time_spacing_in_ms, speed_of_sound_in_m_per_s, 
@@ -557,6 +543,8 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
         end = time.time()
         print("TIME", end-start)
    
+    jj = j.long()
+    
     # perform index validation
     invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
     torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1] - 1)
@@ -582,6 +570,44 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
     del delays  # free memory of delays
 
     return values, n_sensor_elements
+
+def calculate_delays_for_homogen_sos(sensor_positions: torch.tensor, x: torch.tensor, y: torch.tensor, z: torch.tensor,
+                                     j: torch.tensor, spacing_in_mm: float, time_spacing_in_ms: float,
+                                     speed_of_sound_in_m_per_s: float) -> torch.tensor:
+    """
+    Returns the delays indicating which time series data has to be summed up assuming a
+    homogenous speed-of-sound-map.
+    
+    :param sensor_positions: sensor positions in mm in the FOV coordinate system,
+                             where the origin is at the device base position
+    :type sensor_positions: torch.tensor
+    :param x: pixel indices in x-direction in FOV coordinate system
+    :type x: torch.tensor
+    :param y: pixel indices in y-direction in FOV coordinate system
+    :type y: torch.tensor
+    :param z: pixel indices in z-direction in FOV coordinate system
+    :type z: torch.tensor
+    :param j: sensor indices
+    :type j: torch.tensor
+    :param spacing_in_mm: spacing of voxels in reconstructed image (FOV) in mm
+    :type spacing_in_mm: float
+    :param time_spacing_in_ms: temporal spacing of the time series data in ms
+    :type time_spacing_in_ms: float
+    :param speed_of_sound_in_m_per_s: assumed constant speed-of-sound value
+    :type speed_of_sound_in_m_per_s: float
+
+    :return: delays indices indicating which time series data
+             one has to sum up
+    :rtype: torch.tensor
+    """
+    xx, yy, zz, jj = torch.meshgrid(x, y, z, j)
+    logger.debug("Considering fixed SoS-value in reconstruction algorithm")
+    jj = jj.long()
+    return torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
+                        (xx * spacing_in_mm - sensor_positions[:, 0][jj]) ** 2 +
+                        (zz * spacing_in_mm - sensor_positions[:, 1][jj]) ** 2) \
+        / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
+
 
 # TODO: Leave just one of the following implementations 
 #  - calculate_delays_for_heterogen_sos_OLD uses grid_sample and seems more buggy (due to weird system) [comparison to analytical solution
@@ -618,6 +644,7 @@ def calculate_delays_for_heterogen_sos_OLD(sensor_positions: torch.tensor, xdim:
     :param y: pixel indices in y-direction in FOV coordinate system
     :type y: torch.tensor
     :param z: pixel indices in z-direction in FOV coordinate system
+    :type z: torch.tensor
     :param spacing_in_mm: spacing of voxels in reconstructed image (FOV) in mm
     :type spacing_in_mm: float
     :param time_spacing_in_ms: temporal spacing of the time series data in ms
@@ -625,7 +652,7 @@ def calculate_delays_for_heterogen_sos_OLD(sensor_positions: torch.tensor, xdim:
     :param speed_of_sound_in_m_per_s: (heterogenous) speed-of-sound map
     :type speed_of_sound_in_m_per_s: np.ndarray
     :param n_sensor_elements: number of sensor elements of the given 
-    :type 
+    :type n_sensor_elements: int
     :param global settings: (Settings) settings for the whole simulation
     :param device_base_position_mm: (np.ndarray) position of the device base in mm
     :param logger: (logger) logger instance in order to log and print warnings/errors/debug hints
@@ -645,6 +672,7 @@ def calculate_delays_for_heterogen_sos_OLD(sensor_positions: torch.tensor, xdim:
     # so far mixed_coordinate_system_calculation is more accurate!!!!
     if global_ds_calc:
         mixed_coordinate_system_calculation = False
+    ############################
 
     if zdim == 1:
         # get relevant sos slice
@@ -672,13 +700,13 @@ def calculate_delays_for_heterogen_sos_OLD(sensor_positions: torch.tensor, xdim:
             ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()              
 
             # scale the source and the sensor positions to [-1,1] range (needed for interpolator-function),
-            # where -1 denotes x=0 and 1 denots x = 'volume_x_dim_mm' and same for y
+            # where -1 denotes x=0 and 1 denotes x = 'volume_x_dim_mm' and same for y
             volume_dim_mm_vector = torch.tensor([global_settings[Tags.DIM_VOLUME_X_MM],
                                                 global_settings[Tags.DIM_VOLUME_Z_MM]],
                                                 device=torch_device)
             device_base_position_xy_mm = device_base_position_mm[::2] # leave out second component
             
-            if not grid_points_middle:
+            if not grid_points_middle:  # TODO decide and delete condidition
                 source_pos_in_mm += global_settings[Tags.SPACING_MM]/2
                 sensor_positions += global_settings[Tags.SPACING_MM]/2
 
@@ -701,14 +729,15 @@ def calculate_delays_for_heterogen_sos_OLD(sensor_positions: torch.tensor, xdim:
                                                 global_settings[Tags.DIM_VOLUME_Z_MM]],
                                                 device=torch_device)
 
-            if not grid_points_middle:
-                source_pos_in_mm = source_pos_in_mm + global_settings[Tags.SPACING_MM]/2
-                sensor_positions = sensor_positions + global_settings[Tags.SPACING_MM]/2
+            if not grid_points_middle: # TODO decide and delete condidition
+                source_pos_in_mm += global_settings[Tags.SPACING_MM]/2
+                sensor_positions += global_settings[Tags.SPACING_MM]/2
 
             source_pos_scaled = 2*source_pos_in_mm/volume_dim_mm_vector-1 
             sensor_positions_scaled = 2*sensor_positions/volume_dim_mm_vector-1
         # free some unneeded gpu memory
         del volume_dim_mm_vector
+        del device_base_position_mm
         del source_pos_in_mm
         del sensor_positions
 
@@ -786,6 +815,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
     :param y: pixel indices in y-direction in FOV coordinate system
     :type y: torch.tensor
     :param z: pixel indices in z-direction in FOV coordinate system
+    :type z: torch.tensor
     :param spacing_in_mm: spacing of voxels in reconstructed image (FOV) in mm
     :type spacing_in_mm: float
     :param time_spacing_in_ms: temporal spacing of the time series data in ms
@@ -793,7 +823,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
     :param speed_of_sound_in_m_per_s: (heterogenous) speed-of-sound map
     :type speed_of_sound_in_m_per_s: np.ndarray
     :param n_sensor_elements: number of sensor elements of the given 
-    :type 
+    :type n_sensor_elements: int
     :param global settings: (Settings) settings for the whole simulation
     :param device_base_position_mm: (np.ndarray) position of the device base in mm
     :param logger: (logger) logger instance in order to log and print warnings/errors/debug hints
@@ -987,6 +1017,7 @@ def calculate_delays_for_heterogen_sos_mem(sensor_positions: torch.tensor, xdim:
     :param y: pixel indices in y-direction in FOV coordinate system
     :type y: torch.tensor
     :param z: pixel indices in z-direction in FOV coordinate system
+    :type z: torch.tensor
     :param spacing_in_mm: spacing of voxels in reconstructed image (FOV) in mm
     :type spacing_in_mm: float
     :param time_spacing_in_ms: temporal spacing of the time series data in ms
@@ -994,7 +1025,7 @@ def calculate_delays_for_heterogen_sos_mem(sensor_positions: torch.tensor, xdim:
     :param speed_of_sound_in_m_per_s: (heterogenous) speed-of-sound map
     :type speed_of_sound_in_m_per_s: np.ndarray
     :param n_sensor_elements: number of sensor elements of the given 
-    :type 
+    :type n_sensor_elements: int
     :param global settings: (Settings) settings for the whole simulation
     :param device_base_position_mm: (np.ndarray) position of the device base in mm
     :param logger: (logger) logger instance in order to log and print warnings/errors/debug hints
