@@ -125,3 +125,7 @@ class TestCalculationUtils(unittest.TestCase):
                                 np.pad(image_3d.numpy(), pad_width=1, mode="edge"), sample_points_3d,
                                 method="linear", bounds_error=True)
         np.testing.assert_array_almost_equal(interpolated_values_3d.numpy(), scipy_values_3d, decimal=12)
+
+if __name__ == "__main__":
+    test = TestCalculationUtils()
+    test.test_bilinear_interpolation()

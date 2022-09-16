@@ -251,18 +251,14 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         x_int = []
         y_int = []
         # compute the indices of the neighbors
-        # for x dimension           
-        x_int.append(torch.floor(x).type(dtype_long))
-        x_int.append(x_int[0] + 1)
-        # for y dimension
-        y_int.append(torch.floor(y).type(dtype_long))
-        y_int.append(y_int[0] + 1)
-
         # for lower indices clamp at 0 and image.shape[*]-2
         # for higher indices clamp at 1 and image.shape[*]-1
-        for i in range(2):
-            x_int[i] = torch.clamp(x_int[i], i, image.shape[0]-2+i)
-            y_int[i] = torch.clamp(y_int[i], i, image.shape[1]-2+i)
+        # for x dimension           
+        x_int.append(torch.clamp(torch.floor(x).type(dtype_long), 0, image.shape[0]-2))
+        x_int.append(x_int[0] + 1)
+        # for y dimension
+        y_int.append(torch.clamp(torch.floor(y).type(dtype_long), 0, image.shape[1]-2))
+        y_int.append(y_int[0] + 1)
 
         # ensures, that at the boundary the nearest boundary values are taken into account
         x = torch.clamp(x, 0, image.shape[0]-1)
@@ -279,56 +275,41 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         return f_int
 
     
-    elif image.ndim == 3: # 3dim case #TODO: Make it less memory expensive - probably not possible
+    elif image.ndim == 3: # 3dim case
         # in the 3dim case one has 8 neighbors that are the corners of a cube 
         
-        # compute the indices of the neighbors            
-        x0 = torch.floor(x).type(dtype_long)
-        x1 = x0 + 1
+        # compute the indices of the neighbors
+        x_int = []
+        y_int = []
+        z_int = []
+        # for lower indices clamp at 0 and image.shape[*]-2
+        # for higher indices clamp at 1 and image.shape[*]-1
+        # for x dimension           
+        x_int.append(torch.clamp(torch.floor(x).type(dtype_long), 0, image.shape[0]-2))
+        x_int.append(x_int[0] + 1)
 
-        y0 = torch.floor(y).type(dtype_long)
-        y1 = y0 + 1
+        # for y dimension
+        y_int.append(torch.clamp(torch.floor(y).type(dtype_long), 0, image.shape[1]-2))
+        y_int.append(y_int[0] + 1)
+
+        # for z dimension
+        z_int.append(torch.clamp(torch.floor(z).type(dtype_long), 0, image.shape[2]-2))
+        z_int.append(z_int[0] + 1)       
         
-        z0 = torch.floor(z).type(dtype_long)
-        z1 = z0 + 1
-
-        x0 = torch.clamp(x0, 0, image.shape[0]-2)
-        x1 = torch.clamp(x1, 1, image.shape[0]-1)
-        y0 = torch.clamp(y0, 0, image.shape[1]-2)
-        y1 = torch.clamp(y1, 1, image.shape[1]-1)
-        z0 = torch.clamp(z0, 0, image.shape[2]-2)
-        z1 = torch.clamp(z1, 1, image.shape[2]-1)
-
         # ensures, that at the boundary the nearest boundary values are taken into account
         x = torch.clamp(x, 0, image.shape[0]-1)
         y = torch.clamp(y, 0, image.shape[1]-1)
         z = torch.clamp(z, 0, image.shape[2]-1)
         
-        # read out the neighboring values
-        # front plane
-        f_tlf = image[x0, y0, z0] # top left front neighbor value
-        f_blf = image[x0, y1, z0] # bottom left front neighbor value
-        f_trf = image[x1, y0, z0] # top right front neighbor value
-        f_brf = image[x1, y1, z0] # bottom right front neighbor value
-        # back plane
-        f_tlb = image[x0, y0, z1] # top left front neighbor value
-        f_blb = image[x0, y1, z1] # bottom left front neighbor value
-        f_trb = image[x1, y0, z1] # top right front neighbor value
-        f_brb = image[x1, y1, z1] # bottom right front neighbor value
-
-        # calculate the weights
-        # front plane
-        w_tlf = (x1.type(dtype)-x) * (y1.type(dtype)-y) * (z1.type(dtype)-z)
-        w_blf = (x1.type(dtype)-x) * (y-y0.type(dtype)) * (z1.type(dtype)-z)
-        w_trf = (x-x0.type(dtype)) * (y1.type(dtype)-y) * (z1.type(dtype)-z)
-        w_brf = (x-x0.type(dtype)) * (y-y0.type(dtype)) * (z1.type(dtype)-z)
-        # back plane
-        w_tlb = (x1.type(dtype)-x) * (y1.type(dtype)-y) * (z-z0.type(dtype))
-        w_blb = (x1.type(dtype)-x) * (y-y0.type(dtype)) * (z-z0.type(dtype))
-        w_trb = (x-x0.type(dtype)) * (y1.type(dtype)-y) * (z-z0.type(dtype))
-        w_brb = (x-x0.type(dtype)) * (y-y0.type(dtype)) * (z-z0.type(dtype))
-
-        return f_tlf*w_tlf + f_blf*w_blf + f_trf*w_trf + f_brf*w_brf + f_tlb*w_tlb + f_blb*w_blb + f_trb*w_trb + f_brb*w_brb
+        # in order to reduce needed memory loop over 8 neigbours (i,j) \in {(0,0,0), (0,0,1), (0,1,0), (0,1,1), ...} 
+        # and sum the weighted image values of the neighbors up
+        f_int = 0
+        for i,j in zip(itertools.product(range(2),repeat=3), itertools.product(range(1,-1,-1),repeat=3)):
+            weights = torch.abs((x_int[j[0]].type(dtype)-x) * (y_int[j[1]].type(dtype)-y) * (z_int[j[2]].type(dtype)-z))
+            neighbor_values = image[x_int[i[0]], y_int[i[1]], z_int[i[2]]]
+            f_int += neighbor_values * weights
+            del weights, neighbor_values
+        return f_int
         
     else:
         return None
