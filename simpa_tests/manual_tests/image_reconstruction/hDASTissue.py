@@ -36,7 +36,7 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-class DASTissueBasedHeterogenousSoSTest(ManualIntegrationTestClass):
+class hDASTissue(ManualIntegrationTestClass):
     """
     This test runs a simulation creating an example volume of geometric shapes and reconstructs it with the Delay and
     Sum algorithm. To verify that the test was successful a user has to evaluate the displayed reconstruction.
@@ -424,5 +424,5 @@ class DASTissueBasedHeterogenousSoSTest(ManualIntegrationTestClass):
         pass
 
 if __name__ == '__main__':
-    test = DASTissueBasedHeterogenousSoSTest()
+    test = hDASTissue()
     test.run_test(show_figure_on_screen=True)

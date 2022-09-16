@@ -32,9 +32,18 @@ class hDASToySoS(ManualIntegrationTestClass):
     """
 
     def setup(self):
-        ###########  Hyperparam to change: ##############
-        self.HETERO_OPTION = "vertical_gradient"
-        #################################################
+        ###########  change this parameter in order to specify the type of the toy sos map ##############
+        self.HETERO_OPTION = None
+        #################################################################################################
+        if self.HETERO_OPTION == None:
+            self.HETERO_OPTION = input("Choose one sos-map out of:" +
+                                        "\n-'vertical_gradient'" +
+                                        "\n-'horizontal_gradient'" +
+                                        "\n-'horizontal_2_regions'" +
+                                        "\n-'diagonal_2_regions'" +
+                                        "\n-'gaussian_noise'" +
+                                        "\n Enter here: "
+                                        )
 
         path_manager = PathManager()
 
