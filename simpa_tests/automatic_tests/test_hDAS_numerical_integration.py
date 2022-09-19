@@ -71,24 +71,26 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         self.spacing_in_mm = spac_fov
 
         self.logger = Logger()
-        self.torch_device = torch.device("cuda")
+        self.torch_device = torch.device("cpu") #torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         
         self.device_base_position_mm = np.array([self.global_settings[Tags.DIM_VOLUME_X_MM]/2,
                                                  self.global_settings[Tags.SPACING_MM],
                                                  self.global_settings[Tags.DIM_VOLUME_Z_MM]/2])  
 
         # Simulate sensors
-        RANDOM_SENSORS = False # Should be False for Reproducibility or True to test random sensors
-        self.n_sensor_elements = 2
-        if RANDOM_SENSORS: 
+        self.RANDOM_SENSORS = False # Should be False for Reproducibility or True to test random sensors
+        self.n_sensor_elements = 10
+        if self.RANDOM_SENSORS: 
             # sample sensors
             sensor_distri = Uniform(
                 low=torch.tensor([-self.global_settings[Tags.DIM_VOLUME_X_MM]/2+self.global_settings[Tags.SPACING_MM]/4,
                                   0,
-                                  -self.global_settings[Tags.DIM_VOLUME_Z_MM]/2]+self.global_settings[Tags.SPACING_MM]/4).to(self.torch_device),
+                                  -self.global_settings[Tags.DIM_VOLUME_Z_MM]/2+self.global_settings[Tags.SPACING_MM]/4],
+                                   dtype=torch.float64, device=self.torch_device),
                 high=torch.tensor([self.global_settings[Tags.DIM_VOLUME_X_MM]/2-self.global_settings[Tags.SPACING_MM]/4,
                                    0.01,
-                                   self.global_settings[Tags.DIM_VOLUME_Z_MM]/2]-self.global_settings[Tags.SPACING_MM]/4).to(self.torch_device))
+                                   self.global_settings[Tags.DIM_VOLUME_Z_MM]/2-self.global_settings[Tags.SPACING_MM]/4],
+                                   dtype=torch.float64, device = self.torch_device))
             self.sensor_positions = sensor_distri.sample((self.n_sensor_elements,))
         else:
             self.sensor_positions = torch.tensor([[self.xdim/4*self.spacing_in_mm, 1e-5, -self.ydim/4*self.spacing_in_mm],
@@ -255,6 +257,7 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                                                       + D*self.c
                         ds_ref[x_index, y_index, n] = D
         
+        del source_positions, sensor_positions
         return delays/self.time_spacing_in_ms, ds_ref
 
     def test(self, visualize=False, verbosity: list = [], scalarfield_type: str = None) -> None:
@@ -303,13 +306,13 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                                 "constant": 1e-15,
                                 "horizontal_gradient": 1e-8,
                                 "vertical_gradient": 1e-8,
-                                "quadratic": 0
+                                "quadratic": 1e-5
                                 },
                             "absolute": {
                                 "constant": 1e-9,
                                 "horizontal_gradient": 1e-2,
                                 "vertical_gradient": 1e-2,
-                                "quadratic": 0
+                                "quadratic": 1 if not self.RANDOM_SENSORS else 10
                                 }
                             }
         
@@ -481,8 +484,12 @@ if __name__ == "__main__":
     test = TesthDASNumericalIntegration()
 
     # Normal usage
+    test.setUp()
+    test.test()
+
+    # More verbose prints
     #test.setUp()
-    #test.test()
+    #test.test(verbosity=["delays", "ds", "integrals"])
 
     # Visualize scalarfield 
     #test.setUp()
@@ -490,6 +497,6 @@ if __name__ == "__main__":
     #test.visualize_setting(show=True)
 
     # Print and plot all quantities for given scalarfield
-    test.setUp()
-    test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="horizontal_gradient")
+    #test.setUp()
+    #test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="horizontal_gradient")
 
