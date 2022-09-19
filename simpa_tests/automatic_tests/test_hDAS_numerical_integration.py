@@ -7,19 +7,31 @@ from simpa.utils.settings import Settings
 from simpa.log.file_logger import Logger
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-
-from simpa.utils.calculate import bilinear_interpolation
+from typing import Tuple
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import calculate_delays_for_heterogen_sos
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import calculate_delays_for_heterogen_sos_OLD
 
-import sys
 class TesthDASNumericalIntegration(unittest.TestCase):
     """
-    
+    This test is an automatic test, however one can also run the script and visualize the results and get more detailed prints
+    This test tests the heterogenous delay calculation hDAS.
+    usage:
+    - run automatic tests with minimal prints
+        test.setUp()
+        test.test()
+    - run tests for given scalarfield type showing plots and printing informations about the differences of delays, ds and integrals
+        test.setUp()
+        test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="horizontal_gradient")
+    - visualize a specific scalarfield type and the corresponding SoS-map
+        test.setUp()
+        test.create_scalarfield("quadratic")
+        test.visualize_setting(show=True)
     """
 
-    def setUp(self, xdim_glob = 400, ydim_glob = 500, spac_glob = 0.1, xdim_fov = None, ydim_fov= None, spac_fov = 0.1,
-              PAI_realistic_units = True):
+    def setUp(self, xdim_glob: int = 400, ydim_glob: int = 500, spac_glob: float = 0.1, xdim_fov: int = None, ydim_fov: int = None,
+              spac_fov: float = 0.1, PAI_realistic_units: bool = True) -> None:
+        """
+        sets up volume, FOV, sensor positions, physical properties
+        """
         # Global Volume
         self.global_settings = Settings()
 
@@ -84,12 +96,9 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                                                   device=self.torch_device)
             self.n_sensor_elements = 2
 
-        # Account for centered source points and for the thing that pixel positions correspond to the centre of the pixel
-        self.center_FOV_x = True # should be true
-
         self.scalarfield_type_list = ["constant", "horizontal_gradient", "vertical_gradient", "quadratic"]
 
-    def create_scalarfield(self, scalarfield_type="horizontal_gradient")-> None:
+    def create_scalarfield(self, scalarfield_type: str = "horizontal_gradient")-> None:
         """
         creates heterogenous maps
         """
@@ -145,17 +154,14 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         scalarfield_3d = self.scalarfield[:,None,:]
         self.speed_of_sound_in_m_per_s = 1/scalarfield_3d
 
-    def get_xyz(self, center_FOV_x):
+    def get_xyz(self) -> Tuple[torch.tensor, torch.tensor, torch.tensor]:
         """
         helper function to compute the positions of the FOV points(=source points) taking into account the symmetry in x
         direction (off by one fix by Tom)
         """
-        if center_FOV_x:
-            x_offset = 0.5 if self.xdim % 2 == 0 else 0  # to ensure pixels are symmetrically arranged around the 0 like the
-            # sensor positions, add an offset of 0.5 pixels if the dimension is even
-        else:
-            x_offset = 0
-
+        x_offset = 0.5 if self.xdim % 2 == 0 else 0  # to ensure pixels are symmetrically arranged around the 0 like the
+        # sensor positions, add an offset of 0.5 pixels if the dimension is even
+        
         x = self.xdim_start + torch.arange(self.xdim, device=self.torch_device, dtype=torch.float32) + x_offset
         y = self.ydim_start + torch.arange(self.ydim, device=self.torch_device, dtype=torch.float32)
         if self.zdim == 1:
@@ -164,9 +170,11 @@ class TesthDASNumericalIntegration(unittest.TestCase):
             z = self.zdim_start + torch.arange(self.zdim, device=self.torch_device, dtype=torch.float32)
         return x, y, z
 
-    def analytical_solution(self, scalarfield_type):
-    
-        print(f"Calculate analytical solution for {scalarfield_type}\n")
+    def analytical_solution(self, scalarfield_type: str) -> Tuple[torch.tensor, torch.tensor]:
+        """
+        Calculates the delays using an analytical formula (derived by hand) and also returns the used distances
+        """
+        print(f"\nCalculate analytical solution for {scalarfield_type} scalarfield\n")
         xx, yy = torch.meshgrid(self.x, self.y)
         source_positions = torch.dstack([xx*self.spacing_in_mm, yy*self.spacing_in_mm])
         device_base_position_mm = self.device_base_position_mm.copy()
@@ -249,22 +257,30 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         
         return delays/self.time_spacing_in_ms, ds_ref
 
-    def test(self, visualize=False, verbosity=[], scalarfield_type = None) -> None:
-        self.x, self.y, self.z = self.get_xyz(self.center_FOV_x)
+    def test(self, visualize=False, verbosity: list = [], scalarfield_type: str = None) -> None:
+        """
+        test function to automatically test for given or specified scalarfield types
+        """
+        self.x, self.y, self.z = self.get_xyz()
 
         if scalarfield_type == None:
             for scalarfield_type in self.scalarfield_type_list:
-                print("\n############################################\nScalarfield", scalarfield_type, "\n############################################")
+                print("\n#######################################\nScalarfield", scalarfield_type, "\n#######################################")
                 self.run_for_given_type(visualize=visualize, verbosity=verbosity, scalarfield_type=scalarfield_type)
         else:
-            print("\n############################################\nScalarfield", scalarfield_type, "\n############################################")
+            print("\n#######################################\nScalarfield", scalarfield_type, "\n#######################################")
             self.run_for_given_type(visualize=visualize, verbosity=verbosity, scalarfield_type=scalarfield_type)
 
-    def run_for_given_type(self, visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="horizontal_gradient") -> None:
+    def run_for_given_type(self, visualize: bool =True, verbosity: list = ["delays", "ds", "integrals"],
+                           scalarfield_type: str = "horizontal_gradient") -> None:
+        """
+        run test for given scalarfield type
+        """
 
         self.create_scalarfield(scalarfield_type)
 
-        self.delays_num, self.ds_num = calculate_delays_for_heterogen_sos_OLD(
+        print(f"Calculate numerical solution for {scalarfield_type} scalarfield")
+        self.delays_num, self.ds_num = calculate_delays_for_heterogen_sos(
                                     self.sensor_positions, self.xdim, self.ydim, self.zdim, self.x, self.y, self.z, self.spacing_in_mm,
                                     self.time_spacing_in_ms, self.speed_of_sound_in_m_per_s, self.n_sensor_elements, self.global_settings,
                                     self.device_base_position_mm, self.logger, self.torch_device,
@@ -273,27 +289,15 @@ class TesthDASNumericalIntegration(unittest.TestCase):
 
         self.delays_num, self.ds_num = self.delays_num.squeeze().cpu().numpy(), self.ds_num.cpu().numpy()
 
-        # using own interpolation
-        self.delays_num2, self.ds_num2 = calculate_delays_for_heterogen_sos(
-                                    self.sensor_positions, self.xdim, self.ydim, self.zdim, self.x, self.y, self.z, self.spacing_in_mm,
-                                    self.time_spacing_in_ms, self.speed_of_sound_in_m_per_s, self.n_sensor_elements, self.global_settings,
-                                    self.device_base_position_mm, self.logger, self.torch_device,
-                                    get_ds = True
-                                    )
-        self.delays_num2, self.ds_num2 = self.delays_num2.squeeze().cpu().numpy(), self.ds_num2.cpu().numpy()
-
         # Analytical Integration
         self.delays_ana, self.ds_ana = self.analytical_solution(scalarfield_type)
         self.delays_ana, self.ds_ana = self.delays_ana.cpu().numpy(), self.ds_ana.cpu().numpy()
 
         # Calculate differences of the delays
         self.difference = np.abs(self.delays_num - self.delays_ana)
-        self.difference2 = np.abs(self.delays_num2 - self.delays_ana)
-        self.difference_nums = np.abs(self.delays_num - self.delays_num2)
 
         # Calculate differences of the distances
         ds_diff_num = np.abs(self.ds_ana - self.ds_num)
-        ds_diff_num2 = np.abs(self.ds_ana - self.ds_num2)
 
         self.tolerances = {"relative": {
                                 "constant": 1e-15,
@@ -321,19 +325,10 @@ class TesthDASNumericalIntegration(unittest.TestCase):
 
         if "delays" in verbosity:
             print("Absolute difference of delays")
-            print(" - numerical delays (grid_sample interpol.) and analytical delays")
             print(f"    max={self.difference.max()}\n    mean={self.difference.mean()}\n    min={self.difference.min()}")
             print(" - numerical delays (own interpol.) and analytical delays")
-            print(f"    max={self.difference2.max()}\n    mean={self.difference2.mean()}\n    min={self.difference2.min()}")
-            print(" - numerical delays (own interpol.) and numerical delays (grid_sample interpol.)")
-            print(f"    max={self.difference_nums.max()}\n    mean={self.difference_nums.mean()}\n    min={self.difference_nums.min()}\n")
             print("Relative difference of delays (divided by analytical delays)")
-            print(" - numerical delays (grid_sample interpol.) and analytical delays")
             print(f"    max={(self.difference/self.delays_ana).max()}\n    mean={(self.difference/self.delays_ana).mean()}\n    min={(self.difference/self.delays_ana).min()}")
-            print(" - numerical delays (own interpol.) and analytical delays")
-            print(f"    max={(self.difference2/self.delays_ana).max()}\n    mean={(self.difference2/self.delays_ana).mean()}\n    min={(self.difference2/self.delays_ana).min()}")
-            print(" - numerical delays (own interpol.) and numerical delays (grid_sample interpol.)")
-            print(f"    max={(self.difference_nums/self.delays_num).max()}\n    mean={(self.difference_nums/self.delays_num).mean()}\n    min={(self.difference_nums/self.delays_num).min()}\n")
 
 
         print("Distances of Sources and Sensors:")
@@ -343,45 +338,33 @@ class TesthDASNumericalIntegration(unittest.TestCase):
 
         if "ds" in verbosity:
             print("Distance differences")
-            print(" - numerical delays (grid_sample interpol.) and analytical ds")
             print(f"    max={ds_diff_num.max()}\n    mean={ds_diff_num.mean()}\n    min={ds_diff_num.min()}")
-            print(" - numerical delays (own interpol.) and analytical ds") 
-            print(f"    max={ds_diff_num2.max()}\n    mean={ds_diff_num.mean()}\n    min={ds_diff_num.min()}\n")
-        
 
         if "integrals" in verbosity or visualize:
             # Compute the Integrals
             # avoid division by 0
             self.ds_num[self.ds_num==0] = 42
-            self.ds_num2[self.ds_num2==0] = 42
             self.ds_ana[self.ds_ana==0] = 42
             self.integral_num = self.delays_num[:,:,:]/self.ds_num[:,:,:]
             self.integral_ana = self.delays_ana[:,:,:]/self.ds_ana[:,:,:]
-            self.integral_num2 = self.delays_num2[:,:,:]/self.ds_num2[:,:,:]
             # Integration differences
             self.int_difference = np.abs(self.integral_num - self.integral_ana)
-            self.int_difference2 = np.abs(self.integral_num2 - self.integral_ana)
-            self.int_difference_num = np.abs(self.integral_num - self.integral_num2)
             if "integrals" in verbosity:
                 print("Absolute difference of integrals")
-                print(" - numerical integrals (grid_sample interpol.) and analytical integrals")
                 print(f"    max={self.int_difference.max()}\n    mean={self.int_difference.mean()}\n    min={self.int_difference.min()}")
-                print(" - numerical integrals (own interpol.) and analytical integrals")
-                print(f"    max={self.int_difference2.max()}\n    mean={self.int_difference2.mean()}\n    min={self.int_difference2.min()}")
-                print(" - numerical integrals (own interpol.) and numerical integrals (grid_sample interpol.)")
-                print(f"    max={self.int_difference_num.max()}\n    mean={self.int_difference_num.mean()}\n    min={self.int_difference_num.min()}\n")
 
         if visualize:
-            self.visualize_setting(show_sos_map=True)
+            self.visualize_setting()
             self.visualize_delays()
             self.visualize_differences()
             self.visualize_delay_difference_hist()
-            self.visualize_integral_differences()
+            self.visualize_integrals()
             self.visualize_integral_difference_hist()
+            plt.show()
 
         return None
 
-    def visualize_setting(self, show_sos_map = False) -> None:
+    def visualize_setting(self, show: bool = False) -> None:
         """
         visualizes the scalarfield, the sensors, the FOV and the device base position 
         """           
@@ -392,96 +375,121 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         xdim_start_glob = self.xdim_start*FOV_global_pix_factor + device_pix[0]
         ydim_start_glob = self.ydim_start*FOV_global_pix_factor + device_pix[2]
 
-        plt.figure("Scalarfield", figsize=(6,12))
-        ax = plt.gca()
-        plt.imshow(self.scalarfield.T, extent=[0, self.xdim_glob, self.ydim_glob, 0])
-        plt.colorbar()
+        fig, axes = plt.subplots(1, 2, figsize=(8*2,12))
+        fig.canvas.manager.set_window_title("Scalarfield and SoS-map")
+        im1 = axes[0].imshow(self.scalarfield.T, extent=[0, self.xdim_glob, self.ydim_glob, 0])
+        axes[0].set_xlabel("x")
+        axes[0].set_ylabel("y")
+        axes[0].set_title("Scalarfield")
+        plt.colorbar(im1, ax=axes[0])
         # Create a Rectangle patch
         rect = patches.Rectangle((xdim_start_glob,ydim_start_glob),self.xdim*FOV_global_pix_factor, self.ydim*FOV_global_pix_factor,
                                 linewidth=1, edgecolor='grey', facecolor='none', linestyle="--", label="FOV")
         # Add the patch to the Axes
-        ax.add_patch(rect)
-        plt.scatter(sens_pix[:,0], sens_pix[:,2], color="red", label="sensors")
-        plt.scatter(device_pix[0], device_pix[2], color="orange", label="device base position")
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), facecolor='whitesmoke')
-        plt.show()
+        axes[0].add_patch(rect)
+        axes[0].scatter(sens_pix[:,0], sens_pix[:,2], color="red", label="sensors")
+        axes[0].scatter(device_pix[0], device_pix[2], color="orange", label="device base position", marker="x")
+        axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, -0.08), facecolor='whitesmoke')
 
-        if show_sos_map:
-            plt.figure("SoS-map = 1/Scalarfield", figsize=(6,12))
-            ax = plt.gca()
-            plt.imshow(1/self.scalarfield.T, extent=[0, self.xdim_glob, self.ydim_glob, 0])
-            plt.colorbar()
+        im2 = plt.imshow(1/self.scalarfield.T, extent=[0, self.xdim_glob, self.ydim_glob, 0])
+        axes[1].set_xlabel("x")
+        axes[1].set_ylabel("y")
+        axes[1].set_title("SoS-map = 1/Scalarfield")
+        plt.colorbar(im2, ax=axes[1])
+
+        if show:
             plt.show()
 
-    def visualize_delays(self) -> None:
-        cols = 3
+    def visualize_delays(self, show: bool = False) -> None:
+        """
+        visualize the numerically and analytically calculated delays for all sensors
+        """
+        cols = 2
         fig, axes = plt.subplots(self.n_sensor_elements, cols, figsize=(8*cols,6*self.n_sensor_elements))
         fig.canvas.manager.set_window_title("Delays of the FOV points")
         for n in range(self.n_sensor_elements):
             im1 = axes[n,0].imshow(self.delays_num[:,:,n])
+            axes[n, 0].set_title(f"Numerical (Sensor {n+1})")
+            axes[n, 0].set_ylabel("x")
+            axes[n, 0].set_xlabel("y")
             plt.colorbar(im1, ax=axes[n, 0])
             im2 = axes[n,1].imshow(self.delays_ana[:,:,n])
+            axes[n, 1].set_title(f"Analytical (Sensor {n+1})")
+            axes[n, 1].set_ylabel("x")
+            axes[n, 1].set_xlabel("y")
             plt.colorbar(im2, ax=axes[n, 1])
-            im3 = axes[n,2].imshow(self.delays_num2[:,:,n])
-            plt.colorbar(im3, ax=axes[n, 2])
-        plt.show()
+        if show:
+            plt.show()
 
-    def visualize_differences(self) -> None:
-        cols = 3
-        fig, axes = plt.subplots(self.n_sensor_elements, 2, figsize=(8*(cols-1),6*self.n_sensor_elements))
+    def visualize_differences(self, show: bool = False) -> None:
+        """
+        visualize the difference between the numerically and analytically calculated delays
+        """
+        fig, axes = plt.subplots(1, self.n_sensor_elements, figsize=(8*self.n_sensor_elements,6))
         fig.canvas.manager.set_window_title("Delay Differences")
         for n in range(self.n_sensor_elements):
-            dif1 = axes[n,0].imshow(self.difference[:,:,n])
-            plt.colorbar(dif1, ax=axes[n, 0])
-            dif2 = axes[n,1].imshow(self.difference2[:,:,n])
-            plt.colorbar(dif2, ax=axes[n, 1])
-        plt.show()
+            dif1 = axes[n].imshow(self.difference[:,:,n], cmap="hot")
+            axes[n].set_title(f"Sensor {n+1}")
+            axes[n].set_ylabel("x")
+            axes[n].set_xlabel("y")
+            plt.colorbar(dif1, ax=axes[n])
+        if show:
+            plt.show()
 
-    def visualize_delay_difference_hist(self) -> None:
-        fig, axes = plt.subplots(1, 2, figsize=(28,8))
-        fig.canvas.manager.set_window_title("Analysis of the Delay Differences")
-        fig.suptitle('Delay Differences', fontsize=18)
+    def visualize_delay_difference_hist(self, show: bool = False) -> None:
+        """
+        plot a histogram of the delay differences
+        """
+        plt.figure("Histogram of Delay Differences")
+        plt.hist(self.difference.reshape(-1), bins=20, color="red")
+        plt.title(f"max = {self.difference.max()}\nmean={self.difference.mean()}\nmin={self.difference.min()}", fontsize=16)
+        if show:
+            plt.show()
 
-        axes[0].hist(self.difference.reshape(-1), bins=20)
-        axes[0].set_title(f"grid_sample()\nmax = {self.difference.max()}\nmean={self.difference.mean()}\nmin={self.difference.min()}", fontsize=16)
-
-        axes[1].hist(self.difference2.reshape(-1), bins=20)
-        axes[1].set_title(f"own interpol.\nmax = {self.difference2.max()}\nmean={self.difference2.mean()}\nmin={self.difference2.min()}", fontsize=16)
-        plt.show()
-
-    def visualize_integral_differences(self) -> None:
-        cols = 3 
-        fig, axes = plt.subplots(self.n_sensor_elements, 3, figsize=(6*cols,8*self.n_sensor_elements))
+    def visualize_integrals(self, show: bool = False) -> None:
+        """
+        plot the integrals, i.e. delays/ds
+        """
+        cols = 2
+        fig, axes = plt.subplots(self.n_sensor_elements, cols, figsize=(6*cols,8*self.n_sensor_elements))
         fig.canvas.manager.set_window_title("Integrals")
         for n in range(self.n_sensor_elements):
             im1 = axes[n,0].imshow(self.integral_num[:,:,n].T)
+            axes[n, 0].set_title(f"Numerical (Sensor {n+1})")
+            axes[n, 0].set_ylabel("x")
+            axes[n, 0].set_xlabel("y")
             plt.colorbar(im1, ax=axes[n, 0])
             im2 = axes[n,1].imshow(self.integral_ana[:,:,n].T)
+            axes[n, 1].set_title(f"Analytical (Sensor {n+1})")
+            axes[n, 1].set_ylabel("x")
+            axes[n, 1].set_xlabel("y")
             plt.colorbar(im2, ax=axes[n, 1])
-            im3 = axes[n,2].imshow(self.integral_num2[:,:,n].T)
-            plt.colorbar(im3, ax=axes[n, 2])
-        plt.show()
+        if show:
+            plt.show()
 
-    def visualize_integral_difference_hist(self) -> None:      
-        fig, axes = plt.subplots(1, 2, figsize=(28,8))
-        fig.canvas.manager.set_window_title("Integral Differences")
-        fig.suptitle('Integral Differences', fontsize=18)
-        axes[0].hist(self.int_difference.reshape(-1), bins=20)
-        axes[0].set_title(f"grid_sample()\nmax = {self.int_difference.max()}\nmean={self.int_difference.mean()}\nmin={self.int_difference.min()}", fontsize=16)
-
-        axes[1].hist(self.int_difference2.reshape(-1), bins=20)
-        axes[1].set_title(f"own interpol.\nmax = {self.int_difference2.max()}\nmean={self.int_difference2.mean()}\nmin={self.int_difference2.min()}", fontsize=16)
-        plt.show()
-
-    def print_difference_details(self, name, difference):
-        #TODO
-        pass
+    def visualize_integral_difference_hist(self, show: bool = False) -> None:      
+        """
+        plot a histogram of the integral differences
+        """
+        plt.figure("Integral Differences")
+        plt.hist(self.int_difference.reshape(-1), bins=20, color="red")
+        plt.title(f"max = {self.int_difference.max()}\nmean={self.int_difference.mean()}\nmin={self.int_difference.min()}", fontsize=16)
+        if show:
+            plt.show()
 
 if __name__ == "__main__":
     test = TesthDASNumericalIntegration()
 
-    #test.setUp()
-    #test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="quadratic")
-
+    # Normal usage
     #test.setUp()
     #test.test()
+
+    # Visualize scalarfield 
+    #test.setUp()
+    #test.create_scalarfield("quadratic")
+    #test.visualize_setting(show=True)
+
+    # Print and plot all quantities for given scalarfield
+    test.setUp()
+    test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="horizontal_gradient")
+
