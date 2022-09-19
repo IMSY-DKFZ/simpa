@@ -35,6 +35,12 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         # FOV
         self.xdim = int(xdim_glob)//2 if xdim_fov == None else xdim_fov # self.xdim_glob//2 #xdim_glob     # pixels (xdim_mm = 10 mm)
         self.ydim = int(ydim_glob)//2 if ydim_fov == None else ydim_fov #self.ydim_glob//2 #ydim_glob        # pixels (ydim_mm = 15 mm)
+        # Note: 
+        # if FOV dimensions == Global volume dimensions: numerical and the analytical solution will differ for the boundary FOV-pixel,
+        # because they differ in how they treat the boundary of the SoS-map:
+        #  - the numerical solution assigns the global position [0 mm, 0 mm] the nearest sos-value at the position [spacing/2 mm, spacing/2 mm] 
+        #    (because we do not have any other neigbors between which one can interpolate [we clamp the boundary values to the nearest one])
+        #  - the analytical solution assumes no step in the SoS-map and assumes that the SoS-scalarfield-function goes on also after the boundary.
         self.xdim = np.clip(self.xdim, 2, self.xdim_glob-2) # for xdim >= xdim_glob-1: boundary miscalculations in the analytical solution
         self.ydim = np.clip(self.ydim, 2, self.ydim_glob-2)
         self.zdim = 1
@@ -60,7 +66,7 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                                                  self.global_settings[Tags.DIM_VOLUME_Z_MM]/2])  
 
         # Simulate sensors
-        RANDOM_SENSORS = False # Should be False for Reproducibility or True for test random sensors
+        RANDOM_SENSORS = False # Should be False for Reproducibility or True to test random sensors
         self.n_sensor_elements = 2
         if RANDOM_SENSORS: 
             # sample sensors
@@ -79,23 +85,7 @@ class TesthDASNumericalIntegration(unittest.TestCase):
             self.n_sensor_elements = 2
 
         # Account for centered source points and for the thing that pixel positions correspond to the centre of the pixel
-        self.grid_points_middle = True # should be true
         self.center_FOV_x = True # should be true
-        self.global_ds_calc = True # TODO: in finaler version wird man sich für eine version entscheiden
-
-        # * grid_points_middle = True: 
-        #     
-        #         assumes that the position of the first sos pixel is at [global_spacing/2 mm, global_spacing/2 mm] and is spanned over [0 mm,0 mm] to [global_spacing mm, global_spacing mm]
-        #         
-        #         
-        # * grid_points_middle = False: 
-        #         
-        #         assumes that the position of the first sos pixel is at [0 mm ,0 mm]  and is spanned over [-global_spacing/2 mm, -global_spacing/2 mm] to [global_spacing/2 mm, global_spacing/2 mm]
-
-        # ### Note: For grid_points_middle=True
-        # if the FOV is the same like the global volume dimensions, then the numerical and the analytical solution will differ for the boundary FOV-pixel, because they differ in how they treat the boundary of the sos-map:
-        # - the numerical solution assigns the global position [0 mm, 0 mm] the nearest sos-value at the position [spacing/2 mm, spacing/2 mm] (because we do not have any other neigbors between which one can interpolate (we clamp the boundary values to the nearest one)
-        # - the analytical solution assumes no step in the sos-map and assumes that the sos-scalarfield-function goes on also after the boundary.
 
         self.scalarfield_type_list = ["constant", "horizontal_gradient", "vertical_gradient", "quadratic"]
 
@@ -116,8 +106,8 @@ class TesthDASNumericalIntegration(unittest.TestCase):
             self.k = 1e-4/self.global_settings[Tags.DIM_VOLUME_X_MM] if self.PAI_realistic_units else int(200/self.global_settings[Tags.DIM_VOLUME_X_MM])
 
             x_pos_mm = np.arange(self.xdim_glob)*self.global_settings[Tags.SPACING_MM]
-            if self.grid_points_middle:
-                x_pos_mm += 0.5*self.global_settings[Tags.SPACING_MM]
+            # pixel [0,0] denotes to position [spacing/2, spacing/2]
+            x_pos_mm += 0.5*self.global_settings[Tags.SPACING_MM]
             self.scalarfield = np.ones((self.xdim_glob,self.ydim_glob)) * (self.k*x_pos_mm[:,None] + self.c)
         elif scalarfield_type == "vertical_gradient":
             """
@@ -127,8 +117,8 @@ class TesthDASNumericalIntegration(unittest.TestCase):
             self.k = 1e-4/self.global_settings[Tags.DIM_VOLUME_Z_MM] if self.PAI_realistic_units else int(200/self.global_settings[Tags.DIM_VOLUME_Z_MM])
 
             y_pos_mm = np.arange(self.ydim_glob)*self.global_settings[Tags.SPACING_MM]
-            if self.grid_points_middle:
-                y_pos_mm += 0.5*self.global_settings[Tags.SPACING_MM] 
+            # pixel [0,0] denotes to position [spacing/2, spacing/2]
+            y_pos_mm += 0.5*self.global_settings[Tags.SPACING_MM] 
             self.scalarfield = np.ones((self.xdim_glob,self.ydim_glob)) * (self.k*y_pos_mm[None,:] + self.c)
         elif scalarfield_type == "quadratic":
             self.c = None # see below
@@ -137,16 +127,16 @@ class TesthDASNumericalIntegration(unittest.TestCase):
 
             x_pos_mm = np.arange(self.xdim_glob)*self.global_settings[Tags.SPACING_MM]
             y_pos_mm = np.arange(self.ydim_glob)*self.global_settings[Tags.SPACING_MM]
-            if self.grid_points_middle:
-                x_pos_mm += 0.5*self.global_settings[Tags.SPACING_MM]
-                y_pos_mm += 0.5*self.global_settings[Tags.SPACING_MM]
+            # pixel [0,0] denotes to position [spacing/2, spacing/2]
+            x_pos_mm += 0.5*self.global_settings[Tags.SPACING_MM]
+            y_pos_mm += 0.5*self.global_settings[Tags.SPACING_MM]
             xgrid, ygrid = np.meshgrid(x_pos_mm, y_pos_mm) 
             quadratic = (xgrid-self.centre[0])**2+(ygrid-self.centre[1])**2
             #scale
             max_mm = max(self.global_settings[Tags.DIM_VOLUME_Z_MM]/2, self.global_settings[Tags.DIM_VOLUME_Z_MM]/2)
-            self.k = 0.0004/max_mm**2 if self.PAI_realistic_units else 1
+            self.k = 0.00008/max_mm**2 if self.PAI_realistic_units else 1
             #shift
-            self.c = 1/1700 if self.PAI_realistic_units else 1
+            self.c = 1/1650 if self.PAI_realistic_units else 1
             scalarfield = self.k*quadratic+self.c
             self.scalarfield = scalarfield.T # in order to be shape xdim_glob x ydim_glob
         else:
@@ -177,16 +167,17 @@ class TesthDASNumericalIntegration(unittest.TestCase):
     def analytical_solution(self, scalarfield_type):
     
         print(f"Calculate analytical solution for {scalarfield_type}\n")
-              
         xx, yy = torch.meshgrid(self.x, self.y)
-        source_positions = torch.dstack([xx*self.spacing_in_mm + self.device_base_position_mm[0], yy*self.spacing_in_mm + self.device_base_position_mm[2]])
-        
-        device_base_position_mm = torch.from_numpy(self.device_base_position_mm).to(self.torch_device)
-        sensor_positions = self.sensor_positions + device_base_position_mm
+        source_positions = torch.dstack([xx*self.spacing_in_mm, yy*self.spacing_in_mm])
+        device_base_position_mm = self.device_base_position_mm.copy()
+        device_base_position_mm_x = device_base_position_mm[0]
+        device_base_position_mm_y = device_base_position_mm[2]
+
+        sensor_positions = self.sensor_positions.clone()
         sensor_positions = sensor_positions[:,::2] # leave out 3rd dimension
         
         delays = torch.zeros(self.xdim, self.ydim, self.n_sensor_elements, dtype=torch.float64, device=self.torch_device)
-        ds = torch.zeros(self.xdim, self.ydim, self.n_sensor_elements, dtype=torch.float64, device=self.torch_device)
+        ds_ref = torch.zeros(self.xdim, self.ydim, self.n_sensor_elements, dtype=torch.float64, device=self.torch_device)
         
         if scalarfield_type == "constant":
             for x_index in range(self.xdim):
@@ -194,10 +185,11 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                     for n in range(self.n_sensor_elements):
                         x_s, y_s = source_positions[x_index, y_index]
                         x_e, y_e = sensor_positions[n]
-                        # distance
+                        # distance calculated in FOV system (invariant under translation)
                         D = ((x_e-x_s)**2 + (y_e-y_s)**2)**0.5
+                        # Calculate delays
                         delays[x_index, y_index, n] = D*self.c
-                        ds[x_index, y_index, n] = D
+                        ds_ref[x_index, y_index, n] = D
         
         elif scalarfield_type == "horizontal_gradient":
             for x_index in range(self.xdim):
@@ -205,10 +197,16 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                     for n in range(self.n_sensor_elements):
                         x_s, y_s = source_positions[x_index, y_index]
                         x_e, y_e = sensor_positions[n]
-                        # distance
+                        # distance calculated in FOV system
                         D = ((x_e-x_s)**2 + (y_e-y_s)**2)**0.5
-                        delays[x_index, y_index, n] = D*(self.c+self.k/2*(x_s+x_e))
-                        ds[x_index, y_index, n] = D
+                        # go into global coordinate system
+                        x_s_glob = x_s + device_base_position_mm_x 
+                        x_e_glob = x_e + device_base_position_mm_x
+                        #y_s_glob = y_s + device_base_position_mm_y
+                        #y_e_glob = y_e + device_base_position_mm_y
+                        # Calculate delays
+                        delays[x_index, y_index, n] = D*(self.c+self.k/2*(x_s_glob+x_e_glob))
+                        ds_ref[x_index, y_index, n] = D
         
         elif scalarfield_type == "vertical_gradient":
             for x_index in range(self.xdim):
@@ -216,10 +214,16 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                     for n in range(self.n_sensor_elements):
                         x_s, y_s = source_positions[x_index, y_index]
                         x_e, y_e = sensor_positions[n]
-                        # distance
+                        # distance calculated in FOV system
                         D = ((x_e-x_s)**2 + (y_e-y_s)**2)**0.5
-                        delays[x_index, y_index, n] = D*(self.c+self.k/2*(y_s+y_e))
-                        ds[x_index, y_index, n] = D
+                        # go into global coordinate system
+                        #x_s_glob = x_s + device_base_position_mm_x 
+                        #x_e_glob = x_e + device_base_position_mm_x
+                        y_s_glob = y_s + device_base_position_mm_y
+                        y_e_glob = y_e + device_base_position_mm_y
+                        # Calculate delays
+                        delays[x_index, y_index, n] = D*(self.c+self.k/2*(y_s_glob+y_e_glob))
+                        ds_ref[x_index, y_index, n] = D
         
         elif scalarfield_type == "quadratic":
             for x_index in range(self.xdim):
@@ -227,19 +231,25 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                     for n in range(self.n_sensor_elements):
                         x_s, y_s = source_positions[x_index, y_index]
                         x_e, y_e = sensor_positions[n]
-                        # distance
+                        # distances calculated in FOV system
                         delta_x = x_e-x_s
                         delta_y = y_e-y_s
                         D = (delta_x**2 + delta_y**2)**0.5
-                        ds[x_index, y_index, n] = D
-                        
-                        tilde_x = x_s-self.centre[0]
-                        tilde_y = y_s-self.centre[1]                  
-                        delays[x_index, y_index, n] = D*self.k*(tilde_x**2+tilde_y**2 + delta_x*tilde_x + delta_y*tilde_y + 1/3*D**2) + D*self.c
+                        # go into global coordinate system
+                        x_s_glob = x_s + device_base_position_mm_x 
+                        #x_e_glob = x_e + device_base_position_mm_x
+                        y_s_glob = y_s + device_base_position_mm_y
+                        #y_e_glob = y_e + device_base_position_mm_y
+                        # Calculate delays
+                        tilde_x = x_s_glob-self.centre[0]
+                        tilde_y = y_s_glob-self.centre[1]                  
+                        delays[x_index, y_index, n] = D*self.k*(tilde_x**2+tilde_y**2 + delta_x*tilde_x + delta_y*tilde_y + 1/3*D**2) \
+                                                      + D*self.c
+                        ds_ref[x_index, y_index, n] = D
         
-        return delays/self.time_spacing_in_ms, ds
+        return delays/self.time_spacing_in_ms, ds_ref
 
-    def test(self, visualize=False, verbosity=["delays"], scalarfield_type = None) -> None:
+    def test(self, visualize=False, verbosity=[], scalarfield_type = None) -> None:
         self.x, self.y, self.z = self.get_xyz(self.center_FOV_x)
 
         if scalarfield_type == None:
@@ -250,29 +260,25 @@ class TesthDASNumericalIntegration(unittest.TestCase):
             print("\n############################################\nScalarfield", scalarfield_type, "\n############################################")
             self.run_for_given_type(visualize=visualize, verbosity=verbosity, scalarfield_type=scalarfield_type)
 
-    def run_for_given_type(self, visualize=True, verbosity=["delays", "ds", "integrals", "interpols"], scalarfield_type="horizontal_gradient"):
+    def run_for_given_type(self, visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="horizontal_gradient") -> None:
 
         self.create_scalarfield(scalarfield_type)
 
-
-
-        self.delays_num, self.ds_num, self.interpols = calculate_delays_for_heterogen_sos_OLD(
+        self.delays_num, self.ds_num = calculate_delays_for_heterogen_sos_OLD(
                                     self.sensor_positions, self.xdim, self.ydim, self.zdim, self.x, self.y, self.z, self.spacing_in_mm,
                                     self.time_spacing_in_ms, self.speed_of_sound_in_m_per_s, self.n_sensor_elements, self.global_settings,
                                     self.device_base_position_mm, self.logger, self.torch_device,
-                                    self.grid_points_middle,
-                                    global_ds_calc = self.global_ds_calc, get_ds = True, get_interpols=True, verbose = False, uneven_steps = False
+                                    get_ds = True
                                     )
 
         self.delays_num, self.ds_num = self.delays_num.squeeze().cpu().numpy(), self.ds_num.cpu().numpy()
 
         # using own interpolation
-        self.delays_num2, self.ds_num2, self.interpols2 = calculate_delays_for_heterogen_sos(
+        self.delays_num2, self.ds_num2 = calculate_delays_for_heterogen_sos(
                                     self.sensor_positions, self.xdim, self.ydim, self.zdim, self.x, self.y, self.z, self.spacing_in_mm,
                                     self.time_spacing_in_ms, self.speed_of_sound_in_m_per_s, self.n_sensor_elements, self.global_settings,
                                     self.device_base_position_mm, self.logger, self.torch_device,
-                                    self.grid_points_middle,
-                                    global_ds_calc = self.global_ds_calc, get_ds = True, get_interpols=True, verbose = False, uneven_steps = False
+                                    get_ds = True
                                     )
         self.delays_num2, self.ds_num2 = self.delays_num2.squeeze().cpu().numpy(), self.ds_num2.cpu().numpy()
 
@@ -280,10 +286,38 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         self.delays_ana, self.ds_ana = self.analytical_solution(scalarfield_type)
         self.delays_ana, self.ds_ana = self.delays_ana.cpu().numpy(), self.ds_ana.cpu().numpy()
 
-        # Calculate differences
+        # Calculate differences of the delays
         self.difference = np.abs(self.delays_num - self.delays_ana)
         self.difference2 = np.abs(self.delays_num2 - self.delays_ana)
         self.difference_nums = np.abs(self.delays_num - self.delays_num2)
+
+        # Calculate differences of the distances
+        ds_diff_num = np.abs(self.ds_ana - self.ds_num)
+        ds_diff_num2 = np.abs(self.ds_ana - self.ds_num2)
+
+        self.tolerances = {"relative": {
+                                "constant": 1e-15,
+                                "horizontal_gradient": 1e-8,
+                                "vertical_gradient": 1e-8,
+                                "quadratic": 0
+                                },
+                            "absolute": {
+                                "constant": 1e-9,
+                                "horizontal_gradient": 1e-2,
+                                "vertical_gradient": 1e-2,
+                                "quadratic": 0
+                                }
+                            }
+        
+        print("Delays:")
+        # test whether relative differences are in the accecpted range defined above
+        torch.testing.assert_close(self.delays_num, self.delays_ana, rtol=self.tolerances["relative"][scalarfield_type], atol=42)
+        print("  Relative Difference < ", self.tolerances["relative"][scalarfield_type])
+
+        # Test for absolute differences
+        if self.PAI_realistic_units:
+            torch.testing.assert_close(self.delays_num, self.delays_ana, rtol=42, atol=self.tolerances["absolute"][scalarfield_type])
+            print("  Absolute Difference < ", self.tolerances["absolute"][scalarfield_type])
 
         if "delays" in verbosity:
             print("Absolute difference of delays")
@@ -302,77 +336,50 @@ class TesthDASNumericalIntegration(unittest.TestCase):
             print(f"    max={(self.difference_nums/self.delays_num).max()}\n    mean={(self.difference_nums/self.delays_num).mean()}\n    min={(self.difference_nums/self.delays_num).min()}\n")
 
 
-        # TODO: ############################ ACTUAL TEST #########################
-        self.tolerarance = 1e-5
-        if scalarfield_type == "quadratic":
-            self.tolerance = 1e-3
-        #assert difference.max() < self.tolerance
-        #assert difference2.max() < self.tolerance
-        #torch.testing.assert_close(self.delays, self.delays_ref, rtol=, atol=)
-        ####################################
-
-        ds_diff_num = np.abs(self.ds_ana - self.ds_num)
-        ds_diff_num2 = np.abs(self.ds_ana - self.ds_num2)
+        print("Distances of Sources and Sensors:")
+        # test whether the difference is 0
+        torch.testing.assert_close(self.ds_num, self.ds_ana, rtol=0, atol=0)
+        print("  Absolute Difference is 0")
 
         if "ds" in verbosity:
-            if self.global_ds_calc:
-                if ds_diff_num.max() > 0.0 or ds_diff_num2.max() > 0.0:
-                    print("Maximal distance differences")
-                    print(" - numerical delays (grid_sample interpol.) and analytical ds")
-                    print(f"    max={ds_diff_num.max()}\n    mean={ds_diff_num.mean()}\n    min={ds_diff_num.min()}")
-                    print(" - numerical delays (own interpol.) and analytical ds") 
-                    print(f"    max={ds_diff_num2.max()}\n    mean={ds_diff_num.mean()}\n    min={ds_diff_num.min()}\n")
-                else:
-                    print("ds are the same\n")
-            else:
-                if ds_diff_num.max() > 1e-5 or ds_diff_num2.max() > 1e-5:
-                    print("Maximal distance differences")
-                    print(" - numerical delays (grid_sample interpol.) and analytical ds")
-                    print(f"    max={ds_diff_num.max()}\n    mean={ds_diff_num.mean()}\n    min={ds_diff_num.min()}")
-                    print(" - numerical delays (own interpol.) and analytical ds") 
-                    print(f"    max={ds_diff_num2.max()}\n    mean={ds_diff_num.mean()}\n    min={ds_diff_num.min()}\n")
-                else:
-                    print("ds differences are <= 1e-5\n")
+            print("Distance differences")
+            print(" - numerical delays (grid_sample interpol.) and analytical ds")
+            print(f"    max={ds_diff_num.max()}\n    mean={ds_diff_num.mean()}\n    min={ds_diff_num.min()}")
+            print(" - numerical delays (own interpol.) and analytical ds") 
+            print(f"    max={ds_diff_num2.max()}\n    mean={ds_diff_num.mean()}\n    min={ds_diff_num.min()}\n")
         
 
-        # Integrals
-        # avoid division by 0
-        self.ds_num[self.ds_num==0] = 42
-        self.ds_num2[self.ds_num2==0] = 42
-        self.ds_ana[self.ds_ana==0] = 42
-        self.integral_num = self.delays_num[:,:,:]/self.ds_num[:,:,:]
-        self.integral_ana = self.delays_ana[:,:,:]/self.ds_ana[:,:,:]
-        self.integral_num2 = self.delays_num2[:,:,:]/self.ds_num2[:,:,:]
-        # Integration differences
-        self.int_difference = np.abs(self.integral_num - self.integral_ana)
-        self.int_difference2 = np.abs(self.integral_num2 - self.integral_ana)
-        self.int_difference_num = np.abs(self.integral_num - self.integral_num2)
-        if "integrals" in verbosity:
-            print("Absolute difference of integrals")
-            print(" - numerical integrals (grid_sample interpol.) and analytical integrals")
-            print(f"    max={self.int_difference.max()}\n    mean={self.int_difference.mean()}\n    min={self.int_difference.min()}")
-            print(" - numerical integrals (own interpol.) and analytical integrals")
-            print(f"    max={self.int_difference2.max()}\n    mean={self.int_difference2.mean()}\n    min={self.int_difference2.min()}")
-            print(" - numerical integrals (own interpol.) and numerical integrals (grid_sample interpol.)")
-            print(f"    max={self.int_difference_num.max()}\n    mean={self.int_difference_num.mean()}\n    min={self.int_difference_num.min()}\n")
-
-        if "interpols" in verbosity:
-            print("Interpolation")
-            print("grid sample")
-            print(self.interpols)
-            print("own")
-            print(self.interpols2)
-            print("deviations")
-            print(np.abs(self.interpols-self.interpols2))
-            print("    max difference = ", np.abs(self.interpols-self.interpols2).max())
+        if "integrals" in verbosity or visualize:
+            # Compute the Integrals
+            # avoid division by 0
+            self.ds_num[self.ds_num==0] = 42
+            self.ds_num2[self.ds_num2==0] = 42
+            self.ds_ana[self.ds_ana==0] = 42
+            self.integral_num = self.delays_num[:,:,:]/self.ds_num[:,:,:]
+            self.integral_ana = self.delays_ana[:,:,:]/self.ds_ana[:,:,:]
+            self.integral_num2 = self.delays_num2[:,:,:]/self.ds_num2[:,:,:]
+            # Integration differences
+            self.int_difference = np.abs(self.integral_num - self.integral_ana)
+            self.int_difference2 = np.abs(self.integral_num2 - self.integral_ana)
+            self.int_difference_num = np.abs(self.integral_num - self.integral_num2)
+            if "integrals" in verbosity:
+                print("Absolute difference of integrals")
+                print(" - numerical integrals (grid_sample interpol.) and analytical integrals")
+                print(f"    max={self.int_difference.max()}\n    mean={self.int_difference.mean()}\n    min={self.int_difference.min()}")
+                print(" - numerical integrals (own interpol.) and analytical integrals")
+                print(f"    max={self.int_difference2.max()}\n    mean={self.int_difference2.mean()}\n    min={self.int_difference2.min()}")
+                print(" - numerical integrals (own interpol.) and numerical integrals (grid_sample interpol.)")
+                print(f"    max={self.int_difference_num.max()}\n    mean={self.int_difference_num.mean()}\n    min={self.int_difference_num.min()}\n")
 
         if visualize:
-            self.visualize_setting()
+            self.visualize_setting(show_sos_map=True)
             self.visualize_delays()
             self.visualize_differences()
             self.visualize_delay_difference_hist()
             self.visualize_integral_differences()
             self.visualize_integral_difference_hist()
+
+        return None
 
     def visualize_setting(self, show_sos_map = False) -> None:
         """
@@ -404,12 +411,6 @@ class TesthDASNumericalIntegration(unittest.TestCase):
             ax = plt.gca()
             plt.imshow(1/self.scalarfield.T, extent=[0, self.xdim_glob, self.ydim_glob, 0])
             plt.colorbar()
-            plt.show()
-            plt.figure()
-            plt.plot(1/self.scalarfield[self.scalarfield.shape[0]//2-1,:])
-            plt.show()
-            plt.figure()
-            plt.plot(self.scalarfield[self.scalarfield.shape[0]//2-1,:])
             plt.show()
 
     def visualize_delays(self) -> None:
@@ -472,24 +473,15 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         axes[1].set_title(f"own interpol.\nmax = {self.int_difference2.max()}\nmean={self.int_difference2.mean()}\nmin={self.int_difference2.min()}", fontsize=16)
         plt.show()
 
+    def print_difference_details(self, name, difference):
+        #TODO
+        pass
 
 if __name__ == "__main__":
     test = TesthDASNumericalIntegration()
-    #test.setUp(4, 8, 1., 2, 4, 1.)
-    #test.test(visualize=False, verbosity=["interpols"], scalarfield_type="horizontal_gradient")
 
-    #test.setUp(400, 400, 0.1, 250, 250, 0.1)
-    #test.test(visualize=True, scalarfield_type="quadratic")
-
-    #test.setUp()
-    #test.test(visualize=True, verbosity = ["delays", "ds", "interpols", "integrals"], scalarfield_type="horizontal_gradient")
-
-    #test.setUp()
-    #test.test(visualize=True, scalarfield_type="quadratic")
-
-    #test.setUp()
-    #test.create_scalarfield("quadratic")
-    #test.visualize_setting(show_sos_map=True)
-    
     test.setUp()
-    test.test()
+    test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="quadratic")
+
+    #test.setUp()
+    #test.test()
