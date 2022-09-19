@@ -480,8 +480,8 @@ class TesthDASNumericalIntegration(unittest.TestCase):
 if __name__ == "__main__":
     test = TesthDASNumericalIntegration()
 
-    test.setUp()
-    test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="quadratic")
+    #test.setUp()
+    #test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="quadratic")
 
     #test.setUp()
     #test.test()
