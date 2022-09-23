@@ -49,7 +49,7 @@ class TestBoxes(unittest.TestCase):
         self.box_settings[Tags.STRUCTURE_Y_EXTENT_MM] = edge_length
         self.box_settings[Tags.STRUCTURE_Z_EXTENT_MM] = edge_length
         bs = RectangularCuboidStructure(self.global_settings, self.box_settings)
-        assert bs.geometrical_volume[0, 0, 0] == edge_length**3
+        self.assertAlmostEqual(bs.geometrical_volume[0, 0, 0], edge_length**3, places=6)
 
     def test_box_structure_partial_volume_within_two_voxels(self):
         self.box_settings[Tags.STRUCTURE_START_MM] = [0.5, 0, 0.5]
