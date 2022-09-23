@@ -42,6 +42,7 @@ jdata = ">=0.3.7"            # Uses Apache 2.0-License (MIT compatible)
 [tool.poetry.group.docs.dependencies]
 sphinx-rtd-theme = "^1.0.0"
 Sphinx = "^5.1.1"
+myst-parser = "^0.18.0"
 
 [build-system]
 requires = [
