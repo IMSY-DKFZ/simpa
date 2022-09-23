@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
+from typing import Iterable
 
 
 class Tags:
@@ -1464,4 +1465,9 @@ class Tags:
     Identifier for the direction of photons when they exit the volume. Currently only photon exiting along the Z axis 
     are detected.
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    MCX_ADDITIONAL_FLAGS = ("mcx_additional_flags", Iterable)
+    """
+    Defines a sequence of extra flags to be parsed to the MCX executable for optical simulations
     """
