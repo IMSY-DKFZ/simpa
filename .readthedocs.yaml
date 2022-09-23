@@ -19,10 +19,3 @@ sphinx:
   builder: html
   configuration: docs/source/conf.py
   fail_on_warning: false
-
-python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
