@@ -100,32 +100,9 @@ karray = kWaveArray;
 
 elem_pos = data.sensor_element_positions/1000;
 
-% In case some detectors are defined at zeros or with negative values out
-% of bounds, correct all of them with minimum needed correction of the
-% spacing dx.
-
-min_x_pos = find(elem_pos(1, :) <= 0);
-min_y_pos = find(elem_pos(2, :) <= 0);
-min_z_pos = find(elem_pos(3, :) <= 0);
-x_correction = 0;
-y_correction = 0;
-z_correction = 0;
-if size(min_x_pos) > 0
-   x_correction = dx;
-end
-
-if size(min_y_pos) > 0
-   y_correction = dx;
-end
-
-if size(min_z_pos) > 0
-   z_correction = dx;
-end
-
-
-elem_pos(1, :) = elem_pos(1, :) - 0.5 * kgrid.x_size + x_correction + dx * GEL_LAYER_HEIGHT;
-elem_pos(2, :) = elem_pos(2, :) - 0.5 * kgrid.y_size + y_correction;
-elem_pos(3, :) = elem_pos(3, :) - 0.5 * kgrid.z_size + z_correction;
+elem_pos(1, :) = elem_pos(1, :) - 0.5 * kgrid.x_size + dx * GEL_LAYER_HEIGHT;
+elem_pos(2, :) = elem_pos(2, :) - 0.5 * kgrid.y_size;
+elem_pos(3, :) = elem_pos(3, :) - 0.5 * kgrid.z_size;
 num_elements = size(elem_pos, 2);
 
 element_width = double(settings.detector_element_width_mm)/1000;
