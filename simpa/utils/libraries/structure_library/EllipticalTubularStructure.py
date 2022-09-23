@@ -35,11 +35,11 @@ class EllipticalTubularStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM], dtype=torch.double).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_END_MM], dtype=torch.double).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_RADIUS_MM], dtype=torch.double).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_ECCENTRICITY], dtype=torch.double).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME], dtype=torch.double).to(self.torch_device))
+        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM], dtype=torch.float).to(self.torch_device),
+                  torch.tensor(single_structure_settings[Tags.STRUCTURE_END_MM], dtype=torch.float).to(self.torch_device),
+                  torch.tensor(single_structure_settings[Tags.STRUCTURE_RADIUS_MM], dtype=torch.float).to(self.torch_device),
+                  torch.tensor(single_structure_settings[Tags.STRUCTURE_ECCENTRICITY], dtype=torch.float).to(self.torch_device),
+                  torch.tensor(single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME], dtype=torch.float).to(self.torch_device))
         return params
 
     def to_settings(self):
@@ -82,7 +82,7 @@ class EllipticalTubularStructure(GeometricalStructure):
             deformation_values_mm = deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
                                                                   self.volume_dimensions_voxels[1], 1, 1)
             deformation_values_mm = torch.tile(torch.from_numpy(deformation_values_mm).to(self.torch_device), (1, 1, self.volume_dimensions_voxels[2], 3))
-            target_vector = target_vector + (deformation_values_mm / self.voxel_spacing)
+            target_vector = (target_vector + (deformation_values_mm / self.voxel_spacing)).float()
         cylinder_vector = torch.subtract(end_voxels, start_voxels)
 
         main_axis_length = radius_voxels/(1-eccentricity**2)**0.25
@@ -105,7 +105,7 @@ class EllipticalTubularStructure(GeometricalStructure):
         radius_crit = torch.sqrt(((main_projection/main_axis_length)**2 + (minor_projection/minor_axis_length)**2) *
                               radius_voxels**2)
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.double).to(self.torch_device)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
         filled_mask = radius_crit <= radius_voxels - 1 + radius_margin
         border_mask = (radius_crit > radius_voxels - 1 + radius_margin) & \
                       (radius_crit < radius_voxels + 2 * radius_margin)
@@ -121,7 +121,7 @@ class EllipticalTubularStructure(GeometricalStructure):
         else:
             mask = filled_mask
 
-        return mask.detach().cpu().numpy(), volume_fractions[mask].detach().cpu().numpy()
+        return mask.cpu().numpy(), volume_fractions[mask].cpu().numpy()
 
 
 def define_elliptical_tubular_structure_settings(tube_start_mm: list,

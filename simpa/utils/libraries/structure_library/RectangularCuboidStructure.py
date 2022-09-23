@@ -106,7 +106,7 @@ class RectangularCuboidStructure(GeometricalStructure):
         else:
             mask = filled_mask
 
-        return mask.detach().cpu().numpy(), volume_fractions[mask].detach().cpu().numpy()
+        return mask.cpu().numpy(), volume_fractions[mask].cpu().numpy()
 
 
 def define_rectangular_cuboid_structure_settings(start_mm: list, extent_mm: int | list,

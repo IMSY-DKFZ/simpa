@@ -77,7 +77,7 @@ class SphericalStructure(GeometricalStructure):
         else:
             mask = filled_mask
 
-        return mask.detach().cpu().numpy(), volume_fractions[mask].detach().cpu().numpy()
+        return mask.cpu().numpy(), volume_fractions[mask].cpu().numpy()
 
 
 def define_spherical_structure_settings(start_mm: list, molecular_composition: MolecularComposition,

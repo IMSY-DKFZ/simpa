@@ -41,12 +41,12 @@ class HorizontalLayerStructure(GeometricalStructure):
         return settings
 
     def get_enclosed_indices(self):
-        start_mm = torch.tensor(self.params[0], dtype=torch.double).to(self.torch_device)
-        end_mm = torch.tensor(self.params[1], dtype=torch.double).to(self.torch_device)
+        start_mm = torch.tensor(self.params[0], dtype=torch.float).to(self.torch_device)
+        end_mm = torch.tensor(self.params[1], dtype=torch.float).to(self.torch_device)
         partial_volume = self.params[2]
         start_voxels = start_mm / self.voxel_spacing
         direction_mm = end_mm - start_mm
-        depth_voxels = (direction_mm[2] / self.voxel_spacing).double()
+        depth_voxels = direction_mm[2] / self.voxel_spacing
 
         if direction_mm[0] != 0 or direction_mm[1] != 0 or direction_mm[2] == 0:
             raise ValueError("Horizontal Layer structure needs a start and end vector in the form of [0, 0, n].")
@@ -64,11 +64,11 @@ class HorizontalLayerStructure(GeometricalStructure):
                                                                    self.voxel_spacing,
                                                                    torch.arange(self.volume_dimensions_voxels[1]) *
                                                                    self.voxel_spacing).T
-            target_vector_voxels = target_vector_voxels + torch.from_numpy(deformation_values_mm.reshape(
+            target_vector_voxels = (target_vector_voxels + torch.from_numpy(deformation_values_mm.reshape(
                 self.volume_dimensions_voxels[0],
-                self.volume_dimensions_voxels[1], 1)).to(self.torch_device) / self.voxel_spacing
+                self.volume_dimensions_voxels[1], 1)).to(self.torch_device) / self.voxel_spacing).float()
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels),dtype=torch.double).to(self.torch_device)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels),dtype=torch.float).to(self.torch_device)
 
         if partial_volume:
             bools_first_layer = ((target_vector_voxels >= -1) & (target_vector_voxels < 0))
@@ -96,7 +96,7 @@ class HorizontalLayerStructure(GeometricalStructure):
 
         volume_fractions[bools_fully_filled_layers] = 1
 
-        return bools_all_layers.detach().cpu().numpy(), volume_fractions[bools_all_layers].detach().cpu().numpy()
+        return bools_all_layers.cpu().numpy(), volume_fractions[bools_all_layers].cpu().numpy()
 
 
 def define_horizontal_layer_structure_settings(molecular_composition: MolecularComposition,

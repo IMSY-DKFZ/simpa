@@ -29,10 +29,10 @@ class ParallelepipedStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM], dtype=torch.double).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_FIRST_EDGE_MM], dtype=torch.double).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM], dtype=torch.double).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM], dtype=torch.double).to(self.torch_device))
+        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM], dtype=torch.float).to(self.torch_device),
+                  torch.tensor(single_structure_settings[Tags.STRUCTURE_FIRST_EDGE_MM], dtype=torch.float).to(self.torch_device),
+                  torch.tensor(single_structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM], dtype=torch.float).to(self.torch_device),
+                  torch.tensor(single_structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM], dtype=torch.float).to(self.torch_device))
         return params
 
     def to_settings(self):
@@ -69,12 +69,12 @@ class ParallelepipedStructure(GeometricalStructure):
 
         filled_mask_bool = (0 <= result) & (result <= 1 - norm_vector)
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.double).to(self.torch_device)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
         filled_mask = torch.all(filled_mask_bool, axis=-1)
 
         volume_fractions[filled_mask] = 1
 
-        return filled_mask.detach().cpu().numpy(), volume_fractions[filled_mask].detach().cpu().numpy()
+        return filled_mask.cpu().numpy(), volume_fractions[filled_mask].cpu().numpy()
 
 
 def define_parallelepiped_structure_settings(start_mm: list, edge_a_mm: list, edge_b_mm: list, edge_c_mm: list,

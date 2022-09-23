@@ -130,7 +130,7 @@ class VesselStructure(GeometricalStructure):
         y = torch.arange(self.volume_dimensions_voxels[1])[None, :, None].to(self.torch_device)
         z = torch.arange(self.volume_dimensions_voxels[2])[None, None, :].to(self.torch_device)
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.double).to(self.torch_device)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
 
         if partial_volume:
             radius_margin = 0.5
@@ -146,9 +146,9 @@ class VesselStructure(GeometricalStructure):
             volume_fractions[filled_mask] = 1
             old_border_values = volume_fractions[border_mask]
             new_border_values = 1 - (target_radius - (radius - radius_margin))[border_mask]
-            volume_fractions[border_mask] = torch.maximum(old_border_values, new_border_values)
+            volume_fractions[border_mask] = torch.maximum(old_border_values, new_border_values).float()
 
-        return volume_fractions.detach().cpu().numpy()
+        return volume_fractions.cpu().numpy()
 
 
 def define_vessel_structure_settings(vessel_start_mm: list,

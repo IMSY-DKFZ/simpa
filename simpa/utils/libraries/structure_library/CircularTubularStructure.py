@@ -31,9 +31,9 @@ class CircularTubularStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM], dtype=torch.double).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_END_MM], dtype=torch.double).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_RADIUS_MM], dtype=torch.double).to(self.torch_device),
+        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM], dtype=torch.float).to(self.torch_device),
+                  torch.tensor(single_structure_settings[Tags.STRUCTURE_END_MM], dtype=torch.float).to(self.torch_device),
+                  torch.tensor(single_structure_settings[Tags.STRUCTURE_RADIUS_MM], dtype=torch.float).to(self.torch_device),
                   single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME])
         return params
 
@@ -64,6 +64,7 @@ class CircularTubularStructure(GeometricalStructure):
         else:
             radius_margin = 0.7071
 
+        typee = torch.get_default_dtype()
         target_vector = torch.subtract(torch.stack([x, y, z], axis=-1), start_voxels)
         if self.do_deformation:
             # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
@@ -74,7 +75,7 @@ class CircularTubularStructure(GeometricalStructure):
             deformation_values_mm = deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
                                                                   self.volume_dimensions_voxels[1], 1, 1)
             deformation_values_mm = torch.tile(torch.from_numpy(deformation_values_mm).to(self.torch_device), (1, 1, self.volume_dimensions_voxels[2], 3))
-            target_vector = target_vector + (deformation_values_mm / self.voxel_spacing)
+            target_vector = (target_vector + (deformation_values_mm / self.voxel_spacing)).float()
         cylinder_vector = torch.subtract(end_voxels, start_voxels)
 
         
@@ -82,7 +83,7 @@ class CircularTubularStructure(GeometricalStructure):
             torch.arccos((torch.matmul(target_vector, cylinder_vector)) /
                       (torch.linalg.norm(target_vector, axis=-1) * torch.linalg.norm(cylinder_vector))))
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.double).to(self.torch_device)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
 
         filled_mask = target_radius <= radius_voxels - 1 + radius_margin
         border_mask = (target_radius > radius_voxels - 1 + radius_margin) & \
@@ -98,7 +99,7 @@ class CircularTubularStructure(GeometricalStructure):
         else:
             mask = filled_mask
 
-        return mask.detach().cpu().numpy(), volume_fractions[mask].detach().cpu().numpy()
+        return mask.cpu().numpy(), volume_fractions[mask].cpu().numpy()
 
 
 def define_circular_tubular_structure_settings(tube_start_mm: list,
