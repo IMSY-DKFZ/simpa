@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+from typing import Union
 import torch 
 
 from simpa.utils import Tags
@@ -109,7 +110,7 @@ class RectangularCuboidStructure(GeometricalStructure):
         return mask.cpu().numpy(), volume_fractions[mask].cpu().numpy()
 
 
-def define_rectangular_cuboid_structure_settings(start_mm: list, extent_mm: int | list,
+def define_rectangular_cuboid_structure_settings(start_mm: list, extent_mm: Union[int, list],
                                                  molecular_composition: MolecularComposition, priority: int = 10,
                                                  consider_partial_volume: bool = False,
                                                  adhere_to_deformation: bool = False):
