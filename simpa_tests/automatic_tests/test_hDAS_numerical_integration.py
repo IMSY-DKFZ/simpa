@@ -8,7 +8,7 @@ from simpa.log.file_logger import Logger
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from typing import Tuple
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import calculate_delays_for_heterogen_sos
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import calculate_delays_for_heterogen_sos, calculate_delays_for_homogen_sos
 
 class TesthDASNumericalIntegration(unittest.TestCase):
     """
@@ -28,7 +28,7 @@ class TesthDASNumericalIntegration(unittest.TestCase):
     """
 
     def setUp(self, xdim_glob: int = 400, ydim_glob: int = 500, spac_glob: float = 0.1, xdim_fov: int = None, ydim_fov: int = None,
-              spac_fov: float = 0.1, PAI_realistic_units: bool = True) -> None:
+              spac_fov: float = 0.1, PAI_realistic_units: bool = True, random_sens: bool = True) -> None:
         """
         sets up volume, FOV, sensor positions, physical properties
         """
@@ -71,15 +71,15 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         self.spacing_in_mm = spac_fov
 
         self.logger = Logger()
-        self.torch_device = torch.device("cpu") #torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        self.torch_device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         
         self.device_base_position_mm = np.array([self.global_settings[Tags.DIM_VOLUME_X_MM]/2,
                                                  self.global_settings[Tags.SPACING_MM],
                                                  self.global_settings[Tags.DIM_VOLUME_Z_MM]/2])  
 
         # Simulate sensors
-        self.RANDOM_SENSORS = False # Should be False for Reproducibility or True to test random sensors
-        self.n_sensor_elements = 10
+        self.RANDOM_SENSORS = random_sens # Should be False for Reproducibility or True to test random sensors
+        self.n_sensor_elements = 42
         if self.RANDOM_SENSORS: 
             # sample sensors
             sensor_distri = Uniform(
@@ -92,9 +92,11 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                                    self.global_settings[Tags.DIM_VOLUME_Z_MM]/2-self.global_settings[Tags.SPACING_MM]/4],
                                    dtype=torch.float64, device = self.torch_device))
             self.sensor_positions = sensor_distri.sample((self.n_sensor_elements,))
+            self.sensor_positions[:,1] = 0.
         else:
-            self.sensor_positions = torch.tensor([[self.xdim/4*self.spacing_in_mm, 1e-5, -self.ydim/4*self.spacing_in_mm],
-                                                  [-self.xdim/2*self.spacing_in_mm, 1e-5,  self.ydim/2*self.spacing_in_mm]],
+            self.sensor_positions = torch.tensor([[self.xdim/4*self.spacing_in_mm, 0, -self.ydim/4*self.spacing_in_mm],
+                                                  [-self.xdim/2*self.spacing_in_mm, 0,  self.ydim/2*self.spacing_in_mm]],
+                                                  dtype=torch.float64,
                                                   device=self.torch_device)
             self.n_sensor_elements = 2
 
@@ -145,13 +147,13 @@ class TesthDASNumericalIntegration(unittest.TestCase):
             quadratic = (xgrid-self.centre[0])**2+(ygrid-self.centre[1])**2
             #scale
             max_mm = max(self.global_settings[Tags.DIM_VOLUME_Z_MM]/2, self.global_settings[Tags.DIM_VOLUME_Z_MM]/2)
-            self.k = 0.00008/max_mm**2 if self.PAI_realistic_units else 1
+            self.k = 0.00004/max_mm**2 if self.PAI_realistic_units else 1
             #shift
-            self.c = 1/1650 if self.PAI_realistic_units else 1
+            self.c = 1/1610 if self.PAI_realistic_units else 1
             scalarfield = self.k*quadratic+self.c
             self.scalarfield = scalarfield.T # in order to be shape xdim_glob x ydim_glob
         else:
-            raise("Error")
+            raise(f"Error. Given scalarfield type is not known. Choose from {self.scalarfield_type_list}")
 
         scalarfield_3d = self.scalarfield[:,None,:]
         self.speed_of_sound_in_m_per_s = 1/scalarfield_3d
@@ -174,90 +176,64 @@ class TesthDASNumericalIntegration(unittest.TestCase):
 
     def analytical_solution(self, scalarfield_type: str) -> Tuple[torch.tensor, torch.tensor]:
         """
-        Calculates the delays using an analytical formula (derived by hand) and also returns the used distances
+        Calculates the delays using an analytical formula (derived by hand) or the homogenous function of Tom for homogenous sos-map
+        and also returns the used distances
         """
-        print(f"\nCalculate analytical solution for {scalarfield_type} scalarfield\n")
-        xx, yy = torch.meshgrid(self.x, self.y)
-        source_positions = torch.dstack([xx*self.spacing_in_mm, yy*self.spacing_in_mm])
-        device_base_position_mm = self.device_base_position_mm.copy()
-        device_base_position_mm_x = device_base_position_mm[0]
-        device_base_position_mm_y = device_base_position_mm[2]
-
-        sensor_positions = self.sensor_positions.clone()
-        sensor_positions = sensor_positions[:,::2] # leave out 3rd dimension
-        
-        delays = torch.zeros(self.xdim, self.ydim, self.n_sensor_elements, dtype=torch.float64, device=self.torch_device)
-        ds_ref = torch.zeros(self.xdim, self.ydim, self.n_sensor_elements, dtype=torch.float64, device=self.torch_device)
-        
         if scalarfield_type == "constant":
-            for x_index in range(self.xdim):
-                for y_index in range(self.ydim):
-                    for n in range(self.n_sensor_elements):
-                        x_s, y_s = source_positions[x_index, y_index]
-                        x_e, y_e = sensor_positions[n]
-                        # distance calculated in FOV system (invariant under translation)
-                        D = ((x_e-x_s)**2 + (y_e-y_s)**2)**0.5
-                        # Calculate delays
-                        delays[x_index, y_index, n] = D*self.c
-                        ds_ref[x_index, y_index, n] = D
-        
-        elif scalarfield_type == "horizontal_gradient":
-            for x_index in range(self.xdim):
-                for y_index in range(self.ydim):
-                    for n in range(self.n_sensor_elements):
-                        x_s, y_s = source_positions[x_index, y_index]
-                        x_e, y_e = sensor_positions[n]
-                        # distance calculated in FOV system
-                        D = ((x_e-x_s)**2 + (y_e-y_s)**2)**0.5
-                        # go into global coordinate system
-                        x_s_glob = x_s + device_base_position_mm_x 
-                        x_e_glob = x_e + device_base_position_mm_x
-                        #y_s_glob = y_s + device_base_position_mm_y
-                        #y_e_glob = y_e + device_base_position_mm_y
-                        # Calculate delays
-                        delays[x_index, y_index, n] = D*(self.c+self.k/2*(x_s_glob+x_e_glob))
-                        ds_ref[x_index, y_index, n] = D
-        
-        elif scalarfield_type == "vertical_gradient":
-            for x_index in range(self.xdim):
-                for y_index in range(self.ydim):
-                    for n in range(self.n_sensor_elements):
-                        x_s, y_s = source_positions[x_index, y_index]
-                        x_e, y_e = sensor_positions[n]
-                        # distance calculated in FOV system
-                        D = ((x_e-x_s)**2 + (y_e-y_s)**2)**0.5
-                        # go into global coordinate system
-                        #x_s_glob = x_s + device_base_position_mm_x 
-                        #x_e_glob = x_e + device_base_position_mm_x
-                        y_s_glob = y_s + device_base_position_mm_y
-                        y_e_glob = y_e + device_base_position_mm_y
-                        # Calculate delays
-                        delays[x_index, y_index, n] = D*(self.c+self.k/2*(y_s_glob+y_e_glob))
-                        ds_ref[x_index, y_index, n] = D
-        
-        elif scalarfield_type == "quadratic":
-            for x_index in range(self.xdim):
-                for y_index in range(self.ydim):
-                    for n in range(self.n_sensor_elements):
-                        x_s, y_s = source_positions[x_index, y_index]
-                        x_e, y_e = sensor_positions[n]
-                        # distances calculated in FOV system
-                        delta_x = x_e-x_s
-                        delta_y = y_e-y_s
-                        D = (delta_x**2 + delta_y**2)**0.5
-                        # go into global coordinate system
-                        x_s_glob = x_s + device_base_position_mm_x 
-                        #x_e_glob = x_e + device_base_position_mm_x
-                        y_s_glob = y_s + device_base_position_mm_y
-                        #y_e_glob = y_e + device_base_position_mm_y
-                        # Calculate delays
-                        tilde_x = x_s_glob-self.centre[0]
-                        tilde_y = y_s_glob-self.centre[1]                  
-                        delays[x_index, y_index, n] = D*self.k*(tilde_x**2+tilde_y**2 + delta_x*tilde_x + delta_y*tilde_y + 1/3*D**2) \
-                                                      + D*self.c
-                        ds_ref[x_index, y_index, n] = D
-        
-        del source_positions, sensor_positions
+            """
+            if constant compare with Toms homogenous calculation
+            """
+            print(f"\nUse already tested homogenous function for {scalarfield_type} scalarfield\n")
+            j = torch.arange(self.n_sensor_elements, device=self.torch_device, dtype=torch.float32)
+            delays_ref, ds_ref = calculate_delays_for_homogen_sos(sensor_positions=self.sensor_positions, x=self.x, y=self.y, z=self.z,
+                                            j = j, spacing_in_mm=self.spacing_in_mm, time_spacing_in_ms=self.time_spacing_in_ms,
+                                            speed_of_sound_in_m_per_s = 1/self.c, get_ds = True)
+            delays_ref, ds_ref = delays_ref.squeeze(), ds_ref.squeeze()
+            return delays_ref, ds_ref
+        else: # TODO: vectorize this 
+            print(f"\nCalculate analytical solution for {scalarfield_type} scalarfield\n")
+            xx, yy = torch.meshgrid(self.x, self.y)
+            source_positions = torch.dstack([xx.type(torch.float64)*self.spacing_in_mm, yy.type(torch.float64)*self.spacing_in_mm])
+            device_base_position_mm = torch.from_numpy(self.device_base_position_mm).to(self.torch_device)
+            device_base_position_xy_mm = device_base_position_mm[::2] # leave out second component (z-direction)
+
+            sensor_positions = self.sensor_positions.clone()
+            sensor_positions = sensor_positions[:,::2] # leave out 3rd dimension
+            
+            if scalarfield_type == "horizontal_gradient":
+                # distance calculated in FOV system
+                ds_ref = (source_positions[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()
+                # go into global coordinate system
+                sensor_positions_glob = sensor_positions + device_base_position_xy_mm
+                source_positions_glob = source_positions + device_base_position_xy_mm
+                # calculate delays
+                x = source_positions_glob[:,:, None, 0] + sensor_positions_glob[None, None, :, 0]
+                delays = ds_ref*(self.c+self.k/2*x)
+
+            elif scalarfield_type == "vertical_gradient":
+                # distance calculated in FOV system
+                ds_ref = (source_positions[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()
+                # go into global coordinate system
+                sensor_positions_glob = sensor_positions + device_base_position_xy_mm
+                source_positions_glob = source_positions + device_base_position_xy_mm
+                # calculate delays
+                y = source_positions_glob[:,:, None, 1] + sensor_positions_glob[None, None, :, 1]
+                delays = ds_ref*(self.c+self.k/2*y)
+                
+            elif scalarfield_type == "quadratic":
+                deltas = sensor_positions[None, None, :, :] - source_positions[:, :, None, :]
+                # distance calculated in FOV system
+                ds_ref = deltas.pow(2).sum(-1).sqrt()
+                # go into global coordinate system
+                sensor_positions_glob = sensor_positions + device_base_position_xy_mm
+                source_positions_glob = source_positions + device_base_position_xy_mm
+                # calculate delays
+                tilde_deltas = (source_positions_glob-torch.tensor(self.centre, dtype=torch.float64, device=self.torch_device)[None,None,:])
+                products = tilde_deltas.pow(2).sum(-1)[:,:,None] + (deltas*tilde_deltas[:,:,None,:]).sum(-1)
+                delays = ds_ref*self.k*(products+1/3*ds_ref**2) + ds_ref*self.c
+
+            del source_positions, sensor_positions
+
         return delays/self.time_spacing_in_ms, ds_ref
 
     def test(self, visualize=False, verbosity: list = [], scalarfield_type: str = None) -> None:
@@ -304,44 +280,39 @@ class TesthDASNumericalIntegration(unittest.TestCase):
 
         self.tolerances = {"relative": {
                                 "constant": 1e-15,
-                                "horizontal_gradient": 1e-8,
-                                "vertical_gradient": 1e-8,
-                                "quadratic": 1e-5
+                                "horizontal_gradient": 1e-9,
+                                "vertical_gradient": 1e-9,
+                                "quadratic": 1e-5 if self.PAI_realistic_units else 1e-3
                                 },
                             "absolute": {
                                 "constant": 1e-9,
-                                "horizontal_gradient": 1e-2,
-                                "vertical_gradient": 1e-2,
-                                "quadratic": 1 if not self.RANDOM_SENSORS else 10
+                                "horizontal_gradient": 1e-3,
+                                "vertical_gradient": 1e-3,
+                                "quadratic": 1
                                 }
                             }
         
         print("Delays:")
-        # test whether relative differences are in the accecpted range defined above
-        torch.testing.assert_close(self.delays_num, self.delays_ana, rtol=self.tolerances["relative"][scalarfield_type], atol=42)
-        print("  Relative Difference < ", self.tolerances["relative"][scalarfield_type])
-
-        # Test for absolute differences
-        if self.PAI_realistic_units:
-            torch.testing.assert_close(self.delays_num, self.delays_ana, rtol=42, atol=self.tolerances["absolute"][scalarfield_type])
-            print("  Absolute Difference < ", self.tolerances["absolute"][scalarfield_type])
-
         if "delays" in verbosity:
             print("Absolute difference of delays")
             print(f"    max={self.difference.max()}\n    mean={self.difference.mean()}\n    min={self.difference.min()}")
-            print(" - numerical delays (own interpol.) and analytical delays")
             print("Relative difference of delays (divided by analytical delays)")
             print(f"    max={(self.difference/self.delays_ana).max()}\n    mean={(self.difference/self.delays_ana).mean()}\n    min={(self.difference/self.delays_ana).min()}")
-
+        # test whether relative differences are in the accecpted range defined above
+        assert (self.difference/self.delays_ana).max().item() < self.tolerances["relative"][scalarfield_type]
+        print("  Relative Difference < ", self.tolerances["relative"][scalarfield_type])
+        # Test for absolute differences
+        if self.PAI_realistic_units:
+            assert self.difference.max().item() < self.tolerances["absolute"][scalarfield_type]
+            print("  Absolute Difference < ", self.tolerances["absolute"][scalarfield_type])
 
         print("Distances of Sources and Sensors:")
-        # test whether the difference is 0
-        torch.testing.assert_close(self.ds_num, self.ds_ana, rtol=0, atol=0)
-        print("  Absolute Difference is 0")
-
         if "ds" in verbosity:
             print("Distance differences")
             print(f"    max={ds_diff_num.max()}\n    mean={ds_diff_num.mean()}\n    min={ds_diff_num.min()}")
+        # test whether the difference is 0
+        assert ds_diff_num.max() == 0.0
+        print("  Absolute Difference is 0")
 
         if "integrals" in verbosity or visualize:
             # Compute the Integrals
@@ -489,7 +460,7 @@ if __name__ == "__main__":
 
     # More verbose prints
     #test.setUp()
-    #test.test(verbosity=["delays", "ds", "integrals"])
+    #test.test(visualize=False,verbosity=["delays", "ds"])
 
     # Visualize scalarfield 
     #test.setUp()
