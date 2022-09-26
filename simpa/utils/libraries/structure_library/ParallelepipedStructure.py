@@ -59,10 +59,8 @@ class ParallelepipedStructure(GeometricalStructure):
 
         matrix = torch.stack((x_edge_voxels, y_edge_voxels, z_edge_voxels))
 
-        inverse_matrix = torch.linalg.inv(matrix)
-
-        result = torch.matmul(target_vector, inverse_matrix)
-
+        result = torch.linalg.solve(matrix.T.expand((target_vector.shape[:-1]+matrix.shape)), target_vector)
+        
         norm_vector = torch.tensor([1/torch.linalg.norm(x_edge_voxels),
                                 1/torch.linalg.norm(y_edge_voxels),
                                 1/torch.linalg.norm(z_edge_voxels)]).to(self.torch_device)
