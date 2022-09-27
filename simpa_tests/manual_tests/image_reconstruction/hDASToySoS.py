@@ -11,7 +11,6 @@ from simpa.core.device_digital_twins import *
 from simpa.io_handling import save_hdf5, load_data_field
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
@@ -33,7 +32,7 @@ class hDASToySoS(ManualIntegrationTestClass):
 
     def setup(self):
         ###########  change this parameter in order to specify the type of the toy sos map ##############
-        self.HETERO_OPTION = None
+        self.HETERO_OPTION = "vertical_gradient" #None
         #################################################################################################
         if self.HETERO_OPTION == None:
             self.HETERO_OPTION = input("Choose one sos-map out of:" +
@@ -155,6 +154,9 @@ class hDASToySoS(ManualIntegrationTestClass):
 
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
+        """
+        plot used inital pressure and SoS-map as well as DAS and hDAS reconstruction
+        """
 
         # visualize detector
         #visualise_device(self.pa_device)
@@ -191,9 +193,9 @@ class hDASToySoS(ManualIntegrationTestClass):
         else:
             if save_path is None:
                 save_path = ""
-            plt.savefig(save_path + f"minimal_kwave_test_with_heterogenous_sos_{self.HETERO_OPTION}.png", dpi=300)
+            plt.savefig(save_path + f"hDAS_toy_sos_{self.HETERO_OPTION}.png", dpi=300)
         plt.close()
 
 if __name__ == "__main__":
     test = hDASToySoS()
-    test.run_test(show_figure_on_screen=True)
+    test.run_test(show_figure_on_screen=False)
