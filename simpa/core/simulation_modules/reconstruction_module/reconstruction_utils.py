@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 from asyncio.log import logger
-from time import time
 from typing import Tuple, Union
 
 from simpa.log.file_logger import Logger
@@ -11,7 +10,6 @@ from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils.settings import Settings
 from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.utils import Tags
-from simpa.utils.calculate import bilinear_interpolation, print_memory_stats
 import torch
 import torch.fft
 from torch import Tensor
