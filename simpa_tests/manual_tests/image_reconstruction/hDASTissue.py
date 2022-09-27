@@ -3,32 +3,21 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.core.simulation import simulate
-from simpa.utils import Tags, generate_dict_path
+from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.utils.path_manager import PathManager
 from simpa import KWaveAdapter, DelayAndSumAdapter, visualise_device
 from simpa.core.device_digital_twins import *
-from simpa.io_handling import save_hdf5, load_data_field
+from simpa.io_handling import  load_data_field
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 from simpa.core.device_digital_twins import SlitIlluminationGeometry, LinearArrayDetectionGeometry, PhotoacousticDevice
-
-
-# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
-# SPDX-FileCopyrightText: 2021 Janek Groehl
-# SPDX-License-Identifier: MIT
-
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import apply_b_mode
-from simpa.utils import Tags
-
-from simpa.io_handling import load_data_field
-from simpa.core.simulation import simulate
 from simpa import KWaveAdapter, MCXAdapter, \
     DelayAndSumAdapter, ModelBasedVolumeCreationAdapter, GaussianNoise
-from simpa import reconstruct_delay_and_sum_pytorch
+
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 # FIXME temporary workaround for newest Intel architectures
@@ -39,17 +28,19 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 class hDASTissue(ManualIntegrationTestClass):
     """
     This test runs a simulation creating an example volume of geometric shapes and reconstructs it with the Delay and
-    Sum algorithm. To verify that the test was successful a user has to evaluate the displayed reconstruction.
+    Sum algorithm assuming a fixed SoS-value (DAS) and also using the heterogenous SoS-map (hDAS).
+    To verify that the test was successful a user has to evaluate the displayed reconstruction.
     """ 
+    
+    def __init__(self, device_type="Linear"):
+        self.device_type = device_type
 
     def setup(self):
         """
         This is not a completely autonomous simpa_tests case yet.
         Please make sure that a valid path_config.env file is located in your home directory, or that you
         point to the correct file in the PathManager().
-        :return:
         """
-        DEVICE = "Acuity"
 
         self.path_manager = PathManager()
         self.VOLUME_TRANSDUCER_DIM_IN_MM = 75
@@ -58,10 +49,11 @@ class hDASTissue(ManualIntegrationTestClass):
         self.SPACING = 0.25
         self.RANDOM_SEED = 4711
         np.random.seed(self.RANDOM_SEED)
-        if DEVICE == "Acuity":
+        print(f"Use {self.device_type} Detector")
+        if self.device_type == "Acuity":
             self.device = MSOTAcuityEcho(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                   self.VOLUME_PLANAR_DIM_IN_MM/2, 0]))
-        else:
+        elif self.device_type == "Linear":
             self.device = PhotoacousticDevice(
                 device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                              self.VOLUME_PLANAR_DIM_IN_MM/2, 0]),
@@ -77,6 +69,8 @@ class hDASTissue(ManualIntegrationTestClass):
                                                 )
                                                 )
             self.device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[50,0,0]))
+        else:
+            raise("not supplemented detector chosen")
         
         self.general_settings = {
             # These parameters set the general properties of the simulated volume
@@ -152,103 +146,9 @@ class hDASTissue(ManualIntegrationTestClass):
             Tags.ACOUSTIC_MODEL_BINARY_PATH: self.path_manager.get_matlab_binary_path(),
         })
 
-        """
-        self.settings["noise_initial_pressure"] = {
-            Tags.NOISE_MEAN: 1,
-            Tags.NOISE_STD: 0.1,
-            Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
-            Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
-            Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
-        }"""
-
-    # first volume i tried out
-    def create_example_tissue_big_vessels(self):
-        """
-        1 circular 2 rectancular vessels
-        """
-        background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-        background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
-
-        muscle_dictionary = Settings()
-        muscle_dictionary[Tags.PRIORITY] = 1
-        muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-        muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
-        muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-        muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-        muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
-
-        """
-        # add fat layer below skin
-        fat_dictionary = Settings()
-        fat_dictionary[Tags.PRIORITY] = 2
-        fat_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-        fat_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 2.75]
-        # see https://www.metabolismjournal.com/article/0026-0495(89)90256-4/fulltext, 
-        # https://www.sciencedirect.com/science/article/pii/0026049589902564 for thickness
-        fat_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.subcutaneous_fat()
-        fat_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-        fat_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-        fat_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE"""
-
-        """# add epidermis
-        epidermis_dictionary = Settings()
-        epidermis_dictionary[Tags.PRIORITY] = 8
-        epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
-        epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 0.1]
-        epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.epidermis()
-        epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-        epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
-        epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE"""
-
-        vessel_1_dictionary = Settings()
-        vessel_1_dictionary[Tags.PRIORITY] = 3
-        vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
-                                                        0, 10]
-        vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
-                                                      self.VOLUME_PLANAR_DIM_IN_MM, 10]
-        vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
-        vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-        vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
-
-        vessel_2_dictionary = Settings()
-        vessel_2_dictionary[Tags.PRIORITY] = 3
-        vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 12,
-                                                        0, 7]
-        vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 10,
-                                                      self.VOLUME_PLANAR_DIM_IN_MM, 5]
-        vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-        vessel_2_dictionary[Tags.STRUCTURE_ECCENTRICITY] = 0.9
-        vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
-        vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-        vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
-
-        vessel_3_dictionary = Settings()
-        vessel_3_dictionary[Tags.PRIORITY] = 3
-        vessel_3_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 12, 0, 3]
-        vessel_3_dictionary[Tags.STRUCTURE_X_EXTENT_MM] = 8
-        vessel_3_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = 10
-        vessel_3_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = 16
-        vessel_3_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
-        vessel_3_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
-        vessel_3_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
-
-        tissue_dict = Settings()
-        tissue_dict[Tags.BACKGROUND] = background_dictionary
-        tissue_dict["muscle"] = muscle_dictionary
-        #tissue_dict["fat"] = fat_dictionary
-        #tissue_dict["epidermis"] = epidermis_dictionary
-        tissue_dict["vessel_1"] = vessel_1_dictionary
-        tissue_dict["vessel_2"] = vessel_2_dictionary
-        tissue_dict["vessel_3"] = vessel_3_dictionary
-        return tissue_dict
-
-    # better for visualization
     def create_example_tissue(self):
         """
-        4 circular shaped vessesl with increasing radius, no deformation
+        4 circular shaped vessels with increasing radius, no deformation
         """
         background_dictionary = Settings()
         background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.subcutaneous_fat()
@@ -276,9 +176,9 @@ class hDASTissue(ManualIntegrationTestClass):
 
         vessel_1_dictionary = Settings()
         vessel_1_dictionary[Tags.PRIORITY] = 3
-        vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 10,
+        vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 9,
                                                         0, 15]
-        vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 10,
+        vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 9,
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 15]
         vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 0.1
         vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
@@ -287,9 +187,9 @@ class hDASTissue(ManualIntegrationTestClass):
 
         vessel_2_dictionary = Settings()
         vessel_2_dictionary[Tags.PRIORITY] = 3
-        vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 2.5,
+        vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 3,
                                                         0, 15]
-        vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 2.5,
+        vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 + 3,
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 15]
         vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 0.5
         vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
@@ -298,9 +198,9 @@ class hDASTissue(ManualIntegrationTestClass):
 
         vessel_3_dictionary = Settings()
         vessel_3_dictionary[Tags.PRIORITY] = 3
-        vessel_3_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 2.5,
+        vessel_3_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 3,
                                                         0, 15]
-        vessel_3_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 2.5,
+        vessel_3_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 3,
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 15]
         vessel_3_dictionary[Tags.STRUCTURE_RADIUS_MM] = 1.
         vessel_3_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
@@ -309,9 +209,9 @@ class hDASTissue(ManualIntegrationTestClass):
 
         vessel_4_dictionary = Settings()
         vessel_4_dictionary[Tags.PRIORITY] = 3
-        vessel_4_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 10,
+        vessel_4_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 9,
                                                         0, 15]
-        vessel_4_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 10,
+        vessel_4_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM / 2 - 9,
                                                       self.VOLUME_PLANAR_DIM_IN_MM, 15]
         vessel_4_dictionary[Tags.STRUCTURE_RADIUS_MM] = 1.5
         vessel_4_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
@@ -328,8 +228,10 @@ class hDASTissue(ManualIntegrationTestClass):
         tissue_dict["vessel_4"] = vessel_4_dictionary
         return tissue_dict
 
-
     def perform_test(self):
+        """
+        Simulate and reconstruct with DAS and hDAS
+        """
 
         self.device.update_settings_for_use_of_model_based_volume_creator(self.settings)
 
@@ -362,14 +264,18 @@ class hDASTissue(ManualIntegrationTestClass):
 
     # overwrite function of ReconstructionAlgorithmTestBaseClass
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
+        """
+        plot sos, p0, hDAS and DAS reconstruction (zoomed and not zoomed) and the difference
+        """
 
         # visualize detector
         #visualise_device(self.pa_device)
 
         slice = 20
 
-        fig, axes = plt.subplots(2, 2)#, figsize=(12,12))
-        axes[0,0].set_title(f"Initial pressure")
+        fig, axes = plt.subplots(2, 2)
+        fig.canvas.manager.set_window_title("hDAS in Comparison to DAS")
+        axes[0,0].set_title(f"Simulated initial pressure")
         im = axes[0,0].imshow(np.rot90(self.initial_pressure[:, slice, :], 3), cmap="gnuplot")
         plt.colorbar(im, ax=axes[0,0])
    
@@ -387,21 +293,52 @@ class hDASTissue(ManualIntegrationTestClass):
         im = axes[1,1].imshow(np.rot90(self.reconstructed_image_hetero, 3), cmap="gnuplot")
         plt.colorbar(im, ax=axes[1,1])
 
-        plt.tight_layout()
-
         for ax in axes.flatten():
             ax.set_xlabel("x")
             ax.set_ylabel("z")
+
+        plt.tight_layout()
 
         if show_figure_on_screen:
             plt.show()
         else:
             if save_path is None:
-                save_path = ""
-            plt.savefig(save_path + f"minimal_pipeline_test_with_heterogenous_sos.png", dpi=300)
+                save_path = "figures/hDAS/"
+            plt.savefig(save_path + f"hDAS_full_pipeline_{self.device_type}.png", dpi=300)
         plt.close()
 
-        plt.figure()
+        fig, axes = plt.subplots(3,4)
+        fig.canvas.manager.set_window_title("hDAS/hDAS in Comparison to DAS (Zoomed)")
+        # get slices for the vessels
+        edges = np.array([[48, 68], [53, 73]]) if self.device_type == "Linear" else np.array([[48, 68], [95, 115]])
+        edges_pzero = np.array([[50, 70], [104, 124]]) if self.device_type == "Linear" else np.array([[223, 243], [104, 124]])
+        for i in range(4):
+            axes[0,i].imshow(np.rot90(self.reconstructed_image_homo, 3)[edges[0,0]:edges[0,1], edges[1,0]:edges[1,1]], cmap="gnuplot")
+            axes[0,i].set_xticks([])
+            axes[0,i].set_yticks([])
+            axes[1,i].imshow(np.rot90(self.reconstructed_image_hetero, 3)[edges[0,0]:edges[0,1], edges[1,0]:edges[1,1]], cmap="gnuplot")
+            axes[1,i].set_xticks([])
+            axes[1,i].set_yticks([])
+            edges[1,:] += 24
+            axes[2,i].imshow(np.rot90(self.initial_pressure[:, slice, :], 3)[edges_pzero[0,0]:edges_pzero[0,1], edges_pzero[1,0]:edges_pzero[1,1]],
+                             cmap="gnuplot")
+            axes[2,i].set_xticks([])
+            axes[2,i].set_yticks([])
+            edges_pzero[1,:] += 24
+        axes[0,0].set_ylabel('DAS', rotation=0, fontsize=20, labelpad=50)
+        axes[1,0].set_ylabel('hDAS', rotation=0, fontsize=20, labelpad=50)
+        axes[2,0].set_ylabel('p0', rotation=0, fontsize=20, labelpad=50)
+        plt.tight_layout()
+        if show_figure_on_screen:
+            plt.show()
+        else:
+            if save_path is None:
+                save_path = ""
+            plt.savefig(save_path + f"hDAS_full_pipeline_zoomed_{self.device_type}.png", dpi=300)
+        plt.close()
+        
+
+        plt.figure("Difference of hDAS and DAS")
         plt.title(f"hDAS - DAS")
         difference = np.rot90(self.reconstructed_image_hetero, 3)-np.rot90(self.reconstructed_image_homo, 3)
         max_difference = np.abs(difference).max()
@@ -409,20 +346,16 @@ class hDASTissue(ManualIntegrationTestClass):
         plt.colorbar()
         plt.xlabel("x")
         plt.ylabel("z")
+        plt.tight_layout()
         if show_figure_on_screen:
             plt.show()
         else:
             if save_path is None:
                 save_path = ""
-            plt.savefig(save_path + f"minimal_pipeline_test_with_heterogenous_sos_difference.png", dpi=300)
+            plt.savefig(save_path + f"hDAS_full_pipeline_difference_{self.device_type}.png", dpi=300)
         plt.close()
     
-    
-    def test_convenience_function(self):
-
-        #TODO ???
-        pass
 
 if __name__ == '__main__':
-    test = hDASTissue()
-    test.run_test(show_figure_on_screen=True)
+    test = hDASTissue(device_type="Acuity") # "Acuity" or "Linear"
+    test.run_test(show_figure_on_screen=False)
