@@ -53,7 +53,7 @@ class TestCalculationUtils(unittest.TestCase):
         assert abs(oxy_value) < 1e-5, ("oxy value was not 0.0 but " + str(oxy_value))
 
         # RANDOM CASES
-        for i in range(100):
+        for _ in range(100):
             oxy = np.random.random()
             deoxy = np.random.random()
             mcg = MolecularCompositionGenerator()
@@ -102,11 +102,10 @@ class TestCalculationUtils(unittest.TestCase):
         assert bvf_value == 1.0
 
         # RANDOM CASES
-        for i in range(100):
+        for _ in range(100):
             oxy = np.random.random()
             deoxy = np.random.random()
             fat = np.random.random()
-            
             sum_oxy_deoxy_fat = oxy + deoxy + fat
             mcg = MolecularCompositionGenerator()
             mcg.append(MOLECULE_LIBRARY.fat(fat/sum_oxy_deoxy_fat))
@@ -136,7 +135,3 @@ class TestCalculationUtils(unittest.TestCase):
             std = np.random.rand(1)[0]
             random_value = positive_gauss(mean, std)
             assert random_value > float(0), "positive Gauss value outside the desired range and negative"
-
-
-# test = TestCalculationUtils()
-# test.test_bvf_calculation()
