@@ -1153,6 +1153,26 @@ class Tags:
     Volume Creation Model Settings
     """
 
+    # Sensor Degradation
+    DEGRADATED_SENSORS = ("degradated_sensors", (int, float, list, np.ndarray))
+    """
+    If int: specify the number randomly chosen sensors to be degradated
+    If float: specify the ratio of randomly chosen sensors to be degradated
+    If list or np.ndarray: specify the indices of sensors to be degradated
+    """
+
+    DEGRADATION_FACTORS = ("degradation_factors", (float, list, np.ndarray))
+    """
+    If float: specify the degradation factor used for all degradated sensors
+    If list or np.ndarray: specify the degradation factors of the respective degradated sensors
+    The time series data of the given sensors will be mutltiplied with (1-degradatation_factors)
+    """
+
+    SHIFT_TS = ("shift_time_series", (float, int, list, np.ndarray))
+    """
+    added onto time series data
+    """
+
     # Structures
     STRUCTURES = ("structures", dict)
     """
