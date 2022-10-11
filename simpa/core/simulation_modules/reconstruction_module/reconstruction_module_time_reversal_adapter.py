@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_image_dimensions
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
@@ -188,7 +189,11 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         reconstructed_data = np.flipud(np.rot90(reconstructed_data, 1, axes))
 
         field_of_view_mm = detection_geometry.get_field_of_view_mm()
-        field_of_view_voxels = (field_of_view_mm / spacing_in_mm).astype(np.int32)
+        # field_of_view_voxels = (field_of_view_mm / spacing_in_mm).astype(np.int32)
+        _, _, _, xdim_start, xdim_end,  ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(field_of_view_mm, spacing_in_mm, self.logger)
+        field_of_view_voxels = [xdim_start, xdim_end, zdim_start, zdim_end, ydim_start, ydim_end] # change ordering
+        field_of_view_voxels = [int(dim) for dim in field_of_view_voxels] # cast to int
+        
         self.logger.debug(f"FOV (voxels): {field_of_view_voxels}")
         # In case it should be cropped from A to A, then crop from A to A+1
         x_offset_correct = 1 if (field_of_view_voxels[1] - field_of_view_voxels[0]) < 1 else 0

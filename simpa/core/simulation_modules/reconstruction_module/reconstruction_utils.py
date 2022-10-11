@@ -408,14 +408,15 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
             time_spacing_in_ms, torch_device)
 
-def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
+def compute_image_dimensions(field_of_view_in_mm: np.ndarray, spacing_in_mm: float,
                              logger: Logger) -> Tuple[int, int, int, np.float64, np.float64,
                                                       np.float64, np.float64, np.float64, np.float64]:
     """
     Computes size of beamformed image from field of view of detection geometry given the spacing.
 
-    :param detection_geometry: detection geometry with specified field of view
-    :type detection_geometry: DetectionGeometryBase
+    :param field_of_view_in_mm: field of view in mm as list of xdim_start, xdim_end, ydim_start, ydim_end, 
+    zdim_start, zdim_end
+    :type field_of_view_in_mm: numpy ndarray
     :param spacing_in_mm: space betwenn pixels in mm
     :type spacing_in_mm: float
     :param logger: logger for debugging purposes
@@ -426,8 +427,7 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
     :rtype: Tuple[int, int, int, np.float64, np.float64, np.float64, np.float64, np.float64, np.float64]
     """
 
-    field_of_view = detection_geometry.field_of_view_extent_mm
-    logger.debug(f"Field of view: {field_of_view}")
+    logger.debug(f"Field of view: {field_of_view_in_mm}")
 
     def compute_for_one_dimension(start_in_mm: float, end_in_mm: float) -> Tuple[int, np.float64, np.float64]:
         """
@@ -452,9 +452,9 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
         end = end_temp - np.sign(end_temp) * diff/2
         return dim, start, end
 
-    xdim, xdim_start, xdim_end = compute_for_one_dimension(field_of_view[0], field_of_view[1])
-    zdim, zdim_start, zdim_end = compute_for_one_dimension(field_of_view[2], field_of_view[3])
-    ydim, ydim_start, ydim_end = compute_for_one_dimension(field_of_view[4], field_of_view[5])
+    xdim, xdim_start, xdim_end = compute_for_one_dimension(field_of_view_in_mm[0], field_of_view_in_mm[1])
+    zdim, zdim_start, zdim_end = compute_for_one_dimension(field_of_view_in_mm[2], field_of_view_in_mm[3])
+    ydim, ydim_start, ydim_end = compute_for_one_dimension(field_of_view_in_mm[4], field_of_view_in_mm[5])
 
     if xdim < 1:
         xdim = 1
