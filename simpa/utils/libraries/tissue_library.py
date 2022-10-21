@@ -114,7 +114,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.epidermal_scatterer(1 - melanosom_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.EPIDERMIS))
 
-    def dermis(self, background_oxy=0.05, blood_volume_fraction=0.002):
+    def dermis(self, background_oxy=0.5, blood_volume_fraction=0.002):
         """
 
         :return: a settings dictionary containing all min and max parameters fitting for dermis tissue.
