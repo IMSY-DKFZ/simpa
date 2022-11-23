@@ -66,10 +66,10 @@ class SensorDegradation(ProcessingComponent):
         self.check_input(time_series_data)
 
         ##### TODO delete:
-        _, axes = plt.subplots(1,2)
-        factor = 0.8
-        time_limit = int(factor*time_series_data.shape[1])
-        axes[0].imshow(time_series_data[:,:time_limit], aspect="auto")
+        #_, axes = plt.subplots(2, 1)
+        #factor = 1#0.8
+        #time_limit = int(factor*time_series_data.shape[1])
+        #axes[0].imshow(time_series_data[:,:time_limit], aspect="auto")
 
         if self.component_settings[Tags.TRANSFORM_TO_IN_VITRO_DOMAIN]:
             # laser correct and norm time series data
@@ -89,8 +89,8 @@ class SensorDegradation(ProcessingComponent):
             np.random.normal(size=time_series_data.shape) * self.component_settings[Tags.THERMAL_NOISES][:,None]
 
         # TODO delete
-        axes[1].imshow(time_series_data[:,:time_limit], aspect="auto")
-        plt.show()
+        #axes[1].imshow(time_series_data[:,:time_limit], aspect="auto")
+        #plt.show()
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_array_well_defined(time_series_data)
