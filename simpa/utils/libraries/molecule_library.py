@@ -357,6 +357,9 @@ class MoleculeLibrary(object):
     @staticmethod
     def mediprene(volume_fraction: float = 1.0):
         return Molecule(name="mediprene",
+                        # values based on transmission measurement:
+                        # optical transmission of 85% @ 800nm
+                        # assume that 90% of this comes from scattering and 10 % from absorption
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),  # FIXME
                         volume_fraction=volume_fraction,
                         scattering_spectrum=
