@@ -35,9 +35,9 @@ class SensorDegradation(ProcessingComponent):
        Tags.TRANSFORM_TO_IN_VITRO_DOMAIN
        Tags.SCALING_FACTOR (for example membrane peak of in vitro waterbath data)
        TAGS.IN_VITRO_LASER_ENERGY
-       Tags.BROKEN_SENSORS: (default: np.array([30,94,145]))
-       Tags.OFFSETS: (default: 2300)
-       Tags.THERMAL_NOISES: (default: 2.5)
+       Tags.BROKEN_SENSORS: (for example: np.array([30,94,145]))
+       Tags.OFFSETS: (for example: np.ones(256)*2300)
+       Tags.THERMAL_NOISES: (default: np.ones(256)*2.5)
     """
 
     def norm_time_series(self, time_series: np.ndarray, divide_by_maximum: bool = True):
@@ -45,7 +45,7 @@ class SensorDegradation(ProcessingComponent):
         Apply Laser energy correction and normalize time series using the membrane peak
         """
         # TODO: GENERALIZE THIS FOR MULTISPECTRAL DATA AND TISSUE RELATED SIGNALS (NOT MEMBRANE BASED NORMALIZATION)
-        energy = self.global_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
+        energy = self.global_settings.get_optical_settings()[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
 
         # laser energy correction
         time_series /= energy
