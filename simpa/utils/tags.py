@@ -1153,25 +1153,69 @@ class Tags:
     Volume Creation Model Settings
     """
 
-    # Sensor Degradation
-    DEGRADATED_SENSORS = ("degradated_sensors", (int, float, list, np.ndarray))
+    # Realistic Time Series including Noise Components
+
+    TRANSFORM_TO_IN_VITRO_DOMAIN = ("transform_to_in_vitro_domain", bool)
     """
-    If int: specify the number randomly chosen sensors to be degradated
-    If float: specify the ratio of randomly chosen sensors to be degradated
-    If list or np.ndarray: specify the indices of sensors to be degradated
+    determines whether to transform to in-vitor domain, i.e. laser correcting and normalization of simualated
+    time series as well as scaling with in-vitro-based scaling factor and in-vitro laser-energy
+    Usage: core.processing_components.monospectral.realisitic_time_series
     """
 
-    DEGRADATION_FACTORS = ("degradation_factors", (float, list, np.ndarray))
+    SCALING_FACTOR = ("scaling_factor", float)
     """
-    If float: specify the degradation factor used for all degradated sensors
-    If list or np.ndarray: specify the degradation factors of the respective degradated sensors
-    The time series data of the given sensors will be mutltiplied with (1-degradatation_factors)
+    used to scale the simulated time series data
+    can be the membrane peak of an in-vitro (waterbath) acquisition
+    Usage: core.processing_components.monospectral.realisitic_time_series
     """
 
-    SHIFT_TS = ("shift_time_series", (float, int, list, np.ndarray))
+    IN_VITRO_LASER_ENERGY = ("in_vitro_laser_energy", float)
     """
-    added onto time series data
+    laser energy acquired in in_vitro (waterbath) acquisition, will be used to scale the simulated time series
+    Usage: core.processing_components.monospectral.realisitic_time_series
     """
+
+    BROKEN_SENSORS = ("broken_sensors", (list, np.ndarray))
+    """
+    specify indices of broken sensors
+    Usage: core.processing_components.monospectral.realisitic_time_series
+    """
+
+    OFFSETS = ("offsets", (float, list, np.ndarray))
+    """
+    specifies the offset of sensors
+    if float: offset will be added on all sensors
+    if list or np.ndarray: offsets will be added for each sensor respectively, needed shape = (#sensors, )
+    Usage: core.processing_components.monospectral.realisitic_time_series
+    """
+
+    THERMAL_NOISES = ("thermal_noises", (float, list, np.ndarray))
+    """
+    Determines the standard deviation of thermal noise (Gaussian noise) of time series data
+    if float: Gaussian noise will be added on all sensors
+    if list or np.ndarray: Gaussian noise will be added for each sensor respectively, needed shape = (#sensors, )
+    Usage: core.processing_components.monospectral.realisitic_time_series
+    """
+
+    ###    DEPRECATED   ###
+    #DEGRADATED_SENSORS = ("degradated_sensors", (int, float, list, np.ndarray))
+    #"""
+    #If int: specify the number randomly chosen sensors to be degradated
+    #If float: specify the ratio of randomly chosen sensors to be degradated
+    #If list or np.ndarray: specify the indices of sensors to be degradated
+    #"""
+
+    #DEGRADATION_FACTORS = ("degradation_factors", (float, list, np.ndarray))
+    #"""
+    #If float: specify the degradation factor used for all degradated sensors
+    #If list or np.ndarray: specify the degradation factors of the respective degradated sensors
+    #The time series data of the given sensors will be mutltiplied with (1-degradatation_factors)
+    #"""
+
+    #SHIFT_TS = ("shift_time_series", (float, int, list, np.ndarray))
+    #"""
+    #added onto time series data
+    #"""
 
     # Structures
     STRUCTURES = ("structures", dict)
