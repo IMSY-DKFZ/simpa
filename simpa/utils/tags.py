@@ -1181,18 +1181,18 @@ class Tags:
     Usage: core.processing_components.monospectral.realisitic_time_series
     """
 
-    OFFSETS = ("offsets", (float, list, np.ndarray))
+    OFFSETS = ("offsets", (int, float, list, np.ndarray))
     """
     specifies the offset of sensors
-    if float: offset will be added on all sensors
+    if int or float: offset will be added on all sensors
     if list or np.ndarray: offsets will be added for each sensor respectively, needed shape = (#sensors, )
     Usage: core.processing_components.monospectral.realisitic_time_series
     """
 
-    THERMAL_NOISES = ("thermal_noises", (float, list, np.ndarray))
+    THERMAL_NOISES = ("thermal_noises", (int, float, list, np.ndarray))
     """
     Determines the standard deviation of thermal noise (Gaussian noise) of time series data
-    if float: Gaussian noise will be added on all sensors
+    if int or float: Gaussian noise will be added on all sensors
     if list or np.ndarray: Gaussian noise will be added for each sensor respectively, needed shape = (#sensors, )
     Usage: core.processing_components.monospectral.realisitic_time_series
     """

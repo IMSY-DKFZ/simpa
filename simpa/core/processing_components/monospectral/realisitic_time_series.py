@@ -50,7 +50,7 @@ class SensorDegradation(ProcessingComponent):
         # laser energy correction
         time_series /= energy
 
-        # norm (such that maximum value is 1) [ASSUME MEMBRANE PEAK NORMALIZATION]
+        # norm (such that maximum value is 1) [ASSUME MEMBRANE PEAK NORMALIZATION TODO Generalize that]
         if divide_by_maximum:
             time_series /= time_series.max()
         return time_series
@@ -62,14 +62,8 @@ class SensorDegradation(ProcessingComponent):
         wavelength = self.global_settings[Tags.WAVELENGTH]
         time_series_data = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength)
         
-        # 
+        # check which tags are set and convert it to needed datatype
         self.check_input(time_series_data)
-
-        ##### TODO delete:
-        #_, axes = plt.subplots(2, 1)
-        #factor = 1#0.8
-        #time_limit = int(factor*time_series_data.shape[1])
-        #axes[0].imshow(time_series_data[:,:time_limit], aspect="auto")
 
         if self.component_settings[Tags.TRANSFORM_TO_IN_VITRO_DOMAIN]:
             # laser correct and norm time series data
@@ -88,9 +82,6 @@ class SensorDegradation(ProcessingComponent):
             self.component_settings[Tags.OFFSETS][:,None] + \
             np.random.normal(size=time_series_data.shape) * self.component_settings[Tags.THERMAL_NOISES][:,None]
 
-        # TODO delete
-        #axes[1].imshow(time_series_data[:,:time_limit], aspect="auto")
-        #plt.show()
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_array_well_defined(time_series_data)
@@ -102,14 +93,34 @@ class SensorDegradation(ProcessingComponent):
     def check_input(self, time_series_data: np.ndarray):
         (n_sensors, _) = time_series_data.shape
 
+        if Tags.TRANSFORM_TO_IN_VITRO_DOMAIN not in self.component_settings.keys():
+            self.component_settings[Tags.TRANSFORM_TO_IN_VITRO_DOMAIN] = False
+        else:
+            if self.component_settings[Tags.TRANSFORM_TO_IN_VITRO_DOMAIN]:
+                if Tags.SCALING_FACTOR not in self.component_settings.keys():
+                    self.logger.error("Tags.SCALING_FACTOR has to be set\
+                         if Tags.TRANSFORM_TO_IN_VITRO_DOMAIN is True")
+                if Tags.IN_VITRO_LASER_ENERGY not in self.component_settings.keys():
+                    self.logger.error("Tags.IN_VITRO_LASER_ENERGY has to be\
+                         set if Tags.TRANSFORM_TO_IN_VITRO_DOMAIN is True")
+        
         # indicator function for non-broken sensors
-        self.working_sensors = np.ones(n_sensors) 
-        self.working_sensors[self.component_settings[Tags.BROKEN_SENSORS]] = 0
+        self.working_sensors = np.ones(n_sensors)
+        if Tags.BROKEN_SENSORS in self.component_settings.keys():
+            self.working_sensors[self.component_settings[Tags.BROKEN_SENSORS]] = 0
+
+        if Tags.OFFSETS not in self.component_settings.keys():
+            self.logger.info("Tags.OFFSETS is set to 0.")
+            self.component_settings[Tags.OFFSETS] = 0. # i.e. not adding any offsets
+
+        if Tags.THERMAL_NOISES not in self.component_settings.keys():
+            self.logger.info("Tags.THERMAL_NOISES is set to 0.")
+            self.component_settings[Tags.THERMAL_NOISES] = 0 # i.e. not adding any thermal noise
 
         # convert float offset to an array
-        if isinstance(self.component_settings[Tags.OFFSETS], (float, list)):
+        if isinstance(self.component_settings[Tags.OFFSETS], (int, float, list)):
             self.component_settings[Tags.OFFSETS] = np.array(self.component_settings[Tags.OFFSETS])
 
         # convert float thermal noise to an array
-        if isinstance(self.component_settings[Tags.OFFSETS], (float, list)):
+        if isinstance(self.component_settings[Tags.THERMAL_NOISES], (int, float, list)):
             self.component_settings[Tags.THERMAL_NOISES] = np.array(self.component_settings[Tags.THERMAL_NOISES])
