@@ -120,7 +120,7 @@ class SensorDegradation(ProcessingComponent):
         # convert offset to an array if it is not yet
         if isinstance(self.component_settings[Tags.OFFSETS], (int, float)):
             self.component_settings[Tags.OFFSETS] = np.ones(n_sensors) * self.component_settings[Tags.OFFSETS]
-        elif isinstance(self.component_settings[Tags.OFFSETS]):
+        elif isinstance(self.component_settings[Tags.OFFSETS], list):
             self.component_settings[Tags.OFFSETS] = np.array(self.component_settings[Tags.OFFSETS])
 
         # convert thermal noise to an array if it is not yet
