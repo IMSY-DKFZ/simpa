@@ -111,16 +111,20 @@ class SensorDegradation(ProcessingComponent):
 
         if Tags.OFFSETS not in self.component_settings.keys():
             self.logger.info("Tags.OFFSETS is set to 0.")
-            self.component_settings[Tags.OFFSETS] = 0. # i.e. not adding any offsets
+            self.component_settings[Tags.OFFSETS] = 0 # i.e. not adding any offsets
 
         if Tags.THERMAL_NOISES not in self.component_settings.keys():
             self.logger.info("Tags.THERMAL_NOISES is set to 0.")
             self.component_settings[Tags.THERMAL_NOISES] = 0 # i.e. not adding any thermal noise
 
-        # convert float offset to an array
-        if isinstance(self.component_settings[Tags.OFFSETS], (int, float, list)):
+        # convert offset to an array if it is not yet
+        if isinstance(self.component_settings[Tags.OFFSETS], (int, float)):
+            self.component_settings[Tags.OFFSETS] = np.ones(n_sensors) * self.component_settings[Tags.OFFSETS]
+        elif isinstance(self.component_settings[Tags.OFFSETS]):
             self.component_settings[Tags.OFFSETS] = np.array(self.component_settings[Tags.OFFSETS])
 
-        # convert float thermal noise to an array
-        if isinstance(self.component_settings[Tags.THERMAL_NOISES], (int, float, list)):
+        # convert thermal noise to an array if it is not yet
+        if isinstance(self.component_settings[Tags.THERMAL_NOISES], (int, float)):
+            self.component_settings[Tags.THERMAL_NOISES] = np.ones(n_sensors) * self.component_settings[Tags.THERMAL_NOISES]
+        if isinstance(self.component_settings[Tags.THERMAL_NOISES], list):
             self.component_settings[Tags.THERMAL_NOISES] = np.array(self.component_settings[Tags.THERMAL_NOISES])
