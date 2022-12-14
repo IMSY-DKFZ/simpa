@@ -23,6 +23,7 @@ The paper that introduces SIMPA including visualisations and explanations can be
 * [Contributing](#how-to-contribute)
 * [Performance profiling](#performance-profiling)
 * [Troubleshooting](#troubleshooting)
+* [Citation](#citation)
 
 The toolkit is still under development and is thus not fully tested and may contain bugs. 
 Please report any issues that you find in our Issue Tracker: https://github.com/IMSY-DKFZ/simpa/issues. 
@@ -50,9 +51,8 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
 virtual environment activated (we also recommend python 3.8)
-1. `pip install -r requirements.txt`
-2. `python setup.py install` (for developement: `python setup.py develop`)
-3. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
+1. `pip install .`
+2. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
 If no error messages arise, you are now setup to use SIMPA in your project.
 
@@ -98,7 +98,7 @@ for further (and much better) guidance under:
 
 [http://www.k-wave.org/](http://www.k-wave.org/)
 
-1. Install MATLAB with the core and parallel computing toolboxes activated at the minimum.
+1. Install MATLAB with the core, image processing and parallel computing toolboxes activated at the minimum.
 2. Download the kWave toolbox
 3. Add the kWave toolbox base path to the toolbox paths in MATLAB
 4. Download the kWaveArray addition from the link given in this user forum post [http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources](http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources)
@@ -209,3 +209,20 @@ If you encounter an error similar to:
 
 Look up the solution in [this thread of the k-Wave forum](http://www.k-wave.org/forum/topic/error-reading-h5-files-when-using-binaries).  
       
+# Citation
+
+If you use the SIMPA tool, we would appreciate if you cite our Journal publication in the Journal of Biomedical Optics:
+
+Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, Patricia Vieten, Leonardo Ayala, Sarah E. Bohndiek, Alexander Seitel, and Lena Maier-Hein. *"SIMPA: an open-source toolkit for simulation and image processing for photonics and acoustics."* **Journal of Biomedical Optics** 27, no. 8 (2022).
+
+```Bibtex
+@article{2022simpatoolkit,
+  title={SIMPA: an open-source toolkit for simulation and image processing for photonics and acoustics},
+  author={Gr{\"o}hl, Janek and Dreher, Kris K and Schellenberg, Melanie and Rix, Tom and Holzwarth, Niklas and Vieten, Patricia and Ayala, Leonardo and Bohndiek, Sarah E and Seitel, Alexander and Maier-Hein, Lena},
+  journal={Journal of Biomedical Optics},
+  volume={27},
+  number={8},
+  year={2022},
+  publisher={SPIE}
+}
+```

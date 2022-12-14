@@ -2,11 +2,11 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from asyncio.log import logger
 from typing import Tuple, Union
 
 from simpa.log.file_logger import Logger
 from simpa.core.device_digital_twins import DetectionGeometryBase
+from simpa.utils.processing_device import get_processing_device
 from simpa.utils.settings import Settings
 from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.utils import Tags
@@ -18,6 +18,7 @@ import numpy as np
 from scipy.signal import hilbert, butter, lfilter
 from scipy.signal.windows import tukey
 from scipy.ndimage import zoom
+
 
 def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZATION_BOX,
                            dimensions: tuple = None, n_sensor_elements=None,
@@ -51,29 +52,31 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
 
     return output
 
+
 def bandpass_filter_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
-                                           device: DetectionGeometryBase) -> np.ndarray:
-        """
-        Applies corresponding bandpass filter which can be set in 
-        `component_settings[Tags.BANDPASS_FILTER_METHOD]`, using Tukey window-based filter as default.
+                                  device: DetectionGeometryBase) -> np.ndarray:
+    """
+    Applies corresponding bandpass filter which can be set in
+    `component_settings[Tags.BANDPASS_FILTER_METHOD]`, using Tukey window-based filter as default.
 
-        :param data: (numpy array) data to be filtered
-        :param global_settings: (Settings) settings for the whole simulation
-        :param component_settings: (Settings) settings for the reconstruction module
-        :param device:
-        :return: (numpy array) filtered data
-        """
+    :param data: (numpy array) data to be filtered
+    :param global_settings: (Settings) settings for the whole simulation
+    :param component_settings: (Settings) settings for the reconstruction module
+    :param device:
+    :return: (numpy array) filtered data
+    """
 
-        # select corresponding filtering method depending on tag in settings
-        if Tags.BANDPASS_FILTER_METHOD in component_settings:
-            if component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.TUKEY_BANDPASS_FILTER:
-                return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
-            elif component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.BUTTERWORTH_BANDPASS_FILTER:
-                return butter_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
-            else:
-                return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
+    # select corresponding filtering method depending on tag in settings
+    if Tags.BANDPASS_FILTER_METHOD in component_settings:
+        if component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.TUKEY_BANDPASS_FILTER:
+            return tukey_bandpass_filtering_with_settings(data, global_settings, component_settings, device)
+        elif component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.BUTTERWORTH_BANDPASS_FILTER:
+            return butter_bandpass_filtering_with_settings(data, global_settings, component_settings, device)
         else:
-            return tukey_bandpass_filtering_with_settings(data, global_settings,component_settings, device)
+            return tukey_bandpass_filtering_with_settings(data, global_settings, component_settings, device)
+    else:
+        return tukey_bandpass_filtering_with_settings(data, global_settings, component_settings, device)
+
 
 def butter_bandpass_filtering(data: np.array,  time_spacing_in_ms: float = None,
                               cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
@@ -102,14 +105,15 @@ def butter_bandpass_filtering(data: np.array,  time_spacing_in_ms: float = None,
         high = 0.999999999
     else:
         high = (cutoff_highpass / nyquist)
-    
+
     b, a = butter(N=order, Wn=[high, low], btype='band')
     y = lfilter(b, a, data)
-    
+
     return y
 
+
 def butter_bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
-                                           device: DetectionGeometryBase) -> np.ndarray:
+                                            device: DetectionGeometryBase) -> np.ndarray:
     """
     Apply a butterworth bandpass filter of `order` with cutoff values at `cutoff_lowpass`
     and `cutoff_highpass` MHz on the `data` using the scipy.signal.butter filter.
@@ -143,8 +147,8 @@ def butter_bandpass_filtering_with_settings(data: np.ndarray, global_settings: S
 
 
 def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
-                       cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
-                       tukey_alpha: float = 0.5, resampling_for_fft: bool =False) -> np.ndarray:
+                             cutoff_lowpass: int = int(8e6), cutoff_highpass: int = int(0.1e6),
+                             tukey_alpha: float = 0.5, resampling_for_fft: bool = False) -> np.ndarray:
     """
     Apply a tukey bandpass filter with cutoff values at `cutoff_lowpass` and `cutoff_highpass` MHz 
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
@@ -166,7 +170,7 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
         raise ValueError("The highpass cutoff value must be lower than the lowpass cutoff value.")
 
     # no resampling by default
-    resampling_factor = 1 
+    resampling_factor = 1
     original_size = data.shape[-1]
     target_size = original_size
 
@@ -176,9 +180,9 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
         order = 0
         mode = 'constant'
 
-        target_size = int(2**(np.ceil(np.log2(original_size)))) # compute next larger power of 2
+        target_size = int(2**(np.ceil(np.log2(original_size))))  # compute next larger power of 2
         resampling_factor = original_size/target_size
-        zoom_factors = [1]*data.ndim # resampling factor for each dimension
+        zoom_factors = [1]*data.ndim  # resampling factor for each dimension
         zoom_factors[-1] = 1.0/resampling_factor
 
         data = zoom(data, zoom_factors, order=order, mode=mode)
@@ -200,7 +204,7 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     # transform data into Fourier space, multiply filter and transform back
     data_in_fourier_space = np.fft.fft(data)
     filtered_data_in_fourier_space = data_in_fourier_space * np.broadcast_to(window, np.shape(data_in_fourier_space))
-    filtered_data =  np.fft.ifft(filtered_data_in_fourier_space).real
+    filtered_data = np.fft.ifft(filtered_data_in_fourier_space).real
 
     # resample back to original size if necessary
     if resampling_for_fft:
@@ -352,7 +356,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         # this loads the sos-map based on volume generation
         speed_of_sound_in_m_per_s = load_data_field(
             global_settings[Tags.SIMPA_OUTPUT_PATH],
-            Tags.DATA_FIELD_SPEED_OF_SOUND) 
+            Tags.DATA_FIELD_SPEED_OF_SOUND)
         if Tags.SOS_HETEROGENOUS not in global_settings or not global_settings[Tags.SOS_HETEROGENOUS]:
             speed_of_sound_in_m_per_s = np.mean(speed_of_sound_in_m_per_s)
             logger.debug(f"Using a fixed SoS-value of {speed_of_sound_in_m_per_s:.2f}")
@@ -393,9 +397,11 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
         'The time series sensor data must have been converted to a tensor'
 
     # move tensors to GPU if available, otherwise use CPU
-    dev = get_reconstruction_processing_unit(global_settings)
+    torch_device = get_processing_device(global_settings)
 
-    torch_device = torch.device(dev)
+    if torch_device == torch.device('cpu'):  # warn the user that CPU reconstruction is slow
+        logger.warning(f"Reconstructing on CPU is slow. Check if cuda is available 'torch.cuda.is_available()'.")
+
     sensor_positions = sensor_positions.to(torch_device)
     time_series_sensor_data = time_series_sensor_data.to(torch_device)
 
@@ -415,54 +421,53 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
             time_spacing_in_ms, torch_device)
 
-
-def get_reconstruction_processing_unit(global_settings):
-    """
-    Get device (CPU/GPU) for reconstructing the image.
-    :param global_settings: global SIMPA settings
-    :return: device for reconstruction
-    """
-    logger = Logger()
-    # if no tag is set, try to use GPU if available
-    if Tags.GPU not in global_settings:
-        if torch.cuda.is_available():
-            dev = "cuda"
-        else:
-            dev = "cpu"
-    else:  # else set tag as user wants
-        dev = "cuda" if global_settings[Tags.GPU] else "cpu"
-
-    if dev == 'cuda' and not torch.cuda.is_available():
-        # torch will likely raise an error if no GPU is available but set as device -> log it to SIMPA log
-        logger.error('Cuda is not available! Check your torch/cuda version.')
-
-    if dev == 'cpu':  # warn the user that CPU reconstruction is slow
-        logger.warning(f"Reconstructing on CPU is slow. Check if cuda is available 'torch.cuda.is_available()'.")
-    return dev
-
-
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
-                             logger: Logger) -> Tuple[int, int, int, int, int, int, int, int, int]:
+                             logger: Logger) -> Tuple[int, int, int, np.float64, np.float64,
+                                                      np.float64, np.float64, np.float64, np.float64]:
     """
-    compute size of beamformed image from field of view of detection geometry
+    Computes size of beamformed image from field of view of detection geometry given the spacing.
 
-    Returns x,z,y dimensions of reconstructed image volume in pixels as well 
-    as the range for each dimension as start and end pixels.
+    :param detection_geometry: detection geometry with specified field of view
+    :type detection_geometry: DetectionGeometryBase
+    :param spacing_in_mm: space betwenn pixels in mm
+    :type spacing_in_mm: float
+    :param logger: logger for debugging purposes
+    :type logger: Logger
+    :returns: tuple with x,z,y dimensions of reconstructed image volume in pixels as well as the range for
+    each dimension as start and end pixels (xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end,
+    zdim_start, zdim_end)
+    :rtype: Tuple[int, int, int, np.float64, np.float64, np.float64, np.float64, np.float64, np.float64]
     """
+
     field_of_view = detection_geometry.field_of_view_extent_mm
     logger.debug(f"Field of view: {field_of_view}")
 
-    #if isinstance(speed_of_sound_in_m_per_s, float):  
-    xdim_start = int(np.round(field_of_view[0] / spacing_in_mm))
-    xdim_end = int(np.round(field_of_view[1] / spacing_in_mm))
-    zdim_start = int(np.round(field_of_view[2] / spacing_in_mm))
-    zdim_end = int(np.round(field_of_view[3] / spacing_in_mm))
-    ydim_start = int(np.round(field_of_view[4] / spacing_in_mm))
-    ydim_end = int(np.round(field_of_view[5] / spacing_in_mm))
+    def compute_for_one_dimension(start_in_mm: float, end_in_mm: float) -> Tuple[int, np.float64, np.float64]:
+        """
+        Helper function to compute the image dimensions for a single dimension given a start and end point in mm.
+        Makes sure that image dimesion is an integer by flooring.
+        Spaces the pixels symmetrically between start and end.
 
-    xdim = (xdim_end - xdim_start)
-    ydim = (ydim_end - ydim_start)
-    zdim = (zdim_end - zdim_start)
+        :param start_in_mm: lower limit of the field of view in this dimension
+        :type start_in_mm: float
+        :param start_in_mm: upper limit of the field of view in this dimension
+        :type start_in_mm: float
+        :returns: tuple with number of pixels in dimension, lower and upper limit in pixels
+        :rtype: Tuple[int, np.float64, np.float64]
+        """
+
+        start_temp = start_in_mm / spacing_in_mm
+        end_temp = end_in_mm / spacing_in_mm
+        dim_temp = np.abs(end_temp - start_temp)
+        dim = int(np.floor(dim_temp))
+        diff = np.abs(dim_temp - dim)
+        start = start_temp - np.sign(start_temp) * diff/2
+        end = end_temp - np.sign(end_temp) * diff/2
+        return dim, start, end
+
+    xdim, xdim_start, xdim_end = compute_for_one_dimension(field_of_view[0], field_of_view[1])
+    zdim, zdim_start, zdim_end = compute_for_one_dimension(field_of_view[2], field_of_view[3])
+    ydim, ydim_start, ydim_end = compute_for_one_dimension(field_of_view[4], field_of_view[5])
 
     if xdim < 1:
         xdim = 1
@@ -483,7 +488,7 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
                                  zdim_start: int, zdim_end: int, spacing_in_mm: float,
                                  speed_of_sound_in_m_per_s: Union[float,np.ndarray],
                                  time_spacing_in_ms: float, logger: Logger, torch_device: torch.device,
-                                 component_settings: Settings, global_settings: Settings, 
+                                 component_settings: Settings, global_settings: Settings,
                                  device_base_position_mm: np.ndarray) -> Tuple[torch.tensor, int]:
     """
     Perform the core computation of Delay and Sum, without summing up the delay dependend values.
@@ -509,20 +514,21 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
     y = ydim_start + torch.arange(ydim, device=torch_device, dtype=torch.float32)
     if zdim == 1:
         z = torch.arange(zdim, device=torch_device, dtype=torch.float32)
+        z = torch.arange(zdim, device=torch_device, dtype=torch.float32)
     else:
         z = zdim_start + torch.arange(zdim, device=torch_device, dtype=torch.float32)
-    j = torch.arange(n_sensor_elements, device=torch_device, dtype=torch.float32) 
+    j = torch.arange(n_sensor_elements, device=torch_device, dtype=torch.float32)
 
     if not isinstance(speed_of_sound_in_m_per_s, np.ndarray):
         delays = calculate_delays_for_homogen_sos(sensor_positions, x, y, z, j, spacing_in_mm, time_spacing_in_ms,
                                                   speed_of_sound_in_m_per_s)
     else:
         delays = calculate_delays_for_heterogen_sos(sensor_positions, xdim, ydim, zdim,
-                            x, y, z, spacing_in_mm, time_spacing_in_ms, speed_of_sound_in_m_per_s, 
+                            x, y, z, spacing_in_mm, time_spacing_in_ms, speed_of_sound_in_m_per_s,
                             n_sensor_elements, global_settings, device_base_position_mm, logger,
-                            torch_device)   
+                            torch_device)
     jj = j.long()
-    
+
     # perform index validation
     invalid_indices = torch.where(torch.logical_or(delays < 0, delays >= float(time_series_sensor_data.shape[1])))
     torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1] - 1)
@@ -555,7 +561,7 @@ def calculate_delays_for_homogen_sos(sensor_positions: torch.tensor, x: torch.te
     """
     Returns the delays indicating which time series data has to be summed up assuming a
     homogenous speed-of-sound.
-    
+
     :param sensor_positions: sensor positions in mm in the FOV coordinate system,
                              where the origin is at the device base position
     :type sensor_positions: torch.tensor
@@ -596,15 +602,15 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
                                            x: torch.tensor, y: torch.tensor, z: torch.tensor,
                                            spacing_in_mm: float, time_spacing_in_ms: float,
                                            speed_of_sound_in_m_per_s: np.ndarray,
-                                           n_sensor_elements: int, global_settings: Settings, 
+                                           n_sensor_elements: int, global_settings: Settings,
                                            device_base_position_mm: np.ndarray, logger: Logger,
                                            torch_device: torch.device,
                                            get_ds: bool = False,
                                            ) -> torch.tensor:
     """
-    Returns the delays indicating which time series data has to be summed up taking a heterogenous 
+    Returns the delays indicating which time series data has to be summed up taking a heterogenous
     speed-of-sound-map into account, i.e. performing a line integral over the inverse speed-of-sound map.
-    
+
     :param sensor_positions: sensor positions in mm in the FOV coordinate system,
                              where the origin is at the device base position
     :type sensor_positions: torch.tensor
@@ -626,7 +632,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
     :type time_spacing_in_ms: float
     :param speed_of_sound_in_m_per_s: (heterogenous) speed-of-sound map
     :type speed_of_sound_in_m_per_s: np.ndarray
-    :param n_sensor_elements: number of sensor elements of the given 
+    :param n_sensor_elements: number of sensor elements of the given
     :type n_sensor_elements: int
     :param global settings: settings for the whole simulation
     :type global_settings: Settings
@@ -667,21 +673,21 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
         sensor_positions = sensor_positions.clone()[:,::2] # leave out 3rd dimension
 
         # do distance calculation in FOV system, as it is numerically somewhat more stable
-        ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()              
+        ds = (source_pos_in_mm[:, :, None, :] - sensor_positions[None, None, :, :]).pow(2).sum(-1).sqrt()
 
 
         # Add device_base_position_xy_mm to sensor and source positions in order to go to global coordinate system
         device_base_position_mm = torch.from_numpy(device_base_position_mm).to(torch_device)
         device_base_position_xy_mm = device_base_position_mm[::2] # leave out second component (z-direction)
-        
+
         volume_dim_mm_vector = torch.tensor([global_settings[Tags.DIM_VOLUME_X_MM],
                                             global_settings[Tags.DIM_VOLUME_Z_MM]],
                                             device=torch_device)
         # Scale the positions in the desired input range of grid_sample function, i.e. [-1,-1] to [1,1]
         # where [-1,-1] denotes the pixel at index [0,0]
-        source_pos_scaled = 2*(source_pos_in_mm+device_base_position_xy_mm)/volume_dim_mm_vector-1 
+        source_pos_scaled = 2*(source_pos_in_mm+device_base_position_xy_mm)/volume_dim_mm_vector-1
         sensor_positions_scaled = 2*(sensor_positions+device_base_position_xy_mm)/volume_dim_mm_vector-1
-               
+
         # free some unneeded gpu memory
         del source_pos_in_mm, sensor_positions, xx, yy, volume_dim_mm_vector, device_base_position_mm
 
@@ -689,7 +695,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
         # we want that for the longest ray that the ray is sampled at least at every pixel on average
         steps = int(max((xdim**2+ydim**2)**0.5 + 0.5, ds.max()/(2**0.5*spacing_in_mm) + 0.5, STEPS_MIN))
         logger.debug(f"Using {steps} steps for numerical calculation of the line integrals")
-        # steps        
+        # steps
         s = torch.linspace(0, 1, steps, device=torch_device)
 
         delays = torch.zeros(xdim, ydim, n_sensor_elements, dtype=torch.float64, device=torch_device)

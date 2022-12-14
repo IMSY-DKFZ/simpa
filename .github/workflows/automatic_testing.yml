@@ -5,9 +5,9 @@ name: SIMPA tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   build:
@@ -25,13 +25,10 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install -r requirements.txt
     - name: Install simpa
       run: |
-        python setup.py develop
+        python -m pip install --upgrade pip
+        python -m pip install .
     - name: Testing
       run: |
         python simpa_tests/do_coverage.py
