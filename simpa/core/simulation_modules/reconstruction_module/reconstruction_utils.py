@@ -34,7 +34,6 @@ def get_apodization_factor(apodization_method: str = Tags.RECONSTRUCTION_APODIZA
     :param device: (torch device) PyTorch tensor device
     :return: (torch tensor) tensor with apodization factors which can be multipied with DAS values
     """
-
     if dimensions is None or n_sensor_elements is None:
         raise AttributeError("dimensions and n_sensor_elements must be specified and not be None")
 
@@ -521,7 +520,7 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
 
     if not isinstance(speed_of_sound_in_m_per_s, np.ndarray):
         delays = calculate_delays_for_homogen_sos(sensor_positions, x, y, z, j, spacing_in_mm, time_spacing_in_ms,
-                                                  speed_of_sound_in_m_per_s)
+                                                  speed_of_sound_in_m_per_s, logger=logger)
     else:
         delays = calculate_delays_for_heterogen_sos(sensor_positions, xdim, ydim, zdim,
                             x, y, z, spacing_in_mm, time_spacing_in_ms, speed_of_sound_in_m_per_s,
@@ -555,9 +554,17 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
 
     return values, n_sensor_elements
 
-def calculate_delays_for_homogen_sos(sensor_positions: torch.tensor, x: torch.tensor, y: torch.tensor, z: torch.tensor,
-                                     j: torch.tensor, spacing_in_mm: float, time_spacing_in_ms: float,
-                                     speed_of_sound_in_m_per_s: float, get_ds: bool = False) -> torch.tensor:
+
+def calculate_delays_for_homogen_sos(sensor_positions: torch.tensor,
+                                     x: torch.tensor,
+                                     y: torch.tensor,
+                                     z: torch.tensor,
+                                     j: torch.tensor,
+                                     spacing_in_mm: float,
+                                     time_spacing_in_ms: float,
+                                     speed_of_sound_in_m_per_s: float,
+                                     logger: Logger,
+                                     get_ds: bool = False) -> torch.tensor:
     """
     Returns the delays indicating which time series data has to be summed up assuming a
     homogenous speed-of-sound.
@@ -581,6 +588,8 @@ def calculate_delays_for_homogen_sos(sensor_positions: torch.tensor, x: torch.te
     :type speed_of_sound_in_m_per_s: float
     :param get_ds: whether distances should be returned (which is needed in the automatic test) or not
     :type get_ds: bool
+    :param logger: default simpa logger instantiated
+    :type logger: Logger
 
     :return: delays indices indicating which time series data
              one has to sum up
@@ -597,6 +606,7 @@ def calculate_delays_for_homogen_sos(sensor_positions: torch.tensor, x: torch.te
         return ds / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
     else:
         return ds / (speed_of_sound_in_m_per_s * time_spacing_in_ms), ds
+
 
 def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int, ydim: int, zdim: int,
                                            x: torch.tensor, y: torch.tensor, z: torch.tensor,
@@ -731,6 +741,3 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
 
     else:
         logger.warning("3-dimensional heterogenous SoS reconstruction is not implemented yet.")
-
-        #xx, yy, zz = torch.meshgrid(x, y, z)
-        pass

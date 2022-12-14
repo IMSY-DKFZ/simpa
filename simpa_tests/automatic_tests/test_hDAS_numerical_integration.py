@@ -10,6 +10,7 @@ import matplotlib.patches as patches
 from typing import Tuple
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import calculate_delays_for_heterogen_sos, calculate_delays_for_homogen_sos
 
+
 class TesthDASNumericalIntegration(unittest.TestCase):
     """
     This test is an automatic test, however one can also run the script and visualize the results and get more detailed prints
@@ -18,7 +19,7 @@ class TesthDASNumericalIntegration(unittest.TestCase):
     - run automatic tests with minimal prints
         test.setUp()
         test.test()
-    - run tests for given scalarfield type showing plots and printing informations about the differences of delays, ds and integrals
+    - run tests for given scalarfield type showing plots and printing information about the differences of delays, ds and integrals
         test.setUp()
         test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="horizontal_gradient")
     - visualize a specific scalarfield type and the corresponding SoS-map
@@ -187,7 +188,7 @@ class TesthDASNumericalIntegration(unittest.TestCase):
             j = torch.arange(self.n_sensor_elements, device=self.torch_device, dtype=torch.float32)
             delays_ref, ds_ref = calculate_delays_for_homogen_sos(sensor_positions=self.sensor_positions, x=self.x, y=self.y, z=self.z,
                                             j = j, spacing_in_mm=self.spacing_in_mm, time_spacing_in_ms=self.time_spacing_in_ms,
-                                            speed_of_sound_in_m_per_s = 1/self.c, get_ds = True)
+                                            speed_of_sound_in_m_per_s=1/self.c, logger=self.logger, get_ds=True)
             delays_ref, ds_ref = delays_ref.squeeze(), ds_ref.squeeze()
             return delays_ref, ds_ref
         else: # TODO: vectorize this 
@@ -451,23 +452,10 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         if show:
             plt.show()
 
+
 if __name__ == "__main__":
     test = TesthDASNumericalIntegration()
 
     # Normal usage
     test.setUp()
     test.test()
-
-    # More verbose prints
-    #test.setUp()
-    #test.test(visualize=False,verbosity=["delays", "ds"])
-
-    # Visualize scalarfield 
-    #test.setUp()
-    #test.create_scalarfield("quadratic")
-    #test.visualize_setting(show=True)
-
-    # Print and plot all quantities for given scalarfield
-    #test.setUp()
-    #test.test(visualize=True, verbosity=["delays", "ds", "integrals"], scalarfield_type="horizontal_gradient")
-
