@@ -200,7 +200,7 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
             else:
                 if save_path is None:
                     save_path = ""
-                plt.savefig(save_path + f"diffusion_theory_{idx}.png")
+                plt.savefig(save_path + f"diffusion_theory_reflectance_{idx}.png")
             plt.close()
 
 
