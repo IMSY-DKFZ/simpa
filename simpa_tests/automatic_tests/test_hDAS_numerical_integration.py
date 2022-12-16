@@ -14,7 +14,7 @@ from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils im
 class TesthDASNumericalIntegration(unittest.TestCase):
     """
     This test is an automatic test, however one can also run the script and visualize the results and get more detailed prints
-    This test tests the heterogenous delay calculation hDAS.
+    This test tests the heterogeneous delay calculation hDAS.
     usage:
     - run automatic tests with minimal prints
         test.setUp()
@@ -33,6 +33,10 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         """
         sets up volume, FOV, sensor positions, physical properties
         """
+        # seed random generator (tested 300 seeds, all worked)
+        np.random.seed(42)
+        torch.random.manual_seed(42)
+
         # Global Volume
         self.global_settings = Settings()
 
@@ -84,13 +88,13 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         if self.RANDOM_SENSORS: 
             # sample sensors
             sensor_distri = Uniform(
-                low=torch.tensor([-self.global_settings[Tags.DIM_VOLUME_X_MM]/2+self.global_settings[Tags.SPACING_MM]/4,
+                low=torch.tensor([-self.global_settings[Tags.DIM_VOLUME_X_MM]/2+self.global_settings[Tags.SPACING_MM]/2,
                                   0,
-                                  -self.global_settings[Tags.DIM_VOLUME_Z_MM]/2+self.global_settings[Tags.SPACING_MM]/4],
+                                  -self.global_settings[Tags.DIM_VOLUME_Z_MM]/2+self.global_settings[Tags.SPACING_MM]/2],
                                    dtype=torch.float64, device=self.torch_device),
-                high=torch.tensor([self.global_settings[Tags.DIM_VOLUME_X_MM]/2-self.global_settings[Tags.SPACING_MM]/4,
+                high=torch.tensor([self.global_settings[Tags.DIM_VOLUME_X_MM]/2-self.global_settings[Tags.SPACING_MM]/2,
                                    0.01,
-                                   self.global_settings[Tags.DIM_VOLUME_Z_MM]/2-self.global_settings[Tags.SPACING_MM]/4],
+                                   self.global_settings[Tags.DIM_VOLUME_Z_MM]/2-self.global_settings[Tags.SPACING_MM]/2],
                                    dtype=torch.float64, device = self.torch_device))
             self.sensor_positions = sensor_distri.sample((self.n_sensor_elements,))
             self.sensor_positions[:,1] = 0.
@@ -105,7 +109,7 @@ class TesthDASNumericalIntegration(unittest.TestCase):
 
     def create_scalarfield(self, scalarfield_type: str = "horizontal_gradient")-> None:
         """
-        creates heterogenous maps
+        creates heterogeneous maps
         """
         if scalarfield_type == "constant":
             self.c = 1/1500 if self.PAI_realistic_units else 1500 #1500
@@ -191,7 +195,7 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                                             speed_of_sound_in_m_per_s=1/self.c, logger=self.logger, get_ds=True)
             delays_ref, ds_ref = delays_ref.squeeze(), ds_ref.squeeze()
             return delays_ref, ds_ref
-        else: # TODO: vectorize this 
+        else:
             print(f"\nCalculate analytical solution for {scalarfield_type} scalarfield\n")
             xx, yy = torch.meshgrid(self.x, self.y)
             source_positions = torch.dstack([xx.type(torch.float64)*self.spacing_in_mm, yy.type(torch.float64)*self.spacing_in_mm])
@@ -276,13 +280,16 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         # Calculate differences of the delays
         self.difference = np.abs(self.delays_num - self.delays_ana)
 
+        # Calculate the sensor with maximum difference
+        self.crit_sensor = np.argmax(np.max(self.difference, axis=(0,1)))
+        
         # Calculate differences of the distances
         ds_diff_num = np.abs(self.ds_ana - self.ds_num)
 
         self.tolerances = {"relative": {
                                 "constant": 1e-15,
-                                "horizontal_gradient": 1e-9,
-                                "vertical_gradient": 1e-9,
+                                "horizontal_gradient": 1e-8,
+                                "vertical_gradient": 1e-8,
                                 "quadratic": 1e-5 if self.PAI_realistic_units else 1e-3
                                 },
                             "absolute": {
@@ -362,7 +369,8 @@ class TesthDASNumericalIntegration(unittest.TestCase):
                                 linewidth=1, edgecolor='grey', facecolor='none', linestyle="--", label="FOV")
         # Add the patch to the Axes
         axes[0].add_patch(rect)
-        axes[0].scatter(sens_pix[:,0], sens_pix[:,2], color="red", label="sensors")
+        axes[0].scatter(sens_pix[:,0], sens_pix[:,2], color="red", marker=".", label="sensors")
+        axes[0].scatter(sens_pix[self.crit_sensor, 0], sens_pix[self.crit_sensor, 2], color="darkred", marker="o", label="critical sensor")
         axes[0].scatter(device_pix[0], device_pix[2], color="orange", label="device base position", marker="x")
         axes[0].legend(loc='upper center', bbox_to_anchor=(0.5, -0.08), facecolor='whitesmoke')
 
@@ -379,20 +387,21 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         """
         visualize the numerically and analytically calculated delays for all sensors
         """
-        cols = 2
-        fig, axes = plt.subplots(self.n_sensor_elements, cols, figsize=(8*cols,6*self.n_sensor_elements))
+        rows = 2
+        shown_sensors = list(range(min(4,self.n_sensor_elements))) + [self.crit_sensor]
+        fig, axes = plt.subplots(rows, len(shown_sensors), figsize=(8*len(shown_sensors),6*rows))
         fig.canvas.manager.set_window_title("Delays of the FOV points")
-        for n in range(self.n_sensor_elements):
-            im1 = axes[n,0].imshow(self.delays_num[:,:,n])
-            axes[n, 0].set_title(f"Numerical (Sensor {n+1})")
-            axes[n, 0].set_ylabel("x")
-            axes[n, 0].set_xlabel("y")
-            plt.colorbar(im1, ax=axes[n, 0])
-            im2 = axes[n,1].imshow(self.delays_ana[:,:,n])
-            axes[n, 1].set_title(f"Analytical (Sensor {n+1})")
-            axes[n, 1].set_ylabel("x")
-            axes[n, 1].set_xlabel("y")
-            plt.colorbar(im2, ax=axes[n, 1])
+        for n, sens in enumerate(shown_sensors):
+            im1 = axes[0, n].imshow(self.delays_num[:,:,sens])
+            axes[0, n].set_title(f"Numerical (Sensor {sens+1})")
+            axes[0, n].set_ylabel("x")
+            axes[0, n].set_xlabel("y")
+            plt.colorbar(im1, ax=axes[0, n])
+            im2 = axes[1, n].imshow(self.delays_ana[:,:,sens])
+            axes[1, n].set_title(f"Analytical (Sensor {sens+1})")
+            axes[1, n].set_ylabel("x")
+            axes[1, n].set_xlabel("y")
+            plt.colorbar(im2, ax=axes[1, n])
         if show:
             plt.show()
 
@@ -400,11 +409,12 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         """
         visualize the difference between the numerically and analytically calculated delays
         """
-        fig, axes = plt.subplots(1, self.n_sensor_elements, figsize=(8*self.n_sensor_elements,6))
+        shown_sensors = list(range(min(4,self.n_sensor_elements))) + [self.crit_sensor]
+        fig, axes = plt.subplots(1, len(shown_sensors), figsize=(8*len(shown_sensors),6*1))
         fig.canvas.manager.set_window_title("Delay Differences")
-        for n in range(self.n_sensor_elements):
-            dif1 = axes[n].imshow(self.difference[:,:,n], cmap="hot")
-            axes[n].set_title(f"Sensor {n+1}")
+        for n, sens in enumerate(shown_sensors):
+            dif1 = axes[n].imshow(self.difference[:,:,sens], cmap="hot")
+            axes[n].set_title(f"Sensor {sens+1}")
             axes[n].set_ylabel("x")
             axes[n].set_xlabel("y")
             plt.colorbar(dif1, ax=axes[n])
@@ -425,20 +435,21 @@ class TesthDASNumericalIntegration(unittest.TestCase):
         """
         plot the integrals, i.e. delays/ds
         """
-        cols = 2
-        fig, axes = plt.subplots(self.n_sensor_elements, cols, figsize=(6*cols,8*self.n_sensor_elements))
+        rows = 2 
+        shown_sensors = list(range(min(4,self.n_sensor_elements))) + [self.crit_sensor]
+        fig, axes = plt.subplots(rows, len(shown_sensors), figsize=(8*len(shown_sensors),6*rows))
         fig.canvas.manager.set_window_title("Integrals")
-        for n in range(self.n_sensor_elements):
-            im1 = axes[n,0].imshow(self.integral_num[:,:,n].T)
-            axes[n, 0].set_title(f"Numerical (Sensor {n+1})")
-            axes[n, 0].set_ylabel("x")
-            axes[n, 0].set_xlabel("y")
-            plt.colorbar(im1, ax=axes[n, 0])
-            im2 = axes[n,1].imshow(self.integral_ana[:,:,n].T)
-            axes[n, 1].set_title(f"Analytical (Sensor {n+1})")
-            axes[n, 1].set_ylabel("x")
-            axes[n, 1].set_xlabel("y")
-            plt.colorbar(im2, ax=axes[n, 1])
+        for n, sens in enumerate(shown_sensors):
+            im1 = axes[0, n].imshow(self.integral_num[:,:,sens].T)
+            axes[0, n].set_title(f"Numerical (Sensor {sens+1})")
+            axes[0, n].set_ylabel("x")
+            axes[0, n].set_xlabel("y")
+            plt.colorbar(im1, ax=axes[0, n])
+            im2 = axes[1, n].imshow(self.integral_ana[:,:,sens].T)
+            axes[1, n].set_title(f"Analytical (Sensor {sens+1})")
+            axes[1, n].set_ylabel("x")
+            axes[1, n].set_xlabel("y")
+            plt.colorbar(im2, ax=axes[1, n])
         if show:
             plt.show()
 
