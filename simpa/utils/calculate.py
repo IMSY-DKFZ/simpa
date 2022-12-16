@@ -313,28 +313,3 @@ def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor
         
     else:
         return None
-
-def print_memory_stats(unit="MiB"):
-           
-    t = torch.cuda.get_device_properties(0).total_memory
-    r = torch.cuda.memory_reserved(0)
-    a = torch.cuda.memory_allocated(0)
-    if unit=="kiB":
-        t /= 2**10
-        r /= 2**10
-        a /= 2**10
-    elif unit=="MiB":
-        t /= 1048576 #2**20
-        r /= 1048576
-        a /= 1048576
-    else:
-        unit = "B"
-    print(f"""##########GPU-Memory-Stats##########
-Allocated : {a:20.3f} {unit}
-Theo. Free: {t-a:20.3f} {unit}
-(Total-allocated)
-Reserved  : {r:20.3f} {unit}
-Free Cache: {r-a:20.3f} {unit}
-(Not used in reserved)
-Total     : {t:20.3f} {unit}
-####################################""")

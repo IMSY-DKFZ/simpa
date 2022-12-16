@@ -887,10 +887,10 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
-    SOS_HETEROGENOUS = ("sos_heterogenous", bool)
+    SOS_HETEROGENEOUS = ("sos_heterogeneous", bool)
     """
     Specifies whether the KwaveAcousticForwardModel and the Delay-and-Sum adapters should consider
-    a heterogenous speed-of-sound-map in their calculations or not.\n
+    a heterogeneous speed-of-sound-map in their calculations or not.\n
     Usage: adapter KwaveAcousticForwardModel, adapter DelayAndSumAdapter, naming convention
     """
 

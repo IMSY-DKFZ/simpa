@@ -28,7 +28,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 class hDASTissue(ManualIntegrationTestClass):
     """
     This test runs a simulation creating an example volume of geometric shapes and reconstructs it with the Delay and
-    Sum algorithm assuming a fixed SoS-value (DAS) and also using the heterogenous SoS-map (hDAS).
+    Sum algorithm assuming a fixed SoS-value (DAS) and also using the heterogeneous SoS-map (hDAS).
     To verify that the test was successful a user has to evaluate the displayed reconstruction.
     """ 
     
@@ -140,7 +140,7 @@ class hDASTissue(ManualIntegrationTestClass):
             Tags.RECORDMOVIE: False,
             Tags.MOVIENAME: "visualization_log",
             Tags.ACOUSTIC_LOG_SCALE: True,
-            Tags.DATA_FIELD_SPEED_OF_SOUND: 1540,
+            #Tags.DATA_FIELD_SPEED_OF_SOUND: 1540, # if commented, then use mean sos value for homogenous recon
             Tags.DATA_FIELD_ALPHA_COEFF: 0.01,
             Tags.DATA_FIELD_DENSITY: 1000,
             Tags.ACOUSTIC_MODEL_BINARY_PATH: self.path_manager.get_matlab_binary_path(),
@@ -250,13 +250,16 @@ class hDASTissue(ManualIntegrationTestClass):
 
         self.reconstructed_image_homo = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
                                                         self.settings[Tags.WAVELENGTH])
-
-        self.homogenous_speed_of_sound = self.settings.get_reconstruction_settings()[Tags.DATA_FIELD_SPEED_OF_SOUND]
-
-        # Heterogenous Reconstruction
         self.speed_of_sound_map_hetero = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SPEED_OF_SOUND)
+
+        if Tags.DATA_FIELD_SPEED_OF_SOUND in self.settings.get_reconstruction_settings():
+            self.homogenous_speed_of_sound = self.settings.get_reconstruction_settings()[Tags.DATA_FIELD_SPEED_OF_SOUND]
+        else:
+            self.homogenous_speed_of_sound = np.mean(self.speed_of_sound_map_hetero)
+
+        # heterogeneous Reconstruction
         self.settings.get_reconstruction_settings()[Tags.DATA_FIELD_SPEED_OF_SOUND] = self.speed_of_sound_map_hetero
-        self.settings[Tags.SOS_HETEROGENOUS] = True
+        self.settings[Tags.SOS_HETEROGENEOUS] = True
         DelayAndSumAdapter(self.settings).run(self.device)
 
         self.reconstructed_image_hetero = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
@@ -285,7 +288,7 @@ class hDASTissue(ManualIntegrationTestClass):
         im = axes[0,1].imshow(np.rot90(self.speed_of_sound_map_hetero[:, slice, :], 3))
         plt.colorbar(im, ax=axes[0,1])
 
-        axes[1,0].set_title(f"DAS Reconstruction\nwith SoS={self.homogenous_speed_of_sound}")
+        axes[1,0].set_title(f"DAS Reconstruction\nwith SoS={self.homogenous_speed_of_sound:.1f}")
         im = axes[1,0].imshow(np.rot90(self.reconstructed_image_homo, 3), cmap="gnuplot")
         plt.colorbar(im, ax=axes[1,0])
 

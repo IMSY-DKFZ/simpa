@@ -345,22 +345,22 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     # speed of sound: use given speed of sound
     if Tags.DATA_FIELD_SPEED_OF_SOUND in component_settings:
         speed_of_sound_in_m_per_s = component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]
-        if Tags.SOS_HETEROGENOUS not in global_settings or not global_settings[Tags.SOS_HETEROGENOUS]:
+        if Tags.SOS_HETEROGENEOUS not in global_settings or not global_settings[Tags.SOS_HETEROGENEOUS]:
             speed_of_sound_in_m_per_s = np.mean(speed_of_sound_in_m_per_s)
             logger.debug(f"Using a fixed SoS-value of {speed_of_sound_in_m_per_s:.2f}")
         else:
-            logger.debug(f"Using a heterogenous SoS-map ({type(speed_of_sound_in_m_per_s)}) " \
+            logger.debug(f"Using a heterogeneous SoS-map ({type(speed_of_sound_in_m_per_s)}) " \
                          f"with shape {speed_of_sound_in_m_per_s.shape}")
     else:
         # this loads the sos-map based on volume generation
         speed_of_sound_in_m_per_s = load_data_field(
             global_settings[Tags.SIMPA_OUTPUT_PATH],
             Tags.DATA_FIELD_SPEED_OF_SOUND)
-        if Tags.SOS_HETEROGENOUS not in global_settings or not global_settings[Tags.SOS_HETEROGENOUS]:
+        if Tags.SOS_HETEROGENEOUS not in global_settings or not global_settings[Tags.SOS_HETEROGENEOUS]:
             speed_of_sound_in_m_per_s = np.mean(speed_of_sound_in_m_per_s)
             logger.debug(f"Using a fixed SoS-value of {speed_of_sound_in_m_per_s:.2f}")
         else:
-            logger.debug(f"Using a heterogenous SoS-map ({type(speed_of_sound_in_m_per_s)}) " \
+            logger.debug(f"Using a heterogeneous SoS-map ({type(speed_of_sound_in_m_per_s)}) " \
                          f"with shape {speed_of_sound_in_m_per_s.shape}")
 
     # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
@@ -618,7 +618,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
                                            get_ds: bool = False,
                                            ) -> torch.tensor:
     """
-    Returns the delays indicating which time series data has to be summed up taking a heterogenous
+    Returns the delays indicating which time series data has to be summed up taking a heterogeneous
     speed-of-sound-map into account, i.e. performing a line integral over the inverse speed-of-sound map.
 
     :param sensor_positions: sensor positions in mm in the FOV coordinate system,
@@ -640,7 +640,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
     :type spacing_in_mm: float
     :param time_spacing_in_ms: temporal spacing of the time series data in ms
     :type time_spacing_in_ms: float
-    :param speed_of_sound_in_m_per_s: (heterogenous) speed-of-sound map
+    :param speed_of_sound_in_m_per_s: (heterogeneous) speed-of-sound map
     :type speed_of_sound_in_m_per_s: np.ndarray
     :param n_sensor_elements: number of sensor elements of the given
     :type n_sensor_elements: int
@@ -659,7 +659,7 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
              one has to sum up
     :rtype: torch.tensor
     """
-    logger.debug("Considering heterogenous SoS-map in reconstruction algorithm")
+    logger.debug("Considering heterogeneous SoS-map in reconstruction algorithm")
 
     STEPS_MIN = 2 # minimal number of steps of interpolated points along one ray
 
@@ -740,4 +740,4 @@ def calculate_delays_for_heterogen_sos(sensor_positions: torch.tensor, xdim: int
             return delays.unsqueeze(2), ds
 
     else:
-        logger.warning("3-dimensional heterogenous SoS reconstruction is not implemented yet.")
+        logger.warning("3-dimensional heterogeneous SoS reconstruction is not implemented yet.")

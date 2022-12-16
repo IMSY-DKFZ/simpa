@@ -16,10 +16,10 @@ from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 class hDASToySoS(ManualIntegrationTestClass):
     """
-    Time series data are simulated using KWave and a heterogenous SoS-map and a initital pressure with just 
+    Time series data are simulated using KWave and a heterogeneous SoS-map and a initital pressure with just 
     1 non-zero entry (point source).
     DAS-Reconstruction assuming a fixed speed-of-sound-value (homogenous SoS-map) and hDAS-reconstruction considering 
-    the correct heterogenous SoS-map are performed. 
+    the correct heterogeneous SoS-map are performed. 
     For this, one can choose between predefined "toy examples of SoS-maps" with gradients, steps or noise:
         - vertical gradient
         - horizontal gradient
@@ -54,13 +54,13 @@ class hDASToySoS(ManualIntegrationTestClass):
         self.initial_pressure[50, :, 50] = 1
         self.speed_of_sound_map = np.ones((100, 30, 100)) * self.SPEED_OF_SOUND
         np.random.seed(4711)
-        heterogenous_map = {"vertical_gradient": self.speed_of_sound_map * np.linspace(0.5,1.5,100)[None, None, :],
+        heterogeneous_map = {"vertical_gradient": self.speed_of_sound_map * np.linspace(0.5,1.5,100)[None, None, :],
                             "horizontal_gradient": self.speed_of_sound_map * np.linspace(0.5,1.5,100)[:, None, None],
                             "horizontal_2_regions": self.speed_of_sound_map * np.hstack((np.ones(50)*0.5, np.ones(50)*1.5))[:, None, None],
                             "diagonal_2_regions": self.speed_of_sound_map * 0.5 + np.triu(self.speed_of_sound_map[:,14,:])[:,None,:],
                             "gaussian_noise": self.speed_of_sound_map + np.random.randn(100, 30, 100) * 142}
         
-        self.speed_of_sound_map_hetero = heterogenous_map[self.HETERO_OPTION]
+        self.speed_of_sound_map_hetero = heterogeneous_map[self.HETERO_OPTION]
         # scale to mean = self.SPEED_OF_SOUND
         self.speed_of_sound_map_hetero *= self.SPEED_OF_SOUND/self.speed_of_sound_map_hetero.mean()
 
@@ -71,7 +71,7 @@ class hDASToySoS(ManualIntegrationTestClass):
         def get_settings():
             general_settings = {
                 Tags.RANDOM_SEED: 4711,
-                Tags.VOLUME_NAME: "HeterogenousSpeedOfSoundToyTest",
+                Tags.VOLUME_NAME: "HeterogeneousSpeedOfSoundToyTest",
                 Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
                 Tags.SPACING_MM: 1.0,
                 Tags.DIM_VOLUME_Z_MM: 100,
@@ -79,7 +79,7 @@ class hDASToySoS(ManualIntegrationTestClass):
                 Tags.DIM_VOLUME_Y_MM: 30,
                 Tags.GPU: True,
                 Tags.WAVELENGTHS: [700],
-                Tags.SOS_HETEROGENOUS: True # in order to reconstruct using the heterogen. map
+                Tags.SOS_HETEROGENEOUS: True # in order to reconstruct using the heterogen. map
             }
 
             acoustic_settings = {
@@ -104,7 +104,7 @@ class hDASToySoS(ManualIntegrationTestClass):
                 Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
                 Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_HAMMING,
                 Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
-                Tags.DATA_FIELD_SPEED_OF_SOUND:  # Heterogenous SoS if simulated heterogenously
+                Tags.DATA_FIELD_SPEED_OF_SOUND:  # heterogeneous SoS if simulated heterogeneously
                 self.speed_of_sound_map_hetero if self.SIMULATE_HETERO else self.speed_of_sound_map,
                 Tags.SPACING_MM: 0.1
             }
@@ -121,7 +121,7 @@ class hDASToySoS(ManualIntegrationTestClass):
         simulate([], self.settings, self.pa_device)
 
         acoustic_properties = {
-            Tags.DATA_FIELD_SPEED_OF_SOUND: # Heterogenous map for foward modeling
+            Tags.DATA_FIELD_SPEED_OF_SOUND: # heterogeneous map for foward modeling
             self.speed_of_sound_map_hetero if self.SIMULATE_HETERO else self.speed_of_sound_map, 
             Tags.DATA_FIELD_DENSITY: self.density,
             Tags.DATA_FIELD_ALPHA_COEFF: self.alpha
@@ -135,7 +135,7 @@ class hDASToySoS(ManualIntegrationTestClass):
         save_hdf5(optical_output, self.settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
         KWaveAdapter(self.settings).run(self.pa_device)
 
-        # Heterogenous reconstruction
+        # heterogeneous reconstruction
         DelayAndSumAdapter(self.settings).run(self.pa_device)
 
         self.reconstructed_image_hetero = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
@@ -145,7 +145,7 @@ class hDASToySoS(ManualIntegrationTestClass):
 
         # Homogenous reconstruction (for this reset the settings for homogenous reconstruction)
         self.settings.get_reconstruction_settings()[Tags.DATA_FIELD_SPEED_OF_SOUND] = self.SPEED_OF_SOUND
-        self.settings[Tags.SOS_HETEROGENOUS] = False
+        self.settings[Tags.SOS_HETEROGENEOUS] = False
         DelayAndSumAdapter(self.settings).run(self.pa_device)
 
         self.reconstructed_image_homo = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
