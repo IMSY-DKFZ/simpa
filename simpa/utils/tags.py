@@ -881,8 +881,17 @@ class Tags:
 
     DATA_FIELD_SPEED_OF_SOUND = "sos"
     """
-    Speed of sound of the generated volume/structure in m/s.\n
+    Speed of sound of the generated volume/structure in m/s.
+    A single number implies that one assumes a homogeneous tissue with constant speed of sound,
+    while a 2 dimensional array implies that one uses a speed-of-sound map.\n
     Usage: SIMPA package, naming convention
+    """
+
+    SOS_HETEROGENEOUS = ("sos_heterogeneous", bool)
+    """
+    Specifies whether the KwaveAcousticForwardModel and the Delay-and-Sum adapters should consider
+    a heterogeneous speed-of-sound-map in their calculations or not.\n
+    Usage: adapter KwaveAcousticForwardModel, adapter DelayAndSumAdapter, naming convention
     """
 
     DATA_FIELD_DENSITY = "density"

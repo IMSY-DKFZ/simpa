@@ -5,7 +5,8 @@
 
 import numpy as np
 from scipy.interpolate import interp1d
-
+import torch
+import itertools
 
 def calculate_oxygenation(molecule_list):
     """
@@ -223,3 +224,92 @@ def positive_gauss(mean, std) -> float:
         return positive_gauss(mean, std)
     else: 
         return random_value
+
+def bilinear_interpolation(image: torch.tensor, x: torch.tensor, y: torch.tensor, z: torch.tensor = None) -> torch.tensor:
+    """
+    Returns interpolated values of an 2 dimensional or 3 dimensional map/image at the positions (x,y) or (x,y,z) respectively.
+    For this bilinear interpolation (in every dimension) is used.
+    This function is based on https://gist.github.com/peteflorence/a1da2c759ca1ac2b74af9a83f69ce20e.
+    If the sample point is outside the image, one uses the next nearest 2 or 3 neighbors for interpolation!
+    
+    :param image: 2-dim./3-dim image which values shall be interpolated
+    :type image: torch.tensor
+    :param x: pixel positions in x-direction
+    :type x: torch.tensor
+    :param y: pixel positions in y-direction
+    :type y: torch.tensor
+    :param z: pixel positions in z-direction
+    :type z: torch.tensor
+    
+    :return: interpolated values of the input image at given positions
+    :rtype: torch.tensor
+    """
+    dtype = torch.float64
+    dtype_long = torch.long
+   
+    if image.ndim < 3 or z == None: # 2dim case        
+        x_int = []
+        y_int = []
+        # compute the indices of the neighbors
+        # for lower indices clamp at 0 and image.shape[*]-2
+        # for higher indices clamp at 1 and image.shape[*]-1
+        # for x dimension           
+        x_int.append(torch.clamp(torch.floor(x).type(dtype_long), 0, image.shape[0]-2))
+        x_int.append(x_int[0] + 1)
+        # for y dimension
+        y_int.append(torch.clamp(torch.floor(y).type(dtype_long), 0, image.shape[1]-2))
+        y_int.append(y_int[0] + 1)
+
+        # ensures, that at the boundary the nearest boundary values are taken into account
+        x = torch.clamp(x, 0, image.shape[0]-1)
+        y = torch.clamp(y, 0, image.shape[1]-1)
+     
+        # in order to reduce needed memory loop over 4 neigbours (i,j) \in {(0,0), (1,0), (0,1), (1,1)} 
+        # and sum the weighted image values of the neighbors up
+        f_int = 0
+        for i,j in zip(itertools.product(range(2),repeat=2), itertools.product(range(1,-1,-1),repeat=2)):
+            weights = torch.abs((x_int[j[0]].type(dtype)-x) * (y_int[j[1]].type(dtype)-y))
+            neighbor_values = image[x_int[i[0]], y_int[i[1]]]
+            f_int += neighbor_values * weights
+            del weights, neighbor_values
+        return f_int
+
+    
+    elif image.ndim == 3: # 3dim case
+        # in the 3dim case one has 8 neighbors that are the corners of a cube 
+        
+        # compute the indices of the neighbors
+        x_int = []
+        y_int = []
+        z_int = []
+        # for lower indices clamp at 0 and image.shape[*]-2
+        # for higher indices clamp at 1 and image.shape[*]-1
+        # for x dimension           
+        x_int.append(torch.clamp(torch.floor(x).type(dtype_long), 0, image.shape[0]-2))
+        x_int.append(x_int[0] + 1)
+
+        # for y dimension
+        y_int.append(torch.clamp(torch.floor(y).type(dtype_long), 0, image.shape[1]-2))
+        y_int.append(y_int[0] + 1)
+
+        # for z dimension
+        z_int.append(torch.clamp(torch.floor(z).type(dtype_long), 0, image.shape[2]-2))
+        z_int.append(z_int[0] + 1)       
+        
+        # ensures, that at the boundary the nearest boundary values are taken into account
+        x = torch.clamp(x, 0, image.shape[0]-1)
+        y = torch.clamp(y, 0, image.shape[1]-1)
+        z = torch.clamp(z, 0, image.shape[2]-1)
+        
+        # in order to reduce needed memory loop over 8 neigbours (i,j) \in {(0,0,0), (0,0,1), (0,1,0), (0,1,1), ...} 
+        # and sum the weighted image values of the neighbors up
+        f_int = 0
+        for i,j in zip(itertools.product(range(2),repeat=3), itertools.product(range(1,-1,-1),repeat=3)):
+            weights = torch.abs((x_int[j[0]].type(dtype)-x) * (y_int[j[1]].type(dtype)-y) * (z_int[j[2]].type(dtype)-z))
+            neighbor_values = image[x_int[i[0]], y_int[i[1]], z_int[i[2]]]
+            f_int += neighbor_values * weights
+            del weights, neighbor_values
+        return f_int
+        
+    else:
+        return None

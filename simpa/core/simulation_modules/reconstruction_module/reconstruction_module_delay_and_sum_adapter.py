@@ -10,6 +10,7 @@ from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils im
     compute_image_dimensions, preparing_reconstruction_and_obtaining_reconstruction_settings
 from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.core.simulation_modules.reconstruction_module import create_reconstruction_settings
+from typing import Union
 
 
 class DelayAndSumAdapter(ReconstructionAdapterBase):
@@ -42,8 +43,8 @@ class DelayAndSumAdapter(ReconstructionAdapterBase):
 
         values, _ = compute_delay_and_sum_values(time_series_sensor_data, sensor_positions, xdim,
                                                  ydim, zdim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end, spacing_in_mm, speed_of_sound_in_m_per_s,
-                                                 time_spacing_in_ms, self.logger, torch_device,
-                                                 self.component_settings)
+                                                 time_spacing_in_ms, self.logger, torch_device, self.component_settings,
+                                                 self.global_settings, detection_geometry.device_position_mm)
 
         _sum = torch.sum(values, dim=3)
         counter = torch.count_nonzero(values, dim=3)
@@ -56,7 +57,7 @@ class DelayAndSumAdapter(ReconstructionAdapterBase):
 
 def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray,
                                       detection_geometry: DetectionGeometryBase,
-                                      speed_of_sound_in_m_per_s: int = 1540,
+                                      speed_of_sound_in_m_per_s: Union[int, np.ndarray] = 1540,
                                       time_spacing_in_s: float = 2.5e-8,
                                       sensor_spacing_in_mm: float = 0.1,
                                       recon_mode: str = Tags.RECONSTRUCTION_MODE_PRESSURE,
@@ -66,7 +67,7 @@ def reconstruct_delay_and_sum_pytorch(time_series_sensor_data: np.ndarray,
 
     :param time_series_sensor_data: (2D numpy array) sensor data of shape (sensor elements, time steps)
     :param detection_geometry: The DetectionGeometryBase that should be used to reconstruct the given time series data
-    :param speed_of_sound_in_m_per_s: (int) speed of sound in medium in meters per second (default: 1540 m/s)
+    :param speed_of_sound_in_m_per_s: (int or np.ndarray) speed of sound in medium in meters per second (default: 1540 m/s)
     :param time_spacing_in_s: (float) time between sampling points in seconds (default: 2.5e-8 s which is equal to 40 MHz)
     :param sensor_spacing_in_mm: (float) space between sensor elements in millimeters (default: 0.1 mm)
     :param recon_mode: SIMPA Tag defining the reconstruction mode - pressure default OR differential
