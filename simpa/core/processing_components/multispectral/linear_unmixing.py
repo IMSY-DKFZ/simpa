@@ -13,28 +13,28 @@ from scipy.optimize import nnls
 
 class LinearUnmixing(MultispectralProcessingAlgorithm):
     """
-        Performs linear spectral unmixing (LU) using Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI)
-        on the defined data field for each chromophore specified in the component settings.
+    Performs linear spectral unmixing (LU) using Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI)
+    on the defined data field for each chromophore specified in the component settings.
 
-        If tag LINEAR_UNMIXING_NON_NEGATIVE is set to True non-negative linear unmixing is performed, which solves the
-        KKT (Karush-Kuhn-Tucker) conditions for the non-negative least squares problem.
+    If tag LINEAR_UNMIXING_NON_NEGATIVE is set to True non-negative linear unmixing is performed, which solves the
+    KKT (Karush-Kuhn-Tucker) conditions for the non-negative least squares problem.
 
-        This component saves a dictionary containing the chromophore concentrations and corresponding wavelengths for
-        each chromophore. If the tag LINEAR_UNMIXING_COMPUTE_SO2 is set True the blood oxygen saturation
-        is saved as well, however, this is only possible if the chromophores oxy- and deoxyhemoglobin are specified.
-        IMPORTANT:
-        Linear unmixing should only be performed with at least two wavelengths:
-        e.g. Tags.WAVELENGTHS: [750, 800]
+    This component saves a dictionary containing the chromophore concentrations and corresponding wavelengths for
+    each chromophore. If the tag LINEAR_UNMIXING_COMPUTE_SO2 is set True the blood oxygen saturation
+    is saved as well, however, this is only possible if the chromophores oxy- and deoxyhemoglobin are specified.
+    IMPORTANT:
+    Linear unmixing should only be performed with at least two wavelengths:
+    e.g. Tags.WAVELENGTHS: [750, 800]
 
-        :param kwargs:
-           **Tags.DATA_FIELD (required)
-           **Tags.LINEAR_UNMIXING_SPECTRA (required)
-           **Tags.WAVELENGTHS (default: None, if None, then settings[Tags.WAVELENGTHS] will be used.)
-           **Tags.LINEAR_UNMIXING_COMPUTE_SO2 (default: False)
-           **Tags.LINEAR_UNMIXING_NON_NEGATIVE (default: False)
-           **settings (required)
-           **component_settings_key (required)
-        """
+    Parameters:
+    Tags.DATA_FIELD (required)
+    Tags.LINEAR_UNMIXING_SPECTRA (required)
+    Tags.WAVELENGTHS (default: None, if None, then settings[Tags.WAVELENGTHS] will be used.)
+    Tags.LINEAR_UNMIXING_COMPUTE_SO2 (default: False)
+    Tags.LINEAR_UNMIXING_NON_NEGATIVE (default: False)
+    global_settings (required)
+    component_settings_key (required)
+    """
 
     def __init__(self, global_settings, component_settings_key: str):
         super(LinearUnmixing, self).__init__(global_settings=global_settings,

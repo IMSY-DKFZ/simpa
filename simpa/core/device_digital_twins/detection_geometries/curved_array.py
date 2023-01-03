@@ -87,7 +87,6 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
 
         pitch_angle = self.pitch_mm / self.radius_mm
-        self.logger.debug(f"pitch angle: {pitch_angle}")
         detector_radius = self.radius_mm
         detector_positions = np.zeros((self.number_detector_elements, 3))
         det_elements = np.arange(-int(self.number_detector_elements / 2) + 0.5,
