@@ -23,7 +23,7 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
 matplotlib = ">=3.5.0"       # Uses PSF-License (MIT compatible)
-numpy = ">=1.21.4"           # Uses BSD-License (MIT compatible)
+numpy = ">=1.21.4, <1.24.0"           # Uses BSD-License (MIT compatible)
 scipy = ">=1.7.2"            # Uses BSD-like-License (MIT compatible)
 pynrrd = ">=0.4.2"           # Uses MIT-License (MIT compatible)
 scikit-image = ">=0.18.3"    # Uses BSD-License (MIT compatible)
