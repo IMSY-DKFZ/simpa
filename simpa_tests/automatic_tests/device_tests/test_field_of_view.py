@@ -103,6 +103,31 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
+    def test_with_changing_spacing(self):
+        """
+        Tests different spacings with the same field of view. Dimensions and their start and end are expected to change
+        """
+        spacings = [0.1, 0.2, 0.3, 0.4, 0.5]
+        expected_xdims = [100, 50, 33, 25, 20]
+        expected_ydims = [200, 100, 67, 50, 40]
+        expected_xdim_starts = [-50, -25, -16.5, -12.5, -10]
+        expected_xdim_ends = [50, 25, 16.5, 12.5, 10]
+        expected_ydim_starts = [-120, -60, -40.16666666, -30, -24]
+        expected_ydim_ends = [80, 40, 26.83333333, 20, 16]
+
+        for i, spacing in enumerate(spacings):
+            image_dimensions = self._test([-5, 5, 0, 0, -12, 8], spacing, self.detection_geometry)
+            xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
+
+            assert zdim == 1, "With no FOV extend in z dimension only one slice should be created"
+            assert xdim == expected_xdims[i]
+            assert ydim == expected_ydims[i]
+            self.assertAlmostEqual(xdim_start, expected_xdim_starts[i])
+            self.assertAlmostEqual(xdim_end, expected_xdim_ends[i])
+            self.assertAlmostEqual(ydim_start, expected_ydim_starts[i])
+            self.assertAlmostEqual(ydim_end, expected_ydim_ends[i])
+            self.assertAlmostEqual(zdim_start, 0)
+            self.assertAlmostEqual(zdim_end, 0)
 
 if __name__ == '__main__':
     test = TestFieldOfView()
@@ -112,3 +137,4 @@ if __name__ == '__main__':
     test.unsymmetric_test_with_small_spacing()
     test.unsymmetric_test()
     test.symmetric_test_with_odd_number_of_elements()
+    test.test_with_changing_spacing()
