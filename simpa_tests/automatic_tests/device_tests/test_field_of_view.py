@@ -77,10 +77,10 @@ class TestFieldOfView(unittest.TestCase):
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
         assert zdim == 1, "With no FOV extend in z dimension only one slice should be created"
-        assert xdim == 249
+        assert xdim == 250
         assert ydim == 100
-        self.assertAlmostEqual(xdim_start, -124.75)
-        self.assertAlmostEqual(xdim_end, 124.25)
+        self.assertAlmostEqual(xdim_start, -125.25)
+        self.assertAlmostEqual(xdim_end, 124.75)
         self.assertAlmostEqual(ydim_start, -60)
         self.assertAlmostEqual(ydim_end, 40)
         self.assertAlmostEqual(zdim_start, 0)

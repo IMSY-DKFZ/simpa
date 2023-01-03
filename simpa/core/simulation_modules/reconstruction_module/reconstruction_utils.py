@@ -432,8 +432,7 @@ def compute_image_dimensions(field_of_view_in_mm: np.ndarray, spacing_in_mm: flo
     def compute_for_one_dimension(start_in_mm: float, end_in_mm: float) -> Tuple[int, np.float64, np.float64]:
         """
         Helper function to compute the image dimensions for a single dimension given a start and end point in mm.
-        Makes sure that image dimesion is an integer by flooring. 
-        Spaces the pixels symmetrically between start and end.
+        Makes sure that image dimesion is an integer by rounding, thus the resulting dimensions might be slightly larger or smaller than the given field of view. The maximal deviation amounts to a quarter spacing on each side. The algorithm spaces the pixels symmetrically between start and end.
 
         :param start_in_mm: lower limit of the field of view in this dimension
         :type start_in_mm: float
@@ -446,8 +445,8 @@ def compute_image_dimensions(field_of_view_in_mm: np.ndarray, spacing_in_mm: flo
         start_temp = start_in_mm / spacing_in_mm
         end_temp = end_in_mm / spacing_in_mm
         dim_temp = np.abs(end_temp - start_temp)
-        dim = int(np.floor(dim_temp))
-        diff = np.abs(dim_temp - dim)
+        dim = int(np.round(dim_temp))
+        diff = dim_temp - dim # the sign is important here
         start = start_temp - np.sign(start_temp) * diff/2
         end = end_temp - np.sign(end_temp) * diff/2
         return dim, start, end
