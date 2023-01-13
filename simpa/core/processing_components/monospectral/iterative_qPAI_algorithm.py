@@ -22,26 +22,26 @@ import os
 
 class IterativeqPAI(ProcessingComponent):
     """
-        Applies iterative qPAI Algorithm [1] on simulated initial pressure map and saves the
-        reconstruction result in the hdf5 output file. If a 2-d map of initial_pressure is passed the algorithm saves
-        the reconstructed absorption coefficients as a 2-d map, else a 3-d absorption reconstruction is
-        saved.
-        The reconstruction result is saved as an image processing entry "iterative_qpai_result" in the hdf5 output file.
-        If intended (e.g. for testing) a list of intermediate iteration updates (only 2-d middle slices) can be saved
-        as a npy file.
-        To run the reconstruction the scattering coefficients must be known a priori.
-        :param kwargs:
-           **Tags.DOWNSCALE_FACTOR (default: 0.73)
-           **Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION (default: False)
-           **Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER (default: 10)
-           **Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA (default: 0.01)
-           **Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS (default: False)
-           **Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL (default: 0.03)
-           **settings (required)
-           **component_settings_key (required)
+    Applies iterative qPAI Algorithm [1] on simulated initial pressure map and saves the
+    reconstruction result in the hdf5 output file. If a 2-d map of initial_pressure is passed the algorithm saves
+    the reconstructed absorption coefficients as a 2-d map, else a 3-d absorption reconstruction is
+    saved.
+    The reconstruction result is saved as an image processing entry "iterative_qpai_result" in the hdf5 output file.
+    If intended (e.g. for testing) a list of intermediate iteration updates (only 2-d middle slices) can be saved
+    as a npy file.
+    To run the reconstruction the scattering coefficients must be known a priori.
+    Parameters:
+    Tags.DOWNSCALE_FACTOR (default: 0.73)
+    Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION (default: False)
+    Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER (default: 10)
+    Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA (default: 0.01)
+    Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS (default: False)
+    Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL (default: 0.03)
+    global_settings (required)
+    component_settings_key (required)
 
-        [1] B. T. Cox et al. 2006, "Two-dimensional quantitative photoacoustic image reconstruction of absorption
-        distributions in scattering media by use of a simple iterative method", https://doi.org/10.1364/ao.45.001866
+    [1] B. T. Cox et al. 2006, "Two-dimensional quantitative photoacoustic image reconstruction of absorption
+    distributions in scattering media by use of a simple iterative method", https://doi.org/10.1364/ao.45.001866
     """
 
     def __init__(self, global_settings, component_settings_key: str):
