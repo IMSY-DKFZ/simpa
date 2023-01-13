@@ -142,7 +142,12 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         })
 
         self.reconstructed = reconstruct_delay_and_sum_pytorch(
-            time_series_data.copy(), self.device.get_detection_geometry(), self.settings)
+            time_series_data.copy(), self.device.get_detection_geometry(),
+            speed_of_sound_in_m_per_s=1540,
+            time_spacing_in_s=1/40_000_000_000,
+            sensor_spacing_in_mm=self.device.get_detection_geometry().pitch_mm,
+            recon_mode=Tags.RECONSTRUCTION_MODE_PRESSURE,
+        )
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         '''plot initial pressure and reconstructed image volume to manually compare'''
