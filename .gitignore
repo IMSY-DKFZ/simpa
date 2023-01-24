@@ -13,6 +13,9 @@ docs/_static/*
 docs/searchindex.js
 docs/objects.inv
 
+data/
+.vscode/
+
 simpa_tests/figures
 simpa_tests/figures/*
 
@@ -112,6 +115,7 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
+simpa_venv/
 .env
 .venv
 env/
