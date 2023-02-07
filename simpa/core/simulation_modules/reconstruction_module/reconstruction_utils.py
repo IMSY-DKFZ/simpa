@@ -204,7 +204,7 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     # transform data into Fourier space, multiply filter and transform back
     data_in_fourier_space = np.fft.rfft(data)
     filtered_data_in_fourier_space = data_in_fourier_space * np.broadcast_to(window, np.shape(data_in_fourier_space))
-    filtered_data = np.fft.irfft(filtered_data_in_fourier_space).real
+    filtered_data = np.fft.irfft(filtered_data_in_fourier_space, n=original_size).real
 
     # resample back to original size if necessary
     if resampling_for_fft:
