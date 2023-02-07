@@ -151,7 +151,7 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     Apply a tukey bandpass filter with cutoff values at `cutoff_lowpass_in_Hz` and `cutoff_highpass_in_Hz` Hz 
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
     Note that the filter operates on both, negative and positive frequencies similarly.
-    Filtering is performed along the last dimension.
+    Filtering is performed along the last dimension using rfft (One can use rfft since we only use real valued data.)
 
     :param data: (numpy array) data to be filtered
     :param time_spacing_in_ms: (float) time spacing in milliseconds, e.g. 2.5e-5
@@ -196,7 +196,7 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     large_index = int(np.clip(large_index, 0, len(frequencies)-1)) # limit by Nyquist frequency index
     small_index = int(np.clip(small_index, 0, len(frequencies)-1)) # limit by Nyquist frequency index
 
-    # construct bandpass filter given the cutoff values with tukey window in negative and positive frequencies
+    # construct bandpass filter given the cutoff values with tukey window (only in positive frequencies)
     win = tukey(large_index - small_index + 1, alpha=tukey_alpha)
     window = np.zeros_like(frequencies)
     window[small_index:large_index+1] = win
