@@ -150,16 +150,21 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
     """
     Apply a tukey bandpass filter with cutoff values at `cutoff_lowpass_in_Hz` and `cutoff_highpass_in_Hz` Hz 
     and a tukey window with alpha value of `tukey_alpha` inbetween on the `data` in Fourier space.
-    Note that the filter operates on both, negative and positive frequencies similarly.
-    Filtering is performed along the last dimension using rfft (One can use rfft since we only use real valued data.)
+    Note that the filter operates only on positive frequencies using rfft (One can use rfft since we only use real valued data.).
+    Filtering is performed along the last dimension.
+
+    Warning: Depending on the number of data points and time spacing the represented frequencies may not be ideal which leads 
+    to rounding issues.
 
     :param data: (numpy array) data to be filtered
     :param time_spacing_in_ms: (float) time spacing in milliseconds, e.g. 2.5e-5
-    :param cutoff_lowpass_in_Hz: (int) Signal above this value will be ignored (in Hz)
-    :param cutoff_highpass_in_Hz: (int) Signal below this value will be ignored (in Hz)
+    :param cutoff_lowpass_in_Hz: (int) Signal above this value will be ignored, Signal at this value will be included as long as 
+                                       it is represented in the freqeuency space (in Hz)
+    :param cutoff_highpass_in_Hz: (int) Signal below this value will be ignored, Signal at this value will be included as long as 
+                                        it is represented in the freqeuency space (in Hz)
     :param tukey_alpha: (float) transition value between 0 (rectangular) and 1 (Hann window)
     :param resampling_for_fft: (bool) whether the data is resampled to a power of 2 in time dimension
-    before applying the FFT and resampled back after filtering
+                                      before applying the FFT and resampled back after filtering
     :return: (numpy array) filtered data
     """
 
@@ -187,19 +192,9 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
 
         time_spacing_in_ms *= resampling_factor
 
-    # array of frequencies in Hz corrsponding to rfft and irfft method
-    frequencies = np.fft.rfftfreq(target_size, time_spacing_in_ms/1000) 
-    delta_f = frequencies[1]-frequencies[0] # frequency step size
-    # compute closest indices for cutoff frequencies, limited by the Nyquist frequency
-    large_index = np.floor(cutoff_lowpass_in_Hz/delta_f) # floor in order to ignore all frequencies above given lowpass cutoff
-    small_index = np.ceil(cutoff_highpass_in_Hz/delta_f) # ceil in order to ignore all frequencies below given highpass cutoff
-    large_index = int(np.clip(large_index, 0, len(frequencies)-1)) # limit by Nyquist frequency index
-    small_index = int(np.clip(small_index, 0, len(frequencies)-1)) # limit by Nyquist frequency index
-
-    # construct bandpass filter given the cutoff values with tukey window (only in positive frequencies)
-    win = tukey(large_index - small_index + 1, alpha=tukey_alpha)
-    window = np.zeros_like(frequencies)
-    window[small_index:large_index+1] = win
+    # create tukey window
+    window = tukey_window_function(target_size, time_spacing_in_ms, cutoff_lowpass_in_Hz,
+                                   cutoff_highpass_in_Hz, tukey_alpha)
 
     # transform data into Fourier space, multiply filter and transform back
     data_in_fourier_space = np.fft.rfft(data)
@@ -212,6 +207,42 @@ def tukey_bandpass_filtering(data: np.ndarray, time_spacing_in_ms: float = None,
         return zoom(filtered_data, inverse_zoom_factors, order=order, mode=mode)
     else:
         return filtered_data
+
+
+def tukey_window_function(target_size: int, time_spacing_in_ms: float, cutoff_lowpass_in_Hz: int,
+                          cutoff_highpass_in_Hz: int, tukey_alpha: float) -> np.ndarray:
+    """
+    Creates the tukey window in wanted frequency space for given cutoff frequencies and alpha value.
+    
+    :param target_size: number of time steps in time series data
+    :type target_size: int
+    :param time_spacing_in_ms: time spacing in ms of time series data
+    :type time_spacing_in_ms: float
+    :param cutoff_lowpass_in_Hz: Signal above this value will be ignored, Signal at this value will be included as long as 
+                                 it is represented in the freqeuency space (in Hz)
+    :type cutoff_lowpass_in_Hz: int
+    :param cutoff_highpass_in_Hz: Signal below this value will be ignored, Signal at this value will be included as long as 
+                                  it is represented in the freqeuency space (in Hz)
+    :type cutoff_highpass_in_Hz: int
+    :param tukey_alpha: transition value between 0 (rectangular) and 1 (Hann window)
+    :type tukey_alpha: float
+    :return: tukey window for filtering time series data
+    :rtype: np.ndarray
+    """
+    # array of frequencies in Hz corrsponding to rfft and irfft method
+    frequencies = np.fft.rfftfreq(target_size, time_spacing_in_ms/1000) 
+    delta_f = frequencies[1]-frequencies[0] # frequency step size
+    # compute closest indices for cutoff frequencies, limited by the Nyquist frequency
+    large_index = np.floor(cutoff_lowpass_in_Hz/delta_f) # floor in order to ignore all frequencies above given lowpass cutoff
+    small_index = np.ceil(cutoff_highpass_in_Hz/delta_f) # ceil in order to ignore all frequencies below given highpass cutoff
+    large_index = int(np.clip(large_index, 0, len(frequencies)-1)) # limit by Nyquist frequency index
+    small_index = int(np.clip(small_index, 0, len(frequencies)-1)) # limit by Nyquist frequency index
+
+    # construct bandpass filter given the cutoff values with tukey window (only in positive frequencies)
+    win = tukey(large_index - small_index + 1, alpha=tukey_alpha) # + 1 needed in order to include cutoff indices in the window
+    window = np.zeros_like(frequencies)
+    window[small_index:large_index+1] = win
+    return window
 
 
 def tukey_bandpass_filtering_with_settings(data: np.ndarray, global_settings: Settings, component_settings: Settings,
