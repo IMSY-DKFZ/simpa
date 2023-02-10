@@ -24,6 +24,7 @@ The paper that introduces SIMPA including visualisations and explanations can be
 * [Performance profiling](#performance-profiling)
 * [Troubleshooting](#troubleshooting)
 * [Citation](#citation)
+* [Funding](#funding)
 
 The toolkit is still under development and is thus not fully tested and may contain bugs. 
 Please report any issues that you find in our Issue Tracker: https://github.com/IMSY-DKFZ/simpa/issues. 
@@ -226,3 +227,9 @@ Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, 
   publisher={SPIE}
 }
 ```
+
+# Funding
+
+This project has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No. [101002198]).
+
+![ERC](docs/source/images/LOGO_ERC-FLAG_EU_.jpg "ERC")
