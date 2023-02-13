@@ -25,3 +25,4 @@ class SegmentationClasses:
     HEAVY_WATER = 9
     COUPLING_ARTIFACT = 10
     MEDIPRENE = 11
+    SOFT_TISSUE = 12
