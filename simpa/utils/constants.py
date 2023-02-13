@@ -26,3 +26,4 @@ class SegmentationClasses:
     COUPLING_ARTIFACT = 10
     MEDIPRENE = 11
     SOFT_TISSUE = 12
+    LYMPH_NODE = 13

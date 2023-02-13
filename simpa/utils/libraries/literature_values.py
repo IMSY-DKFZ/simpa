@@ -73,6 +73,7 @@ class StandardProperties:
     DENSITY_GEL_PAD = 890
     DENSITY_WATER = 1000
     DENSITY_HEAVY_WATER = 1107
+    DENSITY_LYMPH_NODE = 1035
 
     SPEED_OF_SOUND_GENERIC = 1540.0   # m/s
     SPEED_OF_SOUND_AIR = 343.0
@@ -84,6 +85,7 @@ class StandardProperties:
     SPEED_OF_SOUND_GEL_PAD = 1583.0
     SPEED_OF_SOUND_WATER = 1482.3
     SPEED_OF_SOUND_HEAVY_WATER = 1540
+    SPEED_OF_SOUND_LYMPH_NODE = 1586
 
     ALPHA_COEFF_GENERIC = 0.02  # dB/cm/MHz
     ALPHA_COEFF_AIR = 3.3875e-3
@@ -94,6 +96,7 @@ class StandardProperties:
     ALPHA_COEFF_FAT = 0.3785
     ALPHA_COEFF_GEL_PAD = 0.277
     ALPHA_COEFF_WATER = 2.1976e-3
+    ALPHA_COEFF_LYMPH_NODE = 2.50
 
 
 class OpticalTissueProperties:
@@ -246,6 +249,20 @@ class OpticalTissueProperties:
     #   year = {2019}
     # }
     BONE_ABSORPTION = 1.8
+
+    # @article{kanick2010characterization,
+    # title={Characterization of mediastinal lymph node physiology in vivo by optical spectroscopy during endoscopic ultrasound-guided fine needle aspiration},
+    # author={Kanick, Stephen C and van der Leest, Cor and Djamin, Remco S and Janssens, Andre M and Hoogsteden, Henk C and Sterenborg, Henricus JCM and Amelink, Arjen and Aerts, Joachim GJV},
+    # journal={Journal of Thoracic Oncology},
+    # volume={5},
+    # number={7},
+    # pages={981--987},
+    # year={2010},
+    # publisher={Elsevier}
+    # }
+    BLOOD_VOLUME_FRACTION_LYMPH_NODE = 0.135
+    LYMPH_NODE_OXYGENATION = 0.839
+
 
 class MorphologicalTissueProperties:
     """
