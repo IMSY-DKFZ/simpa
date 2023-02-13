@@ -123,7 +123,7 @@ class TissueLibrary(object):
                         volume_fraction=1 - fraction_oxy - fraction_deoxy - water_volume_fraction),
                         key="muscle_scatterers")
                 .append(custom_water)
-                .get_molecular_composition(SegmentationClasses.MUSCLE))
+                .get_molecular_composition(SegmentationClasses.SOFT_TISSUE))
 
     def epidermis(self, melanosom_volume_fraction=None):
         """
