@@ -16,6 +16,17 @@ docs/objects.inv
 simpa_tests/figures
 simpa_tests/figures/*
 
+figures/
+
+data/
+
+mcx_hackathon/
+
+simpa_hackathon_env/
+simpa_hackathon_env/*
+
+path_config.env
+
 *.orig
 */*.orig
 

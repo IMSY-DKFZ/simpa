@@ -4,12 +4,13 @@
 
 import os
 import sys
-import inspect
+print(sys.path)
+import inspect # TODO use getdoc or getsource
 #import unittest # TODO: delete
 from mdutils.mdutils import MdUtils
 from simpa_tests import manual_test_classes
-import simpa_tests.manual_tests.acoustic_forward_models.KWaveAcousticForwardConvenienceFunction as specific_module
-import simpa_tests.manual_tests as test_module
+#import simpa_tests.manual_tests.acoustic_forward_models.KWaveAcousticForwardConvenienceFunction as specific_module # TODO delete
+#import simpa_tests.manual_tests as test_module # TODO delete
 import ast
 import importlib
 import logging
@@ -38,6 +39,7 @@ class GenerateOverview():
 
         self.mdFile = MdUtils(file_name='manual_tests_overview', title='<u>Overview of Manual Test Results</u>')
 
+        # TODO delete the following
         self.scripts_to_neglect = []
         self.scripts_to_neglect += ["PointSourceReconstruction.py", "KWaveAcousticForwardConvenienceFunction.py"] # TODO: let script not stop for not running manual tests and mention this errors in overview
         self.scripts_to_neglect += ["DelayAndSumReconstruction.py", "SignedDelayMultiplyAndSumReconstruction.py", "DelayMultiplyAndSumReconstruction.py",
