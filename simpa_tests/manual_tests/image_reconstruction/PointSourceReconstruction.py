@@ -224,7 +224,7 @@ dist = list()
 
 dist.append(simulate_and_evaluate_with_device(MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-                                                                                          0]),
+                                                                                          35]),
                                                              field_of_view_extent_mm=np.array([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
                                                                                                (2 * np.sin(0.34 / 40 * 128) * 40) / 2,
                                                                                                0, 0, -25, 25]))))
@@ -234,7 +234,7 @@ dist.append(simulate_and_evaluate_with_device(InVision256TF(device_position_mm=n
                                                                                          VOLUME_HEIGHT_IN_MM/2]))))
 device = PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                           VOLUME_PLANAR_DIM_IN_MM/2,
-                                                          0]),
+                                                          30]),
                              field_of_view_extent_mm=np.asarray([-VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                  VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                  0, 0, 0, VOLUME_HEIGHT_IN_MM]))

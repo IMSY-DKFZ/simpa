@@ -24,6 +24,7 @@ The paper that introduces SIMPA including visualisations and explanations can be
 * [Performance profiling](#performance-profiling)
 * [Troubleshooting](#troubleshooting)
 * [Citation](#citation)
+* [Funding](#funding)
 
 The toolkit is still under development and is thus not fully tested and may contain bugs. 
 Please report any issues that you find in our Issue Tracker: https://github.com/IMSY-DKFZ/simpa/issues. 
@@ -99,12 +100,10 @@ for further (and much better) guidance under:
 [http://www.k-wave.org/](http://www.k-wave.org/)
 
 1. Install MATLAB with the core, image processing and parallel computing toolboxes activated at the minimum.
-2. Download the kWave toolbox
+2. Download the kWave toolbox (version >= 1.4)
 3. Add the kWave toolbox base path to the toolbox paths in MATLAB
-4. Download the kWaveArray addition from the link given in this user forum post [http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources](http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources)
-5. Add the kWaveArray folder to the toolbox paths in MATLAB as well
-6. If wanted: Download the CPP and CUDA binary files and place them in the k-Wave/binaries folder
-7. Note down the system path to the `matlab` executable file.
+4. If wanted: Download the CPP and CUDA binary files and place them in the k-Wave/binaries folder
+5. Note down the system path to the `matlab` executable file.
 
 ## Path management
 
@@ -226,3 +225,9 @@ Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, 
   publisher={SPIE}
 }
 ```
+
+# Funding
+
+This project has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No. [101002198]).
+
+![ERC](docs/source/images/LOGO_ERC-FLAG_EU_.jpg "ERC")
