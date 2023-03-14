@@ -1153,69 +1153,56 @@ class Tags:
     Volume Creation Model Settings
     """
 
-    # Realistic Time Series including Noise Components
+    # Add Noisy Time Series Data Properties
 
-    TRANSFORM_TO_IN_VITRO_DOMAIN = ("transform_to_in_vitro_domain", bool)
+    IN_AQUA_DATA_PATH = ("in_aqua_data_path", str)
+    IN_AQUA_DATA_PATH = ("in_aqua_data_path", str)
     """
-    determines whether to transform to in-vitor domain, i.e. laser correcting and normalization of simualated
-    time series as well as scaling with in-vitro-based scaling factor and in-vitro laser-energy
-    Usage: core.processing_components.monospectral.realisitic_time_series
-    """
-
-    SCALING_FACTOR = ("scaling_factor", float)
-    """
-    used to scale the simulated time series data
-    can be the membrane peak of an in-vitro (waterbath) acquisition
-    Usage: core.processing_components.monospectral.realisitic_time_series
+    Path of in-aqua time series data
+    Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
-    IN_VITRO_LASER_ENERGY = ("in_vitro_laser_energy", float)
+    IN_AQUA_DATA = ("in_aqua_data", np.ndarray)
     """
-    laser energy acquired in in_vitro (waterbath) acquisition, will be used to scale the simulated time series
-    Usage: core.processing_components.monospectral.realisitic_time_series
+    Array containing additive noise to be added on simulated signal
+    Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
     BROKEN_SENSORS = ("broken_sensors", (list, np.ndarray))
     """
-    specify indices of broken sensors
-    Usage: core.processing_components.monospectral.realisitic_time_series
+    Indices of sensors that do not acquire any signal (for example: np.array([30,94,145, 247]) [for old REZ device]
+    Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
-    OFFSETS = ("offsets", (int, float, list, np.ndarray))
+    SCALING_FACTOR = ("scaling_factor", (int, float))
     """
-    specifies the offset of sensors
-    if int or float: offset will be added on all sensors
-    if list or np.ndarray: offsets will be added for each sensor respectively, needed shape = (#sensors, )
-    Usage: core.processing_components.monospectral.realisitic_time_series
+    scaling factor of the noise data added to the signal: Signal + Scaling_Factor * Noise
+    Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
-    THERMAL_NOISES = ("thermal_noises", (int, float, list, np.ndarray))
+    LASER_ENERGY_CORRECTION = ("laser_energy_correction", bool)
     """
-    Determines the standard deviation of thermal noise (Gaussian noise) of time series data
-    if int or float: Gaussian noise will be added on all sensors
-    if list or np.ndarray: Gaussian noise will be added for each sensor respectively, needed shape = (#sensors, )
-    Usage: core.processing_components.monospectral.realisitic_time_series
+    whether to perform laser energy correction
+    Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
-    ###    DEPRECATED   ###
-    #DEGRADATED_SENSORS = ("degradated_sensors", (int, float, list, np.ndarray))
-    #"""
-    #If int: specify the number randomly chosen sensors to be degradated
-    #If float: specify the ratio of randomly chosen sensors to be degradated
-    #If list or np.ndarray: specify the indices of sensors to be degradated
-    #"""
+    IN_AQUA_LASER_ENERGY_IN_MILLIJOULE = ("in_aqua_laser_energy_in_millijoule")
+    """
+    laser energy of the corresponding waterbath measurement in mJ
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
 
-    #DEGRADATION_FACTORS = ("degradation_factors", (float, list, np.ndarray))
-    #"""
-    #If float: specify the degradation factor used for all degradated sensors
-    #If list or np.ndarray: specify the degradation factors of the respective degradated sensors
-    #The time series data of the given sensors will be mutltiplied with (1-degradatation_factors)
-    #"""
+    BANDPASS_FILTERED_IN_AQUA_DATA = ("bandpass_filtered_in_aqua_data")
+    """
+    whether loaded in-aqua data is already bandpassfiltered, default True
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
 
-    #SHIFT_TS = ("shift_time_series", (float, int, list, np.ndarray))
-    #"""
-    #added onto time series data
-    #"""
+    CROPPED_IN_AQUA_DATA = ("cropped_in_aqua_data")
+    """
+    whether loaded in-aqua is data already cropped, default True
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
 
     # Structures
     STRUCTURES = ("structures", dict)
