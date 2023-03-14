@@ -1153,6 +1153,56 @@ class Tags:
     Volume Creation Model Settings
     """
 
+    # Add Noisy Time Series Data Properties
+
+    IN_AQUA_DATA_PATH = ("in_aqua_data_path", str)
+    """
+    Path of in-aqua time series data
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
+    IN_AQUA_DATA = ("in_aqua_data", np.ndarray)
+    """
+    Array containing additive noise to be added on simulated signal
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
+    BROKEN_SENSORS = ("broken_sensors", (list, np.ndarray))
+    """
+    Indices of sensors that do not acquire any signal (for example: np.array([30,94,145, 247]) [for old REZ device]
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
+    SCALING_FACTOR = ("scaling_factor", (int, float))
+    """
+    scaling factor of the noise data added to the signal: Signal + Scaling_Factor * Noise
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
+    LASER_ENERGY_CORRECTION = ("laser_energy_correction", bool)
+    """
+    whether to perform laser energy correction
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
+    IN_AQUA_LASER_ENERGY_IN_MILLIJOULE = ("in_aqua_laser_energy_in_millijoule")
+    """
+    laser energy of the corresponding waterbath measurement in mJ
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
+    BANDPASS_FILTERED_IN_AQUA_DATA = ("bandpass_filtered_in_aqua_data")
+    """
+    whether loaded in-aqua data is already bandpassfiltered, default True
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
+    CROPPED_IN_AQUA_DATA = ("cropped_in_aqua_data")
+    """
+    whether loaded in-aqua is data already cropped, default True
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
     # Structures
     STRUCTURES = ("structures", dict)
     """
