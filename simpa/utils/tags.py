@@ -1156,6 +1156,7 @@ class Tags:
     # Add Noisy Time Series Data Properties
 
     IN_AQUA_DATA_PATH = ("in_aqua_data_path", str)
+    IN_AQUA_DATA_PATH = ("in_aqua_data_path", str)
     """
     Path of in-aqua time series data
     Usage: module core.processing_components.monospectral.add_noisy_data
