@@ -38,6 +38,7 @@ from simpa.core.processing_components.monospectral.noise import GammaNoise
 from simpa.core.processing_components.monospectral.noise import PoissonNoise
 from simpa.core.processing_components.monospectral.noise import SaltAndPepperNoise
 from simpa.core.processing_components.monospectral.noise import UniformNoise
+from simpa.core.processing_components.monospectral.add_noisy_data import AddNoisyTimeSeries
 from simpa.core.processing_components.monospectral.realisitic_time_series import SensorDegradation
 from simpa.core.processing_components.monospectral.field_of_view_cropping import FieldOfViewCropping
 from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI

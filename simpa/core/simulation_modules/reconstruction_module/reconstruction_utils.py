@@ -569,3 +569,48 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
     del delays  # free memory of delays
 
     return values, n_sensor_elements
+
+def get_reconstruction_time_step_window(time_series_sensor_data: Tensor, sensor_positions: torch.tensor, xdim: int,
+                                        ydim: int, zdim: int, xdim_start: int, ydim_start: int, zdim_start: int, 
+                                        spacing_in_mm: float, speed_of_sound_in_m_per_s: float,
+                                        time_spacing_in_ms: float, logger: Logger, torch_device: torch.device) -> Tuple[int]:
+    """
+    Compute the highest and the lowest delay index needed for reconstrction
+    """
+
+    if time_series_sensor_data.shape[0] < sensor_positions.shape[0]:
+        logger.warning("Warning: The time series data has less sensor element entries than the given sensor positions. "
+                       "This might be due to a low simulated resolution, please increase it.")
+
+    n_sensor_elements = time_series_sensor_data.shape[0]
+
+    logger.debug(f'Number of pixels in X dimension: {xdim}, Y dimension: {ydim}, Z dimension: {zdim} '
+                 f',number of sensor elements: {n_sensor_elements}')
+
+    x_offset = 0.5 if xdim % 2 == 0 else 0  # to ensure pixels are symmetrically arranged around the 0 like the
+    # sensor positions, add an offset of 0.5 pixels if the dimension is even
+
+    x = xdim_start + torch.arange(xdim, device=torch_device, dtype=torch.float32) + x_offset
+    y = ydim_start + torch.arange(ydim, device=torch_device, dtype=torch.float32)
+    if zdim == 1:
+        z = torch.arange(zdim, device=torch_device, dtype=torch.float32)
+    else:
+        z = zdim_start + torch.arange(zdim, device=torch_device, dtype=torch.float32)
+    j = torch.arange(n_sensor_elements, device=torch_device, dtype=torch.float32)
+
+    xx, yy, zz, jj = torch.meshgrid(x, y, z, j)
+    jj = jj.long()
+
+    delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
+                        (xx * spacing_in_mm - sensor_positions[:, 0][jj]) ** 2 +
+                        (zz * spacing_in_mm - sensor_positions[:, 1][jj]) ** 2) \
+        / (speed_of_sound_in_m_per_s * time_spacing_in_ms)
+
+    # perform index validation
+    torch.clip_(delays, min=0, max=time_series_sensor_data.shape[1] - 1)
+
+    # interpolation of delays
+    lower_delays = (torch.floor(delays)).long()
+    upper_delays = lower_delays + 1
+    torch.clip_(upper_delays, min=0, max=time_series_sensor_data.shape[1] - 1)
+    return lower_delays.min().item(), upper_delays.max().item()

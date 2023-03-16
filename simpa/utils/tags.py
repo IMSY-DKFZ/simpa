@@ -1171,6 +1171,7 @@ class Tags:
     BROKEN_SENSORS = ("broken_sensors", (list, np.ndarray))
     """
     Indices of sensors that do not acquire any signal (for example: np.array([30,94,145, 247]) [for old REZ device]
+    For devices without any broken sensor an empty list or an empty np.ndarray should be set.
     Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
@@ -1186,9 +1187,15 @@ class Tags:
     Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
-    IN_AQUA_LASER_ENERGY_IN_MILLIJOULE = ("in_aqua_laser_energy_in_millijoule")
+    IN_AQUA_LASER_ENERGY_IN_MILLIJOULE = ("in_aqua_laser_energy_in_millijoule", (int, float))
     """
     laser energy of the corresponding waterbath measurement in mJ
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
+    RECONSTRUCTION_TIME_STEPS = ("reconstruction_time_steps", (tuple, list))
+    """
+    
     Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
