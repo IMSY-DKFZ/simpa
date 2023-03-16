@@ -30,8 +30,8 @@ GEL_LAYER_HEIGHT = 3;
 
 source.p0 = padarray(source.p0, [GEL_LAYER_HEIGHT 0], 0, 'pre');
 [Nx, Ny] = size(source.p0);
-disp(Nx);
-disp(Ny);
+disp(['Nx=', num2str(Nx)]);
+disp(['Ny=', num2str(Ny)]);
 if isfield(settings, 'sample') == true
     if settings.sample == true
         dx = double(settings.voxel_spacing_mm) / (double(settings.upscale_factor) * 1000);
@@ -81,15 +81,17 @@ dt = 1.0 / double(settings.sensor_sampling_rate_mhz * 1000000);
 Nt = round((sqrt(Ny*Ny+Nx*Nx)*dx / mean(medium.sound_speed, 'all')) / dt);
 
 estimated_cfl_number = dt / dx * mean(medium.sound_speed, 'all');
-disp(estimated_cfl_number);
+disp(['estimated CFL=', num2str(estimated_cfl_number)]);
 
 % smaller time steps are better for numerical stability in time progressing simulations
-% A minimum CFL of 0.3 is advised in the kwave handbook.
+% A maximum CFL of 0.3 is advised in the kwave handbook.
 % In case we specify something larger, we use a higher sampling rate than anticipated.
 % Otherwise we simulate with the target sampling rate
-if estimated_cfl_number < 0.3
+%if estimated_cfl_number < 0.3
+if estimated_cfl_number < 0.32
     kgrid.setTime(Nt, dt);
     disp("Setting custom time!");
+    disp(['Nt=', num2str(Nt), 'dt=', num2str(dt)]);
 else
     kgrid.t_array = makeTime(kgrid, medium.sound_speed, 0.3);
     disp("Making time!");
