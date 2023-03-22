@@ -119,13 +119,18 @@ def load_hdf5(file_path, file_dictionary_path="/"):
 
         :param file: hdf5 file instance to load the data from.
         :param path: Current group path in hdf5 file group structure.
-        :returns: Dictionary
+        :returns: Dictionary or np.array
         """
+
+        if isinstance(h5file[path], h5py._hl.dataset.Dataset):
+            return h5file[path][()]
+
         dictionary = {}
         for key, item in h5file[path].items():
             if isinstance(item, h5py._hl.dataset.Dataset):
-                if item[()] is not None:
-                    dictionary[key] = item[()]
+                item = item[()]
+                if item is not None:
+                    dictionary[key] = item
                     if isinstance(dictionary[key], bytes):
                         dictionary[key] = dictionary[key].decode("utf-8")
                     elif isinstance(dictionary[key], np.bool_):
@@ -163,10 +168,8 @@ def load_hdf5(file_path, file_dictionary_path="/"):
 
 
 def load_data_field(file_path, data_field, wavelength=None):
-    dict_path = generate_dict_path(data_field, wavelength=wavelength)
-    data_field_key = dict_path.split("/")[-2]
-    dict_path = "/".join(dict_path.split("/")[:-2]) + "/"
-    data = load_hdf5(file_path, dict_path)[data_field_key]
+    path = generate_dict_path(data_field, wavelength=wavelength)
+    data = load_hdf5(file_path, path)
     return data
 
 
