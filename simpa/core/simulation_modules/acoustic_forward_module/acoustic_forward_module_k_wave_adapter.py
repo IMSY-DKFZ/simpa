@@ -77,13 +77,14 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
         self.logger.debug(f"OPTICAL_PATH: {str(optical_path)}")
 
-        data_dict = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-        if Tags.DATA_FIELD_FLUENCE in data_dict:
-            del data_dict[Tags.DATA_FIELD_FLUENCE]
+        data_dict = {}
+        file_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH]
+        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = load_data_field(file_path, Tags.DATA_FIELD_INITIAL_PRESSURE)
         gc.collect()
 
-        tmp_ac_data = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.SIMULATION_PROPERTIES,
-                                      self.global_settings[Tags.WAVELENGTH])
+        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = load_data_field(file_path, Tags.DATA_FIELD_SPEED_OF_SOUND)
+        data_dict[Tags.DATA_FIELD_DENSITY] = load_data_field(file_path, Tags.DATA_FIELD_DENSITY)
+        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = load_data_field(file_path, Tags.DATA_FIELD_ALPHA_COEFF)
 
         pa_device = detection_geometry
         pa_device.check_settings_prerequisites(self.global_settings)
@@ -106,11 +107,11 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
             image_slice = np.s_[:]
         
         wavelength = str(self.global_settings[Tags.WAVELENGTH])
-        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice],
+        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.rot90(data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice],
                                                              3, axes=axes)
-        data_dict[Tags.DATA_FIELD_DENSITY] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_DENSITY][image_slice],
+        data_dict[Tags.DATA_FIELD_DENSITY] = np.rot90(data_dict[Tags.DATA_FIELD_DENSITY][image_slice],
                                                       3, axes=axes)
-        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_ALPHA_COEFF][image_slice],
+        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.rot90(data_dict[Tags.DATA_FIELD_ALPHA_COEFF][image_slice],
                                                           3, axes=axes)
         data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = np.rot90(data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE]
                                                                   [wavelength][image_slice], 3, axes=axes)
