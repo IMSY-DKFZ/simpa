@@ -47,27 +47,38 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
 
     wavelength_independent_image_processing_output = [Tags.LINEAR_UNMIXING_RESULT]
 
-    if wavelength is None and ((data_field in wavelength_dependent_properties) or (data_field in simulation_output) or
-                               (data_field in wavelength_dependent_image_processing_output)):
-        raise ValueError("Please specify the wavelength as integer!")
-    else:
+    if wavelength is not None:
         wl = "/{}/".format(wavelength)
 
     if data_field in wavelength_dependent_properties:
-        dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + wl
+        if wavelength is not None:
+            dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + wl
+        else:
+            dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field
     elif data_field in simulation_output:
         if data_field in [Tags.DATA_FIELD_FLUENCE, Tags.DATA_FIELD_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS,
                           Tags.DATA_FIELD_DIFFUSE_REFLECTANCE, Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
                           Tags.DATA_FIELD_PHOTON_EXIT_POS, Tags.DATA_FIELD_PHOTON_EXIT_DIR]:
-            dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field + wl
+            if wavelength is not None:
+                dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field + wl
+            else:
+                dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field
         else:
-            dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + wl
+            if wavelength is not None:
+                dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + wl
+            else:
+                dict_path = "/" + Tags.SIMULATIONS + "/" + data_field
+
     elif data_field in wavelength_independent_properties:
         dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + "/"
     elif data_field in simulation_output_fields:
         dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + "/"
     elif data_field in wavelength_dependent_image_processing_output:
-        dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + wl
+        if wavelength is not None:
+            dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + wl
+        else:
+            dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field
+
     elif data_field in wavelength_independent_image_processing_output:
         dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + "/"
     else:
