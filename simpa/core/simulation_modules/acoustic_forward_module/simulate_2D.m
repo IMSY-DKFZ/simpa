@@ -88,7 +88,7 @@ disp(['estimated CFL=', num2str(estimated_cfl_number)]);
 % In case we specify something larger, we use a higher sampling rate than anticipated.
 % Otherwise we simulate with the target sampling rate
 %if estimated_cfl_number < 0.3
-if estimated_cfl_number < 0.32
+if estimated_cfl_number < 0.351
     kgrid.setTime(Nt, dt);
     disp("Setting custom time!");
     disp(['Nt=', num2str(Nt), 'dt=', num2str(dt)]);
