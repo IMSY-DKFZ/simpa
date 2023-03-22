@@ -147,8 +147,9 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                     dictionary_list = [None for x in item.keys()]
                     for listkey in sorted(item.keys()):
                         if isinstance(item[listkey], h5py._hl.dataset.Dataset):
-                            if item[listkey][()] is not None:
-                                list_item = item[listkey][()]
+                            listkey_item = item[listkey][()]
+                            if listkey_item is not None:
+                                list_item = listkey_item
                                 if isinstance(list_item, bytes):
                                     list_item = list_item.decode("utf-8")
                                 elif isinstance(list_item, np.bool_):
