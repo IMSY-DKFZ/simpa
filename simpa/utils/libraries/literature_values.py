@@ -250,18 +250,20 @@ class OpticalTissueProperties:
     # }
     BONE_ABSORPTION = 1.8
 
-    # @article{kanick2010characterization,
-    # title={Characterization of mediastinal lymph node physiology in vivo by optical spectroscopy during endoscopic ultrasound-guided fine needle aspiration},
-    # author={Kanick, Stephen C and van der Leest, Cor and Djamin, Remco S and Janssens, Andre M and Hoogsteden, Henk C and Sterenborg, Henricus JCM and Amelink, Arjen and Aerts, Joachim GJV},
-    # journal={Journal of Thoracic Oncology},
-    # volume={5},
-    # number={7},
-    # pages={981--987},
-    # year={2010},
+    # Approximated table 2 with gaussian fit
+    # @article{bugter2021detecting,
+    # title={Detecting head and neck lymph node metastases with white light reflectance spectroscopy; a pilot study},
+    # author={Bugter, Ois{\'\i}n and Aaboubout, Yassine and Algoe, Mahesh and de Bruijn, Henri{\"e}tte S and Keereweer, Stijn and Sewnaik, Aniel and Monserez, Dominiek A and Koljenovi{\'c}, Senada and Hardillo, Jose AU and Robinson, Dominic J and others},
+    # journal={Oral Oncology},
+    # volume={123},
+    # pages={105627},
+    # year={2021},
     # publisher={Elsevier}
     # }
-    BLOOD_VOLUME_FRACTION_LYMPH_NODE = 0.135
-    LYMPH_NODE_OXYGENATION = 0.839
+    BLOOD_VOLUME_FRACTION_LYMPH_NODE = 0.14
+    BLOOD_VOLUME_FRACTION_LYMPH_NODE_VARIATION = 0.07
+    LYMPH_NODE_OXYGENATION = 0.73
+    LYMPH_NODE_OXYGENATION_VARIATION = 0.15
 
 
 class MorphologicalTissueProperties:
