@@ -248,40 +248,36 @@ class TissueLibrary(object):
                 .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
 
     def lymph_node(self, oxy=None, blood_volume_fraction=None):
-            """
-            IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
-            It is a mixture of oxyhemoglobin, deoxyhemoglobin, and lymph node customized water.
-            :return: a settings dictionary fitting for generic lymph node tissue.
-            """
+        """
+        IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
+        It is a mixture of oxyhemoglobin, deoxyhemoglobin, and lymph node customized water.
+        :return: a settings dictionary fitting for generic lymph node tissue.
+        """
 
-            # Determine muscle oxygenation
-            if oxy is None:
-                oxy = OpticalTissueProperties.LYMPH_NODE_OXYGENATION
-            else:
-                oxy = oxy
+        # Determine muscle oxygenation
+        if oxy is None:
+            oxy = OpticalTissueProperties.LYMPH_NODE_OXYGENATION
 
-            # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
-            if blood_volume_fraction is None:
-                bvf = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_LYMPH_NODE
-            else:
-                bvf = blood_volume_fraction
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        if blood_volume_fraction is None:
+            blood_volume_fraction = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_LYMPH_NODE
 
-            [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(bvf, oxy)
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(blood_volume_fraction, oxy)
 
-            # Get the water volume fraction
-            # water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
+        # Get the water volume fraction
+        # water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
 
-            lymphatic_fluid = MOLECULE_LIBRARY.water(1-fraction_deoxy-fraction_oxy)
-            lymphatic_fluid.speed_of_sound = StandardProperties.SPEED_OF_SOUND_LYMPH_NODE + 1.22
-            lymphatic_fluid.density = StandardProperties.DENSITY_LYMPH_NODE - 2.30
-            lymphatic_fluid.alpha_coefficient = StandardProperties.ALPHA_COEFF_LYMPH_NODE + 0.36
+        lymphatic_fluid = MOLECULE_LIBRARY.water(1 - fraction_deoxy - fraction_oxy)
+        lymphatic_fluid.speed_of_sound = StandardProperties.SPEED_OF_SOUND_LYMPH_NODE + 1.22
+        lymphatic_fluid.density = StandardProperties.DENSITY_LYMPH_NODE - 2.30
+        lymphatic_fluid.alpha_coefficient = StandardProperties.ALPHA_COEFF_LYMPH_NODE + 0.36
 
-            # generate the tissue dictionary
-            return (MolecularCompositionGenerator()
-                    .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                    .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                    .append(lymphatic_fluid)
-                    .get_molecular_composition(SegmentationClasses.LYMPH_NODE))
+        # generate the tissue dictionary
+        return (MolecularCompositionGenerator()
+                .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(lymphatic_fluid)
+                .get_molecular_composition(SegmentationClasses.LYMPH_NODE))
     
 
 TISSUE_LIBRARY = TissueLibrary()
