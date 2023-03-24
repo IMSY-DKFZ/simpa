@@ -2,12 +2,15 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import simpa as sp
-from simpa import Tags
+
+import os
+
 import numpy as np
 
+import simpa as sp
+from simpa import Tags
+
 # FIXME temporary workaround for newest Intel architectures
-import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 path_manager = sp.PathManager()
 PATH = path_manager.get_hdf5_file_save_path() + "/CompletePipelineExample_4711.hdf5"

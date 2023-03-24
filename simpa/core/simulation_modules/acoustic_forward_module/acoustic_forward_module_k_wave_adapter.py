@@ -2,21 +2,25 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils.path_manager import PathManager
-import numpy as np
-import subprocess
-from simpa.utils import Tags
-from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5, load_data_field
-from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.utils.settings import Settings
-from simpa.utils.calculate import rotation_matrix_between_vectors
-from simpa.core.device_digital_twins import CurvedArrayDetectionGeometry, DetectionGeometryBase
-import os
+import gc
 import inspect
+import os
+import subprocess
+
+import numpy as np
 import scipy.io as sio
 from scipy.spatial.transform import Rotation
-from simpa.core.simulation_modules.acoustic_forward_module import AcousticForwardModelBaseAdapter
-import gc
+
+from simpa.core.device_digital_twins import (CurvedArrayDetectionGeometry,
+                                             DetectionGeometryBase)
+from simpa.core.simulation_modules.acoustic_forward_module import \
+    AcousticForwardModelBaseAdapter
+from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
+from simpa.utils import Tags
+from simpa.utils.calculate import rotation_matrix_between_vectors
+from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.utils.path_manager import PathManager
+from simpa.utils.settings import Settings
 
 
 class KWaveAdapter(AcousticForwardModelBaseAdapter):
@@ -80,8 +84,6 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         data_dict = {}
         file_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH]
         data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = load_data_field(file_path, Tags.DATA_FIELD_INITIAL_PRESSURE)
-        gc.collect()
-
         data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = load_data_field(file_path, Tags.DATA_FIELD_SPEED_OF_SOUND)
         data_dict[Tags.DATA_FIELD_DENSITY] = load_data_field(file_path, Tags.DATA_FIELD_DENSITY)
         data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = load_data_field(file_path, Tags.DATA_FIELD_ALPHA_COEFF)
@@ -91,7 +93,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         field_of_view_extent = pa_device.field_of_view_extent_mm
         detector_positions_mm = pa_device.get_detector_element_positions_accounting_for_device_position_mm()
         self.logger.debug(f"field_of_view_extent: {field_of_view_extent}")
-        
+
         detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
         detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
         if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
@@ -105,7 +107,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         else:
             axes = (0, 2)
             image_slice = np.s_[:]
-        
+
         wavelength = str(self.global_settings[Tags.WAVELENGTH])
         data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.rot90(data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice],
                                                              3, axes=axes)

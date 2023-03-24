@@ -1,17 +1,19 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
-import numpy as np
-from typing import Union, Dict
 from abc import abstractmethod
-import gc
+from typing import Dict, Union
 
-from simpa.utils import Tags, Settings
+import numpy as np
+
 from simpa.core import SimulationModule
+from simpa.core.device_digital_twins import (IlluminationGeometryBase,
+                                             PhotoacousticDevice)
+from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
+from simpa.utils import Settings, Tags
 from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.io_handling.io_hdf5 import save_hdf5, load_data_field
-from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
-from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
+from simpa.utils.quality_assurance.data_sanity_testing import \
+    assert_array_well_defined
 
 
 class OpticalForwardModuleBase(SimulationModule):

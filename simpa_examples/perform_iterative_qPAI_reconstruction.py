@@ -2,14 +2,17 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa import Tags
-import simpa as sp
-import numpy as np
+
+import os
+
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.ndimage import zoom
 
+import simpa as sp
+from simpa import Tags
+
 # FIXME temporary workaround for newest Intel architectures
-import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
