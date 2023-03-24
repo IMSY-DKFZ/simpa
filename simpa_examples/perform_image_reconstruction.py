@@ -12,8 +12,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 path_manager = sp.PathManager()
 PATH = path_manager.get_hdf5_file_save_path() + "/CompletePipelineExample_4711.hdf5"
 
-file = sp.load_hdf5(PATH)
-settings = sp.Settings(file["settings"])
+settings = sp.load_data_field(PATH, Tags.SETTINGS)
 settings[Tags.WAVELENGTH] = settings[Tags.WAVELENGTHS][0]
 
 settings.set_reconstruction_settings({
@@ -28,7 +27,7 @@ settings.set_reconstruction_settings({
 })
 
 # TODO use the correct device definition here
-device = file["digital_device"]
+device = sp.load_data_field(PATH, Tags.DIGITAL_DEVICE)
 
 sp.DelayAndSumAdapter(settings).run(device)
 

@@ -154,8 +154,7 @@ sp.simulate(pipeline, settings, device)
 if VISUALIZE:
     # get simulation output
     data_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
-    file = sp.load_hdf5(data_path)
-    settings = sp.Settings(file["settings"])
+    settings = sp.load_data_field(data_path, Tags.SETTINGS)
     wavelength = settings[Tags.WAVELENGTHS][0]
 
     # get reconstruction result
