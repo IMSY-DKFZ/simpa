@@ -16,7 +16,7 @@ class MultiplyEnergy(ProcessingComponent):
         - Multiply with Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE
 
     Component Settings:
-       Tags.IN_AQUA_DATA_PATH: path of in-aqua time series data sample containing also the energyn
+       Tags.IN_AQUA_DATA_PATH: path of in-aqua time series data sample containing also the energy
        Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE: laser energy of the corresponding waterbath measurement in mJ
     """
 
@@ -26,6 +26,10 @@ class MultiplyEnergy(ProcessingComponent):
             self.logger.debug("MultiplyEnergy Settings should be stored in global settings under the tag\
                               Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS in order to ensure check energy settings\
                               in AddNoisyTimeSeries Component.")
+
+        if Tags.IN_AQUA_DATA_PATH not in self.component_settings:
+            self.logger.debug("Tags.IN_AQUA_DATA_PATH should be set for reproducibility.")    
+
         if Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE in self.component_settings:
             noise_sample_energy = self.component_settings[Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE]
         else:
