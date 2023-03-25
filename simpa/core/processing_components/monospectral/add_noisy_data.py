@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-from typing import Tuple
-import os
 from simpa.utils import Tags
 from simpa.log import Logger
 from simpa.io_handling import load_data_field, save_data_field
@@ -13,14 +11,7 @@ from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import tukey_bandpass_filtering_with_settings, get_reconstruction_time_step_window, compute_image_dimensions, preparing_reconstruction_and_obtaining_reconstruction_settings
 from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 
-
-# TODO: Delete 
-import matplotlib.pyplot as plt
-
-# TODO: Ask 
-# CURRENT RESTRICTIONS:
-# - monospectral normalization (does not include spectral information)
-# - membrane base calibration (will not work for )
+import matplotlib.pyplot as plt # TODO: Delete if debug plot is removed
 
 
 class AddNoisyTimeSeries(ProcessingComponent):
@@ -29,11 +20,11 @@ class AddNoisyTimeSeries(ProcessingComponent):
         - Bandpassfilter simulated time series
         - Load noisy in-aqua time series data
         - Bandpassfilter noisy in-aqua data (if needed, per default not needed)
-        - crop noisy in-aqua data (if needed, per default not needed)
-        - scale noisy in-aqua data with Tags.SCALING_FACTOR
-        - take broken sensors into account by setting simulated time series data of corresponding sensors to 0
-        - add noisy in-aqua data to simulated data in the window relevant for the FOV
-        - perform laser energy correction (if specified)
+        - Crop noisy in-aqua data (if needed, per default not needed)
+        - Scale noisy in-aqua data with Tags.SCALING_FACTOR
+        - Take broken sensors into account by setting simulated time series data of corresponding sensors to 0
+        - Add noisy in-aqua data to simulated data in the window relevant for the FOV
+        - Perform laser energy correction (if specified)
 
     Component Settings:
        Tags.IN_AQUA_DATA_PATH: path of in-aqua time series data
@@ -42,7 +33,7 @@ class AddNoisyTimeSeries(ProcessingComponent):
        Tags.SCALING_FACTOR: scaling factor of the noise data added to the signal: Signal + Scaling_Factor * Noise
        Tags.LASER_ENERGY_CORRECTION: whether to perform laser energy correction
        Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE: laser energy of the corresponding waterbath measurement in mJ
-        Tags.RECONSTRUCTION_TIME_STEPS: specify which time steps are used for the reconstruction
+        Tags.RECONSTRUCTION_TIME_STEPS: specify which time steps are used for the reconstruction and should be covered with noise
         Tags.BANDPASS_FILTERED_IN_AQUA_DATA: whether loaded in-aqua data is already bandpassfiltered, default True
         Tags.CROPPED_IN_AQUA_DATA: is loaded in-aqua data already cropped, default True
     """
@@ -77,10 +68,10 @@ class AddNoisyTimeSeries(ProcessingComponent):
         if noise_data.shape[1] < time_series_data.shape[1]:
             # read out time step window needed for reconstruction if given or compute it if not
             if Tags.RECONSTRUCTION_TIME_STEPS in self.component_settings:
-                print("use window from settings")
                 time_step_start, time_step_end = self.component_settings[Tags.RECONSTRUCTION_TIME_STEPS]
+                self.logger.info("use given noise-window: ({time_step_start}, {time_step_end})")
             else:
-                print("compute it own")
+                self.logger.info("compute noise window based on reconstruction")
                 logger = Logger()
                 detection_geometry = device.get_detection_geometry()
                 reconstruction_settings = self.global_settings.get_reconstruction_settings()
@@ -100,6 +91,7 @@ class AddNoisyTimeSeries(ProcessingComponent):
             # add noise on time series data in this window 
             time_series_data *= self.working_sensors[:,None] # account for broken sensors
             time_series_data[:,noise_start:noise_end] += scaling_factor * noise_data[:,:]
+            self.logger.info(f"Add noise from time step {noise_start} to {noise_end}")
             return time_series_data
 
         elif noise_data.shape[1] == time_series_data.shape[1]:
@@ -108,20 +100,42 @@ class AddNoisyTimeSeries(ProcessingComponent):
     def do_laser_energy_correction(self, time_series: np.ndarray) -> np.ndarray:
         """
         Apply laser energy correction
-
-        should be appplied after the noise is added
+        (will be applied to the time series data after the noise is added)
 
         :param time_series: time series data to be laser energy corrected
         :type time_series: np.ndarray
         :return: laser energy corrected time series data
         :rtype: np.ndarray
         """
+        self.logger.info("Perform Laser Energy Correction of noisened Time Series Data.")
         # load energy specified in optical simulation settings
-        energy = self.global_settings.get_optical_settings()[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
-        # check whether component setting and optical simulation setting do not contradict
-        assert energy == self.component_settings[Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE]
+        optical_settings = self.global_settings.get_optical_settings()
+        if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in optical_settings:
+            sim_energy = [Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
+        else:
+            msg = f"No laser energy was set for optical simulation.\
+                Laser Energy Correction is not meaningful for initial pressure map with non pascal but arbitrary units."
+            self.logger.critical(msg)
+            raise KeyError(msg)
+        
+        noise_sample_energy = self.component_settings[Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE]
+        # check whether component setting and optical simulation setting contradict or not
+        if sim_energy != noise_sample_energy:
+            self.logger.debug(f"Simulated laser energy in optical settings E={sim_energy:.3f} \
+                              do not match with energy of noise sample E={noise_sample_energy:.3f}.")
+        # check whether Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE was already used for p0 multlication
+        if Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS in self.global_settings and \
+            Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE in self.global_settings[Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS]:
+            energy_p0_factor = self.global_settings[Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS][Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE]
+            assert noise_sample_energy == energy_p0_factor, "Energy used for p0 mulitplication\
+                  (self.global_settings[Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS][Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE]=\
+                    {energy_p0_factor:.3f}) does not match with given Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE={noise_sample_energy}"
+        else:
+            self.logger.debug(f"No Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS in global settings \
+                              or no Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE found in MultiplyEnergy Component.")
         # laser energy correction
-        time_series /= energy
+        self.logger.info(f"Divide time series by {noise_sample_energy:.3f}mJ")
+        time_series /= noise_sample_energy
         return time_series
 
     def run(self, device) -> None:
@@ -155,7 +169,7 @@ class AddNoisyTimeSeries(ProcessingComponent):
         if Tags.CROPPED_IN_AQUA_DATA in self.component_settings:
             if not self.component_settings[Tags.CROPPED_IN_AQUA_DATA]:
                 self.logger.debug("Crop out additive noise in noisy in-aqua time series data.")
-                # TODO 
+                self.logger.critical("Cropping is not implemented yet!")
                 pass
         
         if self.debug_plot:
