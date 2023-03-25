@@ -1148,14 +1148,21 @@ class Tags:
     Usage: module core.processing_components.noise
     """
 
-    VOLUME_CREATION_MODEL_SETTINGS = ("volume_creation_model_settings", dict)
-    """"
-    Volume Creation Model Settings
+    # Mulitplicative Sample Energy
+    MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS = "multiplicate_energy_on_pressure"
+    """
+    Settings for multiplicative energy noise transformation of initial pressure
+    """
+
+    IN_AQUA_LASER_ENERGY_IN_MILLIJOULE = ("in_aqua_laser_energy_in_millijoule", (int, float))
+    """
+    laser energy of the corresponding waterbath measurement in mJ
+    Usage: module core.processing_components.monospectral.p0_energy_multiplication,
+           module core.processing_components.monospectral.add_noisy_data
     """
 
     # Add Noisy Time Series Data Properties
 
-    IN_AQUA_DATA_PATH = ("in_aqua_data_path", str)
     IN_AQUA_DATA_PATH = ("in_aqua_data_path", str)
     """
     Path of in-aqua time series data
@@ -1187,12 +1194,6 @@ class Tags:
     Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
-    IN_AQUA_LASER_ENERGY_IN_MILLIJOULE = ("in_aqua_laser_energy_in_millijoule", (int, float))
-    """
-    laser energy of the corresponding waterbath measurement in mJ
-    Usage: module core.processing_components.monospectral.add_noisy_data
-    """
-
     RECONSTRUCTION_TIME_STEPS = ("reconstruction_time_steps", (tuple, list))
     """
     
@@ -1212,6 +1213,12 @@ class Tags:
     """
 
     # Structures
+
+    VOLUME_CREATION_MODEL_SETTINGS = ("volume_creation_model_settings", dict)
+    """"
+    Volume Creation Model Settings
+    """
+
     STRUCTURES = ("structures", dict)
     """
     Settings dictionary which contains all the structures that should be generated inside the volume.\n
