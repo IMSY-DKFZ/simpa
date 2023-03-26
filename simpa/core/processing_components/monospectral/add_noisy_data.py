@@ -69,7 +69,7 @@ class AddNoisyTimeSeries(ProcessingComponent):
             # read out time step window needed for reconstruction if given or compute it if not
             if Tags.RECONSTRUCTION_TIME_STEPS in self.component_settings:
                 time_step_start, time_step_end = self.component_settings[Tags.RECONSTRUCTION_TIME_STEPS]
-                self.logger.info("use given noise-window: ({time_step_start}, {time_step_end})")
+                self.logger.info(f"use given noise-window: ({time_step_start}, {time_step_end})")
             else:
                 self.logger.info("compute noise window based on reconstruction")
                 logger = Logger()

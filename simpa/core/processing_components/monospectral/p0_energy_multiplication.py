@@ -40,7 +40,7 @@ class MultiplyEnergy(ProcessingComponent):
         # load energy specified in optical simulation settings
         optical_settings = self.global_settings.get_optical_settings()
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in optical_settings:
-            sim_energy = [Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
+            sim_energy = optical_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
 
             if sim_energy == noise_sample_energy:
                 self.logger.info("Same Energy was used already for optical simulation. p0-map is not changed.")
