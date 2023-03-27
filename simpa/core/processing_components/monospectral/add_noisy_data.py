@@ -8,7 +8,7 @@ from simpa.log import Logger
 from simpa.io_handling import load_data_field, save_data_field
 from simpa.core.processing_components import ProcessingComponent
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import tukey_bandpass_filtering_with_settings, get_reconstruction_time_step_window, compute_image_dimensions, preparing_reconstruction_and_obtaining_reconstruction_settings
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filter_with_settings, tukey_bandpass_filtering_with_settings, get_reconstruction_time_step_window, compute_image_dimensions, preparing_reconstruction_and_obtaining_reconstruction_settings
 from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
 
 import matplotlib.pyplot as plt # TODO: Delete if debug plot is removed
@@ -33,9 +33,10 @@ class AddNoisyTimeSeries(ProcessingComponent):
        Tags.SCALING_FACTOR: scaling factor of the noise data added to the signal: Signal + Scaling_Factor * Noise
        Tags.LASER_ENERGY_CORRECTION: whether to perform laser energy correction
        Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE: laser energy of the corresponding waterbath measurement in mJ
+       Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: whether simulated time series shall be bandpass filtered, should be True
         Tags.RECONSTRUCTION_TIME_STEPS: specify which time steps are used for the reconstruction and should be covered with noise
-        Tags.BANDPASS_FILTERED_IN_AQUA_DATA: whether loaded in-aqua data is already bandpassfiltered, default True
-        Tags.CROPPED_IN_AQUA_DATA: is loaded in-aqua data already cropped, default True
+        Tags.BANDPASS_FILTER_IN_AQUA_DATA: whether in-aqua data shall be bandpassfiltered, default False
+        Tags.CROP_IN_AQUA_DATA: whether in-aqua data shall be cropped, default False
     """
 
     def __init__(self, global_settings, component_settings_key: str, debug_plot: bool = False):
@@ -149,9 +150,18 @@ class AddNoisyTimeSeries(ProcessingComponent):
         self.check_input(time_series_data)
 
         # bandpass filter the simulated time series data
-        time_series_data = tukey_bandpass_filtering_with_settings(data = time_series_data, global_settings = self.global_settings, 
-                                                                  component_settings = self.global_settings.get_reconstruction_settings(),
-                                                                  device = device)
+        if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING in self.component_settings and \
+            self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING]:
+            reconstruction_settings = self.global_settings.get_reconstruction_settings()
+            self.logger.info(f"Already bandpass-filter time series data with reconstruction settings of reconstruction module.")
+            time_series_data = bandpass_filter_with_settings(data=time_series_data, global_settings=self.global_settings,
+                                                         component_settings=reconstruction_settings,
+                                                         device=device)
+            self.logger.info("do not bandpass filter in reconstruction module any more")
+            if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING in reconstruction_settings and \
+                reconstruction_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING]:
+                reconstruction_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] = False
+
 
         # load noisy in-aqua data 
         if Tags.IN_AQUA_DATA in self.component_settings:
@@ -161,25 +171,24 @@ class AddNoisyTimeSeries(ProcessingComponent):
             raise("error")
 
         # preprocess noisy in-aqua data if needed
-        if Tags.BANDPASS_FILTERED_IN_AQUA_DATA in self.component_settings:
-            if not self.component_settings[Tags.BANDPASS_FILTERED_IN_AQUA_DATA]:
+        if Tags.BANDPASS_FILTER_IN_AQUA_DATA in self.component_settings:
+            if self.component_settings[Tags.BANDPASS_FILTER_IN_AQUA_DATA]:
                 self.logger.debug("Bandpass filter noisy in-aqua time series data")
                 noise_data = tukey_bandpass_filtering_with_settings(data = noise_data, global_settings = self.global_settings, 
                                                                     component_settings = self.component_settings, device = device)
-        if Tags.CROPPED_IN_AQUA_DATA in self.component_settings:
-            if not self.component_settings[Tags.CROPPED_IN_AQUA_DATA]:
+        if Tags.CROP_IN_AQUA_DATA in self.component_settings:
+            if self.component_settings[Tags.CROP_IN_AQUA_DATA]:
                 self.logger.debug("Crop out additive noise in noisy in-aqua time series data.")
                 self.logger.critical("Cropping is not implemented yet!")
                 pass
         
         if self.debug_plot:
-            plt.figure()
-            plt.imshow(time_series_data, aspect="auto")
+            _, ax = plt.subplots(1,2)
+            ax[0].imshow(time_series_data, aspect="auto")
         # add noise components, i.e. broken sensors, sensor offsets, sensor thermal noises
         time_series_data = self.add_noise(time_series_data, noise_data, self.component_settings[Tags.SCALING_FACTOR], device)          
         if self.debug_plot:
-            plt.figure()
-            plt.imshow(time_series_data, aspect="auto")
+            ax[1].imshow(time_series_data, aspect="auto")
             plt.show()
 
         # laser correct and norm time series data

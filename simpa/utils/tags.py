@@ -1200,15 +1200,15 @@ class Tags:
     Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
-    BANDPASS_FILTERED_IN_AQUA_DATA = ("bandpass_filtered_in_aqua_data")
+    BANDPASS_FILTER_IN_AQUA_DATA = ("bandpass_filter_in_aqua_data")
     """
-    whether loaded in-aqua data is already bandpassfiltered, default True
+    whether in-aqua data shall be bandpassfiltered, default False
     Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
-    CROPPED_IN_AQUA_DATA = ("cropped_in_aqua_data")
+    CROP_IN_AQUA_DATA = ("crop_in_aqua_data")
     """
-    whether loaded in-aqua is data already cropped, default True
+    whether loaded in-aqua data shall be cropped, default False
     Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
