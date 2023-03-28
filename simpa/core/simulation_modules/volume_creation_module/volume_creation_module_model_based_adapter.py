@@ -7,7 +7,7 @@ from simpa.utils.libraries.structure_library import Structures
 from simpa.utils import Tags
 import numpy as np
 from simpa.utils import create_deformation_settings
-
+import torch
 
 class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
     """
@@ -98,5 +98,8 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                     volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
 
             global_volume_fractions[mask] += added_volume_fraction[mask]
+
+        # explicitly empty cache to free reserved GPU memory after volume creation
+        torch.cuda.empty_cache()
 
         return volumes
