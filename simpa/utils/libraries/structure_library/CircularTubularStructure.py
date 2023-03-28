@@ -32,9 +32,9 @@ class CircularTubularStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
-                  np.asarray(single_structure_settings[Tags.STRUCTURE_END_MM]),
-                  np.asarray(single_structure_settings[Tags.STRUCTURE_RADIUS_MM]),
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
+                  single_structure_settings[Tags.STRUCTURE_END_MM],
+                  single_structure_settings[Tags.STRUCTURE_RADIUS_MM],
                   single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME])
         return params
 
