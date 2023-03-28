@@ -68,7 +68,6 @@ class CircularTubularStructure(GeometricalStructure):
         else:
             radius_margin = 0.7071
 
-        typee = torch.get_default_dtype()
         target_vector = torch.subtract(torch.stack([x, y, z], axis=-1), start_voxels)
         if self.do_deformation:
             # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
