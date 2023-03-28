@@ -112,7 +112,7 @@ class AddNoisyTimeSeries(ProcessingComponent):
         # load energy specified in optical simulation settings
         optical_settings = self.global_settings.get_optical_settings()
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in optical_settings:
-            sim_energy = [Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
+            sim_energy = optical_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
         else:
             msg = f"No laser energy was set for optical simulation.\
                 Laser Energy Correction is not meaningful for initial pressure map with non pascal but arbitrary units."
