@@ -70,9 +70,9 @@ class VesselStructure(GeometricalStructure):
             if samples >= bifurcation_length:
                 vessel_branch_positions1 = position
                 vessel_branch_positions2 = position
-                angles = torch.from_numpy(np.random.normal(torch.pi / 16, torch.pi / 8, 3)).to(self.torch_device)
-                vessel_branch_directions1 = torch.squeeze(torch.tensor(torch.matmul(rotation(angles), direction)))
-                vessel_branch_directions2 = torch.squeeze(torch.tensor(torch.matmul(rotation(-angles), direction)))
+                angles = np.random.normal(torch.pi / 16, torch.pi / 8, 3)
+                vessel_branch_directions1 = torch.tensor(np.matmul(rotation(angles), direction)).to(self.torch_device)
+                vessel_branch_directions2 = torch.tensor(np.matmul(rotation(-angles), direction)).to(self.torch_device)
                 vessel_branch_radius1 = 1 / torch.sqrt(2) * radius
                 vessel_branch_radius2 = 1 / torch.sqrt(2) * radius
                 vessel_branch_radius_variation1 = 1 / torch.sqrt(2) * radius_variation
