@@ -31,8 +31,8 @@ class SphericalStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM]).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_RADIUS_MM]).to(self.torch_device),
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
+                  single_structure_settings[Tags.STRUCTURE_RADIUS_MM],
                   single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME])
         return params
 
@@ -44,6 +44,9 @@ class SphericalStructure(GeometricalStructure):
 
     def get_enclosed_indices(self):
         start_mm, radius_mm, partial_volume = self.params
+        start_mm = torch.tensor(start_mm, dtype=torch.float).to(self.torch_device)
+        radius_mm = torch.tensor(radius_mm, dtype=torch.float).to(self.torch_device)
+        
         start_voxels = start_mm / self.voxel_spacing
         radius_voxels = radius_mm / self.voxel_spacing
         x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),

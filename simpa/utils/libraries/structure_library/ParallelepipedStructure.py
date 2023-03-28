@@ -29,10 +29,10 @@ class ParallelepipedStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM], dtype=torch.float).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_FIRST_EDGE_MM], dtype=torch.float).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM], dtype=torch.float).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM], dtype=torch.float).to(self.torch_device))
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
+                  single_structure_settings[Tags.STRUCTURE_FIRST_EDGE_MM],
+                  single_structure_settings[Tags.STRUCTURE_SECOND_EDGE_MM],
+                  single_structure_settings[Tags.STRUCTURE_THIRD_EDGE_MM])
         return params
 
     def to_settings(self):
@@ -45,6 +45,11 @@ class ParallelepipedStructure(GeometricalStructure):
 
     def get_enclosed_indices(self):
         start_mm, x_edge_mm, y_edge_mm, z_edge_mm = self.params
+        start_mm = torch.tensor(start_mm, dtype=torch.float).to(self.torch_device)
+        x_edge_mm = torch.tensor(x_edge_mm, dtype=torch.float).to(self.torch_device)
+        y_edge_mm = torch.tensor(y_edge_mm, dtype=torch.float).to(self.torch_device)
+        z_edge_mm = torch.tensor(z_edge_mm, dtype=torch.float).to(self.torch_device)
+
         start_voxels = start_mm / self.voxel_spacing
         x_edge_voxels = x_edge_mm / self.voxel_spacing
         y_edge_voxels = y_edge_mm / self.voxel_spacing

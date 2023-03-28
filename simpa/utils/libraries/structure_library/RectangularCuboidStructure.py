@@ -34,10 +34,10 @@ class RectangularCuboidStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM]).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_X_EXTENT_MM]).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_Y_EXTENT_MM]).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_Z_EXTENT_MM]).to(self.torch_device),
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
+                  single_structure_settings[Tags.STRUCTURE_X_EXTENT_MM],
+                  single_structure_settings[Tags.STRUCTURE_Y_EXTENT_MM],
+                  single_structure_settings[Tags.STRUCTURE_Z_EXTENT_MM],
                   single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME])
         return params
 
@@ -52,6 +52,11 @@ class RectangularCuboidStructure(GeometricalStructure):
 
     def get_enclosed_indices(self):
         start_mm, x_edge_mm, y_edge_mm, z_edge_mm, partial_volume = self.params
+        start_mm = torch.tensor(start_mm, dtype=torch.float).to(self.torch_device)
+        x_edge_mm = torch.tensor(x_edge_mm, dtype=torch.float).to(self.torch_device)
+        y_edge_mm = torch.tensor(y_edge_mm, dtype=torch.float).to(self.torch_device)
+        z_edge_mm = torch.tensor(z_edge_mm, dtype=torch.float).to(self.torch_device)
+        
         start_voxels = start_mm / self.voxel_spacing
         x_edge_voxels = torch.tensor([x_edge_mm / self.voxel_spacing, 0, 0]).to(self.torch_device)
         y_edge_voxels = torch.tensor([0, y_edge_mm / self.voxel_spacing, 0]).to(self.torch_device)

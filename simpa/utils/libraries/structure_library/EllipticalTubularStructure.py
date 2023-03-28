@@ -35,11 +35,11 @@ class EllipticalTubularStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM], dtype=torch.float).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_END_MM], dtype=torch.float).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_RADIUS_MM], dtype=torch.float).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_ECCENTRICITY], dtype=torch.float).to(self.torch_device),
-                  torch.tensor(single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME], dtype=torch.float).to(self.torch_device))
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
+                  single_structure_settings[Tags.STRUCTURE_END_MM],
+                  single_structure_settings[Tags.STRUCTURE_RADIUS_MM],
+                  single_structure_settings[Tags.STRUCTURE_ECCENTRICITY],
+                  single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME])
         return params
 
     def to_settings(self):
@@ -53,6 +53,11 @@ class EllipticalTubularStructure(GeometricalStructure):
 
     def get_enclosed_indices(self):
         start_mm, end_mm, radius_mm, eccentricity, partial_volume = self.params
+        start_mm = torch.tensor(start_mm, dtype=torch.float).to(self.torch_device)
+        end_mm = torch.tensor(end_mm, dtype=torch.float).to(self.torch_device)
+        radius_mm = torch.tensor(radius_mm, dtype=torch.float).to(self.torch_device)
+        eccentricity = torch.tensor(eccentricity, dtype=torch.float).to(self.torch_device)
+        partial_volume = torch.tensor(partial_volume, dtype=torch.float).to(self.torch_device)
 
         start_voxels = start_mm / self.voxel_spacing
         end_voxels = end_mm / self.voxel_spacing

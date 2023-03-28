@@ -37,9 +37,9 @@ class VesselStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM]).to(self.torch_device),
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
                   single_structure_settings[Tags.STRUCTURE_RADIUS_MM],
-                  torch.tensor(single_structure_settings[Tags.STRUCTURE_DIRECTION]).to(self.torch_device),
+                  single_structure_settings[Tags.STRUCTURE_DIRECTION],
                   single_structure_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM],
                   single_structure_settings[Tags.STRUCTURE_CURVATURE_FACTOR],
                   single_structure_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR],
@@ -113,6 +113,9 @@ class VesselStructure(GeometricalStructure):
     def get_enclosed_indices(self):
         start_mm, radius_mm, direction_mm, bifurcation_length_mm, curvature_factor, \
             radius_variation_factor, partial_volume = self.params
+        start_mm = torch.tensor(start_mm, dtype=torch.float).to(self.torch_device)
+        direction_mm = torch.tensor(direction_mm, dtype=torch.float).to(self.torch_device)
+
         start_voxels = start_mm / self.voxel_spacing
         radius_voxels = radius_mm / self.voxel_spacing
         direction_voxels = direction_mm / self.voxel_spacing
