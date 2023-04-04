@@ -20,13 +20,14 @@ repos:
     rev: "44e8fc9"
     hooks:
       - id: validate-cff # validates cff citation files
--   repo: local
-    hooks:
-      - id: git-config-email-check
-        name: git-config-email-check
-        entry: .git/hooks/check-email.sh
-        language: script
-        
+# toggle comment to perform git config user email check. Note that you have to place the check-email.sh script in your .git/hooks/ folder
+# -   repo: local
+#     hooks:
+#       - id: git-config-email-check # checks if git config user email address is valid according to specified domains in check-email.sh script
+#         name: git-config-email-check
+#         entry: .git/hooks/check-email.sh
+#         language: script
+
 
 # -   repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook # Uses MIT-License (MIT compatible) 
 #     rev: v9.4.0
