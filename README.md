@@ -65,6 +65,10 @@ You also need to manually install the pytorch library to use all features of SIM
 To this end, use the pytorch website tool to figure out which version to install:
 [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
 
+## Install pre-commit hooks
+
+In your SIMPA root directory run `pre-commit install` to set up the pre-commit hooks defined in `.pre-commit-config.yaml`. This will generate pre-commit hooks in `.git/hooks/` and run them for every commit. To run them manually, call `pre-commit run --all-files`.
+
 ## External tools installation instructions
 
 In order to get the full SIMPA functionality, you should install all third party toolkits that make the optical and 
