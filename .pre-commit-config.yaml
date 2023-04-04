@@ -3,6 +3,7 @@ repos:
     rev: v4.4.0
     hooks:
     -   id: check-yaml # checks is yaml file is valid
+    -   id: check-added-large-files # prevents adding large files, above 500kB
 
 -   repo: https://github.com/pre-commit/mirrors-autopep8 # Uses MIT-License (MIT compatible) 
     rev: v2.0.2  # Use the sha / tag you want to point at
@@ -13,15 +14,16 @@ repos:
     rev: v3.10.3
     hooks:
       - id: markdown-link-check # checks if links in markdown files work
+        exclude: ^docs/*
 
 -   repo: https://github.com/citation-file-format/cff-converter-python # Uses Apache 2.0-License (MIT compatible)
     rev: "44e8fc9"
     hooks:
       - id: validate-cff # validates cff citation files
 
--   repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook # Uses MIT-License (MIT compatible) 
-    rev: v9.4.0
-    hooks:
-      - id: commitlint    # ensures structured commit messages
-        stages: [commit-msg]
-        additional_dependencies: ['@commitlint/config-conventional']      
+# -   repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook # Uses MIT-License (MIT compatible) 
+#     rev: v9.4.0
+#     hooks:
+#       - id: commitlint    # ensures structured commit messages according to conventional commits 1.0.0
+#         stages: [commit-msg]
+#         additional_dependencies: ['@commitlint/config-angular']      
