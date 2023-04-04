@@ -18,3 +18,10 @@ repos:
     rev: "44e8fc9"
     hooks:
       - id: validate-cff # validates cff citation files
+
+-   repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook # Uses MIT-License (MIT compatible) 
+    rev: v9.4.0
+    hooks:
+      - id: commitlint    # ensures structured commit messages
+        stages: [commit-msg]
+        additional_dependencies: ['@commitlint/config-conventional']      
