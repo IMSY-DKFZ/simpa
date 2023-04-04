@@ -14,12 +14,19 @@ repos:
     rev: v3.10.3
     hooks:
       - id: markdown-link-check # checks if links in markdown files work
-        exclude: ^docs/*
+        exclude: docs/
 
 -   repo: https://github.com/citation-file-format/cff-converter-python # Uses Apache 2.0-License (MIT compatible)
     rev: "44e8fc9"
     hooks:
       - id: validate-cff # validates cff citation files
+-   repo: local
+    hooks:
+      - id: git-config-email-check
+        name: git-config-email-check
+        entry: .git/hooks/check-email.sh
+        language: script
+        
 
 # -   repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook # Uses MIT-License (MIT compatible) 
 #     rev: v9.4.0
