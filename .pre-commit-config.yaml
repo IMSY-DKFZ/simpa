@@ -20,6 +20,16 @@ repos:
     rev: "44e8fc9"
     hooks:
       - id: validate-cff # validates cff citation files
+
+- repo: https://github.com/Lucas-C/pre-commit-hooks # Uses MIT License (MIT compatible)
+  rev: v1.5.1
+  hooks:
+    - id: insert-license    # Checks if the license header specified at license_header.txt is added in the first lines of each python file. If not, it suggests to insert them.
+      types: [python]
+      args:
+        - --license-filepath
+        - license_header.txt        # defaults to: LICENSE.txt
+
 # toggle comment to perform git config user email check. Note that you have to place the check-email.sh script in your .git/hooks/ folder
 # -   repo: local
 #     hooks:
