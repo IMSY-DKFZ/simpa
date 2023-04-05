@@ -36,9 +36,10 @@ In general the following steps are involved during a contribution:
 5.	Perform test driven development on feature branch. 
       A new implemented feature / a bug fix should be accompanied by a test. 
       Additionally, all previously existing tests must still pass after the contribution. 
-6.	Once development is finished, create a pull request including your changes. 
+6.    Run pre-commit hooks and make sure all hooks are passing.
+7.	Once development is finished, create a pull request including your changes. 
       For more information on how to create pull request, see GitHub's [about pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
-7.	A member of the core development team will review your pull request and potentially require further changes 
+8.	A member of the core development team will review your pull request and potentially require further changes 
       (see [Contribution review and integration](#contribution-review-and-integration)). 
       Once all remarks have been resolved, your changes will be merged into the develop branch.
 
@@ -87,7 +88,7 @@ In case already existing commits need to be signed off, you can make use of the 
 `git commit --amend --signoff`
 
 ### Contribution review and integration
-To ensure correctness and high quality of the submitted code, each contribution will be reviewed by a member of the core development team regarding among others the following aspects:
+To ensure correctness and high quality of the submitted code, each contribution will be checked by pre-commit hooks and reviewed by a member of the core development team regarding among others the following aspects:
 - The code is correct and implements the described feature / fixes the described issue.
 - The code follows the [SIMPA coding style](#coding-style)
 - The code is [documented appropriately](#documenting-your-code)
@@ -104,7 +105,7 @@ We also have a Slack workspace that you can join if you are interested to contri
 
 ## Coding style
 
-When writing code for SIMPA, please use the [PEP 8](https://www.python.org/dev/peps/pep-0008/) python coding conventions
+When writing code for SIMPA, please use the [PEP 8](https://www.python.org/dev/peps/pep-0008/) python coding conventions (which will be checked with the [autopep8 pre-commit hook](https://github.com/pre-commit/mirrors-autopep8))
 and consider using the following structures in your code in order to make a new
 developer or someone external always know exactly what to expect.
 

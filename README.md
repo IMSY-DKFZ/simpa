@@ -206,7 +206,7 @@ To contribute to SIMPA, please fork the SIMPA github repository and create a pul
 suggested changes. The core developers will then review the suggested changes and integrate these into the code 
 base.
 
-Please make sure that you have included unit tests for your code and that all previous tests still run through.
+Please make sure that you have included unit tests for your code and that all previous tests still run through. Please also run the pre-commit hooks and make sure they are passing.
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST, and you are very welcome to participate and
 raise any issues or suggest new features. If you want to join this meeting, write one of the core developers.
