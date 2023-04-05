@@ -67,7 +67,32 @@ To this end, use the pytorch website tool to figure out which version to install
 
 ## Install pre-commit hooks
 
-In your SIMPA root directory run `pre-commit install` to set up the pre-commit hooks defined in `.pre-commit-config.yaml`. This will generate pre-commit hooks in `.git/hooks/` and run them for every commit. To run them manually, call `pre-commit run --all-files`.
+In your SIMPA root directory run `pre-commit install` to set up the pre-commit hooks defined in `.pre-commit-config.yaml`. This will generate pre-commit hooks in `.git/hooks/` and run them for every commit. To run them manually before you commit, call `pre-commit run --all-files`.
+
+<details>
+<summary>Further information on pre-commit hooks</summary>
+
+### git config user email address checking
+The `git-config-email-check` hook is by default commented out in `pre-commit-config.yaml`. If you want to get a warning when you are not using a specified git config user email address domain, then you might want to comment this hook in. Then you would have to place a file according to the given path, e.g. at `.git/hooks/check-email.sh` with the following content:
+
+```shell
+#!/bin/bash
+PWD=`pwd`
+EMAIL=$(git config user.email)
+if [[ $EMAIL == *"@dkfz-heidelberg.de"* ]]; then
+  echo "[INFO] Verified email: $EMAIL"
+else
+  echo "[ERROR] Invalid email: $EMAIL => Please configure the company email and retry."
+  echo "Steps:"
+  echo "   cd $PWD"
+  echo '   git config user.email "<user>@dkfz-heidelberg.de"'
+  echo ""
+  exit 1;
+fi;
+```
+
+Change the domain in lines 4 and 10 according to your specific domain (e.g. corporate email domain) or even whole email address.
+</details>
 
 ## External tools installation instructions
 
