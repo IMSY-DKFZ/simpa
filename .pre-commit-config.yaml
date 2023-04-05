@@ -30,6 +30,11 @@ repos:
         - --license-filepath
         - license_header.txt        # defaults to: LICENSE.txt
 
+-   repo: https://github.com/jorisroovers/gitlint # Uses MIT License (MIT compatible)
+    rev:  v0.19.1
+    hooks:
+    -   id: gitlint
+
 # toggle comment to perform git config user email check. Note that you have to place the check-email.sh script in your .git/hooks/ folder
 # -   repo: local
 #     hooks:
