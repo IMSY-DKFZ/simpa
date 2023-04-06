@@ -12,6 +12,9 @@ on:
     branches: [ main, develop ]
   # as well as upon manual triggers through the 'Actions' tab of the Github UI
   workflow_dispatch:
+  # Additionally, run Friday morning 6AM, so that we can react quickly if things break
+  schedule:
+  - cron: "0 5 * * 5"
 
 jobs:
   build:
