@@ -1,42 +1,49 @@
-# This workflow will install Python dependencies, run unit_tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# Runs automatic tests for the given python version and operating system.
+# First, the python environment is set up according to the version, SIMPA is installed with its dependencies.
+# Afterwards, the tests are run and liceses of the dependencies are checked.
 
-name: SIMPA tests
+name: Automatic tests for each python version and os
 
 on:
-  # run SIMPA tests on pushes to the main or develop branch
-  push:
-    branches: [ main, develop ]
-  # and on all pull requests to the main or develop branch
-  pull_request:
-    branches: [ main, develop ]
-  # as well as upon manual triggers through the 'Actions' tab of the Github UI
-  workflow_dispatch:
-  # Additionally, run Friday morning 6AM, so that we can react quickly if things break
-  schedule:
-  - cron: "0 5 * * 5"
+  workflow_call:  # triggered when the workflow is called from another workflow
+    inputs:
+      python-version: 
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
 
 jobs:
-  build:
-
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.8", "3.9", "3.10"]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
+  setup-and-install:
+    name: Setup python environment and install SIMPA with its dependencies
+    runs-on: ${{ inputs.os }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python ${{ inputs.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install simpa
+    - name: Install SIMPA 
       run: |
         python -m pip install --upgrade pip
         python -m pip install .
+
+  run-tests:
+    name: Run automatic tests
+    needs: setup-and-install
+    runs-on: ${{ inputs.os }}
+    steps:
     - name: Testing
       run: |
         python simpa_tests/do_coverage.py
         coverage xml
+
+  check-licenses:
+    name: Check licenses of installed dependencies with pylic
+    needs: setup-and-install
+    runs-on: ${{ inputs.os }}
+    steps:
+    - name: License check
+      run: |
+        pylic check
