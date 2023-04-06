@@ -1,11 +1,14 @@
+<div align="center">
+
+![Logo](docs/source/images/simpa_logo.png?raw=true "Logo")
+
 [![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=develop)](https://simpa.readthedocs.io/en/develop/?badge=develop)
 ![Build Status](https://github.com/IMSY-DKFZ/simpa/actions/workflows/automatic_testing.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/IMSY-DKFZ/simpa/blob/main/LICENSE.md)
-
 [![Pypi Badge](https://img.shields.io/pypi/v/simpa)](https://pypi.org/project/simpa/)
 [![PyPI downloads](https://img.shields.io/pypi/dw/simpa?color=gr&label=pypi%20downloads)](https://pypi.org/project/simpa/)
 
-![Logo](docs/source/images/simpa_logo.png?raw=true "Logo")
+</div>
 
 # The toolkit for Simulation and Image Processing for Photonics and Acoustics (SIMPA)
 
@@ -79,13 +82,13 @@ The `git-config-email-check` hook is by default commented out in `pre-commit-con
 #!/bin/bash
 PWD=`pwd`
 EMAIL=$(git config user.email)
-if [[ $EMAIL == *"@dkfz-heidelberg.de"* ]]; then
+if [[ $EMAIL == *"@yourdomain.com"* ]]; then
   echo "[INFO] Verified email: $EMAIL"
 else
   echo "[ERROR] Invalid email: $EMAIL => Please configure the company email and retry."
   echo "Steps:"
   echo "   cd $PWD"
-  echo '   git config user.email "<user>@dkfz-heidelberg.de"'
+  echo '   git config user.email "<user>@yourdomain.com"'
   echo ""
   exit 1;
 fi;
