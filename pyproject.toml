@@ -39,6 +39,7 @@ requests = ">=2.26.0"        # Uses Apache 2.0-License (MIT compatible)
 wget = ">=3.2"               # Is Public Domain (MIT compatible)
 jdata = ">=0.5.2"            # Uses Apache 2.0-License (MIT compatible)
 pre-commit = ">=3.2.2"       # Uses MIT-License (MIT compatible) 
+pylic = ">=3.5.0"            # Uses MIT-License (MIT compatible) 
 
 [tool.poetry.group.docs.dependencies]
 sphinx-rtd-theme = "^1.0.0"
@@ -48,6 +49,32 @@ myst-parser = "^0.18.0"
 # autopep8 config
 [tool.autopep8]
 max_line_length = 120
+
+# license checking with pylic
+[tool.pylic]
+safe_licenses = [
+    "Apache Software License",
+    "MIT License",
+    "Python Software Foundation License",
+    "BSD License",
+    "The Unlicense (Unlicense)",
+    "Public Domain",
+    "Historical Permission Notice and Disclaimer (HPND)"
+]
+ignore_packages = [
+    "certifi",
+    "nvidia-curand-cu11",
+    "nvidia-cuda-nvrtc-cu11",
+    "nvidia-nvtx-cu11",
+    "nvidia-cusparse-cu11",
+    "nvidia-cuda-runtime-cu11",
+    "nvidia-cublas-cu11",
+    "nvidia-nccl-cu11",
+    "nvidia-cufft-cu11",
+    "nvidia-cuda-cupti-cu11",
+    "nvidia-cusolver-cu11",
+    "nvidia-cudnn-cu11",
+]
 
 [build-system]
 requires = [
