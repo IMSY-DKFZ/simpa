@@ -63,7 +63,7 @@ def bandpass_filter_with_settings(data: np.ndarray, global_settings: Settings, c
     :param device:
     :return: (numpy array) filtered data
     """
-
+    
     # select corresponding filtering method depending on tag in settings
     if Tags.BANDPASS_FILTER_METHOD in component_settings:
         if component_settings[Tags.BANDPASS_FILTER_METHOD] == Tags.TUKEY_BANDPASS_FILTER:
@@ -124,7 +124,9 @@ def butter_bandpass_filtering_with_settings(data: np.ndarray, global_settings: S
     :return: (numpy array) filtered data
     """
 
-    if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
+    if Tags.DOWNSAMPLED_DT in global_settings and global_settings[Tags.DOWNSAMPLED_DT]:
+        time_spacing_in_ms = global_settings[Tags.DOWNSAMPLED_DT] * 1000
+    elif Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
         time_spacing_in_ms = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
     elif device.sampling_frequency_MHz is not None:
         time_spacing_in_ms = 1.0 / (device.sampling_frequency_MHz * 1000)
@@ -259,7 +261,9 @@ def tukey_bandpass_filtering_with_settings(data: np.ndarray, global_settings: Se
     :param device:
     :return: (numpy array) filtered data
     """
-    if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
+    if Tags.DOWNSAMPLED_DT in global_settings and global_settings[Tags.DOWNSAMPLED_DT]:
+        time_spacing_in_ms = global_settings[Tags.DOWNSAMPLED_DT] * 1000
+    elif Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
         time_spacing_in_ms = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
     elif device.sampling_frequency_MHz is not None:
         time_spacing_in_ms = 1.0 / (device.sampling_frequency_MHz * 1000)
@@ -385,7 +389,9 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
                              "or WAVELENGTH to obtain the average speed of sound")
 
     # time spacing: use kWave specific dt from simulation if set, otherwise sampling rate if specified,
-    if Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
+    if Tags.DOWNSAMPLED_DT in global_settings and global_settings[Tags.DOWNSAMPLED_DT]:
+        time_spacing_in_ms = global_settings[Tags.DOWNSAMPLED_DT] * 1000
+    elif Tags.K_WAVE_SPECIFIC_DT in global_settings and global_settings[Tags.K_WAVE_SPECIFIC_DT]:
         time_spacing_in_ms = global_settings[Tags.K_WAVE_SPECIFIC_DT] * 1000
     elif detection_geometry.sampling_frequency_MHz is not None:
         time_spacing_in_ms = 1.0 / (detection_geometry.sampling_frequency_MHz * 1000)

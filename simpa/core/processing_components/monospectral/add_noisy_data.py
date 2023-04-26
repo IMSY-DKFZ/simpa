@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
+from scipy.interpolate import interp1d
 from simpa.utils import Tags
 from simpa.log import Logger
 from simpa.io_handling import load_data_field, save_data_field
@@ -17,18 +18,21 @@ import matplotlib.pyplot as plt # TODO: Delete if debug plot is removed
 class AddNoisyTimeSeries(ProcessingComponent):
     """
     Operations:
+        - Downsample simulated time series, if kWave used a time spacing dt' that is smaller than the device specific time spacing dt and if 
+          Tag is set.
         - Bandpassfilter simulated time series
         - Load noisy in-aqua time series data
-        - Bandpassfilter noisy in-aqua data (if needed, per default not needed)
-        - Crop noisy in-aqua data (if needed, per default not needed)
+        - Bandpassfilter noisy in-aqua data (if Tag is set, per default should not be needed)
+        - Crop noisy in-aqua data (if Tag is set, per default not needed)
         - Scale noisy in-aqua data with Tags.SCALING_FACTOR
         - Take broken sensors into account by setting simulated time series data of corresponding sensors to 0
         - Add noisy in-aqua data to simulated data in the window relevant for the FOV
-        - Perform laser energy correction (if specified)
+        - Perform laser energy correction (if Tag is set)
 
     Component Settings:
        Tags.IN_AQUA_DATA_PATH: path of in-aqua time series data
        Tags.IN_AQUA_DATA: np.ndarray containing additive noise to be added on simulated signal
+       Tags.DOWNSAMPLE_TIME_SERIES: whether simulated time series shall be downsampled to device specific time spacing
        Tags.BROKEN_SENSORS: (for example: np.array([30,94,145, 247]))
        Tags.SCALING_FACTOR: scaling factor of the noise data added to the signal: Signal + Scaling_Factor * Noise
        Tags.LASER_ENERGY_CORRECTION: whether to perform laser energy correction
@@ -43,7 +47,14 @@ class AddNoisyTimeSeries(ProcessingComponent):
         super(AddNoisyTimeSeries, self).__init__(global_settings=global_settings, component_settings_key=component_settings_key)
         self.debug_plot = debug_plot
       
-    def check_input(self, time_series_data: np.ndarray):
+    def check_input(self, time_series_data: np.ndarray) -> None:
+        """
+        Checks input of Processing Component, i.e. whether needed tags are set or not.
+        If they are not set an error will be raised or default settings will be assumed
+
+        :param time_series_data: time series data to be preprocessed
+        :type time_series_data: np.ndarray
+        """
         (n_sensors, _) = time_series_data.shape
 
         if Tags.SCALING_FACTOR not in self.component_settings:
@@ -63,6 +74,35 @@ class AddNoisyTimeSeries(ProcessingComponent):
         self.working_sensors = np.ones(n_sensors)
         if Tags.BROKEN_SENSORS in self.component_settings and len(self.component_settings[Tags.BROKEN_SENSORS]) > 0:
             self.working_sensors[self.component_settings[Tags.BROKEN_SENSORS]] = 0 # set to 0 for broken sensors
+
+    def downsample_time_series(self, time_series_data: np.ndarray, device: DigitalDeviceTwinBase) -> np.ndarray:
+        """
+        Check whether time spacing of simulated time series data matches time spacing of device.
+        And downsample time series data if this is not the case.
+        :param time_series_data: kWave simulated time series data
+        :type time_series_data: np.ndarray
+        :param device: device object containing sampling_rate information
+        :type device: DigitalDeviceTwinBase
+        :return: downsampled (if need) time series
+        :rtype: np.ndarray
+        """
+        if Tags.K_WAVE_SPECIFIC_DT in self.global_settings and Tags.K_WAVE_SPECIFIC_NT in self.global_settings:
+            dt_sim = self.global_settings[Tags.K_WAVE_SPECIFIC_DT]*10**9 # in ns
+            N_sim = self.global_settings[Tags.K_WAVE_SPECIFIC_NT]
+        else:
+            self.logger.debug("No Tags.K_WAVE_SPECIFIC_DT and Tags.K_WAVE_SPECIFIC_NT in global settings. Time series is not downsampled.")
+            return time_series_data
+        
+        dt_device = 1.0 / device.get_detection_geometry().sampling_frequency_MHz * 1000 # in ns
+        time_points_old = np.arange(0, N_sim)*dt_sim # in ns
+        N_target = int(dt_sim/dt_device * N_sim)
+        time_points_target = np.arange(0, N_target)*dt_device
+        interpolation_func = interp1d(time_points_old, time_series_data, axis=-1, kind="linear")
+        time_series_downsampled = interpolation_func(time_points_target)
+        self.logger.info(f"Downsampled simulated time series with dt={dt_sim}ns and #steps={N_sim} to dt={dt_device}ns and #steps={N_target}")
+        # store new time spacing of time series in global settings for reproducibility
+        self.global_settings[Tags.DOWNSAMPLED_DT] = dt_device*10**(-9) # in s
+        return time_series_downsampled          
 
     def add_noise(self, time_series_data: np.ndarray, noise_data: np.ndarray, scaling_factor: float, device: DigitalDeviceTwinBase) -> np.ndarray:
         assert noise_data.shape[0] == time_series_data.shape[0], "number of sensors do not match between noisy and simulated time series data"
@@ -129,7 +169,7 @@ class AddNoisyTimeSeries(ProcessingComponent):
             Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE in self.global_settings[Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS]:
             energy_p0_factor = self.global_settings[Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS][Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE]
             assert noise_sample_energy == energy_p0_factor, "Energy used for p0 mulitplication\
-                  (self.global_settings[Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS][Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE]=\
+                (self.global_settings[Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS][Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE]=\
                     {energy_p0_factor:.3f}) does not match with given Tags.IN_AQUA_LASER_ENERGY_IN_MILLIJOULE={noise_sample_energy}"
         else:
             self.logger.debug(f"No Tags.MULTIPLY_ENERGY_ON_PRESSURE_SETTINGS in global settings \
@@ -149,6 +189,10 @@ class AddNoisyTimeSeries(ProcessingComponent):
         # check which tags are set
         self.check_input(time_series_data)
 
+        # downsample time spacing of simulated time series data to device-specific time series
+        if Tags.DOWNSAMPLE_TIME_SERIES in self.component_settings and self.component_settings[Tags.DOWNSAMPLE_TIME_SERIES]:
+            time_series_data = self.downsample_time_series(time_series_data, device)
+
         # bandpass filter the simulated time series data
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING in self.component_settings and \
             self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING]:
@@ -157,7 +201,7 @@ class AddNoisyTimeSeries(ProcessingComponent):
             time_series_data = bandpass_filter_with_settings(data=time_series_data, global_settings=self.global_settings,
                                                          component_settings=reconstruction_settings,
                                                          device=device)
-            self.logger.info("do not bandpass filter in reconstruction module any more")
+            self.logger.info("Do not bandpass filter in reconstruction module any more")
             if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING in reconstruction_settings and \
                 reconstruction_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING]:
                 reconstruction_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] = False

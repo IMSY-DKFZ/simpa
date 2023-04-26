@@ -87,8 +87,7 @@ disp(['estimated CFL=', num2str(estimated_cfl_number)]);
 % A maximum CFL of 0.3 is advised in the kwave handbook.
 % In case we specify something larger, we use a higher sampling rate than anticipated.
 % Otherwise we simulate with the target sampling rate
-%if estimated_cfl_number < 0.3
-if estimated_cfl_number < 0.351
+if estimated_cfl_number < 0.3
     kgrid.setTime(Nt, dt);
     disp("Setting custom time!");
     disp(['Nt=', num2str(Nt), 'dt=', num2str(dt)]);

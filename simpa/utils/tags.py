@@ -1175,6 +1175,21 @@ class Tags:
     Usage: module core.processing_components.monospectral.add_noisy_data
     """
 
+    DOWNSAMPLE_TIME_SERIES = ("downsample_time_series", bool)
+    """
+    If True: Time spacing of simulated time series data will be downsampled to device specific time spacing
+    If False or not set: nothing happens
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
+    DOWNSAMPLED_DT = ("downsampled_dt", float)
+    """
+    Time spacing in seconds of the simulated time series data after downsampling in AddNoisyTimeSeries class.
+    Not set if no downsampling was performed.
+    This will be stored in global settings to be accesible during the reconstruction.
+    Usage: module core.processing_components.monospectral.add_noisy_data
+    """
+
     BROKEN_SENSORS = ("broken_sensors", (list, np.ndarray))
     """
     Indices of sensors that do not acquire any signal (for example: np.array([30,94,145, 247]) [for old REZ device]

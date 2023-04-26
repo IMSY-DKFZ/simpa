@@ -55,7 +55,7 @@ class ReconstructionAdapterBase(SimulationModule):
 
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING in self.component_settings and \
                 self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING]:
-
+            self.logger.info("Perform Bandpass-filtering for reconstruction.")
             time_series_sensor_data = bandpass_filter_with_settings(time_series_sensor_data,
                                                                        self.global_settings,
                                                                        self.component_settings,
