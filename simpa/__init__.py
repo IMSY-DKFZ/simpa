@@ -55,3 +55,7 @@ from .visualisation.matplotlib_device_visualisation import visualise_device
 
 from .utils.quality_assurance.data_sanity_testing import assert_equal_shapes
 from .utils.quality_assurance.data_sanity_testing import assert_array_well_defined
+
+# file will be written during build process
+f = open('GIT_COMMIT_HASH','r')
+__git_commit_hash__ = f.readline()
