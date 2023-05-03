@@ -5,7 +5,7 @@
 import numpy as np
 from simpa.utils import Tags
 from simpa.core.processing_components import ProcessingComponent
-from simpa.io_handling import load_data_field, save_data_field
+from simpa.io_handling import load_data_field, save_hdf5, save_data_field
 
 class MultiplyEnergy(ProcessingComponent):
     """
@@ -57,5 +57,7 @@ class MultiplyEnergy(ProcessingComponent):
             self.logger.critical(msg)
             raise KeyError(msg)
 
+        # update the changed settings
+        #save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.SETTINGS +"/")
         self.logger.info("Applying Sample Energy Multiplication on Initial Pressure...[Done]")
     

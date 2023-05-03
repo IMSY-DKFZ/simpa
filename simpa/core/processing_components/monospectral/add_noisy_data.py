@@ -6,7 +6,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from simpa.utils import Tags
 from simpa.log import Logger
-from simpa.io_handling import load_data_field, save_data_field
+from simpa.io_handling import load_data_field, save_hdf5, save_data_field
 from simpa.core.processing_components import ProcessingComponent
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filter_with_settings, tukey_bandpass_filtering_with_settings, get_reconstruction_time_step_window, compute_image_dimensions, preparing_reconstruction_and_obtaining_reconstruction_settings
@@ -244,6 +244,8 @@ class AddNoisyTimeSeries(ProcessingComponent):
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_array_well_defined(time_series_data)
 
+        # update the changed settings
+        save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.SETTINGS +"/")
         # overwrite the time series data
         save_data_field(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength)
         self.logger.info("Adding Device-Specific Noise on Time Series Data...[Done]")

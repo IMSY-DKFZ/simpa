@@ -155,6 +155,7 @@ basename = basename{1};
 date_str = datestr(now, 'HH-MM-SS-FFF');
 pid = feature('GetPid');
 tmp_path_name = ['kwave__' basename '__' date_str '__' num2str(pid)];
+disp(["kwave tempory file name=", tmp_path_name]);
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
                'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
