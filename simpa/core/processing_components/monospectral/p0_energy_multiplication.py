@@ -58,6 +58,6 @@ class MultiplyEnergy(ProcessingComponent):
             raise KeyError(msg)
 
         # update the changed settings
-        #save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.SETTINGS +"/")
+        save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.SETTINGS +"/")
         self.logger.info("Applying Sample Energy Multiplication on Initial Pressure...[Done]")
     
