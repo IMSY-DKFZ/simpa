@@ -58,14 +58,15 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
                 ax.scatter(x=wavelength, y=expected_properties[tag], c="green")
         else:
             for tag in TissueProperties.property_tags:
-                if (not (composition_properties[tag] is None and expected_properties[tag] is None)) and \
-                    ((np.abs(composition_properties[tag] - expected_properties[tag]) /
-                     expected_properties[tag]) > tolerated_margin_in_percent):
-                    raise AssertionError(f"The calculated value for {tag} at "
-                                         f"wavelength {wavelength}nm was different from the"
-                                         f" expected value by a margin greater than {tolerated_margin_in_percent*100}%"
-                                         f" (was {composition_properties[tag]} but was "
-                                         f"expected to be {expected_properties[tag]})")
+                if expected_properties[tag] is not None:
+                    if (not (composition_properties[tag] is None and expected_properties[tag] is None)) and \
+                        ((np.abs(composition_properties[tag] - expected_properties[tag]) /
+                        expected_properties[tag]) > tolerated_margin_in_percent):
+                        raise AssertionError(f"The calculated value for {tag} at "
+                                            f"wavelength {wavelength}nm was different from the"
+                                            f" expected value by a margin greater than {tolerated_margin_in_percent*100}%"
+                                            f" (was {composition_properties[tag]} but was "
+                                            f"expected to be {expected_properties[tag]})")
 
     if visualise_values:
         plt.tight_layout()
@@ -97,6 +98,7 @@ def get_epidermis_reference_dictionary():
     values450nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values450nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.EPIDERMIS
     values450nm[Tags.DATA_FIELD_OXYGENATION] = None
+    values450nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values450nm[Tags.DATA_FIELD_DENSITY] = 1109
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -108,6 +110,7 @@ def get_epidermis_reference_dictionary():
     values500nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values500nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.EPIDERMIS
     values500nm[Tags.DATA_FIELD_OXYGENATION] = None
+    values500nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values500nm[Tags.DATA_FIELD_DENSITY] = 1109
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -119,6 +122,7 @@ def get_epidermis_reference_dictionary():
     values550nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values550nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.EPIDERMIS
     values550nm[Tags.DATA_FIELD_OXYGENATION] = None
+    values550nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values550nm[Tags.DATA_FIELD_DENSITY] = 1109
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -130,6 +134,7 @@ def get_epidermis_reference_dictionary():
     values600nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values600nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.EPIDERMIS
     values600nm[Tags.DATA_FIELD_OXYGENATION] = None
+    values600nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values600nm[Tags.DATA_FIELD_DENSITY] = 1109
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -141,6 +146,7 @@ def get_epidermis_reference_dictionary():
     values650nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values650nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.EPIDERMIS
     values650nm[Tags.DATA_FIELD_OXYGENATION] = None
+    values650nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values650nm[Tags.DATA_FIELD_DENSITY] = 1109
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -152,6 +158,7 @@ def get_epidermis_reference_dictionary():
     values700nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values700nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.EPIDERMIS
     values700nm[Tags.DATA_FIELD_OXYGENATION] = None
+    values700nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values700nm[Tags.DATA_FIELD_DENSITY] = 1109
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -194,6 +201,7 @@ def get_dermis_reference_dictionary():
     values450nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values450nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values450nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values450nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values450nm[Tags.DATA_FIELD_DENSITY] = 1109
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -205,6 +213,7 @@ def get_dermis_reference_dictionary():
     values500nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values500nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values500nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values500nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values500nm[Tags.DATA_FIELD_DENSITY] = 1109
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -216,6 +225,7 @@ def get_dermis_reference_dictionary():
     values550nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values550nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values550nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values550nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values550nm[Tags.DATA_FIELD_DENSITY] = 1109
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -227,6 +237,7 @@ def get_dermis_reference_dictionary():
     values600nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values600nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values600nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values600nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values600nm[Tags.DATA_FIELD_DENSITY] = 1109
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -238,6 +249,7 @@ def get_dermis_reference_dictionary():
     values650nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values650nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values650nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values650nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values650nm[Tags.DATA_FIELD_DENSITY] = 1109
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -249,6 +261,7 @@ def get_dermis_reference_dictionary():
     values700nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values700nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values700nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values700nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values700nm[Tags.DATA_FIELD_DENSITY] = 1109
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -260,6 +273,7 @@ def get_dermis_reference_dictionary():
     values750nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values750nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values750nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values750nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values750nm[Tags.DATA_FIELD_DENSITY] = 1109
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -271,6 +285,7 @@ def get_dermis_reference_dictionary():
     values800nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values800nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values800nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values800nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values800nm[Tags.DATA_FIELD_DENSITY] = 1109
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -282,6 +297,7 @@ def get_dermis_reference_dictionary():
     values850nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values850nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values850nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values850nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values850nm[Tags.DATA_FIELD_DENSITY] = 1109
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -293,6 +309,7 @@ def get_dermis_reference_dictionary():
     values900nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values900nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values900nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values900nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values900nm[Tags.DATA_FIELD_DENSITY] = 1109
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -304,6 +321,7 @@ def get_dermis_reference_dictionary():
     values950nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values950nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.DERMIS
     values950nm[Tags.DATA_FIELD_OXYGENATION] = 0.5
+    values950nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values950nm[Tags.DATA_FIELD_DENSITY] = 1109
     values950nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values950nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
@@ -347,6 +365,7 @@ def get_muscle_reference_dictionary():
     values650nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values650nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.MUSCLE
     values650nm[Tags.DATA_FIELD_OXYGENATION] = 0.175
+    values650nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values650nm[Tags.DATA_FIELD_DENSITY] = 1090.4
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
@@ -358,6 +377,7 @@ def get_muscle_reference_dictionary():
     values700nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values700nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.MUSCLE
     values700nm[Tags.DATA_FIELD_OXYGENATION] = 0.175
+    values700nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values700nm[Tags.DATA_FIELD_DENSITY] = 1090.4
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
@@ -369,6 +389,7 @@ def get_muscle_reference_dictionary():
     values750nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values750nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.MUSCLE
     values750nm[Tags.DATA_FIELD_OXYGENATION] = 0.175
+    values750nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values750nm[Tags.DATA_FIELD_DENSITY] = 1090.4
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
@@ -380,6 +401,7 @@ def get_muscle_reference_dictionary():
     values800nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values800nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.MUSCLE
     values800nm[Tags.DATA_FIELD_OXYGENATION] = 0.175
+    values800nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values800nm[Tags.DATA_FIELD_DENSITY] = 1090.4
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
@@ -391,6 +413,7 @@ def get_muscle_reference_dictionary():
     values850nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values850nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.MUSCLE
     values850nm[Tags.DATA_FIELD_OXYGENATION] = 0.175
+    values850nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values850nm[Tags.DATA_FIELD_DENSITY] = 1090.4
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
@@ -402,6 +425,7 @@ def get_muscle_reference_dictionary():
     values900nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values900nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.MUSCLE
     values900nm[Tags.DATA_FIELD_OXYGENATION] = 0.175
+    values900nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values900nm[Tags.DATA_FIELD_DENSITY] = 1090.4
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
@@ -413,6 +437,7 @@ def get_muscle_reference_dictionary():
     values950nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values950nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.MUSCLE
     values950nm[Tags.DATA_FIELD_OXYGENATION] = 0.175
+    values950nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values950nm[Tags.DATA_FIELD_DENSITY] = 1090.4
     values950nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values950nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
@@ -456,6 +481,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values450nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values450nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values450nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values450nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values450nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -467,6 +493,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values500nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values500nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values500nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values500nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values500nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -478,6 +505,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values550nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values550nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values550nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values550nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values550nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -489,6 +517,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values600nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values600nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values600nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values600nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values600nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -500,6 +529,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values650nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values650nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values650nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values650nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values650nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -511,6 +541,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values700nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values700nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values700nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values700nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values700nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -522,6 +553,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values750nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values750nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values750nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values750nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values750nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -533,6 +565,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values800nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values800nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values800nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values800nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values800nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -544,6 +577,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values850nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values850nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values850nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values850nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values850nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -555,6 +589,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values900nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values900nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values900nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values900nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values900nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -566,6 +601,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values950nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values950nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values950nm[Tags.DATA_FIELD_OXYGENATION] = 1.0
+    values950nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values950nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values950nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values950nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -614,6 +650,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values450nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values450nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values450nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values450nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values450nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -625,6 +662,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values500nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values500nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values500nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values500nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values500nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -636,6 +674,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values550nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values550nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values550nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values550nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values550nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -647,6 +686,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values600nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values600nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values600nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values600nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values600nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -658,6 +698,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values650nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values650nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values650nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values650nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values650nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -669,6 +710,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values700nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values700nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values700nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values700nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values700nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -680,6 +722,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values750nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values750nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values750nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values750nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values750nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -691,6 +734,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values800nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values800nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values800nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values800nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values800nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -702,6 +746,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values850nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values850nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values850nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values850nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values850nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -713,6 +758,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values900nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values900nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values900nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values900nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values900nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
@@ -724,6 +770,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values950nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values950nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.BLOOD
     values950nm[Tags.DATA_FIELD_OXYGENATION] = 0.0
+    values950nm[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = None
     values950nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values950nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values950nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
