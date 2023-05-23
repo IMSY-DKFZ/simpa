@@ -74,5 +74,6 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
     def deserialize(dictionary_to_deserialize):
         deserialized_device = GaussianBeamIlluminationGeometry()
         for key, value in dictionary_to_deserialize.items():
-            deserialized_device.__dict__[key] = value
+            if value != 'None':
+                deserialized_device.__dict__[key] = value
         return deserialized_device
