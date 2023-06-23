@@ -93,7 +93,8 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         
         detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
         detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
-        if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
+        if not self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] and \
+                (detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis):
             axes = (0, 1)
             if detectors_are_aligned_along_y_axis:
                 transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM]))) - 1
@@ -155,7 +156,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         field_of_view = pa_device.get_field_of_view_mm()
         detector_positions_mm = pa_device.get_detector_element_positions_accounting_for_device_position_mm()
 
-        if not self.component_settings.get(Tags.ACOUSTIC_SIMULATION_3D):
+        if not self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
             detectors_are_aligned_along_x_axis = np.abs(field_of_view[2] - field_of_view[3]) < 1e-5
             detectors_are_aligned_along_y_axis = np.abs(field_of_view[0] - field_of_view[1]) < 1e-5
             if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
@@ -207,6 +208,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
             Tags.DETECTOR_ELEMENT_WIDTH_MM: pa_device.detector_element_width_mm,
+            Tags.DETECTOR_ELEMENT_LENGTH_MM: pa_device.detector_element_length_mm,
             Tags.SENSOR_CENTER_FREQUENCY_HZ: pa_device.center_frequency_Hz,
             Tags.SENSOR_BANDWIDTH_PERCENT: pa_device.bandwidth_percent,
             Tags.SENSOR_SAMPLING_RATE_MHZ: pa_device.sampling_frequency_MHz

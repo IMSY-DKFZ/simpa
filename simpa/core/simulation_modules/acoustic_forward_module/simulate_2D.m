@@ -122,8 +122,8 @@ for ind = 1:num_elements
   x = elem_pos(1, ind);
   y = elem_pos(2, ind);
   alpha = angles(1, ind);
-  x = x + 0.5 * (element_width*sin(alpha));
-  y = y + 0.5 * (element_width*cos(alpha));
+  x = x - 0.5 * (element_width*sin(alpha));
+  y = y - 0.5 * (element_width*cos(alpha));
   karray.addRectElement([x, y], element_width, 0.00001, [angles(1, ind)]);
 end
 

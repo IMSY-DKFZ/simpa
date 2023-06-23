@@ -22,7 +22,6 @@ class IpascSimpaAdapter(BaseAdapter):
 
     def __init__(self, hdf5_file_path: str, device: DigitalDeviceTwinBase, settings: Settings = None):
         self.logger = Logger()
-        raise RuntimeError("Please do not use this adapter currently! It is still under construction!")
 
         # Input validation with descriptive error messages
         if not os.path.exists(hdf5_file_path):
@@ -113,13 +112,13 @@ class IpascSimpaAdapter(BaseAdapter):
                 return float(1.0 / self.settings[Tags.K_WAVE_SPECIFIC_DT])
             elif self.device.get_detection_geometry().sampling_frequency_MHz is not None:
                 return float(self.device.get_detection_geometry().sampling_frequency_MHz * 1000000)
-        elif metadata_tag == MetadataAcquisitionTags.ACQUISITION_OPTICAL_WAVELENGTHS:
+        elif metadata_tag == MetadataAcquisitionTags.ACQUISITION_WAVELENGTHS:
             return np.asarray(self.wavelengths)
         elif metadata_tag == MetadataAcquisitionTags.DIMENSIONALITY:
             return "time"
         elif metadata_tag == MetadataAcquisitionTags.SCANNING_METHOD:
             return "full_scan"
-        elif metadata_tag == MetadataAcquisitionTags.PHOTOACOUSTIC_IMAGING_DEVICE:
+        elif metadata_tag == MetadataAcquisitionTags.PHOTOACOUSTIC_IMAGING_DEVICE_REFERENCE:
             return str(self.device.generate_uuid())
         elif metadata_tag == MetadataAcquisitionTags.SIZES:
             return np.asarray(np.shape(self.time_series_data))

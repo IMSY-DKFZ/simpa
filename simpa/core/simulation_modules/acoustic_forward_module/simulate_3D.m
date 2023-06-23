@@ -5,7 +5,7 @@
 function [] = simulate_3D(optical_path)
 
 %% In case of an error, make sure the matlab scripts exits anyway
-clean_up = onCleanup(@exit);
+% clean_up = onCleanup(@exit);
 
 %% Read settings file
 
@@ -116,17 +116,19 @@ end
 % For addArcElement orient all elements towards the focus
 % For the iThera MSOT Acuity Echo, it is [0.008, 0]
 
-%focus_pos = [0.008, 0];
+focus_pos = [0, 0];
 
 % add elements to the array
 
 %for ind = 1:num_elements
-%    karray.addArcElement(elem_pos(:, ind), radius_of_curv, element_width, focus_pos);
+%    karray.addArcElement(elem_pos(:, ind), radius_of_curv, [element_width element_height], focus_pos);
 %end
 for ind = 1:num_elements
-  elem_pos(:, ind) = elem_pos(:, ind) - 0.5*(element_width*sind(orientation_angles(:, ind)));
+  elem_pos(:, ind) = elem_pos(:, ind) - 0.5 * (element_width*sind(orientation_angles(:, ind)));
   karray.addRectElement(elem_pos(:, ind), element_width, 0.0001, euler_angles(ind, :));
 end
+
+karray.plotArray(1)
 
 % assign binary mask from karray to the sensor mask
 sensor.mask = karray.getArrayBinaryMask(kgrid);
