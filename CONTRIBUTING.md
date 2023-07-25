@@ -87,6 +87,35 @@ In case already existing commits need to be signed off, you can make use of the 
 
 `git commit --amend --signoff`
 
+### Install pre-commit hooks
+
+In your SIMPA root directory run `pre-commit install` to set up the pre-commit hooks defined in `.pre-commit-config.yaml`. This will generate pre-commit hooks in `.git/hooks/` and run them for every commit. To run them manually before you commit, call `pre-commit run --all-files`.
+
+<details>
+<summary>Further information on pre-commit hooks</summary>
+
+#### git config user email address checking
+The `git-config-email-check` hook is by default commented out in `pre-commit-config.yaml`. If you want to get a warning when you are not using a specified git config user email address domain, then you might want to comment this hook in. Then you would have to place a file according to the given path, e.g. at `.git/hooks/check-email.sh` with the following content:
+
+```shell
+#!/bin/bash
+PWD=`pwd`
+EMAIL=$(git config user.email)
+if [[ $EMAIL == *"@yourdomain.com"* ]]; then
+  echo "[INFO] Verified email: $EMAIL"
+else
+  echo "[ERROR] Invalid email: $EMAIL => Please configure the company email and retry."
+  echo "Steps:"
+  echo "   cd $PWD"
+  echo '   git config user.email "<user>@yourdomain.com"'
+  echo ""
+  exit 1;
+fi;
+```
+
+Change the domain in lines 4 and 10 according to your specific domain (e.g. corporate email domain) or even whole email address.
+</details>
+
 ### Contribution review and integration
 To ensure correctness and high quality of the submitted code, each contribution will be checked by pre-commit hooks and reviewed by a member of the core development team regarding among others the following aspects:
 - The code is correct and implements the described feature / fixes the described issue.
