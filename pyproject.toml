@@ -45,7 +45,7 @@ Sphinx = "^5.1.1"
 myst-parser = "^0.18.0"
 
 [tool.poetry.build] 
-script = "inject_git_commit_hash.py" 
+script = "docs/inject_git_commit_hash.py"
 generate-setup-file = false 
 
 [build-system]
