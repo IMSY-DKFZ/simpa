@@ -26,14 +26,11 @@ class TissueLibrary(object):
         TODO
         """
         return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
-                                                                absorption_spectrum=
-                                                                AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
+                                                                absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
                                                                 volume_fraction=1.0,
-                                                                scattering_spectrum=
-                                                                ScatteringSpectrumLibrary.
+                                                                scattering_spectrum=ScatteringSpectrumLibrary.
                                                                 CONSTANT_SCATTERING_ARBITRARY(mus),
-                                                                anisotropy_spectrum=
-                                                                AnisotropySpectrumLibrary.
+                                                                anisotropy_spectrum=AnisotropySpectrumLibrary.
                                                                 CONSTANT_ANISOTROPY_ARBITRARY(g)))
                 .get_molecular_composition(SegmentationClasses.GENERIC))
 
@@ -62,7 +59,7 @@ class TissueLibrary(object):
 
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
+            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
         custom_water.alpha_coefficient = 1.58
         custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_MUSCLE + 16
         custom_water.density = StandardProperties.DENSITY_MUSCLE + 41
@@ -107,7 +104,7 @@ class TissueLibrary(object):
 
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
+            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
         custom_water.alpha_coefficient = 0.08
         custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_WATER
         custom_water.density = StandardProperties.DENSITY_WATER

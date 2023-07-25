@@ -385,7 +385,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
 
     # move tensors to GPU if available, otherwise use CPU
     torch_device = get_processing_device(global_settings)
-    
+
     if torch_device == torch.device('cpu'):  # warn the user that CPU reconstruction is slow
         logger.warning(f"Reconstructing on CPU is slow. Check if cuda is available 'torch.cuda.is_available()'.")
 
@@ -407,6 +407,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
 
     return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
             time_spacing_in_ms, torch_device)
+
 
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
                              logger: Logger) -> Tuple[int, int, int, np.float64, np.float64,

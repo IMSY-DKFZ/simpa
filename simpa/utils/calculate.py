@@ -221,5 +221,5 @@ def positive_gauss(mean, std) -> float:
     random_value = np.random.normal(mean, std)
     if random_value <= 0:
         return positive_gauss(mean, std)
-    else: 
+    else:
         return random_value

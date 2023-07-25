@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('../src'))
 
 project = 'SIMPA'
 _copyright = '2020-2021, IMSY (Division of Intelligent Medical Systems), DKFZ, Heidelberg and ' \
-            'Janek Groehl'
+    'Janek Groehl'
 author = 'IMSY (Division of Intelligent Medical Systems), DKFZ, Heidelberg and ' \
          'Janek Groehl'
 

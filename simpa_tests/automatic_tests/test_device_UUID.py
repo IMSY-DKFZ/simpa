@@ -37,4 +37,3 @@ class TestDeviceUUID(unittest.TestCase):
         self.assertNotEqual(device2.generate_uuid(), device3.generate_uuid())
         self.assertNotEqual(device2.generate_uuid(), device4.generate_uuid())
         self.assertNotEqual(device3.generate_uuid(), device4.generate_uuid())
-
