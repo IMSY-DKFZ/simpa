@@ -6,7 +6,9 @@ import unittest
 from simpa.utils import TISSUE_LIBRARY
 from simpa_tests.test_utils.tissue_composition_tests import compare_molecular_composition_against_expected_values, \
     get_epidermis_reference_dictionary, get_dermis_reference_dictionary, get_muscle_reference_dictionary, \
-    get_fully_oxygenated_blood_reference_dictionary, get_fully_deoxygenated_blood_reference_dictionary
+    get_fully_oxygenated_blood_reference_dictionary,\
+    get_fully_deoxygenated_blood_reference_dictionary, \
+    get_lymph_node_reference_dictionary
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -61,4 +63,12 @@ class TestEpidermis(unittest.TestCase):
             expected_values=get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=True),
             visualise_values=VISUALISE,
             title="DEOXY BLOOD"
+        )
+
+    def test_lymph_node_parameters(self):
+        compare_molecular_composition_against_expected_values(
+            molecular_composition=TISSUE_LIBRARY.lymph_node(),
+            expected_values=get_lymph_node_reference_dictionary(only_use_NIR_values=True),
+            visualise_values=VISUALISE,
+            title="LYMPH NODE"
         )
