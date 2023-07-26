@@ -43,7 +43,7 @@ pre-commit = ">=3.2.2"       # Uses MIT-License (MIT compatible)
 [tool.poetry.group.docs.dependencies]
 sphinx-rtd-theme = "^1.0.0"
 Sphinx = "^5.1.1"
-myst-parser = "^0.18.0"
+myst-parser = ">=0.18,<1.1"
 
 # autopep8 config
 [tool.autopep8]
