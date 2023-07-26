@@ -126,7 +126,7 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
 
         # diffuse reflectance
         R = 1 / (4 * np.pi) * (z0 * (mu_eff + (1 / r1)) * (np.exp(-mu_eff * r1) / r1 ** 2) + (z0 + 2 * zb) * (
-                    mu_eff + (1 / r2)) * (np.exp(-mu_eff * r2) / r2 ** 2))
+            mu_eff + (1 / r2)) * (np.exp(-mu_eff * r2) / r2 ** 2))
 
         return phi, R
 
@@ -171,7 +171,7 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
         fluence_diffusion_approx, ref_diffusion_approx = self.diff_theory_fluence(measurement_distances + 1)
 
         return (
-        measurement_distances, fluence_measurements, fluence_diffusion_approx, ref_measurement, ref_diffusion_approx)
+            measurement_distances, fluence_measurements, fluence_diffusion_approx, ref_measurement, ref_diffusion_approx)
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         print(len(self.results))

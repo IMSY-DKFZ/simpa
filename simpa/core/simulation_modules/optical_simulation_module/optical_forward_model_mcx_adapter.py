@@ -90,7 +90,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         :return: None
         """
         tmp_json_filename = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                            self.global_settings[Tags.VOLUME_NAME] + ".json"
+            self.global_settings[Tags.VOLUME_NAME] + ".json"
         self.mcx_json_config_file = tmp_json_filename
         self.temporary_output_files.append(tmp_json_filename)
         with open(tmp_json_filename, "w") as json_file:
@@ -110,7 +110,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         :return: dictionary with settings to be used by MCX
         """
         mcx_volumetric_data_file = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                                   self.global_settings[Tags.VOLUME_NAME] + "_output"
+            self.global_settings[Tags.VOLUME_NAME] + "_output"
         for name, suffix in self.mcx_output_suffixes.items():
             self.__setattr__(name, mcx_volumetric_data_file + suffix)
             self.temporary_output_files.append(mcx_volumetric_data_file + suffix)
@@ -158,7 +158,7 @@ class MCXAdapter(OpticalForwardModuleBase):
                 "MediaFormat": "muamus_float",
                 "Dim": [self.nx, self.ny, self.nz],
                 "VolumeFile": self.global_settings[Tags.SIMULATION_PATH] + "/" +
-                              self.global_settings[Tags.VOLUME_NAME] + ".bin"
+                self.global_settings[Tags.VOLUME_NAME] + ".bin"
             }}
         if Tags.MCX_SEED not in self.component_settings:
             if Tags.RANDOM_SEED in self.global_settings:
@@ -218,7 +218,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         [_, self.nx, self.ny, self.nz] = np.shape(op_array)
         # # create a binary of the volume
         tmp_input_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                         self.global_settings[Tags.VOLUME_NAME] + ".bin"
+            self.global_settings[Tags.VOLUME_NAME] + ".bin"
         self.temporary_output_files.append(tmp_input_path)
         # numpy tofile writes in 'C' order, so writing the transpose gives Fortran order
         op_array.T.tofile(tmp_input_path)

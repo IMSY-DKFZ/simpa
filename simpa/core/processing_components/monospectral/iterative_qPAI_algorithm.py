@@ -114,7 +114,7 @@ class IterativeqPAI(ProcessingComponent):
         if Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS in self.iterative_method_settings:
             if self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS]:
                 dst = self.global_settings[Tags.SIMULATION_PATH] + "/List_reconstructed_qpai_absorptions_" \
-                      + str(wavelength) + "_"
+                    + str(wavelength) + "_"
                 np.save(dst + self.global_settings[Tags.VOLUME_NAME] + ".npy", list_of_intermediate_absorptions)
 
         self.logger.info("Reconstructing absorption using iterative qPAI method...[Done]")

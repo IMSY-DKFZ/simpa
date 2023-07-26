@@ -23,15 +23,14 @@ class TestFieldOfView(unittest.TestCase):
         detection_geometry.field_of_view_extent_mm = field_of_view_extent_mm
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
             detection_geometry, spacing_in_mm, self.logger)
-        
+
         assert type(xdim) == int and type(ydim) == int and type(zdim) == int, "dimensions should be integers"
         assert xdim >= 1 and ydim >= 1 and zdim >= 1, "dimensions should be positive"
 
         return xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end
-        
 
     def symmetric_test(self):
-        image_dimensions = self._test([-25,25,0,0,-12,8], 0.2, self.detection_geometry)
+        image_dimensions = self._test([-25, 25, 0, 0, -12, 8], 0.2, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
         assert zdim == 1, "With no FOV extend in z dimension only one slice should be created"
