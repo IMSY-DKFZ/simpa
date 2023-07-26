@@ -61,12 +61,12 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
                 if expected_properties[tag] is not None:
                     if (not (composition_properties[tag] is None and expected_properties[tag] is None)) and \
                         ((np.abs(composition_properties[tag] - expected_properties[tag]) /
-                        expected_properties[tag]) > tolerated_margin_in_percent):
+                          expected_properties[tag]) > tolerated_margin_in_percent):
                         raise AssertionError(f"The calculated value for {tag} at "
-                                            f"wavelength {wavelength}nm was different from the"
-                                            f" expected value by a margin greater than {tolerated_margin_in_percent*100}%"
-                                            f" (was {composition_properties[tag]} but was "
-                                            f"expected to be {expected_properties[tag]})")
+                                             f"wavelength {wavelength}nm was different from the"
+                                             f" expected value by a margin greater than {tolerated_margin_in_percent*100}%"
+                                             f" (was {composition_properties[tag]} but was "
+                                             f"expected to be {expected_properties[tag]})")
 
     if visualise_values:
         plt.tight_layout()
@@ -888,6 +888,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
 
     return reference_dict
 
+
 if __name__ == "__main__":
 
     compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.epidermis(),
@@ -896,14 +897,12 @@ if __name__ == "__main__":
                                                           title="Epidermis ")
 
     compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(1.0),
-                                                          expected_values=
-                                                          get_fully_oxygenated_blood_reference_dictionary(),
+                                                          expected_values=get_fully_oxygenated_blood_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="100% sO2 Blood ")
 
     compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(0.0),
-                                                          expected_values=
-                                                          get_fully_deoxygenated_blood_reference_dictionary(),
+                                                          expected_values=get_fully_deoxygenated_blood_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="0% sO2 Blood ")
 

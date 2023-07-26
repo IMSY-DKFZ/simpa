@@ -123,7 +123,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         We expect a decay ratio of e^1.
         """
         return self.test_simulation(distance=10, expected_decay_ratio=np.e ** 1, scattering_value=0.5, absorption_value=0.5,
-                             anisotropy_value=0.0, title="Absorption and Scattering over 1 cm")
+                                    anisotropy_value=0.0, title="Absorption and Scattering over 1 cm")
 
     def test_both_double_width(self):
         """
@@ -131,7 +131,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         We expect a decay ratio of e^2.
         """
         return self.test_simulation(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=0.5, absorption_value=0.5,
-                             anisotropy_value=0.0, title="Absorption and Scattering over 2 cm")
+                                    anisotropy_value=0.0, title="Absorption and Scattering over 2 cm")
 
     def test_isotropic_scattering(self):
         """
@@ -139,7 +139,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         We expect a decay ratio of e^1.
         """
         return self.test_simulation(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.0,
-                             title="Isotropic Scattering over 1 cm")
+                                    title="Isotropic Scattering over 1 cm")
 
     def test_isotropic_scattering_double_width(self):
         """
@@ -147,7 +147,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         We expect a decay ratio of e^2.
         """
         return self.test_simulation(distance=20, expected_decay_ratio=np.e ** 2, scattering_value=1, anisotropy_value=0.0,
-                             title="Isotropic Scattering over 2 cm")
+                                    title="Isotropic Scattering over 2 cm")
 
     def test_anisotropic_scattering_0_9(self):
         """
@@ -156,7 +156,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         We expect a decay ratio of e^1.
         """
         return self.test_simulation(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.9,
-                             title="Anisotropic Scattering (0.9) over 1 cm")
+                                    title="Anisotropic Scattering (0.9) over 1 cm")
 
     def test_anisotropic_scattering_0_5(self):
         """
@@ -165,7 +165,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         We expect a decay ratio of e^1.
         """
         return self.test_simulation(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.5,
-                             title="Anisotropic Scattering (0.5) over 1 cm")
+                                    title="Anisotropic Scattering (0.5) over 1 cm")
 
     def test_anisotropic_scattering_0_1(self):
         """
@@ -174,7 +174,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         We expect a decay ratio of e^1.
         """
         return self.test_simulation(distance=10, expected_decay_ratio=np.e, scattering_value=1, anisotropy_value=0.1,
-                             title="Anisotropic Scattering (0.1) over 1 cm")
+                                    title="Anisotropic Scattering (0.1) over 1 cm")
 
     def test_absorption(self):
         """
@@ -182,8 +182,8 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         We expect a decay ratio of e^1.
         """
         return self.test_simulation(distance=10, expected_decay_ratio=np.e, absorption_value=1,
-                             title="Absorption over 1 cm"
-                             )
+                                    title="Absorption over 1 cm"
+                                    )
 
     def test_absorption_double_width(self):
         """
@@ -191,7 +191,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         We expect a decay ratio of e^2.
         """
         return self.test_simulation(distance=20, expected_decay_ratio=np.e ** 2, absorption_value=1,
-                             title="Absorption over 2 cm")
+                                    title="Absorption over 2 cm")
 
     def test_simulation(self, distance=10, expected_decay_ratio=np.e, scattering_value=1e-30,
                         absorption_value=1e-30, anisotropy_value=1.0, title=""):
@@ -231,13 +231,13 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         print("early fluence", fluence[illuminator_point, illuminator_point, early_point])
         print("late fluence", fluence[illuminator_point, illuminator_point, late_point])
         decay_ratio = fluence[illuminator_point, illuminator_point, early_point] / \
-                      fluence[illuminator_point, illuminator_point, late_point]
+            fluence[illuminator_point, illuminator_point, late_point]
 
         expected_end_fluence = fluence[illuminator_point, illuminator_point, early_point] / expected_decay_ratio
         print("Expected", expected_decay_ratio, "and was", decay_ratio)
 
         return (title, fluence, illuminator_point, expected_end_fluence, absorption,
-             scattering, anisotropy)
+                scattering, anisotropy)
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         print(len(self.results))
@@ -251,9 +251,12 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
             plt.axhline(expected_end_fluence, label="Expected Value after Slab", color="red")
             plt.legend(loc="center left")
             ax2 = plt.twinx()
-            ax2.plot(absorption[illuminator_point, illuminator_point, :], label="Absorption", linestyle="dashed", alpha=0.5)
-            ax2.plot(scattering[illuminator_point, illuminator_point, :], label="Scattering", linestyle="dashed", alpha=0.5)
-            ax2.plot(anisotropy[illuminator_point, illuminator_point, :], label="Anisotropy", linestyle="dashed", alpha=0.5)
+            ax2.plot(absorption[illuminator_point, illuminator_point, :],
+                     label="Absorption", linestyle="dashed", alpha=0.5)
+            ax2.plot(scattering[illuminator_point, illuminator_point, :],
+                     label="Scattering", linestyle="dashed", alpha=0.5)
+            ax2.plot(anisotropy[illuminator_point, illuminator_point, :],
+                     label="Anisotropy", linestyle="dashed", alpha=0.5)
             plt.legend(loc="center right")
 
             plt.tight_layout()

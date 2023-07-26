@@ -1,11 +1,14 @@
+<div align="center">
+
+![Logo](docs/source/images/simpa_logo.png?raw=true "Logo")
+
 [![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=develop)](https://simpa.readthedocs.io/en/develop/?badge=develop)
 ![Build Status](https://github.com/IMSY-DKFZ/simpa/actions/workflows/automatic_testing.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/IMSY-DKFZ/simpa/blob/main/LICENSE.md)
-
 [![Pypi Badge](https://img.shields.io/pypi/v/simpa)](https://pypi.org/project/simpa/)
 [![PyPI downloads](https://img.shields.io/pypi/dw/simpa?color=gr&label=pypi%20downloads)](https://pypi.org/project/simpa/)
 
-![Logo](docs/source/images/simpa_logo.png?raw=true "Logo")
+</div>
 
 # The toolkit for Simulation and Image Processing for Photonics and Acoustics (SIMPA)
 
@@ -24,6 +27,7 @@ The paper that introduces SIMPA including visualisations and explanations can be
 * [Performance profiling](#performance-profiling)
 * [Troubleshooting](#troubleshooting)
 * [Citation](#citation)
+* [Funding](#funding)
 
 The toolkit is still under development and is thus not fully tested and may contain bugs. 
 Please report any issues that you find in our Issue Tracker: https://github.com/IMSY-DKFZ/simpa/issues. 
@@ -99,12 +103,10 @@ for further (and much better) guidance under:
 [http://www.k-wave.org/](http://www.k-wave.org/)
 
 1. Install MATLAB with the core, image processing and parallel computing toolboxes activated at the minimum.
-2. Download the kWave toolbox
+2. Download the kWave toolbox (version >= 1.4)
 3. Add the kWave toolbox base path to the toolbox paths in MATLAB
-4. Download the kWaveArray addition from the link given in this user forum post [http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources](http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources)
-5. Add the kWaveArray folder to the toolbox paths in MATLAB as well
-6. If wanted: Download the CPP and CUDA binary files and place them in the k-Wave/binaries folder
-7. Note down the system path to the `matlab` executable file.
+4. If wanted: Download the CPP and CUDA binary files and place them in the k-Wave/binaries folder
+5. Note down the system path to the `matlab` executable file.
 
 ## Path management
 
@@ -178,7 +180,7 @@ To contribute to SIMPA, please fork the SIMPA github repository and create a pul
 suggested changes. The core developers will then review the suggested changes and integrate these into the code 
 base.
 
-Please make sure that you have included unit tests for your code and that all previous tests still run through.
+Please make sure that you have included unit tests for your code and that all previous tests still run through. Please also run the pre-commit hooks and make sure they are passing.
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST, and you are very welcome to participate and
 raise any issues or suggest new features. If you want to join this meeting, write one of the core developers.
@@ -226,3 +228,9 @@ Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, 
   publisher={SPIE}
 }
 ```
+
+# Funding
+
+This project has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No. [101002198]).
+
+![ERC](docs/source/images/LOGO_ERC-FLAG_EU_.jpg "ERC")
