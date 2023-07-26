@@ -2,21 +2,25 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils.path_manager import PathManager
-import numpy as np
-import subprocess
-from simpa.utils import Tags
-from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5, load_data_field
-from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.utils.settings import Settings
-from simpa.utils.calculate import rotation_matrix_between_vectors
-from simpa.core.device_digital_twins import CurvedArrayDetectionGeometry, DetectionGeometryBase
-import os
+import gc
 import inspect
+import os
+import subprocess
+
+import numpy as np
 import scipy.io as sio
 from scipy.spatial.transform import Rotation
-from simpa.core.simulation_modules.acoustic_forward_module import AcousticForwardModelBaseAdapter
-import gc
+
+from simpa.core.device_digital_twins import (CurvedArrayDetectionGeometry,
+                                             DetectionGeometryBase)
+from simpa.core.simulation_modules.acoustic_forward_module import \
+    AcousticForwardModelBaseAdapter
+from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
+from simpa.utils import Tags
+from simpa.utils.calculate import rotation_matrix_between_vectors
+from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.utils.path_manager import PathManager
+from simpa.utils.settings import Settings
 
 
 class KWaveAdapter(AcousticForwardModelBaseAdapter):
@@ -77,13 +81,12 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
         self.logger.debug(f"OPTICAL_PATH: {str(optical_path)}")
 
-        data_dict = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-        if Tags.DATA_FIELD_FLUENCE in data_dict:
-            del data_dict[Tags.DATA_FIELD_FLUENCE]
-        gc.collect()
-
-        tmp_ac_data = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.SIMULATION_PROPERTIES,
-                                      self.global_settings[Tags.WAVELENGTH])
+        data_dict = {}
+        file_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH]
+        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = load_data_field(file_path, Tags.DATA_FIELD_INITIAL_PRESSURE)
+        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = load_data_field(file_path, Tags.DATA_FIELD_SPEED_OF_SOUND)
+        data_dict[Tags.DATA_FIELD_DENSITY] = load_data_field(file_path, Tags.DATA_FIELD_DENSITY)
+        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = load_data_field(file_path, Tags.DATA_FIELD_ALPHA_COEFF)
 
         pa_device = detection_geometry
         pa_device.check_settings_prerequisites(self.global_settings)
@@ -106,11 +109,11 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
             image_slice = np.s_[:]
 
         wavelength = str(self.global_settings[Tags.WAVELENGTH])
-        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice],
+        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.rot90(data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice],
                                                              3, axes=axes)
-        data_dict[Tags.DATA_FIELD_DENSITY] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_DENSITY][image_slice],
+        data_dict[Tags.DATA_FIELD_DENSITY] = np.rot90(data_dict[Tags.DATA_FIELD_DENSITY][image_slice],
                                                       3, axes=axes)
-        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_ALPHA_COEFF][image_slice],
+        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.rot90(data_dict[Tags.DATA_FIELD_ALPHA_COEFF][image_slice],
                                                           3, axes=axes)
         data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = np.rot90(data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE]
                                                                [wavelength][image_slice], 3, axes=axes)

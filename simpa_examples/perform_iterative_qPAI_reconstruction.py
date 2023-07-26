@@ -2,14 +2,17 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa import Tags
-import simpa as sp
-import numpy as np
+
+import os
+
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.ndimage import zoom
 
+import simpa as sp
+from simpa import Tags
+
 # FIXME temporary workaround for newest Intel architectures
-import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
@@ -155,8 +158,7 @@ sp.simulate(pipeline, settings, device)
 if VISUALIZE:
     # get simulation output
     data_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
-    file = sp.load_hdf5(data_path)
-    settings = sp.Settings(file["settings"])
+    settings = sp.load_data_field(data_path, Tags.SETTINGS)
     wavelength = settings[Tags.WAVELENGTHS][0]
 
     # get reconstruction result
