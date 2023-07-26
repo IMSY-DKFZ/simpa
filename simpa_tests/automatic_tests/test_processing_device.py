@@ -84,7 +84,6 @@ class TestProcessing(unittest.TestCase):
         # restore torch.cuda
         torch.cuda = temp_cuda
 
-
     def test_get_processing_device_with_settings_with_gpu(self):
         '''
         If cuda is available and GPU Tag is specified as True in settings by user, verify that a torch GPU device is returned
@@ -110,12 +109,13 @@ class TestProcessing(unittest.TestCase):
         # actual test case
         with self.assertLogs("SIMPA Logger", level='WARN') as context_manager:
             device = get_processing_device(global_settings=self.settings_with_GPU)
-            
+
             assert device == torch.device("cpu"), f"Processing device is not the assumed torch CPU device, but {device}"
 
             # also check if warning is logged
-            assert context_manager.output == ['WARNING:SIMPA Logger:Cuda is not available! Check your torch/cuda version. Processing will be done on CPU instead.'], "Warning that CPU instead of GPU is used is not logged"
-        
+            assert context_manager.output == [
+                'WARNING:SIMPA Logger:Cuda is not available! Check your torch/cuda version. Processing will be done on CPU instead.'], "Warning that CPU instead of GPU is used is not logged"
+
         # restore torch.cuda
         torch.cuda = temp_cuda
 
@@ -147,7 +147,7 @@ class TestProcessing(unittest.TestCase):
 
         # restore torch.cuda
         torch.cuda = temp_cuda
-        
+
 
 if __name__ == "__main__":
     test = TestProcessing()

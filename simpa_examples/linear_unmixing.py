@@ -138,8 +138,8 @@ settings["linear_unmixing"] = {
 
 # Get device for simulation
 device = sp.MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                     VOLUME_PLANAR_DIM_IN_MM/2,
-                                                     0]))
+                                                        VOLUME_PLANAR_DIM_IN_MM/2,
+                                                        0]))
 device.update_settings_for_use_of_model_based_volume_creator(settings)
 
 # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS

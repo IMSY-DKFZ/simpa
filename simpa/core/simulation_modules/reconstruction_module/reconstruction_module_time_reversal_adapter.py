@@ -57,8 +57,10 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         detector_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
         detector_positions_voxels = np.round(detector_positions / spacing_in_mm).astype(int)
 
-        volume_x_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_X_MM] / spacing_in_mm) + 1)   # plus 2 because of off-
-        volume_y_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_Y_MM] / spacing_in_mm) + 1)      # by-one error in matlab
+        # plus 2 because of off-
+        volume_x_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_X_MM] / spacing_in_mm) + 1)
+        # by-one error in matlab
+        volume_y_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_Y_MM] / spacing_in_mm) + 1)
         volume_z_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_Z_MM] / spacing_in_mm) + 1)      # otherwise
 
         if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not \
@@ -197,15 +199,14 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         if len(np.shape(reconstructed_data)) == 2:
             reconstructed_data = np.squeeze(reconstructed_data[field_of_view_voxels[0]:field_of_view_voxels[1] + x_offset_correct,
-                                    field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
+                                                               field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
         elif len(np.shape(reconstructed_data)) == 3:
             reconstructed_data = np.squeeze(reconstructed_data[field_of_view_voxels[0]:field_of_view_voxels[1] + x_offset_correct,
-                                    field_of_view_voxels[2]:field_of_view_voxels[3] + y_offset_correct,
-                                    field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
+                                                               field_of_view_voxels[2]:field_of_view_voxels[3] + y_offset_correct,
+                                                               field_of_view_voxels[4]:field_of_view_voxels[5] + z_offset_correct])
         else:
             self.logger.critical("Unexpected number of dimensions in reconstructed image. "
                                  f"Expected 2 or 3 but was {len(np.shape(reconstructed_data))}")
-
 
         os.chdir(cur_dir)
         os.remove(acoustic_path)
