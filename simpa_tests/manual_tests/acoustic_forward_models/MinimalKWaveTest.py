@@ -33,7 +33,6 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
         self.density = np.ones((100, 30, 100)) * 1000
         self.alpha = np.ones((100, 30, 100)) * 0.01
 
-
         def get_settings():
             general_settings = {
                 Tags.RANDOM_SEED: 4711,
@@ -137,6 +136,7 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
                 save_path = ""
             plt.savefig(save_path + f"minimal_kwave_test.png")
         plt.close()
+
 
 if __name__ == "__main__":
     test = MinimalKWaveTest()

@@ -87,7 +87,7 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
 
         # Load reference absorption for the first wavelength
         self.mua = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
-                                   wavelength=self.VISUAL_WAVELENGTHS[0])
+                                      wavelength=self.VISUAL_WAVELENGTHS[0])
 
     def tear_down(self):
         # clean up file after testing

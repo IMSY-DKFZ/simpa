@@ -104,7 +104,8 @@ class SpectraLibrary(object):
             if spectrum.spectrum_name == spectrum_name:
                 return spectrum
 
-        raise LookupError(f"No spectrum for the given name exists ({spectrum_name}). Try one of: {self.get_spectra_names()}")
+        raise LookupError(
+            f"No spectrum for the given name exists ({spectrum_name}). Try one of: {self.get_spectra_names()}")
 
 
 class AnisotropySpectrumLibrary(SpectraLibrary):

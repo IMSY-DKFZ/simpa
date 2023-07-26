@@ -1,0 +1,7 @@
+# Configuration file for gitlint, used via pre-commit
+# Configuration docs: http://jorisroovers.github.io/gitlint/configuration/
+# Default rules: https://github.com/jorisroovers/gitlint/blob/master/docs/rules.md
+
+[general]
+# Ignore certain rules, you can reference them by their id or by their full name
+ignore=title-max-length, title-trailing-punctuation, body-is-missing, body-max-line-length, body-first-line-empty, body-min-length, body-changed-file-mention
