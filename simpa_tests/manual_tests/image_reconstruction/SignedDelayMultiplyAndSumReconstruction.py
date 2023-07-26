@@ -46,13 +46,16 @@ class SignedDelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseCla
                                                   Tags.DATA_FIELD_TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
 
         reconstruction_settings = self.settings.get_reconstruction_settings()
-        
+
         # reconstruct via convenience function
-        self.reconstructed_image_convenience = reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data, self.device.get_detection_geometry(), reconstruction_settings[Tags.DATA_FIELD_SPEED_OF_SOUND],  1.0 / (self.device.get_detection_geometry().sampling_frequency_MHz * 1000), self.settings[Tags.SPACING_MM], reconstruction_settings[Tags.RECONSTRUCTION_MODE], reconstruction_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD])
+        self.reconstructed_image_convenience = reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data, self.device.get_detection_geometry(), reconstruction_settings[Tags.DATA_FIELD_SPEED_OF_SOUND],  1.0 / (
+            self.device.get_detection_geometry().sampling_frequency_MHz * 1000), self.settings[Tags.SPACING_MM], reconstruction_settings[Tags.RECONSTRUCTION_MODE], reconstruction_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD])
 
         # apply envelope detection method if set
         if reconstruction_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:
-            self.reconstructed_image_convenience = apply_b_mode(self.reconstructed_image_convenience, reconstruction_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
+            self.reconstructed_image_convenience = apply_b_mode(
+                self.reconstructed_image_convenience, reconstruction_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
+
 
 if __name__ == '__main__':
     test = SignedDelayMultiplyAndSumReconstruction()

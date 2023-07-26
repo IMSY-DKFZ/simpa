@@ -37,14 +37,13 @@ def create_example_tissue():
     tissue_dict = sp.Settings()
     tissue_dict[Tags.BACKGROUND] = background_dictionary
     tissue_dict["muscle"] = sp.define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
-                                                                          molecular_composition=
-                                                                          sp.TISSUE_LIBRARY.constant(0.05, 100, 0.9),
+                                                                          molecular_composition=sp.TISSUE_LIBRARY.constant(
+                                                                              0.05, 100, 0.9),
                                                                           priority=1,
                                                                           consider_partial_volume=True,
                                                                           adhere_to_deformation=True)
     tissue_dict["epidermis"] = sp.define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
-                                                                             molecular_composition=
-                                                                             sp.TISSUE_LIBRARY.epidermis(),
+                                                                             molecular_composition=sp.TISSUE_LIBRARY.epidermis(),
                                                                              priority=8,
                                                                              consider_partial_volume=True,
                                                                              adhere_to_deformation=True)
@@ -73,20 +72,20 @@ np.random.seed(RANDOM_SEED)
 VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 
 general_settings = {
-            # These parameters set the general properties of the simulated volume
-            Tags.RANDOM_SEED: RANDOM_SEED,
-            Tags.VOLUME_NAME: "CompletePipelineExample_" + str(RANDOM_SEED),
-            Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
-            Tags.SPACING_MM: SPACING,
-            Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
-            Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
-            Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
-            Tags.GPU: True,
-            Tags.WAVELENGTHS: [700, 800],
-            Tags.DO_FILE_COMPRESSION: True,
-            Tags.DO_IPASC_EXPORT: True
-        }
+    # These parameters set the general properties of the simulated volume
+    Tags.RANDOM_SEED: RANDOM_SEED,
+    Tags.VOLUME_NAME: "CompletePipelineExample_" + str(RANDOM_SEED),
+    Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
+    Tags.SPACING_MM: SPACING,
+    Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
+    Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
+    Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
+    Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+    Tags.GPU: True,
+    Tags.WAVELENGTHS: [700, 800],
+    Tags.DO_FILE_COMPRESSION: True,
+    Tags.DO_IPASC_EXPORT: True
+}
 settings = sp.Settings(general_settings)
 np.random.seed(RANDOM_SEED)
 
@@ -184,7 +183,7 @@ SIMULATION_PIPELINE = [
     sp.GaussianNoise(settings, "noise_time_series"),
     sp.TimeReversalAdapter(settings),
     sp.FieldOfViewCropping(settings)
-    ]
+]
 
 sp.simulate(SIMULATION_PIPELINE, settings, device)
 

@@ -4,10 +4,17 @@
 name: SIMPA tests
 
 on:
+  # run SIMPA tests on pushes to the main or develop branch
   push:
     branches: [ main, develop ]
+  # and on all pull requests to the main or develop branch
   pull_request:
     branches: [ main, develop ]
+  # as well as upon manual triggers through the 'Actions' tab of the Github UI
+  workflow_dispatch:
+  # Additionally, run Friday morning 6AM, so that we can react quickly if things break
+  schedule:
+  - cron: "0 5 * * 5"
 
 jobs:
   build:

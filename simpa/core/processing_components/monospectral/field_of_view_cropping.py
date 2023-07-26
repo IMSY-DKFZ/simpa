@@ -16,9 +16,9 @@ class FieldOfViewCropping(ProcessingComponent):
         if settings_key is None:
             # TODO Extract from global settings all the fields that should be cropped
             global_settings["FieldOfViewCropping"] = Settings({
-                      Tags.DATA_FIELD: TissueProperties.property_tags +
-                                           [Tags.DATA_FIELD_FLUENCE,
-                                            Tags.DATA_FIELD_INITIAL_PRESSURE]})
+                Tags.DATA_FIELD: TissueProperties.property_tags +
+                [Tags.DATA_FIELD_FLUENCE,
+                 Tags.DATA_FIELD_INITIAL_PRESSURE]})
         super(FieldOfViewCropping, self).__init__(global_settings, "FieldOfViewCropping")
     """
     Applies Gaussian noise to the defined data field.

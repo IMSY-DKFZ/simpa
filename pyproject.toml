@@ -38,11 +38,16 @@ pacfish = ">=0.4.4"       # Uses BSD-License (MIT compatible)
 requests = ">=2.26.0"        # Uses Apache 2.0-License (MIT compatible)
 wget = ">=3.2"               # Is Public Domain (MIT compatible)
 jdata = ">=0.5.2"            # Uses Apache 2.0-License (MIT compatible)
+pre-commit = ">=3.2.2"       # Uses MIT-License (MIT compatible) 
 
 [tool.poetry.group.docs.dependencies]
 sphinx-rtd-theme = "^1.0.0"
 Sphinx = "^5.1.1"
 myst-parser = "^0.18.0"
+
+# autopep8 config
+[tool.autopep8]
+max_line_length = 120
 
 [build-system]
 requires = [

@@ -47,4 +47,3 @@ class TestSpectraCanBeFound(unittest.TestCase):
     @unittest.expectedFailure
     def test_anisotropy_spectra_invalid(self):
         AnisotropySpectrumLibrary().get_spectrum_by_name("This does not exist")
-
