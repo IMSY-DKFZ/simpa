@@ -752,14 +752,12 @@ if __name__ == "__main__":
                                                           title="Epidermis ")
 
     compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(1.0),
-                                                          expected_values=
-                                                          get_fully_oxygenated_blood_reference_dictionary(),
+                                                          expected_values=get_fully_oxygenated_blood_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="100% sO2 Blood ")
 
     compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(0.0),
-                                                          expected_values=
-                                                          get_fully_deoxygenated_blood_reference_dictionary(),
+                                                          expected_values=get_fully_deoxygenated_blood_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="0% sO2 Blood ")
 

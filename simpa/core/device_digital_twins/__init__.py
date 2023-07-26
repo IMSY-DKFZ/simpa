@@ -19,4 +19,3 @@ from .illumination_geometries.ithera_msot_invision_illumination import MSOTInVis
 from .pa_devices.ithera_msot_invision import InVision256TF
 from .pa_devices.ithera_msot_acuity import MSOTAcuityEcho
 from .pa_devices.ithera_rsom import RSOMExplorerP50
-

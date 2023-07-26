@@ -116,7 +116,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.rot90(data_dict[Tags.DATA_FIELD_ALPHA_COEFF][image_slice],
                                                           3, axes=axes)
         data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = np.rot90(data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE]
-                                                                  [wavelength][image_slice], 3, axes=axes)
+                                                               [wavelength][image_slice], 3, axes=axes)
 
         time_series_data, global_settings = self.k_wave_acoustic_forward_model(
             detection_geometry,

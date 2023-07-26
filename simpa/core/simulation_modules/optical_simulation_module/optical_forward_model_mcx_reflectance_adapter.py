@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 import numpy as np
 import struct
 import jdata

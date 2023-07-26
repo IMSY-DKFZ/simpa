@@ -96,13 +96,13 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
         for index, chromophore in enumerate(self.chromophore_spectra_dict.keys()):
             self.chromophore_concentrations_dict[chromophore] = self.chromophore_concentrations[index]
         self.logger.info(f"The chromophore concentration was computed for chromophores: "
-                          f"{self.chromophore_concentrations_dict.keys()}")
+                         f"{self.chromophore_concentrations_dict.keys()}")
 
         # compute blood oxygen saturation if selected
         save_dict = {
-                    "chromophore_concentrations": self.chromophore_concentrations_dict,
-                    "wavelengths": self.wavelengths
-                    }
+            "chromophore_concentrations": self.chromophore_concentrations_dict,
+            "wavelengths": self.wavelengths
+        }
         if Tags.LINEAR_UNMIXING_COMPUTE_SO2 in self.component_settings:
             if self.component_settings[Tags.LINEAR_UNMIXING_COMPUTE_SO2]:
                 self.logger.info("Blood oxygen saturation is calculated and saved.")
@@ -157,7 +157,7 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
         # write absorption data for each chromophore and the corresponding wavelength into an array (matrix)
         for index, key in enumerate(self.chromophore_spectra_dict.keys()):
             for wave in range(numberWavelengths):
-                    endmemberMatrix[wave][index] = self.chromophore_spectra_dict[key][wave]
+                endmemberMatrix[wave][index] = self.chromophore_spectra_dict[key][wave]
 
         return endmemberMatrix
 

@@ -78,16 +78,16 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
     def test_fluence(self):
-        return self.test_simulation(distance=self.dim / 2, spacing=1)
+        return self.run_simulation(distance=self.dim / 2, spacing=1)
 
     def test_spacing_short(self):
-        return self.test_simulation(distance=self.dim / 2, spacing=0.333333)
+        return self.run_simulation(distance=self.dim / 2, spacing=0.333333)
 
     def test_spacing_middle(self):
-        return self.test_simulation(distance=self.dim / 2, spacing=0.5)
+        return self.run_simulation(distance=self.dim / 2, spacing=0.5)
 
     def test_spacing_long(self):
-        return self.test_simulation(distance=self.dim / 2, spacing=2)
+        return self.run_simulation(distance=self.dim / 2, spacing=2)
 
     def diff_theory_fluence(self, r):
         """
@@ -113,21 +113,24 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
         zb = 2 * A * D
 
         # distance from point source inside the medium to the detector
-        r1 = np.linalg.norm(np.asarray([0, 0, z0]) - np.asarray([r, 0, 0.5 * spacing]))
+        detector_distance = np.zeros([len(r), 3])
+        detector_distance[:, 0] = r
+        detector_distance[:, 2] = 0.5*spacing
+        r1 = np.linalg.norm(np.asarray([0, 0, z0]) - detector_distance, axis=1)
 
         # distance from image point source above the medium to the detector
-        r2 = np.linalg.norm(np.asarray([0, 0, -z0 - 2 * zb]) - np.asarray([r, 0, 0.5 * spacing]))
+        r2 = np.linalg.norm(np.asarray([0, 0, -z0 - 2 * zb]) - detector_distance, axis=1)
 
         # fluence
         phi = 1 / (4 * np.pi * D) * (np.exp(-mu_eff * r1) / r1 - np.exp(-mu_eff * r2) / r2)
 
         # diffuse reflectance
         R = 1 / (4 * np.pi) * (z0 * (mu_eff + (1 / r1)) * (np.exp(-mu_eff * r1) / r1 ** 2) + (z0 + 2 * zb) * (
-                    mu_eff + (1 / r2)) * (np.exp(-mu_eff * r2) / r2 ** 2))
+            mu_eff + (1 / r2)) * (np.exp(-mu_eff * r2) / r2 ** 2))
 
         return phi, R
 
-    def test_simulation(self, distance, spacing):
+    def run_simulation(self, distance, spacing):
 
         self.settings[Tags.SPACING_MM] = spacing
 
@@ -168,7 +171,7 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
         fluence_diffusion_approx, ref_diffusion_approx = self.diff_theory_fluence(measurement_distances + 1)
 
         return (
-        measurement_distances, fluence_measurements, fluence_diffusion_approx, ref_measurement, ref_diffusion_approx)
+            measurement_distances, fluence_measurements, fluence_diffusion_approx, ref_measurement, ref_diffusion_approx)
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         print(len(self.results))

@@ -31,7 +31,6 @@ class StandardProperties:
     WATER_MUS = 1e-10
     WATER_G = 1.0
 
-
     # @article{Kedenburg:12,
     # author = {S. Kedenburg and M. Vieweg and T. Gissibl and H. Giessen},
     # journal = {Opt. Mater. Express},
@@ -45,7 +44,7 @@ class StandardProperties:
     # url = {http://www.osapublishing.org/ome/abstract.cfm?URI=ome-2-11-1588},
     # doi = {10.1364/OME.2.001588},
 
-    HEAVY_WATER_MUA = 0.0008 
+    HEAVY_WATER_MUA = 0.0008
 
     # @book{marx2013rosen,
     #   title={Rosen's Emergency Medicine-Concepts and Clinical Practice E-Book},
@@ -246,6 +245,7 @@ class OpticalTissueProperties:
     #   year = {2019}
     # }
     BONE_ABSORPTION = 1.8
+
 
 class MorphologicalTissueProperties:
     """

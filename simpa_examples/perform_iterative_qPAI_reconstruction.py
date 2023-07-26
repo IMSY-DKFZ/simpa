@@ -81,6 +81,7 @@ def create_example_tissue():
     tissue_dict["vessel_2"] = vessel_structure_2
     return tissue_dict
 
+
 # set settings for volume creation, optical simulation and iterative qPAI method
 np.random.seed(RANDOM_SEED)
 

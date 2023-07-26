@@ -39,13 +39,13 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         """
 
         super(CurvedArrayDetectionGeometry, self).__init__(
-             number_detector_elements=number_detector_elements,
-             detector_element_width_mm=detector_element_width_mm,
-             detector_element_length_mm=detector_element_length_mm,
-             center_frequency_hz=center_frequency_hz,
-             bandwidth_percent=bandwidth_percent,
-             sampling_frequency_mhz=sampling_frequency_mhz,
-             device_position_mm=device_position_mm)
+            number_detector_elements=number_detector_elements,
+            detector_element_width_mm=detector_element_width_mm,
+            detector_element_length_mm=detector_element_length_mm,
+            center_frequency_hz=center_frequency_hz,
+            bandwidth_percent=bandwidth_percent,
+            sampling_frequency_mhz=sampling_frequency_mhz,
+            device_position_mm=device_position_mm)
 
         self.pitch_mm = pitch_mm
         self.radius_mm = radius_mm
