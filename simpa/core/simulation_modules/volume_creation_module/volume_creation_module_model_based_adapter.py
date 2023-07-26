@@ -9,6 +9,7 @@ import numpy as np
 from simpa.utils import create_deformation_settings
 import torch
 
+
 class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
     """
     The model-based volume creator uses a set of rules how to generate structures

@@ -46,13 +46,13 @@ class SphericalStructure(GeometricalStructure):
         start_mm, radius_mm, partial_volume = self.params
         start_mm = torch.tensor(start_mm, dtype=torch.float).to(self.torch_device)
         radius_mm = torch.tensor(radius_mm, dtype=torch.float).to(self.torch_device)
-        
+
         start_voxels = start_mm / self.voxel_spacing
         radius_voxels = radius_mm / self.voxel_spacing
         x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
-                              indexing='ij')
+                                 torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
+                                 torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
+                                 indexing='ij')
 
         x = x + 0.5
         y = y + 0.5

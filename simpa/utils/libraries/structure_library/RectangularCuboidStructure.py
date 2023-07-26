@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from typing import Union
-import torch 
+import torch
 
 from simpa.utils import Tags
 from simpa.utils.libraries.molecule_library import MolecularComposition
@@ -56,16 +56,16 @@ class RectangularCuboidStructure(GeometricalStructure):
         x_edge_mm = torch.tensor(x_edge_mm, dtype=torch.float).to(self.torch_device)
         y_edge_mm = torch.tensor(y_edge_mm, dtype=torch.float).to(self.torch_device)
         z_edge_mm = torch.tensor(z_edge_mm, dtype=torch.float).to(self.torch_device)
-        
+
         start_voxels = start_mm / self.voxel_spacing
         x_edge_voxels = torch.tensor([x_edge_mm / self.voxel_spacing, 0, 0]).to(self.torch_device)
         y_edge_voxels = torch.tensor([0, y_edge_mm / self.voxel_spacing, 0]).to(self.torch_device)
         z_edge_voxels = torch.tensor([0, 0, z_edge_mm / self.voxel_spacing]).to(self.torch_device)
 
         x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
-                              indexing='ij')
+                                 torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
+                                 torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
+                                 indexing='ij')
 
         target_vector = torch.subtract(torch.stack([x, y, z], axis=-1), start_voxels)
 
@@ -76,13 +76,13 @@ class RectangularCuboidStructure(GeometricalStructure):
         result = torch.matmul(target_vector, inverse_matrix)
 
         norm_vector = torch.tensor([1/torch.linalg.norm(x_edge_voxels),
-                                1/torch.linalg.norm(y_edge_voxels),
-                                1/torch.linalg.norm(z_edge_voxels)]).to(self.torch_device)
+                                    1/torch.linalg.norm(y_edge_voxels),
+                                    1/torch.linalg.norm(z_edge_voxels)]).to(self.torch_device)
 
         filled_mask_bool = (0 <= result) & (result <= 1 - norm_vector)
         border_bool = (0 - norm_vector < result) & (result <= 1)
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels),dtype=torch.float).to(self.torch_device)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
         filled_mask = torch.all(filled_mask_bool, axis=-1)
 
         border_mask = torch.all(border_bool, axis=-1)

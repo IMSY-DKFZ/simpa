@@ -9,6 +9,7 @@ from simpa.utils import Tags
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.libraries.structure_library.StructureBase import GeometricalStructure
 
+
 class CircularTubularStructure(GeometricalStructure):
     """
     Defines a circular tube which is defined by a start and end point as well as a radius. This structure implements
@@ -55,9 +56,9 @@ class CircularTubularStructure(GeometricalStructure):
         radius_voxels = radius_mm / self.voxel_spacing
 
         x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
-                              indexing='ij')
+                                 torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
+                                 torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
+                                 indexing='ij')
 
         x = x + 0.5
         y = y + 0.5
@@ -71,20 +72,20 @@ class CircularTubularStructure(GeometricalStructure):
         target_vector = torch.subtract(torch.stack([x, y, z], axis=-1), start_voxels)
         if self.do_deformation:
             # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
-            deformation_values_mm = self.deformation_functional_mm(torch.arange(self.volume_dimensions_voxels[0])*
+            deformation_values_mm = self.deformation_functional_mm(torch.arange(self.volume_dimensions_voxels[0]) *
                                                                    self.voxel_spacing,
                                                                    torch.arange(self.volume_dimensions_voxels[1]) *
                                                                    self.voxel_spacing).T
             deformation_values_mm = deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
                                                                   self.volume_dimensions_voxels[1], 1, 1)
-            deformation_values_mm = torch.tile(torch.from_numpy(deformation_values_mm).to(self.torch_device), (1, 1, self.volume_dimensions_voxels[2], 3))
+            deformation_values_mm = torch.tile(torch.from_numpy(deformation_values_mm).to(
+                self.torch_device), (1, 1, self.volume_dimensions_voxels[2], 3))
             target_vector = (target_vector + (deformation_values_mm / self.voxel_spacing)).float()
         cylinder_vector = torch.subtract(end_voxels, start_voxels)
 
-        
         target_radius = torch.linalg.norm(target_vector, axis=-1) * torch.sin(
             torch.arccos((torch.matmul(target_vector, cylinder_vector)) /
-                      (torch.linalg.norm(target_vector, axis=-1) * torch.linalg.norm(cylinder_vector))))
+                         (torch.linalg.norm(target_vector, axis=-1) * torch.linalg.norm(cylinder_vector))))
 
         volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
 
@@ -93,7 +94,7 @@ class CircularTubularStructure(GeometricalStructure):
                       (target_radius < radius_voxels + 2 * radius_margin)
 
         volume_fractions[filled_mask] = 1
-        
+
         volume_fractions[border_mask] = 1 - (target_radius - (radius_voxels - radius_margin))[border_mask]
         volume_fractions[volume_fractions < 0] = 0
 

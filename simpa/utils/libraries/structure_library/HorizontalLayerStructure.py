@@ -52,9 +52,9 @@ class HorizontalLayerStructure(GeometricalStructure):
             raise ValueError("Horizontal Layer structure needs a start and end vector in the form of [0, 0, n].")
 
         x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
-                              indexing='ij')
+                                 torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
+                                 torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
+                                 indexing='ij')
 
         target_vector_voxels = torch.subtract(torch.stack([x, y, z], axis=-1), start_voxels)
         target_vector_voxels = target_vector_voxels[:, :, :, 2]
@@ -68,7 +68,7 @@ class HorizontalLayerStructure(GeometricalStructure):
                 self.volume_dimensions_voxels[0],
                 self.volume_dimensions_voxels[1], 1)).to(self.torch_device) / self.voxel_spacing).float()
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels),dtype=torch.float).to(self.torch_device)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
 
         if partial_volume:
             bools_first_layer = ((target_vector_voxels >= -1) & (target_vector_voxels < 0))

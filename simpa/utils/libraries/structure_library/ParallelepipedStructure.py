@@ -56,19 +56,19 @@ class ParallelepipedStructure(GeometricalStructure):
         z_edge_voxels = z_edge_mm / self.voxel_spacing
 
         x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
-                              indexing='ij')
+                                 torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
+                                 torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
+                                 indexing='ij')
 
         target_vector = torch.subtract(torch.stack([x, y, z], axis=-1), start_voxels)
 
         matrix = torch.stack((x_edge_voxels, y_edge_voxels, z_edge_voxels))
 
         result = torch.linalg.solve(matrix.T.expand((target_vector.shape[:-1]+matrix.shape)), target_vector)
-        
+
         norm_vector = torch.tensor([1/torch.linalg.norm(x_edge_voxels),
-                                1/torch.linalg.norm(y_edge_voxels),
-                                1/torch.linalg.norm(z_edge_voxels)]).to(self.torch_device)
+                                    1/torch.linalg.norm(y_edge_voxels),
+                                    1/torch.linalg.norm(z_edge_voxels)]).to(self.torch_device)
 
         filled_mask_bool = (0 <= result) & (result <= 1 - norm_vector)
 

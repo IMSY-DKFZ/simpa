@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import torch 
+import torch
 
 from simpa.utils import Tags
 from simpa.utils.libraries.molecule_library import MolecularComposition
@@ -64,9 +64,9 @@ class EllipticalTubularStructure(GeometricalStructure):
         radius_voxels = radius_mm / self.voxel_spacing
 
         x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
-                              torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
-                              indexing='ij')
+                                 torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
+                                 torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
+                                 indexing='ij')
 
         x = x + 0.5
         y = y + 0.5
@@ -86,7 +86,8 @@ class EllipticalTubularStructure(GeometricalStructure):
                                                                    self.voxel_spacing).T
             deformation_values_mm = deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
                                                                   self.volume_dimensions_voxels[1], 1, 1)
-            deformation_values_mm = torch.tile(torch.from_numpy(deformation_values_mm).to(self.torch_device), (1, 1, self.volume_dimensions_voxels[2], 3))
+            deformation_values_mm = torch.tile(torch.from_numpy(deformation_values_mm).to(
+                self.torch_device), (1, 1, self.volume_dimensions_voxels[2], 3))
             target_vector = (target_vector + (deformation_values_mm / self.voxel_spacing)).float()
         cylinder_vector = torch.subtract(end_voxels, start_voxels)
 
@@ -108,7 +109,7 @@ class EllipticalTubularStructure(GeometricalStructure):
         minor_projection = torch.matmul(target_vector_from_projection, minor_axis_vector) / minor_axis_length
 
         radius_crit = torch.sqrt(((main_projection/main_axis_length)**2 + (minor_projection/minor_axis_length)**2) *
-                              radius_voxels**2)
+                                 radius_voxels**2)
 
         volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
         filled_mask = radius_crit <= radius_voxels - 1 + radius_margin

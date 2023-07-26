@@ -12,6 +12,7 @@ from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.processing_device import get_processing_device
 
+
 class GeometricalStructure:
     """
     Base class for all model-based structures for ModelBasedVolumeCreator. A GeometricalStructure has an internal
