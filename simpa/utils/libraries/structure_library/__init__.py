@@ -30,6 +30,7 @@ class Structures:
     """
     TODO
     """
+
     def __init__(self, settings: Settings, volume_creator_settings: dict):
         """
         TODO

@@ -23,14 +23,14 @@ sys.path.insert(0, os.path.abspath('../src'))
 
 project = 'SIMPA'
 _copyright = '2020-2021, IMSY (Division of Intelligent Medical Systems), DKFZ, Heidelberg and ' \
-            'Janek Groehl'
+    'Janek Groehl'
 author = 'IMSY (Division of Intelligent Medical Systems), DKFZ, Heidelberg and ' \
          'Janek Groehl'
 
 # The full version
 # SIMPA syntax: RELEASE.MAJOR.MINOR
-with open('../../VERSION', 'r') as readme_file:
-    version = readme_file.read()
+with open('../../pyproject.toml', 'r') as py_project_file:
+    version = py_project_file.readlines()[2].split('\"')[-2]
 
 # -- General configuration ---------------------------------------------------
 

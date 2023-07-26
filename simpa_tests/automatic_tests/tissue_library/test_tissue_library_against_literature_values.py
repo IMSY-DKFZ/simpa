@@ -14,6 +14,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 VISUALISE = False
 
+
 class TestEpidermis(unittest.TestCase):
 
     def setUp(self) -> None:

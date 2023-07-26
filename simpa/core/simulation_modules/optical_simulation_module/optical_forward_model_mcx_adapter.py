@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-import struct
 import subprocess
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
@@ -79,8 +78,6 @@ class MCXAdapter(OpticalForwardModuleBase):
         # Read output
         results = self.read_mcx_output()
 
-        struct._clearcache()
-
         # clean temporary files
         self.remove_mcx_output()
         return results
@@ -93,7 +90,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         :return: None
         """
         tmp_json_filename = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                            self.global_settings[Tags.VOLUME_NAME] + ".json"
+            self.global_settings[Tags.VOLUME_NAME] + ".json"
         self.mcx_json_config_file = tmp_json_filename
         self.temporary_output_files.append(tmp_json_filename)
         with open(tmp_json_filename, "w") as json_file:
@@ -113,7 +110,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         :return: dictionary with settings to be used by MCX
         """
         mcx_volumetric_data_file = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                                   self.global_settings[Tags.VOLUME_NAME] + "_output"
+            self.global_settings[Tags.VOLUME_NAME] + "_output"
         for name, suffix in self.mcx_output_suffixes.items():
             self.__setattr__(name, mcx_volumetric_data_file + suffix)
             self.temporary_output_files.append(mcx_volumetric_data_file + suffix)
@@ -161,7 +158,7 @@ class MCXAdapter(OpticalForwardModuleBase):
                 "MediaFormat": "muamus_float",
                 "Dim": [self.nx, self.ny, self.nz],
                 "VolumeFile": self.global_settings[Tags.SIMULATION_PATH] + "/" +
-                              self.global_settings[Tags.VOLUME_NAME] + ".bin"
+                self.global_settings[Tags.VOLUME_NAME] + ".bin"
             }}
         if Tags.MCX_SEED not in self.component_settings:
             if Tags.RANDOM_SEED in self.global_settings:
@@ -217,27 +214,14 @@ class MCXAdapter(OpticalForwardModuleBase):
                                                                    'scattering_cm': scattering_cm,
                                                                    'anisotropy': anisotropy,
                                                                    'assumed_anisotropy': assumed_anisotropy})
-        op_array = np.asarray([absorption_mm, scattering_mm])
-
+        op_array = np.asarray([absorption_mm, scattering_mm], dtype=np.float32)
         [_, self.nx, self.ny, self.nz] = np.shape(op_array)
-
-        # create a binary of the volume
-
-        optical_properties_list = list(np.reshape(op_array, op_array.size, "F"))
-        del absorption_cm, absorption_mm, scattering_cm, scattering_mm, op_array
-        gc.collect()
-        mcx_input = struct.pack("f" * len(optical_properties_list), *optical_properties_list)
-        del optical_properties_list
-        gc.collect()
+        # # create a binary of the volume
         tmp_input_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                         self.global_settings[Tags.VOLUME_NAME] + ".bin"
+            self.global_settings[Tags.VOLUME_NAME] + ".bin"
         self.temporary_output_files.append(tmp_input_path)
-        with open(tmp_input_path, "wb") as input_file:
-            input_file.write(mcx_input)
-
-        del mcx_input, input_file
-        struct._clearcache()
-        gc.collect()
+        # numpy tofile writes in 'C' order, so writing the transpose gives Fortran order
+        op_array.T.tofile(tmp_input_path)
 
     def read_mcx_output(self, **kwargs) -> Dict:
         """
@@ -246,10 +230,8 @@ class MCXAdapter(OpticalForwardModuleBase):
         :param kwargs: dummy, used for class inheritance compatibility
         :return: `Dict` instance containing the MCX output
         """
-        with open(self.mcx_volumetric_data_file, 'rb') as f:
-            data = f.read()
-        data = struct.unpack('%df' % (len(data) / 4), data)
-        fluence = np.asarray(data).reshape([self.nx, self.ny, self.nz, self.frames], order='F')
+        shape = [self.nx, self.ny, self.nz, self.frames]
+        fluence = np.fromfile(self.mcx_volumetric_data_file, dtype=np.float32).reshape(shape, order='F')
         fluence *= 100  # Convert from J/mm^2 to J/cm^2
         if np.shape(fluence)[3] == 1:
             fluence = np.squeeze(fluence, 3)
