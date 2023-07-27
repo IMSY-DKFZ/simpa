@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from math import log, sqrt
-from collections import Sized
+from collections.abc import Sized
 from simpa.core.device_digital_twins import IlluminationGeometryBase
 from simpa.utils import Tags
 
