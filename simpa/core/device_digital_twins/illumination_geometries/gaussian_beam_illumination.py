@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from math import log, sqrt
-
+from collections import Sized
 from simpa.core.device_digital_twins import IlluminationGeometryBase
 from simpa.utils import Tags
 
@@ -74,6 +74,6 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
     def deserialize(dictionary_to_deserialize):
         deserialized_device = GaussianBeamIlluminationGeometry()
         for key, value in dictionary_to_deserialize.items():
-            if value != 'None':
+            if not isinstance(value, Sized) and value != 'None':
                 deserialized_device.__dict__[key] = value
         return deserialized_device
