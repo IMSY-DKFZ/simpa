@@ -13,7 +13,6 @@ from pathlib import Path
 import numpy as np
 import os
 import time
-import pkg_resources
 
 
 def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin: DigitalDeviceTwinBase):
@@ -55,8 +54,7 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     else:
         simpa_output_path = path + settings[Tags.VOLUME_NAME]
 
-    settings[Tags.SIMPA_OUTPUT_PATH] = simpa_output_path + ".hdf5"    
-    settings[Tags.SIMPA_VERSION] = pkg_resources.require("simpa")[0].version 
+    settings[Tags.SIMPA_OUTPUT_PATH] = simpa_output_path + ".hdf5"
 
     simpa_output[Tags.SETTINGS] = settings
     simpa_output[Tags.DIGITAL_DEVICE] = digital_device_twin
@@ -87,7 +85,7 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     # code does not dynamically change. This can be remedied by re-writing the file after the simulation
     # terminates. As it might have a negative impact on simulation performance, it must be activated
     # by the user manually. Active by default.
-    if not(Tags.DO_FILE_COMPRESSION in settings and
+    if not (Tags.DO_FILE_COMPRESSION in settings and
             not settings[Tags.DO_FILE_COMPRESSION]):
         all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
         if Tags.VOLUME_CREATION_MODEL_SETTINGS in all_data[Tags.SETTINGS] and \

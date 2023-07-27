@@ -47,8 +47,6 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         self.reconstructed_image_pipeline = None
         self.reconstructed_image_convenience = None
 
-
-
     @abstractmethod
     def test_reconstruction_of_simulation(self):
         pass

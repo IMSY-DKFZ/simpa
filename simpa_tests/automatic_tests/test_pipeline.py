@@ -65,10 +65,10 @@ class TestPipeline(unittest.TestCase):
             Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
         })
         settings.set_acoustic_settings({
-                Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
-                Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_TEST,
-                Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
-                Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+            Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+            Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_TEST,
+            Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_PENCIL,
+            Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
         })
 
         simulation_pipeline = [

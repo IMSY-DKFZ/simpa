@@ -29,8 +29,8 @@ def assert_equal_shapes(numpy_arrays: list):
                              f" parameters. Called from {inspect.stack()[1].function}")
 
 
-def assert_array_well_defined(array: np.ndarray, assume_non_negativity:bool = False,
-                              assume_positivity=False, array_name:str=None):
+def assert_array_well_defined(array: np.ndarray, assume_non_negativity: bool = False,
+                              assume_positivity=False, array_name: str = None):
     """
     This method tests if all entries of the given array are well-defined (i.e. not np.inf, np.nan, or None).
     The method can be parametrised to be more strict.
