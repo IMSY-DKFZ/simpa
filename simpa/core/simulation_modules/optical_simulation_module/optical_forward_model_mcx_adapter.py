@@ -179,6 +179,9 @@ class MCXAdapter(OpticalForwardModuleBase):
         cmd.append(self.mcx_json_config_file)
         cmd.append("-O")
         cmd.append("F")
+        # use 'C' order array format for binary input file
+        cmd.append("-a")
+        cmd.append("1")
         return cmd
 
     @staticmethod
@@ -214,14 +217,15 @@ class MCXAdapter(OpticalForwardModuleBase):
                                                                    'scattering_cm': scattering_cm,
                                                                    'anisotropy': anisotropy,
                                                                    'assumed_anisotropy': assumed_anisotropy})
-        op_array = np.asarray([absorption_mm, scattering_mm], dtype=np.float32)
-        [_, self.nx, self.ny, self.nz] = np.shape(op_array)
+        # stack arrays to give array with shape (nx,ny,nz,2)
+        op_array = np.stack([absorption_mm, scattering_mm], axis=-1, dtype=np.float32)
+        [self.nx, self.ny, self.nz, _] = np.shape(op_array)
         # # create a binary of the volume
         tmp_input_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
             self.global_settings[Tags.VOLUME_NAME] + ".bin"
         self.temporary_output_files.append(tmp_input_path)
-        # numpy tofile writes in 'C' order, so writing the transpose gives Fortran order
-        op_array.T.tofile(tmp_input_path)
+        # write array in 'C' order to binary file
+        op_array.tofile(tmp_input_path)
 
     def read_mcx_output(self, **kwargs) -> Dict:
         """
