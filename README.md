@@ -1,6 +1,6 @@
 <div align="center">
 
-![Logo](docs/source/images/simpa_logo.png?raw=true "Logo")
+![Logo](docs/source/images/simpa_logo.png?raw=true)
 
 [![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=develop)](https://simpa.readthedocs.io/en/develop/?badge=develop)
 ![Build Status](https://github.com/IMSY-DKFZ/simpa/actions/workflows/automatic_testing.yml/badge.svg)
