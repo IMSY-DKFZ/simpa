@@ -40,8 +40,10 @@ class MolecularComposition(SerializableSIMPAClass, list):
             self.internal_properties[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] += \
                 molecule.volume_fraction * molecule.gruneisen_parameter
             self.internal_properties[Tags.DATA_FIELD_DENSITY] += molecule.volume_fraction * molecule.density
-            self.internal_properties[Tags.DATA_FIELD_SPEED_OF_SOUND] += molecule.volume_fraction * molecule.speed_of_sound
-            self.internal_properties[Tags.DATA_FIELD_ALPHA_COEFF] += molecule.volume_fraction * molecule.alpha_coefficient
+            self.internal_properties[Tags.DATA_FIELD_SPEED_OF_SOUND] += molecule.volume_fraction * \
+                molecule.speed_of_sound
+            self.internal_properties[Tags.DATA_FIELD_ALPHA_COEFF] += molecule.volume_fraction * \
+                molecule.alpha_coefficient
 
         if np.abs(self.internal_properties.volume_fraction - 1.0) > 1e-3:
             raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
@@ -277,8 +279,8 @@ class MoleculeLibrary(object):
         return Molecule(name="constant_scatterer",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=
-                        ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(scattering_coefficient),
+                        scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(
+                            scattering_coefficient),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(anisotropy),
                         density=StandardProperties.DENSITY_GENERIC,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
@@ -359,9 +361,8 @@ class MoleculeLibrary(object):
         return Molecule(name="mediprene",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),  # FIXME
                         volume_fraction=volume_fraction,
-                        scattering_spectrum=
-                        ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY((-np.log(0.85)) -
-                                                                                (-np.log(0.85) / 10)),
+                        scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY((-np.log(0.85)) -
+                                                                                                    (-np.log(0.85) / 10)),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9),
                         density=StandardProperties.DENSITY_GEL_PAD,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GEL_PAD,
@@ -382,6 +383,7 @@ class MoleculeLibrary(object):
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_HEAVY_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
                         )
+
     @staticmethod
     def air(volume_fraction: float = 1.0):
         return Molecule(name="air",
@@ -406,6 +408,7 @@ class MolecularCompositionGenerator(object):
     The MolecularCompositionGenerator is a helper class to facilitate the creation of a
     MolecularComposition instance.
     """
+
     def __init__(self):
         self.molecular_composition_dictionary = dict()
 

@@ -58,14 +58,15 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
                 ax.scatter(x=wavelength, y=expected_properties[tag], c="green")
         else:
             for tag in TissueProperties.property_tags:
-                if (not (composition_properties[tag] is None and expected_properties[tag] is None)) and \
-                    ((np.abs(composition_properties[tag] - expected_properties[tag]) /
-                     expected_properties[tag]) > tolerated_margin_in_percent):
-                    raise AssertionError(f"The calculated value for {tag} at "
-                                         f"wavelength {wavelength}nm was different from the"
-                                         f" expected value by a margin greater than {tolerated_margin_in_percent*100}%"
-                                         f" (was {composition_properties[tag]} but was "
-                                         f"expected to be {expected_properties[tag]})")
+                if expected_properties[tag] is not None:
+                    if (not (composition_properties[tag] is None and expected_properties[tag] is None)) and \
+                        ((np.abs(composition_properties[tag] - expected_properties[tag]) /
+                          expected_properties[tag]) > tolerated_margin_in_percent):
+                        raise AssertionError(f"The calculated value for {tag} at "
+                                             f"wavelength {wavelength}nm was different from the"
+                                             f" expected value by a margin greater than {tolerated_margin_in_percent*100}%"
+                                             f" (was {composition_properties[tag]} but was "
+                                             f"expected to be {expected_properties[tag]})")
 
     if visualise_values:
         plt.tight_layout()
@@ -744,6 +745,150 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     return reference_dict
 
 
+def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
+    """
+    The values were compiled from the following resources:
+
+    """
+    reference_dict = dict()
+
+    values450nm = TissueProperties()
+    values450nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values450nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values450nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values450nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values450nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values450nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values450nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values500nm = TissueProperties()
+    values500nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values500nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values500nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values500nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values500nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values500nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values500nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values550nm = TissueProperties()
+    values550nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values550nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values550nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values550nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values550nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values550nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values550nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values600nm = TissueProperties()
+    values600nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values600nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values600nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values600nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values600nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values600nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values600nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values650nm = TissueProperties()
+    values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values650nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values650nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values650nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values650nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values650nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values650nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values700nm = TissueProperties()
+    values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values700nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values700nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values700nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values700nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values700nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values750nm = TissueProperties()
+    values750nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values750nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values750nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values750nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values750nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values750nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values750nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values800nm = TissueProperties()
+    values800nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values800nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values800nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values800nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values800nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values800nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values800nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values850nm = TissueProperties()
+    values850nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values850nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values850nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values850nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values850nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values850nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values850nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values900nm = TissueProperties()
+    values900nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values900nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values900nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values900nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values900nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values900nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values900nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    values950nm = TissueProperties()
+    values950nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
+    values950nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
+    values950nm[Tags.DATA_FIELD_ANISOTROPY] = None
+    values950nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
+    values950nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.LYMPH_NODE
+    values950nm[Tags.DATA_FIELD_OXYGENATION] = 0.73
+    values950nm[Tags.DATA_FIELD_DENSITY] = 1035
+    values950nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
+    values950nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
+
+    if not only_use_NIR_values:
+        reference_dict[450] = values450nm
+        reference_dict[500] = values500nm
+        reference_dict[550] = values550nm
+        reference_dict[600] = values600nm
+    reference_dict[650] = values650nm
+    reference_dict[700] = values700nm
+    reference_dict[750] = values750nm
+    reference_dict[800] = values800nm
+    reference_dict[850] = values850nm
+    reference_dict[900] = values900nm
+    reference_dict[950] = values950nm
+
+    return reference_dict
+
+
 if __name__ == "__main__":
 
     compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.epidermis(),
@@ -752,14 +897,12 @@ if __name__ == "__main__":
                                                           title="Epidermis ")
 
     compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(1.0),
-                                                          expected_values=
-                                                          get_fully_oxygenated_blood_reference_dictionary(),
+                                                          expected_values=get_fully_oxygenated_blood_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="100% sO2 Blood ")
 
     compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(0.0),
-                                                          expected_values=
-                                                          get_fully_deoxygenated_blood_reference_dictionary(),
+                                                          expected_values=get_fully_deoxygenated_blood_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="0% sO2 Blood ")
 
@@ -772,3 +915,8 @@ if __name__ == "__main__":
                                                           expected_values=get_muscle_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="Muscle ")
+
+    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.lymph_node(),
+                                                          expected_values=get_lymph_node_reference_dictionary(),
+                                                          visualise_values=True,
+                                                          title="LymphNode ")

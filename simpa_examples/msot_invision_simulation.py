@@ -31,9 +31,12 @@ def get_device():
 
 def create_volume():
     inclusion_material = sp.Molecule(volume_fraction=1.0,
-                                     anisotropy_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9),
-                                     scattering_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(100.0),
-                                     absorption_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(4.0),
+                                     anisotropy_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                                         0.9),
+                                     scattering_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                                         100.0),
+                                     absorption_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                                         4.0),
                                      speed_of_sound=SPEED_OF_SOUND,
                                      alpha_coefficient=1e-4,
                                      density=1000,
@@ -42,7 +45,8 @@ def create_volume():
 
     phantom_material = sp.Molecule(volume_fraction=1.0,
                                    anisotropy_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9),
-                                   scattering_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(100.0),
+                                   scattering_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                                       100.0),
                                    absorption_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.05),
                                    speed_of_sound=SPEED_OF_SOUND,
                                    alpha_coefficient=1e-4,
@@ -85,8 +89,8 @@ def create_volume():
     inclusion_1_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = 20
     inclusion_1_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = 10
     inclusion_1_dictionary[Tags.MOLECULE_COMPOSITION] = (sp.MolecularCompositionGenerator()
-                                                              .append(inclusion_material)
-                                                              .get_molecular_composition(segmentation_type=1))
+                                                         .append(inclusion_material)
+                                                         .get_molecular_composition(segmentation_type=1))
     inclusion_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
     inclusion_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
 
@@ -107,9 +111,9 @@ def create_volume():
     tissue_dict["inclusion_1"] = inclusion_1_dictionary
     tissue_dict["inclusion_2"] = inclusion_2_dictionary
     return {
-               Tags.STRUCTURES: tissue_dict,
-               Tags.SIMULATE_DEFORMED_LAYERS: False
-           }
+        Tags.STRUCTURES: tissue_dict,
+        Tags.SIMULATE_DEFORMED_LAYERS: False
+    }
 
 
 def get_settings():
