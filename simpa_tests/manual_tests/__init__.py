@@ -122,8 +122,8 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         self.settings.set_reconstruction_settings({
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
             Tags.TUKEY_WINDOW_ALPHA: 0.5,
-            Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
-            Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
+            Tags.BANDPASS_CUTOFF_LOWPASS_IN_HZ: int(8e6),
+            Tags.BANDPASS_CUTOFF_HIGHPASS_IN_HZ: int(0.1e6),
             Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
             Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
