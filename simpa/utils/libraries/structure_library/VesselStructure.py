@@ -4,6 +4,7 @@
 
 import numpy as np
 import torch
+import math
 
 from simpa.utils import Tags
 from simpa.utils.calculate import rotation
@@ -73,10 +74,10 @@ class VesselStructure(GeometricalStructure):
                 angles = np.random.normal(torch.pi / 16, torch.pi / 8, 3)
                 vessel_branch_directions1 = torch.tensor(np.matmul(rotation(angles), direction)).to(self.torch_device)
                 vessel_branch_directions2 = torch.tensor(np.matmul(rotation(-angles), direction)).to(self.torch_device)
-                vessel_branch_radius1 = 1 / torch.sqrt(2) * radius
-                vessel_branch_radius2 = 1 / torch.sqrt(2) * radius
-                vessel_branch_radius_variation1 = 1 / torch.sqrt(2) * radius_variation
-                vessel_branch_radius_variation2 = 1 / torch.sqrt(2) * radius_variation
+                vessel_branch_radius1 = 1 / math.sqrt(2) * radius
+                vessel_branch_radius2 = 1 / math.sqrt(2) * radius
+                vessel_branch_radius_variation1 = 1 / math.sqrt(2) * radius_variation
+                vessel_branch_radius_variation2 = 1 / math.sqrt(2) * radius_variation
 
                 if vessel_branch_radius1 >= 0.5:
                     vessel1_pos, vessel1_rad = self.calculate_vessel_samples(vessel_branch_positions1,
