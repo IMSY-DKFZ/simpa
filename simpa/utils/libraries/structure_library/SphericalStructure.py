@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import numpy as np
+import torch
 
 from simpa.utils import Tags
 from simpa.utils.libraries.molecule_library import MolecularComposition
@@ -31,8 +31,8 @@ class SphericalStructure(GeometricalStructure):
     """
 
     def get_params_from_settings(self, single_structure_settings):
-        params = (np.asarray(single_structure_settings[Tags.STRUCTURE_START_MM]),
-                  np.asarray(single_structure_settings[Tags.STRUCTURE_RADIUS_MM]),
+        params = (single_structure_settings[Tags.STRUCTURE_START_MM],
+                  single_structure_settings[Tags.STRUCTURE_RADIUS_MM],
                   single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME])
         return params
 
@@ -44,12 +44,15 @@ class SphericalStructure(GeometricalStructure):
 
     def get_enclosed_indices(self):
         start_mm, radius_mm, partial_volume = self.params
+        start_mm = torch.tensor(start_mm, dtype=torch.float).to(self.torch_device)
+        radius_mm = torch.tensor(radius_mm, dtype=torch.float).to(self.torch_device)
+
         start_voxels = start_mm / self.voxel_spacing
         radius_voxels = radius_mm / self.voxel_spacing
-        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
-                              np.arange(self.volume_dimensions_voxels[1]),
-                              np.arange(self.volume_dimensions_voxels[2]),
-                              indexing='ij')
+        x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),
+                                 torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
+                                 torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
+                                 indexing='ij')
 
         x = x + 0.5
         y = y + 0.5
@@ -60,10 +63,10 @@ class SphericalStructure(GeometricalStructure):
         else:
             radius_margin = 0.7071
 
-        target_vector = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
-        target_radius = np.linalg.norm(target_vector, axis=-1)
+        target_vector = torch.subtract(torch.stack([x, y, z], axis=-1), start_voxels)
+        target_radius = torch.linalg.norm(target_vector, axis=-1)
 
-        volume_fractions = np.zeros(self.volume_dimensions_voxels)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels)).to(self.torch_device)
         filled_mask = target_radius <= radius_voxels - 1 + radius_margin
         border_mask = (target_radius > radius_voxels - 1 + radius_margin) & \
                       (target_radius < radius_voxels + 2 * radius_margin)
@@ -77,7 +80,7 @@ class SphericalStructure(GeometricalStructure):
         else:
             mask = filled_mask
 
-        return mask, volume_fractions[mask]
+        return mask.cpu().numpy(), volume_fractions[mask].cpu().numpy()
 
 
 def define_spherical_structure_settings(start_mm: list, molecular_composition: MolecularComposition,
