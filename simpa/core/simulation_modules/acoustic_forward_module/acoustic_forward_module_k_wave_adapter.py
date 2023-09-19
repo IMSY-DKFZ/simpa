@@ -84,7 +84,8 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
         data_dict = {}
         file_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH]
-        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = load_data_field(file_path, Tags.DATA_FIELD_INITIAL_PRESSURE)
+        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = load_data_field(file_path, Tags.DATA_FIELD_INITIAL_PRESSURE,
+                                                                      wavelength=wavelength)
         data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = load_data_field(file_path, Tags.DATA_FIELD_SPEED_OF_SOUND)
         data_dict[Tags.DATA_FIELD_DENSITY] = load_data_field(file_path, Tags.DATA_FIELD_DENSITY)
         data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = load_data_field(file_path, Tags.DATA_FIELD_ALPHA_COEFF)
@@ -116,7 +117,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.rot90(data_dict[Tags.DATA_FIELD_ALPHA_COEFF][image_slice],
                                                           3, axes=axes)
         data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = np.rot90(data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE]
-                                                               [wavelength][image_slice], 3, axes=axes)
+                                                               [image_slice], 3, axes=axes)
 
         time_series_data, global_settings = self.k_wave_acoustic_forward_model(
             detection_geometry,
