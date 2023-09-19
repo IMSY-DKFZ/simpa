@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
+from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase, TissueProperties
 from simpa.utils.libraries.structure_library import Structures
 from simpa.utils import Tags
 import numpy as np
@@ -89,6 +89,9 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                                                                       fraction_to_be_filled], axis=0)
             for key in volumes.keys():
                 if structure_properties[key] is None:
+                    continue
+                if (key in TissueProperties.wavelength_independent_properties
+                        and wavelength != self.global_settings[Tags.WAVELENGTHS][0]):
                     continue
                 if key == Tags.DATA_FIELD_SEGMENTATION:
                     added_fraction_greater_than_any_added_fraction = added_volume_fraction > max_added_fractions
