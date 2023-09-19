@@ -76,8 +76,9 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
         """
 
+        wavelength = self.global_settings[Tags.WAVELENGTH]
         optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
-                                          wavelength=self.global_settings[Tags.WAVELENGTH])
+                                          wavelength=wavelength)
 
         self.logger.debug(f"OPTICAL_PATH: {str(optical_path)}")
 
@@ -108,7 +109,6 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
             axes = (0, 2)
             image_slice = np.s_[:]
 
-        wavelength = str(self.global_settings[Tags.WAVELENGTH])
         data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.rot90(data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice],
                                                              3, axes=axes)
         data_dict[Tags.DATA_FIELD_DENSITY] = np.rot90(data_dict[Tags.DATA_FIELD_DENSITY][image_slice],
