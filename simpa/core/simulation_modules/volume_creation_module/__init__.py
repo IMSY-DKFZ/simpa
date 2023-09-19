@@ -31,7 +31,13 @@ class VolumeCreatorModuleBase(SimulationModule):
         volume_z_dim = int(round(self.global_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing))
         sizes = (volume_x_dim, volume_y_dim, volume_z_dim)
 
+        wavelength = self.global_settings[Tags.WAVELENGTH]
+        first_wavelength = self.global_settings[Tags.WAVELENGTHS][0]
+
         for key in TissueProperties.property_tags:
+            # Create wavelength-independent properties only in the first wavelength run
+            if key in TissueProperties.wavelength_independent_properties and wavelength != first_wavelength:
+                continue
             volumes[key] = np.zeros(sizes)
 
         return volumes, volume_x_dim, volume_y_dim, volume_z_dim
@@ -51,7 +57,6 @@ class VolumeCreatorModuleBase(SimulationModule):
         self.logger.info("VOLUME CREATION")
 
         volumes = self.create_simulation_volume()
-        wavelength = self.global_settings[Tags.WAVELENGTH]
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_equal_shapes(list(volumes.values()))
@@ -62,8 +67,5 @@ class VolumeCreatorModuleBase(SimulationModule):
                 assert_array_well_defined(volumes[_volume_name], array_name=_volume_name)
 
         for key, value in volumes.items():
-            if (key in TissueProperties.wavelength_independent_properties
-                    and wavelength != self.global_settings[Tags.WAVELENGTHS][0]):
-                continue
             save_data_field(value, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
-                            data_field=key, wavelength=wavelength)
+                            data_field=key, wavelength=self.global_settings[Tags.WAVELENGTH])
