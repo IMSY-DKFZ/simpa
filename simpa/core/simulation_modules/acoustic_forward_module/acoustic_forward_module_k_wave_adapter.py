@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import gc
-import inspect
 import os
 import subprocess
 
@@ -17,6 +16,7 @@ from simpa.core.simulation_modules.acoustic_forward_module import \
     AcousticForwardModelBaseAdapter
 from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
 from simpa.utils import Tags
+from simpa.utils.matlab import generate_matlab_cmd
 from simpa.utils.calculate import rotation_matrix_between_vectors
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.path_manager import PathManager
@@ -240,17 +240,9 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
             self.logger.info("Simulating 2D....")
             simulation_script_path = "simulate_2D"
 
-        base_script_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
+        cmd = generate_matlab_cmd(matlab_binary_path, simulation_script_path, optical_path)
 
-        cmd = list()
-        cmd.append(self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
-        cmd.append("-nodisplay")
-        cmd.append("-nosplash")
-        cmd.append("-automation")
-        cmd.append("-wait")
-        cmd.append("-r")
-        cmd.append("addpath('" + base_script_path + "');" +
-                   simulation_script_path + "('" + optical_path + "');exit;")
         cur_dir = os.getcwd()
         self.logger.info(cmd)
         subprocess.run(cmd)
