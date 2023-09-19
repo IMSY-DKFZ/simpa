@@ -60,6 +60,7 @@ class FieldOfViewCropping(ProcessingComponent):
         wavelength = self.global_settings[Tags.WAVELENGTH]
 
         for data_field in data_fields:
+            # Crop wavelength-independent properties only in the last wavelength run
             if (data_field in TissueProperties.wavelength_independent_properties
                     and wavelength != self.global_settings[Tags.WAVELENGTHS][-1]):
                 continue

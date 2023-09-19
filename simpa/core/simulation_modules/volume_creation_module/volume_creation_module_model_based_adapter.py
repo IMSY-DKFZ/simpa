@@ -90,6 +90,7 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
             for key in volumes.keys():
                 if structure_properties[key] is None:
                     continue
+                # Create wavelength-independent properties only in the first wavelength run
                 if (key in TissueProperties.wavelength_independent_properties
                         and wavelength != self.global_settings[Tags.WAVELENGTHS][0]):
                     continue
