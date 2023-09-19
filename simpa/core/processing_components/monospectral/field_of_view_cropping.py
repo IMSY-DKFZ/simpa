@@ -57,11 +57,14 @@ class FieldOfViewCropping(ProcessingComponent):
 
         self.logger.debug(f"field of view to crop: {field_of_view_voxels}")
 
-        for data_field in data_fields:
-            self.logger.debug(f"Cropping data field {data_field}...")
+        wavelength = self.global_settings[Tags.WAVELENGTH]
 
-            # load
-            wavelength = self.global_settings[Tags.WAVELENGTH]
+        for data_field in data_fields:
+            # Crop wavelength-independent properties only in the last wavelength run
+            if (data_field in TissueProperties.wavelength_independent_properties
+                    and wavelength != self.global_settings[Tags.WAVELENGTHS][-1]):
+                continue
+            self.logger.debug(f"Cropping data field {data_field}...")
             data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
             self.logger.debug(f"data array shape before cropping: {np.shape(data_array)}")
             self.logger.debug(f"data array shape len: {len(np.shape(data_array))}")
