@@ -101,6 +101,6 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
 
         # convert volumes back to CPU
         for key in volumes.keys():
-            volumes[key] = volumes[key].cpu().numpy()
+            volumes[key] = volumes[key].cpu().numpy().astype(np.float64, copy=False)
 
         return volumes
