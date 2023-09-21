@@ -45,35 +45,38 @@ class ParallelepipedStructure(GeometricalStructure):
 
     def get_enclosed_indices(self):
         start_mm, x_edge_mm, y_edge_mm, z_edge_mm = self.params
-        start_mm = torch.tensor(start_mm, dtype=torch.float).to(self.torch_device)
-        x_edge_mm = torch.tensor(x_edge_mm, dtype=torch.float).to(self.torch_device)
-        y_edge_mm = torch.tensor(y_edge_mm, dtype=torch.float).to(self.torch_device)
-        z_edge_mm = torch.tensor(z_edge_mm, dtype=torch.float).to(self.torch_device)
+        start_mm = torch.tensor(start_mm, dtype=torch.float, device=self.torch_device)
+        x_edge_mm = torch.tensor(x_edge_mm, dtype=torch.float, device=self.torch_device)
+        y_edge_mm = torch.tensor(y_edge_mm, dtype=torch.float, device=self.torch_device)
+        z_edge_mm = torch.tensor(z_edge_mm, dtype=torch.float, device=self.torch_device)
 
         start_voxels = start_mm / self.voxel_spacing
         x_edge_voxels = x_edge_mm / self.voxel_spacing
         y_edge_voxels = y_edge_mm / self.voxel_spacing
         z_edge_voxels = z_edge_mm / self.voxel_spacing
 
-        x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),
-                                 torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
-                                 torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
-                                 indexing='ij')
-
-        target_vector = torch.subtract(torch.stack([x, y, z], axis=-1), start_voxels)
+        target_vector = torch.stack(torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0], dtype=torch.float, device=self.torch_device),
+                                                   torch.arange(
+                                                       self.volume_dimensions_voxels[1], dtype=torch.float, device=self.torch_device),
+                                                   torch.arange(
+                                                       self.volume_dimensions_voxels[2], dtype=torch.float, device=self.torch_device),
+                                                   indexing='ij'), dim=-1)
+        target_vector -= start_voxels
 
         matrix = torch.stack((x_edge_voxels, y_edge_voxels, z_edge_voxels))
 
         result = torch.linalg.solve(matrix.T.expand((target_vector.shape[:-1]+matrix.shape)), target_vector)
+        del target_vector
 
         norm_vector = torch.tensor([1/torch.linalg.norm(x_edge_voxels),
                                     1/torch.linalg.norm(y_edge_voxels),
-                                    1/torch.linalg.norm(z_edge_voxels)]).to(self.torch_device)
+                                    1/torch.linalg.norm(z_edge_voxels)], device=self.torch_device)
 
         filled_mask_bool = (0 <= result) & (result <= 1 - norm_vector)
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
-        filled_mask = torch.all(filled_mask_bool, axis=-1)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels),
+                                       dtype=torch.float, device=self.torch_device)
+        filled_mask = torch.all(filled_mask_bool, dim=-1)
 
         volume_fractions[filled_mask] = 1
 

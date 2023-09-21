@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
-from simpa.utils.libraries.structure_library import Structures
+from simpa.utils.libraries.structure_library import priority_sorted_structures
 from simpa.utils import Tags
 import numpy as np
 from simpa.utils import create_deformation_settings
@@ -60,19 +60,18 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                     cosine_scaling_factor=1)
 
         volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes()
-        global_volume_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
-        max_added_fractions = np.zeros((x_dim_px, y_dim_px, z_dim_px))
+        global_volume_fractions = torch.zeros((x_dim_px, y_dim_px, z_dim_px),
+                                              dtype=torch.float, device=self.torch_device)
+        max_added_fractions = torch.zeros((x_dim_px, y_dim_px, z_dim_px), dtype=torch.float, device=self.torch_device)
         wavelength = self.global_settings[Tags.WAVELENGTH]
 
-        structure_list = Structures(self.global_settings, self.component_settings)
-        priority_sorted_structures = structure_list.sorted_structures
-
-        for structure in priority_sorted_structures:
+        for structure in priority_sorted_structures(self.global_settings, self.component_settings):
             self.logger.debug(type(structure))
 
             structure_properties = structure.properties_for_wavelength(wavelength)
 
-            structure_volume_fractions = structure.geometrical_volume
+            structure_volume_fractions = torch.as_tensor(
+                structure.geometrical_volume, dtype=torch.float, device=self.torch_device)
             structure_indexes_mask = structure_volume_fractions > 0
             global_volume_fractions_mask = global_volume_fractions < 1
             mask = structure_indexes_mask & global_volume_fractions_mask
@@ -82,11 +81,11 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                 added_volume_fraction <= 1 & mask]
 
             selector_more_than_1 = added_volume_fraction > 1
-            if selector_more_than_1.any():
+            if torch.any(selector_more_than_1):
                 remaining_volume_fraction_to_fill = 1 - global_volume_fractions[selector_more_than_1]
                 fraction_to_be_filled = structure_volume_fractions[selector_more_than_1]
-                added_volume_fraction[selector_more_than_1] = np.min([remaining_volume_fraction_to_fill,
-                                                                      fraction_to_be_filled], axis=0)
+                added_volume_fraction[selector_more_than_1] = torch.min(torch.stack((remaining_volume_fraction_to_fill,
+                                                                                     fraction_to_be_filled)), 0).values
             for key in volumes.keys():
                 if structure_properties[key] is None:
                     continue
@@ -100,7 +99,8 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
 
             global_volume_fractions[mask] += added_volume_fraction[mask]
 
-        # explicitly empty cache to free reserved GPU memory after volume creation
-        torch.cuda.empty_cache()
+        # convert volumes back to CPU
+        for key in volumes.keys():
+            volumes[key] = volumes[key].cpu().numpy().astype(np.float64, copy=False)
 
         return volumes

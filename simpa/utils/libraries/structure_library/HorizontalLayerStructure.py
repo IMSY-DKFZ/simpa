@@ -51,24 +51,27 @@ class HorizontalLayerStructure(GeometricalStructure):
         if direction_mm[0] != 0 or direction_mm[1] != 0 or direction_mm[2] == 0:
             raise ValueError("Horizontal Layer structure needs a start and end vector in the form of [0, 0, n].")
 
-        x, y, z = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]).to(self.torch_device),
-                                 torch.arange(self.volume_dimensions_voxels[1]).to(self.torch_device),
-                                 torch.arange(self.volume_dimensions_voxels[2]).to(self.torch_device),
-                                 indexing='ij')
+        target_vector_voxels = torch.stack(torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0], dtype=torch.float, device=self.torch_device),
+                                                          torch.arange(
+                                                              self.volume_dimensions_voxels[1], dtype=torch.float, device=self.torch_device),
+                                                          torch.arange(
+                                                              self.volume_dimensions_voxels[2], dtype=torch.float, device=self.torch_device),
+                                                          indexing='ij'), dim=-1)
 
-        target_vector_voxels = torch.subtract(torch.stack([x, y, z], axis=-1), start_voxels)
+        target_vector_voxels -= start_voxels
         target_vector_voxels = target_vector_voxels[:, :, :, 2]
         if self.do_deformation:
             # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
-            deformation_values_mm = self.deformation_functional_mm(torch.arange(self.volume_dimensions_voxels[0]) *
+            deformation_values_mm = self.deformation_functional_mm(torch.arange(self.volume_dimensions_voxels[0], dtype=torch.float) *
                                                                    self.voxel_spacing,
-                                                                   torch.arange(self.volume_dimensions_voxels[1]) *
+                                                                   torch.arange(self.volume_dimensions_voxels[1], dtype=torch.float) *
                                                                    self.voxel_spacing).T
             target_vector_voxels = (target_vector_voxels + torch.from_numpy(deformation_values_mm.reshape(
                 self.volume_dimensions_voxels[0],
                 self.volume_dimensions_voxels[1], 1)).to(self.torch_device) / self.voxel_spacing).float()
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels),
+                                       dtype=torch.float, device=self.torch_device)
 
         if partial_volume:
             bools_first_layer = ((target_vector_voxels >= -1) & (target_vector_voxels < 0))
