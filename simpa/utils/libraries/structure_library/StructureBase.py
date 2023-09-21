@@ -69,7 +69,7 @@ class GeometricalStructure:
         self.molecule_composition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
         self.molecule_composition.update_internal_properties()
 
-        self.geometrical_volume = np.zeros(self.volume_dimensions_voxels)
+        self.geometrical_volume = np.zeros(self.volume_dimensions_voxels, dtype=np.float32)
         self.params = self.get_params_from_settings(single_structure_settings)
         self.fill_internal_volume()
 
