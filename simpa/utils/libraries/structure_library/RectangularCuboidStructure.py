@@ -78,8 +78,6 @@ class RectangularCuboidStructure(GeometricalStructure):
 
         inverse_matrix = torch.linalg.inv(matrix)
 
-        print(target_vector.shape)
-        print(inverse_matrix.shape)
         result = torch.matmul(target_vector, inverse_matrix)
         del target_vector
 
