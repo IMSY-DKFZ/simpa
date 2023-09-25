@@ -91,6 +91,16 @@ class PathManager:
         self.logger.debug(f"Retrieved MATLAB_BINARY_PATH={path}")
         return path
 
+    def get_matlab_runtime_path(self):
+        path = self.get_path_from_environment('MATLAB_RUNTIME_PATH')
+        self.logger.debug(f"Retrieved MATLAB_RUNTIME_PATH={path}")
+        return path
+
+    def get_matlab_compiled_script_path(self):
+        path = self.get_path_from_environment('MATLAB_COMPILED_SCRIPTS_PATH')
+        self.logger.debug(f"Retrieved MATLAB_COMPILED_SCRIPTS_PATH={path}")
+        return path
+
     def get_path_from_environment(self, env_variable_name):
         env_variable_content = os.environ.get(env_variable_name)
         if env_variable_content is None:

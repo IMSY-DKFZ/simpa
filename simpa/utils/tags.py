@@ -76,6 +76,18 @@ class Tags:
     Usage: SIMPA package
     """
 
+    MATLAB_RUNTIME_PATH = ("matlab_runtime_path", str)
+    """
+    Absolute path to the matlab runtime folder (contains runtime, bin, sys, extern folder).\n
+    Usage: SIMPA package
+    """
+
+    MATLAB_COMPILED_SCRIPTS_PATH = ("matlab_compiled_scripts_path", str)
+    """
+    Absolute path to the folder that should contain the compiled matlab scripts.\n
+    Usage: SIMPA package
+    """
+
     MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", Number)
     """
     Temperature of the simulated volume.\n
