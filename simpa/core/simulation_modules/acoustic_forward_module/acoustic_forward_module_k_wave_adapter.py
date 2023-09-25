@@ -241,7 +241,11 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
             self.logger.info("Simulating 2D....")
             simulation_script_path = "simulate_2D"
 
-        matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
+        if Tags.ACOUSTIC_MODEL_BINARY_PATH in self.component_settings:
+            matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
+        else:
+            matlab_binary_path = ""
+
         matlab_runtime_path = ''
         if Tags.MATLAB_RUNTIME_PATH in self.component_settings:
             matlab_runtime_path = self.component_settings[Tags.MATLAB_RUNTIME_PATH]
