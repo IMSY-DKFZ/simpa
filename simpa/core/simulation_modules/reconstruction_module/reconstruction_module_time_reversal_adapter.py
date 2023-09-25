@@ -180,7 +180,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         cur_dir = os.getcwd()
         os.chdir(self.global_settings[Tags.SIMULATION_PATH])
         self.logger.info(cmd)
-        subprocess.run(cmd)
+        subprocess.run(cmd, shell=True)
 
         reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.DATA_FIELD_RECONSTRUCTED_DATA]
 

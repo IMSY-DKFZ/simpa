@@ -257,7 +257,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
         cur_dir = os.getcwd()
         self.logger.info(cmd)
-        subprocess.run(cmd)
+        subprocess.run(cmd, shell=True)
 
         raw_time_series_data = sio.loadmat(optical_path)[Tags.DATA_FIELD_TIME_SERIES_DATA]
 
