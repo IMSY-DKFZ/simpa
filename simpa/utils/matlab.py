@@ -16,13 +16,17 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
     cmd = list()
 
     if matlab_runtime_path and matlab_compiled_scripts_path:
-        cmd.append("module load mcr/23.2")
+        cmd.append("module")
+        cmd.append("load")
+        cmd.append("mcr/23.2")
         cmd.append("&&")
         cmd.append(os.path.join(matlab_compiled_scripts_path, simulation_script_path, f"run_{simulation_script_path}.sh"))
         cmd.append(matlab_runtime_path)
         cmd.append(data_path)
         cmd.append("&&")
-        cmd.append("module unload mcr")
+        cmd.append("module")
+        cmd.append("unload")
+        cmd.append("mcr")
     else:
         # get path of calling script to add to matlab path
         base_script_path = os.path.dirname(os.path.abspath(inspect.stack()[1].filename))
