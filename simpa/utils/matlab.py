@@ -16,12 +16,6 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
     cmd = list()
 
     if matlab_runtime_path and matlab_compiled_scripts_path:
-        module_command = list()
-        module_command.append("bash")
-        module_command.append("mcr_module.sh")
-        module_command.append("load")
-        subprocess.run(module_command)
-
         cmd.append("bash")
         cmd.append(os.path.join(matlab_compiled_scripts_path,
                                 simulation_script_path,
@@ -29,11 +23,6 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
         cmd.append(matlab_runtime_path)
         cmd.append(data_path)
 
-        module_command = list()
-        module_command.append("bash")
-        module_command.append("mcr_module.sh")
-        module_command.append("unload")
-        subprocess.run(module_command)
     else:
         # get path of calling script to add to matlab path
         base_script_path = os.path.dirname(os.path.abspath(inspect.stack()[1].filename))
@@ -46,6 +35,18 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
         cmd.append("-r")
         cmd.append(f"addpath('{base_script_path}');{simulation_script_path}('{data_path}');exit;")
     return cmd
+
+
+def matlab_runtime(module_option: str):
+    if module_option not in ["load", "unload"]:
+        raise ValueError("Choose either 'load' or 'unload' as module option!")
+    module_command = list()
+    module_command.append("bash")
+    module_command.append("mcr_module.sh")
+    module_command.append(module_option)
+    subprocess.run(module_command)
+
+
 
 def generate_compiled_matlab_scripts(matlab_binary_path, kwave_binary_path, compiled_scripts_path):
     simulation_module = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'core', 'simulation_modules')

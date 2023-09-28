@@ -16,7 +16,7 @@ from simpa.core.simulation_modules.acoustic_forward_module import \
     AcousticForwardModelBaseAdapter
 from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
 from simpa.utils import Tags
-from simpa.utils.matlab import generate_matlab_cmd
+from simpa.utils.matlab import generate_matlab_cmd, matlab_runtime
 from simpa.utils.calculate import rotation_matrix_between_vectors
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.utils.path_manager import PathManager
@@ -253,11 +253,16 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         if Tags.MATLAB_COMPILED_SCRIPTS_PATH in self.component_settings:
             matlab_compiled_scripts_path = self.component_settings[Tags.MATLAB_COMPILED_SCRIPTS_PATH]
 
+        if matlab_runtime_path and matlab_compiled_scripts_path:
+            matlab_runtime("load")
         cmd = generate_matlab_cmd(matlab_binary_path, simulation_script_path, optical_path, matlab_runtime_path, matlab_compiled_scripts_path)
 
         cur_dir = os.getcwd()
         self.logger.info(cmd)
         subprocess.run(cmd, shell=True)
+
+        if matlab_runtime_path and matlab_compiled_scripts_path:
+            matlab_runtime("unload")
 
         raw_time_series_data = sio.loadmat(optical_path)[Tags.DATA_FIELD_TIME_SERIES_DATA]
 
