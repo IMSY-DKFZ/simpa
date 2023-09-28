@@ -17,7 +17,8 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
 
     if matlab_runtime_path and matlab_compiled_scripts_path:
         module_loading = list()
-        module_loading.append("module load mcr/23.2")
+        module_loading.append("module")
+        module_loading.append("load mcr/23.2")
         subprocess.run(module_loading)
 
         cmd.append(os.path.join(matlab_compiled_scripts_path, simulation_script_path, f"run_{simulation_script_path}.sh"))
