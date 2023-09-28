@@ -128,23 +128,21 @@ else:
     ]
 
 
-# class ExampleDeviceSlitIlluminationLinearDetector(sp.PhotoacousticDevice):
-#     """
-#     This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
-#
-#     """
-#
-#     def __init__(self):
-#         super().__init__(device_position_mm=np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-#                                                         VOLUME_PLANAR_DIM_IN_MM/2, 0]))
-#         self.set_detection_geometry(sp.LinearArrayDetectionGeometry())
-#         self.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
-#                                                                    direction_vector_mm=[0, 0, 1]))
-device = sp.PencilBeamIlluminationGeometry(np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                        VOLUME_PLANAR_DIM_IN_MM/2, 0]),
-                                           source_direction_vector=np.asarray([0, 0, 1]))
+class ExampleDeviceSlitIlluminationLinearDetector(sp.PhotoacousticDevice):
+    """
+    This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
 
-# device = ExampleDeviceSlitIlluminationLinearDetector()
+    """
+
+    def __init__(self):
+        super().__init__(device_position_mm=np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                        VOLUME_PLANAR_DIM_IN_MM/2, 0]))
+        self.set_detection_geometry(sp.LinearArrayDetectionGeometry())
+        self.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
+                                                                   direction_vector_mm=[0, 0, 1]))
+
+
+device = ExampleDeviceSlitIlluminationLinearDetector()
 
 sp.simulate(pipeline, settings, device)
 
@@ -158,6 +156,5 @@ if VISUALIZE:
                       wavelength=WAVELENGTH,
                       show_initial_pressure=True,
                       show_absorption=True,
-                      show_oxygenation=True,
                       show_diffuse_reflectance=SAVE_REFLECTANCE,
                       log_scale=True)
