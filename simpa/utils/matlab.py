@@ -16,16 +16,14 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
     cmd = list()
 
     if matlab_runtime_path and matlab_compiled_scripts_path:
-        cmd.append("module")
-        cmd.append("load")
+        cmd.append("module load")
         cmd.append("mcr/23.2")
         cmd.append("&&")
         cmd.append(os.path.join(matlab_compiled_scripts_path, simulation_script_path, f"run_{simulation_script_path}.sh"))
         cmd.append(matlab_runtime_path)
         cmd.append(data_path)
         cmd.append("&&")
-        cmd.append("module")
-        cmd.append("unload")
+        cmd.append("module unload")
         cmd.append("mcr")
     else:
         # get path of calling script to add to matlab path
@@ -54,10 +52,15 @@ def generate_compiled_matlab_scripts(matlab_binary_path, kwave_binary_path, comp
     cmd.append("-r")
 
     cmd.append(
-        f"mcc -m {os.path.join(acoustical_path, 'simulate_2D.m')} -a {kwave_binary_path} -d {os.path.join(compiled_scripts_path, 'simulate_2D')};"
-        f"mcc -m {os.path.join(acoustical_path, 'simulate_3D.m')} -a {kwave_binary_path} -d {os.path.join(compiled_scripts_path, 'simulate_3D')};"
-        f"mcc -m {os.path.join(reconstruction_path, 'time_reversal_2D.m')} -a {kwave_binary_path} -d {os.path.join(compiled_scripts_path, 'time_reversal_2D')};"
-        f"mcc -m {os.path.join(reconstruction_path, 'time_reversal_3D.m')} -a {kwave_binary_path} -d {os.path.join(compiled_scripts_path, 'time_reversal_3D')};"
+        f"mcc -m {os.path.join(acoustical_path, 'simulate_2D.m')} -d {os.path.join(compiled_scripts_path, 'simulate_2D')};"
+        f"mcc -m {os.path.join(acoustical_path, 'simulate_3D.m')} -d {os.path.join(compiled_scripts_path, 'simulate_3D')};"
+        f"mcc -m {os.path.join(reconstruction_path, 'time_reversal_2D.m')} -d {os.path.join(compiled_scripts_path, 'time_reversal_2D')};"
+        f"mcc -m {os.path.join(reconstruction_path, 'time_reversal_3D.m')} -d {os.path.join(compiled_scripts_path, 'time_reversal_3D')};"
         f"exit;")
 
     subprocess.run(cmd)
+
+if __name__ == "__main__":
+    generate_compiled_matlab_scripts("/home/kris/Programs/MATLAB/R2023b/bin/matlab",
+                                     "/home/kris/Projects/SIMPA/Repositories/k-wave/k-Wave/binaries/",
+                                     "/home/kris/Projects/SIMPA/Binaries/")
