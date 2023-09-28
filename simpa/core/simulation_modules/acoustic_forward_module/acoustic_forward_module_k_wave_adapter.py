@@ -259,7 +259,7 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
         cur_dir = os.getcwd()
         self.logger.info(cmd)
-        subprocess.run(cmd, shell=True)
+        subprocess.run(cmd)
 
         if matlab_runtime_path and matlab_compiled_scripts_path:
             matlab_runtime("unload")

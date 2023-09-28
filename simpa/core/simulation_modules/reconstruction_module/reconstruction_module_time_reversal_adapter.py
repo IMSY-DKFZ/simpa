@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
-from simpa.utils.matlab import generate_matlab_cmd
+from simpa.utils.matlab import generate_matlab_cmd, matlab_runtime
 from simpa.utils.settings import Settings
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
@@ -168,19 +168,29 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             time_reversal_script = "time_reversal_2D"
             axes = (0, 1)
 
-        matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
-        matlab_runtime_path = ''
+        if Tags.ACOUSTIC_MODEL_BINARY_PATH in self.component_settings:
+            matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
+        else:
+            matlab_binary_path = ""
+
+        matlab_runtime_path = ""
         if Tags.MATLAB_RUNTIME_PATH in self.component_settings:
             matlab_runtime_path = self.component_settings[Tags.MATLAB_RUNTIME_PATH]
         matlab_compiled_scripts_path = ''
         if Tags.MATLAB_COMPILED_SCRIPTS_PATH in self.component_settings:
             matlab_compiled_scripts_path = self.component_settings[Tags.MATLAB_COMPILED_SCRIPTS_PATH]
+
+        if matlab_runtime_path and matlab_compiled_scripts_path:
+            matlab_runtime("load")
         cmd = generate_matlab_cmd(matlab_binary_path, time_reversal_script, acoustic_path, matlab_runtime_path, matlab_compiled_scripts_path)
 
         cur_dir = os.getcwd()
         os.chdir(self.global_settings[Tags.SIMULATION_PATH])
         self.logger.info(cmd)
-        subprocess.run(cmd, shell=True)
+        subprocess.run(cmd)
+
+        if matlab_runtime_path and matlab_compiled_scripts_path:
+            matlab_runtime("unload")
 
         reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.DATA_FIELD_RECONSTRUCTED_DATA]
 
