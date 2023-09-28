@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
-from simpa.utils.matlab import generate_matlab_cmd, matlab_runtime
+from simpa.utils.matlab import generate_matlab_cmd
+from simpa.utils.environment_modules import use_environment_module
 from simpa.utils.settings import Settings
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
@@ -181,7 +182,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             matlab_compiled_scripts_path = self.component_settings[Tags.MATLAB_COMPILED_SCRIPTS_PATH]
 
         if matlab_runtime_path and matlab_compiled_scripts_path:
-            matlab_runtime("load")
+            use_environment_module("mcr", "23.2", "load")
         cmd = generate_matlab_cmd(matlab_binary_path, time_reversal_script, acoustic_path, matlab_runtime_path, matlab_compiled_scripts_path)
 
         cur_dir = os.getcwd()
@@ -190,7 +191,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         subprocess.run(cmd)
 
         if matlab_runtime_path and matlab_compiled_scripts_path:
-            matlab_runtime("unload")
+            use_environment_module("mcr", "23.2", "unload")
 
         reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.DATA_FIELD_RECONSTRUCTED_DATA]
 

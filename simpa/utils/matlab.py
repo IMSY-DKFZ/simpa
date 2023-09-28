@@ -37,17 +37,6 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
     return cmd
 
 
-def matlab_runtime(module_option: str):
-    if module_option not in ["load", "unload"]:
-        raise ValueError("Choose either 'load' or 'unload' as module option!")
-    module_command = list()
-    module_command.append("bash")
-    module_command.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "mcr_module.sh"))
-    module_command.append(module_option)
-    subprocess.run(module_command)
-
-
-
 def generate_compiled_matlab_scripts(matlab_binary_path, kwave_binary_path, compiled_scripts_path):
     simulation_module = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'core', 'simulation_modules')
     acoustical_path = os.path.join(simulation_module, 'acoustic_forward_module')
