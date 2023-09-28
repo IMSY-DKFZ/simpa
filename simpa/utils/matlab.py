@@ -5,7 +5,7 @@
 import inspect
 import os
 from typing import List
-import subprocess
+exec(open("/usr/share/Modules/init/python.py").read(), globals())
 
 
 def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, data_path: str,
@@ -16,10 +16,7 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
     cmd = list()
 
     if matlab_runtime_path and matlab_compiled_scripts_path:
-        module_loading = list()
-        module_loading.append("module")
-        module_loading.append("load mcr/23.2")
-        subprocess.run(module_loading)
+        module("load", "mcr/23.2")
 
         cmd.append(os.path.join(matlab_compiled_scripts_path, simulation_script_path, f"run_{simulation_script_path}.sh"))
         cmd.append(matlab_runtime_path)
