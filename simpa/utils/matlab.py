@@ -42,7 +42,7 @@ def matlab_runtime(module_option: str):
         raise ValueError("Choose either 'load' or 'unload' as module option!")
     module_command = list()
     module_command.append("bash")
-    module_command.append("mcr_module.sh")
+    module_command.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "mcr_module.sh"))
     module_command.append(module_option)
     subprocess.run(module_command)
 
