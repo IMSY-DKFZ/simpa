@@ -22,7 +22,10 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
         module_command.append("load")
         subprocess.run(module_command)
 
-        cmd.append(os.path.join(matlab_compiled_scripts_path, simulation_script_path, f"run_{simulation_script_path}.sh"))
+        cmd.append("bash")
+        cmd.append(os.path.join(matlab_compiled_scripts_path,
+                                simulation_script_path,
+                                f"run_{simulation_script_path}.sh"))
         cmd.append(matlab_runtime_path)
         cmd.append(data_path)
 
