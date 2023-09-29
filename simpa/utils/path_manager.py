@@ -95,7 +95,7 @@ class PathManager:
         env_variable_content = os.environ.get(env_variable_name)
         if env_variable_content is None:
             error_string = f"The desired environment path variable {env_variable_name} is not available in"\
-                            f" the given config path {self.environment_path}"
+                f" the given config path {self.environment_path}"
             self.logger.critical(error_string)
             raise FileNotFoundError(error_string)
         return env_variable_content

@@ -13,17 +13,13 @@ class InVision256TF(PhotoacousticDevice):
     (https://www.ithera-medical.com/products/msot-invision/). It is based on the real specifications of the device, but
     due to the limitations of the possibilities how to represent a device in the software frameworks,
     constitutes only an approximation.
-
     Some important publications that showcase the use cases of the InVision series devices are::
-
         Joseph, James, et al. "Evaluation of precision in optoacoustic tomography
         for preclinical imaging in living subjects."
         Journal of Nuclear Medicine 58.5 (2017): 807-814.
-
         Merčep, Elena, et al. "Whole-body live mouse imaging by hybrid
         reflection-mode ultrasound and optoacoustic tomography."
         Optics letters 40.20 (2015): 4643-4646.
-
     """
 
     def __init__(self, device_position_mm: np.ndarray = None,
@@ -40,8 +36,9 @@ class InVision256TF(PhotoacousticDevice):
         super(InVision256TF, self).__init__(device_position_mm=device_position_mm,
                                             field_of_view_extent_mm=field_of_view_extent_mm)
 
-        detection_geometry = iTheraInvision256TFDetectionGeometry(device_position_mm=device_position_mm,
-                                                                  field_of_view_extent_mm=field_of_view_extent_mm)
+        detection_geometry = iTheraInvision256TFDetectionGeometry(
+                                                          device_position_mm=device_position_mm,
+                                                          field_of_view_extent_mm=field_of_view_extent_mm)
 
         self.field_of_view_extent_mm = detection_geometry.field_of_view_extent_mm
         self.set_detection_geometry(detection_geometry)

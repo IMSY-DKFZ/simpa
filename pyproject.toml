@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "simpa"
-version = "0.8.7"
+version = "0.8.20"
 description = "Simulation and Image Processing for Photonics and Acoustics"
 authors = [
     "Division of Intelligent Medical Systems (IMSY), DKFZ <k.dreher@dkfz-heidelberg.de>",
-    "Janek Groehl <>"]
+    "Janek Groehl <janekgroehl@live.de>"]
 license = "MIT"
 readme = "README.md"
 # requires-python = ">=3.7"
@@ -21,7 +21,7 @@ packages = [
 
 # Requirements
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.8"
 matplotlib = ">=3.5.0"       # Uses PSF-License (MIT compatible)
 numpy = ">=1.21.4"           # Uses BSD-License (MIT compatible)
 scipy = ">=1.7.2"            # Uses BSD-like-License (MIT compatible)
@@ -34,11 +34,21 @@ coverage = ">=6.1.2"         # Uses Apache 2.0-License (MIT compatible)
 Deprecated = ">=1.2.13"      # Uses MIT-License (MIT compatible)
 torch = ">=1.10.0"           # Uses BSD-License (MIT compatible)
 python-dotenv = ">=0.19.2"   # Uses BSD-License (MIT compatible)
-ipasc-tool = ">=0.1.3"       # Uses BSD-License (MIT compatible)
+pacfish = ">=0.4.4"          # Uses BSD-License (MIT compatible)
 requests = ">=2.26.0"        # Uses Apache 2.0-License (MIT compatible)
 wget = ">=3.2"               # Is Public Domain (MIT compatible)
-jdata = ">=0.3.7"            # Uses Apache 2.0-License (MIT compatible)
+jdata = ">=0.5.2"            # Uses Apache 2.0-License (MIT compatible)
+pre-commit = ">=3.2.2"       # Uses MIT-License (MIT compatible) 
 scikit-learn = ">=1.1.0"     # Uses BSD-License (MIT compatible)
+
+[tool.poetry.group.docs.dependencies]
+sphinx-rtd-theme = "^1.0.0"
+Sphinx = "^5.1.1"
+myst-parser = "0.18.0, <1.1"
+
+# autopep8 config
+[tool.autopep8]
+max_line_length = 120
 
 [build-system]
 requires = [

@@ -10,8 +10,8 @@ from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.device_digital_twins import DigitalDeviceTwinBase, PhotoacousticDevice
 from simpa.utils import Settings, Tags
 
-from ipasc_tool import BaseAdapter, MetaDatum, DeviceMetaDataCreator, DetectionElementCreator, MetadataAcquisitionTags
-from ipasc_tool.iohandler import write_data as write_ipasc_data
+from pacfish import BaseAdapter, MetaDatum, DeviceMetaDataCreator, DetectionElementCreator, MetadataAcquisitionTags
+from pacfish.iohandler import write_data as write_ipasc_data
 
 
 class IpascSimpaAdapter(BaseAdapter):
@@ -80,7 +80,7 @@ class IpascSimpaAdapter(BaseAdapter):
     def generate_binary_data(self) -> np.ndarray:
         return self.time_series_data
 
-    def generate_meta_data_device(self) -> dict:
+    def generate_device_meta_data(self) -> dict:
         device_creator = DeviceMetaDataCreator()
         device_creator.set_general_information(uuid=self.device.generate_uuid(),
                                                fov=self.device.field_of_view_extent_mm/1000)
@@ -112,13 +112,13 @@ class IpascSimpaAdapter(BaseAdapter):
                 return float(1.0 / self.settings[Tags.K_WAVE_SPECIFIC_DT])
             elif self.device.get_detection_geometry().sampling_frequency_MHz is not None:
                 return float(self.device.get_detection_geometry().sampling_frequency_MHz * 1000000)
-        elif metadata_tag == MetadataAcquisitionTags.ACQUISITION_OPTICAL_WAVELENGTHS:
+        elif metadata_tag == MetadataAcquisitionTags.ACQUISITION_WAVELENGTHS:
             return np.asarray(self.wavelengths)
         elif metadata_tag == MetadataAcquisitionTags.DIMENSIONALITY:
             return "time"
         elif metadata_tag == MetadataAcquisitionTags.SCANNING_METHOD:
             return "full_scan"
-        elif metadata_tag == MetadataAcquisitionTags.PHOTOACOUSTIC_IMAGING_DEVICE:
+        elif metadata_tag == MetadataAcquisitionTags.PHOTOACOUSTIC_IMAGING_DEVICE_REFERENCE:
             return str(self.device.generate_uuid())
         elif metadata_tag == MetadataAcquisitionTags.SIZES:
             return np.asarray(np.shape(self.time_series_data))

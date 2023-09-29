@@ -29,8 +29,8 @@ def assert_equal_shapes(numpy_arrays: list):
                              f" parameters. Called from {inspect.stack()[1].function}")
 
 
-def assert_array_well_defined(array: np.ndarray, assume_non_negativity:bool = False,
-                              assume_positivity=False, array_name:str=None):
+def assert_array_well_defined(array: np.ndarray, assume_non_negativity: bool = False,
+                              assume_positivity=False, array_name: str = None):
     """
     This method tests if all entries of the given array are well-defined (i.e. not np.inf, np.nan, or None).
     The method can be parametrised to be more strict.
@@ -42,24 +42,18 @@ def assert_array_well_defined(array: np.ndarray, assume_non_negativity:bool = Fa
     :raises AssertionError: if there are any unexpected values in the given array.
     """
 
-    if array_name is None:
-        array_name = "'Not specified'"
-    caller = inspect.stack()[1]
-    stack_string = f" \n\tArray Name: {array_name} \n\tCaller: {caller.filename}" \
-                   f" \n\tline: {caller.lineno} \n\tcode: {caller.code_context}"
-
-    if np.isinf(array).any() or np.isneginf(array).any():
-        raise AssertionError("The given array contained values that were inf or -inf."
-                             f" Info: {stack_string}.")
-
-    if np.isnan(array).any():
-        raise AssertionError("The given array contained values that were nan."
-                             f" Info: {stack_string}.")
-
+    error_message = None
+    if not np.isfinite(array).all():
+        error_message = "nan, inf or -inf"
     if assume_positivity and (array <= 0).any():
-        raise AssertionError("The given array contained values that were not positive."
-                             f" Info: {stack_string}.")
-
+        error_message = "not positive"
     if assume_non_negativity and (array < 0).any():
-        raise AssertionError("The given array contained values that were negative."
+        error_message = "negative"
+    if error_message:
+        if array_name is None:
+            array_name = "'Not specified'"
+        caller = inspect.stack()[1]
+        stack_string = f" \n\tArray Name: {array_name} \n\tCaller: {caller.filename}" \
+                       f" \n\tline: {caller.lineno} \n\tcode: {caller.code_context}"
+        raise AssertionError(f"The given array contained values that were {error_message}."
                              f" Info: {stack_string}.")

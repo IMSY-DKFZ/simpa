@@ -18,6 +18,8 @@ simpa_tests/figures/*
 simpa_tests/**/figures
 simpa_tests/**/figures/*
 
+path_config.env
+
 *.orig
 */*.orig
 

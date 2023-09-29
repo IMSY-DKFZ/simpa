@@ -79,7 +79,7 @@ class TestCalculationUtils(unittest.TestCase):
             assert isinstance(gruneisen, float), "Gruneisenparameter was not a float"
             assert gruneisen > 0, "Gruneisenparameter was negative"
             assert gruneisen < 1, "Gruneisenparameter was way too large"
-    
+
     def test_positive_Gauss(self):
         for _ in range(1000):
             mean = np.random.rand(1)[0]

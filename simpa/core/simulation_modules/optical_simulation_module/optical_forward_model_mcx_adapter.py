@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-import struct
 import subprocess
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
@@ -101,8 +100,6 @@ class MCXAdapter(OpticalForwardModuleBase):
             fluence = self.define_settings_and_execute(illumination_geometry, _assumed_anisotropy)
  
 
-        struct._clearcache()
-
         # clean temporary files
         self.remove_mcx_output()
         return {Tags.DATA_FIELD_FLUENCE: fluence}
@@ -115,7 +112,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         :return: None
         """
         tmp_json_filename = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                            self.global_settings[Tags.VOLUME_NAME] + ".json"
+            self.global_settings[Tags.VOLUME_NAME] + ".json"
         self.mcx_json_config_file = tmp_json_filename
         self.temporary_output_files.append(tmp_json_filename)
         with open(tmp_json_filename, "w") as json_file:
@@ -135,7 +132,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         :return: dictionary with settings to be used by MCX
         """
         mcx_volumetric_data_file = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                                   self.global_settings[Tags.VOLUME_NAME] + "_output"
+            self.global_settings[Tags.VOLUME_NAME] + "_output"
         for name, suffix in self.mcx_output_suffixes.items():
             self.__setattr__(name, mcx_volumetric_data_file + suffix)
             self.temporary_output_files.append(mcx_volumetric_data_file + suffix)
@@ -183,7 +180,7 @@ class MCXAdapter(OpticalForwardModuleBase):
                 "MediaFormat": "muamus_float",
                 "Dim": [self.nx, self.ny, self.nz],
                 "VolumeFile": self.global_settings[Tags.SIMULATION_PATH] + "/" +
-                              self.global_settings[Tags.VOLUME_NAME] + ".bin"
+                self.global_settings[Tags.VOLUME_NAME] + ".bin"
             }}
         if Tags.MCX_SEED not in self.component_settings:
             if Tags.RANDOM_SEED in self.global_settings:
@@ -204,6 +201,9 @@ class MCXAdapter(OpticalForwardModuleBase):
         cmd.append(self.mcx_json_config_file)
         cmd.append("-O")
         cmd.append("F")
+        # use 'C' order array format for binary input file
+        cmd.append("-a")
+        cmd.append("1")
         return cmd
 
     @staticmethod
@@ -239,27 +239,15 @@ class MCXAdapter(OpticalForwardModuleBase):
                                                                    'scattering_cm': scattering_cm,
                                                                    'anisotropy': anisotropy,
                                                                    'assumed_anisotropy': assumed_anisotropy})
-        op_array = np.asarray([absorption_mm, scattering_mm])
-
-        [_, self.nx, self.ny, self.nz] = np.shape(op_array)
-
-        # create a binary of the volume
-
-        optical_properties_list = list(np.reshape(op_array, op_array.size, "F"))
-        del absorption_cm, absorption_mm, scattering_cm, scattering_mm, op_array
-        gc.collect()
-        mcx_input = struct.pack("f" * len(optical_properties_list), *optical_properties_list)
-        del optical_properties_list
-        gc.collect()
+        # stack arrays to give array with shape (nx,ny,nz,2)
+        op_array = np.stack([absorption_mm, scattering_mm], axis=-1, dtype=np.float32)
+        [self.nx, self.ny, self.nz, _] = np.shape(op_array)
+        # # create a binary of the volume
         tmp_input_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
-                         self.global_settings[Tags.VOLUME_NAME] + ".bin"
+            self.global_settings[Tags.VOLUME_NAME] + ".bin"
         self.temporary_output_files.append(tmp_input_path)
-        with open(tmp_input_path, "wb") as input_file:
-            input_file.write(mcx_input)
-
-        del mcx_input, input_file
-        struct._clearcache()
-        gc.collect()
+        # write array in 'C' order to binary file
+        op_array.tofile(tmp_input_path)
 
     def read_mcx_output(self, **kwargs) -> Dict:
         """
@@ -268,10 +256,8 @@ class MCXAdapter(OpticalForwardModuleBase):
         :param kwargs: dummy, used for class inheritance compatibility
         :return: `Dict` instance containing the MCX output
         """
-        with open(self.mcx_volumetric_data_file, 'rb') as f:
-            data = f.read()
-        data = struct.unpack('%df' % (len(data) / 4), data)
-        fluence = np.asarray(data).reshape([self.nx, self.ny, self.nz, self.frames], order='F')
+        shape = [self.nx, self.ny, self.nz, self.frames]
+        fluence = np.fromfile(self.mcx_volumetric_data_file, dtype=np.float32).reshape(shape, order='F')
         fluence *= 100  # Convert from J/mm^2 to J/cm^2
         if np.shape(fluence)[3] == 1:
             fluence = np.squeeze(fluence, 3)

@@ -261,7 +261,6 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         return [title, anisotropy_value_1, scattering_value_1, fluence_1,
                 anisotropy_value_2, scattering_value_2, fluence_2, illuminator_point]
 
-
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         print(len(self.results))
         for idx, result in enumerate(self.results):

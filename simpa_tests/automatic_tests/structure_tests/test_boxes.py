@@ -35,12 +35,18 @@ class TestBoxes(unittest.TestCase):
         )
 
     def assert_values(self, volume, values):
-        assert abs(volume[0][0][0] - values[0]) < 1e-5, "excpected " + str(values[0]) + " but was " + str(volume[0][0][0])
-        assert abs(volume[0][0][1] - values[1]) < 1e-5, "excpected " + str(values[1]) + " but was " + str(volume[0][0][1])
-        assert abs(volume[0][0][2] - values[2]) < 1e-5, "excpected " + str(values[2]) + " but was " + str(volume[0][0][2])
-        assert abs(volume[0][0][3] - values[3]) < 1e-5, "excpected " + str(values[3]) + " but was " + str(volume[0][0][3])
-        assert abs(volume[0][0][4] - values[4]) < 1e-5, "excpected " + str(values[4]) + " but was " + str(volume[0][0][4])
-        assert abs(volume[0][0][5] - values[5]) < 1e-5, "excpected " + str(values[5]) + " but was " + str(volume[0][0][5])
+        assert abs(volume[0][0][0] - values[0]) < 1e-5, "excpected " + \
+            str(values[0]) + " but was " + str(volume[0][0][0])
+        assert abs(volume[0][0][1] - values[1]) < 1e-5, "excpected " + \
+            str(values[1]) + " but was " + str(volume[0][0][1])
+        assert abs(volume[0][0][2] - values[2]) < 1e-5, "excpected " + \
+            str(values[2]) + " but was " + str(volume[0][0][2])
+        assert abs(volume[0][0][3] - values[3]) < 1e-5, "excpected " + \
+            str(values[3]) + " but was " + str(volume[0][0][3])
+        assert abs(volume[0][0][4] - values[4]) < 1e-5, "excpected " + \
+            str(values[4]) + " but was " + str(volume[0][0][4])
+        assert abs(volume[0][0][5] - values[5]) < 1e-5, "excpected " + \
+            str(values[5]) + " but was " + str(volume[0][0][5])
 
     def test_box_structures_partial_volume_within_one_voxel(self):
         self.box_settings[Tags.STRUCTURE_START_MM] = [0, 0, 0]
@@ -49,7 +55,7 @@ class TestBoxes(unittest.TestCase):
         self.box_settings[Tags.STRUCTURE_Y_EXTENT_MM] = edge_length
         self.box_settings[Tags.STRUCTURE_Z_EXTENT_MM] = edge_length
         bs = RectangularCuboidStructure(self.global_settings, self.box_settings)
-        assert bs.geometrical_volume[0, 0, 0] == edge_length**3
+        self.assertAlmostEqual(bs.geometrical_volume[0, 0, 0], edge_length**3, places=6)
 
     def test_box_structure_partial_volume_within_two_voxels(self):
         self.box_settings[Tags.STRUCTURE_START_MM] = [0.5, 0, 0.5]

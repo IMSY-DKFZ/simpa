@@ -13,28 +13,28 @@ from scipy.optimize import nnls
 
 class LinearUnmixing(MultispectralProcessingAlgorithm):
     """
-        Performs linear spectral unmixing (LU) using Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI)
-        on the defined data field for each chromophore specified in the component settings.
+    Performs linear spectral unmixing (LU) using Fast Linear Unmixing for PhotoAcoustic Imaging (FLUPAI)
+    on the defined data field for each chromophore specified in the component settings.
 
-        If tag LINEAR_UNMIXING_NON_NEGATIVE is set to True non-negative linear unmixing is performed, which solves the
-        KKT (Karush-Kuhn-Tucker) conditions for the non-negative least squares problem.
+    If tag LINEAR_UNMIXING_NON_NEGATIVE is set to True non-negative linear unmixing is performed, which solves the
+    KKT (Karush-Kuhn-Tucker) conditions for the non-negative least squares problem.
 
-        This component saves a dictionary containing the chromophore concentrations and corresponding wavelengths for
-        each chromophore. If the tag LINEAR_UNMIXING_COMPUTE_SO2 is set True the blood oxygen saturation
-        is saved as well, however, this is only possible if the chromophores oxy- and deoxyhemoglobin are specified.
-        IMPORTANT:
-        Linear unmixing should only be performed with at least two wavelengths:
-        e.g. Tags.WAVELENGTHS: [750, 800]
+    This component saves a dictionary containing the chromophore concentrations and corresponding wavelengths for
+    each chromophore. If the tag LINEAR_UNMIXING_COMPUTE_SO2 is set True the blood oxygen saturation
+    is saved as well, however, this is only possible if the chromophores oxy- and deoxyhemoglobin are specified.
+    IMPORTANT:
+    Linear unmixing should only be performed with at least two wavelengths:
+    e.g. Tags.WAVELENGTHS: [750, 800]
 
-        :param kwargs:
-           **Tags.DATA_FIELD (required)
-           **Tags.LINEAR_UNMIXING_SPECTRA (required)
-           **Tags.WAVELENGTHS (default: None, if None, then settings[Tags.WAVELENGTHS] will be used.)
-           **Tags.LINEAR_UNMIXING_COMPUTE_SO2 (default: False)
-           **Tags.LINEAR_UNMIXING_NON_NEGATIVE (default: False)
-           **settings (required)
-           **component_settings_key (required)
-        """
+    Parameters:
+    Tags.DATA_FIELD (required)
+    Tags.LINEAR_UNMIXING_SPECTRA (required)
+    Tags.WAVELENGTHS (default: None, if None, then settings[Tags.WAVELENGTHS] will be used.)
+    Tags.LINEAR_UNMIXING_COMPUTE_SO2 (default: False)
+    Tags.LINEAR_UNMIXING_NON_NEGATIVE (default: False)
+    global_settings (required)
+    component_settings_key (required)
+    """
 
     def __init__(self, global_settings, component_settings_key: str):
         super(LinearUnmixing, self).__init__(global_settings=global_settings,
@@ -96,13 +96,13 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
         for index, chromophore in enumerate(self.chromophore_spectra_dict.keys()):
             self.chromophore_concentrations_dict[chromophore] = self.chromophore_concentrations[index]
         self.logger.info(f"The chromophore concentration was computed for chromophores: "
-                          f"{self.chromophore_concentrations_dict.keys()}")
+                         f"{self.chromophore_concentrations_dict.keys()}")
 
         # compute blood oxygen saturation if selected
         save_dict = {
-                    "chromophore_concentrations": self.chromophore_concentrations_dict,
-                    "wavelengths": self.wavelengths
-                    }
+            "chromophore_concentrations": self.chromophore_concentrations_dict,
+            "wavelengths": self.wavelengths
+        }
         if Tags.LINEAR_UNMIXING_COMPUTE_SO2 in self.component_settings:
             if self.component_settings[Tags.LINEAR_UNMIXING_COMPUTE_SO2]:
                 self.logger.info("Blood oxygen saturation is calculated and saved.")
@@ -157,7 +157,7 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
         # write absorption data for each chromophore and the corresponding wavelength into an array (matrix)
         for index, key in enumerate(self.chromophore_spectra_dict.keys()):
             for wave in range(numberWavelengths):
-                    endmemberMatrix[wave][index] = self.chromophore_spectra_dict[key][wave]
+                endmemberMatrix[wave][index] = self.chromophore_spectra_dict[key][wave]
 
         return endmemberMatrix
 

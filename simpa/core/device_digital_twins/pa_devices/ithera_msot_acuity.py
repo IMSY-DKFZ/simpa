@@ -125,7 +125,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                              global_settings[Tags.SPACING_MM] -
                                              global_settings[Tags.DIM_VOLUME_X_MM]) / 2
             global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + \
-                                                    global_settings[Tags.SPACING_MM]
+                global_settings[Tags.SPACING_MM]
             self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
         else:
             width_shift_for_structures_mm = 0
@@ -137,20 +137,20 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             structure_dict = volume_creator_settings[Tags.STRUCTURES][structure_key]
             if Tags.STRUCTURE_START_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                                 0] + width_shift_for_structures_mm
+                    0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                                 2] + z_dim_position_shift_mm
+                    2] + z_dim_position_shift_mm
             if Tags.STRUCTURE_END_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                               0] + width_shift_for_structures_mm
+                    0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                               2] + z_dim_position_shift_mm
+                    2] + z_dim_position_shift_mm
 
         if Tags.CONSIDER_PARTIAL_VOLUME_IN_DEVICE in volume_creator_settings:
             consider_partial_volume = volume_creator_settings[Tags.CONSIDER_PARTIAL_VOLUME_IN_DEVICE]
         else:
             consider_partial_volume = False
-        
+
         if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
             us_gel_layer_settings = Settings({
                 Tags.PRIORITY: 5,

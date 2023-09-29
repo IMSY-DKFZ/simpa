@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
+from numbers import Number
 
 
 class Tags:
@@ -45,13 +46,13 @@ class Tags:
     Usage: SIMPA package
     """
 
-    WAVELENGTH = ("wavelength", (int, np.integer))
+    WAVELENGTH = ("wavelength", Number)
     """
     Single wavelength used for the current simulation.\n
     Usage: SIMPA package
     """
 
-    RANDOM_SEED = ("random_seed", (int, np.integer))
+    RANDOM_SEED = ("random_seed", Number)
     """
     Random seed for numpy and torch.\n
     Usage: SIMPA package
@@ -63,7 +64,7 @@ class Tags:
     Usage: naming convention
     """
 
-    GPU = ("gpu", (bool, np.bool, np.bool_))
+    GPU = ("gpu", (bool, np.bool_))
     """
     If True, uses all available gpu options of the used modules.\n
     Usage: SIMPA package 
@@ -75,13 +76,13 @@ class Tags:
     Usage: SIMPA package
     """
 
-    MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", (int, np.integer, float))
+    MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", Number)
     """
     Temperature of the simulated volume.\n
     Usage: module noise_simulation
     """
 
-    DO_FILE_COMPRESSION = ("minimize_file_size", (bool, np.bool, np.bool_))
+    DO_FILE_COMPRESSION = ("minimize_file_size", (bool, np.bool_))
     """
     If not set to False, the HDF5 file will be optimised after the simulations are done.
     Usage: simpa.core.simulation.simulate
@@ -121,7 +122,7 @@ class Tags:
     Usage: adapter segmentation_based_volume_creator
     """
 
-    PRIORITY = ("priority", (int, np.integer, float))
+    PRIORITY = ("priority", Number)
     """
     Number that corresponds to a priority of the assigned structure. If another structure occupies the same voxel 
     in a volume, the structure with a higher priority will be preferred.\n
@@ -210,13 +211,13 @@ class Tags:
     Usage: adapter versatile_volume_creation, class GeometricalStructure
     """
 
-    STRUCTURE_RADIUS_MM = ("structure_radius", (int, np.integer, float, np.ndarray))
+    STRUCTURE_RADIUS_MM = ("structure_radius", (Number, np.ndarray))
     """
     Radius of the structure.\n
     Usage: adapter versatile_volume_creation, class GeometricalStructure
     """
 
-    STRUCTURE_ECCENTRICITY = ("structure_excentricity", (int, np.integer, float, np.ndarray))
+    STRUCTURE_ECCENTRICITY = ("structure_excentricity", (Number, np.ndarray))
     """
     Eccentricity of the structure.\n
     Usage: adapter versatile_volume_creation, class EllipticalTubularStructure
@@ -240,37 +241,37 @@ class Tags:
     Usage: adapter versatile_volume_creation, class ParallelepipedStructure
     """
 
-    STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", (int, np.integer, float))
+    STRUCTURE_X_EXTENT_MM = ("structure_x_extent_mm", Number)
     """
     X-extent of the structure in the generated volume.\n
     Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
     """
 
-    STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", (int, np.integer, float))
+    STRUCTURE_Y_EXTENT_MM = ("structure_y_extent_mm", Number)
     """
     Y-extent of the structure in the generated volume.\n
     Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
     """
 
-    STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", (int, np.integer, float))
+    STRUCTURE_Z_EXTENT_MM = ("structure_z_extent_mm", Number)
     """
     Z-extent of the structure in the generated volume.\n
     Usage: adapter versatile_volume_creation, class RectangularCuboidStructure
     """
 
-    STRUCTURE_BIFURCATION_LENGTH_MM = ("structure_bifurcation_length_mm", (int, np.integer, float))
+    STRUCTURE_BIFURCATION_LENGTH_MM = ("structure_bifurcation_length_mm", Number)
     """
     Length after which a VesselStructure will bifurcate.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
     """
 
-    STRUCTURE_CURVATURE_FACTOR = ("structure_curvature_factor", (int, np.integer, float))
+    STRUCTURE_CURVATURE_FACTOR = ("structure_curvature_factor", Number)
     """
     Factor that determines how strongly a vessel tree is curved.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
     """
 
-    STRUCTURE_RADIUS_VARIATION_FACTOR = ("structure_radius_variation_factor", (int, np.integer, float))
+    STRUCTURE_RADIUS_VARIATION_FACTOR = ("structure_radius_variation_factor", Number)
     """
     Factor that determines how strongly a the radius of vessel tree varies.\n
     Usage: adapter versatile_volume_creation, class VesselStructure
@@ -347,7 +348,7 @@ class Tags:
     Usage: module optical_simulation_module
     """
 
-    OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", (int, np.integer, float))
+    OPTICAL_MODEL_NUMBER_PHOTONS = ("optical_model_number_of_photons", Number)
     """
     Number of photons used in the optical simulation.\n
     Usage: module optical_simulation_module
@@ -430,13 +431,13 @@ class Tags:
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
-    TIME_STEP = ("time_step", (int, np.integer, float))
+    TIME_STEP = ("time_step", Number)
     """
     Temporal resolution of mcx.\n
     Usage: adapter mcx_adapter
     """
 
-    TOTAL_TIME = ("total_time", (int, np.integer, float))
+    TOTAL_TIME = ("total_time", Number)
     """
     Total simulated time in mcx.\n
     Usage: adapter mcx_adapter
@@ -572,13 +573,13 @@ class Tags:
     Usage: module acoustic_forward_module, naming convention
     """
 
-    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", (int, np.integer, float))
+    K_WAVE_SPECIFIC_DT = ("dt_acoustic_sim", Number)
     """
     Temporal resolution of kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter
     """
 
-    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", (int, np.integer, float))
+    K_WAVE_SPECIFIC_NT = ("Nt_acoustic_sim", Number)
     """
     Total time steps simulated by kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter
@@ -607,7 +608,7 @@ class Tags:
     Usage: naming convention
     """
 
-    RECORDMOVIE = ("record_movie", (bool, np.bool, np.bool_))
+    RECORDMOVIE = ("record_movie", (bool, np.bool_))
     """
     If True, a movie of the kwave simulation will be recorded.\n
     Usage: adapter KwaveAcousticForwardModel
@@ -619,7 +620,7 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel
     """
 
-    ACOUSTIC_LOG_SCALE = ("acoustic_log_scale", (bool, np.bool, np.bool_))
+    ACOUSTIC_LOG_SCALE = ("acoustic_log_scale", (bool, np.bool_))
     """
     If True, the movie of the kwave simulation will be recorded in a log scale.\n
     Usage: adapter KwaveAcousticForwardModel
@@ -678,7 +679,7 @@ class Tags:
     Usage: module reconstruction_module, naming convention
     """
 
-    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool, np.bool_))
+    RECONSTRUCTION_INVERSE_CRIME = ("reconstruction_inverse_crime", (bool, np.bool_))
     """
     If True, the Time Reversal reconstruction will commit the "inverse crime".\n
     Usage: TimeReversalAdapter
@@ -714,13 +715,13 @@ class Tags:
     Usage: adapter MitkBeamformingAdapter, naming convention
     """
 
-    RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION = ("Envelope_Detection_before_Reconstruction", (bool, np.bool, np.bool_))
+    RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION = ("Envelope_Detection_before_Reconstruction", (bool, np.bool_))
     """
     Specifies whether an envelope detection should be performed before reconstruction, default is False
     Usage: adapter PyTorchDASAdapter, naming convention
     """
 
-    RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION = ("Envelope_Detection_after_Reconstruction", (bool, np.bool, np.bool_))
+    RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION = ("Envelope_Detection_after_Reconstruction", (bool, np.bool_))
     """
     Specifies whether an envelope detection should be performed after reconstruction, default is False
     Usage: adapter PyTorchDASAdapter
@@ -751,14 +752,14 @@ class Tags:
     """
 
     RECONSTRUCTION_PERFORM_BANDPASS_FILTERING = ("reconstruction_perform_bandpass_filtering",
-                                    (bool, np.bool, np.bool_))
+                                                 (bool, np.bool_))
     """
     Whether bandpass filtering should be applied or not. Default should be True\n
     Usage: adapter PyTorchDASAdapter
     """
 
     RECONSTRUCTION_PERFORM_RESAMPLING_FOR_FFT = ("reconstruction_perform_resampling_for_fft",
-                                    (bool, np.bool, np.bool_))
+                                                 (bool, np.bool_))
     """
     Whether the data is resampled to a power of 2 in time dimension before applying the FFT 
     and resampled back after filtering for performance reasons. Default should be False\n
@@ -783,7 +784,7 @@ class Tags:
     Usage: reconstruction utils
     """
 
-    TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", (int, np.integer, float))
+    TUKEY_WINDOW_ALPHA = ("tukey_window_alpha", Number)
     """
     Sets alpha value of Tukey window between 0 (similar to box window) and 1 (similar to Hann window).
     Default is 0.5\n
@@ -797,13 +798,13 @@ class Tags:
     Usage: reconstruction utils
     """
 
-    BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", (int, np.integer, float))
+    BANDPASS_CUTOFF_LOWPASS_IN_HZ = ("bandpass_cuttoff_lowpass_in_HZ", Number)
     """
     Sets the cutoff threshold in Hz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
-    BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", (int, np.integer, float))
+    BANDPASS_CUTOFF_HIGHPASS_IN_HZ = ("bandpass_cuttoff_highpass_in_HZ", Number)
     """
     Sets the cutoff threshold in Hz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
     Usage: adapter PyTorchDASAdapter
@@ -915,32 +916,32 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    KWAVE_PROPERTY_ALPHA_POWER = ("medium_alpha_power", (int, np.integer, float))
+    KWAVE_PROPERTY_ALPHA_POWER = ("medium_alpha_power", Number)
     """
     Exponent of the exponential acoustic attenuation law of kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
     # Volume geometry settings
-    SPACING_MM = ("voxel_spacing_mm", (int, np.integer, float))
+    SPACING_MM = ("voxel_spacing_mm", Number)
     """
     Isotropic extent of one voxels in mm in the generated volume.\n
     Usage: SIMPA package
     """
 
-    DIM_VOLUME_X_MM = ("volume_x_dim_mm", (int, np.integer, float))
+    DIM_VOLUME_X_MM = ("volume_x_dim_mm", Number)
     """
     Extent of the x-axis of the generated volume.\n
     Usage: SIMPA package
     """
 
-    DIM_VOLUME_Y_MM = ("volume_y_dim_mm", (int, np.integer, float))
+    DIM_VOLUME_Y_MM = ("volume_y_dim_mm", Number)
     """
     Extent of the y-axis of the generated volume.\n
     Usage: SIMPA package
     """
 
-    DIM_VOLUME_Z_MM = ("volume_z_dim_mm", (int, np.integer, float))
+    DIM_VOLUME_Z_MM = ("volume_z_dim_mm", Number)
     """
     Extent of the z-axis of the generated volume.\n
     Usage: SIMPA package
@@ -953,7 +954,7 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    KWAVE_PROPERTY_PMLAlpha = ("pml_alpha", (int, np.integer, float))
+    KWAVE_PROPERTY_PMLAlpha = ("pml_alpha", Number)
     """
     Alpha coefficient of the "perfectly matched layer" (PML) around the simulated volume in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -990,19 +991,19 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", (int, np.integer, float))
+    SENSOR_CENTER_FREQUENCY_HZ = ("sensor_center_frequency", Number)
     """
     Sensor center frequency in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", (int, np.integer, float))
+    SENSOR_BANDWIDTH_PERCENT = ("sensor_bandwidth", Number)
     """
     Sensor bandwidth in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", (int, np.integer, float))
+    SENSOR_DIRECTIVITY_SIZE_M = ("sensor_directivity_size", Number)
     """
     Size of each detector element in kwave.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -1014,7 +1015,7 @@ class Tags:
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
     """
 
-    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", (int, np.integer, float))
+    SENSOR_SAMPLING_RATE_MHZ = ("sensor_sampling_rate_mhz", Number)
     """
     Sampling rate of the used PA device.\n
     Usage: adapter KwaveAcousticForwardModel, adapter TimeReversalAdapter, naming convention
@@ -1043,6 +1044,12 @@ class Tags:
     DETECTOR_ELEMENT_WIDTH_MM = "detector_element_width_mm"
     """
     Width of a detector element. Corresponds to the pitch - the distance between two detector element borders.\n
+    Usage: module acoustic_forward_module, naming convention
+    """
+
+    DETECTOR_ELEMENT_LENGTH_MM = "detector_element_length_mm"
+    """
+    Length of a detector element. Corresponds to the length of the detection element.\n
     Usage: module acoustic_forward_module, naming convention
     """
 
@@ -1302,7 +1309,7 @@ class Tags:
     Iterative qPAI Reconstruction
     """
 
-    ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION = ("constant_regularization", (bool, np.bool, np.bool_))
+    ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION = ("constant_regularization", (bool, np.bool_))
     """
     If True, the fluence regularization will be constant.\n
     Usage: module algorithms (iterative_qPAI_algorithm.py)
@@ -1320,25 +1327,25 @@ class Tags:
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
-    ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", (int, np.integer, float))
+    ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA = ("regularization_sigma", Number)
     """
     Sigma value used for constant regularization of fluence.\n
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
-    ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS = ("save_intermediate_results", (bool, np.bool, np.bool_))
+    ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS = ("save_intermediate_results", (bool, np.bool_))
     """
     If True, a list of all intermediate absorption updates (middle slices only) will be saved in a numpy file.\n
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
-    ITERATIVE_RECONSTRUCTION_SAVE_LAST_FLUENCE = ("save_last_fluence", (bool, np.bool, np.bool_))
+    ITERATIVE_RECONSTRUCTION_SAVE_LAST_FLUENCE = ("save_last_fluence", (bool, np.bool_))
     """
     If True, the last simulated fluence before the stopping criterion will be saved in a numpy file.\n
     Usage: module algorithms (iterative_qPAI_algorithm.py)
     """
 
-    ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", (int, np.integer, float))
+    ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL = ("iteration_stopping_level", Number)
     """
     Ratio of improvement and preceding error at which iteration method stops. 
     Usage: module algorithms (iterative_qPAI_algorithm.py)
@@ -1406,13 +1413,13 @@ class Tags:
     Usage: module algorithms (linear_unmixing)
     """
 
-    SIGNAL_THRESHOLD = ("linear_unmixing_signal_threshold", (int, np.integer, float))
+    SIGNAL_THRESHOLD = ("linear_unmixing_signal_threshold", Number)
     """
     Number that specifies which fraction of the signal intensity is used for the specified processing algorithm.\n
     Usage: module algorithms (linear_unmixing)
     """
 
-    DO_IPASC_EXPORT = ("do_ipasc_export", (bool, np.bool, np.bool_))
+    DO_IPASC_EXPORT = ("do_ipasc_export", (bool, np.bool_))
     """
     Flag which determines whether the simulated time series data (if available) will be
     exported into the IPASC data format.

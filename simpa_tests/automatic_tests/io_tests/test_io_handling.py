@@ -53,7 +53,8 @@ class TestIOHandling(unittest.TestCase):
         structure_settings["background"] = background_dictionary
 
         save_dictionary[Tags.STRUCTURES] = structure_settings
-        save_dictionary["test_dictionary"] = {"test_spectrum": AbsorptionSpectrumLibrary().get_spectrum_by_name("Water")}
+        save_dictionary["test_dictionary"] = {
+            "test_spectrum": AbsorptionSpectrumLibrary().get_spectrum_by_name("Water")}
 
         self.assert_save_and_read_dictionaries_equal(save_dictionary)
 

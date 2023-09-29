@@ -10,6 +10,7 @@ from simpa.log import Logger
 from simpa.utils import Settings, Tags, get_functional_from_deformation_settings
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.tissue_properties import TissueProperties
+from simpa.utils.processing_device import get_processing_device
 
 
 class GeometricalStructure:
@@ -25,6 +26,7 @@ class GeometricalStructure:
     def __init__(self, global_settings: Settings,
                  single_structure_settings: Settings = None):
 
+        self.torch_device = get_processing_device(global_settings)
         self.logger = Logger()
 
         self.voxel_spacing = global_settings[Tags.SPACING_MM]
@@ -67,7 +69,7 @@ class GeometricalStructure:
         self.molecule_composition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
         self.molecule_composition.update_internal_properties(global_settings)
 
-        self.geometrical_volume = np.zeros(self.volume_dimensions_voxels)
+        self.geometrical_volume = np.zeros(self.volume_dimensions_voxels, dtype=np.float32)
         self.params = self.get_params_from_settings(single_structure_settings)
         self.fill_internal_volume()
 

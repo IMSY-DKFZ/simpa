@@ -32,7 +32,7 @@ class DelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
         ### ALGORITHM ITSELF ###
 
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
-            detection_geometry, spacing_in_mm, speed_of_sound_in_m_per_s, self.logger)
+            detection_geometry, spacing_in_mm, self.logger)
 
         if zdim == 1:
             sensor_positions[:, 1] = 0  # Assume imaging plane

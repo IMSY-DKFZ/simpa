@@ -16,15 +16,22 @@ class TissueProperties(dict):
     It also contains a volume fraction field.
     """
 
-    property_tags = [Tags.DATA_FIELD_ABSORPTION_PER_CM,
-                     Tags.DATA_FIELD_SCATTERING_PER_CM,
-                     Tags.DATA_FIELD_ANISOTROPY,
-                     Tags.DATA_FIELD_GRUNEISEN_PARAMETER,
-                     Tags.DATA_FIELD_SEGMENTATION,
-                     Tags.DATA_FIELD_OXYGENATION,
-                     Tags.DATA_FIELD_DENSITY,
-                     Tags.DATA_FIELD_SPEED_OF_SOUND,
-                     Tags.DATA_FIELD_ALPHA_COEFF]
+    wavelength_dependent_properties = [
+        Tags.DATA_FIELD_ABSORPTION_PER_CM,
+        Tags.DATA_FIELD_SCATTERING_PER_CM,
+        Tags.DATA_FIELD_ANISOTROPY
+    ]
+
+    wavelength_independent_properties = [
+        Tags.DATA_FIELD_GRUNEISEN_PARAMETER,
+        Tags.DATA_FIELD_SEGMENTATION,
+        Tags.DATA_FIELD_OXYGENATION,
+        Tags.DATA_FIELD_DENSITY,
+        Tags.DATA_FIELD_SPEED_OF_SOUND,
+        Tags.DATA_FIELD_ALPHA_COEFF
+    ]
+
+    property_tags = wavelength_dependent_properties + wavelength_independent_properties
 
     def __init__(self, settings: Settings):
         super().__init__()
