@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
-import os, inspect
+import os
+import inspect
 from simpa.utils import PathManager
 from pathlib import Path
 from dotenv import unset_key

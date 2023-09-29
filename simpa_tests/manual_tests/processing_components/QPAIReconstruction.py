@@ -4,21 +4,20 @@
 
 
 # FIXME temporary workaround for newest Intel architectures
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-from simpa.utils.path_manager import PathManager
-import numpy as np
-import os
-import matplotlib.pyplot as plt
-from scipy.ndimage import zoom
-from simpa.io_handling import load_data_field
-from simpa.core.simulation import simulate
-from simpa.utils import Tags, Settings, TISSUE_LIBRARY
+from simpa_tests.manual_tests import ManualIntegrationTestClass
+from simpa.core.device_digital_twins import RSOMExplorerP50
+from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI
 from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
     GaussianNoise
-from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI
-from simpa.core.device_digital_twins import RSOMExplorerP50
-from simpa_tests.manual_tests import ManualIntegrationTestClass
+from simpa.utils import Tags, Settings, TISSUE_LIBRARY
+from simpa.core.simulation import simulate
+from simpa.io_handling import load_data_field
+from scipy.ndimage import zoom
+import matplotlib.pyplot as plt
+import numpy as np
+from simpa.utils.path_manager import PathManager
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 class TestqPAIReconstruction(ManualIntegrationTestClass):
@@ -130,7 +129,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
 
         # get reconstructed absorptions (2-d middle slices) at each iteration step
         self.list_reconstructions_result_path = self.path_manager.get_hdf5_file_save_path() + \
-                        "/List_reconstructed_qpai_absorptions_" + str(self.wavelength) + "_" + self.VOLUME_NAME + ".npy"
+            "/List_reconstructed_qpai_absorptions_" + str(self.wavelength) + "_" + self.VOLUME_NAME + ".npy"
         self.list_2d_reconstructed_absorptions = np.load(self.list_reconstructions_result_path)
 
     def tear_down(self):
@@ -169,7 +168,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
                        difference_absorption[x_pos, :, :]]
 
         label = ["Absorption coefficients: ${\mu_a}^{gt}$", "Reconstruction: ${\mu_a}^{reconstr.}$",
-             "Difference: ${\mu_a}^{gt} - {\mu_a}^{reconstr.}$"]
+                 "Difference: ${\mu_a}^{gt} - {\mu_a}^{reconstr.}$"]
 
         plt.figure(figsize=(20, 15))
         plt.subplots_adjust(hspace=0.5, wspace=0.1)

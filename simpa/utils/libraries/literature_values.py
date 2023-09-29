@@ -31,7 +31,6 @@ class StandardProperties:
     WATER_MUS = 1e-10
     WATER_G = 1.0
 
-
     # @article{Kedenburg:12,
     # author = {S. Kedenburg and M. Vieweg and T. Gissibl and H. Giessen},
     # journal = {Opt. Mater. Express},
@@ -45,7 +44,7 @@ class StandardProperties:
     # url = {http://www.osapublishing.org/ome/abstract.cfm?URI=ome-2-11-1588},
     # doi = {10.1364/OME.2.001588},
 
-    HEAVY_WATER_MUA = 0.0008 
+    HEAVY_WATER_MUA = 0.0008
 
     # @book{marx2013rosen,
     #   title={Rosen's Emergency Medicine-Concepts and Clinical Practice E-Book},
@@ -73,6 +72,7 @@ class StandardProperties:
     DENSITY_GEL_PAD = 890
     DENSITY_WATER = 1000
     DENSITY_HEAVY_WATER = 1107
+    DENSITY_LYMPH_NODE = 1035
 
     SPEED_OF_SOUND_GENERIC = 1540.0   # m/s
     SPEED_OF_SOUND_AIR = 343.0
@@ -84,6 +84,7 @@ class StandardProperties:
     SPEED_OF_SOUND_GEL_PAD = 1583.0
     SPEED_OF_SOUND_WATER = 1482.3
     SPEED_OF_SOUND_HEAVY_WATER = 1540
+    SPEED_OF_SOUND_LYMPH_NODE = 1586
 
     ALPHA_COEFF_GENERIC = 0.02  # dB/cm/MHz
     ALPHA_COEFF_AIR = 3.3875e-3
@@ -94,6 +95,7 @@ class StandardProperties:
     ALPHA_COEFF_FAT = 0.3785
     ALPHA_COEFF_GEL_PAD = 0.277
     ALPHA_COEFF_WATER = 2.1976e-3
+    ALPHA_COEFF_LYMPH_NODE = 2.50
 
 
 class OpticalTissueProperties:
@@ -246,6 +248,22 @@ class OpticalTissueProperties:
     #   year = {2019}
     # }
     BONE_ABSORPTION = 1.8
+
+    # Approximated table 2 with gaussian fit
+    # @article{bugter2021detecting,
+    # title={Detecting head and neck lymph node metastases with white light reflectance spectroscopy; a pilot study},
+    # author={Bugter, Ois{\'\i}n and Aaboubout, Yassine and Algoe, Mahesh and de Bruijn, Henri{\"e}tte S and Keereweer, Stijn and Sewnaik, Aniel and Monserez, Dominiek A and Koljenovi{\'c}, Senada and Hardillo, Jose AU and Robinson, Dominic J and others},
+    # journal={Oral Oncology},
+    # volume={123},
+    # pages={105627},
+    # year={2021},
+    # publisher={Elsevier}
+    # }
+    BLOOD_VOLUME_FRACTION_LYMPH_NODE = 0.14
+    BLOOD_VOLUME_FRACTION_LYMPH_NODE_VARIATION = 0.07
+    LYMPH_NODE_OXYGENATION = 0.73
+    LYMPH_NODE_OXYGENATION_VARIATION = 0.15
+
 
 class MorphologicalTissueProperties:
     """

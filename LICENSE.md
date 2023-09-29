@@ -6,4 +6,4 @@
 
 This work is licensed under the following licenses:
 
-- The source code and the accompanying material is licensed under [MIT](LICENSES/MIT.txt).
+- The source code and the accompanying material is licensed under [MIT](LICENSES/MIT).

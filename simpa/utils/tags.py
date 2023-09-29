@@ -752,14 +752,14 @@ class Tags:
     """
 
     RECONSTRUCTION_PERFORM_BANDPASS_FILTERING = ("reconstruction_perform_bandpass_filtering",
-                                    (bool, np.bool_))
+                                                 (bool, np.bool_))
     """
     Whether bandpass filtering should be applied or not. Default should be True\n
     Usage: adapter PyTorchDASAdapter
     """
 
     RECONSTRUCTION_PERFORM_RESAMPLING_FOR_FFT = ("reconstruction_perform_resampling_for_fft",
-                                    (bool, np.bool_))
+                                                 (bool, np.bool_))
     """
     Whether the data is resampled to a power of 2 in time dimension before applying the FFT 
     and resampled back after filtering for performance reasons. Default should be False\n
@@ -798,13 +798,13 @@ class Tags:
     Usage: reconstruction utils
     """
 
-    BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", Number)
+    BANDPASS_CUTOFF_LOWPASS_IN_HZ = ("bandpass_cuttoff_lowpass_in_HZ", Number)
     """
     Sets the cutoff threshold in Hz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
-    BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", Number)
+    BANDPASS_CUTOFF_HIGHPASS_IN_HZ = ("bandpass_cuttoff_highpass_in_HZ", Number)
     """
     Sets the cutoff threshold in Hz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
     Usage: adapter PyTorchDASAdapter
