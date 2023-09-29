@@ -30,7 +30,7 @@ from .libraries.molecule_library import Molecule, MolecularCompositionGenerator
 from .libraries.molecule_library import MoleculeLibrary
 from .libraries.molecule_library import MOLECULE_LIBRARY
 
-from .libraries.tissue_library import TissueLibrary
+from .libraries.tissue_library import TissueLibrary, TISSUE_LIBRARY
 
 from .calculate import calculate_oxygenation
 from .calculate import calculate_gruneisen_parameter_from_temperature

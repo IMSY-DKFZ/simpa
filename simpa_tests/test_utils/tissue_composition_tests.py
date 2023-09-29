@@ -759,7 +759,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     """
     reference_dict = dict()
 
-    values450nm = TissueProperties()
+    values450nm = TissueProperties(TEST_SETTINGS)
     values450nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values450nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values450nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -770,7 +770,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values500nm = TissueProperties()
+    values500nm = TissueProperties(TEST_SETTINGS)
     values500nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values500nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values500nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -781,7 +781,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values550nm = TissueProperties()
+    values550nm = TissueProperties(TEST_SETTINGS)
     values550nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values550nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values550nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -792,7 +792,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values600nm = TissueProperties()
+    values600nm = TissueProperties(TEST_SETTINGS)
     values600nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values600nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values600nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -803,7 +803,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values650nm = TissueProperties()
+    values650nm = TissueProperties(TEST_SETTINGS)
     values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values650nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values650nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -814,7 +814,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values700nm = TissueProperties()
+    values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values700nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -825,7 +825,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values750nm = TissueProperties()
+    values750nm = TissueProperties(TEST_SETTINGS)
     values750nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values750nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values750nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -836,7 +836,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values800nm = TissueProperties()
+    values800nm = TissueProperties(TEST_SETTINGS)
     values800nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values800nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values800nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -847,7 +847,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values850nm = TissueProperties()
+    values850nm = TissueProperties(TEST_SETTINGS)
     values850nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values850nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values850nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -858,7 +858,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values900nm = TissueProperties()
+    values900nm = TissueProperties(TEST_SETTINGS)
     values900nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values900nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values900nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -869,7 +869,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values950nm = TissueProperties()
+    values950nm = TissueProperties(TEST_SETTINGS)
     values950nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values950nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values950nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -923,7 +923,7 @@ if __name__ == "__main__":
                                                           visualise_values=True,
                                                           title="Muscle ")
 
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.lymph_node(),
+    compare_molecular_composition_against_expected_values(molecular_composition=TissueLibrary().lymph_node(),
                                                           expected_values=get_lymph_node_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="LymphNode ")
