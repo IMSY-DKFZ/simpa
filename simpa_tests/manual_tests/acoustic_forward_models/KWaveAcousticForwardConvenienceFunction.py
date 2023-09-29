@@ -82,8 +82,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         self.device = PhotoacousticDevice(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                        self.VOLUME_PLANAR_DIM_IN_MM/2,
                                                                        0]))
-        self.device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=
-                                                                        self.device.device_position_mm, pitch_mm=0.25,
+        self.device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=self.device.device_position_mm, pitch_mm=0.25,
                                                                         number_detector_elements=200))
         self.device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 

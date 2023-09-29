@@ -13,6 +13,7 @@ class PencilArrayIlluminationGeometry(IlluminationGeometryBase):
     This class represents a pencil array illumination geometry.
     The device position is defined as the middle of the array.
     """
+
     def __init__(self, pitch_mm=0.5, number_illuminators_x=100, number_illuminators_y=100, device_position_mm=None,
                  field_of_view_extent_mm=None):
         """
