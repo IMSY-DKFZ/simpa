@@ -1047,6 +1047,12 @@ class Tags:
     Usage: module acoustic_forward_module, naming convention
     """
 
+    DETECTOR_ELEMENT_LENGTH_MM = "detector_element_length_mm"
+    """
+    Length of a detector element. Corresponds to the length of the detection element.\n
+    Usage: module acoustic_forward_module, naming convention
+    """
+
     SENSOR_CONCAVE = "concave"
     """
     Indicates that the geometry of the used PA device in the Mitk Beamforming is concave.\n

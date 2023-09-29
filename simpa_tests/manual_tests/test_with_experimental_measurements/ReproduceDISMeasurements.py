@@ -56,7 +56,7 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
         self.base_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
         # ##########################################################################
-        # Choose of of these
+        # Choose one of these
         # ##########################################################################
 
         # This one works pretty well

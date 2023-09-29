@@ -4,7 +4,7 @@
 
 import unittest
 import numpy as np
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import EllipticalTubularStructure
@@ -25,7 +25,7 @@ class TestEllipticalTubes(unittest.TestCase):
         self.elliptical_tube_settings[Tags.STRUCTURE_RADIUS_MM] = 1
         self.elliptical_tube_settings[Tags.STRUCTURE_END_MM] = [0, 5, 0]
         self.elliptical_tube_settings[Tags.STRUCTURE_ECCENTRICITY] = 0
-        self.elliptical_tube_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        self.elliptical_tube_settings[Tags.MOLECULE_COMPOSITION] = TissueLibrary().muscle()
         self.elliptical_tube_settings[Tags.ADHERE_TO_DEFORMATION] = True
         self.elliptical_tube_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 

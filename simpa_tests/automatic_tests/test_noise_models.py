@@ -10,7 +10,7 @@ from simpa.core.processing_components.monospectral.noise import *
 from simpa.utils import Tags, Settings
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.core.simulation import simulate
-from simpa.utils import TISSUE_LIBRARY
+from simpa.utils import TissueLibrary
 from simpa.io_handling import load_data_field
 from simpa import ModelBasedVolumeCreationAdapter
 
@@ -21,7 +21,7 @@ class TestNoiseModels(unittest.TestCase):
     def create_background_parameters(background_value):
         background_structure_dictionary = dict()
         background_structure_dictionary[Tags.PRIORITY] = 0
-        background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(
+        background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary().constant(
             mua=background_value, mus=background_value, g=0.5
         )
         background_structure_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND

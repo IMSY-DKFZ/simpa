@@ -28,10 +28,7 @@ class VolumeCreatorModuleBase(SimulationModule):
 
     def create_empty_volumes(self):
         volumes = dict()
-        voxel_spacing = self.global_settings[Tags.SPACING_MM]
-        volume_x_dim = int(round(self.global_settings[Tags.DIM_VOLUME_X_MM] / voxel_spacing))
-        volume_y_dim = int(round(self.global_settings[Tags.DIM_VOLUME_Y_MM] / voxel_spacing))
-        volume_z_dim = int(round(self.global_settings[Tags.DIM_VOLUME_Z_MM] / voxel_spacing))
+        volume_x_dim, volume_y_dim, volume_z_dim = self.global_settings.get_volume_dimensions_voxels()
         sizes = (volume_x_dim, volume_y_dim, volume_z_dim)
 
         wavelength = self.global_settings[Tags.WAVELENGTH]

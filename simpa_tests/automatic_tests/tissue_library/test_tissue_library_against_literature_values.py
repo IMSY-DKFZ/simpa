@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
-from simpa.utils import TISSUE_LIBRARY
+from simpa.utils import TissueLibrary, TISSUE_LIBRARY
 from simpa_tests.test_utils.tissue_composition_tests import compare_molecular_composition_against_expected_values, \
     get_epidermis_reference_dictionary, get_dermis_reference_dictionary, get_muscle_reference_dictionary, \
     get_fully_oxygenated_blood_reference_dictionary, \
@@ -26,40 +26,45 @@ class TestEpidermis(unittest.TestCase):
         print("tear_down")
 
     def test_epidermis_parameters(self):
+        print("EPIDERMIS")
         compare_molecular_composition_against_expected_values(
-            molecular_composition=TISSUE_LIBRARY.epidermis(0.014),
+            molecular_composition=TissueLibrary().epidermis(0.014),
             expected_values=get_epidermis_reference_dictionary(),
             visualise_values=VISUALISE,
             title="EPIDERMIS"
         )
 
     def test_dermis_parameters(self):
+        print("DERMIS")
         compare_molecular_composition_against_expected_values(
-            molecular_composition=TISSUE_LIBRARY.dermis(),
+            molecular_composition=TissueLibrary().dermis(),
             expected_values=get_dermis_reference_dictionary(),
             visualise_values=VISUALISE,
             title="DERMIS"
         )
 
     def test_muscle_parameters(self):
+        print("MUSCLE")
         compare_molecular_composition_against_expected_values(
-            molecular_composition=TISSUE_LIBRARY.muscle(),
+            molecular_composition=TissueLibrary().muscle(),
             expected_values=get_muscle_reference_dictionary(),
             visualise_values=VISUALISE,
             title="MUSCLE"
         )
 
     def test_blood_oxy_parameters(self):
+        print("100 OXY")
         compare_molecular_composition_against_expected_values(
-            molecular_composition=TISSUE_LIBRARY.blood(1.0),
+            molecular_composition=TissueLibrary().blood(1.0),
             expected_values=get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=True),
             visualise_values=VISUALISE,
             title="OXY BLOOD"
         )
 
     def test_blood_deoxy_parameters(self):
+        print("0 OXY")
         compare_molecular_composition_against_expected_values(
-            molecular_composition=TISSUE_LIBRARY.blood(0.0),
+            molecular_composition=TissueLibrary().blood(0.0),
             expected_values=get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=True),
             visualise_values=VISUALISE,
             title="DEOXY BLOOD"

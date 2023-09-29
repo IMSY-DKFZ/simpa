@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import RectangularCuboidStructure
@@ -24,7 +24,7 @@ class TestBoxes(unittest.TestCase):
         self.box_settings[Tags.STRUCTURE_X_EXTENT_MM] = 1
         self.box_settings[Tags.STRUCTURE_Y_EXTENT_MM] = 1
         self.box_settings[Tags.STRUCTURE_Z_EXTENT_MM] = 1
-        self.box_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        self.box_settings[Tags.MOLECULE_COMPOSITION] = TissueLibrary().muscle()
         self.box_settings[Tags.ADHERE_TO_DEFORMATION] = True
         self.box_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 

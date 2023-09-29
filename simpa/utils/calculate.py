@@ -28,8 +28,12 @@ def calculate_oxygenation(molecule_list):
     elif hbO2 is None:
         hbO2 = 0
 
-    if hb + hbO2 < 1e-10:  # negative values are not allowed and division by (approx) zero
-        return None        # will lead to negative side effects.
+    if isinstance(hb, np.ndarray) or isinstance(hbO2, np.ndarray):
+        if (hb + hbO2 < 1e-10).any():  # negative values are not allowed and division by (approx) zero
+            return None                # will lead to negative side effects.
+    else:
+        if hb + hbO2 < 1e-10:
+            return None
 
     return hbO2 / (hb + hbO2)
 

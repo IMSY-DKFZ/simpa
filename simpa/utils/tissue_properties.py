@@ -2,10 +2,19 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings
+import numpy as np
 
 
 class TissueProperties(dict):
+    """
+    The tissue properties contain a volumetric representation of each tissue parameter currently
+    modelled in the SIMPA framework.
+
+    It is a dictionary that is populated with each of the parameters.
+    The values of the parameters can be either numbers or numpy arrays.
+    It also contains a volume fraction field.
+    """
 
     wavelength_dependent_properties = [
         Tags.DATA_FIELD_ABSORPTION_PER_CM,
@@ -24,25 +33,9 @@ class TissueProperties(dict):
 
     property_tags = wavelength_dependent_properties + wavelength_independent_properties
 
-    def __init__(self):
+    def __init__(self, settings: Settings):
         super().__init__()
-        self.volume_fraction = 0
+        volume_x_dim, volume_y_dim, volume_z_dim = settings.get_volume_dimensions_voxels()
+        self.volume_fraction = np.zeros((volume_x_dim, volume_y_dim, volume_z_dim))
         for key in TissueProperties.property_tags:
             self[key] = 0
-
-    @staticmethod
-    def normalized_merge(property_list: list):
-        return_property = TissueProperties.weighted_merge(property_list)
-        for key in return_property.property_tags:
-            return_property[key] = return_property[key] / return_property.volume_fraction
-        return return_property
-
-    @staticmethod
-    def weighted_merge(property_list: list):
-        return_property = TissueProperties()
-        for target_property in property_list:
-            for key in return_property.property_tags:
-                if target_property[key] is not None:
-                    return_property[key] += target_property.volume_fraction * target_property[key]
-            return_property.volume_fraction += target_property.volume_fraction
-        return return_property

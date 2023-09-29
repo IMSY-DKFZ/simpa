@@ -4,7 +4,7 @@
 
 import unittest
 import numpy as np
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import SphericalStructure
@@ -23,7 +23,7 @@ class TestSpheres(unittest.TestCase):
         self.sphere_settings = Settings()
         self.sphere_settings[Tags.STRUCTURE_START_MM] = [0, 0, 0]
         self.sphere_settings[Tags.STRUCTURE_RADIUS_MM] = 1
-        self.sphere_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        self.sphere_settings[Tags.MOLECULE_COMPOSITION] = TissueLibrary().muscle()
         self.sphere_settings[Tags.ADHERE_TO_DEFORMATION] = True
         self.sphere_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 

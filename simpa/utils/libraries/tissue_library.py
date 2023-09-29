@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+from simpa.utils import Settings
 from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
@@ -74,7 +75,7 @@ class TissueLibrary(object):
                 .append(value=MOLECULE_LIBRARY.muscle_scatterer(
                         volume_fraction=1 - fraction_oxy - fraction_deoxy - water_volume_fraction),
                         key="muscle_scatterers")
-                .append(custom_water)
+                .append_filler(custom_water)
                 .get_molecular_composition(SegmentationClasses.MUSCLE))
 
     def soft_tissue(self, background_oxy=None, blood_volume_fraction=None):
@@ -119,7 +120,7 @@ class TissueLibrary(object):
                 .append(value=MOLECULE_LIBRARY.muscle_scatterer(
                         volume_fraction=1 - fraction_oxy - fraction_deoxy - water_volume_fraction),
                         key="muscle_scatterers")
-                .append(custom_water)
+                .append_filler(custom_water)
                 .get_molecular_composition(SegmentationClasses.SOFT_TISSUE))
 
     def epidermis(self, melanosom_volume_fraction=None):
@@ -137,7 +138,7 @@ class TissueLibrary(object):
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.melanin(melanin_volume_fraction))
-                .append(MOLECULE_LIBRARY.epidermal_scatterer(1 - melanin_volume_fraction))
+                .append_filler(MOLECULE_LIBRARY.epidermal_scatterer(1 - melanin_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.EPIDERMIS))
 
     def dermis(self, background_oxy=None, blood_volume_fraction=None):
@@ -164,7 +165,7 @@ class TissueLibrary(object):
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.dermal_scatterer(1.0 - bvf))
+                .append_filler(MOLECULE_LIBRARY.dermal_scatterer(1.0 - bvf))
                 .get_molecular_composition(SegmentationClasses.DERMIS))
 
     def subcutaneous_fat(self, oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
@@ -190,7 +191,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.fat(fat_volume_fraction))
                 .append(MOLECULE_LIBRARY.soft_tissue_scatterer(
                         1 - (fat_volume_fraction + water_volume_fraction + fraction_oxy + fraction_deoxy)))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
+                .append_filler(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.FAT))
 
     def blood(self, oxygenation=None):
@@ -208,7 +209,7 @@ class TissueLibrary(object):
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
-                .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append_filler(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
                 .get_molecular_composition(SegmentationClasses.BLOOD))
 
     def bone(self):
@@ -226,22 +227,22 @@ class TissueLibrary(object):
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.bone(1 - water_volume_fraction))
-                .append(MOLECULE_LIBRARY.water(water_volume_fraction))
+                .append_filler(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.BONE))
 
     def mediprene(self):
         return (MolecularCompositionGenerator()
-                .append(MOLECULE_LIBRARY.mediprene())
+                .append_filler(MOLECULE_LIBRARY.mediprene())
                 .get_molecular_composition(SegmentationClasses.MEDIPRENE))
 
     def heavy_water(self):
         return (MolecularCompositionGenerator()
-                .append(MOLECULE_LIBRARY.heavy_water())
+                .append_filler(MOLECULE_LIBRARY.heavy_water())
                 .get_molecular_composition(SegmentationClasses.HEAVY_WATER))
 
     def ultrasound_gel(self):
         return (MolecularCompositionGenerator()
-                .append(MOLECULE_LIBRARY.water())
+                .append_filler(MOLECULE_LIBRARY.water())
                 .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
 
     def lymph_node(self, oxy=None, blood_volume_fraction=None):
@@ -273,7 +274,7 @@ class TissueLibrary(object):
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(lymphatic_fluid)
+                .append_filler(lymphatic_fluid)
                 .get_molecular_composition(SegmentationClasses.LYMPH_NODE))
 
 

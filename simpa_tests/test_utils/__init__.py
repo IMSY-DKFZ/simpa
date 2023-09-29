@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-from simpa.utils import TISSUE_LIBRARY
+from simpa.utils import TissueLibrary
 from simpa.utils.libraries.structure_library import Background, CircularTubularStructure
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
@@ -43,7 +43,7 @@ def assert_equals_recursive(a, b):
 def create_background():
     background_structure_dictionary = dict()
     background_structure_dictionary[Tags.PRIORITY] = 0
-    background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+    background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary().muscle()
     background_structure_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
     return background_structure_dictionary
 
@@ -51,7 +51,7 @@ def create_background():
 def create_vessel():
     tubular_structure_dictionary = dict()
     tubular_structure_dictionary[Tags.PRIORITY] = 2
-    tubular_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+    tubular_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary().blood()
     tubular_structure_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
     tubular_structure_dictionary[Tags.STRUCTURE_END_MM] = [10, 10, 10]
     tubular_structure_dictionary[Tags.STRUCTURE_RADIUS_MM] = 4

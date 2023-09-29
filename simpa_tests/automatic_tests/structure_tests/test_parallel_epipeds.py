@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import ParallelepipedStructure
@@ -24,7 +24,7 @@ class TestParallelEpipeds(unittest.TestCase):
         self.parallelepiped_settings[Tags.STRUCTURE_FIRST_EDGE_MM] = [1, 0, 0]
         self.parallelepiped_settings[Tags.STRUCTURE_SECOND_EDGE_MM] = [0, 1, 0]
         self.parallelepiped_settings[Tags.STRUCTURE_THIRD_EDGE_MM] = [0, 0, 1]
-        self.parallelepiped_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        self.parallelepiped_settings[Tags.MOLECULE_COMPOSITION] = TissueLibrary().muscle()
         self.parallelepiped_settings[Tags.ADHERE_TO_DEFORMATION] = True
         self.parallelepiped_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 

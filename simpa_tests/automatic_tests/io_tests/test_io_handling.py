@@ -7,7 +7,7 @@ from simpa.io_handling import load_hdf5
 from simpa.io_handling import save_hdf5
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY, AbsorptionSpectrumLibrary
+from simpa.utils.libraries.tissue_library import TissueLibrary, AbsorptionSpectrumLibrary
 from simpa_tests.test_utils import assert_equals_recursive
 from simpa.core.device_digital_twins import *
 import os
@@ -47,7 +47,7 @@ class TestIOHandling(unittest.TestCase):
         save_dictionary[Tags.SETTINGS] = settings
 
         background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary().muscle()
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
         structure_settings = Settings()
         structure_settings["background"] = background_dictionary

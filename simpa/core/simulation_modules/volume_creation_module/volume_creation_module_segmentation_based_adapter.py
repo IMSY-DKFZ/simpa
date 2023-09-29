@@ -41,9 +41,15 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
         class_mapping = self.component_settings[Tags.SEGMENTATION_CLASS_MAPPING]
 
         for seg_class in segmentation_classes:
-            class_properties = class_mapping[seg_class].get_properties_for_wavelength(wavelength)
+            class_properties = class_mapping[seg_class].get_properties_for_wavelength(self.global_settings, wavelength)
             for prop_tag in TissueProperties.property_tags:
-                volumes[prop_tag][segmentation_volume == seg_class] = class_properties[prop_tag]
+                if len(np.shape(class_properties[prop_tag])) == 0: # scalar
+                    volumes[prop_tag][segmentation_volume == seg_class] = class_properties[prop_tag]
+                elif len(np.shape(class_properties[prop_tag])) == 3: # 3D map
+                    volumes[prop_tag][segmentation_volume == seg_class] = \
+                        class_properties[prop_tag][segmentation_volume == seg_class]
+                else:
+                    raise AssertionError("Properties need to either be a scalar or a 3D map.")
 
         save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 

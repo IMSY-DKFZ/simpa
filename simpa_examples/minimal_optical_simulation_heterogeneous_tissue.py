@@ -1,6 +1,12 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+#
+# This file should give an example how heterogeneity can be used in the SIMPA framework to model non-homogeneous
+# structures.
+# The result of this simulation should be a optical simulation results with spatially varying absorption coefficients
+# that is induced by a heterogeneous map of blood volume fraction and oxygenation both in the simulated vessel and
+# the background.
 
 from simpa import Tags
 import simpa as sp
@@ -27,12 +33,13 @@ SAVE_PHOTON_DIRECTION = False
 VISUALIZE = True
 
 
-def create_example_tissue():
+def create_example_tissue(settings):
     """
     This is a very simple example script of how to create a tissue definition.
     It contains a muscular background, an epidermis layer on top of the muscles
     and a blood vessel.
     """
+    dim_x, dim_y, dim_z = settings.get_volume_dimensions_voxels()
     tissue_library = sp.TissueLibrary()
     background_dictionary = sp.Settings()
     background_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.constant(1e-4, 1e-4, 0.9)
@@ -42,7 +49,11 @@ def create_example_tissue():
     muscle_dictionary[Tags.PRIORITY] = 1
     muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 10]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-    muscle_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.muscle()
+    muscle_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.muscle(
+        background_oxy=sp.BlobHeterogeneity(dim_x, dim_y, dim_z, SPACING,
+                                            target_min=0.5, target_max=0.8).get_map(),
+        blood_volume_fraction=sp.BlobHeterogeneity(dim_x, dim_y, dim_z, SPACING,
+                                                   target_min=0.01, target_max=0.1).get_map())
     muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
@@ -56,7 +67,9 @@ def create_example_tissue():
                                                   12,
                                                   VOLUME_HEIGHT_IN_MM/2]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.blood()
+    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.blood(
+                                                        oxygenation=sp.RandomHeterogeneity(dim_x, dim_y, dim_z, SPACING,
+                                                                                           target_min=0.9, target_max=1.0).get_map())
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -64,7 +77,9 @@ def create_example_tissue():
     epidermis_dictionary[Tags.PRIORITY] = 8
     epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 9]
     epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 10]
-    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.epidermis()
+    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.epidermis(
+        melanosom_volume_fraction=sp.RandomHeterogeneity(dim_x, dim_y, dim_z, SPACING,
+                                                         target_min=0.1, target_max=0.2).get_map())
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
     epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
     epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
@@ -100,7 +115,7 @@ settings = sp.Settings(general_settings)
 
 settings.set_volume_creation_settings({
     Tags.SIMULATE_DEFORMED_LAYERS: True,
-    Tags.STRUCTURES: create_example_tissue()
+    Tags.STRUCTURES: create_example_tissue(settings)
 })
 settings.set_optical_settings({
     Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e7,
@@ -156,6 +171,7 @@ if VISUALIZE:
     sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
                       wavelength=WAVELENGTH,
                       show_initial_pressure=True,
+                      show_oxygenation=True,
                       show_absorption=True,
                       show_diffuse_reflectance=SAVE_REFLECTANCE,
                       log_scale=True)
