@@ -40,9 +40,10 @@ class SlitIlluminationGeometry(IlluminationGeometryBase):
             direction_vector_mm = [0, 0, 1]
 
         self.slit_vector_mm = slit_vector_mm
-        direction_vector_mm[0] = direction_vector_mm[0] / np.linalg.norm(direction_vector_mm)
-        direction_vector_mm[1] = direction_vector_mm[1] / np.linalg.norm(direction_vector_mm)
-        direction_vector_mm[2] = direction_vector_mm[2] / np.linalg.norm(direction_vector_mm)
+        norm_direction_vector_mm = np.linalg.norm(direction_vector_mm)
+        direction_vector_mm[0] = direction_vector_mm[0] / norm_direction_vector_mm
+        direction_vector_mm[1] = direction_vector_mm[1] / norm_direction_vector_mm
+        direction_vector_mm[2] = direction_vector_mm[2] / norm_direction_vector_mm
         self.direction_vector_norm = direction_vector_mm
 
     def get_mcx_illuminator_definition(self, global_settings) -> dict:
