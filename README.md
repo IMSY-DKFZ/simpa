@@ -1,11 +1,14 @@
+<div align="center">
+
+![Logo](https://github.com/IMSY-DKFZ/simpa/raw/main/docs/source/images/simpa_logo.png?raw=true "SIMPA Logo")
+
 [![Documentation Status](https://readthedocs.org/projects/simpa/badge/?version=develop)](https://simpa.readthedocs.io/en/develop/?badge=develop)
 ![Build Status](https://github.com/IMSY-DKFZ/simpa/actions/workflows/automatic_testing.yml/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/IMSY-DKFZ/simpa/blob/main/LICENSE.md)
-
 [![Pypi Badge](https://img.shields.io/pypi/v/simpa)](https://pypi.org/project/simpa/)
 [![PyPI downloads](https://img.shields.io/pypi/dw/simpa?color=gr&label=pypi%20downloads)](https://pypi.org/project/simpa/)
 
-![Logo](docs/source/images/simpa_logo.png?raw=true "Logo")
+</div>
 
 # The toolkit for Simulation and Image Processing for Photonics and Acoustics (SIMPA)
 
@@ -177,7 +180,7 @@ To contribute to SIMPA, please fork the SIMPA github repository and create a pul
 suggested changes. The core developers will then review the suggested changes and integrate these into the code 
 base.
 
-Please make sure that you have included unit tests for your code and that all previous tests still run through.
+Please make sure that you have included unit tests for your code and that all previous tests still run through. Please also run the pre-commit hooks and make sure they are passing.
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST, and you are very welcome to participate and
 raise any issues or suggest new features. If you want to join this meeting, write one of the core developers.

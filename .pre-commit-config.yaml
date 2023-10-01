@@ -1,0 +1,46 @@
+default_install_hook_types: [pre-commit, commit-msg]
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks # Uses MIT-License (MIT compatible) 
+    rev: v4.4.0
+    hooks:
+    -   id: check-yaml # checks is yaml file is valid
+    -   id: check-added-large-files # prevents adding large files, above 500kB
+
+-   repo: https://github.com/pre-commit/mirrors-autopep8 # Uses MIT-License (MIT compatible) 
+    rev: v2.0.2  # Use the sha / tag you want to point at
+    hooks:
+    -   id: autopep8 # formats code according to PEP8 standard. Lets commit fail if it needs to reformat code. Config for autopep8 is done in myproject.toml
+
+-   repo: https://github.com/citation-file-format/cff-converter-python # Uses Apache 2.0-License (MIT compatible)
+    rev: "44e8fc9"
+    hooks:
+      - id: validate-cff # validates cff citation files
+
+- repo: https://github.com/Lucas-C/pre-commit-hooks # Uses MIT License (MIT compatible)
+  rev: v1.5.1
+  hooks:
+    - id: insert-license    # Checks if the license header specified at license_header.txt is added in the first lines of each python file. If not, it suggests to insert them.
+      types: [python]
+      args:
+        - --license-filepath
+        - license_header.txt        # defaults to: LICENSE.txt
+
+-   repo: https://github.com/jorisroovers/gitlint # Uses MIT License (MIT compatible)
+    rev:  v0.19.1
+    hooks:
+    -   id: gitlint
+
+-   repo: https://github.com/tcort/markdown-link-check # Uses ISC-License (MIT compatible) 
+    rev: v3.10.3
+    hooks:
+      - id: markdown-link-check # checks if links in markdown files work
+        exclude: docs/
+        types: [markdown]
+
+# toggle comment to perform git config user email check. Note that you have to place the check-email.sh script in your .git/hooks/ folder
+# -   repo: local
+#     hooks:
+#       - id: git-config-email-check # checks if git config user email address is valid according to specified domains in check-email.sh script
+#         name: git-config-email-check
+#         entry: .git/hooks/check-email.sh
+#         language: script

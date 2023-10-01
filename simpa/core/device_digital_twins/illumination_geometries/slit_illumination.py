@@ -13,6 +13,7 @@ class SlitIlluminationGeometry(IlluminationGeometryBase):
     This class represents a slit illumination geometry.
     The device position is defined as the middle of the slit.
     """
+
     def __init__(self, slit_vector_mm=None, direction_vector_mm=None, device_position_mm=None,
                  field_of_view_extent_mm=None):
         """

@@ -31,7 +31,8 @@ def get_processing_device(global_settings: Settings = None) -> torch.device:
         dev = "cpu"
         if global_settings is not None:
             if Tags.GPU in global_settings:
-                logger.warning('Cuda is not available! Check your torch/cuda version. Processing will be done on CPU instead.')
+                logger.warning(
+                    'Cuda is not available! Check your torch/cuda version. Processing will be done on CPU instead.')
 
     logger.debug(f"Processing is done on {dev}")
 

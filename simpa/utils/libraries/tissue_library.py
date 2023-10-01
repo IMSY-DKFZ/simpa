@@ -26,14 +26,11 @@ class TissueLibrary(object):
         TODO
         """
         return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
-                                                                absorption_spectrum=
-                                                                AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
+                                                                absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
                                                                 volume_fraction=1.0,
-                                                                scattering_spectrum=
-                                                                ScatteringSpectrumLibrary.
+                                                                scattering_spectrum=ScatteringSpectrumLibrary.
                                                                 CONSTANT_SCATTERING_ARBITRARY(mus),
-                                                                anisotropy_spectrum=
-                                                                AnisotropySpectrumLibrary.
+                                                                anisotropy_spectrum=AnisotropySpectrumLibrary.
                                                                 CONSTANT_ANISOTROPY_ARBITRARY(g)))
                 .get_molecular_composition(SegmentationClasses.GENERIC))
 
@@ -62,7 +59,7 @@ class TissueLibrary(object):
 
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
+            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
         custom_water.alpha_coefficient = 1.58
         custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_MUSCLE + 16
         custom_water.density = StandardProperties.DENSITY_MUSCLE + 41
@@ -107,7 +104,7 @@ class TissueLibrary(object):
 
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
+            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
         custom_water.alpha_coefficient = 0.08
         custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_WATER
         custom_water.density = StandardProperties.DENSITY_WATER
@@ -123,7 +120,7 @@ class TissueLibrary(object):
                         volume_fraction=1 - fraction_oxy - fraction_deoxy - water_volume_fraction),
                         key="muscle_scatterers")
                 .append(custom_water)
-                .get_molecular_composition(SegmentationClasses.MUSCLE))
+                .get_molecular_composition(SegmentationClasses.SOFT_TISSUE))
 
     def epidermis(self, melanosom_volume_fraction=None):
         """
@@ -246,6 +243,38 @@ class TissueLibrary(object):
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.water())
                 .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
+
+    def lymph_node(self, oxy=None, blood_volume_fraction=None):
+        """
+        IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
+        It is a mixture of oxyhemoglobin, deoxyhemoglobin, and lymph node customized water.
+        :return: a settings dictionary fitting for generic lymph node tissue.
+        """
+
+        # Determine muscle oxygenation
+        if oxy is None:
+            oxy = OpticalTissueProperties.LYMPH_NODE_OXYGENATION
+
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        if blood_volume_fraction is None:
+            blood_volume_fraction = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_LYMPH_NODE
+
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(blood_volume_fraction, oxy)
+
+        # Get the water volume fraction
+        # water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
+
+        lymphatic_fluid = MOLECULE_LIBRARY.water(1 - fraction_deoxy - fraction_oxy)
+        lymphatic_fluid.speed_of_sound = StandardProperties.SPEED_OF_SOUND_LYMPH_NODE + 1.22
+        lymphatic_fluid.density = StandardProperties.DENSITY_LYMPH_NODE - 2.30
+        lymphatic_fluid.alpha_coefficient = StandardProperties.ALPHA_COEFF_LYMPH_NODE + 0.36
+
+        # generate the tissue dictionary
+        return (MolecularCompositionGenerator()
+                .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(lymphatic_fluid)
+                .get_molecular_composition(SegmentationClasses.LYMPH_NODE))
 
 
 TISSUE_LIBRARY = TissueLibrary()
