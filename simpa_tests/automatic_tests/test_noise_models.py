@@ -89,8 +89,8 @@ class TestNoiseModels(unittest.TestCase):
 
     def setUp(self):
 
-        self.VOLUME_WIDTH_IN_MM = 20
-        self.VOLUME_HEIGHT_IN_MM = 20
+        self.VOLUME_WIDTH_IN_MM = 40
+        self.VOLUME_HEIGHT_IN_MM = 40
         self.SPACING = 1
         self.RANDOM_SEED = 4711
 
