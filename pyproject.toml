@@ -34,11 +34,12 @@ coverage = ">=6.1.2"         # Uses Apache 2.0-License (MIT compatible)
 Deprecated = ">=1.2.13"      # Uses MIT-License (MIT compatible)
 torch = ">=1.10.0"           # Uses BSD-License (MIT compatible)
 python-dotenv = ">=0.19.2"   # Uses BSD-License (MIT compatible)
-pacfish = ">=0.4.4"       # Uses BSD-License (MIT compatible)
+pacfish = ">=0.4.4"          # Uses BSD-License (MIT compatible)
 requests = ">=2.26.0"        # Uses Apache 2.0-License (MIT compatible)
 wget = ">=3.2"               # Is Public Domain (MIT compatible)
 jdata = ">=0.5.2"            # Uses Apache 2.0-License (MIT compatible)
-pre-commit = ">=3.2.2"       # Uses MIT-License (MIT compatible) 
+pre-commit = ">=3.2.2"       # Uses MIT-License (MIT compatible)
+pmcx = ">=0.2.5"             # Uses GNU Public License V3 or later
 
 [tool.poetry.group.docs.dependencies]
 sphinx-rtd-theme = "^1.0.0"
