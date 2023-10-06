@@ -77,7 +77,8 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         if global_settings[Tags.DIM_VOLUME_X_MM] < (self.probe_width_mm + global_settings[Tags.SPACING_MM]):
             self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
                               "Must be at least {} mm but was {} mm"
-                              .format(self.probe_width_mm, global_settings[Tags.DIM_VOLUME_X_MM]))
+                              .format(self.probe_width_mm + global_settings[Tags.SPACING_MM],
+                                      global_settings[Tags.DIM_VOLUME_X_MM]))
             return False
         return True
 
