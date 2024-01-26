@@ -101,6 +101,9 @@ class MCXAdapterReflectance(MCXAdapter):
         cmd.append(self.mcx_json_config_file)
         cmd.append("-O")
         cmd.append("F")
+        # use 'C' order array format for binary input file
+        cmd.append("-a")
+        cmd.append("1")
         cmd.append("-F")
         cmd.append("jnii")
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
