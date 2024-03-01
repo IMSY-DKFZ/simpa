@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "simpa"
-version = "0.8.19"
+version = "0.8.20"
 description = "Simulation and Image Processing for Photonics and Acoustics"
 authors = [
     "Division of Intelligent Medical Systems (IMSY), DKFZ <k.dreher@dkfz-heidelberg.de>",

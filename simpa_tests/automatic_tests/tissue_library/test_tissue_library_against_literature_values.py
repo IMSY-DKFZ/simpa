@@ -6,7 +6,7 @@ import unittest
 from simpa.utils import TISSUE_LIBRARY
 from simpa_tests.test_utils.tissue_composition_tests import compare_molecular_composition_against_expected_values, \
     get_epidermis_reference_dictionary, get_dermis_reference_dictionary, get_muscle_reference_dictionary, \
-    get_fully_oxygenated_blood_reference_dictionary,\
+    get_fully_oxygenated_blood_reference_dictionary, \
     get_fully_deoxygenated_blood_reference_dictionary, \
     get_lymph_node_reference_dictionary
 

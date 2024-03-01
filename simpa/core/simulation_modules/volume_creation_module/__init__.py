@@ -7,10 +7,12 @@ from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.tissue_properties import TissueProperties
 import numpy as np
+import torch
 from simpa.core import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import save_data_field
 from simpa.utils.quality_assurance.data_sanity_testing import assert_equal_shapes, assert_array_well_defined
+from simpa.utils.processing_device import get_processing_device
 
 
 class VolumeCreatorModuleBase(SimulationModule):
@@ -22,6 +24,7 @@ class VolumeCreatorModuleBase(SimulationModule):
     def __init__(self, global_settings: Settings):
         super(VolumeCreatorModuleBase, self).__init__(global_settings=global_settings)
         self.component_settings = global_settings.get_volume_creation_settings()
+        self.torch_device = get_processing_device(self.global_settings)
 
     def create_empty_volumes(self):
         volumes = dict()
@@ -38,7 +41,7 @@ class VolumeCreatorModuleBase(SimulationModule):
             # Create wavelength-independent properties only in the first wavelength run
             if key in TissueProperties.wavelength_independent_properties and wavelength != first_wavelength:
                 continue
-            volumes[key] = np.zeros(sizes)
+            volumes[key] = torch.zeros(sizes, dtype=torch.float, device=self.torch_device)
 
         return volumes, volume_x_dim, volume_y_dim, volume_z_dim
 
@@ -57,6 +60,8 @@ class VolumeCreatorModuleBase(SimulationModule):
         self.logger.info("VOLUME CREATION")
 
         volumes = self.create_simulation_volume()
+        # explicitly empty cache to free reserved GPU memory after volume creation
+        torch.cuda.empty_cache()
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_equal_shapes(list(volumes.values()))

@@ -81,7 +81,7 @@ class TestLinearUnmixing(unittest.TestCase):
         lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
         self.assert_correct_so2_vales(lu_results["sO2"])
 
-    def assert_correct_so2_vales(self, estimates, tolerance=1e-8):
+    def assert_correct_so2_vales(self, estimates, tolerance=1e-7):
         ground_truth = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_OXYGENATION)
         msg = f"expected {estimates.reshape((-1,))[0]} but was {ground_truth.reshape((-1,))[0]}"
         self.logger.info(msg)

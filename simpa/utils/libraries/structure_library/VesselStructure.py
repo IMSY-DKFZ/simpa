@@ -114,8 +114,8 @@ class VesselStructure(GeometricalStructure):
     def get_enclosed_indices(self):
         start_mm, radius_mm, direction_mm, bifurcation_length_mm, curvature_factor, \
             radius_variation_factor, partial_volume = self.params
-        start_mm = torch.tensor(start_mm, dtype=torch.float).to(self.torch_device)
-        direction_mm = torch.tensor(direction_mm, dtype=torch.float).to(self.torch_device)
+        start_mm = torch.tensor(start_mm, dtype=torch.float, device=self.torch_device)
+        direction_mm = torch.tensor(direction_mm, dtype=torch.float, device=self.torch_device)
 
         start_voxels = start_mm / self.voxel_spacing
         radius_voxels = radius_mm / self.voxel_spacing
@@ -130,11 +130,12 @@ class VesselStructure(GeometricalStructure):
                                                                      curvature_factor)
 
         # creates open grid like np.ogrid
-        x = torch.arange(self.volume_dimensions_voxels[0])[:, None, None].to(self.torch_device)
-        y = torch.arange(self.volume_dimensions_voxels[1])[None, :, None].to(self.torch_device)
-        z = torch.arange(self.volume_dimensions_voxels[2])[None, None, :].to(self.torch_device)
+        x = torch.arange(self.volume_dimensions_voxels[0], device=self.torch_device)[:, None, None]
+        y = torch.arange(self.volume_dimensions_voxels[1], device=self.torch_device)[None, :, None]
+        z = torch.arange(self.volume_dimensions_voxels[2], device=self.torch_device)[None, None, :]
 
-        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels), dtype=torch.float).to(self.torch_device)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels),
+                                       dtype=torch.float, device=self.torch_device)
 
         if partial_volume:
             radius_margin = 0.5
@@ -142,15 +143,21 @@ class VesselStructure(GeometricalStructure):
             radius_margin = 0.7071
 
         for position, radius in zip(position_array, radius_array):
-            target_radius = torch.sqrt((x - position[0]) ** 2 + (y - position[1]) ** 2 + (z - position[2]) ** 2)
+            target_radius = torch.zeros(tuple(self.volume_dimensions_voxels),
+                                        dtype=torch.float, device=self.torch_device)
+            target_radius += (x - position[0]) ** 2
+            target_radius += (y - position[1]) ** 2
+            target_radius += (z - position[2]) ** 2
+            target_radius = target_radius.sqrt_()
             filled_mask = target_radius <= radius - 1 + radius_margin
             border_mask = (target_radius > radius - 1 + radius_margin) & \
                           (target_radius < radius + 2 * radius_margin)
 
             volume_fractions[filled_mask] = 1
             old_border_values = volume_fractions[border_mask]
-            new_border_values = 1 - (target_radius - (radius - radius_margin))[border_mask]
+            new_border_values = 1 - (target_radius[border_mask] - (radius - radius_margin))
             volume_fractions[border_mask] = torch.maximum(old_border_values, new_border_values).float()
+            del target_radius
 
         return volume_fractions.cpu().numpy()
 
