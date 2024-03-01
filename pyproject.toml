@@ -45,6 +45,11 @@ sphinx-rtd-theme = "^1.0.0"
 Sphinx = "^5.1.1"
 myst-parser = "0.18.0, <1.1"
 
+[tool.poetry.group.profile.dependencies]
+pytorch_memlab = "^0.3.0"
+line_profiler = "^4.0.0"
+memory_profiler = "^0.61.0"
+
 # autopep8 config
 [tool.autopep8]
 max_line_length = 120
