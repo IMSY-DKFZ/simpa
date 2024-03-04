@@ -182,6 +182,9 @@ class MCXAdapter(OpticalForwardModuleBase):
         # use 'C' order array format for binary input file
         cmd.append("-a")
         cmd.append("1")
+        # use mc2 binary output file format
+        cmd.append("-F")
+        cmd.append("mc2")
         return cmd
 
     @staticmethod
