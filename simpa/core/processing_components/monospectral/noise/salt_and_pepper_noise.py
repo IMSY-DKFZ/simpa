@@ -7,6 +7,7 @@ from simpa.io_handling import load_data_field, save_data_field
 from simpa.core.processing_components import ProcessingComponent
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 import numpy as np
+import torch
 
 
 class SaltAndPepperNoise(ProcessingComponent):
@@ -38,9 +39,10 @@ class SaltAndPepperNoise(ProcessingComponent):
 
         wavelength = self.global_settings[Tags.WAVELENGTH]
         data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+        data_tensor = torch.as_tensor(data_array, dtype=torch.float32, device=self.torch_device)
 
-        min_noise = np.min(data_array)
-        max_noise = np.max(data_array)
+        min_noise = torch.min(data_tensor).item()
+        max_noise = torch.max(data_tensor).item()
         noise_frequency = 0.01
 
         if Tags.NOISE_FREQUENCY in self.component_settings.keys():
@@ -56,18 +58,17 @@ class SaltAndPepperNoise(ProcessingComponent):
         self.logger.debug(f"Noise model max: {max_noise}")
         self.logger.debug(f"Noise model frequency: {noise_frequency}")
 
-        shape = np.shape(data_array)
-        num_data_points = int(np.round(np.prod(shape) * noise_frequency / 2))
-
-        coords_min = tuple([np.random.randint(0, i - 1, int(num_data_points)) for i in shape])
-        coords_max = tuple([np.random.randint(0, i - 1, int(num_data_points)) for i in shape])
-
-        data_array[coords_min] = min_noise
-        data_array[coords_max] = max_noise
+        dist = torch.distributions.uniform.Uniform(torch.tensor(-1.0, dtype=torch.float32, device=self.torch_device),
+                                                   torch.tensor(1.0, dtype=torch.float32, device=self.torch_device))
+        sample = dist.sample(data_tensor.shape)
+        sample_cutoff = 1.0 - noise_frequency
+        data_tensor[sample > sample_cutoff] = min_noise
+        data_tensor[-sample > sample_cutoff] = max_noise
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
-            assert_array_well_defined(data_array)
+            assert_array_well_defined(data_tensor)
 
-        save_data_field(data_array, self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+        save_data_field(data_tensor.cpu().numpy().astype(np.float64, copy=False),
+                        self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
 
         self.logger.info("Applying Salt And Pepper Noise Model...[Done]")

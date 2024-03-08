@@ -7,11 +7,12 @@ from simpa.io_handling import load_data_field, save_data_field
 from simpa.core.processing_components import ProcessingComponent
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 import numpy as np
+import torch
 
 
 class PoissonNoise(ProcessingComponent):
     """
-    Applies Gaussian noise to the defined data field.
+    Applies Poisson noise to the defined data field.
     The noise will be applied to all wavelengths.
 
     Component Settings::
@@ -44,15 +45,18 @@ class PoissonNoise(ProcessingComponent):
 
         wavelength = self.global_settings[Tags.WAVELENGTH]
         data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+        data_tensor = torch.as_tensor(data_array, dtype=torch.float32, device=self.torch_device)
+        dist = torch.distributions.poisson.Poisson(torch.tensor(mean, dtype=torch.float32, device=self.torch_device))
 
         if mode == Tags.NOISE_MODE_ADDITIVE:
-            data_array = data_array + np.random.poisson(mean, size=np.shape(data_array))
+            data_tensor += dist.sample(data_tensor.shape)
         elif mode == Tags.NOISE_MODE_MULTIPLICATIVE:
-            data_array = data_array * np.random.poisson(mean, size=np.shape(data_array))
+            data_tensor *= dist.sample(data_tensor.shape)
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
-            assert_array_well_defined(data_array)
+            assert_array_well_defined(data_tensor)
 
-        save_data_field(data_array, self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+        save_data_field(data_tensor.cpu().numpy().astype(np.float64, copy=False),
+                        self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
 
         self.logger.info("Applying Poisson Noise Model...[Done]")
