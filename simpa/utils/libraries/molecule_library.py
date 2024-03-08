@@ -228,6 +228,7 @@ class MoleculeLibrary(object):
                             StandardProperties.WATER_MUS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             StandardProperties.WATER_G),
+                        refractive_index=RefractiveIndexSpectrumLibrary().get_spectrum_by_name("Water"),
                         density=StandardProperties.DENSITY_WATER,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
@@ -241,6 +242,7 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("blood_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.BLOOD_ANISOTROPY),
+                        refractive_index=RefractiveIndexSpectrumLibrary().get_spectrum_by_name("Oxyhemoglobin"),
                         density=StandardProperties.DENSITY_BLOOD,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_BLOOD,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_BLOOD
@@ -250,10 +252,12 @@ class MoleculeLibrary(object):
     def deoxyhemoglobin(volume_fraction: float = 1.0):
         return Molecule(name="deoxyhemoglobin",
                         absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Deoxyhemoglobin"),
+
                         volume_fraction=volume_fraction,
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("blood_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.BLOOD_ANISOTROPY),
+                        refractive_index=RefractiveIndexSpectrumLibrary().get_spectrum_by_name("Deoxyhemoglobin"),
                         density=StandardProperties.DENSITY_BLOOD,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_BLOOD,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_BLOOD
@@ -268,6 +272,8 @@ class MoleculeLibrary(object):
                             "epidermis", OpticalTissueProperties.MUS500_EPIDERMIS, OpticalTissueProperties.FRAY_EPIDERMIS,
                             OpticalTissueProperties.BMIE_EPIDERMIS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary().get_spectrum_by_name("Epidermis_Anisotropy"),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.36),
                         density=StandardProperties.DENSITY_SKIN,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN
@@ -281,6 +287,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("fat_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.46),
                         density=StandardProperties.DENSITY_FAT,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_FAT,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_FAT
@@ -289,13 +297,14 @@ class MoleculeLibrary(object):
     # Scatterers
     @staticmethod
     def constant_scatterer(scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
-                           volume_fraction: float = 1.0):
+                           refractive_index: float = 1.329, volume_fraction: float = 1.0):
         return Molecule(name="constant_scatterer",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
                         scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(
                             scattering_coefficient),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(anisotropy),
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(refractive_index),
                         density=StandardProperties.DENSITY_GENERIC,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
@@ -309,6 +318,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("background_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.39),
                         density=StandardProperties.DENSITY_GENERIC,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
@@ -322,6 +333,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("muscle_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.39),
                         density=StandardProperties.DENSITY_GENERIC,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
@@ -336,6 +349,8 @@ class MoleculeLibrary(object):
                             "epidermis", OpticalTissueProperties.MUS500_EPIDERMIS, OpticalTissueProperties.FRAY_EPIDERMIS,
                             OpticalTissueProperties.BMIE_EPIDERMIS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary().get_spectrum_by_name("Epidermis_Anisotropy"),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.36),
                         density=StandardProperties.DENSITY_SKIN,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN
@@ -365,6 +380,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("bone_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.55),
                         density=StandardProperties.DENSITY_BONE,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_BONE,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_BONE
@@ -378,6 +395,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY((-np.log(0.85)) -
                                                                                                     (-np.log(0.85) / 10)),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9),
+                        # for n: This is basically just a guess
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.4),
                         density=StandardProperties.DENSITY_GEL_PAD,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GEL_PAD,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_GEL_PAD
@@ -393,6 +412,7 @@ class MoleculeLibrary(object):
                             StandardProperties.WATER_MUS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             StandardProperties.WATER_G),
+                        refractive_index=RefractiveIndexSpectrumLibrary().get_spectrum_by_name("Heavy_Water"),
                         density=StandardProperties.DENSITY_HEAVY_WATER,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_HEAVY_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
@@ -408,6 +428,7 @@ class MoleculeLibrary(object):
                             StandardProperties.AIR_MUS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             StandardProperties.AIR_G),
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1),
                         density=StandardProperties.DENSITY_AIR,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_AIR,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_AIR
