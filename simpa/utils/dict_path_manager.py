@@ -54,7 +54,7 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
         if wavelength is not None:
             dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + wl
         else:
-            dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field
+            dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + "/"
     elif data_field in simulation_output:
         if data_field in [Tags.DATA_FIELD_FLUENCE, Tags.DATA_FIELD_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS,
                           Tags.DATA_FIELD_DIFFUSE_REFLECTANCE, Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
@@ -62,12 +62,12 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
             if wavelength is not None:
                 dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field + wl
             else:
-                dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field
+                dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field + "/"
         else:
             if wavelength is not None:
                 dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + wl
             else:
-                dict_path = "/" + Tags.SIMULATIONS + "/" + data_field
+                dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + "/"
 
     elif data_field in wavelength_independent_properties:
         dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.SIMULATION_PROPERTIES + "/" + data_field + "/"
@@ -77,7 +77,7 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
         if wavelength is not None:
             dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + wl
         else:
-            dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field
+            dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + "/"
 
     elif data_field in wavelength_independent_image_processing_output:
         dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + "/"
