@@ -75,7 +75,9 @@ acoustic simulations possible.
 
 ### mcx (Optical Forward Model)
 
-Either download suitable executables or build yourself from the following sources:
+Either download suitable executables from the MCX homepage or build yourself from the following sources. If you are 
+working with simple illumination geometries (pencil beams, disks, etc.), pre-compiled executables might be easier to 
+use.
 
 [http://mcx.space/](http://mcx.space/)
 
@@ -181,6 +183,7 @@ suggested changes. The core developers will then review the suggested changes an
 base.
 
 Please make sure that you have included unit tests for your code and that all previous tests still run through. Please also run the pre-commit hooks and make sure they are passing.
+Details are found in our [contribution guidelines](CONTRIBUTING.md).
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST, and you are very welcome to participate and
 raise any issues or suggest new features. If you want to join this meeting, write one of the core developers.
