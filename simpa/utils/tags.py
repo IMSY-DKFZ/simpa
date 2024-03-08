@@ -859,6 +859,12 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
+    DATA_FIELD_REFRACTIVE_INDEX = "n"
+    """
+    Refractive index of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DATA_FIELD_OXYGENATION = "oxy"
     """
     Oxygenation of the generated volume/structure.\n

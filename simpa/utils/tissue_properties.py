@@ -3,24 +3,10 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
+from simpa.utils.constants import wavelength_independent_properties, wavelength_dependent_properties
 
 
 class TissueProperties(dict):
-
-    wavelength_dependent_properties = [
-        Tags.DATA_FIELD_ABSORPTION_PER_CM,
-        Tags.DATA_FIELD_SCATTERING_PER_CM,
-        Tags.DATA_FIELD_ANISOTROPY
-    ]
-
-    wavelength_independent_properties = [
-        Tags.DATA_FIELD_GRUNEISEN_PARAMETER,
-        Tags.DATA_FIELD_SEGMENTATION,
-        Tags.DATA_FIELD_OXYGENATION,
-        Tags.DATA_FIELD_DENSITY,
-        Tags.DATA_FIELD_SPEED_OF_SOUND,
-        Tags.DATA_FIELD_ALPHA_COEFF
-    ]
 
     property_tags = wavelength_dependent_properties + wavelength_independent_properties
 

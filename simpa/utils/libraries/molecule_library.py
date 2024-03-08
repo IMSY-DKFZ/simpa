@@ -7,11 +7,11 @@ from simpa.utils import Tags
 
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
-from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
+from simpa.utils.libraries.spectrum_library import (AnisotropySpectrumLibrary, ScatteringSpectrumLibrary,
+                                                    RefractiveIndexSpectrumLibrary, AbsorptionSpectrumLibrary)
 from simpa.utils import Spectrum
 from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
 from simpa.utils.serializer import SerializableSIMPAClass
-from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
 
 
 class MolecularComposition(SerializableSIMPAClass, list):
@@ -55,16 +55,20 @@ class MolecularComposition(SerializableSIMPAClass, list):
         self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0
         self.internal_properties[Tags.DATA_FIELD_SCATTERING_PER_CM] = 0
         self.internal_properties[Tags.DATA_FIELD_ANISOTROPY] = 0
+        self.internal_properties[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 0
 
         for molecule in self:
             self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] += \
-                (molecule.volume_fraction * molecule.spectrum.get_value_for_wavelength(wavelength))
+                (molecule.volume_fraction * molecule.absorption_spectrum.get_value_for_wavelength(wavelength))
 
             self.internal_properties[Tags.DATA_FIELD_SCATTERING_PER_CM] += \
                 (molecule.volume_fraction * (molecule.scattering_spectrum.get_value_for_wavelength(wavelength)))
 
             self.internal_properties[Tags.DATA_FIELD_ANISOTROPY] += \
                 molecule.volume_fraction * molecule.anisotropy_spectrum.get_value_for_wavelength(wavelength)
+
+            self.internal_properties[Tags.DATA_FIELD_REFRACTIVE_INDEX] += \
+                molecule.volume_fraction * molecule.refractive_index.get_value_for_wavelength(wavelength)
 
         return self.internal_properties
 
@@ -90,7 +94,9 @@ class Molecule(SerializableSIMPAClass, object):
                  absorption_spectrum: Spectrum = None,
                  volume_fraction: float = None,
                  scattering_spectrum: Spectrum = None,
-                 anisotropy_spectrum: Spectrum = None, gruneisen_parameter: float = None,
+                 anisotropy_spectrum: Spectrum = None,
+                 refractive_index: Spectrum = None,
+                 gruneisen_parameter: float = None,
                  density: float = None, speed_of_sound: float = None,
                  alpha_coefficient: float = None):
         """
@@ -99,6 +105,7 @@ class Molecule(SerializableSIMPAClass, object):
         :param volume_fraction: float
         :param scattering_spectrum: Spectrum
         :param anisotropy_spectrum: Spectrum
+        :param refractive_index: Spectrum
         :param gruneisen_parameter: float
         :param density: float
         :param speed_of_sound: float
@@ -120,7 +127,7 @@ class Molecule(SerializableSIMPAClass, object):
         if not isinstance(absorption_spectrum, Spectrum):
             raise TypeError(f"The given spectrum was not of type AbsorptionSpectrum! Instead: "
                             f"{type(absorption_spectrum)} and reads: {absorption_spectrum}")
-        self.spectrum = absorption_spectrum
+        self.absorption_spectrum = absorption_spectrum
 
         if volume_fraction is None:
             volume_fraction = 0.0
@@ -136,10 +143,16 @@ class Molecule(SerializableSIMPAClass, object):
         self.scattering_spectrum = scattering_spectrum
 
         if anisotropy_spectrum is None:
-            anisotropy_spectrum = 0.0
+            anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(1)
         if not isinstance(anisotropy_spectrum, Spectrum):
             raise TypeError(f"The given anisotropy was not of type Spectrum instead of {type(anisotropy_spectrum)}!")
         self.anisotropy_spectrum = anisotropy_spectrum
+
+        if refractive_index is None:
+            refractive_index = RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1)
+        if not isinstance(refractive_index, Spectrum):
+            raise TypeError(f"The refractive index was not of type Spectrum instead of {type(refractive_index)}!")
+        self.refractive_index = refractive_index
 
         if gruneisen_parameter is None:
             gruneisen_parameter = calculate_gruneisen_parameter_from_temperature(
@@ -172,9 +185,10 @@ class Molecule(SerializableSIMPAClass, object):
     def __eq__(self, other):
         if isinstance(other, Molecule):
             return (self.name == other.name and
-                    self.spectrum == other.spectrum and
+                    self.absorption_spectrum == other.absorption_spectrum and
                     self.volume_fraction == other.volume_fraction and
                     self.scattering_spectrum == other.scattering_spectrum and
+                    self.refractive_index == other.refractive_index and
                     self.alpha_coefficient == other.alpha_coefficient and
                     self.speed_of_sound == other.speed_of_sound and
                     self.gruneisen_parameter == other.gruneisen_parameter and
@@ -191,7 +205,7 @@ class Molecule(SerializableSIMPAClass, object):
     @staticmethod
     def deserialize(dictionary_to_deserialize: dict):
         deserialized_molecule = Molecule(name=dictionary_to_deserialize["name"],
-                                         absorption_spectrum=dictionary_to_deserialize["spectrum"],
+                                         absorption_spectrum=dictionary_to_deserialize["absorption_spectrum"],
                                          volume_fraction=dictionary_to_deserialize["volume_fraction"],
                                          scattering_spectrum=dictionary_to_deserialize["scattering_spectrum"],
                                          alpha_coefficient=dictionary_to_deserialize["alpha_coefficient"],

@@ -15,9 +15,9 @@ def calculate_oxygenation(molecule_list):
     hbO2 = None
 
     for molecule in molecule_list:
-        if molecule.spectrum.spectrum_name == "Deoxyhemoglobin":
+        if molecule.absorption_spectrum.spectrum_name == "Deoxyhemoglobin":
             hb = molecule.volume_fraction
-        if molecule.spectrum.spectrum_name == "Oxyhemoglobin":
+        if molecule.absorption_spectrum.spectrum_name == "Oxyhemoglobin":
             hbO2 = molecule.volume_fraction
 
     if hb is None and hbO2 is None:

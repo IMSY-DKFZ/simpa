@@ -33,7 +33,7 @@ class Spectrum(SerializableSIMPAClass, object):
                              str(np.shape(wavelengths)) + " vs " + str(np.shape(values)))
 
         new_wavelengths = np.arange(self.min_wavelength, self.max_wavelength+1, 1)
-        self.new_absorptions = np.interp(new_wavelengths, self.wavelengths, self.values)
+        self.new_values = np.interp(new_wavelengths, self.wavelengths, self.values)
 
     def get_value_over_wavelength(self):
         """
@@ -47,7 +47,7 @@ class Spectrum(SerializableSIMPAClass, object):
                            Must be an integer value between the minimum and maximum wavelength.
         :return: the best matching linearly interpolated absorption value for the given wavelength.
         """
-        return self.new_absorptions[wavelength-self.min_wavelength]
+        return self.new_values[wavelength-self.min_wavelength]
 
     def __eq__(self, other):
         if isinstance(other, Spectrum):
@@ -147,6 +147,17 @@ class AbsorptionSpectrumLibrary(SpectraLibrary):
     def CONSTANT_ABSORBER_ARBITRARY(absorption_coefficient: float = 1):
         return Spectrum("Constant Absorber (arb)", np.asarray([450, 1000]),
                         np.asarray([absorption_coefficient, absorption_coefficient]))
+
+
+class RefractiveIndexSpectrumLibrary(SpectraLibrary):
+
+    def __init__(self, additional_folder_path: str = None):
+        super(RefractiveIndexSpectrumLibrary, self).__init__("refractive_index_spectra_data", additional_folder_path)
+
+    @staticmethod
+    def CONSTANT_REFRACTOR_ARBITRARY(refractive_index: float = 1):
+        return Spectrum("Constant Refractor (arb)", np.asarray([450, 1000]),
+                        np.asarray([refractive_index, refractive_index]))
 
 
 def get_simpa_internal_absorption_spectra_by_names(absorption_spectrum_names: list):

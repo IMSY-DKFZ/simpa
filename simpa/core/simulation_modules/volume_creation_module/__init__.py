@@ -13,6 +13,7 @@ from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling import save_data_field
 from simpa.utils.quality_assurance.data_sanity_testing import assert_equal_shapes, assert_array_well_defined
 from simpa.utils.processing_device import get_processing_device
+from simpa.utils.constants import wavelength_independent_properties
 
 
 class VolumeCreatorModuleBase(SimulationModule):
@@ -39,7 +40,7 @@ class VolumeCreatorModuleBase(SimulationModule):
 
         for key in TissueProperties.property_tags:
             # Create wavelength-independent properties only in the first wavelength run
-            if key in TissueProperties.wavelength_independent_properties and wavelength != first_wavelength:
+            if key in wavelength_independent_properties and wavelength != first_wavelength:
                 continue
             volumes[key] = torch.zeros(sizes, dtype=torch.float, device=self.torch_device)
 

@@ -20,6 +20,7 @@ def visualise_data(wavelength: int = None,
                    show_absorption=False,
                    show_scattering=False,
                    show_anisotropy=False,
+                   show_refractive_index=False,
                    show_speed_of_sound=False,
                    show_tissue_density=False,
                    show_fluence=False,
@@ -62,6 +63,7 @@ def visualise_data(wavelength: int = None,
     absorption = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength)
     scattering = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SCATTERING_PER_CM, wavelength)
     anisotropy = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_ANISOTROPY, wavelength)
+    refractive_index = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_REFRACTIVE_INDEX, wavelength)
     segmentation_map = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SEGMENTATION)
     speed_of_sound = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_SPEED_OF_SOUND)
     density = get_data_field_from_simpa_output(file, Tags.DATA_FIELD_DENSITY)
@@ -161,6 +163,11 @@ def visualise_data(wavelength: int = None,
     if anisotropy is not None and show_anisotropy:
         data_to_show.append(anisotropy)
         data_item_names.append("Anisotropy")
+        cmaps.append("gray")
+        logscales.append(True and log_scale)
+    if refractive_index is not None and show_refractive_index:
+        data_to_show.append(refractive_index)
+        data_item_names.append("Refractive Index")
         cmaps.append("gray")
         logscales.append(True and log_scale)
     if speed_of_sound is not None and show_speed_of_sound:
