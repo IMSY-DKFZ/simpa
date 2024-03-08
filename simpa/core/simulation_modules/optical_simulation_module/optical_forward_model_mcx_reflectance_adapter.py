@@ -2,7 +2,6 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
-import struct
 import jdata
 import os
 from typing import List, Tuple, Dict, Union
@@ -45,6 +44,7 @@ class MCXAdapterReflectance(MCXAdapter):
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
+                      refractive_index: np.ndarray,
                       illumination_geometry: IlluminationGeometryBase) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
@@ -55,6 +55,7 @@ class MCXAdapterReflectance(MCXAdapter):
         :param absorption_cm: array containing the absorption of the tissue in `cm` units
         :param scattering_cm: array containing the scattering of the tissue in `cm` units
         :param anisotropy: array containing the anisotropy of the volume defined by `absorption_cm` and `scattering_cm`
+        :param refractive_index: array containing the refractive index of the volume defined by `absorption_cm` and `scattering_cm`
         :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
         :param probe_position_mm: position of a probe in `mm` units. This is parsed to
             `illumination_geometry.get_mcx_illuminator_definition`
@@ -69,6 +70,7 @@ class MCXAdapterReflectance(MCXAdapter):
         self.generate_mcx_bin_input(absorption_cm=absorption_cm,
                                     scattering_cm=scattering_cm,
                                     anisotropy=_assumed_anisotropy,
+                                    refractive_index=refractive_index,
                                     assumed_anisotropy=_assumed_anisotropy)
 
         settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
@@ -83,7 +85,6 @@ class MCXAdapterReflectance(MCXAdapter):
 
         # Read output
         results = self.read_mcx_output()
-        struct._clearcache()
 
         # clean temporary files
         self.remove_mcx_output()
@@ -226,7 +227,8 @@ class MCXAdapterReflectance(MCXAdapter):
                           device: Union[IlluminationGeometryBase, PhotoacousticDevice],
                           absorption: np.ndarray,
                           scattering: np.ndarray,
-                          anisotropy: np.ndarray
+                          anisotropy: np.ndarray,
+                          refractive_index: np.ndarray
                           ) -> Dict:
         """
         runs `self.forward_model` as many times as defined by `device` and aggregates the results.
@@ -236,6 +238,7 @@ class MCXAdapterReflectance(MCXAdapter):
         :param absorption: Absorption volume
         :param scattering: Scattering volume
         :param anisotropy: Dimensionless scattering anisotropy
+        :param refractive_index: Refractive index
         :return:
         """
         reflectance = []
@@ -247,6 +250,7 @@ class MCXAdapterReflectance(MCXAdapter):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
+                                         refractive_index=refractive_index,
                                          illumination_geometry=_device[0])
             self._append_results(results=results,
                                  reflectance=reflectance,
@@ -259,6 +263,7 @@ class MCXAdapterReflectance(MCXAdapter):
                 results = self.forward_model(absorption_cm=absorption,
                                              scattering_cm=scattering,
                                              anisotropy=anisotropy,
+                                             refractive_index=refractive_index,
                                              illumination_geometry=_device[idx])
                 self._append_results(results=results,
                                      reflectance=reflectance,
@@ -273,6 +278,7 @@ class MCXAdapterReflectance(MCXAdapter):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
+                                         refractive_index=refractive_index,
                                          illumination_geometry=_device)
             self._append_results(results=results,
                                  reflectance=reflectance,

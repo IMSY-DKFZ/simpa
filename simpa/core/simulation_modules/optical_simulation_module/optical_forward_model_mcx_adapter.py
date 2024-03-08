@@ -42,6 +42,7 @@ class MCXAdapter(OpticalForwardModuleBase):
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
+                      refractive_index: np.ndarray,
                       illumination_geometry: IlluminationGeometryBase) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
@@ -52,6 +53,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         :param absorption_cm: array containing the absorption of the tissue in `cm` units
         :param scattering_cm: array containing the scattering of the tissue in `cm` units
         :param anisotropy: array containing the anisotropy of the volume defined by `absorption_cm` and `scattering_cm`
+        :param refractive_index: array containing the refractive index of the volume defined by `absorption_cm` and `scattering_cm`
         :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
         :return: `Dict` containing the results of optical simulations, the keys in this dictionary-like object
             depend on the Tags defined in `self.component_settings`
@@ -64,6 +66,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         self.generate_mcx_bin_input(absorption_cm=absorption_cm,
                                     scattering_cm=scattering_cm,
                                     anisotropy=anisotropy,
+                                    refractive_index=refractive_index,
                                     assumed_anisotropy=_assumed_anisotropy)
 
         settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
@@ -155,7 +158,7 @@ class MCXAdapter(OpticalForwardModuleBase):
                         "n": 1
                     }
                 ],
-                "MediaFormat": "muamus_float",
+                "MediaFormat": "asgn_float",
                 "Dim": [self.nx, self.ny, self.nz],
                 "VolumeFile": self.global_settings[Tags.SIMULATION_PATH] + "/" +
                 self.global_settings[Tags.VOLUME_NAME] + ".bin"
@@ -207,6 +210,7 @@ class MCXAdapter(OpticalForwardModuleBase):
                                absorption_cm: np.ndarray,
                                scattering_cm: np.ndarray,
                                anisotropy: np.ndarray,
+                               refractive_index: np.ndarray,
                                assumed_anisotropy: np.ndarray) -> None:
         """
         generates binary file containing volume scattering and absorption as input for MCX
@@ -214,15 +218,17 @@ class MCXAdapter(OpticalForwardModuleBase):
         :param absorption_cm: Absorption in units of per centimeter
         :param scattering_cm: Scattering in units of per centimeter
         :param anisotropy: Dimensionless scattering anisotropy
+        :param refractive_index: Refractive index
         :param assumed_anisotropy:
         :return: None
         """
-        absorption_mm, scattering_mm = self.pre_process_volumes(**{'absorption_cm': absorption_cm,
-                                                                   'scattering_cm': scattering_cm,
-                                                                   'anisotropy': anisotropy,
-                                                                   'assumed_anisotropy': assumed_anisotropy})
-        # stack arrays to give array with shape (nx,ny,nz,2)
-        op_array = np.stack([absorption_mm, scattering_mm], axis=-1, dtype=np.float32)
+        absorption_mm, scattering_mm, anisotropy, refractive_index = self.pre_process_volumes(**{'absorption_cm': absorption_cm,
+                                                                                                 'scattering_cm': scattering_cm,
+                                                                                                 'anisotropy': anisotropy,
+                                                                                                 'refractive_index': refractive_index,
+                                                                                                 'assumed_anisotropy': assumed_anisotropy})
+        # stack arrays to give array with shape (nx,ny,nz,4) - where the 4 floats correspond to mua/mus/g/n
+        op_array = np.stack([absorption_mm, scattering_mm, anisotropy, refractive_index], axis=-1, dtype=np.float32)
         [self.nx, self.ny, self.nz, _] = np.shape(op_array)
         # # create a binary of the volume
         tmp_input_path = self.global_settings[Tags.SIMULATION_PATH] + "/" + \
@@ -263,7 +269,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         """
         pre-process volumes before running simulations with MCX. The volumes are transformed to `mm` units
 
-        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy` and
+        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy, refractive_index` and
             `assumed_anisotropy`
         :return: `Tuple` of volumes after transformation
         """
@@ -274,29 +280,17 @@ class MCXAdapter(OpticalForwardModuleBase):
         """
         transforms volumes into `mm` units
 
-        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy` and
+        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy, refractive_index` and
             `assumed_anisotropy`
         :return: `Tuple` of volumes after transformation
         """
         scattering_cm = kwargs.get('scattering_cm')
         absorption_cm = kwargs.get('absorption_cm')
+        anisotropy = kwargs.get('anisotropy')
+        refractive_index = kwargs.get('refractive_index')
         absorption_mm = absorption_cm / 10
         scattering_mm = scattering_cm / 10
-
-        # FIXME Currently, mcx only accepts a single value for the anisotropy.
-        #   In order to use the correct reduced scattering coefficient throughout the simulation,
-        #   we adjust the scattering parameter to be more accurate in the diffuse regime.
-        #   This will lead to errors, especially in the quasi-ballistic regime.
-
-        given_reduced_scattering = (scattering_mm * (1 - kwargs.get('anisotropy')))
-
-        # If the anisotropy is 1, all scattering is forward scattering which is equal to no scattering at all
-        if kwargs.get("assumed_anisotropy") == 1:
-            scattering_mm = given_reduced_scattering * 0
-        else:
-            scattering_mm = given_reduced_scattering / (1 - kwargs.get('assumed_anisotropy'))
-        scattering_mm[scattering_mm < 1e-10] = 1e-10
-        return absorption_mm, scattering_mm
+        return absorption_mm, scattering_mm, anisotropy, refractive_index
 
     @staticmethod
     def post_process_volumes(**kwargs) -> Tuple:
