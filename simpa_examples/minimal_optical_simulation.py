@@ -157,5 +157,4 @@ if VISUALIZE:
                       show_initial_pressure=True,
                       show_absorption=True,
                       show_diffuse_reflectance=SAVE_REFLECTANCE,
-                      show_refractive_index=True,
-                      log_scale=False)
+                      log_scale=True)
