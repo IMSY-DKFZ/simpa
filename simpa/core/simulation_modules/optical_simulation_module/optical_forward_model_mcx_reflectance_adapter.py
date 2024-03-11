@@ -132,8 +132,8 @@ class MCXAdapterReflectance(MCXAdapter):
             content = jdata.load(self.mcx_volumetric_data_file)
             fluence = content['NIFTIData']
             if fluence.ndim > 3:
-                # mcx >= v2024.1 includes additional dimensions in this data structure for the source and detector ids
-                fluence = np.squeeze(fluence)
+                # remove the 1 or 2 (for mcx >= v2024.1) additional dimensions of size 1 if present to obtain a 3d array
+                fluence = fluence.reshape(fluence.shape[0], fluence.shape[1], -1)
             ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
             fluence = self.post_process_volumes(**{'arrays': (fluence,)})[0]
             fluence *= 100  # Convert from J/mm^2 to J/cm^2
