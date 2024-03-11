@@ -101,6 +101,9 @@ class MCXAdapterReflectance(MCXAdapter):
         cmd.append(self.mcx_json_config_file)
         cmd.append("-O")
         cmd.append("F")
+        # use 'C' order array format for binary input file
+        cmd.append("-a")
+        cmd.append("1")
         cmd.append("-F")
         cmd.append("jnii")
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
@@ -128,6 +131,9 @@ class MCXAdapterReflectance(MCXAdapter):
                 self.mcx_output_suffixes['mcx_volumetric_data_file']):
             content = jdata.load(self.mcx_volumetric_data_file)
             fluence = content['NIFTIData']
+            if fluence.ndim > 3:
+                # mcx >= v2024.1 includes additional dimensions in this data structure for the source and detector ids
+                fluence = np.squeeze(fluence)
             ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
             fluence = self.post_process_volumes(**{'arrays': (fluence,)})[0]
             fluence *= 100  # Convert from J/mm^2 to J/cm^2
