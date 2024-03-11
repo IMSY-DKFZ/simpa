@@ -18,8 +18,8 @@ class MCXAdapterReflectance(MCXAdapter):
     diffuse reflectance simulations. Specifically, it implements the capability to run diffuse reflectance simulations.
 
     .. warning::
-        This MCX adapter requires a version of MCX containing the revision: `Rev::077060`, which was published in the
-        Nightly build  on `2022-01-26`.
+        This MCX adapter requires a version of MCX containing the commit 56eca8ae7e9abde309053759d6d6273ac4795fc5,
+        which was published in the Nightly build on `2024-03-10`.
 
     .. note::
         MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue:
