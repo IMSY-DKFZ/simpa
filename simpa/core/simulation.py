@@ -65,10 +65,12 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     # In case of continuation, the simulation script doesn't overwrite the existing file.
 
     if Tags.CONTINUE_SIMULATION in settings and settings[Tags.CONTINUE_SIMULATION]:
-        simpa_output[Tags.SIMULATION_PIPELINE] = (load_data_field(settings[Tags.SIMPA_OUTPUT_PATH],
-                                                                  Tags.SIMULATION_PIPELINE)
-                                                  + simpa_output[Tags.SIMULATION_PIPELINE])
-        previous_settings = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH], Tags.SETTINGS)
+        try:
+            old_pipe = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.SIMULATION_PIPELINE)
+        except KeyError as e:
+            old_pipe = list()
+        simpa_output[Tags.SIMULATION_PIPELINE] = old_pipe + simpa_output[Tags.SIMULATION_PIPELINE]
+        previous_settings = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.SETTINGS)
         previous_settings.update(settings)
         simpa_output[Tags.SETTINGS] = previous_settings
 
