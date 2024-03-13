@@ -8,8 +8,8 @@ from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
 from simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base import IlluminationGeometryBase
 import json
+import jdata
 import os
-import gc
 from typing import List, Dict, Tuple
 
 
@@ -36,7 +36,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         self.mcx_json_config_file = None
         self.mcx_volumetric_data_file = None
         self.frames = None
-        self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.mc2'}
+        self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii'}
 
     def forward_model(self,
                       absorption_cm: np.ndarray,
@@ -182,9 +182,8 @@ class MCXAdapter(OpticalForwardModuleBase):
         # use 'C' order array format for binary input file
         cmd.append("-a")
         cmd.append("1")
-        # use mc2 binary output file format
         cmd.append("-F")
-        cmd.append("mc2")
+        cmd.append("jnii")
         return cmd
 
     @staticmethod
@@ -237,11 +236,13 @@ class MCXAdapter(OpticalForwardModuleBase):
         :param kwargs: dummy, used for class inheritance compatibility
         :return: `Dict` instance containing the MCX output
         """
-        shape = [self.nx, self.ny, self.nz, self.frames]
-        fluence = np.fromfile(self.mcx_volumetric_data_file, dtype=np.float32).reshape(shape, order='F')
-        fluence *= 100  # Convert from J/mm^2 to J/cm^2
-        if np.shape(fluence)[3] == 1:
-            fluence = np.squeeze(fluence, 3)
+        content = jdata.load(self.mcx_volumetric_data_file)
+        fluence = content['NIFTIData']
+        print(f"fluence.shape {fluence.shape}")
+        if fluence.ndim > 3:
+            # remove the 1 or 2 (for mcx >= v2024.1) additional dimensions of size 1 if present to obtain a 3d array
+            fluence = fluence.reshape(fluence.shape[0], fluence.shape[1], -1)
+        print(f"fluence.shape {fluence.shape}")
         results = dict()
         results[Tags.DATA_FIELD_FLUENCE] = fluence
         return results
