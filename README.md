@@ -77,9 +77,9 @@ acoustic simulations possible.
 
 Download the latest nightly build of [mcx](http://mcx.space/) for your operating system:
 
-- [Linux](http://mcx.space/nightly/github/mcx-linux-x64-github-latest.zip)
-- [MacOS](http://mcx.space/nightly/github/mcx-macos-x64-github-latest.zip)
-- [Windows](http://mcx.space/nightly/github/mcx-windows-x64-github-latest.zip)
+- [Linux](https://mcx.space/nightly/github/mcx-linux-x64-github-latest.zip)
+- [MacOS](https://mcx.space/nightly/github/mcx-macos-x64-github-latest.zip)
+- [Windows](https://mcx.space/nightly/github/mcx-windows-x64-github-latest.zip)
 
 Then extract the files and set `MCX_BINARY_PATH=/.../mcx/bin/mcx` in your path_config.env.
 
