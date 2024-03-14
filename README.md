@@ -75,25 +75,13 @@ acoustic simulations possible.
 
 ### mcx (Optical Forward Model)
 
-Either download suitable executables or build yourself from the following sources:
+Download the latest nightly build of [mcx](http://mcx.space/) for your operating system:
 
-[http://mcx.space/](http://mcx.space/)
+- [Linux](http://mcx.space/nightly/github/mcx-linux-x64-github-latest.zip)
+- [MacOS](http://mcx.space/nightly/github/mcx-macos-x64-github-latest.zip)
+- [Windows](http://mcx.space/nightly/github/mcx-windows-x64-github-latest.zip)
 
-In order to obtain access to all custom sources that we implemented, please build mcx yourself from the
-following mcx Github fork:
-[https://github.com/IMSY-DKFZ/mcx](https://github.com/IMSY-DKFZ/mcx)
-
-For the installation, please follow steps 1-4:
-1. `git clone https://github.com/IMSY-DKFZ/mcx.git`
-2. `cd mcx/src`
-3. In `MAKEFILE` adapt line 111 the sm version [according to your GPU](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/).
-4. `make`
-
-The built binary can be found in `src/bin`.
-Note, in case you can’t build mcx with the GPU-specific sm version you need to install a more recent NVIDIA driver and nvcc toolkit. 
-One option would be to install cuda in a conda environment via `conda install cuda -c nvidia`.
-Please note that there might be compatibility issues using mcx-cl with the MCX Adapter as this use case is not 
-being tested and supported by the SIMPA developers.
+Then extract the files and set `MCX_BINARY_PATH=/.../mcx/bin/mcx` in your path_config.env.
 
 ### k-Wave (Acoustic Forward Model)
 

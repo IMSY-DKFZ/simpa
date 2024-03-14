@@ -31,20 +31,24 @@ class SegmentationClasses:
     LYMPH_NODE = 13
 
 
-wavelength_dependent_properties = [Tags.DATA_FIELD_ABSORPTION_PER_CM,
-                                   Tags.DATA_FIELD_SCATTERING_PER_CM,
-                                   Tags.DATA_FIELD_ANISOTROPY,
-                                   Tags.DATA_FIELD_REFRACTIVE_INDEX]
+wavelength_dependent_properties = [
+    Tags.DATA_FIELD_ABSORPTION_PER_CM,
+    Tags.DATA_FIELD_SCATTERING_PER_CM,
+    Tags.DATA_FIELD_ANISOTROPY
+]
 
-wavelength_independent_properties = [Tags.DATA_FIELD_OXYGENATION,
-                                     Tags.DATA_FIELD_SEGMENTATION,
-                                     Tags.DATA_FIELD_GRUNEISEN_PARAMETER,
-                                     Tags.DATA_FIELD_SPEED_OF_SOUND,
-                                     Tags.DATA_FIELD_DENSITY,
-                                     Tags.DATA_FIELD_ALPHA_COEFF]
+wavelength_independent_properties = [
+    Tags.DATA_FIELD_GRUNEISEN_PARAMETER,
+    Tags.DATA_FIELD_SEGMENTATION,
+    Tags.DATA_FIELD_OXYGENATION,
+    Tags.DATA_FIELD_DENSITY,
+    Tags.DATA_FIELD_SPEED_OF_SOUND,
+    Tags.DATA_FIELD_ALPHA_COEFF
+]
 
-toolkit_properties = [Tags.KWAVE_PROPERTY_SENSOR_MASK,
-                      Tags.KWAVE_PROPERTY_DIRECTIVITY_ANGLE]
+property_tags = wavelength_dependent_properties + wavelength_independent_properties
+
+toolkit_tags = [Tags.KWAVE_PROPERTY_SENSOR_MASK, Tags.KWAVE_PROPERTY_DIRECTIVITY_ANGLE]
 
 simulation_output = [Tags.DATA_FIELD_FLUENCE,
                      Tags.DATA_FIELD_INITIAL_PRESSURE,
@@ -58,7 +62,3 @@ simulation_output = [Tags.DATA_FIELD_FLUENCE,
 
 simulation_output_fields = [Tags.OPTICAL_MODEL_OUTPUT_NAME,
                             Tags.SIMULATION_PROPERTIES]
-
-wavelength_dependent_image_processing_output = [Tags.ITERATIVE_qPAI_RESULT]
-
-wavelength_independent_image_processing_output = [Tags.LINEAR_UNMIXING_RESULT]

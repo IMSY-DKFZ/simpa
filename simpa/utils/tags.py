@@ -34,6 +34,14 @@ class Tags:
     Usage: SIMPA package
     """
 
+    CONTINUE_SIMULATION = ("continue_simulation", bool)
+    """
+    Boolean whether the user just wants to continue a previously existing simulation or 
+    if they want to start a new simulation from scratch. In case of continuation, 
+    the simulation script doesn't overwrite the existing file.
+    Usage: SIMPA package
+    """
+
     VOLUME_NAME = ("volume_name", str)
     """
     Name of the SIMPA output file.\n

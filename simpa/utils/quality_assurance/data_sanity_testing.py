@@ -45,7 +45,11 @@ def assert_array_well_defined(array: Union[np.ndarray, torch.Tensor], assume_non
     """
 
     error_message = None
-    array_as_tensor = torch.as_tensor(array)
+    if isinstance(array, np.ndarray) and any(stride < 0 for stride in array.strides):
+        # torch does not support tensors with negative strides so we need to make a copy of the array
+        array_as_tensor = torch.as_tensor(array.copy())
+    else:
+        array_as_tensor = torch.as_tensor(array)
     if not torch.all(torch.isfinite(array_as_tensor)):
         error_message = "nan, inf or -inf"
     if assume_positivity and torch.any(array_as_tensor <= 0):

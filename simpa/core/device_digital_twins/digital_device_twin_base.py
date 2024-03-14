@@ -12,6 +12,15 @@ import uuid
 from simpa.utils.serializer import SerializableSIMPAClass
 
 
+def is_equal(a, b) -> bool:
+    if isinstance(a, list):
+        return all(is_equal(ai, bi) for ai, bi in zip(a, b))
+    elif isinstance(a, np.ndarray):
+        return (a == b).all
+    else:
+        return a == b
+
+
 class DigitalDeviceTwinBase(SerializableSIMPAClass):
     """
     This class represents a device that can be used for illumination, detection or a combined photoacoustic device
@@ -49,14 +58,8 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
                 return False
             for self_key, self_value in self.__dict__.items():
                 other_value = other.__dict__[self_key]
-                if isinstance(self_value, np.ndarray):
-                    boolean = (other_value != self_value).all()
-                else:
-                    boolean = other_value != self_value
-                if boolean:
+                if not is_equal(self_value, other_value):
                     return False
-                else:
-                    continue
             return True
         return False
 
