@@ -5,7 +5,8 @@
 from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
-from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
+from simpa.utils.libraries.spectrum_library import (AnisotropySpectrumLibrary, ScatteringSpectrumLibrary,
+                                                    RefractiveIndexSpectrumLibrary)
 from simpa.utils.calculate import randomize_uniform
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
 
@@ -21,17 +22,21 @@ class TissueLibrary(object):
         """
         return [total_blood_volume_fraction*oxygenation, total_blood_volume_fraction*(1-oxygenation)]
 
-    def constant(self, mua=1e-10, mus=1e-10, g=1e-10):
+    def constant(self, mua=1e-10, mus=1e-10, g=1e-10, n=1.3):
         """
         TODO
         """
         return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
-                                                                absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
+                                                                absorption_spectrum=AbsorptionSpectrumLibrary().
+                                                                CONSTANT_ABSORBER_ARBITRARY(mua),
                                                                 volume_fraction=1.0,
                                                                 scattering_spectrum=ScatteringSpectrumLibrary.
                                                                 CONSTANT_SCATTERING_ARBITRARY(mus),
                                                                 anisotropy_spectrum=AnisotropySpectrumLibrary.
-                                                                CONSTANT_ANISOTROPY_ARBITRARY(g)))
+                                                                CONSTANT_ANISOTROPY_ARBITRARY(g),
+                                                                refractive_index=RefractiveIndexSpectrumLibrary.
+                                                                CONSTANT_REFRACTOR_ARBITRARY(n)))
+
                 .get_molecular_composition(SegmentationClasses.GENERIC))
 
     def muscle(self, background_oxy=None, blood_volume_fraction=None):
