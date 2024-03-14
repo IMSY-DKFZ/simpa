@@ -50,7 +50,7 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     elif data_field in wavelength_independent_image_processing_output:
         dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + "/"
     else:
-        raise ValueError(f"The requested data_field: '{data_field}: is not a valid argument. "
+        raise ValueError(f"The requested data_field: '{data_field}': is not a valid argument. "
                          f"Please specify a valid data_field using the Tags from simpa/utils/tags.py!")
 
     return dict_path

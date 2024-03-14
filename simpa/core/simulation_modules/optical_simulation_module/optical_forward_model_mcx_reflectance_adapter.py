@@ -106,6 +106,8 @@ class MCXAdapterReflectance(MCXAdapter):
         cmd.append("1")
         cmd.append("-F")
         cmd.append("jnii")
+        cmd.append("-b")
+        cmd.append("1")
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
             cmd.append("-H")
