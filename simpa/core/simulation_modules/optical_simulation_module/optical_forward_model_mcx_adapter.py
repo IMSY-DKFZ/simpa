@@ -228,11 +228,9 @@ class MCXAdapter(OpticalForwardModuleBase):
         """
         content = jdata.load(self.mcx_volumetric_data_file)
         fluence = content['NIFTIData']
-        print(f"fluence.shape {fluence.shape}")
         if fluence.ndim > 3:
             # remove the 1 or 2 (for mcx >= v2024.1) additional dimensions of size 1 if present to obtain a 3d array
             fluence = fluence.reshape(fluence.shape[0], fluence.shape[1], -1)
-        print(f"fluence.shape {fluence.shape}")
         results = dict()
         results[Tags.DATA_FIELD_FLUENCE] = fluence
         return results
