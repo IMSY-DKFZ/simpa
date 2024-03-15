@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 from abc import abstractmethod
-from typing import Dict, Union
+from typing import Dict, Union, Iterable
 
 import numpy as np
 
@@ -131,30 +131,11 @@ class OpticalForwardModuleBase(SimulationModule):
         :param refractive_index: Refractive index
         :return:
         """
-        if isinstance(_device, list):
-            # per convention this list has at least two elements
-            results = self.forward_model(absorption_cm=absorption,
+        _devices = _device if isinstance(_device, Iterable) else (_device,)
+        fluence = sum(self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
                                          refractive_index=refractive_index,
-                                         illumination_geometry=_device[0])
-            fluence = results[Tags.DATA_FIELD_FLUENCE]
-            for idx in range(1, len(_device)):
-                # we already looked at the 0th element, so go from 1 to n-1
-                results = self.forward_model(absorption_cm=absorption,
-                                             scattering_cm=scattering,
-                                             anisotropy=anisotropy,
-                                             refractive_index=refractive_index,
-                                             illumination_geometry=_device[idx])
-                fluence += results[Tags.DATA_FIELD_FLUENCE]
-
-            fluence = fluence / len(_device)
-
-        else:
-            results = self.forward_model(absorption_cm=absorption,
-                                         scattering_cm=scattering,
-                                         anisotropy=anisotropy,
-                                         refractive_index=refractive_index,
-                                         illumination_geometry=_device)
-            fluence = results[Tags.DATA_FIELD_FLUENCE]
-        return {Tags.DATA_FIELD_FLUENCE: fluence}
+                                         illumination_geometry=illumination_geometry)[Tags.DATA_FIELD_FLUENCE]
+                      for illumination_geometry in _devices)
+        return {Tags.DATA_FIELD_FLUENCE: fluence / len(_devices)}

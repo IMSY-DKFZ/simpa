@@ -58,19 +58,12 @@ class MCXAdapter(OpticalForwardModuleBase):
         :return: `Dict` containing the results of optical simulations, the keys in this dictionary-like object
             depend on the Tags defined in `self.component_settings`
         """
-        if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
-            _assumed_anisotropy = self.component_settings[Tags.MCX_ASSUMED_ANISOTROPY]
-        else:
-            _assumed_anisotropy = 0.9
-
         self.generate_mcx_bin_input(absorption_cm=absorption_cm,
                                     scattering_cm=scattering_cm,
                                     anisotropy=anisotropy,
-                                    refractive_index=refractive_index,
-                                    assumed_anisotropy=_assumed_anisotropy)
+                                    refractive_index=refractive_index)
 
-        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
-                                              assumed_anisotropy=_assumed_anisotropy)
+        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry)
 
         print(settings_dict)
         self.generate_mcx_json_input(settings_dict=settings_dict)
@@ -101,14 +94,12 @@ class MCXAdapter(OpticalForwardModuleBase):
 
     def get_mcx_settings(self,
                          illumination_geometry: IlluminationGeometryBase,
-                         assumed_anisotropy: np.ndarray,
                          **kwargs) -> Dict:
         """
         generates MCX-specific settings for simulations based on Tags in `self.global_settings` and
         `self.component_settings` . Among others, it defines the volume type, dimensions and path to binary file.
 
         :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
-        :param assumed_anisotropy:
         :param kwargs: dummy, used for class inheritance
         :return: dictionary with settings to be used by MCX
         """
@@ -149,12 +140,6 @@ class MCXAdapter(OpticalForwardModuleBase):
                         "mua": 0,
                         "mus": 0,
                         "g": 1,
-                        "n": 1
-                    },
-                    {
-                        "mua": 1,
-                        "mus": 1,
-                        "g": assumed_anisotropy,
                         "n": 1
                     }
                 ],
@@ -210,8 +195,7 @@ class MCXAdapter(OpticalForwardModuleBase):
                                absorption_cm: np.ndarray,
                                scattering_cm: np.ndarray,
                                anisotropy: np.ndarray,
-                               refractive_index: np.ndarray,
-                               assumed_anisotropy: np.ndarray) -> None:
+                               refractive_index: np.ndarray) -> None:
         """
         generates binary file containing volume scattering and absorption as input for MCX
 
@@ -219,14 +203,12 @@ class MCXAdapter(OpticalForwardModuleBase):
         :param scattering_cm: Scattering in units of per centimeter
         :param anisotropy: Dimensionless scattering anisotropy
         :param refractive_index: Refractive index
-        :param assumed_anisotropy:
         :return: None
         """
         absorption_mm, scattering_mm, anisotropy, refractive_index = self.pre_process_volumes(**{'absorption_cm': absorption_cm,
                                                                                                  'scattering_cm': scattering_cm,
                                                                                                  'anisotropy': anisotropy,
-                                                                                                 'refractive_index': refractive_index,
-                                                                                                 'assumed_anisotropy': assumed_anisotropy})
+                                                                                                 'refractive_index': refractive_index})
         # stack arrays to give array with shape (nx,ny,nz,4) - where the 4 floats correspond to mua/mus/g/n
         op_array = np.stack([absorption_mm, scattering_mm, anisotropy, refractive_index], axis=-1, dtype=np.float32)
         [self.nx, self.ny, self.nz, _] = np.shape(op_array)
@@ -269,8 +251,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         """
         pre-process volumes before running simulations with MCX. The volumes are transformed to `mm` units
 
-        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy, refractive_index` and
-            `assumed_anisotropy`
+        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy, refractive_index`
         :return: `Tuple` of volumes after transformation
         """
         return self.volumes_to_mm(**kwargs)
@@ -280,8 +261,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         """
         transforms volumes into `mm` units
 
-        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy, refractive_index` and
-            `assumed_anisotropy`
+        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy, refractive_index`
         :return: `Tuple` of volumes after transformation
         """
         scattering_cm = kwargs.get('scattering_cm')

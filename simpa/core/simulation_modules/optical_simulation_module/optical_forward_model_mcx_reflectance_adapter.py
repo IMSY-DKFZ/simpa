@@ -62,20 +62,13 @@ class MCXAdapterReflectance(MCXAdapter):
         :return: `Settings` containing the results of optical simulations, the keys in this dictionary-like object
             depend on the Tags defined in `self.component_settings`
         """
-        if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
-            _assumed_anisotropy = self.component_settings[Tags.MCX_ASSUMED_ANISOTROPY]
-        else:
-            _assumed_anisotropy = 0.9
 
         self.generate_mcx_bin_input(absorption_cm=absorption_cm,
                                     scattering_cm=scattering_cm,
-                                    anisotropy=_assumed_anisotropy,
-                                    refractive_index=refractive_index,
-                                    assumed_anisotropy=_assumed_anisotropy)
+                                    anisotropy=anisotropy,
+                                    refractive_index=refractive_index)
 
-        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
-                                              assumed_anisotropy=_assumed_anisotropy,
-                                              )
+        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry)
 
         print(settings_dict)
         self.generate_mcx_json_input(settings_dict=settings_dict)
@@ -96,19 +89,7 @@ class MCXAdapterReflectance(MCXAdapter):
 
         :return: list of MCX commands
         """
-        cmd = list()
-        cmd.append(self.component_settings[Tags.OPTICAL_MODEL_BINARY_PATH])
-        cmd.append("-f")
-        cmd.append(self.mcx_json_config_file)
-        cmd.append("-O")
-        cmd.append("F")
-        # use 'C' order array format for binary input file
-        cmd.append("-a")
-        cmd.append("1")
-        cmd.append("-F")
-        cmd.append("jnii")
-        cmd.append("-b")
-        cmd.append("1")
+        cmd = super().get_command()
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
             cmd.append("-H")
