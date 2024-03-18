@@ -174,6 +174,8 @@ class MCXAdapter(OpticalForwardModuleBase):
         cmd.append("jnii")
         cmd.append("-b")
         cmd.append("1")
+        cmd.append("--bc")
+        cmd.append("aaaaaa")
         return cmd
 
     @staticmethod

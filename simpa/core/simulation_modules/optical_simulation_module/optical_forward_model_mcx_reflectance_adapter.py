@@ -95,7 +95,7 @@ class MCXAdapterReflectance(MCXAdapter):
             cmd.append("-H")
             cmd.append(f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}")
             cmd.append("--bc")  # save photon exit position and direction
-            cmd.append("______000010")
+            cmd.append("aaaaaa000010")
             cmd.append("--savedetflag")
             cmd.append("XV")
         if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
