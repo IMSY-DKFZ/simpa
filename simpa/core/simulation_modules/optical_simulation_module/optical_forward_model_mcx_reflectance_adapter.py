@@ -37,7 +37,8 @@ class MCXAdapterReflectance(MCXAdapter):
         super(MCXAdapterReflectance, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
-        self.mcx_output_suffixes['mcx_photon_data_file'] = '_detp.jdat'
+        self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.bnii',
+                                    'mcx_photon_data_file': '_detp.jdat'}
 
     def forward_model(self,
                       absorption_cm: np.ndarray,
@@ -82,24 +83,23 @@ class MCXAdapterReflectance(MCXAdapter):
         self.remove_mcx_output()
         return results
 
-    def get_command(self) -> List:
+    def get_command(self, bc="aaaaaa000010") -> List:
         """
         generates list of commands to be parse to MCX in a subprocess
 
         :return: list of MCX commands
         """
-        cmd = super().get_command()
+        cmd = super().get_command(bc=bc)
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
             cmd.append("-H")
             cmd.append(f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}")
-            cmd.append("--bc")  # save photon exit position and direction
-            cmd.append("aaaaaa000010")
             cmd.append("--savedetflag")
             cmd.append("XV")
         if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
             cmd.append("--saveref")  # save diffuse reflectance at 0 filled voxels outside of domain
+            cmd.append("1")
         return cmd
 
     def read_mcx_output(self, **kwargs) -> Dict:

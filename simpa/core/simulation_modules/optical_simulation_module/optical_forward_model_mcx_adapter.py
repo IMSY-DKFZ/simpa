@@ -155,7 +155,7 @@ class MCXAdapter(OpticalForwardModuleBase):
             settings_dict["Session"]["RNGSeed"] = self.component_settings[Tags.MCX_SEED]
         return settings_dict
 
-    def get_command(self) -> List:
+    def get_command(self, bc="aaaaaa") -> List:
         """
         generates list of commands to be parse to MCX in a subprocess
 
@@ -177,7 +177,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         cmd.append("-b")
         cmd.append("1")
         cmd.append("--bc")
-        cmd.append("aaaaaa")
+        cmd.append(bc)
         return cmd
 
     @staticmethod
