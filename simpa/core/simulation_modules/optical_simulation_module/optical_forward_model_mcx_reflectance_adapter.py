@@ -37,8 +37,7 @@ class MCXAdapterReflectance(MCXAdapter):
         super(MCXAdapterReflectance, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
-        self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii',
-                                    'mcx_photon_data_file': '_detp.jdat'}
+        self.mcx_output_suffixes['mcx_photon_data_file'] = '_detp.jdat'
 
     def forward_model(self,
                       absorption_cm: np.ndarray,
@@ -123,7 +122,7 @@ class MCXAdapterReflectance(MCXAdapter):
             fluence *= 100  # Convert from J/mm^2 to J/cm^2
             results[Tags.DATA_FIELD_FLUENCE] = fluence
         else:
-            raise FileNotFoundError(f"Could not find .jnii file for {self.mcx_volumetric_data_file}")
+            raise FileNotFoundError(f"Could not find .bnii file for {self.mcx_volumetric_data_file}")
         if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
             results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = ref

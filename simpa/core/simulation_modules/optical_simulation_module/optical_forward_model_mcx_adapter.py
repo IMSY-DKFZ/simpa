@@ -36,7 +36,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         self.mcx_json_config_file = None
         self.mcx_volumetric_data_file = None
         self.frames = None
-        self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii'}
+        self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.bnii'}
 
     def forward_model(self,
                       absorption_cm: np.ndarray,
@@ -171,7 +171,9 @@ class MCXAdapter(OpticalForwardModuleBase):
         cmd.append("-a")
         cmd.append("1")
         cmd.append("-F")
-        cmd.append("jnii")
+        cmd.append("bnii")
+        cmd.append("-Z")
+        cmd.append("2")
         cmd.append("-b")
         cmd.append("1")
         cmd.append("--bc")
