@@ -228,15 +228,15 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         plt.figure(figsize=(9, 3))
         plt.subplot(1, 3, 1)
         plt.title("Initial pressure")
-        plt.imshow(np.rot90(initial_pressure[:, 20, :], 3))
+        plt.imshow(initial_pressure[:, 20, :].T)
         plt.subplot(1, 3, 2)
         plt.title("Pipeline\nReconstruction")
         if self.reconstructed_image_pipeline is not None:
-            plt.imshow(np.rot90(self.reconstructed_image_pipeline, 3))
+            plt.imshow(self.reconstructed_image_pipeline.T)
         plt.subplot(1, 3, 3)
         plt.title("Convenience Method\nReconstruction")
         if self.reconstructed_image_convenience is not None:
-            plt.imshow(np.rot90(self.reconstructed_image_convenience, 3))
+            plt.imshow(self.reconstructed_image_convenience.T)
 
         plt.tight_layout()
         if show_figure_on_screen:

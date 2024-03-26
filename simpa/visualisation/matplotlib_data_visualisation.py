@@ -221,10 +221,10 @@ def visualise_data(wavelength: int = None,
         plt.title(data_item_names[i])
         if len(np.shape(data_to_show[i])) > 2:
             pos = int(np.shape(data_to_show[i])[1] / 2) - 1
-            data = np.rot90(data_to_show[i][:, pos, :], -1)
+            data = data_to_show[i][:, pos, :].T
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         else:
-            data = np.rot90(data_to_show[i][:, :], -1)
+            data = data_to_show[i][:, :].T
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         plt.colorbar()
 
@@ -233,10 +233,10 @@ def visualise_data(wavelength: int = None,
             plt.title(data_item_names[i])
             if len(np.shape(data_to_show[i])) > 2:
                 pos = int(np.shape(data_to_show[i])[0] / 2)
-                data = np.rot90(data_to_show[i][pos, :, :], -1)
+                data = data_to_show[i][pos, :, :].T
                 plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
             else:
-                data = np.rot90(data_to_show[i][:, :], -1)
+                data = data_to_show[i][:, :].T
                 plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
             plt.colorbar()
 
