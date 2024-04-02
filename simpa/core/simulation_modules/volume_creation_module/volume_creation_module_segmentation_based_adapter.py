@@ -7,6 +7,7 @@ from simpa.utils import Tags
 from simpa.utils.constants import property_tags
 from simpa.io_handling import save_hdf5
 import numpy as np
+import torch
 
 
 class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
@@ -42,8 +43,15 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
         for seg_class in segmentation_classes:
             class_properties = class_mapping[seg_class].get_properties_for_wavelength(wavelength)
             for prop_tag in property_tags:
-                volumes[prop_tag][segmentation_volume == seg_class] = class_properties[prop_tag]
+                assigned_prop = class_properties[prop_tag]
+                if assigned_prop is None:
+                    assigned_prop = torch.nan
+                volumes[prop_tag][segmentation_volume == seg_class] = assigned_prop
 
         save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
+
+        # convert volumes back to CPU
+        for key in volumes.keys():
+            volumes[key] = volumes[key].cpu().numpy().astype(np.float64, copy=False)
 
         return volumes
