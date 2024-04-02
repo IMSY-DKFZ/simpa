@@ -46,7 +46,6 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'myst_parser',
-    'sphinx_rtd_theme',
 ]
 
 # Napoleon settings

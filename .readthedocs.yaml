@@ -3,16 +3,13 @@ version: 2
 
 # Set the version of Python and other tools you might need
 build:
-  os: ubuntu-20.04
-  tools: {python: "3.9"}
+  os: ubuntu-22.04
+  tools: {python: "3.10"}
   jobs:
-    pre_create_environment:
-      - asdf plugin add poetry
-      - asdf install poetry latest
-      - asdf global poetry latest
-      - poetry config virtualenvs.create true
+    post_create_environment:
+      - pip install poetry
     post_install:
-      - poetry install --all-extras
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry install --with docs
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
