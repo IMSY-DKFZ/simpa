@@ -75,11 +75,11 @@ acoustic simulations possible.
 
 ### mcx (Optical Forward Model)
 
-Download the latest nightly build of [mcx](http://mcx.space/) for your operating system:
+Download the latest nightly build of [mcx](http://mcx.space/) on [this page](http://mcx.space/nightly/github/) for your operating system:
 
-- [Linux](http://mcx.space/nightly/github/mcx-linux-x64-github-latest.zip)
-- [MacOS](http://mcx.space/nightly/github/mcx-macos-x64-github-latest.zip)
-- [Windows](http://mcx.space/nightly/github/mcx-windows-x64-github-latest.zip)
+- Linux: `mcx-linux-x64-github-latest.zip`
+- MacOS: `mcx-macos-x64-github-latest.zip`
+- Windows: `mcx-windows-x64-github-latest.zip`
 
 Then extract the files and set `MCX_BINARY_PATH=/.../mcx/bin/mcx` in your path_config.env.
 
