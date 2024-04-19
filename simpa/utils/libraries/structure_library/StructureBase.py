@@ -2,9 +2,11 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from abc import abstractmethod
+from abc import abstractmethod, ABC
+from numbers import Number
 
 import numpy as np
+import typing
 
 from simpa.log import Logger
 from simpa.utils import Settings, Tags, get_functional_from_deformation_settings
@@ -13,7 +15,7 @@ from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.processing_device import get_processing_device
 
 
-class GeometricalStructure:
+class GeometricalStructure(ABC):
     """
     Base class for all model-based structures for ModelBasedVolumeCreator. A GeometricalStructure has an internal
     representation of its own geometry. This is represented by self.geometrical_volume which is a 3D array that defines
@@ -24,8 +26,11 @@ class GeometricalStructure:
     """
 
     def __init__(self, global_settings: Settings,
-                 single_structure_settings: Settings = None):
-
+                 single_structure_settings: typing.Optional[Settings] = None):
+        """
+        :param global_settings: The settings of the whole/global structure.
+        :param single_structure_settings: The settings specific to this structure.
+        """
         self.torch_device = get_processing_device(global_settings)
         self.logger = Logger()
 
@@ -73,7 +78,7 @@ class GeometricalStructure:
         self.params = self.get_params_from_settings(single_structure_settings)
         self.fill_internal_volume()
 
-    def fill_internal_volume(self):
+    def fill_internal_volume(self) -> None:
         """
         Fills self.geometrical_volume of the GeometricalStructure.
         """
@@ -81,15 +86,15 @@ class GeometricalStructure:
         self.geometrical_volume[indices] = values
 
     @abstractmethod
-    def get_enclosed_indices(self):
+    def get_enclosed_indices(self) -> typing.Tuple[np.ndarray, np.ndarray]:
         """
         Gets indices of the voxels that are either entirely or partially occupied by the GeometricalStructure.
-        :return: mask for a numpy array
+        :return: The mask of voxels occupied by the structure, the values of these voxels.
         """
         pass
 
     @abstractmethod
-    def get_params_from_settings(self, single_structure_settings):
+    def get_params_from_settings(self, single_structure_settings: Settings) -> typing.Tuple[typing.Any, ...]:
         """
         Gets all the parameters required for the specific GeometricalStructure.
         :param single_structure_settings: Settings which describe the specific GeometricalStructure.
@@ -97,7 +102,7 @@ class GeometricalStructure:
         """
         pass
 
-    def properties_for_wavelength(self, wavelength) -> TissueProperties:
+    def properties_for_wavelength(self, wavelength: Number) -> TissueProperties:
         """
         Returns the values corresponding to each optical/acoustic property used in SIMPA.
         :param wavelength: Wavelength of the queried properties
@@ -105,12 +110,11 @@ class GeometricalStructure:
         """
         return self.molecule_composition.get_properties_for_wavelength(wavelength)
 
-    @abstractmethod
     def to_settings(self) -> Settings:
         """
         Creates a Settings dictionary which contains all the parameters needed to create the same GeometricalStructure
         again.
-        :return : A tuple containing the settings key and the needed entries
+        :return: The settings dictionary containing the needed entries
         """
         settings_dict = Settings()
         settings_dict[Tags.PRIORITY] = self.priority
