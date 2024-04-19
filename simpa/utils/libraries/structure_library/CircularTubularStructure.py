@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import torch
-import numpy as np
 
 from simpa.utils import Tags
 from simpa.utils.libraries.molecule_library import MolecularComposition
