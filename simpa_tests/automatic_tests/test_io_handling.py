@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
+from functools import partial
+
 from simpa.io_handling import load_hdf5
 from simpa.io_handling import save_hdf5
 from simpa.utils import Tags
@@ -63,7 +65,7 @@ class TestIOHandling(unittest.TestCase):
         det_geometries = [CurvedArrayDetectionGeometry, LinearArrayDetectionGeometry, PlanarArrayDetectionGeometry]
         ill_geometries = [SlitIlluminationGeometry, GaussianBeamIlluminationGeometry, PencilArrayIlluminationGeometry,
                           PencilBeamIlluminationGeometry, DiskIlluminationGeometry, MSOTAcuityIlluminationGeometry,
-                          MSOTInVisionIlluminationGeometry]
+                          MSOTInVisionIlluminationGeometry, RectangleIlluminationGeometry]
 
         # Test all predefined PA devices
         for device in pa_devices:
