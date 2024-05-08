@@ -42,7 +42,7 @@ class RectangleIlluminationGeometry(IlluminationGeometryBase):
             device_position_mm = np.zeros(3)
 
         if source_direction_vector is None:
-            source_direction_vector = np.ndarray([0, 0, 1])
+            source_direction_vector = np.array([0, 0, 1])
 
         super(RectangleIlluminationGeometry, self).__init__(device_position_mm=device_position_mm,
                                                             source_direction_vector=source_direction_vector,
@@ -62,6 +62,8 @@ class RectangleIlluminationGeometry(IlluminationGeometryBase):
 
         :return: The illumination parameters as a dictionary.
         """
+        assert isinstance(global_settings, Settings), type(global_settings)
+
         source_type = Tags.ILLUMINATION_TYPE_PLANAR
 
         spacing = global_settings[Tags.SPACING_MM]
@@ -104,7 +106,10 @@ class RectangleIlluminationGeometry(IlluminationGeometryBase):
 
         :return: The deserialized object from the dictionary.
         """
+        assert isinstance(dictionary_to_deserialize, dict), type(dictionary_to_deserialize)
+
         deserialized_device = RectangleIlluminationGeometry()
         for key, value in dictionary_to_deserialize.items():
             deserialized_device.__dict__[key] = value
+
         return deserialized_device
