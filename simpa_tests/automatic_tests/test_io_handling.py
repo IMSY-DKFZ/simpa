@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
-from functools import partial
 
 from simpa.io_handling import load_hdf5
 from simpa.io_handling import save_hdf5
