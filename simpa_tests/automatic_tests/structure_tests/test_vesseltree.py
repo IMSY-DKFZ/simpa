@@ -59,11 +59,11 @@ class TestVesselTree(unittest.TestCase):
         left_plane = ts.geometrical_volume[0, :, :]
         right_plane = ts.geometrical_volume[-1, :, :]
 
-        end_plane_count = measure.label(end_plane, background = 0, return_num = True)[1]
-        top_plane_count = measure.label(top_plane, background = 0, return_num = True)[1]
-        bottom_plane_count = measure.label(bottom_plane, background = 0, return_num = True)[1]
-        left_plane_count = measure.label(left_plane, background = 0, return_num = True)[1]
-        right_plane_count = measure.label(right_plane, background = 0, return_num = True)[1]
+        end_plane_count = measure.label(end_plane, background=0, return_num=True)[1]
+        top_plane_count = measure.label(top_plane, background=0, return_num=True)[1]
+        bottom_plane_count = measure.label(bottom_plane, background=0, return_num=True)[1]
+        left_plane_count = measure.label(left_plane, background=0, return_num=True)[1]
+        right_plane_count = measure.label(right_plane, background=0, return_num=True)[1]
         assert end_plane_count + top_plane_count + bottom_plane_count + left_plane_count + right_plane_count == 2
 
     def test_radius_variation_factor(self):
@@ -77,8 +77,8 @@ class TestVesselTree(unittest.TestCase):
 
         vessel_centre = 5
         edge_of_vessel = vessel_centre + self.vesseltree_settings[Tags.STRUCTURE_RADIUS_MM]
-        has_reduced = np.min(ts.geometrical_volume[edge_of_vessel-1,:,vessel_centre])
-        has_increased = np.max(ts.geometrical_volume[edge_of_vessel+1,:,vessel_centre])
+        has_reduced = np.min(ts.geometrical_volume[edge_of_vessel-1, :, vessel_centre])
+        has_increased = np.max(ts.geometrical_volume[edge_of_vessel+1, :, vessel_centre])
 
         assert has_reduced == 0 or has_increased != 0
 
@@ -95,10 +95,10 @@ class TestVesselTree(unittest.TestCase):
         vessel_centre = 5
         edge_of_vessel = radius + vessel_centre
 
-        assert np.max(np.nditer(ts.geometrical_volume[edge_of_vessel+1,:,:])) != 0  \ #check above
-            or np.max(np.nditer(ts.geometrical_volume[-edge_of_vessel-1,:,:])) != 0 \ #check below
-            or np.max(np.nditer(ts.geometrical_volume[:,:,edge_of_vessel+1])) != 0  \ #check left
-            or np.max(np.nditer(ts.geometrical_volume[:,:,-edge_of_vessel-1])) != 0   #check right
+        assert np.max(np.nditer(ts.geometrical_volume[edge_of_vessel+1, :, :])) != 0  \
+            or np.max(np.nditer(ts.geometrical_volume[-edge_of_vessel-1, :, :])) != 0 \
+            or np.max(np.nditer(ts.geometrical_volume[:, :, edge_of_vessel+1])) != 0  \
+            or np.max(np.nditer(ts.geometrical_volume[:, :, -edge_of_vessel-1])) != 0
 
     def test_vessel_tree_geometrical_volume(self):
         ts = VesselStructure(self.global_settings, self.vesseltree_settings)

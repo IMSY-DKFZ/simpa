@@ -104,7 +104,7 @@ class VesselStructure(GeometricalStructure):
             position_array.append(position)
             radius_array.append(np.random.uniform(-1, 1) * radius_variation + radius)
 
-            step_vector = torch.rand(3).to(self.torch_device) * 2 -1
+            step_vector = torch.rand(3).to(self.torch_device) * 2 - 1
             step_vector = direction + curvature_factor * step_vector
             direction = step_vector / torch.linalg.norm(step_vector)
             samples += 1

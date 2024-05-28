@@ -133,8 +133,8 @@ def rotation_x(theta):
     :return: rotation matrix
     """
     return torch.tensor([[1, 0, 0],
-                    [0, torch.cos(theta), -torch.sin(theta)],
-                    [0, torch.sin(theta), torch.cos(theta)]])
+                         [0, torch.cos(theta), -torch.sin(theta)],
+                         [0, torch.sin(theta), torch.cos(theta)]])
 
 
 def rotation_y(theta):
@@ -145,8 +145,8 @@ def rotation_y(theta):
     :return: rotation matrix
     """
     return torch.tensor([[torch.cos(theta), 0, torch.sin(theta)],
-                    [0, 1, 0],
-                    [-torch.sin(theta), 0, torch.cos(theta)]])
+                         [0, 1, 0],
+                         [-torch.sin(theta), 0, torch.cos(theta)]])
 
 
 def rotation_z(theta):
@@ -157,8 +157,8 @@ def rotation_z(theta):
     :return: rotation matrix
     """
     return torch.tensor([[torch.cos(theta), -torch.sin(theta), 0],
-                    [torch.sin(theta), torch.cos(theta), 0],
-                    [0, 0, 1]])
+                         [torch.sin(theta), torch.cos(theta), 0],
+                         [0, 0, 1]])
 
 
 def rotation(angles):
