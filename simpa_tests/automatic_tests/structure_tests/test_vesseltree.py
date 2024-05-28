@@ -39,6 +39,67 @@ class TestVesselTree(unittest.TestCase):
             }
         )
 
+    def test_bifurcation(self):
+        """
+        Test bifurcation
+        Let bifurcation occur once at a large angle and see if the branch does indeed split into two
+        WARNING: this method uses a pre-specified random seed which ensures ONE SPLIT for the CURRENT pipeline.
+        :return: Assertion for if bifurcation occurs once
+        """
+        torch.manual_seed(10)
+        self.global_settings[Tags.SPACING_MM] = 0.04
+        self.vesseltree_settings[Tags.STRUCTURE_RADIUS_MM] = 0.5
+        self.vesseltree_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 7
+        self.vesseltree_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.1
+        ts = VesselStructure(self.global_settings, self.vesseltree_settings)
+
+        end_plane = ts.geometrical_volume[:, -1, :]
+        top_plane = ts.geometrical_volume[:, :, -1]
+        bottom_plane = ts.geometrical_volume[:, :, 0]
+        left_plane = ts.geometrical_volume[0, :, :]
+        right_plane = ts.geometrical_volume[-1, :, :]
+
+        end_plane_count = measure.label(end_plane, background = 0, return_num = True)[1]
+        top_plane_count = measure.label(top_plane, background = 0, return_num = True)[1]
+        bottom_plane_count = measure.label(bottom_plane, background = 0, return_num = True)[1]
+        left_plane_count = measure.label(left_plane, background = 0, return_num = True)[1]
+        right_plane_count = measure.label(right_plane, background = 0, return_num = True)[1]
+        assert end_plane_count + top_plane_count + bottom_plane_count + left_plane_count + right_plane_count == 2
+
+    def test_radius_variation_factor(self):
+        """
+        Test radius variation factor
+        Let there be no bifurcation or curvature, and see if the radius changes
+        :return: Assertion for radius variation
+        """
+        self.vesseltree_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
+        ts = VesselStructure(self.global_settings, self.vesseltree_settings)
+
+        vessel_centre = 5
+        edge_of_vessel = vessel_centre + self.vesseltree_settings[Tags.STRUCTURE_RADIUS_MM]
+        has_reduced = np.min(ts.geometrical_volume[edge_of_vessel-1,:,vessel_centre])
+        has_increased = np.max(ts.geometrical_volume[edge_of_vessel+1,:,vessel_centre])
+
+        assert has_reduced == 0 or has_increased != 0
+
+    def test_curvature_factor(self):
+        """
+        Test curvature factor
+        Let there be no bifurcation or radius change, and observe if the vessel leaves its original trajectory
+        :return: Assertion of curvature
+        """
+        curvature_factor = 0.2
+        self.vesseltree_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = curvature_factor
+        ts = VesselStructure(self.global_settings, self.vesseltree_settings)
+        radius = self.vesseltree_settings[Tags.STRUCTURE_RADIUS_MM]
+        vessel_centre = 5
+        edge_of_vessel = radius + vessel_centre
+
+        assert np.max(np.nditer(ts.geometrical_volume[edge_of_vessel+1,:,:])) != 0  \ #check above
+            or np.max(np.nditer(ts.geometrical_volume[-edge_of_vessel-1,:,:])) != 0 \ #check below
+            or np.max(np.nditer(ts.geometrical_volume[:,:,edge_of_vessel+1])) != 0  \ #check left
+            or np.max(np.nditer(ts.geometrical_volume[:,:,-edge_of_vessel-1])) != 0   #check right
+
     def test_vessel_tree_geometrical_volume(self):
         ts = VesselStructure(self.global_settings, self.vesseltree_settings)
         for value in np.nditer(ts.geometrical_volume):
