@@ -42,7 +42,8 @@ class TestVesselTree(unittest.TestCase):
     def test_bifurcation(self):
         """
         Test bifurcation
-        Let bifurcation occur once at a large angle and see if the branch does indeed split into two
+        Let bifurcation occur once at a large angle and see if the branch does indeed split into two, thus two spots
+        at the edges
         WARNING: this method uses a pre-specified random seed which ensures ONE SPLIT for the CURRENT pipeline.
         :return: Assertion for if bifurcation occurs once
         """
@@ -64,7 +65,9 @@ class TestVesselTree(unittest.TestCase):
         bottom_plane_count = measure.label(bottom_plane, background=0, return_num=True)[1]
         left_plane_count = measure.label(left_plane, background=0, return_num=True)[1]
         right_plane_count = measure.label(right_plane, background=0, return_num=True)[1]
-        assert end_plane_count + top_plane_count + bottom_plane_count + left_plane_count + right_plane_count == 2
+        has_split = end_plane_count + top_plane_count + bottom_plane_count + left_plane_count + right_plane_count == 2
+
+        assert has_split
 
     def test_radius_variation_factor(self):
         """
@@ -77,15 +80,16 @@ class TestVesselTree(unittest.TestCase):
 
         vessel_centre = 5
         edge_of_vessel = vessel_centre + self.vesseltree_settings[Tags.STRUCTURE_RADIUS_MM]
-        has_reduced = np.min(ts.geometrical_volume[edge_of_vessel-1, :, vessel_centre])
-        has_increased = np.max(ts.geometrical_volume[edge_of_vessel+1, :, vessel_centre])
+        has_reduced = np.min(ts.geometrical_volume[edge_of_vessel-1, :, vessel_centre]) == 0
+        has_increased = np.max(ts.geometrical_volume[edge_of_vessel+1, :, vessel_centre]) != 0
 
-        assert has_reduced == 0 or has_increased != 0
+        assert has_reduced or has_increased
 
     def test_curvature_factor(self):
         """
         Test curvature factor
-        Let there be no bifurcation or radius change, and observe if the vessel leaves its original trajectory
+        Let there be no bifurcation or radius change and observe if the vessel leaves its original trajectory,
+        therefore breaching the imaginary box put around it
         :return: Assertion of curvature
         """
         curvature_factor = 0.2
@@ -93,12 +97,14 @@ class TestVesselTree(unittest.TestCase):
         ts = VesselStructure(self.global_settings, self.vesseltree_settings)
         radius = self.vesseltree_settings[Tags.STRUCTURE_RADIUS_MM]
         vessel_centre = 5
-        edge_of_vessel = radius + vessel_centre
 
-        assert np.max(np.nditer(ts.geometrical_volume[edge_of_vessel+1, :, :])) != 0  \
-            or np.max(np.nditer(ts.geometrical_volume[-edge_of_vessel-1, :, :])) != 0 \
-            or np.max(np.nditer(ts.geometrical_volume[:, :, edge_of_vessel+1])) != 0  \
-            or np.max(np.nditer(ts.geometrical_volume[:, :, -edge_of_vessel-1])) != 0
+        edge_of_vessel = radius + vessel_centre
+        has_breached_top = np.max(np.nditer(ts.geometrical_volume[:, :, edge_of_vessel+1])) != 0
+        has_breached_bottom = np.max(np.nditer(ts.geometrical_volume[:, :, -edge_of_vessel-1])) != 0
+        has_breached_left = np.max(np.nditer(ts.geometrical_volume[-edge_of_vessel-1, :, :])) != 0
+        has_breached_right = np.max(np.nditer(ts.geometrical_volume[edge_of_vessel+1, :, :])) != 0
+
+        assert has_breached_top or has_breached_bottom or has_breached_left or has_breached_right
 
     def test_vessel_tree_geometrical_volume(self):
         ts = VesselStructure(self.global_settings, self.vesseltree_settings)
