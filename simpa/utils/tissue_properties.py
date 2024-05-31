@@ -3,13 +3,24 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.utils.constants import property_tags
+from simpa.utils import Settings
+import numpy as np
 
 
 class TissueProperties(dict):
+    """
+    The tissue properties contain a volumetric representation of each tissue parameter currently
+    modelled in the SIMPA framework.
 
-    def __init__(self):
+    It is a dictionary that is populated with each of the parameters.
+    The values of the parameters can be either numbers or numpy arrays.
+    It also contains a volume fraction field.
+    """
+
+    def __init__(self, settings: Settings):
         super().__init__()
-        self.volume_fraction = 0
+        volume_x_dim, volume_y_dim, volume_z_dim = settings.get_volume_dimensions_voxels()
+        self.volume_fraction = np.zeros((volume_x_dim, volume_y_dim, volume_z_dim))
         for key in property_tags:
             self[key] = 0
 
