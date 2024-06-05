@@ -15,8 +15,8 @@ class RectangleIlluminationGeometry(IlluminationGeometryBase):
     Defines a rectangle illumination geometry.
     The device position is defined as the UPPER LEFT CORNER of the rectangle.
 
-    Note: To create a global light which illuminates the entire tissue evenly, create the following
-    using the tissue length and width:
+    Note: To create a global light which illuminates the entire tissue evenly (= creating a planar illumination geometry),
+    create the following geometry using the tissue length and width:
 
     >>> global_light = RectangleIlluminationGeometry(length_mm=tissue_length_mm, width_mm=tissue_width_mm)
     """
@@ -29,7 +29,7 @@ class RectangleIlluminationGeometry(IlluminationGeometryBase):
                  field_of_view_extent_mm: typing.Optional[np.ndarray] = None):
         """
         :param length_mm: The length of the rectangle in mm.
-        :param width_mm: The length of the rectangle in mm.
+        :param width_mm: The width of the rectangle in mm.
         :param device_position_mm: The device position in mm, the UPPER LEFT CORNER of the rectangle.
         If None, the position is defined as [0, 0, 0].
         :param source_direction_vector: Direction of the illumination source.
