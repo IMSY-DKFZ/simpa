@@ -18,8 +18,8 @@ class MCXAdapterReflectance(MCXAdapter):
     diffuse reflectance simulations. Specifically, it implements the capability to run diffuse reflectance simulations.
 
     .. warning::
-        This MCX adapter requires a version of MCX containing the revision: `Rev::077060`, which was published in the
-        Nightly build  on `2022-01-26`.
+        This MCX adapter requires a version of MCX containing the commit 56eca8ae7e9abde309053759d6d6273ac4795fc5,
+        which was published in the Nightly build on `2024-03-10`.
 
     .. note::
         MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue:
@@ -131,6 +131,9 @@ class MCXAdapterReflectance(MCXAdapter):
                 self.mcx_output_suffixes['mcx_volumetric_data_file']):
             content = jdata.load(self.mcx_volumetric_data_file)
             fluence = content['NIFTIData']
+            if fluence.ndim > 3:
+                # remove the 1 or 2 (for mcx >= v2024.1) additional dimensions of size 1 if present to obtain a 3d array
+                fluence = fluence.reshape(fluence.shape[0], fluence.shape[1], -1)
             ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
             fluence = self.post_process_volumes(**{'arrays': (fluence,)})[0]
             fluence *= 100  # Convert from J/mm^2 to J/cm^2

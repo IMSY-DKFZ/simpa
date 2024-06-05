@@ -5,6 +5,7 @@
 import unittest
 import os
 import numpy as np
+import torch
 
 from simpa.core.processing_components.monospectral.noise import *
 from simpa.utils import Tags, Settings
@@ -32,6 +33,7 @@ class TestNoiseModels(unittest.TestCase):
                                      expected_mean, expected_std,
                                      error_margin=0.05):
         np.random.seed(self.RANDOM_SEED)
+        torch.manual_seed(self.RANDOM_SEED)
 
         settings = {
             # These parameters set the general propeties of the simulated volume
@@ -78,7 +80,7 @@ class TestNoiseModels(unittest.TestCase):
                             f"The mean was not as expected. Expected {expected_mean} but was {actual_mean}")
             self.assertTrue(np.abs(actual_std - expected_std) < 1e-10 or
                             np.abs(actual_std - expected_std) / expected_std < error_margin,
-                            f"The mean was not as expected. Expected {expected_std} but was {actual_std}")
+                            f"The std was not as expected. Expected {expected_std} but was {actual_std}")
         finally:
             if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
                     os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
@@ -87,8 +89,8 @@ class TestNoiseModels(unittest.TestCase):
 
     def setUp(self):
 
-        self.VOLUME_WIDTH_IN_MM = 10
-        self.VOLUME_HEIGHT_IN_MM = 10
+        self.VOLUME_WIDTH_IN_MM = 40
+        self.VOLUME_HEIGHT_IN_MM = 40
         self.SPACING = 1
         self.RANDOM_SEED = 4711
 
