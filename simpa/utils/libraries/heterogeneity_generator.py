@@ -170,8 +170,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
             scaled_image = transform.resize(prior_image, output_shape=(xdim, zdim), order='reflect')
         else:
             pad_width = int((xdim - len(prior_image))/2)
-            pad_height = (int
-                          ((zdim - len(prior_image[0]))/2))
+            pad_height = (int((zdim - len(prior_image[0]))/2))
             scaled_image = np.pad(prior_image, ((pad_width, pad_width), (pad_height, pad_height)),
                                   mode=scaling_type)
         image_as_volume = np.zeros((xdim, ydim, zdim))
