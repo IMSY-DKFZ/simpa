@@ -15,6 +15,7 @@ from .constants import SegmentationClasses
 
 from .libraries.heterogeneity_generator import RandomHeterogeneity
 from .libraries.heterogeneity_generator import BlobHeterogeneity
+from .libraries.heterogeneity_generator import ImageHeterogeneity
 
 # Then load classes and methods with an <b>increasing</b> amount of internal dependencies.
 # If there are import errors in the tests, it is probably due to an incorrect

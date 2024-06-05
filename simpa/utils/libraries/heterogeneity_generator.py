@@ -5,6 +5,8 @@
 import numpy as np
 from sklearn.datasets import make_blobs
 from scipy.ndimage.filters import gaussian_filter
+from skimage import transform
+from simpa.utils import Tags
 
 
 class HeterogeneityGeneratorBase(object):
@@ -146,3 +148,34 @@ class BlobHeterogeneity(HeterogeneityGeneratorBase):
                                                                      (np.percentile(x[:, 2], 5),
                                                                          np.percentile(x[:, 2], 95))))[0]
         self.map = gaussian_filter(self.map, 5)
+
+
+class ImageHeterogeneity(HeterogeneityGeneratorBase):
+    def __init__(self, xdim, ydim, zdim, spacing_mm=None, target_mean=None,
+                 target_std=None, target_min=None, target_max=None, prior_image=None, scaling_type=None):
+        """
+        :param xdim: the x dimension of the volume in voxels
+        :param ydim: the y dimension of the volume in voxels
+        :param zdim: the z dimension of the volume in voxels
+        :param spacing_mm: the spacing of the volume in mm
+        :param target_mean: (optional) the mean of the created heterogeneity map
+        :param target_std: (optional) the standard deviation of the created heterogeneity map
+        :param target_min: (optional) the minimum of the created heterogeneity map
+        :param target_max: (optional) the maximum of the created heterogeneity map
+        """
+        super().__init__(xdim, ydim, zdim, spacing_mm, target_mean, target_std, target_min, target_max)
+        if scaling_type is None:
+            scaled_image = prior_image
+        elif scaling_type == Tags.IMAGE_SCALING_STRETCH:
+            scaled_image = transform.resize(prior_image, output_shape=(xdim, zdim), order='reflect')
+        else:
+            pad_width = int((xdim - len(prior_image))/2)
+            pad_height = (int
+                          ((zdim - len(prior_image[0]))/2))
+            scaled_image = np.pad(prior_image, ((pad_width, pad_width), (pad_height, pad_height)),
+                                  mode=scaling_type)
+        image_as_volume = np.zeros((xdim, ydim, zdim))
+        for y in range(ydim):
+            image_as_volume[:, y, :] = scaled_image
+
+        self.map = image_as_volume
