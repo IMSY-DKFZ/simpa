@@ -12,7 +12,7 @@ import torch
 
 class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
     """
-    This volume creator expects a np.ndarray to be in the settigs
+    This volume creator expects a np.ndarray to be in the settings
     under the Tags.INPUT_SEGMENTATION_VOLUME tag and uses this array
     together with a SegmentationClass mapping which is a dict defined in
     the settings under Tags.SEGMENTATION_CLASS_MAPPING.
@@ -43,12 +43,12 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
         for seg_class in segmentation_classes:
             class_properties = class_mapping[seg_class].get_properties_for_wavelength(self.global_settings, wavelength)
             for prop_tag in property_tags:
-                if len(np.shape(class_properties[prop_tag])) == 0:  # scalar
+                if len(torch.Tensor.size(class_properties[prop_tag])) == 0:  # scalar
                     assigned_prop = class_properties[prop_tag]
                     if assigned_prop is None:
                         assigned_prop = torch.nan
                     volumes[prop_tag][segmentation_volume == seg_class] = assigned_prop
-                elif len(np.shape(class_properties[prop_tag])) == 3:  # 3D map
+                elif len(torch.Tensor.size(class_properties[prop_tag])) == 3:  # 3D map
                     assigned_prop = class_properties[prop_tag][segmentation_volume == seg_class]
                     assigned_prop[assigned_prop is None] = torch.nan
                     volumes[prop_tag][segmentation_volume == seg_class] = assigned_prop

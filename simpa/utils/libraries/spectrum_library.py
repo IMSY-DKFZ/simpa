@@ -7,6 +7,8 @@ import inspect
 import glob
 import numpy as np
 import matplotlib.pylab as plt
+import torch
+from scipy import interpolate
 from simpa.utils.libraries.literature_values import OpticalTissueProperties
 from simpa.utils.serializer import SerializableSIMPAClass
 
@@ -22,18 +24,22 @@ class Spectrum(SerializableSIMPAClass, object):
         :param wavelengths:
         :param values:
         """
+        if isinstance(values, np.ndarray):
+            values = torch.from_numpy(values)
+        wavelengths = torch.from_numpy(wavelengths)
         self.spectrum_name = spectrum_name
         self.wavelengths = wavelengths
-        self.max_wavelength = int(np.max(wavelengths))
-        self.min_wavelength = int(np.min(wavelengths))
+        self.max_wavelength = int(torch.max(wavelengths))
+        self.min_wavelength = int(torch.min(wavelengths))
         self.values = values
 
-        if np.shape(wavelengths) != np.shape(values):
+        if torch.Tensor.size(wavelengths) != torch.Tensor.size(values):
             raise ValueError("The shape of the wavelengths and the absorption coefficients did not match: " +
-                             str(np.shape(wavelengths)) + " vs " + str(np.shape(values)))
+                             str(torch.Tensor.size(wavelengths)) + " vs " + str(torch.Tensor.size(values)))
 
-        new_wavelengths = np.arange(self.min_wavelength, self.max_wavelength+1, 1)
-        self.new_absorptions = np.interp(new_wavelengths, self.wavelengths, self.values)
+        new_wavelengths = torch.arange(self.min_wavelength, self.max_wavelength+1, 1)
+        new_absorptions_function = interpolate.interp1d(self.wavelengths, self.values)
+        self.new_absorptions = new_absorptions_function(new_wavelengths)
 
     def get_value_over_wavelength(self):
         """

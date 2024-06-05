@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
+import torch
 from simpa.utils import Tags
 
 from simpa.utils.tissue_properties import TissueProperties
@@ -183,6 +184,8 @@ class Molecule(SerializableSIMPAClass, object):
         if not isinstance(volume_fraction, (float, np.ndarray)):
             raise TypeError(f"The given volume_fraction was not of type float or array instead of "
                             f"{type(volume_fraction)}!")
+        if isinstance(volume_fraction, np.ndarray):
+            volume_fraction = torch.from_numpy(volume_fraction)
         self.volume_fraction = volume_fraction
 
         if scattering_spectrum is None:
@@ -266,7 +269,7 @@ class MoleculeLibrary(object):
 
     # Main absorbers
     @staticmethod
-    def water(volume_fraction: (float, np.ndarray) = 1.0):
+    def water(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="water",
                         absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Water"),
                         volume_fraction=volume_fraction,
@@ -280,7 +283,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def oxyhemoglobin(volume_fraction: (float, np.ndarray) = 1.0):
+    def oxyhemoglobin(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="oxyhemoglobin",
                         absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Oxyhemoglobin"),
                         volume_fraction=volume_fraction,
@@ -293,7 +296,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def deoxyhemoglobin(volume_fraction: (float, np.ndarray) = 1.0):
+    def deoxyhemoglobin(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="deoxyhemoglobin",
                         absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Deoxyhemoglobin"),
                         volume_fraction=volume_fraction,
@@ -306,7 +309,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def melanin(volume_fraction: (float, np.ndarray) = 1.0):
+    def melanin(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="melanin",
                         absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Melanin"),
                         volume_fraction=volume_fraction,
@@ -320,7 +323,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def fat(volume_fraction: (float, np.ndarray) = 1.0):
+    def fat(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="fat",
                         absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Fat"),
                         volume_fraction=volume_fraction,
@@ -335,7 +338,7 @@ class MoleculeLibrary(object):
     # Scatterers
     @staticmethod
     def constant_scatterer(scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
-                           volume_fraction: (float, np.ndarray) = 1.0):
+                           volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="constant_scatterer",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
@@ -348,7 +351,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def soft_tissue_scatterer(volume_fraction: (float, np.ndarray) = 1.0):
+    def soft_tissue_scatterer(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="soft_tissue_scatterer",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
@@ -361,7 +364,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def muscle_scatterer(volume_fraction: (float, np.ndarray) = 1.0):
+    def muscle_scatterer(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="muscle_scatterer",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
@@ -374,7 +377,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def epidermal_scatterer(volume_fraction: (float, np.ndarray) = 1.0):
+    def epidermal_scatterer(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="epidermal_scatterer",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
                         volume_fraction=volume_fraction,
@@ -388,7 +391,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def dermal_scatterer(volume_fraction: (float, np.ndarray) = 1.0):
+    def dermal_scatterer(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="dermal_scatterer",
                         absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Skin_Baseline"),
                         volume_fraction=volume_fraction,
@@ -403,7 +406,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def bone(volume_fraction: (float, np.ndarray) = 1.0):
+    def bone(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="bone",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(
                             OpticalTissueProperties.BONE_ABSORPTION),
@@ -417,7 +420,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def mediprene(volume_fraction: (float, np.ndarray) = 1.0):
+    def mediprene(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="mediprene",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(-np.log(0.85) / 10),  # FIXME
                         volume_fraction=volume_fraction,
@@ -430,7 +433,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def heavy_water(volume_fraction: (float, np.ndarray) = 1.0):
+    def heavy_water(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="heavy_water",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(
                             StandardProperties.HEAVY_WATER_MUA),
@@ -445,7 +448,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def air(volume_fraction: (float, np.ndarray) = 1.0):
+    def air(volume_fraction: (float, torch.Tensor) = 1.0):
         return Molecule(name="air",
                         absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(
                             StandardProperties.AIR_MUA),

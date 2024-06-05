@@ -4,7 +4,7 @@
 
 from simpa.utils.constants import property_tags
 from simpa.utils import Settings
-import numpy as np
+import torch
 
 
 class TissueProperties(dict):
@@ -20,7 +20,7 @@ class TissueProperties(dict):
     def __init__(self, settings: Settings):
         super().__init__()
         volume_x_dim, volume_y_dim, volume_z_dim = settings.get_volume_dimensions_voxels()
-        self.volume_fraction = np.zeros((volume_x_dim, volume_y_dim, volume_z_dim))
+        self.volume_fraction = torch.zeros((volume_x_dim, volume_y_dim, volume_z_dim))
         for key in property_tags:
             self[key] = 0
 

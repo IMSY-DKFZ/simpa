@@ -96,9 +96,9 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                         added_volume_fraction[added_fraction_greater_than_any_added_fraction & mask]
                 else:
                     # FIXME: This bit needs to be adjusted to torch operations!
-                    if isinstance(structure_properties[key], np.ndarray):
+                    if isinstance(structure_properties[key], torch.Tensor):
                         volumes[key][mask] += added_volume_fraction[mask] * \
-                            torch.from_numpy(structure_properties[key][mask.cpu()]).to(self.torch_device)
+                            structure_properties[key].to(self.torch_device)[mask]
                     elif isinstance(structure_properties[key], (float, np.float64, int, np.int64)):
                         volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
                     else:
