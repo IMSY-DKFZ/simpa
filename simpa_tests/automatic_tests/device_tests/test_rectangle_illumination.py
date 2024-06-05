@@ -34,8 +34,8 @@ class TestRectangleIlluminationGeometry(unittest.TestCase):
             "Type": Tags.ILLUMINATION_TYPE_PLANAR,
             "Pos": [0, 0, 0],
             "Dir": [0, 0, 1],
-            "Param1": [60, 0, 0],
-            "Param2": [0, 75, 0]
+            "Param1": [61, 0, 0],
+            "Param2": [0, 76, 0]
         }
 
         # Act
