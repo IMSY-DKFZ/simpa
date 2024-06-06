@@ -63,7 +63,7 @@ class TestIOHandling(unittest.TestCase):
         det_geometries = [CurvedArrayDetectionGeometry, LinearArrayDetectionGeometry, PlanarArrayDetectionGeometry]
         ill_geometries = [SlitIlluminationGeometry, GaussianBeamIlluminationGeometry, PencilArrayIlluminationGeometry,
                           PencilBeamIlluminationGeometry, DiskIlluminationGeometry, MSOTAcuityIlluminationGeometry,
-                          MSOTInVisionIlluminationGeometry]
+                          MSOTInVisionIlluminationGeometry, RingIlluminationGeometry]
 
         # Test all predefined PA devices
         for device in pa_devices:

@@ -470,6 +470,12 @@ class Tags:
     Usage: adapter mcx_adapter, naming convention
     """
 
+    ILLUMINATION_TYPE_RING = "ring"
+    """
+    Corresponds to ring source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_SLIT = "slit"
     """
     Corresponds to slit source in mcx.\n
