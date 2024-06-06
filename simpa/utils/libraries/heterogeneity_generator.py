@@ -152,7 +152,7 @@ class BlobHeterogeneity(HeterogeneityGeneratorBase):
 
 class ImageHeterogeneity(HeterogeneityGeneratorBase):
     '''
-    This heterogeneity generator takes a pre-specified image, currently only supporting numpy arrays, and uses them
+    This heterogeneity generator takes a pre-specified 2D image, currently only supporting numpy arrays, and uses them
     as a map for heterogeneity within the tissue.
     '''
 
@@ -164,6 +164,12 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         :param zdim: the z dimension of the volume in voxels
         :param heterogeneity_image: the prior image of the heterogeneity map
         :param scaling_type: the scaling type of the heterogeneity map, with default being that no scaling occurs
+            OPTIONS:
+            TAGS.IMAGE_SCALING_SYMMETRIC: symmetric reflections of the image to span the area
+            TAGS.IMAGE_SCALING_STRETCH: stretch the image to span the area
+            TAGS.IMAGE_SCALING_WRAP: multiply the image to span the area
+            TAGS.IMAGE_SCALING_EDGE: continue the values at the edge of the area to fill the shape
+            TAGS.IMAGE_SCALING_CONSTANT: span the left-over area with a constant
         :param constant: the scaling constant of the heterogeneity map, used only for scaling type 'constant'
             WARNING: scaling constant must be in reference to the values in the heterogeneity_image
         :param spacing_mm: the spacing of the volume in mm
