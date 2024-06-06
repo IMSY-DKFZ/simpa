@@ -33,8 +33,7 @@ VISUALIZE = True
 def create_example_tissue():
     """
     This is a very simple example script of how to create a tissue definition.
-    It contains a muscular background, an epidermis layer on top of the muscles
-    and a blood vessel.
+    It contains only a generic background tissue material.
     """
     background_dictionary = sp.Settings()
     background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
