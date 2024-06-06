@@ -1475,7 +1475,7 @@ class Tags:
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
     """
 
-    IMAGE_SCALING_REFLECT = "reflect"
+    IMAGE_SCALING_SYMMETRIC = "symmetric"
     """
     Flag indicating the use of reflection on edges during interpolation when rescaling an image
     Usage: simpa.utils.libraries.structure_library.heterogeneity_generator

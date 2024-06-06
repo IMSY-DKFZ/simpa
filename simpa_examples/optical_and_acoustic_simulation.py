@@ -198,5 +198,6 @@ if VISUALIZE:
                       show_time_series_data=True,
                       show_initial_pressure=True,
                       show_reconstructed_data=True,
+                      show_oxygenation=True,
                       log_scale=False,
                       show_xz_only=False)
