@@ -5,6 +5,8 @@
 import unittest
 import numpy as np
 import simpa as sp
+from simpa.utils import Tags
+import torch
 
 
 class TestHeterogeneityGenerator(unittest.TestCase):
@@ -15,24 +17,56 @@ class TestHeterogeneityGenerator(unittest.TestCase):
         self.MAX = 8.0
         self.MEAN = -332.0
         self.STD = 78.0
+        self.FULL_IMAGE = np.zeros((4, 8))
+        self.FULL_IMAGE[:, 1:2] = 1
+        self.PARTIAL_IMAGE = np.zeros((2, 2))
+        self.PARTIAL_IMAGE[:, 1] = 1
         self.TEST_SETTINGS = sp.Settings({
             # These parameters set the general properties of the simulated volume
             sp.Tags.SPACING_MM: self.spacing,
-            sp.Tags.DIM_VOLUME_Z_MM: 4,
-            sp.Tags.DIM_VOLUME_X_MM: 2,
+            sp.Tags.DIM_VOLUME_Z_MM: 8,
+            sp.Tags.DIM_VOLUME_X_MM: 4,
             sp.Tags.DIM_VOLUME_Y_MM: 7
         })
         dimx, dimy, dimz = self.TEST_SETTINGS.get_volume_dimensions_voxels()
         self.HETEROGENEITY_GENERATORS = [
             sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing),
             sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, gaussian_blur_size_mm=3),
-            sp.BlobHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing)
+            sp.BlobHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.FULL_IMAGE, spacing_mm=self.spacing),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_CONSTANT, spacing_mm=self.spacing, constant=0.5),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_STRETCH, spacing_mm=self.spacing),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_SYMMETRIC, spacing_mm=self.spacing),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_WRAP, spacing_mm=self.spacing),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_EDGE, spacing_mm=self.spacing),
         ]
         self.HETEROGENEITY_GENERATORS_MIN_MAX = [
             sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_min=self.MIN, target_max=self.MAX),
             sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_min=self.MIN, target_max=self.MAX,
                                    gaussian_blur_size_mm=3),
-            sp.BlobHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_min=self.MIN, target_max=self.MAX)
+            sp.BlobHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_min=self.MIN, target_max=self.MAX),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.FULL_IMAGE, spacing_mm=self.spacing,
+                                  target_min=self.MIN, target_max=self.MAX),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_CONSTANT, spacing_mm=self.spacing, constant=0.5,
+                                  target_min=self.MIN, target_max=self.MAX),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_STRETCH, spacing_mm=self.spacing,
+                                  target_min=self.MIN, target_max=self.MAX),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_SYMMETRIC, spacing_mm=self.spacing,
+                                  target_min=self.MIN, target_max=self.MAX),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_WRAP, spacing_mm=self.spacing,
+                                  target_min=self.MIN, target_max=self.MAX),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_EDGE, spacing_mm=self.spacing,
+                                  target_min=self.MIN, target_max=self.MAX),
         ]
         self.HETEROGENEITY_GENERATORS_MEAN_STD = [
             sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing,
@@ -40,6 +74,21 @@ class TestHeterogeneityGenerator(unittest.TestCase):
             sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_mean=self.MEAN, target_std=self.STD,
                                    gaussian_blur_size_mm=3),
             sp.BlobHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, target_mean=self.MEAN, target_std=self.STD),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_CONSTANT, spacing_mm=self.spacing, constant=0.5,
+                                  target_mean=self.MEAN, target_std=self.STD),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_STRETCH, spacing_mm=self.spacing,
+                                  target_mean=self.MEAN, target_std=self.STD),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_SYMMETRIC, spacing_mm=self.spacing,
+                                  target_mean=self.MEAN, target_std=self.STD),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_WRAP, spacing_mm=self.spacing,
+                                  target_mean=self.MEAN, target_std=self.STD),
+            sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                  scaling_type=Tags.IMAGE_SCALING_EDGE, spacing_mm=self.spacing,
+                                  target_mean=self.MEAN, target_std=self.STD),
         ]
 
     def tearDown(self) -> None:
@@ -74,3 +123,75 @@ class TestHeterogeneityGenerator(unittest.TestCase):
     def test_mean_std_bounds(self):
         for generator in self.HETEROGENEITY_GENERATORS_MEAN_STD:
             self.assert_mean_std(generator)
+
+
+class TestImageHeterogeneityScaling(unittest.TestCase):
+    '''
+    A set of tests for the ImageHeterogeneity class, designed to see if the scaling works.
+    '''
+
+    def setUp(self):
+        self.spacing = 1.0
+        self.MIN = -4.0
+        self.MAX = 8.0
+        self.PARTIAL_IMAGE = np.zeros((2, 2))
+        self.PARTIAL_IMAGE[:, 1] = 1
+        self.TEST_SETTINGS = sp.Settings({
+            # These parameters set the general properties of the simulated volume
+            sp.Tags.SPACING_MM: self.spacing,
+            sp.Tags.DIM_VOLUME_Z_MM: 8,
+            sp.Tags.DIM_VOLUME_X_MM: 4,
+            sp.Tags.DIM_VOLUME_Y_MM: 7
+        })
+        self.dimx, self.dimy, self.dimz = self.TEST_SETTINGS.get_volume_dimensions_voxels()
+
+    def test_stretch(self):
+        '''
+        Test to see if the image can be stretched to fill th area, and then the volume
+        :return: Assertion for if the image has been stretched
+        '''
+        stretched_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                                scaling_type=Tags.IMAGE_SCALING_STRETCH, spacing_mm=self.spacing).get_map()
+        assert np.all(stretched_image[:, :, 6:] == 1) and np.all(stretched_image[:, :, :1] == 0)
+
+    def test_wrap(self):
+        '''
+        Test to see if the image can be replicated to fill th area, and then the volume
+        :return: Assertion for if the image has been wrapped to fill the volume
+        '''
+        wrapped_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                              scaling_type=Tags.IMAGE_SCALING_WRAP, spacing_mm=self.spacing).get_map()
+        assert np.all(wrapped_image[:, :, 1::2] == 1)
+
+    def test_edge(self):
+        '''
+        Test to see if the image can fill the area by extending the edges, and then the volume
+        :return: Assertion for if the image edges have filled the volume
+        '''
+        edge_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                           scaling_type=Tags.IMAGE_SCALING_EDGE, spacing_mm=self.spacing).get_map()
+        assert np.all(edge_image[:, :, 0] == 0) and np.all(edge_image[:, :, 1:]) == 1
+
+    def test_constant(self):
+        '''
+        Test to see if the image can fill the area with a constant, and then the volume
+        :return: Assertion for if the image has been filled by a constant
+        '''
+        constant_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                               scaling_type=Tags.IMAGE_SCALING_CONSTANT, spacing_mm=self.spacing,
+                                               constant=0.5).get_map()
+        assert np.all(constant_image[1:3, :, 0] == 0) and np.all(constant_image[1:3, :, 1] == 1) and \
+            np.all(constant_image[:, :, 2:] == 0.5) and np.all(constant_image[0, :, :] == 0.5) and \
+            np.all(constant_image[3, :, :] == 0.5)
+
+    def test_symmetric(self):
+        '''
+        Test to see if the image can fill th area by symmetric reflections, and then the volume
+        :return: Assertion for if the image has been reflected to fill the volume
+        '''
+        symmetric_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
+                                                scaling_type=Tags.IMAGE_SCALING_SYMMETRIC,
+                                                spacing_mm=self.spacing).get_map()
+        assert np.all(symmetric_image[:, :, 1:3] == 1) and np.all(symmetric_image[:, :, 5:7] == 1) and \
+            np.all(symmetric_image[:, :, 0] == 0) and np.all(symmetric_image[:, :, 3:5] == 0) and \
+            np.all(symmetric_image[:, :, 7:] == 0)

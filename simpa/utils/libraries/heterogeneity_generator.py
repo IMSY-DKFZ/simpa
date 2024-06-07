@@ -5,6 +5,8 @@
 import numpy as np
 from sklearn.datasets import make_blobs
 from scipy.ndimage.filters import gaussian_filter
+from skimage import transform
+from simpa.utils import Tags
 
 
 class HeterogeneityGeneratorBase(object):
@@ -146,3 +148,51 @@ class BlobHeterogeneity(HeterogeneityGeneratorBase):
                                                                      (np.percentile(x[:, 2], 5),
                                                                          np.percentile(x[:, 2], 95))))[0]
         self.map = gaussian_filter(self.map, 5)
+
+
+class ImageHeterogeneity(HeterogeneityGeneratorBase):
+    '''
+    This heterogeneity generator takes a pre-specified 2D image, currently only supporting numpy arrays, and uses them
+    as a map for heterogeneity within the tissue.
+    '''
+
+    def __init__(self, xdim, ydim, zdim, heterogeneity_image, scaling_type=None, constant=0, spacing_mm=None,
+                 target_mean=None, target_std=None, target_min=None, target_max=None):
+        """
+        :param xdim: the x dimension of the volume in voxels
+        :param ydim: the y dimension of the volume in voxels
+        :param zdim: the z dimension of the volume in voxels
+        :param heterogeneity_image: the prior image of the heterogeneity map
+        :param scaling_type: the scaling type of the heterogeneity map, with default being that no scaling occurs
+            OPTIONS:
+            TAGS.IMAGE_SCALING_SYMMETRIC: symmetric reflections of the image to span the area
+            TAGS.IMAGE_SCALING_STRETCH: stretch the image to span the area
+            TAGS.IMAGE_SCALING_WRAP: multiply the image to span the area
+            TAGS.IMAGE_SCALING_EDGE: continue the values at the edge of the area to fill the shape
+            TAGS.IMAGE_SCALING_CONSTANT: span the left-over area with a constant
+        :param constant: the scaling constant of the heterogeneity map, used only for scaling type 'constant'
+            WARNING: scaling constant must be in reference to the values in the heterogeneity_image
+        :param spacing_mm: the spacing of the volume in mm
+        :param target_mean: (optional) the mean of the created heterogeneity map
+        :param target_std: (optional) the standard deviation of the created heterogeneity map
+        :param target_min: (optional) the minimum of the created heterogeneity map
+        :param target_max: (optional) the maximum of the created heterogeneity map
+        """
+        super().__init__(xdim, ydim, zdim, spacing_mm, target_mean, target_std, target_min, target_max)
+        if scaling_type is None:
+            scaled_image = heterogeneity_image
+        elif scaling_type == Tags.IMAGE_SCALING_STRETCH:
+            scaled_image = transform.resize(heterogeneity_image, output_shape=(xdim, zdim), mode='symmetric')
+        elif scaling_type == Tags.IMAGE_SCALING_CONSTANT:
+            pad_width = int((xdim - len(heterogeneity_image))/2)
+            pad_height = int(zdim - len(heterogeneity_image[0]))
+            scaled_image = np.pad(heterogeneity_image, ((pad_width, pad_width), (0, pad_height)),
+                                  mode=scaling_type, constant_values=constant)
+        else:
+            pad_width = int((xdim - len(heterogeneity_image)) / 2)
+            pad_height = int(zdim - len(heterogeneity_image[0]))
+            scaled_image = np.pad(heterogeneity_image, ((pad_width, pad_width), (0, pad_height)),
+                                  mode=scaling_type)
+        self.map = np.zeros((xdim, ydim, zdim))
+        for y in range(ydim):
+            self.map[:, y, :] = scaled_image
