@@ -10,6 +10,7 @@ from simpa.log import Logger
 
 from .tags import Tags
 
+
 class PathManager:
     """
     As a pipelining tool that serves as a communication layer between different numerical forward models and

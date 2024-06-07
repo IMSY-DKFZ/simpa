@@ -31,7 +31,7 @@ class TestPathManager(unittest.TestCase):
         self.current_file_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         self.simpa_home = self.current_file_path + "/../../" + self.path
         self.simpa_home_exists = os.path.exists(self.simpa_home)
-  
+
     @unittest.expectedFailure
     def test_variables_not_set():
         path_manager = PathManager()
