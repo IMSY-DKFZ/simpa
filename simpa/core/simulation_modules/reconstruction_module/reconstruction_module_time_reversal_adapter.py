@@ -178,7 +178,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.DATA_FIELD_RECONSTRUCTED_DATA]
 
-        reconstructed_data = np.flipud(np.rot90(reconstructed_data, 1, axes))
+        reconstructed_data = reconstructed_data.T
 
         field_of_view_mm = detection_geometry.get_field_of_view_mm()
         field_of_view_voxels = (field_of_view_mm / spacing_in_mm).astype(np.int32)
