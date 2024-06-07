@@ -39,11 +39,11 @@ acoustic simulations possible.
 
 ### mcx (Optical Forward Model)
 
-Download the latest nightly build of [mcx](http://mcx.space/) for your operating system:
+Download the latest nightly build of [mcx](http://mcx.space/) on [this page](http://mcx.space/nightly/github/) for your operating system:
 
-- [Linux](http://mcx.space/nightly/github/mcx-linux-x64-github-latest.zip)
-- [MacOS](http://mcx.space/nightly/github/mcx-macos-x64-github-latest.zip)
-- [Windows](http://mcx.space/nightly/github/mcx-windows-x64-github-latest.zip)
+- Linux: `mcx-linux-x64-github-latest.zip`
+- MacOS: `mcx-macos-x64-github-latest.zip`
+- Windows: `mcx-windows-x64-github-latest.zip`
 
 Then extract the files and set `MCX_BINARY_PATH=/.../mcx/bin/mcx` in your path_config.env.
 
@@ -55,12 +55,10 @@ for further (and much better) guidance under:
 [http://www.k-wave.org/](http://www.k-wave.org/)
 
 1. Install MATLAB with the core, image processing and parallel computing toolboxes activated at the minimum.
-2. Download the kWave toolbox
+2. Download the kWave toolbox (version >= 1.4)
 3. Add the kWave toolbox base path to the toolbox paths in MATLAB
-4. Download the kWaveArray addition from the link given in this user forum post [http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources](http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources)
-5. Add the kWaveArray folder to the toolbox paths in MATLAB as well
-6. If wanted: Download the CPP and CUDA binary files and place them in the k-Wave/binaries folder
-7. Note down the system path to the `matlab` executable file.
+4. If wanted: Download the CPP and CUDA binary files and place them in the k-Wave/binaries folder
+5. Note down the system path to the `matlab` executable file.
 
 ## Path management
 
