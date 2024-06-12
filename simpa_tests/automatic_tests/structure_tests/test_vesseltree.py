@@ -75,7 +75,8 @@ class TestVesselTree(unittest.TestCase):
         Let there be no bifurcation or curvature, and see if the radius changes
         :return: Assertion for radius variation
         """
-        self.vesseltree_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 2.5
+        self.vesseltree_settings[Tags.STRUCTURE_RADIUS_MM] = 2.5
+        self.vesseltree_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
         ts = VesselStructure(self.global_settings, self.vesseltree_settings)
 
         vessel_centre = 5
