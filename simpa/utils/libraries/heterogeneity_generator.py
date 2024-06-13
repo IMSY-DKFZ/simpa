@@ -7,6 +7,7 @@ from sklearn.datasets import make_blobs
 from scipy.ndimage.filters import gaussian_filter
 from skimage import transform
 from simpa.utils import Tags
+from typing import Union, Optional
 
 
 class HeterogeneityGeneratorBase(object):
@@ -156,13 +157,19 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
     as a map for heterogeneity within the tissue.
     '''
 
-    def __init__(self, xdim, ydim, zdim, heterogeneity_image, scaling_type=None, constant=0, spacing_mm=None,
-                 target_mean=None, target_std=None, target_min=None, target_max=None):
+    def __init__(self, xdim: int, ydim: int, zdim: int, heterogeneity_image: np.ndarray,
+                 spacing_mm: Union[int, float] = None, image_resolution_mm: Union[int, float] = None,
+                 scaling_type: [None, str] = None, constant: Union[int, float] = 0,
+                 crop_placement=('centre', 'centre'), target_mean: Union[int, float] = None,
+                 target_std: Union[int, float] = None, target_min: Union[int, float] = None,
+                 target_max: Union[int, float] = None):
         """
         :param xdim: the x dimension of the volume in voxels
         :param ydim: the y dimension of the volume in voxels
         :param zdim: the z dimension of the volume in voxels
-        :param heterogeneity_image: the prior image of the heterogeneity map
+        :param heterogeneity_image: the 2D prior image of the heterogeneity map
+        :param spacing_mm: the spacing of the volume in mm
+        :param image_resolution_mm: the resolution of the image in mm (pixel spacing)
         :param scaling_type: the scaling type of the heterogeneity map, with default being that no scaling occurs
             OPTIONS:
             TAGS.IMAGE_SCALING_SYMMETRIC: symmetric reflections of the image to span the area
@@ -172,27 +179,135 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
             TAGS.IMAGE_SCALING_CONSTANT: span the left-over area with a constant
         :param constant: the scaling constant of the heterogeneity map, used only for scaling type 'constant'
             WARNING: scaling constant must be in reference to the values in the heterogeneity_image
-        :param spacing_mm: the spacing of the volume in mm
+        :param crop_placement: the placement of where the heterogeneity map is cropped
         :param target_mean: (optional) the mean of the created heterogeneity map
         :param target_std: (optional) the standard deviation of the created heterogeneity map
         :param target_min: (optional) the minimum of the created heterogeneity map
         :param target_max: (optional) the maximum of the created heterogeneity map
         """
         super().__init__(xdim, ydim, zdim, spacing_mm, target_mean, target_std, target_min, target_max)
-        if scaling_type is None:
-            scaled_image = heterogeneity_image
-        elif scaling_type == Tags.IMAGE_SCALING_STRETCH:
-            scaled_image = transform.resize(heterogeneity_image, output_shape=(xdim, zdim), mode='symmetric')
+        if image_resolution_mm is None:
+            image_resolution_mm = spacing_mm
+
+        (image_width_pixels, image_height_pixels) = heterogeneity_image.shape
+        [image_width_mm, image_height_mm] = np.array([image_width_pixels, image_height_pixels]) * image_resolution_mm
+        (xdim_mm, ydim_mm, zdim_mm) = np.array([xdim, ydim, zdim]) * spacing_mm
+
+        wider = image_width_mm > xdim_mm
+        taller = image_height_mm > zdim_mm
+
+        if taller or wider:
+            pixel_scaled_image = self.change_resolution(heterogeneity_image, spacing_mm=spacing_mm,
+                                                        image_resolution_mm=image_resolution_mm)
+            cropped_image = self.crop_image(xdim, zdim, pixel_scaled_image, crop_placement)
+
+            if taller and wider:
+                area_fill_image = cropped_image
+            else:
+                area_fill_image = self.upsize_to_fill_area(xdim, zdim, cropped_image, scaling_type, constant)
+
+        else:
+            pixel_scaled_image = self.change_resolution(heterogeneity_image, spacing_mm=spacing_mm,
+                                                        image_resolution_mm=image_resolution_mm)
+            area_fill_image = self.upsize_to_fill_area(xdim, zdim, pixel_scaled_image, scaling_type, constant)
+
+        if scaling_type == Tags.IMAGE_SCALING_STRETCH:
+            area_fill_image = transform.resize(heterogeneity_image, output_shape=(xdim, zdim), mode='symmetric')
+
+        self.map = np.repeat(area_fill_image[:, np.newaxis, :], ydim, axis=1)
+
+    def upsize_to_fill_area(self, xdim: int, zdim: int, image: np.ndarray, scaling_type: Optional[str] = None,
+                            constant: Union[int, float] = 0):
+        '''
+        Fills an area with an image through various methods of expansion
+        :param xdim: the x dimension of the area to be filled in voxels
+        :param zdim: the z dimension of the area to be filled in voxels
+        :param image: the input image
+        :param scaling_type: the scaling type of the heterogeneity map, with default being that no scaling occurs
+            OPTIONS:
+            TAGS.IMAGE_SCALING_SYMMETRIC: symmetric reflections of the image to span the area
+            TAGS.IMAGE_SCALING_STRETCH: stretch the image to span the area
+            TAGS.IMAGE_SCALING_WRAP: multiply the image to span the area
+            TAGS.IMAGE_SCALING_EDGE: continue the values at the edge of the area to fill the shape
+            TAGS.IMAGE_SCALING_CONSTANT: span the left-over area with a constant
+        :param constant: the scaling constant of the heterogeneity map, used only for scaling type 'constant'
+        :return:A numpy array of size (xdim, zdim) containing the filled image expanded to fill the shape
+        '''
+        if scaling_type is None or scaling_type == Tags.IMAGE_SCALING_STRETCH:
+            scaled_image = image
         elif scaling_type == Tags.IMAGE_SCALING_CONSTANT:
-            pad_width = int((xdim - len(heterogeneity_image))/2)
-            pad_height = int(zdim - len(heterogeneity_image[0]))
-            scaled_image = np.pad(heterogeneity_image, ((pad_width, pad_width), (0, pad_height)),
+            pad_left = int((xdim - len(image)) / 2)
+            pad_height = int(zdim - len(image[0]))
+            pad_right = xdim - pad_left - len(image)
+            scaled_image = np.pad(image, ((pad_left, pad_right), (0, pad_height)),
                                   mode=scaling_type, constant_values=constant)
         else:
-            pad_width = int((xdim - len(heterogeneity_image)) / 2)
-            pad_height = int(zdim - len(heterogeneity_image[0]))
-            scaled_image = np.pad(heterogeneity_image, ((pad_width, pad_width), (0, pad_height)),
+            pad_left = int((xdim - len(image)) / 2)
+            pad_height = int(zdim - len(image[0]))
+            pad_right = xdim - pad_left - len(image)
+            scaled_image = np.pad(image, ((pad_left, pad_right), (0, pad_height)),
                                   mode=scaling_type)
-        self.map = np.zeros((xdim, ydim, zdim))
-        for y in range(ydim):
-            self.map[:, y, :] = scaled_image
+        return scaled_image
+
+    def crop_image(self, xdim: int, zdim: int, image: np.ndarray,
+                   crop_placement: Union[str, tuple] = ('centre', 'centre')):
+        '''
+        Crop the image to fit specified dimensions xdim and zdim
+        :param xdim: the x dimension of the area to be filled in voxels
+        :param zdim: the z dimension of the area to be filled in voxels
+        :param image: the input image
+        :param crop_placement: the placement of where the heterogeneity map is cropped
+            OPTIONS: TAGS.CROP_PLACEMENT_[TOP,BOTTOM,LEFT,RIGHT,CENTRE,RANDOM] or position of left hand corner on image
+        :return: cropped image
+        '''
+        (image_width_pixels, image_height_pixels) = image.shape
+        crop_width = min(xdim, image_width_pixels)
+        crop_height = min(zdim, image_height_pixels)
+
+        if isinstance(crop_placement, tuple):
+            if crop_placement[0] == 'left':
+                crop_horizontal = 0
+            elif crop_placement[0] == 'right':
+                crop_horizontal = image_width_pixels-crop_width-1
+            elif crop_placement[0] == 'centre':
+                crop_horizontal = round((image_width_pixels - crop_width) / 2)
+            elif isinstance(crop_placement[0], int):
+                crop_horizontal = crop_placement[0]
+
+            if crop_placement[1] == 'top':
+                crop_vertical = 0
+            elif crop_placement[1] == 'bottom':
+                crop_vertical = image_height_pixels-crop_height-1
+            elif crop_placement[1] == 'centre':
+                crop_vertical = round((image_height_pixels - crop_height) / 2)
+            elif isinstance(crop_placement[1], int):
+                crop_vertical = crop_placement[1]
+
+        elif isinstance(crop_placement, str):
+            if crop_placement == 'centre':
+                crop_horizontal = round((image_width_pixels - crop_width) / 2)
+                crop_vertical = round((image_height_pixels - crop_height) / 2)
+            elif crop_placement == 'random':
+                crop_horizontal = image_width_pixels - crop_width
+                if crop_horizontal != 0:
+                    crop_horizontal = np.random.randint(0, crop_horizontal)
+                crop_vertical = image_height_pixels - crop_height
+                if crop_vertical != 0:
+                    crop_vertical = np.random.randint(0, crop_vertical)
+
+        cropped_image = image[crop_horizontal: crop_horizontal + crop_width, crop_vertical: crop_vertical + crop_height]
+        return cropped_image
+
+    def change_resolution(self, image: np.ndarray, spacing_mm: Union[int, float], image_resolution_mm: Union[int, float]):
+        '''
+        Method to change the resolution of an image
+        :param image: input image
+        :param image_resolution_mm: original image resolution
+        :param spacing_mm: target resolution
+        :return: image with new resolution
+        '''
+        (image_width_pixels, image_height_pixels) = image.shape
+        [image_width_mm, image_height_mm] = np.array([image_width_pixels, image_height_pixels]) * image_resolution_mm
+        new_image_pixel_width = round(image_width_mm / spacing_mm)
+        new_image_pixel_height = round(image_height_mm / spacing_mm)
+        return transform.resize(image, (new_image_pixel_width, new_image_pixel_height))
