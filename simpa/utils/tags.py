@@ -1507,3 +1507,39 @@ class Tags:
     The edge value will continue across the area
     Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
     """
+
+    CROP_POSITION_TOP = "top"
+    """
+    Flag indicating the crop position: along top edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_BOTTOM = "bottom"
+    """
+    Flag indicating the crop position: along bottom edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_CENTRE = "centre"
+    """
+    Flag indicating the crop position: along centre edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_LEFT = "left"
+    """
+    Flag indicating the crop position: along left-hand edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_RIGHT = "right"
+    """
+    Flag indicating the crop position: along right-hand edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_RANDOM = "random"
+    """
+    Flag indicating the crop position: random placement
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """

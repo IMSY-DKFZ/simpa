@@ -250,7 +250,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         return scaled_image
 
     def crop_image(self, xdim: int, zdim: int, image: np.ndarray,
-                   crop_placement: Union[str, tuple] = ('centre', 'centre')):
+                   crop_placement: Union[str, tuple] = Tags.CROP_POSITION_CENTRE):
         '''
         Crop the image to fit specified dimensions xdim and zdim
         :param xdim: the x dimension of the area to be filled in voxels
@@ -265,29 +265,29 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         crop_height = min(zdim, image_height_pixels)
 
         if isinstance(crop_placement, tuple):
-            if crop_placement[0] == 'left':
+            if crop_placement[0] == Tags.CROP_POSITION_LEFT:
                 crop_horizontal = 0
-            elif crop_placement[0] == 'right':
+            elif crop_placement[0] == Tags.CROP_POSITION_RIGHT:
                 crop_horizontal = image_width_pixels-crop_width-1
-            elif crop_placement[0] == 'centre':
+            elif crop_placement[0] == Tags.CROP_POSITION_CENTRE:
                 crop_horizontal = round((image_width_pixels - crop_width) / 2)
             elif isinstance(crop_placement[0], int):
                 crop_horizontal = crop_placement[0]
 
-            if crop_placement[1] == 'top':
+            if crop_placement[1] == Tags.CROP_POSITION_TOP:
                 crop_vertical = 0
-            elif crop_placement[1] == 'bottom':
+            elif crop_placement[1] == Tags.CROP_POSITION_BOTTOM:
                 crop_vertical = image_height_pixels-crop_height-1
-            elif crop_placement[1] == 'centre':
+            elif crop_placement[1] == Tags.CROP_POSITION_CENTRE:
                 crop_vertical = round((image_height_pixels - crop_height) / 2)
             elif isinstance(crop_placement[1], int):
                 crop_vertical = crop_placement[1]
 
         elif isinstance(crop_placement, str):
-            if crop_placement == 'centre':
+            if crop_placement == Tags.CROP_POSITION_CENTRE:
                 crop_horizontal = round((image_width_pixels - crop_width) / 2)
                 crop_vertical = round((image_height_pixels - crop_height) / 2)
-            elif crop_placement == 'random':
+            elif crop_placement == Tags.CROP_POSITION_RANDOM:
                 crop_horizontal = image_width_pixels - crop_width
                 if crop_horizontal != 0:
                     crop_horizontal = np.random.randint(0, crop_horizontal)
