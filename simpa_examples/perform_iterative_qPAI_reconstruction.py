@@ -208,7 +208,7 @@ if VISUALIZE:
         if i == 0:
             plt.ylabel("x-z", fontsize=10)
         plt.title(label[i], fontsize=10)
-        plt.imshow(np.rot90(quantity, -1))
+        plt.imshow(quantity.T)
         plt.xticks(fontsize=6)
         plt.yticks(fontsize=6)
         plt.colorbar()
@@ -222,7 +222,7 @@ if VISUALIZE:
         if i == 0:
             plt.ylabel("y-z", fontsize=10)
         plt.title(label[i], fontsize=10)
-        plt.imshow(np.rot90(quantity, -1))
+        plt.imshow(quantity.T)
         plt.xticks(fontsize=6)
         plt.yticks(fontsize=6)
         plt.colorbar()

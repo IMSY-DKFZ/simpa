@@ -5,6 +5,7 @@
 from simpa.utils import Tags, SegmentationClasses, calculate_gruneisen_parameter_from_temperature
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.tissue_properties import TissueProperties
+from simpa.utils.constants import property_tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 import numpy as np
 import matplotlib.patches as patches
@@ -37,7 +38,7 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
     if visualise_values:
         plt.figure(figsize=(12, 8))
         plt.suptitle(title + f" [green=expected, blue=actual, red={tolerated_margin_in_percent*100}% margin]")
-        num_subplots = len(TissueProperties.property_tags)
+        num_subplots = len(property_tags)
 
     for wavelength in expected_values.keys():
         molecular_composition.update_internal_properties()
@@ -45,7 +46,7 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
         expected_properties = expected_values[wavelength]
 
         if visualise_values:
-            for tag_idx, tag in enumerate(TissueProperties.property_tags):
+            for tag_idx, tag in enumerate(property_tags):
                 ax = plt.subplot(3, int(np.ceil(num_subplots/3)), (tag_idx+1))
                 ax.set_title(tag)
                 ax.set_xlabel("wavelength [nm]")
@@ -57,7 +58,7 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
                 ax.scatter(x=wavelength, y=composition_properties[tag], c="blue")
                 ax.scatter(x=wavelength, y=expected_properties[tag], c="green")
         else:
-            for tag in TissueProperties.property_tags:
+            for tag in property_tags:
                 if expected_properties[tag] is not None:
                     if (not (composition_properties[tag] is None and expected_properties[tag] is None)) and \
                         ((np.abs(composition_properties[tag] - expected_properties[tag]) /

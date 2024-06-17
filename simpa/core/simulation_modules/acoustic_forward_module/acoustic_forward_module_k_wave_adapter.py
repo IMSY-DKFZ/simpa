@@ -110,14 +110,10 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
             axes = (0, 2)
             image_slice = np.s_[:]
 
-        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.rot90(data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice],
-                                                             3, axes=axes)
-        data_dict[Tags.DATA_FIELD_DENSITY] = np.rot90(data_dict[Tags.DATA_FIELD_DENSITY][image_slice],
-                                                      3, axes=axes)
-        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.rot90(data_dict[Tags.DATA_FIELD_ALPHA_COEFF][image_slice],
-                                                          3, axes=axes)
-        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = np.rot90(data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE]
-                                                               [image_slice], 3, axes=axes)
+        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice].T
+        data_dict[Tags.DATA_FIELD_DENSITY] = data_dict[Tags.DATA_FIELD_DENSITY][image_slice].T
+        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = data_dict[Tags.DATA_FIELD_ALPHA_COEFF][image_slice].T
+        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE][image_slice].T
 
         time_series_data, global_settings = self.k_wave_acoustic_forward_model(
             detection_geometry,
@@ -252,10 +248,6 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         subprocess.run(cmd)
 
         raw_time_series_data = sio.loadmat(optical_path)[Tags.DATA_FIELD_TIME_SERIES_DATA]
-
-        # reverse the order of detector elements from matlab to python order
-        raw_time_series_data = raw_time_series_data[::-1, :]
-
         time_grid = sio.loadmat(optical_path + "dt.mat")
         num_time_steps = int(np.round(time_grid["number_time_steps"]))
 

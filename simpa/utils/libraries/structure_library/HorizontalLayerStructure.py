@@ -83,7 +83,7 @@ class HorizontalLayerStructure(GeometricalStructure):
 
             bools_fully_filled_layers = ((target_vector_voxels >= 0) & (target_vector_voxels < floored_depth_voxels))
 
-            bools_last_layer = ((target_vector_voxels >= floored_depth_voxels) &
+            bools_last_layer = ((target_vector_voxels >= 0) & (target_vector_voxels >= floored_depth_voxels) &
                                 (target_vector_voxels <= floored_depth_voxels + 1))
 
             volume_fractions[bools_last_layer] = depth_voxels - target_vector_voxels[bools_last_layer]
