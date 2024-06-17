@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
+from simpa.utils.matlab import generate_matlab_cmd
 from simpa.utils.settings import Settings
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
@@ -10,7 +11,6 @@ import numpy as np
 import scipy.io as sio
 import subprocess
 import os
-import inspect
 
 
 class TimeReversalAdapter(ReconstructionAdapterBase):
@@ -168,17 +168,8 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             time_reversal_script = "time_reversal_2D"
             axes = (0, 1)
 
-        base_script_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-
-        cmd = list()
-        cmd.append(self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
-        cmd.append("-nodisplay")
-        cmd.append("-nosplash")
-        cmd.append("-automation")
-        cmd.append("-wait")
-        cmd.append("-r")
-        cmd.append("addpath('" + base_script_path + "');" +
-                   time_reversal_script + "('" + acoustic_path + "');exit;")
+        matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
+        cmd = generate_matlab_cmd(matlab_binary_path, time_reversal_script, acoustic_path)
 
         cur_dir = os.getcwd()
         os.chdir(self.global_settings[Tags.SIMULATION_PATH])
@@ -187,7 +178,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         reconstructed_data = sio.loadmat(acoustic_path + "tr.mat")[Tags.DATA_FIELD_RECONSTRUCTED_DATA]
 
-        reconstructed_data = np.flipud(np.rot90(reconstructed_data, 1, axes))
+        reconstructed_data = reconstructed_data.T
 
         field_of_view_mm = detection_geometry.get_field_of_view_mm()
         field_of_view_voxels = (field_of_view_mm / spacing_in_mm).astype(np.int32)

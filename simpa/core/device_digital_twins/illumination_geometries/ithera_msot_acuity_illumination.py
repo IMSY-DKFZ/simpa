@@ -29,21 +29,25 @@ class MSOTAcuityIlluminationGeometry(IlluminationGeometryBase):
         self.normalized_source_direction_vector = self.source_direction_vector / np.linalg.norm(
             self.source_direction_vector)
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings):
+        divergence_angle = 8.66  # full beam divergence angle measured at Full Width at Half Maximum (FWHM)
+        full_width_at_half_maximum = 2.0 * np.tan(0.5 * np.deg2rad(divergence_angle))  # FWHM of beam divergence
+        # standard deviation of gaussian with FWHM
+        self.sigma = full_width_at_half_maximum / (2.0 * np.sqrt(2.0 * np.log(2.0)))
 
-        source_type = Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO
+    def get_mcx_illuminator_definition(self, global_settings: Settings):
+        source_type = Tags.ILLUMINATION_TYPE_SLIT
         spacing = global_settings[Tags.SPACING_MM]
         device_position = list(self.device_position_mm / spacing + 0.5)
-
+        device_length = 30 / spacing
+        source_pos = device_position
+        source_pos[0] -= 0.5 * device_length
         source_direction = list(self.normalized_source_direction_vector)
-
-        source_param1 = [30 / spacing, 0, 0, 0]
-
-        source_param2 = [0, 0, 0, 0]
+        source_param1 = [device_length, 0.0, 0.0, 0.0]
+        source_param2 = [self.sigma, self.sigma, 0.0, 0.0]
 
         return {
             "Type": source_type,
-            "Pos": device_position,
+            "Pos": source_pos,
             "Dir": source_direction,
             "Param1": source_param1,
             "Param2": source_param2
