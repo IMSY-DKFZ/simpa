@@ -126,10 +126,10 @@ class TestHeterogeneityGenerator(unittest.TestCase):
             self.assert_mean_std(generator)
 
 
-class TestImageHeterogeneityScaling(unittest.TestCase):
-    '''
+class TestImageScaling(unittest.TestCase):
+    """
     A set of tests for the ImageHeterogeneity class, designed to see if the scaling works.
-    '''
+    """
 
     def setUp(self):
         self.spacing = 1.0
@@ -149,11 +149,11 @@ class TestImageHeterogeneityScaling(unittest.TestCase):
         self.dimx, self.dimy, self.dimz = self.TEST_SETTINGS.get_volume_dimensions_voxels()
 
     def test_stretch(self):
-        '''
+        """
         Test to see if the image can be stretched to fill th area, and then the volume. After stretched to fill the
         area we should see the furthest two columns keep their values
         :return: Assertion for if the image has been stretched
-        '''
+        """
         stretched_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
                                                 scaling_type=Tags.IMAGE_SCALING_STRETCH, spacing_mm=self.spacing).get_map()
         end_equals_1 = np.all(stretched_image[:, :, 6:] == 1)
@@ -161,11 +161,11 @@ class TestImageHeterogeneityScaling(unittest.TestCase):
         assert end_equals_1 and beginning_equals_0
 
     def test_wrap(self):
-        '''
+        """
         Test to see if the image can be replicated to fill th area, and then the volume. Even and odd columns will keep
         their values
         :return: Assertion for if the image has been wrapped to fill the volume
-        '''
+        """
         wrapped_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
                                               scaling_type=Tags.IMAGE_SCALING_WRAP, spacing_mm=self.spacing).get_map()
         even_equal_1 = np.all(wrapped_image[:, :, 1::2] == 1)
@@ -173,11 +173,11 @@ class TestImageHeterogeneityScaling(unittest.TestCase):
         assert even_equal_1 and odd_equal_zero
 
     def test_edge(self):
-        '''
+        """
         Test to see if the image can fill the area by extending the edges, and then the volume. Should observe a line
         of zeros and the rest ones.
         :return: Assertion for if the image edges have filled the volume
-        '''
+        """
         edge_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
                                            scaling_type=Tags.IMAGE_SCALING_EDGE, spacing_mm=self.spacing).get_map()
         initially_zero = np.all(edge_image[:, :, 0] == 0)
@@ -185,10 +185,10 @@ class TestImageHeterogeneityScaling(unittest.TestCase):
         assert initially_zero and rest_ones
 
     def test_constant(self):
-        '''
+        """
         Test to see if the image can fill the area with a constant, and then the volume
         :return: Assertion for if the image has been filled by a constant
-        '''
+        """
         constant_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
                                                scaling_type=Tags.IMAGE_SCALING_CONSTANT, spacing_mm=self.spacing,
                                                constant=0.5).get_map()
@@ -198,11 +198,11 @@ class TestImageHeterogeneityScaling(unittest.TestCase):
         assert initial_area_same and rest_constant
 
     def test_symmetric(self):
-        '''
-        Test to see if the image can fill th area by symmetric reflections, and then the volume. See stripes following
+        """
+        Test to see if the image can fill the area by symmetric reflections, and then the volume. See stripes following
         two pixel 1 to 0 patterns
         :return: Assertion for if the image has been reflected to fill the volume
-        '''
+        """
         symmetric_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.PARTIAL_IMAGE,
                                                 scaling_type=Tags.IMAGE_SCALING_SYMMETRIC,
                                                 spacing_mm=self.spacing).get_map()
@@ -212,6 +212,10 @@ class TestImageHeterogeneityScaling(unittest.TestCase):
         assert ones_stripes_working and zeros_stripes_working
 
     def test_crop(self):
+        """
+        Test to see if the image will crop to the desired area, thus leaving the same pattern but in a smaller shape
+        :return: Assertion for if the image has been cropped to the desired area
+        """
         crop_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.TOO_BIG_IMAGE,
                                            spacing_mm=self.spacing, image_resolution_mm=self.spacing).get_map()
         odd_columns_equal_1 = np.all(crop_image[:, :, ::2] == 1)

@@ -83,7 +83,7 @@ class HeterogeneityGeneratorBase(object):
 
 class RandomHeterogeneity(HeterogeneityGeneratorBase):
     """
-    This heterogeneity generator representes a uniform random sampling between the given bounds.
+    This heterogeneity generator represents a uniform random sampling between the given bounds.
     Optionally, a Gaussian blur can be specified. Please not that a Gaussian blur will transform the random
     distribution to a Gaussian.
     """
@@ -152,10 +152,10 @@ class BlobHeterogeneity(HeterogeneityGeneratorBase):
 
 
 class ImageHeterogeneity(HeterogeneityGeneratorBase):
-    '''
+    """
     This heterogeneity generator takes a pre-specified 2D image, currently only supporting numpy arrays, and uses them
     as a map for heterogeneity within the tissue.
-    '''
+    """
 
     def __init__(self, xdim: int, ydim: int, zdim: int, heterogeneity_image: np.ndarray,
                  spacing_mm: Union[int, float] = None, image_resolution_mm: Union[int, float] = None,
@@ -218,7 +218,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
 
     def upsize_to_fill_area(self, xdim: int, zdim: int, image: np.ndarray, scaling_type: Optional[str] = None,
                             constant: Union[int, float] = 0):
-        '''
+        """
         Fills an area with an image through various methods of expansion
         :param xdim: the x dimension of the area to be filled in voxels
         :param zdim: the z dimension of the area to be filled in voxels
@@ -232,7 +232,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
             TAGS.IMAGE_SCALING_CONSTANT: span the left-over area with a constant
         :param constant: the scaling constant of the heterogeneity map, used only for scaling type 'constant'
         :return:A numpy array of size (xdim, zdim) containing the filled image expanded to fill the shape
-        '''
+        """
         if scaling_type is None or scaling_type == Tags.IMAGE_SCALING_STRETCH:
             scaled_image = image
         elif scaling_type == Tags.IMAGE_SCALING_CONSTANT:
@@ -251,7 +251,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
 
     def crop_image(self, xdim: int, zdim: int, image: np.ndarray,
                    crop_placement: Union[str, tuple] = Tags.CROP_POSITION_CENTRE):
-        '''
+        """
         Crop the image to fit specified dimensions xdim and zdim
         :param xdim: the x dimension of the area to be filled in voxels
         :param zdim: the z dimension of the area to be filled in voxels
@@ -259,7 +259,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         :param crop_placement: the placement of where the heterogeneity map is cropped
             OPTIONS: TAGS.CROP_PLACEMENT_[TOP,BOTTOM,LEFT,RIGHT,CENTRE,RANDOM] or position of left hand corner on image
         :return: cropped image
-        '''
+        """
         (image_width_pixels, image_height_pixels) = image.shape
         crop_width = min(xdim, image_width_pixels)
         crop_height = min(zdim, image_height_pixels)
@@ -299,13 +299,13 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         return cropped_image
 
     def change_resolution(self, image: np.ndarray, spacing_mm: Union[int, float], image_resolution_mm: Union[int, float]):
-        '''
+        """
         Method to change the resolution of an image
         :param image: input image
         :param image_resolution_mm: original image resolution
         :param spacing_mm: target resolution
         :return: image with new resolution
-        '''
+        """
         (image_width_pixels, image_height_pixels) = image.shape
         [image_width_mm, image_height_mm] = np.array([image_width_pixels, image_height_pixels]) * image_resolution_mm
         new_image_pixel_width = round(image_width_mm / spacing_mm)

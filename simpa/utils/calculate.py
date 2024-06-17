@@ -30,7 +30,7 @@ def calculate_oxygenation(molecule_list):
         hbO2 = 0
 
     if isinstance(hb, torch.Tensor) or isinstance(hbO2, torch.Tensor):
-        return torch.where(hb + hbO2 < 1e-10, float('nan'), hbO2 / (hb + hbO2))
+        return torch.where(hb + hbO2 < 1e-10, 0, hbO2 / (hb + hbO2))
 
     else:
         if hb + hbO2 < 1e-10:
