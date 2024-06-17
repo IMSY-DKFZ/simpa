@@ -75,13 +75,14 @@ class TestVesselTree(unittest.TestCase):
         Let there be no bifurcation or curvature, and see if the radius changes
         :return: Assertion for radius variation
         """
+        self.vesseltree_settings[Tags.STRUCTURE_RADIUS_MM] = 2.5
         self.vesseltree_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1
         ts = VesselStructure(self.global_settings, self.vesseltree_settings)
 
         vessel_centre = 5
         edge_of_vessel = vessel_centre + self.vesseltree_settings[Tags.STRUCTURE_RADIUS_MM]
-        has_reduced = np.min(ts.geometrical_volume[edge_of_vessel-1, :, vessel_centre]) == 0
-        has_increased = np.max(ts.geometrical_volume[edge_of_vessel+1, :, vessel_centre]) != 0
+        has_reduced = np.min(ts.geometrical_volume[int(edge_of_vessel-0.5), :, vessel_centre]) != 1
+        has_increased = np.max(ts.geometrical_volume[int(edge_of_vessel+0.5), :, vessel_centre]) != 0
 
         assert has_reduced or has_increased
 
