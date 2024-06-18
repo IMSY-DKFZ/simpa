@@ -8,6 +8,7 @@ from scipy.ndimage.filters import gaussian_filter
 from skimage import transform
 from simpa.utils import Tags
 from typing import Union, Optional
+from simpa.log import Logger
 
 
 class HeterogeneityGeneratorBase(object):
@@ -130,7 +131,6 @@ class BlobHeterogeneity(HeterogeneityGeneratorBase):
         :param target_std: (optional) the standard deviation of the created heterogeneity map
         :param target_min: (optional) the minimum of the created heterogeneity map
         :param target_max: (optional) the maximum of the created heterogeneity map
-        :param eps: (optional) the threshold when a re-normalisation should be triggered (default: 1e-5)
         """
         super().__init__(xdim, ydim, zdim, spacing_mm, target_mean, target_std, target_min, target_max)
 
@@ -158,7 +158,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
     """
 
     def __init__(self, xdim: int, ydim: int, zdim: int, heterogeneity_image: np.ndarray,
-                 spacing_mm: Union[int, float] = None, image_resolution_mm: Union[int, float] = None,
+                 spacing_mm: Union[int, float] = None, image_pixel_spacing_mm: Union[int, float] = None,
                  scaling_type: [None, str] = None, constant: Union[int, float] = 0,
                  crop_placement=('centre', 'centre'), target_mean: Union[int, float] = None,
                  target_std: Union[int, float] = None, target_min: Union[int, float] = None,
@@ -169,7 +169,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         :param zdim: the z dimension of the volume in voxels
         :param heterogeneity_image: the 2D prior image of the heterogeneity map
         :param spacing_mm: the spacing of the volume in mm
-        :param image_resolution_mm: the resolution of the image in mm (pixel spacing)
+        :param image_pixel_spacing_mm: the pixel spacing of the image in mm (pixel spacing)
         :param scaling_type: the scaling type of the heterogeneity map, with default being that no scaling occurs
             OPTIONS:
             TAGS.IMAGE_SCALING_SYMMETRIC: symmetric reflections of the image to span the area
@@ -186,11 +186,13 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         :param target_max: (optional) the maximum of the created heterogeneity map
         """
         super().__init__(xdim, ydim, zdim, spacing_mm, target_mean, target_std, target_min, target_max)
-        if image_resolution_mm is None:
-            image_resolution_mm = spacing_mm
+        self.logger = Logger()
+
+        if image_pixel_spacing_mm is None:
+            image_pixel_spacing_mm = spacing_mm
 
         (image_width_pixels, image_height_pixels) = heterogeneity_image.shape
-        [image_width_mm, image_height_mm] = np.array([image_width_pixels, image_height_pixels]) * image_resolution_mm
+        [image_width_mm, image_height_mm] = np.array([image_width_pixels, image_height_pixels]) * image_pixel_spacing_mm
         (xdim_mm, ydim_mm, zdim_mm) = np.array([xdim, ydim, zdim]) * spacing_mm
 
         wider = image_width_mm > xdim_mm
@@ -198,7 +200,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
 
         if taller or wider:
             pixel_scaled_image = self.change_resolution(heterogeneity_image, spacing_mm=spacing_mm,
-                                                        image_resolution_mm=image_resolution_mm)
+                                                        image_pixel_spacing_mm=image_pixel_spacing_mm)
             cropped_image = self.crop_image(xdim, zdim, pixel_scaled_image, crop_placement)
 
             if taller and wider:
@@ -208,7 +210,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
 
         else:
             pixel_scaled_image = self.change_resolution(heterogeneity_image, spacing_mm=spacing_mm,
-                                                        image_resolution_mm=image_resolution_mm)
+                                                        image_pixel_spacing_mm=image_pixel_spacing_mm)
             area_fill_image = self.upsize_to_fill_area(xdim, zdim, pixel_scaled_image, scaling_type, constant)
 
         if scaling_type == Tags.IMAGE_SCALING_STRETCH:
@@ -247,6 +249,8 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
             pad_right = xdim - pad_left - len(image)
             scaled_image = np.pad(image, ((pad_left, pad_right), (0, pad_height)),
                                   mode=scaling_type)
+
+        self.logger.warning("The input image has filled the area by using {} scaling type".format(scaling_type))
         return scaled_image
 
     def crop_image(self, xdim: int, zdim: int, image: np.ndarray,
@@ -296,18 +300,23 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
                     crop_vertical = np.random.randint(0, crop_vertical)
 
         cropped_image = image[crop_horizontal: crop_horizontal + crop_width, crop_vertical: crop_vertical + crop_height]
+
+        self.logger.warning("The input image has been cropped to the dimensions of the simulation volume")
         return cropped_image
 
-    def change_resolution(self, image: np.ndarray, spacing_mm: Union[int, float], image_resolution_mm: Union[int, float]):
+    def change_resolution(self, image: np.ndarray, spacing_mm: Union[int, float],
+                          image_pixel_spacing_mm: Union[int, float]):
         """
         Method to change the resolution of an image
         :param image: input image
-        :param image_resolution_mm: original image resolution
-        :param spacing_mm: target resolution
-        :return: image with new resolution
+        :param image_pixel_spacing_mm: original image pixel spacing mm
+        :param spacing_mm: target pixel spacing mm
+        :return: image with new pixel spacing
         """
         (image_width_pixels, image_height_pixels) = image.shape
-        [image_width_mm, image_height_mm] = np.array([image_width_pixels, image_height_pixels]) * image_resolution_mm
+        [image_width_mm, image_height_mm] = np.array([image_width_pixels, image_height_pixels]) * image_pixel_spacing_mm
         new_image_pixel_width = round(image_width_mm / spacing_mm)
         new_image_pixel_height = round(image_height_mm / spacing_mm)
+
+        self.logger.warning("The input image has changed pixel spacing to match the simulation volume")
         return transform.resize(image, (new_image_pixel_width, new_image_pixel_height))

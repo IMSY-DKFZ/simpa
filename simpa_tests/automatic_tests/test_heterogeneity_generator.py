@@ -34,7 +34,7 @@ class TestHeterogeneityGenerator(unittest.TestCase):
             sp.RandomHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing, gaussian_blur_size_mm=3),
             sp.BlobHeterogeneity(dimx, dimy, dimz, spacing_mm=self.spacing),
             sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.FULL_IMAGE, spacing_mm=self.spacing,
-                                  image_resolution_mm=self.spacing),
+                                  image_pixel_spacing_mm=self.spacing),
             sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
                                   scaling_type=Tags.IMAGE_SCALING_CONSTANT, spacing_mm=self.spacing, constant=0.5),
             sp.ImageHeterogeneity(dimx, dimy, dimz, heterogeneity_image=self.PARTIAL_IMAGE,
@@ -217,7 +217,7 @@ class TestImageScaling(unittest.TestCase):
         :return: Assertion for if the image has been cropped to the desired area
         """
         crop_image = sp.ImageHeterogeneity(self.dimx, self.dimy, self.dimz, heterogeneity_image=self.TOO_BIG_IMAGE,
-                                           spacing_mm=self.spacing, image_resolution_mm=self.spacing).get_map()
+                                           spacing_mm=self.spacing, image_pixel_spacing_mm=self.spacing).get_map()
         odd_columns_equal_1 = np.all(crop_image[:, :, ::2] == 1)
         even_columns_equal_0 = np.all(crop_image[:, :, 1::2] == 0)
         size_is_right = np.all(crop_image[:, 1, :].shape == (self.dimx, self.dimz))
