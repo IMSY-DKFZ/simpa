@@ -9,6 +9,7 @@ from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils im
 from simpa.utils import Settings, Tags
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
 
+
 class TestBandpassFilter(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -26,39 +27,40 @@ class TestBandpassFilter(unittest.TestCase):
             sampling_frequency_mhz=1)
 
         # Calculate base sinus as time series datum
-        self.t_step = 0.01 # in ms
-        self.t_values = np.arange(0, 20, self.t_step) # in ms
+        self.t_step = 0.01  # in ms
+        self.t_values = np.arange(0, 20, self.t_step)  # in ms
 
-        base_frequency = 1 # in 10^4 Hz
+        base_frequency = 1  # in 10^4 Hz
         self.base_time_series = np.sin(2 * np.pi * base_frequency * self.t_values)
 
-        high_frequency = 3 # in 10^4 Hz
+        high_frequency = 3  # in 10^4 Hz
         self.high_freq_time_series = np.sin(2 * np.pi * high_frequency * self.t_values)
 
-        low_frequency = 0.1 # in 10^4 Hz
+        low_frequency = 0.1  # in 10^4 Hz
         self.low_freq_time_series = np.sin(2 * np.pi * low_frequency * self.t_values)
 
         self.combined_time_series = self.base_time_series + self.low_freq_time_series + self.high_freq_time_series
 
-        ## for tests with random signal ## 
+        ## for tests with random signal ##
 
         # generate random noisy signal
         random_t_values = np.arange(0, 10, 0.01)
         np.random.seed(4117)
         noisy_frequency = np.random.rand(len(random_t_values))
         self.noisy_signal = np.sin(2 * np.pi * noisy_frequency * random_t_values)
-        
+
         # filter signal
         self.cutoff_highpass_in_Hz = 40000
         self.cutoff_lowpass_in_Hz = 400000
         self.time_spacing_in_ms = 1e-3
-        self.frequencies = np.fft.fftshift(np.fft.fftfreq(len(random_t_values), self.time_spacing_in_ms)) # in kHz
+        self.frequencies = np.fft.fftshift(np.fft.fftfreq(len(random_t_values), self.time_spacing_in_ms))  # in kHz
 
     def test_butter_bandpass_filter(self, show_figure_on_screen=False):
         self.settings.get_reconstruction_settings()[Tags.BANDPASS_FILTER_METHOD] = Tags.BUTTERWORTH_BANDPASS_FILTER
         self.settings.get_reconstruction_settings()[Tags.BUTTERWORTH_FILTER_ORDER] = 1
-        filtered_time_series_with_settings = butter_bandpass_filtering_with_settings(self.combined_time_series, self.settings, self.settings[Tags.RECONSTRUCTION_MODEL_SETTINGS], self.device)
-        
+        filtered_time_series_with_settings = butter_bandpass_filtering_with_settings(
+            self.combined_time_series, self.settings, self.settings[Tags.RECONSTRUCTION_MODEL_SETTINGS], self.device)
+
         filtered_time_series = butter_bandpass_filtering(self.combined_time_series, 1e-3, int(11000), int(9000), 1)
 
         # check if both bandpass filtering methods return the same result
@@ -66,7 +68,6 @@ class TestBandpassFilter(unittest.TestCase):
 
         # compare after 500 steps as the filter does not work perfectly before
         assert (np.abs(self.base_time_series[500:] - filtered_time_series[500:]) < 0.2).all()
-
 
         if show_figure_on_screen:
             labels = ["Base time series", "Low frequency time series", "High frequency time series",
@@ -125,7 +126,7 @@ class TestBandpassFilter(unittest.TestCase):
             ax[1].set_xlabel("Frequency f [Hz]")
         # test
         np.array_equal(expected_window, window)
-        
+
         # check edge case 2: filtering exactly one represented frequency (expected only one one in window at given frequency)
         low_index = np.random.randint(0, len(frequencies)-1)
         high_index = low_index
@@ -153,11 +154,13 @@ class TestBandpassFilter(unittest.TestCase):
                                                                                     self.settings[Tags.RECONSTRUCTION_MODEL_SETTINGS],
                                                                                     self.device)
 
-        filtered_time_series_with_resampling = tukey_bandpass_filtering(self.combined_time_series, 1e-3, int(11000), int(9000), 0, True)
+        filtered_time_series_with_resampling = tukey_bandpass_filtering(
+            self.combined_time_series, 1e-3, int(11000), int(9000), 0, True)
 
         filtered_time_series = tukey_bandpass_filtering(self.combined_time_series, 1e-3, int(11000), int(9000), 0)
 
-        dirac_window_filtered_time_series = tukey_bandpass_filtering(self.combined_time_series, 1e-3, int(10000), int(10000), 0)
+        dirac_window_filtered_time_series = tukey_bandpass_filtering(
+            self.combined_time_series, 1e-3, int(10000), int(10000), 0)
 
         # check if both bandpass filtering methods return the same result
         assert np.array_equal(filtered_time_series, filtered_time_series_with_settings)
@@ -182,19 +185,19 @@ class TestBandpassFilter(unittest.TestCase):
         '''
         Visualizes the filtered spectrum and the intervals which are marked as passing or filtering areas.
         '''
-        
-        def plot_region(low_limit: int, high_limit:int, label:str = '', color:str = 'red'):
+
+        def plot_region(low_limit: int, high_limit: int, label: str = '', color: str = 'red'):
             interval = np.arange(low_limit, high_limit, self.time_spacing_in_ms)
-            plt.plot(interval, np.zeros_like(interval), label=label, linewidth=5, color=color )
-        
+            plt.plot(interval, np.zeros_like(interval), label=label, linewidth=5, color=color)
         # passing intervals
-        plot_region(self.cutoff_highpass_in_Hz*self.time_spacing_in_ms, self.cutoff_lowpass_in_Hz*self.time_spacing_in_ms, \
-             label="bandwidth of passed filter",color="green")
-        plot_region(-self.cutoff_lowpass_in_Hz*self.time_spacing_in_ms, -self.cutoff_highpass_in_Hz*self.time_spacing_in_ms,color="green")
+        plot_region(self.cutoff_highpass_in_Hz*self.time_spacing_in_ms, self.cutoff_lowpass_in_Hz*self.time_spacing_in_ms,
+                    label="bandwidth of passed filter", color="green")
+        plot_region(-self.cutoff_lowpass_in_Hz*self.time_spacing_in_ms, -
+                    self.cutoff_highpass_in_Hz*self.time_spacing_in_ms, color="green")
 
         # filtered intervals
-        plot_region(-self.cutoff_highpass_in_Hz*self.time_spacing_in_ms, self.cutoff_highpass_in_Hz*self.time_spacing_in_ms, \
-            label="signal should be close to zero",color="red")
+        plot_region(-self.cutoff_highpass_in_Hz*self.time_spacing_in_ms, self.cutoff_highpass_in_Hz*self.time_spacing_in_ms,
+                    label="signal should be close to zero", color="red")
         plot_region(self.frequencies[0], -self.cutoff_lowpass_in_Hz*self.time_spacing_in_ms)
         plot_region(self.cutoff_lowpass_in_Hz*self.time_spacing_in_ms, self.frequencies[-1])
 
@@ -205,13 +208,15 @@ class TestBandpassFilter(unittest.TestCase):
 
     def test_tukey_filter_with_random_signal(self, show_figure_on_screen=False):
 
-        filtered_signal = tukey_bandpass_filtering(self.noisy_signal, self.time_spacing_in_ms, self.cutoff_lowpass_in_Hz, self.cutoff_highpass_in_Hz, tukey_alpha=0.5)
+        filtered_signal = tukey_bandpass_filtering(
+            self.noisy_signal, self.time_spacing_in_ms, self.cutoff_lowpass_in_Hz, self.cutoff_highpass_in_Hz, tukey_alpha=0.5)
 
         # compute frequency spectrum
         FILTERED_SIGNAL = np.fft.fftshift(np.fft.fft(filtered_signal))
 
         # check edge case: no filtering
-        not_filtered_signal = tukey_bandpass_filtering(self.noisy_signal, self.time_spacing_in_ms, cutoff_highpass_in_Hz=0, cutoff_lowpass_in_Hz=1e40, tukey_alpha=0.0)
+        not_filtered_signal = tukey_bandpass_filtering(
+            self.noisy_signal, self.time_spacing_in_ms, cutoff_highpass_in_Hz=0, cutoff_lowpass_in_Hz=1e40, tukey_alpha=0.0)
         assert np.allclose(self.noisy_signal, not_filtered_signal, atol=1e-12)
 
         # expected to be close to zero outside of the band
@@ -219,18 +224,22 @@ class TestBandpassFilter(unittest.TestCase):
         low_cutoff_point = self.cutoff_lowpass_in_Hz*self.time_spacing_in_ms
         assert np.allclose(0, FILTERED_SIGNAL[self.frequencies < -low_cutoff_point], atol=1e-5)
         assert np.allclose(0, FILTERED_SIGNAL[self.frequencies > low_cutoff_point], atol=1e-5)
-        assert np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>-high_cutoff_point, self.frequencies<high_cutoff_point))], atol=1e-5)
-    
+        assert np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(
+            self.frequencies > -high_cutoff_point, self.frequencies < high_cutoff_point))], atol=1e-5)
+
         # expected to be not zero within the band
-        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>-low_cutoff_point, self.frequencies<-high_cutoff_point))], atol=1e-5)
-        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>high_cutoff_point, self.frequencies<low_cutoff_point))], atol=1e-5)
+        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(
+            self.frequencies > -low_cutoff_point, self.frequencies < -high_cutoff_point))], atol=1e-5)
+        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(
+            self.frequencies > high_cutoff_point, self.frequencies < low_cutoff_point))], atol=1e-5)
 
         if show_figure_on_screen:
-            self.visualize_filtered_spectrum(FILTERED_SIGNAL) 
+            self.visualize_filtered_spectrum(FILTERED_SIGNAL)
 
     def test_butter_filter_with_random_signal(self, show_figure_on_screen=False):
 
-        filtered_signal = butter_bandpass_filtering(self.noisy_signal, self.time_spacing_in_ms, self.cutoff_lowpass_in_Hz, self.cutoff_highpass_in_Hz, order=9)
+        filtered_signal = butter_bandpass_filtering(
+            self.noisy_signal, self.time_spacing_in_ms, self.cutoff_lowpass_in_Hz, self.cutoff_highpass_in_Hz, order=9)
 
         # compute frequency spectrum
         FILTERED_SIGNAL = np.fft.fftshift(np.fft.fft(filtered_signal))
@@ -238,15 +247,17 @@ class TestBandpassFilter(unittest.TestCase):
         # expected to be close to zero outside of the band with some tolerance margin
         high_cutoff_point = self.cutoff_highpass_in_Hz*self.time_spacing_in_ms
         low_cutoff_point = self.cutoff_lowpass_in_Hz*self.time_spacing_in_ms
-        
         assert np.allclose(0, FILTERED_SIGNAL[self.frequencies < -low_cutoff_point*1.1], atol=1)
         assert np.allclose(0, FILTERED_SIGNAL[self.frequencies > low_cutoff_point*1.1], atol=1)
-        assert np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>-high_cutoff_point/2, self.frequencies<high_cutoff_point/2))], atol=1)
-    
+        assert np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(
+            self.frequencies > -high_cutoff_point/2, self.frequencies < high_cutoff_point/2))], atol=1)
+
         # expected to be not zero within the band
-        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>-low_cutoff_point, self.frequencies < high_cutoff_point))], atol=1e-5)
-        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(self.frequencies>high_cutoff_point, self.frequencies<low_cutoff_point))], atol=1e-5)
-        
+        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(
+            self.frequencies > -low_cutoff_point, self.frequencies < high_cutoff_point))], atol=1e-5)
+        assert not np.allclose(0, FILTERED_SIGNAL[np.where(np.logical_and(
+            self.frequencies > high_cutoff_point, self.frequencies < low_cutoff_point))], atol=1e-5)
+
         if show_figure_on_screen:
             self.visualize_filtered_spectrum(FILTERED_SIGNAL)
 

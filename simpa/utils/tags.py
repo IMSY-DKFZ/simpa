@@ -34,6 +34,14 @@ class Tags:
     Usage: SIMPA package
     """
 
+    CONTINUE_SIMULATION = ("continue_simulation", bool)
+    """
+    Boolean whether the user just wants to continue a previously existing simulation or 
+    if they want to start a new simulation from scratch. In case of continuation, 
+    the simulation script doesn't overwrite the existing file.
+    Usage: SIMPA package
+    """
+
     VOLUME_NAME = ("volume_name", str)
     """
     Name of the SIMPA output file.\n
@@ -752,14 +760,14 @@ class Tags:
     """
 
     RECONSTRUCTION_PERFORM_BANDPASS_FILTERING = ("reconstruction_perform_bandpass_filtering",
-                                    (bool, np.bool_))
+                                                 (bool, np.bool_))
     """
     Whether bandpass filtering should be applied or not. Default should be True\n
     Usage: adapter PyTorchDASAdapter
     """
 
     RECONSTRUCTION_PERFORM_RESAMPLING_FOR_FFT = ("reconstruction_perform_resampling_for_fft",
-                                    (bool, np.bool_))
+                                                 (bool, np.bool_))
     """
     Whether the data is resampled to a power of 2 in time dimension before applying the FFT 
     and resampled back after filtering for performance reasons. Default should be False\n

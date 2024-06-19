@@ -11,6 +11,7 @@ class DiskIlluminationGeometry(IlluminationGeometryBase):
     This class represents a disk illumination geometry.
     The device position is defined as the middle of the disk.
     """
+
     def __init__(self, beam_radius_mm=None, device_position_mm=None, field_of_view_extent_mm=None):
         """
         :param beam_radius_mm: Radius of the disk in mm.

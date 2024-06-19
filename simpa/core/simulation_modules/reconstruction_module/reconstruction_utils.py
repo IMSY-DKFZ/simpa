@@ -215,7 +215,7 @@ def tukey_window_function(target_size: int, time_spacing_in_ms: float, cutoff_lo
                           cutoff_highpass_in_Hz: int, tukey_alpha: float) -> np.ndarray:
     """
     Creates the tukey window in wanted frequency space for given cutoff frequencies and alpha value.
-    
+
     :param target_size: number of time steps in time series data
     :type target_size: int
     :param time_spacing_in_ms: time spacing in ms of time series data
@@ -232,16 +232,19 @@ def tukey_window_function(target_size: int, time_spacing_in_ms: float, cutoff_lo
     :rtype: np.ndarray
     """
     # array of frequencies in Hz corrsponding to rfft and irfft method
-    frequencies = np.fft.rfftfreq(target_size, time_spacing_in_ms/1000) 
-    delta_f = frequencies[1]-frequencies[0] # frequency step size
+    frequencies = np.fft.rfftfreq(target_size, time_spacing_in_ms/1000)
+    delta_f = frequencies[1]-frequencies[0]  # frequency step size
     # compute closest indices for cutoff frequencies, limited by the Nyquist frequency
-    large_index = np.floor(cutoff_lowpass_in_Hz/delta_f) # floor in order to ignore all frequencies above given lowpass cutoff
-    small_index = np.ceil(cutoff_highpass_in_Hz/delta_f) # ceil in order to ignore all frequencies below given highpass cutoff
-    large_index = int(np.clip(large_index, 0, len(frequencies)-1)) # limit by Nyquist frequency index
-    small_index = int(np.clip(small_index, 0, len(frequencies)-1)) # limit by Nyquist frequency index
+    # floor in order to ignore all frequencies above given lowpass cutoff
+    large_index = np.floor(cutoff_lowpass_in_Hz/delta_f)
+    # ceil in order to ignore all frequencies below given highpass cutoff
+    small_index = np.ceil(cutoff_highpass_in_Hz/delta_f)
+    large_index = int(np.clip(large_index, 0, len(frequencies)-1))  # limit by Nyquist frequency index
+    small_index = int(np.clip(small_index, 0, len(frequencies)-1))  # limit by Nyquist frequency index
 
     # construct bandpass filter given the cutoff values with tukey window (only in positive frequencies)
-    win = tukey(large_index - small_index + 1, alpha=tukey_alpha) # + 1 needed in order to include cutoff indices in the window
+    # + 1 needed in order to include cutoff indices in the window
+    win = tukey(large_index - small_index + 1, alpha=tukey_alpha)
     window = np.zeros_like(frequencies)
     window[small_index:large_index+1] = win
     return window
@@ -424,7 +427,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
 
     # move tensors to GPU if available, otherwise use CPU
     torch_device = get_processing_device(global_settings)
-    
+
     if torch_device == torch.device('cpu'):  # warn the user that CPU reconstruction is slow
         logger.warning(f"Reconstructing on CPU is slow. Check if cuda is available 'torch.cuda.is_available()'.")
 
@@ -446,6 +449,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
 
     return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
             time_spacing_in_ms, torch_device)
+
 
 def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
                              logger: Logger) -> Tuple[int, int, int, np.float64, np.float64,
