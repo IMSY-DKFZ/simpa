@@ -29,19 +29,19 @@ In general the following steps are involved during a contribution:
 2.	Discuss potential contribution with core development team
 3.	Fork the [SIMPA repository](https://github.com/IMSY-DKFZ/simpa)
 4.	Create feature branch from develop using the naming convention T<Issue#>_<FeatureName>, 
-      where <Issue#> represent the number github assigned the created issue and <FeatureName> describes 
-      what is being developed in CamelCaseNotation.
-    Examples: `T13_FixSimulatorBug`, `T27_AddNewSimulator`
-
+        where <Issue#> represent the number github assigned the created issue and <FeatureName> describes 
+        what is being developed in CamelCaseNotation.
+        Examples: `T13_FixSimulatorBug`, `T27_AddNewSimulator`
 5.	Perform test driven development on feature branch. 
-      A new implemented feature / a bug fix should be accompanied by a test. 
-      Additionally, all previously existing tests must still pass after the contribution. 
-6.    Run pre-commit hooks and make sure all hooks are passing.
+        A new implemented feature / a bug fix should be accompanied by a test. 
+        Additionally, all previously existing tests must still pass after the contribution. 
+6.	Run pre-commit hooks and make sure all hooks are passing.
 7.	Once development is finished, create a pull request including your changes. 
-      For more information on how to create pull request, see GitHub's [about pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
-8.	A member of the core development team will review your pull request and potentially require further changes 
-      (see [Contribution review and integration](#contribution-review-and-integration)). 
-      Once all remarks have been resolved, your changes will be merged into the develop branch.
+        For more information on how to create pull request, see GitHub's [about pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
+8.      If there are conflicts between the simpa develop branch and your branch, you should update your feature branch with the simpa develop branch using a "merge" strategy instead of "rebase". 
+9.	A member of the core development team will review your pull request and potentially require further changes 
+        (see [Contribution review and integration](#contribution-review-and-integration)). 
+        Once all remarks have been resolved, your changes will be merged into the develop branch.
 
 For each contribution, please make sure to consider the following:
 
