@@ -2,8 +2,9 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import numpy as np
 from numbers import Number
+
+import numpy as np
 
 
 class Tags:
@@ -1542,4 +1543,19 @@ class Tags:
     """
     Flag indicating the crop position: random placement
     Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    SIMPA_SAVE_PATH_VARNAME = "SIMPA_SAVE_PATH"
+    """
+    Identifier for the environment variable that defines where the results generated with SIMPA will be sotred
+    """
+
+    MCX_BINARY_PATH_VARNAME = "MCX_BINARY_PATH"
+    """
+    Identified for the environment varibale that defines the path to the MCX executable.
+    """
+
+    MATLAB_BINARY_PATH_VARNAME = "MATLAB_BINARY_PATH"
+    """
+    Identifier for the environment varibale that defines the path the the matlab executable.
     """
