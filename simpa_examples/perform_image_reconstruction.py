@@ -57,4 +57,4 @@ def run_perform_image_reconstruction(SPACING: Union[int, float] = 0.5, path_mana
 
 
 if __name__ == "__main__":
-    run_image_reconstruction_example(SPACING=0.5, path_manager=sp.PathManager(), visualise=True)
+    run_perform_image_reconstruction(SPACING=0.5, path_manager=sp.PathManager(), visualise=True)

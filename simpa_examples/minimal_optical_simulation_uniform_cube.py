@@ -104,4 +104,4 @@ def run_minimal_optical_simulation_uniform_cube(SPACING: Union[int, float] = 0.5
 
 
 if __name__ == "__main__":
-    run_optical_simulation_uniform_cube_example(SPACING=0.5, path_manager=sp.PathManager(), visualise=True)
+    run_minimal_optical_simulation_uniform_cube(SPACING=0.5, path_manager=sp.PathManager(), visualise=True)

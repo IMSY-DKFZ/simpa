@@ -167,4 +167,4 @@ def run_minimal_optical_simulation(SPACING: Union[int, float] = 0.5, path_manage
 
 
 if __name__ == "__main__":
-    run_minimal_optical_example(SPACING=0.2, path_manager=sp.PathManager(), visualise=True)
+    run_minimal_optical_simulation(SPACING=0.2, path_manager=sp.PathManager(), visualise=True)

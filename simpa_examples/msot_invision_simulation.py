@@ -207,4 +207,4 @@ def run_msot_invision_simulation(SPACING: Union[int, float] = 0.5, path_manager=
 
 
 if __name__ == "__main__":
-    run_msot_invision_example(SPACING=0.5, path_manager=sp.PathManager(), visualise=True)
+    run_msot_invision_simulation(SPACING=0.5, path_manager=sp.PathManager(), visualise=True)

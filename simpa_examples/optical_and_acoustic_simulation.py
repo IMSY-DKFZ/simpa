@@ -211,4 +211,4 @@ def run_optical_and_acoustic_simulation(SPACING: Union[int, float] = 0.2, path_m
 
 
 if __name__ == "__main__":
-    run_optical_and_acoustic_example(SPACING=0.2, path_manager=sp.PathManager(), visualise=True)
+    run_optical_and_acoustic_simulation(SPACING=0.2, path_manager=sp.PathManager(), visualise=True)
