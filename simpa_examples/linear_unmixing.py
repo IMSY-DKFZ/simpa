@@ -3,21 +3,20 @@
 # SPDX-License-Identifier: MIT
 
 import os
-
 import numpy as np
+from typing import Union
 
 import simpa as sp
 from simpa import Tags
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa.utils.profiling import profile
-from typing import Union
 
 # FIXME temporary workaround for newest Intel architectures
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_linear_unmixing(SPACING: Union[int, float] = 0.25, path_manager=sp.PathManager, visualise: bool = True):
+def run_linear_unmixing(SPACING: Union[int, float] = 0.25, path_manager=sp.PathManager(), visualise: bool = True):
     """
 
     :param SPACING: The simulation spacing between voxels
