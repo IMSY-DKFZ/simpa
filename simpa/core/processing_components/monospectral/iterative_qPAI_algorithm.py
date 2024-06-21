@@ -369,7 +369,7 @@ class IterativeqPAI(ProcessingComponent):
             scattering = float(self.global_settings[Tags.DATA_FIELD_SCATTERING_PER_CM]) * np.ones(shape)
         else:
             background_dict = TISSUE_LIBRARY.muscle()
-            scattering = float(MolecularComposition.get_properties_for_wavelength(background_dict,
+            scattering = float(MolecularComposition.get_properties_for_wavelength(background_dict, self.global_settings,
                                                                                   wavelength=800)["mus"])
             scattering = scattering * np.ones(shape)
 
