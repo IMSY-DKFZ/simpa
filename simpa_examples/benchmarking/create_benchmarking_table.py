@@ -81,24 +81,6 @@ for profile in profiles:
             if examples_counter == len(current_examples):
                 examples_counter = 0
 
-# for line_with_sp_simulate in lines_with_sp_simulate:
-#     value = float(line_with_sp_simulate[19:29])
-#     unit = line_with_sp_simulate[29]
-#     benchmarking_dict[file_names[examples_counter]][spacings[spacing_counter]][os.environ['SIMPA_PROFILE']+" value"] = value
-#     benchmarking_dict[file_names[examples_counter]][spacings[spacing_counter]][os.environ['SIMPA_PROFILE']+" unit"] = unit
-#     examples_counter += 1
-#     if examples_counter == 5:
-#         spacing_counter += 1
-#         examples_counter = 0
-#
-# for line_with_sp_simulate in lines_with_sp_simulate:
-#     value = float(line_with_sp_simulate[16:29])
-#     benchmarking_dict[file_names[examples_counter]][spacings[spacing_counter]]["time"] = value
-#     examples_counter += 1
-#     if examples_counter == 6:
-#         spacing_counter += 1
-#         examples_counter = 0
-
 
 table = PrettyTable()
 table.field_names = ["Example", "Spacing mm", 'Time μs', "GPU", "MEMORY"]
@@ -118,4 +100,7 @@ for example, spacing_dict in benchmarking_dict.items():
             table.add_row(["", spacing, p_dict['time'], p_dict["gpu"], p_dict["memory"]], divider=divider)
         subrow_counter += 1
         divider = False
-print(table)
+
+table_file_name = "./benchmarking/benchmarking_data/benchmarking_data_table.txt"
+benchmarking_table_file = open(table_file_name, 'w')
+benchmarking_table_file.write(table.get_string())
