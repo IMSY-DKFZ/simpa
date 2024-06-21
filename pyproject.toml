@@ -17,6 +17,7 @@ repository = "https://github.com/IMSY-DKFZ/simpa"
 packages = [
     { include = "simpa" },
     { include = "simpa_tests" },
+    { include = "simpa_examples"}
 ]
 
 # Requirements
