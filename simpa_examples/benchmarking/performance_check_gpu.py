@@ -6,10 +6,12 @@ import numpy as np
 import simpa as sp
 from simpa_examples import *
 import os
-spacing = 0.2
-os.environ["SIMPA_PROFILE"] = "GPU_MEMORY"
-os.environ["SIMPA_PROFILE_SAVE_FILE"] = "./benchmarking/benchmarking_data/benchmarking_data_gpu_"+str(spacing)+".txt"
 
+# TODO: following text must be ABOVE importing simpa and simpa examples for benchmarking to work
+spacing = 0.2
+os.environ[")SIMPA_PROFILE"] = "GPU_MEMORY"
+os.environ["SIMPA_PROFILE_SAVE_FILE"] = "./benchmarking/benchmarking_data/benchmarking_data_gpu_" + str(
+    spacing) + ".txt"
 
 path_manager = sp.PathManager()
 

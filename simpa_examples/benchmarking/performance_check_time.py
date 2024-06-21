@@ -6,6 +6,7 @@ import numpy as np
 import simpa as sp
 from simpa_examples import *
 import os
+# TODO: following text must be ABOVE importing simpa and simpa examples for benchmarking to work
 spacing = 0.4
 os.environ["SIMPA_PROFILE"] = "TIME"
 os.environ["SIMPA_PROFILE_SAVE_FILE"] = "./benchmarking/benchmarking_data/benchmarking_data_time_"+str(spacing)+".txt"
