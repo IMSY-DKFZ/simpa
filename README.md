@@ -75,25 +75,13 @@ acoustic simulations possible.
 
 ### mcx (Optical Forward Model)
 
-Either download suitable executables or build yourself from the following sources:
+Download the latest nightly build of [mcx](http://mcx.space/) on [this page](http://mcx.space/nightly/github/) for your operating system:
 
-[http://mcx.space/](http://mcx.space/)
+- Linux: `mcx-linux-x64-github-latest.zip`
+- MacOS: `mcx-macos-x64-github-latest.zip`
+- Windows: `mcx-windows-x64-github-latest.zip`
 
-In order to obtain access to all custom sources that we implemented, please build mcx yourself from the
-following mcx Github fork:
-[https://github.com/IMSY-DKFZ/mcx](https://github.com/IMSY-DKFZ/mcx)
-
-For the installation, please follow steps 1-4:
-1. `git clone https://github.com/IMSY-DKFZ/mcx.git`
-2. `cd mcx/src`
-3. In `MAKEFILE` adapt line 111 the sm version [according to your GPU](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/).
-4. `make`
-
-The built binary can be found in `src/bin`.
-Note, in case you can’t build mcx with the GPU-specific sm version you need to install a more recent NVIDIA driver and nvcc toolkit. 
-One option would be to install cuda in a conda environment via `conda install cuda -c nvidia`.
-Please note that there might be compatibility issues using mcx-cl with the MCX Adapter as this use case is not 
-being tested and supported by the SIMPA developers.
+Then extract the files and set `MCX_BINARY_PATH=/.../mcx/bin/mcx` in your path_config.env.
 
 ### k-Wave (Acoustic Forward Model)
 
@@ -112,15 +100,19 @@ for further (and much better) guidance under:
 
 As a pipelining tool that serves as a communication layer between different numerical forward models and
 processing tools, SIMPA needs to be configured with the paths to these tools on your local hard drive.
-To this end, we have implemented the `PathManager` class that you can import to your project using
-`from simpa.utils import PathManager`. The PathManager looks for a `path_config.env` file (just like the
-one we provided in the `simpa_examples`) in the following places in this order:
+You have to a couple of options to define the required path variables. 
+### Option 1: 
+Ensure that the environment variables defined in `simpa_examples/path_config.env.example` are accessible to your script during runtime. This can be done through any method you prefer, as long as the environment variables are accessible through `os.environ`. 
+### Option 2:
+Import the `PathManager` class to your project using
+`from simpa.utils import PathManager`. If a path to a `.env` file is not provided, the `PathManager` looks for a `path_config.env` file (just like the
+one we provided in the `simpa_examples/path_config.env.example`) in the following places, in this order:
 1. The optional path you give the PathManager
 2. Your $HOME$ directory
 3. The current working directory
 4. The SIMPA home directory path
-
-Please follow the instructions in the `path_config.env` file in the `simpa_examples` folder. 
+   
+For this option, please follow the instructions in the `simpa_examples/path_config.env.example` file. 
 
 # Simulation examples
 
@@ -181,6 +173,7 @@ suggested changes. The core developers will then review the suggested changes an
 base.
 
 Please make sure that you have included unit tests for your code and that all previous tests still run through. Please also run the pre-commit hooks and make sure they are passing.
+Details are found in our [contribution guidelines](CONTRIBUTING.md).
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST, and you are very welcome to participate and
 raise any issues or suggest new features. If you want to join this meeting, write one of the core developers.

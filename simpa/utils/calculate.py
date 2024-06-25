@@ -4,6 +4,7 @@
 
 
 import numpy as np
+import torch
 from scipy.interpolate import interp1d
 
 
@@ -131,9 +132,9 @@ def rotation_x(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.array([[1, 0, 0],
-                    [0, np.cos(theta), -np.sin(theta)],
-                    [0, np.sin(theta), np.cos(theta)]])
+    return torch.tensor([[1, 0, 0],
+                         [0, torch.cos(theta), -torch.sin(theta)],
+                         [0, torch.sin(theta), torch.cos(theta)]])
 
 
 def rotation_y(theta):
@@ -143,9 +144,9 @@ def rotation_y(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.array([[np.cos(theta), 0, np.sin(theta)],
-                    [0, 1, 0],
-                    [-np.sin(theta), 0, np.cos(theta)]])
+    return torch.tensor([[torch.cos(theta), 0, torch.sin(theta)],
+                         [0, 1, 0],
+                         [-torch.sin(theta), 0, torch.cos(theta)]])
 
 
 def rotation_z(theta):
@@ -155,9 +156,9 @@ def rotation_z(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.array([[np.cos(theta), -np.sin(theta), 0],
-                    [np.sin(theta), np.cos(theta), 0],
-                    [0, 0, 1]])
+    return torch.tensor([[torch.cos(theta), -torch.sin(theta), 0],
+                         [torch.sin(theta), torch.cos(theta), 0],
+                         [0, 0, 1]])
 
 
 def rotation(angles):
