@@ -44,14 +44,14 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
                                                   0, 100])
 
         super(PlanarArrayDetectionGeometry, self).__init__(
-              number_detector_elements=number_detector_elements_x * number_detector_elements_y,
-              detector_element_width_mm=detector_element_width_mm,
-              detector_element_length_mm=detector_element_length_mm,
-              center_frequency_hz=center_frequency_hz,
-              bandwidth_percent=bandwidth_percent,
-              sampling_frequency_mhz=sampling_frequency_mhz,
-              device_position_mm=device_position_mm,
-              field_of_view_extent_mm=field_of_view_extent_mm)
+            number_detector_elements=number_detector_elements_x * number_detector_elements_y,
+            detector_element_width_mm=detector_element_width_mm,
+            detector_element_length_mm=detector_element_length_mm,
+            center_frequency_hz=center_frequency_hz,
+            bandwidth_percent=bandwidth_percent,
+            sampling_frequency_mhz=sampling_frequency_mhz,
+            device_position_mm=device_position_mm,
+            field_of_view_extent_mm=field_of_view_extent_mm)
         self.pitch_mm = pitch_mm
         self.number_detector_elements_x = number_detector_elements_x
         self.number_detector_elements_y = number_detector_elements_y

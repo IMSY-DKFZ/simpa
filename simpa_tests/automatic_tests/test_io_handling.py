@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
+
 from simpa.io_handling import load_hdf5
 from simpa.io_handling import save_hdf5
 from simpa.utils import Tags
@@ -53,7 +54,8 @@ class TestIOHandling(unittest.TestCase):
         structure_settings["background"] = background_dictionary
 
         save_dictionary[Tags.STRUCTURES] = structure_settings
-        save_dictionary["test_dictionary"] = {"test_spectrum": AbsorptionSpectrumLibrary().get_spectrum_by_name("Water")}
+        save_dictionary["test_dictionary"] = {
+            "test_spectrum": AbsorptionSpectrumLibrary().get_spectrum_by_name("Water")}
 
         self.assert_save_and_read_dictionaries_equal(save_dictionary)
 
@@ -62,7 +64,7 @@ class TestIOHandling(unittest.TestCase):
         det_geometries = [CurvedArrayDetectionGeometry, LinearArrayDetectionGeometry, PlanarArrayDetectionGeometry]
         ill_geometries = [SlitIlluminationGeometry, GaussianBeamIlluminationGeometry, PencilArrayIlluminationGeometry,
                           PencilBeamIlluminationGeometry, DiskIlluminationGeometry, MSOTAcuityIlluminationGeometry,
-                          MSOTInVisionIlluminationGeometry]
+                          MSOTInVisionIlluminationGeometry, RectangleIlluminationGeometry]
 
         # Test all predefined PA devices
         for device in pa_devices:

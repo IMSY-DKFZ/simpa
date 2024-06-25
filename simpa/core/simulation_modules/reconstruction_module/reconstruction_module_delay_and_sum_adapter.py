@@ -6,7 +6,7 @@ from simpa.utils import Tags
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 import numpy as np
 import torch
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values,\
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values, \
     compute_image_dimensions, preparing_reconstruction_and_obtaining_reconstruction_settings
 from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.core.simulation_modules.reconstruction_module import create_reconstruction_settings
@@ -32,7 +32,7 @@ class DelayAndSumAdapter(ReconstructionAdapterBase):
         ### ALGORITHM ITSELF ###
 
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
-            detection_geometry, spacing_in_mm, speed_of_sound_in_m_per_s, self.logger)
+            detection_geometry, spacing_in_mm, self.logger)
 
         if zdim == 1:
             sensor_positions[:, 1] = 0  # Assume imaging plane

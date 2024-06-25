@@ -62,14 +62,16 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         elif isinstance(digital_device_twin, PhotoacousticDevice):
             _device = digital_device_twin.get_detection_geometry()
         else:
-            raise TypeError(f"The optical forward modelling does not support devices of type {type(digital_device_twin)}")
+            raise TypeError(
+                f"The optical forward modelling does not support devices of type {type(digital_device_twin)}")
 
         time_series_data = self.forward_model(_device)
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_array_well_defined(time_series_data, array_name="time_series_data")
 
-        acoustic_output_path = generate_dict_path(Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
+        acoustic_output_path = generate_dict_path(
+            Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 
         save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
 

@@ -2,14 +2,17 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa import Tags
-import simpa as sp
-import numpy as np
+
+import os
+
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.ndimage import zoom
 
+import simpa as sp
+from simpa import Tags
+
 # FIXME temporary workaround for newest Intel architectures
-import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
@@ -77,6 +80,7 @@ def create_example_tissue():
     tissue_dict["vessel_1"] = vessel_structure_1
     tissue_dict["vessel_2"] = vessel_structure_2
     return tissue_dict
+
 
 # set settings for volume creation, optical simulation and iterative qPAI method
 np.random.seed(RANDOM_SEED)
@@ -154,8 +158,7 @@ sp.simulate(pipeline, settings, device)
 if VISUALIZE:
     # get simulation output
     data_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
-    file = sp.load_hdf5(data_path)
-    settings = sp.Settings(file["settings"])
+    settings = sp.load_data_field(data_path, Tags.SETTINGS)
     wavelength = settings[Tags.WAVELENGTHS][0]
 
     # get reconstruction result
@@ -205,7 +208,7 @@ if VISUALIZE:
         if i == 0:
             plt.ylabel("x-z", fontsize=10)
         plt.title(label[i], fontsize=10)
-        plt.imshow(np.rot90(quantity, -1))
+        plt.imshow(quantity.T)
         plt.xticks(fontsize=6)
         plt.yticks(fontsize=6)
         plt.colorbar()
@@ -219,7 +222,7 @@ if VISUALIZE:
         if i == 0:
             plt.ylabel("y-z", fontsize=10)
         plt.title(label[i], fontsize=10)
-        plt.imshow(np.rot90(quantity, -1))
+        plt.imshow(quantity.T)
         plt.xticks(fontsize=6)
         plt.yticks(fontsize=6)
         plt.colorbar()

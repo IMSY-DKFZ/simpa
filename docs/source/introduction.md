@@ -19,9 +19,8 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
 virtual environment activated (we also recommend python 3.8)
-1. `pip install -r requirements.txt`
-2. `python setup.py install` (for developement: `python setup.py develop`)
-3. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
+1. `pip install .`
+2. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
 If no error messages arise, you are now setup to use SIMPA in your project.
 
@@ -40,25 +39,13 @@ acoustic simulations possible.
 
 ### mcx (Optical Forward Model)
 
-Either download suitable executables or build yourself from the following sources:
+Download the latest nightly build of [mcx](http://mcx.space/) on [this page](http://mcx.space/nightly/github/) for your operating system:
 
-[http://mcx.space/](http://mcx.space/)
+- Linux: `mcx-linux-x64-github-latest.zip`
+- MacOS: `mcx-macos-x64-github-latest.zip`
+- Windows: `mcx-windows-x64-github-latest.zip`
 
-In order to obtain access to all custom sources that we implemented, please build mcx yourself from the
-following mcx Github fork:
-[https://github.com/IMSY-DKFZ/mcx](https://github.com/IMSY-DKFZ/mcx)
-
-For the installation, please follow steps 1-4:
-1. `git clone https://github.com/IMSY-DKFZ/mcx.git`
-2. `cd mcx/src`
-3. In `MAKEFILE` adapt line 111 the sm version [according to your GPU](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/).
-4. `make`
-
-The built binary can be found in `src/bin`.
-Note, in case you can’t build mcx with the GPU-specific sm version you need to install a more recent NVIDIA driver and nvcc toolkit. 
-One option would be to install cuda in a conda environment via `conda install cuda -c nvidia`.
-Please note that there might be compatibility issues using mcx-cl with the MCX Adapter as this use case is not 
-being tested and supported by the SIMPA developers.
+Then extract the files and set `MCX_BINARY_PATH=/.../mcx/bin/mcx` in your path_config.env.
 
 ### k-Wave (Acoustic Forward Model)
 
@@ -67,13 +54,11 @@ for further (and much better) guidance under:
 
 [http://www.k-wave.org/](http://www.k-wave.org/)
 
-1. Install MATLAB with the core and parallel computing toolboxes activated at the minimum.
-2. Download the kWave toolbox
+1. Install MATLAB with the core, image processing and parallel computing toolboxes activated at the minimum.
+2. Download the kWave toolbox (version >= 1.4)
 3. Add the kWave toolbox base path to the toolbox paths in MATLAB
-4. Download the kWaveArray addition from the link given in this user forum post [http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources](http://www.k-wave.org/forum/topic/alpha-version-of-kwavearray-off-grid-sources)
-5. Add the kWaveArray folder to the toolbox paths in MATLAB as well
-6. If wanted: Download the CPP and CUDA binary files and place them in the k-Wave/binaries folder
-7. Note down the system path to the `matlab` executable file.
+4. If wanted: Download the CPP and CUDA binary files and place them in the k-Wave/binaries folder
+5. Note down the system path to the `matlab` executable file.
 
 ## Path management
 

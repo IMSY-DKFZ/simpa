@@ -36,7 +36,19 @@ utils
    :show-inheritance:
 
 
+.. automodule:: simpa.utils.matlab
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 .. automodule:: simpa.utils.path_manager
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. automodule:: simpa.utils.processing_device
    :members:
    :undoc-members:
    :show-inheritance:
