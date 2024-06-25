@@ -87,7 +87,7 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
 
         # Load reference absorption for the first wavelength
         self.mua = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
-                                   wavelength=self.VISUAL_WAVELENGTHS[0])
+                                      wavelength=self.VISUAL_WAVELENGTHS[0])
 
     def tear_down(self):
         # clean up file after testing
@@ -104,15 +104,15 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         plt.suptitle("Linear Unmixing - Visual Test")
         plt.subplot(131)
         plt.title("Ground Truth sO2 [%]")
-        plt.imshow(np.rot90(ground_truth_sO2[:, y_dim, :] * 100, -1), vmin=0, vmax=100)
+        plt.imshow(ground_truth_sO2[:, y_dim, :].T * 100, vmin=0, vmax=100)
         plt.colorbar(fraction=0.05)
         plt.subplot(132)
         plt.title("Estimated sO2 [%]")
-        plt.imshow(np.rot90(self.sO2[:, y_dim, :] * 100, -1), vmin=0, vmax=100)
+        plt.imshow(self.sO2[:, y_dim, :].T * 100, vmin=0, vmax=100)
         plt.colorbar(fraction=0.05)
         plt.subplot(133)
         plt.title("Absolute Difference")
-        plt.imshow(np.rot90(np.abs(self.sO2 * 100 - ground_truth_sO2 * 100)[:, y_dim, :], -1), cmap="Reds", vmin=0)
+        plt.imshow(np.abs(self.sO2 * 100 - ground_truth_sO2 * 100)[:, y_dim, :].T, cmap="Reds", vmin=0)
         plt.colorbar()
         plt.tight_layout()
         if show_figure_on_screen:

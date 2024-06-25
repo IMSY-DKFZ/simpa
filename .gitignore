@@ -152,6 +152,9 @@ dmypy.json
 .idea/*
 /*/.idea/*/
 
+#VSCode
+.vscode/
+
 # numpy files
 *npy
 /.mailmap

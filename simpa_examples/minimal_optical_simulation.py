@@ -10,8 +10,8 @@ import numpy as np
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-# TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
-#  point to the correct file in the PathManager().
+# TODO: Please make sure that you have set the correct path to MCX binary and SAVE_PATH in the file path_config.env
+#  located in the simpa_examples directory
 path_manager = sp.PathManager()
 
 VOLUME_TRANSDUCER_DIM_IN_MM = 60
