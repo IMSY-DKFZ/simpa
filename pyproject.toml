@@ -52,8 +52,8 @@ Homepage = "https://github.com/IMSY-DKFZ/simpa"
 Documentation = "https://simpa.readthedocs.io/en/develop/"
 Repository = "https://github.com/IMSY-DKFZ/simpa"
 
-[tool.setuptools]
-packages = ["simpa", "simpa_tests"]
+[tool.setuptools.packages.find]
+include = ["simpa", "simpa_tests"]
 
 [tool.setuptools_scm]
 
