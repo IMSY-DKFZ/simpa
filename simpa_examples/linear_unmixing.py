@@ -5,6 +5,7 @@
 import os
 import numpy as np
 from typing import Union
+import typer
 
 import simpa as sp
 from simpa import Tags
@@ -14,9 +15,12 @@ from simpa.utils.profiling import profile
 # FIXME temporary workaround for newest Intel architectures
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
+app = typer.Typer()
 
+
+@app.command()
 @profile
-def run_linear_unmixing(SPACING: Union[int, float] = 0.25, path_manager=sp.PathManager(), visualise: bool = True):
+def run_linear_unmixing(SPACING: float = 0.25, path_manager=None, visualise: bool = True):
     """
 
     :param SPACING: The simulation spacing between voxels
@@ -24,6 +28,9 @@ def run_linear_unmixing(SPACING: Union[int, float] = 0.25, path_manager=sp.PathM
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
     """
+    print(SPACING)
+    if path_manager is None:
+        path_manager = sp.PathManager()
     # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
     # set global params characterizing the simulated volume
     VOLUME_TRANSDUCER_DIM_IN_MM = 75
@@ -178,4 +185,4 @@ def run_linear_unmixing(SPACING: Union[int, float] = 0.25, path_manager=sp.PathM
 
 
 if __name__ == "__main__":
-    run_linear_unmixing(SPACING=0.25, path_manager=sp.PathManager(), visualise=True)
+    app()

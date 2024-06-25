@@ -14,13 +14,18 @@ from typing import Union
 # FIXME temporary workaround for newest Intel architectures
 import os
 from simpa.utils.profiling import profile
+import typer
+
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 # TODO: Please make sure that you have set the correct path to MCX binary as described in the README.md file.
 
+app = typer.Typer()
 
+
+@app.command()
 @profile
-def run_minimal_optical_simulation_uniform_cube(SPACING: Union[int, float] = 0.5, path_manager=sp.PathManager(),
+def run_minimal_optical_simulation_uniform_cube(SPACING: float = 0.5, path_manager=None,
                                                 visualise: bool = True):
     """
 
@@ -29,6 +34,8 @@ def run_minimal_optical_simulation_uniform_cube(SPACING: Union[int, float] = 0.5
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
     """
+    if path_manager is None:
+        path_manager = sp.PathManager()
     VOLUME_TRANSDUCER_DIM_IN_MM = 60
     VOLUME_PLANAR_DIM_IN_MM = 30
     VOLUME_HEIGHT_IN_MM = 60
@@ -104,4 +111,4 @@ def run_minimal_optical_simulation_uniform_cube(SPACING: Union[int, float] = 0.5
 
 
 if __name__ == "__main__":
-    run_minimal_optical_simulation_uniform_cube(SPACING=0.5, path_manager=sp.PathManager(), visualise=True)
+    app()

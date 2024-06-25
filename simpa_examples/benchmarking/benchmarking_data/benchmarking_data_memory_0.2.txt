@@ -1,0 +1,1027 @@
+Filename: /home/f762e/Workspace/simpa/simpa_examples/linear_unmixing.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    18    445.0 MiB    445.0 MiB           1   @profile
+    19                                         def run_linear_unmixing(SPACING: Union[int, float] = 0.25, path_manager=sp.PathManager(), visualise: bool = True):
+    20                                             """
+    21                                         
+    22                                             :param SPACING: The simulation spacing between voxels
+    23                                             :param path_manager: the path manager to be used, typically sp.PathManager
+    24                                             :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
+    25                                             :return: a run through of the example
+    26                                             """
+    27                                             # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
+    28                                             # set global params characterizing the simulated volume
+    29    445.0 MiB      0.0 MiB           1       VOLUME_TRANSDUCER_DIM_IN_MM = 75
+    30    445.0 MiB      0.0 MiB           1       VOLUME_PLANAR_DIM_IN_MM = 20
+    31    445.0 MiB      0.0 MiB           1       VOLUME_HEIGHT_IN_MM = 25
+    32    445.0 MiB      0.0 MiB           1       RANDOM_SEED = 471
+    33    445.0 MiB      0.0 MiB           1       VOLUME_NAME = "LinearUnmixingExample_" + str(RANDOM_SEED)
+    34                                         
+    35                                             # since we want to perform linear unmixing, the simulation pipeline should be execute for at least two wavelengths
+    36    445.0 MiB      0.0 MiB           1       WAVELENGTHS = [750, 800, 850]
+    37                                         
+    38    445.0 MiB      0.0 MiB           2       def create_example_tissue():
+    39                                                 """
+    40                                                 This is a very simple example script of how to create a tissue definition.
+    41                                                 It contains a muscular background, an epidermis layer on top of the muscles
+    42                                                 and two blood vessels.
+    43                                                 """
+    44    445.0 MiB      0.0 MiB           1           background_dictionary = sp.Settings()
+    45    445.4 MiB      0.3 MiB           1           background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
+    46    445.4 MiB      0.0 MiB           1           background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    47                                         
+    48    445.4 MiB      0.0 MiB           1           muscle_dictionary = sp.Settings()
+    49    445.4 MiB      0.0 MiB           1           muscle_dictionary[Tags.PRIORITY] = 1
+    50    445.4 MiB      0.0 MiB           1           muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    51    445.4 MiB      0.0 MiB           1           muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
+    52    445.4 MiB      0.0 MiB           1           muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.muscle()
+    53    445.4 MiB      0.0 MiB           1           muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    54    445.4 MiB      0.0 MiB           1           muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    55    445.4 MiB      0.0 MiB           1           muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+    56                                         
+    57    445.4 MiB      0.0 MiB           1           vessel_1_dictionary = sp.Settings()
+    58    445.4 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.PRIORITY] = 3
+    59    445.4 MiB      0.0 MiB           2           vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+    60    445.4 MiB      0.0 MiB           1                                                           10,
+    61    445.4 MiB      0.0 MiB           1                                                           5]
+    62    445.4 MiB      0.0 MiB           2           vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+    63    445.4 MiB      0.0 MiB           1                                                         12,
+    64    445.4 MiB      0.0 MiB           1                                                         5]
+    65    445.4 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
+    66    445.4 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood(oxygenation=0.99)
+    67    445.4 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    68    445.4 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+    69                                         
+    70    445.4 MiB      0.0 MiB           1           vessel_2_dictionary = sp.Settings()
+    71    445.4 MiB      0.0 MiB           1           vessel_2_dictionary[Tags.PRIORITY] = 3
+    72    445.4 MiB      0.0 MiB           2           vessel_2_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/3,
+    73    445.4 MiB      0.0 MiB           1                                                           10,
+    74    445.4 MiB      0.0 MiB           1                                                           5]
+    75    445.4 MiB      0.0 MiB           2           vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/3,
+    76    445.4 MiB      0.0 MiB           1                                                         12,
+    77    445.4 MiB      0.0 MiB           1                                                         5]
+    78    445.4 MiB      0.0 MiB           1           vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
+    79    445.4 MiB      0.0 MiB           1           vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood(oxygenation=0.75)
+    80    445.4 MiB      0.0 MiB           1           vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    81    445.4 MiB      0.0 MiB           1           vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+    82                                         
+    83    445.4 MiB      0.0 MiB           1           epidermis_dictionary = sp.Settings()
+    84    445.4 MiB      0.0 MiB           1           epidermis_dictionary[Tags.PRIORITY] = 8
+    85    445.4 MiB      0.0 MiB           1           epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+    86    445.4 MiB      0.0 MiB           1           epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 0.1]
+    87    445.4 MiB      0.0 MiB           1           epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.epidermis()
+    88    445.4 MiB      0.0 MiB           1           epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    89    445.4 MiB      0.0 MiB           1           epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    90    445.4 MiB      0.0 MiB           1           epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+    91                                         
+    92    445.4 MiB      0.0 MiB           1           tissue_dict = sp.Settings()
+    93    445.4 MiB      0.0 MiB           1           tissue_dict[Tags.BACKGROUND] = background_dictionary
+    94    445.4 MiB      0.0 MiB           1           tissue_dict["muscle"] = muscle_dictionary
+    95    445.4 MiB      0.0 MiB           1           tissue_dict["epidermis"] = epidermis_dictionary
+    96    445.4 MiB      0.0 MiB           1           tissue_dict["vessel_1"] = vessel_1_dictionary
+    97    445.4 MiB      0.0 MiB           1           tissue_dict["vessel_2"] = vessel_2_dictionary
+    98    445.4 MiB      0.0 MiB           1           return tissue_dict
+    99                                         
+   100                                             # Seed the numpy random configuration prior to creating the global_settings file in
+   101                                             # order to ensure that the same volume is generated with the same random seed every time.
+   102    445.0 MiB      0.0 MiB           1       np.random.seed(RANDOM_SEED)
+   103                                         
+   104                                             # Initialize global settings and prepare for simulation pipeline including
+   105                                             # volume creation and optical forward simulation.
+   106    445.0 MiB      0.0 MiB           1       general_settings = {
+   107                                                 # These parameters set the general properties of the simulated volume
+   108    445.0 MiB      0.0 MiB           1           Tags.RANDOM_SEED: RANDOM_SEED,
+   109    445.0 MiB      0.0 MiB           1           Tags.VOLUME_NAME: VOLUME_NAME,
+   110    445.0 MiB      0.0 MiB           1           Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
+   111    445.0 MiB      0.0 MiB           1           Tags.SPACING_MM: SPACING,
+   112    445.0 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
+   113    445.0 MiB      0.0 MiB           1           Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
+   114    445.0 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
+   115    445.0 MiB      0.0 MiB           1           Tags.WAVELENGTHS: WAVELENGTHS,
+   116    445.0 MiB      0.0 MiB           1           Tags.GPU: True,
+   117    445.0 MiB      0.0 MiB           1           Tags.DO_FILE_COMPRESSION: True
+   118                                             }
+   119    445.0 MiB      0.0 MiB           1       settings = sp.Settings(general_settings)
+   120    445.4 MiB      0.0 MiB           2       settings.set_volume_creation_settings({
+   121    445.0 MiB      0.0 MiB           1           Tags.SIMULATE_DEFORMED_LAYERS: True,
+   122    445.4 MiB      0.0 MiB           1           Tags.STRUCTURES: create_example_tissue()
+   123                                             })
+   124    445.4 MiB      0.0 MiB           2       settings.set_optical_settings({
+   125    445.4 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+   126    445.4 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
+   127    445.4 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
+   128    445.4 MiB      0.0 MiB           1           Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+   129                                             })
+   130                                         
+   131                                             # Set component settings for linear unmixing.
+   132                                             # In this example we are only interested in the chromophore concentration of oxy- and deoxyhemoglobin and the
+   133                                             # resulting blood oxygen saturation. We want to perform the algorithm using all three wavelengths defined above.
+   134                                             # Please take a look at the component for more information.
+   135    445.4 MiB      0.0 MiB           1       settings["linear_unmixing"] = {
+   136    445.4 MiB      0.0 MiB           1           Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
+   137    445.4 MiB      0.0 MiB           1           Tags.WAVELENGTHS: WAVELENGTHS,
+   138    445.4 MiB      0.0 MiB           2           Tags.LINEAR_UNMIXING_SPECTRA: sp.get_simpa_internal_absorption_spectra_by_names(
+   139    445.4 MiB      0.0 MiB           1               [Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN, Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN]
+   140                                                 ),
+   141    445.4 MiB      0.0 MiB           1           Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
+   142    445.4 MiB      0.0 MiB           1           Tags.LINEAR_UNMIXING_NON_NEGATIVE: True
+   143                                             }
+   144                                         
+   145                                             # Get device for simulation
+   146    445.4 MiB      0.0 MiB           2       device = sp.MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+   147    445.4 MiB      0.0 MiB           1                                                               VOLUME_PLANAR_DIM_IN_MM/2,
+   148    445.4 MiB      0.0 MiB           1                                                               0]))
+   149    445.4 MiB      0.0 MiB           1       device.update_settings_for_use_of_model_based_volume_creator(settings)
+   150                                         
+   151                                             # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
+   152    446.9 MiB      0.0 MiB           1       pipeline = [
+   153    446.9 MiB      1.5 MiB           1           sp.ModelBasedVolumeCreationAdapter(settings),
+   154    446.9 MiB      0.0 MiB           1           sp.MCXAdapter(settings),
+   155    446.9 MiB      0.0 MiB           1           sp.FieldOfViewCropping(settings),
+   156                                             ]
+   157    973.5 MiB    526.6 MiB           1       sp.simulate(pipeline, settings, device)
+   158                                         
+   159                                             # Run linear unmixing component with above specified settings.
+   160    979.7 MiB      6.2 MiB           1       sp.LinearUnmixing(settings, "linear_unmixing").run()
+   161                                         
+   162                                             # Load linear unmixing result (blood oxygen saturation) and reference absorption for first wavelength.
+   163    979.7 MiB      0.0 MiB           1       file_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
+   164    979.7 MiB      0.0 MiB           1       lu_results = sp.load_data_field(file_path, Tags.LINEAR_UNMIXING_RESULT)
+   165    979.7 MiB      0.0 MiB           1       sO2 = lu_results["sO2"]
+   166                                         
+   167    979.7 MiB      0.0 MiB           1       mua = sp.load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength=WAVELENGTHS[0])
+   168    979.7 MiB      0.0 MiB           1       p0 = sp.load_data_field(file_path, Tags.DATA_FIELD_INITIAL_PRESSURE, wavelength=WAVELENGTHS[0])
+   169    979.7 MiB      0.0 MiB           1       gt_oxy = sp.load_data_field(file_path, Tags.DATA_FIELD_OXYGENATION, wavelength=WAVELENGTHS[0])
+   170                                         
+   171                                             # Visualize linear unmixing result
+   172    979.7 MiB      0.0 MiB           1       if visualise:
+   173                                                 visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+   174                                                                wavelength=WAVELENGTHS[0],
+   175                                                                show_initial_pressure=True,
+   176                                                                show_oxygenation=True,
+   177                                                                show_linear_unmixing_sO2=True)
+
+
+Filename: /home/f762e/Workspace/simpa/simpa_examples/minimal_optical_simulation.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    19    979.7 MiB    979.7 MiB           1   @profile
+    20                                         def run_minimal_optical_simulation(SPACING: Union[int, float] = 0.5, path_manager=sp.PathManager(), visualise: bool = True):
+    21                                             """
+    22                                         
+    23                                             :param SPACING: The simulation spacing between voxels
+    24                                             :param path_manager: the path manager to be used, typically sp.PathManager
+    25                                             :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
+    26                                             :return: a run through of the example
+    27                                             """
+    28    979.7 MiB      0.0 MiB           1       VOLUME_TRANSDUCER_DIM_IN_MM = 60
+    29    979.7 MiB      0.0 MiB           1       VOLUME_PLANAR_DIM_IN_MM = 30
+    30    979.7 MiB      0.0 MiB           1       VOLUME_HEIGHT_IN_MM = 60
+    31    979.7 MiB      0.0 MiB           1       RANDOM_SEED = 471
+    32    979.7 MiB      0.0 MiB           1       VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
+    33    979.7 MiB      0.0 MiB           1       SAVE_REFLECTANCE = False
+    34    979.7 MiB      0.0 MiB           1       SAVE_PHOTON_DIRECTION = False
+    35                                         
+    36                                             # If VISUALIZE is set to True, the simulation result will be plotted
+    37                                         
+    38    979.7 MiB      0.0 MiB           2       def create_example_tissue():
+    39                                                 """
+    40                                                 This is a very simple example script of how to create a tissue definition.
+    41                                                 It contains a muscular background, an epidermis layer on top of the muscles
+    42                                                 and a blood vessel.
+    43                                                 """
+    44    979.7 MiB      0.0 MiB           1           background_dictionary = sp.Settings()
+    45    979.7 MiB      0.0 MiB           1           background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
+    46    979.7 MiB      0.0 MiB           1           background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    47                                         
+    48    979.7 MiB      0.0 MiB           1           muscle_dictionary = sp.Settings()
+    49    979.7 MiB      0.0 MiB           1           muscle_dictionary[Tags.PRIORITY] = 1
+    50    979.7 MiB      0.0 MiB           1           muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 10]
+    51    979.7 MiB      0.0 MiB           1           muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
+    52    979.7 MiB      0.0 MiB           1           muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.muscle()
+    53    979.7 MiB      0.0 MiB           1           muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    54    979.7 MiB      0.0 MiB           1           muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    55    979.7 MiB      0.0 MiB           1           muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+    56                                         
+    57    979.7 MiB      0.0 MiB           1           vessel_1_dictionary = sp.Settings()
+    58    979.7 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.PRIORITY] = 3
+    59    979.7 MiB      0.0 MiB           2           vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+    60    979.7 MiB      0.0 MiB           1                                                           10,
+    61    979.7 MiB      0.0 MiB           1                                                           VOLUME_HEIGHT_IN_MM/2]
+    62    979.7 MiB      0.0 MiB           2           vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM/2,
+    63    979.7 MiB      0.0 MiB           1                                                         12,
+    64    979.7 MiB      0.0 MiB           1                                                         VOLUME_HEIGHT_IN_MM/2]
+    65    979.7 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
+    66    979.7 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood()
+    67    979.7 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    68    979.7 MiB      0.0 MiB           1           vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+    69                                         
+    70    979.7 MiB      0.0 MiB           1           epidermis_dictionary = sp.Settings()
+    71    979.7 MiB      0.0 MiB           1           epidermis_dictionary[Tags.PRIORITY] = 8
+    72    979.7 MiB      0.0 MiB           1           epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 9]
+    73    979.7 MiB      0.0 MiB           1           epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 10]
+    74    979.7 MiB      0.0 MiB           1           epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.epidermis()
+    75    979.7 MiB      0.0 MiB           1           epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    76    979.7 MiB      0.0 MiB           1           epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
+    77    979.7 MiB      0.0 MiB           1           epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+    78                                         
+    79    979.7 MiB      0.0 MiB           1           tissue_dict = sp.Settings()
+    80    979.7 MiB      0.0 MiB           1           tissue_dict[Tags.BACKGROUND] = background_dictionary
+    81    979.7 MiB      0.0 MiB           1           tissue_dict["muscle"] = muscle_dictionary
+    82    979.7 MiB      0.0 MiB           1           tissue_dict["epidermis"] = epidermis_dictionary
+    83    979.7 MiB      0.0 MiB           1           tissue_dict["vessel_1"] = vessel_1_dictionary
+    84    979.7 MiB      0.0 MiB           1           return tissue_dict
+    85                                         
+    86                                             # Seed the numpy random configuration prior to creating the global_settings file in
+    87                                             # order to ensure that the same volume
+    88                                             # is generated with the same random seed every time.
+    89                                         
+    90    979.7 MiB      0.0 MiB           1       np.random.seed(RANDOM_SEED)
+    91                                         
+    92    979.7 MiB      0.0 MiB           1       general_settings = {
+    93                                                 # These parameters set the general properties of the simulated volume
+    94    979.7 MiB      0.0 MiB           1           Tags.RANDOM_SEED: RANDOM_SEED,
+    95    979.7 MiB      0.0 MiB           1           Tags.VOLUME_NAME: VOLUME_NAME,
+    96    979.7 MiB      0.0 MiB           1           Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
+    97    979.7 MiB      0.0 MiB           1           Tags.SPACING_MM: SPACING,
+    98    979.7 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
+    99    979.7 MiB      0.0 MiB           1           Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
+   100    979.7 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
+   101    979.7 MiB      0.0 MiB           1           Tags.WAVELENGTHS: [798],
+   102    979.7 MiB      0.0 MiB           1           Tags.DO_FILE_COMPRESSION: True,
+   103    979.7 MiB      0.0 MiB           1           Tags.GPU: True
+   104                                             }
+   105                                         
+   106    979.7 MiB      0.0 MiB           1       settings = sp.Settings(general_settings)
+   107                                         
+   108    979.7 MiB      0.0 MiB           2       settings.set_volume_creation_settings({
+   109    979.7 MiB      0.0 MiB           1           Tags.SIMULATE_DEFORMED_LAYERS: True,
+   110    979.7 MiB      0.0 MiB           1           Tags.STRUCTURES: create_example_tissue()
+   111                                             })
+   112    979.7 MiB      0.0 MiB           2       settings.set_optical_settings({
+   113    979.7 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e7,
+   114    979.7 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
+   115    979.7 MiB      0.0 MiB           1           Tags.COMPUTE_DIFFUSE_REFLECTANCE: SAVE_REFLECTANCE,
+   116    979.7 MiB      0.0 MiB           1           Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT: SAVE_PHOTON_DIRECTION
+   117                                             })
+   118    979.7 MiB      0.0 MiB           1       settings["noise_model_1"] = {
+   119    979.7 MiB      0.0 MiB           1           Tags.NOISE_MEAN: 1.0,
+   120    979.7 MiB      0.0 MiB           1           Tags.NOISE_STD: 0.1,
+   121    979.7 MiB      0.0 MiB           1           Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
+   122    979.7 MiB      0.0 MiB           1           Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
+   123    979.7 MiB      0.0 MiB           1           Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
+   124                                             }
+   125                                         
+   126    979.7 MiB      0.0 MiB           1       if not SAVE_REFLECTANCE and not SAVE_PHOTON_DIRECTION:
+   127    979.7 MiB      0.0 MiB           1           pipeline = [
+   128    979.7 MiB      0.0 MiB           1               sp.ModelBasedVolumeCreationAdapter(settings),
+   129    979.7 MiB      0.0 MiB           1               sp.MCXAdapter(settings),
+   130    979.7 MiB      0.0 MiB           1               sp.GaussianNoise(settings, "noise_model_1")
+   131                                                 ]
+   132                                             else:
+   133                                                 pipeline = [
+   134                                                     sp.ModelBasedVolumeCreationAdapter(settings),
+   135                                                     sp.MCXAdapterReflectance(settings),
+   136                                                 ]
+   137                                         
+   138    979.7 MiB      0.0 MiB           3       class ExampleDeviceSlitIlluminationLinearDetector(sp.PhotoacousticDevice):
+   139    979.7 MiB      0.0 MiB           1           """
+   140                                                 This class represents a digital twin of a PA device with a slit as illumination next to a linear detection geometry.
+   141                                         
+   142                                                 """
+   143                                         
+   144    979.7 MiB      0.0 MiB           2           def __init__(self):
+   145    979.7 MiB      0.0 MiB           2               super().__init__(device_position_mm=np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+   146    979.7 MiB      0.0 MiB           1                                                               VOLUME_PLANAR_DIM_IN_MM/2, 0]))
+   147    979.7 MiB      0.0 MiB           1               self.set_detection_geometry(sp.LinearArrayDetectionGeometry())
+   148    979.7 MiB      0.0 MiB           2               self.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
+   149    979.7 MiB      0.0 MiB           1                                                                          direction_vector_mm=[0, 0, 1]))
+   150                                         
+   151    979.7 MiB      0.0 MiB           1       device = ExampleDeviceSlitIlluminationLinearDetector()
+   152                                         
+   153    996.1 MiB     16.4 MiB           1       sp.simulate(pipeline, settings, device)
+   154                                         
+   155    996.1 MiB      0.0 MiB           1       if Tags.WAVELENGTH in settings:
+   156    996.1 MiB      0.0 MiB           1           WAVELENGTH = settings[Tags.WAVELENGTH]
+   157                                             else:
+   158                                                 WAVELENGTH = 700
+   159                                         
+   160    996.1 MiB      0.0 MiB           1       if visualise:
+   161                                                 sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+   162                                                                   wavelength=WAVELENGTH,
+   163                                                                   show_initial_pressure=True,
+   164                                                                   show_absorption=True,
+   165                                                                   show_diffuse_reflectance=SAVE_REFLECTANCE,
+   166                                                                   log_scale=True)
+
+
+Filename: /home/f762e/Workspace/simpa/simpa_examples/minimal_optical_simulation_uniform_cube.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    22    996.1 MiB    996.1 MiB           1   @profile
+    23                                         def run_minimal_optical_simulation_uniform_cube(SPACING: Union[int, float] = 0.5, path_manager=sp.PathManager(),
+    24                                                                                         visualise: bool = True):
+    25                                             """
+    26                                         
+    27                                             :param SPACING: The simulation spacing between voxels
+    28                                             :param path_manager: the path manager to be used, typically sp.PathManager
+    29                                             :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
+    30                                             :return: a run through of the example
+    31                                             """
+    32    996.1 MiB      0.0 MiB           1       VOLUME_TRANSDUCER_DIM_IN_MM = 60
+    33    996.1 MiB      0.0 MiB           1       VOLUME_PLANAR_DIM_IN_MM = 30
+    34    996.1 MiB      0.0 MiB           1       VOLUME_HEIGHT_IN_MM = 60
+    35    996.1 MiB      0.0 MiB           1       RANDOM_SEED = 471
+    36    996.1 MiB      0.0 MiB           1       VOLUME_NAME = "MyVolumeName_"+str(RANDOM_SEED)
+    37    996.1 MiB      0.0 MiB           1       SAVE_REFLECTANCE = True
+    38    996.1 MiB      0.0 MiB           1       SAVE_PHOTON_DIRECTION = False
+    39                                         
+    40                                             # If VISUALIZE is set to True, the simulation result will be plotted
+    41    996.1 MiB      0.0 MiB           1       VISUALIZE = True
+    42                                         
+    43    996.1 MiB      0.0 MiB           2       def create_example_tissue():
+    44                                                 """
+    45                                                 This is a very simple example script of how to create a tissue definition.
+    46                                                 It contains only a generic background tissue material.
+    47                                                 """
+    48    996.1 MiB      0.0 MiB           1           background_dictionary = sp.Settings()
+    49    996.1 MiB      0.0 MiB           1           background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
+    50    996.1 MiB      0.0 MiB           1           background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    51                                         
+    52    996.1 MiB      0.0 MiB           1           tissue_dict = sp.Settings()
+    53    996.1 MiB      0.0 MiB           1           tissue_dict[Tags.BACKGROUND] = background_dictionary
+    54    996.1 MiB      0.0 MiB           1           return tissue_dict
+    55                                         
+    56                                             # Seed the numpy random configuration prior to creating the global_settings file in
+    57                                             # order to ensure that the same volume
+    58                                             # is generated with the same random seed every time.
+    59                                         
+    60    996.1 MiB      0.0 MiB           1       np.random.seed(RANDOM_SEED)
+    61                                         
+    62    996.1 MiB      0.0 MiB           1       general_settings = {
+    63                                                 # These parameters set the general properties of the simulated volume
+    64    996.1 MiB      0.0 MiB           1           Tags.RANDOM_SEED: RANDOM_SEED,
+    65    996.1 MiB      0.0 MiB           1           Tags.VOLUME_NAME: VOLUME_NAME,
+    66    996.1 MiB      0.0 MiB           1           Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
+    67    996.1 MiB      0.0 MiB           1           Tags.SPACING_MM: SPACING,
+    68    996.1 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
+    69    996.1 MiB      0.0 MiB           1           Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
+    70    996.1 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
+    71    996.1 MiB      0.0 MiB           1           Tags.WAVELENGTHS: [500],
+    72    996.1 MiB      0.0 MiB           1           Tags.DO_FILE_COMPRESSION: True
+    73                                             }
+    74                                         
+    75    996.1 MiB      0.0 MiB           1       settings = sp.Settings(general_settings)
+    76                                         
+    77    996.1 MiB      0.0 MiB           2       settings.set_volume_creation_settings({
+    78    996.1 MiB      0.0 MiB           1           Tags.STRUCTURES: create_example_tissue()
+    79                                             })
+    80    996.1 MiB      0.0 MiB           2       settings.set_optical_settings({
+    81    996.1 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 5e7,
+    82    996.1 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
+    83    996.1 MiB      0.0 MiB           1           Tags.COMPUTE_DIFFUSE_REFLECTANCE: SAVE_REFLECTANCE,
+    84    996.1 MiB      0.0 MiB           1           Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT: SAVE_PHOTON_DIRECTION
+    85                                             })
+    86                                         
+    87    996.1 MiB      0.0 MiB           1       pipeline = [
+    88    996.1 MiB      0.0 MiB           1           sp.ModelBasedVolumeCreationAdapter(settings),
+    89    996.1 MiB      0.0 MiB           1           sp.MCXAdapterReflectance(settings),
+    90                                             ]
+    91                                         
+    92    996.1 MiB      0.0 MiB           2       device = sp.PencilBeamIlluminationGeometry(device_position_mm=np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+    93    996.1 MiB      0.0 MiB           1                                                                                 VOLUME_PLANAR_DIM_IN_MM/2, 0]))
+    94                                         
+    95   1015.1 MiB     19.0 MiB           1       sp.simulate(pipeline, settings, device)
+    96                                         
+    97   1015.1 MiB      0.0 MiB           1       if visualise:
+    98                                                 sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+    99                                                                   wavelength=settings[Tags.WAVELENGTH],
+   100                                                                   show_initial_pressure=True,
+   101                                                                   show_absorption=True,
+   102                                                                   show_diffuse_reflectance=SAVE_REFLECTANCE,
+   103                                                                   log_scale=True)
+
+
+Filename: /home/f762e/Workspace/simpa/simpa_examples/msot_invision_simulation.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    14   1015.1 MiB   1015.1 MiB           1   @profile
+    15                                         def run_msot_invision_simulation(SPACING: Union[int, float] = 0.5, path_manager=sp.PathManager(), visualise: bool = True):
+    16                                             """
+    17                                         
+    18                                             :param SPACING: The simulation spacing between voxels
+    19                                             :param path_manager: the path manager to be used, typically sp.PathManager
+    20                                             :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
+    21                                             :return: a run through of the example
+    22                                             """
+    23   1015.1 MiB      0.0 MiB           1       SPEED_OF_SOUND = 1500
+    24   1015.1 MiB      0.0 MiB           1       XZ_DIM = 90
+    25   1015.1 MiB      0.0 MiB           1       Y_DIM = 40
+    26                                         
+    27   1015.1 MiB      0.0 MiB           2       def create_pipeline(_settings: sp.Settings):
+    28   1015.1 MiB      0.0 MiB           1           return [
+    29   1015.1 MiB      0.0 MiB           1               sp.ModelBasedVolumeCreationAdapter(settings),
+    30   1015.1 MiB      0.0 MiB           1               sp.MCXAdapter(settings),
+    31   1015.1 MiB      0.0 MiB           1               sp.KWaveAdapter(settings),
+    32   1015.1 MiB      0.0 MiB           1               sp.FieldOfViewCropping(settings),
+    33   1015.1 MiB      0.0 MiB           1               sp.TimeReversalAdapter(settings)
+    34                                                 ]
+    35                                         
+    36   1015.1 MiB      0.0 MiB           2       def get_device():
+    37   1015.1 MiB      0.0 MiB           1           pa_device = sp.InVision256TF(device_position_mm=np.asarray([XZ_DIM/2, Y_DIM/2, XZ_DIM/2]))
+    38   1015.1 MiB      0.0 MiB           1           return pa_device
+    39                                         
+    40   1015.1 MiB      0.0 MiB           2       def create_volume():
+    41   1015.1 MiB      0.0 MiB           2           inclusion_material = sp.Molecule(volume_fraction=1.0,
+    42   1015.1 MiB      0.0 MiB           2                                            anisotropy_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+    43   1015.1 MiB      0.0 MiB           1                                                0.9),
+    44   1015.1 MiB      0.0 MiB           2                                            scattering_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+    45   1015.1 MiB      0.0 MiB           1                                                100.0),
+    46   1015.1 MiB      0.0 MiB           2                                            absorption_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+    47   1015.1 MiB      0.0 MiB           1                                                4.0),
+    48   1015.1 MiB      0.0 MiB           1                                            speed_of_sound=SPEED_OF_SOUND,
+    49   1015.1 MiB      0.0 MiB           1                                            alpha_coefficient=1e-4,
+    50   1015.1 MiB      0.0 MiB           1                                            density=1000,
+    51   1015.1 MiB      0.0 MiB           1                                            gruneisen_parameter=1.0,
+    52   1015.1 MiB      0.0 MiB           1                                            name="Inclusion")
+    53                                         
+    54   1015.1 MiB      0.0 MiB           2           phantom_material = sp.Molecule(volume_fraction=1.0,
+    55   1015.1 MiB      0.0 MiB           2                                          anisotropy_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+    56   1015.1 MiB      0.0 MiB           1                                              0.9),
+    57   1015.1 MiB      0.0 MiB           2                                          scattering_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+    58   1015.1 MiB      0.0 MiB           1                                              100.0),
+    59   1015.1 MiB      0.0 MiB           2                                          absorption_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+    60   1015.1 MiB      0.0 MiB           1                                              0.05),
+    61   1015.1 MiB      0.0 MiB           1                                          speed_of_sound=SPEED_OF_SOUND,
+    62   1015.1 MiB      0.0 MiB           1                                          alpha_coefficient=1e-4,
+    63   1015.1 MiB      0.0 MiB           1                                          density=1000,
+    64   1015.1 MiB      0.0 MiB           1                                          gruneisen_parameter=1.0,
+    65   1015.1 MiB      0.0 MiB           1                                          name="Phantom")
+    66                                         
+    67   1015.1 MiB      0.0 MiB           2           heavy_water = sp.Molecule(volume_fraction=1.0,
+    68   1015.1 MiB      0.0 MiB           1                                     anisotropy_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(1.0),
+    69   1015.1 MiB      0.0 MiB           1                                     scattering_spectrum=sp.ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(0.1),
+    70   1015.1 MiB      0.0 MiB           1                                     absorption_spectrum=sp.AbsorptionSpectrumLibrary.CONSTANT_ABSORBER_ARBITRARY(1e-30),
+    71   1015.1 MiB      0.0 MiB           1                                     speed_of_sound=SPEED_OF_SOUND,
+    72   1015.1 MiB      0.0 MiB           1                                     alpha_coefficient=1e-4,
+    73   1015.1 MiB      0.0 MiB           1                                     density=1000,
+    74   1015.1 MiB      0.0 MiB           1                                     gruneisen_parameter=1.0,
+    75   1015.1 MiB      0.0 MiB           1                                     name="background_water")
+    76                                         
+    77   1015.1 MiB      0.0 MiB           1           background_dictionary = sp.Settings()
+    78   1015.1 MiB      0.0 MiB           2           background_dictionary[Tags.MOLECULE_COMPOSITION] = (sp.MolecularCompositionGenerator()
+    79   1015.1 MiB      0.0 MiB           1                                                               .append(heavy_water)
+    80   1015.1 MiB      0.0 MiB           1                                                               .get_molecular_composition(segmentation_type=-1))
+    81   1015.1 MiB      0.0 MiB           1           background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    82                                         
+    83   1015.1 MiB      0.0 MiB           1           phantom_material_dictionary = sp.Settings()
+    84   1015.1 MiB      0.0 MiB           1           phantom_material_dictionary[Tags.PRIORITY] = 3
+    85   1015.1 MiB      0.0 MiB           1           phantom_material_dictionary[Tags.STRUCTURE_START_MM] = [31, 0, 38]
+    86   1015.1 MiB      0.0 MiB           1           phantom_material_dictionary[Tags.STRUCTURE_X_EXTENT_MM] = 28
+    87   1015.1 MiB      0.0 MiB           1           phantom_material_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = 40
+    88   1015.1 MiB      0.0 MiB           1           phantom_material_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = 14
+    89   1015.1 MiB      0.0 MiB           2           phantom_material_dictionary[Tags.MOLECULE_COMPOSITION] = (sp.MolecularCompositionGenerator()
+    90   1015.1 MiB      0.0 MiB           1                                                                     .append(phantom_material)
+    91   1015.1 MiB      0.0 MiB           1                                                                     .get_molecular_composition(segmentation_type=0))
+    92   1015.1 MiB      0.0 MiB           1           phantom_material_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
+    93   1015.1 MiB      0.0 MiB           1           phantom_material_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
+    94                                         
+    95   1015.1 MiB      0.0 MiB           1           inclusion_1_dictionary = sp.Settings()
+    96   1015.1 MiB      0.0 MiB           1           inclusion_1_dictionary[Tags.PRIORITY] = 8
+    97   1015.1 MiB      0.0 MiB           1           inclusion_1_dictionary[Tags.STRUCTURE_START_MM] = [38, 10, 40]
+    98   1015.1 MiB      0.0 MiB           1           inclusion_1_dictionary[Tags.STRUCTURE_X_EXTENT_MM] = 2
+    99   1015.1 MiB      0.0 MiB           1           inclusion_1_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = 20
+   100   1015.1 MiB      0.0 MiB           1           inclusion_1_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = 10
+   101   1015.1 MiB      0.0 MiB           2           inclusion_1_dictionary[Tags.MOLECULE_COMPOSITION] = (sp.MolecularCompositionGenerator()
+   102   1015.1 MiB      0.0 MiB           1                                                                .append(inclusion_material)
+   103   1015.1 MiB      0.0 MiB           1                                                                .get_molecular_composition(segmentation_type=1))
+   104   1015.1 MiB      0.0 MiB           1           inclusion_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
+   105   1015.1 MiB      0.0 MiB           1           inclusion_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
+   106                                         
+   107   1015.1 MiB      0.0 MiB           1           inclusion_2_dictionary = sp.Settings()
+   108   1015.1 MiB      0.0 MiB           1           inclusion_2_dictionary[Tags.PRIORITY] = 5
+   109   1015.1 MiB      0.0 MiB           1           inclusion_2_dictionary[Tags.STRUCTURE_START_MM] = [50, 0, 43]
+   110   1015.1 MiB      0.0 MiB           1           inclusion_2_dictionary[Tags.STRUCTURE_END_MM] = [50, 40, 43]
+   111   1015.1 MiB      0.0 MiB           1           inclusion_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
+   112   1015.1 MiB      0.0 MiB           2           inclusion_2_dictionary[Tags.MOLECULE_COMPOSITION] = (sp.MolecularCompositionGenerator()
+   113   1015.1 MiB      0.0 MiB           1                                                                .append(inclusion_material)
+   114   1015.1 MiB      0.0 MiB           1                                                                .get_molecular_composition(segmentation_type=2))
+   115   1015.1 MiB      0.0 MiB           1           inclusion_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
+   116   1015.1 MiB      0.0 MiB           1           inclusion_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+   117                                         
+   118   1015.1 MiB      0.0 MiB           1           tissue_dict = sp.Settings()
+   119   1015.1 MiB      0.0 MiB           1           tissue_dict[Tags.BACKGROUND] = background_dictionary
+   120   1015.1 MiB      0.0 MiB           1           tissue_dict["phantom"] = phantom_material_dictionary
+   121   1015.1 MiB      0.0 MiB           1           tissue_dict["inclusion_1"] = inclusion_1_dictionary
+   122   1015.1 MiB      0.0 MiB           1           tissue_dict["inclusion_2"] = inclusion_2_dictionary
+   123   1015.1 MiB      0.0 MiB           1           return {
+   124   1015.1 MiB      0.0 MiB           1               Tags.STRUCTURES: tissue_dict,
+   125   1015.1 MiB      0.0 MiB           1               Tags.SIMULATE_DEFORMED_LAYERS: False
+   126                                                 }
+   127                                         
+   128   1015.1 MiB      0.0 MiB           2       def get_settings():
+   129   1015.1 MiB      0.0 MiB           1           general_settings = {
+   130                                                     # These parameters set the general properties of the simulated volume
+   131   1015.1 MiB      0.0 MiB           1               Tags.RANDOM_SEED: 4711,
+   132   1015.1 MiB      0.0 MiB           1               Tags.VOLUME_NAME: "InVision Simulation Example",
+   133   1015.1 MiB      0.0 MiB           1               Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
+   134   1015.1 MiB      0.0 MiB           1               Tags.SPACING_MM: SPACING,
+   135   1015.1 MiB      0.0 MiB           1               Tags.DIM_VOLUME_Z_MM: XZ_DIM,
+   136   1015.1 MiB      0.0 MiB           1               Tags.DIM_VOLUME_X_MM: XZ_DIM,
+   137   1015.1 MiB      0.0 MiB           1               Tags.DIM_VOLUME_Y_MM: Y_DIM,
+   138   1015.1 MiB      0.0 MiB           1               Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+   139   1015.1 MiB      0.0 MiB           1               Tags.GPU: True,
+   140   1015.1 MiB      0.0 MiB           1               Tags.WAVELENGTHS: [700]
+   141                                                 }
+   142                                         
+   143   1015.1 MiB      0.0 MiB           1           volume_settings = create_volume()
+   144                                         
+   145   1015.1 MiB      0.0 MiB           1           optical_settings = {
+   146   1015.1 MiB      0.0 MiB           1               Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+   147   1015.1 MiB      0.0 MiB           1               Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
+   148   1015.1 MiB      0.0 MiB           1               Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_INVISION,
+   149   1015.1 MiB      0.0 MiB           1               Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+   150                                                 }
+   151                                         
+   152   1015.1 MiB      0.0 MiB           1           acoustic_settings = {
+   153   1015.1 MiB      0.0 MiB           1               Tags.ACOUSTIC_SIMULATION_3D: True,
+   154   1015.1 MiB      0.0 MiB           1               Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+   155   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+   156   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+   157   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_PMLInside: False,
+   158   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+   159   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+   160   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_PlotPML: False,
+   161   1015.1 MiB      0.0 MiB           1               Tags.RECORDMOVIE: False,
+   162   1015.1 MiB      0.0 MiB           1               Tags.MOVIENAME: "visualization_log",
+   163   1015.1 MiB      0.0 MiB           1               Tags.ACOUSTIC_LOG_SCALE: True
+   164                                                 }
+   165                                         
+   166   1015.1 MiB      0.0 MiB          19           reconstruction_settings = {
+   167   1015.1 MiB      0.0 MiB           1               Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
+   168   1015.1 MiB      0.0 MiB           1               Tags.TUKEY_WINDOW_ALPHA: 0.5,
+   169   1015.1 MiB      0.0 MiB           1               Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: False,
+   170   1015.1 MiB      0.0 MiB           1               Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+   171   1015.1 MiB      0.0 MiB           1               Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_HAMMING,
+   172   1015.1 MiB      0.0 MiB           1               Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
+   173   1015.1 MiB      0.0 MiB           1               Tags.DATA_FIELD_SPEED_OF_SOUND: SPEED_OF_SOUND,
+   174   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+   175   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_PMLInside: False,
+   176   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+   177   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+   178   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_PlotPML: False,
+   179   1015.1 MiB      0.0 MiB           1               Tags.RECORDMOVIE: False,
+   180   1015.1 MiB      0.0 MiB           1               Tags.MOVIENAME: "visualization_log",
+   181   1015.1 MiB      0.0 MiB           1               Tags.ACOUSTIC_LOG_SCALE: True,
+   182   1015.1 MiB      0.0 MiB           1               Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+   183   1015.1 MiB      0.0 MiB           1               Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+   184   1015.1 MiB      0.0 MiB           1               Tags.SPACING_MM: 0.25,
+   185                                                 }
+   186                                         
+   187   1015.1 MiB      0.0 MiB           1           _settings = sp.Settings(general_settings)
+   188   1015.1 MiB      0.0 MiB           1           _settings.set_volume_creation_settings(volume_settings)
+   189   1015.1 MiB      0.0 MiB           1           _settings.set_optical_settings(optical_settings)
+   190   1015.1 MiB      0.0 MiB           1           _settings.set_acoustic_settings(acoustic_settings)
+   191   1015.1 MiB      0.0 MiB           1           _settings.set_reconstruction_settings(reconstruction_settings)
+   192   1015.1 MiB      0.0 MiB           1           return _settings
+   193                                         
+   194   1015.1 MiB      0.0 MiB           1       device = get_device()
+   195   1015.1 MiB      0.0 MiB           1       settings = get_settings()
+   196   1015.1 MiB      0.0 MiB           1       pipeline = create_pipeline(settings)
+   197                                         
+   198   1054.3 MiB     39.2 MiB           1       sp.simulate(simulation_pipeline=pipeline, digital_device_twin=device, settings=settings)
+   199                                         
+   200   1054.3 MiB      0.0 MiB           1       if visualise:
+   201                                                 sp.visualise_data(settings=settings,
+   202                                                                   path_manager=path_manager,
+   203                                                                   show_absorption=True,
+   204                                                                   show_initial_pressure=True,
+   205                                                                   show_reconstructed_data=True,
+   206                                                                   show_xz_only=True)
+
+
+Filename: /home/f762e/Workspace/simpa/simpa_examples/optical_and_acoustic_simulation.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    19   1054.3 MiB   1054.3 MiB           1   @profile
+    20                                         def run_optical_and_acoustic_simulation(SPACING: Union[int, float] = 0.2, path_manager=sp.PathManager(),
+    21                                                                                 visualise: bool = True):
+    22                                             """
+    23                                         
+    24                                             :param SPACING: The simulation spacing between voxels
+    25                                             :param path_manager: the path manager to be used, typically sp.PathManager
+    26                                             :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
+    27                                             :return: a run through of the example
+    28                                             """
+    29   1054.3 MiB      0.0 MiB           1       VOLUME_TRANSDUCER_DIM_IN_MM = 75
+    30   1054.3 MiB      0.0 MiB           1       VOLUME_PLANAR_DIM_IN_MM = 20
+    31   1054.3 MiB      0.0 MiB           1       VOLUME_HEIGHT_IN_MM = 25
+    32   1054.3 MiB      0.0 MiB           1       RANDOM_SEED = 4711
+    33                                         
+    34                                             # If VISUALIZE is set to True, the simulation result will be plotted
+    35   1054.3 MiB      0.0 MiB           1       VISUALIZE = True
+    36                                         
+    37   1054.3 MiB      0.0 MiB           2       def create_example_tissue():
+    38                                                 """
+    39                                                 This is a very simple example script of how to create a tissue definition.
+    40                                                 It contains a muscular background, an epidermis layer on top of the muscles
+    41                                                 and a blood vessel.
+    42                                                 """
+    43   1054.3 MiB      0.0 MiB           1           background_dictionary = sp.Settings()
+    44   1054.3 MiB      0.0 MiB           1           background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-10, 1e-10, 1.0)
+    45   1054.3 MiB      0.0 MiB           1           background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    46                                         
+    47   1054.3 MiB      0.0 MiB           1           tissue_dict = sp.Settings()
+    48   1054.3 MiB      0.0 MiB           1           tissue_dict[Tags.BACKGROUND] = background_dictionary
+    49   1054.3 MiB      0.0 MiB           2           tissue_dict["muscle"] = sp.define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
+    50   1054.3 MiB      0.0 MiB           2                                                                                 molecular_composition=sp.TISSUE_LIBRARY.constant(
+    51   1054.3 MiB      0.0 MiB           1                                                                                     0.05, 100, 0.9),
+    52   1054.3 MiB      0.0 MiB           1                                                                                 priority=1,
+    53   1054.3 MiB      0.0 MiB           1                                                                                 consider_partial_volume=True,
+    54   1054.3 MiB      0.0 MiB           1                                                                                 adhere_to_deformation=True)
+    55   1054.3 MiB      0.0 MiB           2           tissue_dict["epidermis"] = sp.define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
+    56   1054.3 MiB      0.0 MiB           1                                                                                    molecular_composition=sp.TISSUE_LIBRARY.epidermis(),
+    57   1054.3 MiB      0.0 MiB           1                                                                                    priority=8,
+    58   1054.3 MiB      0.0 MiB           1                                                                                    consider_partial_volume=True,
+    59   1054.3 MiB      0.0 MiB           1                                                                                    adhere_to_deformation=True)
+    60   1054.3 MiB      0.0 MiB           2           tissue_dict["vessel_1"] = sp.define_circular_tubular_structure_settings(
+    61   1054.3 MiB      0.0 MiB           1               tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, 0, 5],
+    62   1054.3 MiB      0.0 MiB           1               tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, VOLUME_PLANAR_DIM_IN_MM, 5],
+    63   1054.3 MiB      0.0 MiB           1               molecular_composition=sp.TISSUE_LIBRARY.blood(),
+    64   1054.3 MiB      0.0 MiB           1               radius_mm=2, priority=3, consider_partial_volume=True,
+    65   1054.3 MiB      0.0 MiB           1               adhere_to_deformation=False
+    66                                                 )
+    67   1054.3 MiB      0.0 MiB           2           tissue_dict["vessel_2"] = sp.define_circular_tubular_structure_settings(
+    68   1054.3 MiB      0.0 MiB           1               tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, 0, 10],
+    69   1054.3 MiB      0.0 MiB           1               tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10],
+    70   1054.3 MiB      0.0 MiB           1               molecular_composition=sp.TISSUE_LIBRARY.blood(),
+    71   1054.3 MiB      0.0 MiB           1               radius_mm=3, priority=3, consider_partial_volume=True,
+    72   1054.3 MiB      0.0 MiB           1               adhere_to_deformation=False
+    73                                                 )
+    74   1054.3 MiB      0.0 MiB           1           return tissue_dict
+    75                                         
+    76                                             # Seed the numpy random configuration prior to creating the global_settings file in
+    77                                             # order to ensure that the same volume
+    78                                             # is generated with the same random seed every time.
+    79                                         
+    80   1054.3 MiB      0.0 MiB           1       np.random.seed(RANDOM_SEED)
+    81   1054.3 MiB      0.0 MiB           1       VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
+    82                                         
+    83   1054.3 MiB      0.0 MiB           1       general_settings = {
+    84                                                 # These parameters set the general properties of the simulated volume
+    85   1054.3 MiB      0.0 MiB           1           Tags.RANDOM_SEED: RANDOM_SEED,
+    86   1054.3 MiB      0.0 MiB           1           Tags.VOLUME_NAME: "CompletePipelineExample_" + str(RANDOM_SEED),
+    87   1054.3 MiB      0.0 MiB           1           Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
+    88   1054.3 MiB      0.0 MiB           1           Tags.SPACING_MM: SPACING,
+    89   1054.3 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
+    90   1054.3 MiB      0.0 MiB           1           Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
+    91   1054.3 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
+    92   1054.3 MiB      0.0 MiB           1           Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+    93   1054.3 MiB      0.0 MiB           1           Tags.GPU: True,
+    94   1054.3 MiB      0.0 MiB           1           Tags.WAVELENGTHS: [700, 800],
+    95   1054.3 MiB      0.0 MiB           1           Tags.DO_FILE_COMPRESSION: True,
+    96   1054.3 MiB      0.0 MiB           1           Tags.DO_IPASC_EXPORT: True
+    97                                             }
+    98   1054.3 MiB      0.0 MiB           1       settings = sp.Settings(general_settings)
+    99   1054.3 MiB      0.0 MiB           1       np.random.seed(RANDOM_SEED)
+   100                                         
+   101   1054.3 MiB      0.0 MiB           2       settings.set_volume_creation_settings({
+   102   1054.3 MiB      0.0 MiB           1           Tags.STRUCTURES: create_example_tissue(),
+   103   1054.3 MiB      0.0 MiB           1           Tags.SIMULATE_DEFORMED_LAYERS: True
+   104                                             })
+   105                                         
+   106   1054.3 MiB      0.0 MiB           2       settings.set_optical_settings({
+   107   1054.3 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+   108   1054.3 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
+   109   1054.3 MiB      0.0 MiB           1           Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
+   110   1054.3 MiB      0.0 MiB           1           Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
+   111   1054.3 MiB      0.0 MiB           1           Tags.MCX_ASSUMED_ANISOTROPY: 0.9,
+   112                                             })
+   113                                         
+   114   1054.3 MiB      0.0 MiB           2       settings.set_acoustic_settings({
+   115   1054.3 MiB      0.0 MiB           1           Tags.ACOUSTIC_SIMULATION_3D: False,
+   116   1054.3 MiB      0.0 MiB           1           Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+   117   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+   118   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+   119   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_PMLInside: False,
+   120   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+   121   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+   122   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_PlotPML: False,
+   123   1054.3 MiB      0.0 MiB           1           Tags.RECORDMOVIE: False,
+   124   1054.3 MiB      0.0 MiB           1           Tags.MOVIENAME: "visualization_log",
+   125   1054.3 MiB      0.0 MiB           1           Tags.ACOUSTIC_LOG_SCALE: True
+   126                                             })
+   127                                         
+   128   1054.3 MiB      0.0 MiB          19       settings.set_reconstruction_settings({
+   129   1054.3 MiB      0.0 MiB           1           Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
+   130   1054.3 MiB      0.0 MiB           1           Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+   131   1054.3 MiB      0.0 MiB           1           Tags.ACOUSTIC_SIMULATION_3D: False,
+   132   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+   133   1054.3 MiB      0.0 MiB           1           Tags.TUKEY_WINDOW_ALPHA: 0.5,
+   134   1054.3 MiB      0.0 MiB           1           Tags.BANDPASS_CUTOFF_LOWPASS_IN_HZ: int(8e6),
+   135   1054.3 MiB      0.0 MiB           1           Tags.BANDPASS_CUTOFF_HIGHPASS_IN_HZ: int(0.1e4),
+   136   1054.3 MiB      0.0 MiB           1           Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: False,
+   137   1054.3 MiB      0.0 MiB           1           Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+   138   1054.3 MiB      0.0 MiB           1           Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
+   139   1054.3 MiB      0.0 MiB           1           Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
+   140   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+   141   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_PMLInside: False,
+   142   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+   143   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+   144   1054.3 MiB      0.0 MiB           1           Tags.KWAVE_PROPERTY_PlotPML: False,
+   145   1054.3 MiB      0.0 MiB           1           Tags.RECORDMOVIE: False,
+   146   1054.3 MiB      0.0 MiB           1           Tags.MOVIENAME: "visualization_log",
+   147   1054.3 MiB      0.0 MiB           1           Tags.ACOUSTIC_LOG_SCALE: True,
+   148   1054.3 MiB      0.0 MiB           1           Tags.DATA_FIELD_SPEED_OF_SOUND: 1540,
+   149   1054.3 MiB      0.0 MiB           1           Tags.DATA_FIELD_ALPHA_COEFF: 0.01,
+   150   1054.3 MiB      0.0 MiB           1           Tags.DATA_FIELD_DENSITY: 1000,
+   151   1054.3 MiB      0.0 MiB           1           Tags.SPACING_MM: SPACING
+   152                                             })
+   153                                         
+   154   1054.3 MiB      0.0 MiB           1       settings["noise_initial_pressure"] = {
+   155   1054.3 MiB      0.0 MiB           1           Tags.NOISE_MEAN: 1,
+   156   1054.3 MiB      0.0 MiB           1           Tags.NOISE_STD: 0.01,
+   157   1054.3 MiB      0.0 MiB           1           Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
+   158   1054.3 MiB      0.0 MiB           1           Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
+   159   1054.3 MiB      0.0 MiB           1           Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
+   160                                             }
+   161                                         
+   162   1054.3 MiB      0.0 MiB           1       settings["noise_time_series"] = {
+   163   1054.3 MiB      0.0 MiB           1           Tags.NOISE_STD: 1,
+   164   1054.3 MiB      0.0 MiB           1           Tags.NOISE_MODE: Tags.NOISE_MODE_ADDITIVE,
+   165   1054.3 MiB      0.0 MiB           1           Tags.DATA_FIELD: Tags.DATA_FIELD_TIME_SERIES_DATA
+   166                                             }
+   167                                         
+   168                                             # TODO: For the device choice, uncomment the undesired device
+   169                                         
+   170                                             # device = sp.MSOTAcuityEcho(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+   171                                             #                                                      VOLUME_PLANAR_DIM_IN_MM/2,
+   172                                             #                                                      0]))
+   173                                             # device.update_settings_for_use_of_model_based_volume_creator(settings)
+   174                                         
+   175   1054.3 MiB      0.0 MiB           3       device = sp.PhotoacousticDevice(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
+   176   1054.3 MiB      0.0 MiB           1                                                                    VOLUME_PLANAR_DIM_IN_MM/2,
+   177   1054.3 MiB      0.0 MiB           1                                                                    0]),
+   178   1054.3 MiB      0.0 MiB           1                                       field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20]))
+   179   1054.3 MiB      0.0 MiB           2       device.set_detection_geometry(sp.LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
+   180   1054.3 MiB      0.0 MiB           1                                                                     pitch_mm=0.25,
+   181   1054.3 MiB      0.0 MiB           1                                                                     number_detector_elements=100,
+   182   1054.3 MiB      0.0 MiB           1                                                                     field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20])))
+   183   1054.3 MiB      0.0 MiB           1       print(device.get_detection_geometry().get_detector_element_positions_base_mm())
+   184   1054.3 MiB      0.0 MiB           1       device.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
+   185                                         
+   186   1054.3 MiB      0.0 MiB           1       SIMULATION_PIPELINE = [
+   187   1054.3 MiB      0.0 MiB           1           sp.ModelBasedVolumeCreationAdapter(settings),
+   188   1054.3 MiB      0.0 MiB           1           sp.MCXAdapter(settings),
+   189   1054.3 MiB      0.0 MiB           1           sp.GaussianNoise(settings, "noise_initial_pressure"),
+   190   1054.3 MiB      0.0 MiB           1           sp.KWaveAdapter(settings),
+   191   1054.3 MiB      0.0 MiB           1           sp.GaussianNoise(settings, "noise_time_series"),
+   192   1054.3 MiB      0.0 MiB           1           sp.TimeReversalAdapter(settings),
+   193   1054.3 MiB      0.0 MiB           1           sp.FieldOfViewCropping(settings)
+   194                                             ]
+   195                                         
+   196   1083.2 MiB     28.9 MiB           1       sp.simulate(SIMULATION_PIPELINE, settings, device)
+   197                                         
+   198   1083.2 MiB      0.0 MiB           1       if Tags.WAVELENGTH in settings:
+   199   1083.2 MiB      0.0 MiB           1           WAVELENGTH = settings[Tags.WAVELENGTH]
+   200                                             else:
+   201                                                 WAVELENGTH = 700
+   202                                         
+   203   1083.2 MiB      0.0 MiB           1       if visualise:
+   204                                                 sp.visualise_data(path_to_hdf5_file=settings[Tags.SIMPA_OUTPUT_PATH],
+   205                                                                   wavelength=WAVELENGTH,
+   206                                                                   show_time_series_data=True,
+   207                                                                   show_initial_pressure=True,
+   208                                                                   show_reconstructed_data=True,
+   209                                                                   log_scale=False,
+   210                                                                   show_xz_only=False)
+
+
+Filename: /home/f762e/Workspace/simpa/simpa_examples/perform_iterative_qPAI_reconstruction.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    25   1083.2 MiB   1083.2 MiB           1   @profile
+    26                                         def run_perform_iterative_qPAI_reconstruction(SPACING: Union[int, float] = 0.2, path_manager=sp.PathManager(), visualise: bool = True):
+    27                                             """
+    28                                         
+    29                                             :param SPACING: The simulation spacing between voxels
+    30                                             :param path_manager: the path manager to be used, typically sp.PathManager
+    31                                             :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
+    32                                             :return: a run through of the example
+    33                                             """
+    34   1083.2 MiB      0.0 MiB           1       VOLUME_TRANSDUCER_DIM_IN_MM = 30
+    35   1083.2 MiB      0.0 MiB           1       VOLUME_PLANAR_DIM_IN_MM = 30
+    36   1083.2 MiB      0.0 MiB           1       VOLUME_HEIGHT_IN_MM = 30
+    37   1083.2 MiB      0.0 MiB           1       RANDOM_SEED = 471
+    38   1083.2 MiB      0.0 MiB           1       VOLUME_NAME = "MyqPAIReconstruction_" + str(RANDOM_SEED)
+    39                                         
+    40                                             # If VISUALIZE is set to True, the reconstruction result will be plotted
+    41                                         
+    42   1083.2 MiB      0.0 MiB           2       def create_example_tissue():
+    43                                                 """
+    44                                                 This is a very simple example script of how to create a tissue definition.
+    45                                                 It contains a muscular background, an epidermis layer on top of the muscles
+    46                                                 and a blood vessel.
+    47                                                 """
+    48   1083.2 MiB      0.0 MiB           1           background_dictionary = sp.Settings()
+    49   1083.2 MiB      0.0 MiB           1           background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(0.05, 30, 0.9)
+    50   1083.2 MiB      0.0 MiB           1           background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
+    51                                         
+    52   1083.2 MiB      0.0 MiB           1           epidermis_structure = sp.Settings()
+    53   1083.2 MiB      0.0 MiB           1           epidermis_structure[Tags.PRIORITY] = 1
+    54   1083.2 MiB      0.0 MiB           1           epidermis_structure[Tags.STRUCTURE_START_MM] = [0, 0, 2]
+    55   1083.2 MiB      0.0 MiB           1           epidermis_structure[Tags.STRUCTURE_END_MM] = [0, 0, 2.5]
+    56   1083.2 MiB      0.0 MiB           1           epidermis_structure[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(2.2, 100.0, 0.9)
+    57   1083.2 MiB      0.0 MiB           1           epidermis_structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    58   1083.2 MiB      0.0 MiB           1           epidermis_structure[Tags.ADHERE_TO_DEFORMATION] = True
+    59   1083.2 MiB      0.0 MiB           1           epidermis_structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
+    60                                         
+    61   1083.2 MiB      0.0 MiB           1           vessel_structure_1 = sp.Settings()
+    62   1083.2 MiB      0.0 MiB           1           vessel_structure_1[Tags.PRIORITY] = 2
+    63   1083.2 MiB      0.0 MiB           2           vessel_structure_1[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2.5, 0,
+    64   1083.2 MiB      0.0 MiB           1                                                          VOLUME_HEIGHT_IN_MM / 2]
+    65   1083.2 MiB      0.0 MiB           2           vessel_structure_1[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2.5,
+    66   1083.2 MiB      0.0 MiB           1                                                        VOLUME_PLANAR_DIM_IN_MM, VOLUME_HEIGHT_IN_MM / 2]
+    67   1083.2 MiB      0.0 MiB           1           vessel_structure_1[Tags.STRUCTURE_RADIUS_MM] = 1.75
+    68   1083.2 MiB      0.0 MiB           1           vessel_structure_1[Tags.STRUCTURE_ECCENTRICITY] = 0.85
+    69   1083.2 MiB      0.0 MiB           1           vessel_structure_1[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(5.2, 100.0, 0.9)
+    70   1083.2 MiB      0.0 MiB           1           vessel_structure_1[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    71   1083.2 MiB      0.0 MiB           1           vessel_structure_1[Tags.ADHERE_TO_DEFORMATION] = True
+    72   1083.2 MiB      0.0 MiB           1           vessel_structure_1[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
+    73                                         
+    74   1083.2 MiB      0.0 MiB           1           vessel_structure_2 = sp.Settings()
+    75   1083.2 MiB      0.0 MiB           1           vessel_structure_2[Tags.PRIORITY] = 3
+    76   1083.2 MiB      0.0 MiB           2           vessel_structure_2[Tags.STRUCTURE_START_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2, 0,
+    77   1083.2 MiB      0.0 MiB           1                                                          VOLUME_HEIGHT_IN_MM / 3]
+    78   1083.2 MiB      0.0 MiB           2           vessel_structure_2[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+    79   1083.2 MiB      0.0 MiB           1                                                        VOLUME_PLANAR_DIM_IN_MM, VOLUME_HEIGHT_IN_MM / 3]
+    80   1083.2 MiB      0.0 MiB           1           vessel_structure_2[Tags.STRUCTURE_RADIUS_MM] = 0.75
+    81   1083.2 MiB      0.0 MiB           1           vessel_structure_2[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(3.0, 100.0, 0.9)
+    82   1083.2 MiB      0.0 MiB           1           vessel_structure_2[Tags.CONSIDER_PARTIAL_VOLUME] = True
+    83   1083.2 MiB      0.0 MiB           1           vessel_structure_2[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
+    84                                         
+    85   1083.2 MiB      0.0 MiB           1           tissue_dict = sp.Settings()
+    86   1083.2 MiB      0.0 MiB           1           tissue_dict[Tags.BACKGROUND] = background_dictionary
+    87   1083.2 MiB      0.0 MiB           1           tissue_dict["epidermis"] = epidermis_structure
+    88   1083.2 MiB      0.0 MiB           1           tissue_dict["vessel_1"] = vessel_structure_1
+    89   1083.2 MiB      0.0 MiB           1           tissue_dict["vessel_2"] = vessel_structure_2
+    90   1083.2 MiB      0.0 MiB           1           return tissue_dict
+    91                                         
+    92                                             # set settings for volume creation, optical simulation and iterative qPAI method
+    93   1083.2 MiB      0.0 MiB           1       np.random.seed(RANDOM_SEED)
+    94                                         
+    95   1083.2 MiB      0.0 MiB           1       general_settings = {
+    96                                                 # These parameters set the general properties of the simulated volume
+    97   1083.2 MiB      0.0 MiB           1           Tags.RANDOM_SEED: RANDOM_SEED,
+    98   1083.2 MiB      0.0 MiB           1           Tags.VOLUME_NAME: VOLUME_NAME,
+    99   1083.2 MiB      0.0 MiB           1           Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
+   100   1083.2 MiB      0.0 MiB           1           Tags.SPACING_MM: SPACING,
+   101   1083.2 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
+   102   1083.2 MiB      0.0 MiB           1           Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
+   103   1083.2 MiB      0.0 MiB           1           Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
+   104   1083.2 MiB      0.0 MiB           1           Tags.WAVELENGTHS: [700]
+   105                                             }
+   106                                         
+   107   1083.2 MiB      0.0 MiB           1       settings = sp.Settings(general_settings)
+   108                                         
+   109   1083.2 MiB      0.0 MiB           2       settings.set_volume_creation_settings({
+   110                                                 # These parameters set the properties for the volume creation
+   111   1083.2 MiB      0.0 MiB           1           Tags.SIMULATE_DEFORMED_LAYERS: True,
+   112   1083.2 MiB      0.0 MiB           1           Tags.STRUCTURES: create_example_tissue()
+   113                                             })
+   114   1083.2 MiB      0.0 MiB           2       settings.set_optical_settings({
+   115                                                 # These parameters set the properties for the optical Monte Carlo simulation
+   116   1083.2 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_NUMBER_PHOTONS: 1e7,
+   117   1083.2 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
+   118   1083.2 MiB      0.0 MiB           1           Tags.OPTICAL_MODEL: Tags.OPTICAL_MODEL_MCX,
+   119   1083.2 MiB      0.0 MiB           1           Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50
+   120                                             })
+   121   1083.2 MiB      0.0 MiB           1       settings["noise_model"] = {
+   122   1083.2 MiB      0.0 MiB           1           Tags.NOISE_MEAN: 1.0,
+   123   1083.2 MiB      0.0 MiB           1           Tags.NOISE_STD: 0.01,
+   124   1083.2 MiB      0.0 MiB           1           Tags.NOISE_MODE: Tags.NOISE_MODE_MULTIPLICATIVE,
+   125   1083.2 MiB      0.0 MiB           1           Tags.DATA_FIELD: Tags.DATA_FIELD_INITIAL_PRESSURE,
+   126   1083.2 MiB      0.0 MiB           1           Tags.NOISE_NON_NEGATIVITY_CONSTRAINT: True
+   127                                             }
+   128   1083.2 MiB      0.0 MiB           1       settings["iterative_qpai_reconstruction"] = {
+   129                                                 # These parameters set the properties of the iterative reconstruction
+   130   1083.2 MiB      0.0 MiB           1           Tags.DOWNSCALE_FACTOR: 0.75,
+   131   1083.2 MiB      0.0 MiB           1           Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION: False,
+   132                                                 # the following tag has no effect, since the regularization is chosen to be SNR dependent, not constant
+   133   1083.2 MiB      0.0 MiB           1           Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA: 0.01,
+   134   1083.2 MiB      0.0 MiB           1           Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER: 20,
+   135                                                 # for this example, we are not interested in all absorption updates
+   136   1083.2 MiB      0.0 MiB           1           Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS: False,
+   137   1083.2 MiB      0.0 MiB           1           Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL: 1e-3
+   138                                             }
+   139                                         
+   140                                             # run pipeline including iterative qPAI method
+   141   1083.2 MiB      0.0 MiB           1       pipeline = [
+   142   1083.2 MiB      0.0 MiB           1           sp.ModelBasedVolumeCreationAdapter(settings),
+   143   1083.2 MiB      0.0 MiB           1           sp.MCXAdapter(settings),
+   144   1083.2 MiB      0.0 MiB           1           sp.GaussianNoise(settings, "noise_model"),
+   145   1083.2 MiB      0.0 MiB           1           sp.IterativeqPAI(settings, "iterative_qpai_reconstruction")
+   146                                             ]
+   147                                         
+   148   1083.2 MiB      0.0 MiB           3       class CustomDevice(sp.PhotoacousticDevice):
+   149                                         
+   150   1083.2 MiB      0.0 MiB           2           def __init__(self):
+   151   1083.2 MiB      0.0 MiB           2               super(CustomDevice, self).__init__(device_position_mm=np.asarray([general_settings[Tags.DIM_VOLUME_X_MM] / 2,
+   152   1083.2 MiB      0.0 MiB           1                                                                                 general_settings[Tags.DIM_VOLUME_Y_MM] / 2,
+   153   1083.2 MiB      0.0 MiB           1                                                                                 0]))
+   154   1083.2 MiB      0.0 MiB           1               self.add_illumination_geometry(sp.DiskIlluminationGeometry(beam_radius_mm=20))
+   155                                         
+   156   1083.2 MiB      0.0 MiB           1       device = CustomDevice()
+   157                                         
+   158   1083.2 MiB      0.0 MiB           1       device.update_settings_for_use_of_model_based_volume_creator(settings)
+   159                                         
+   160   1399.7 MiB    316.5 MiB           1       sp.simulate(pipeline, settings, device)
+   161                                         
+   162                                             # visualize reconstruction results
+   163   1399.7 MiB      0.0 MiB           1       if visualise:
+   164                                                 # get simulation output
+   165                                                 data_path = path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5"
+   166                                                 settings = sp.load_data_field(data_path, Tags.SETTINGS)
+   167                                                 wavelength = settings[Tags.WAVELENGTHS][0]
+   168                                         
+   169                                                 # get reconstruction result
+   170                                                 absorption_reconstruction = sp.load_data_field(data_path, Tags.ITERATIVE_qPAI_RESULT, wavelength)
+   171                                         
+   172                                                 # get ground truth absorption coefficients
+   173                                                 absorption_gt = sp.load_data_field(data_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wavelength)
+   174                                         
+   175                                                 # rescale ground truth to same dimension as reconstruction (necessary due to resampling in iterative algorithm)
+   176                                                 scale = np.shape(absorption_reconstruction)[0] / np.shape(absorption_gt)[0]  # same as Tags.DOWNSCALE_FACTOR
+   177                                                 absorption_gt = zoom(absorption_gt, scale, order=1, mode="nearest")
+   178                                         
+   179                                                 # compute reconstruction error
+   180                                                 difference = absorption_gt - absorption_reconstruction
+   181                                         
+   182                                                 median_error = np.median(difference)
+   183                                                 q3, q1 = np.percentile(difference, [75, 25])
+   184                                                 iqr = q3 - q1
+   185                                         
+   186                                                 # visualize results
+   187                                                 x_pos = int(np.shape(absorption_gt)[0] / 2)
+   188                                                 y_pos = int(np.shape(absorption_gt)[1] / 2)
+   189                                         
+   190                                                 if np.min(absorption_gt) > np.min(absorption_reconstruction):
+   191                                                     cmin = np.min(absorption_reconstruction)
+   192                                                 else:
+   193                                                     cmin = np.min(absorption_gt)
+   194                                         
+   195                                                 if np.max(absorption_gt) > np.max(absorption_reconstruction):
+   196                                                     cmax = np.max(absorption_gt)
+   197                                                 else:
+   198                                                     cmax = np.max(absorption_reconstruction)
+   199                                         
+   200                                                 results_x_z = [absorption_gt[:, y_pos, :], absorption_reconstruction[:, y_pos, :], difference[:, y_pos, :]]
+   201                                                 results_y_z = [absorption_gt[x_pos, :, :], absorption_reconstruction[x_pos, :, :], difference[x_pos, :, :]]
+   202                                         
+   203                                                 label = ["Absorption coefficients: ${\mu_a}^{gt}$", "Reconstruction: ${\mu_a}^{reconstr.}$",
+   204                                                          "Difference: ${\mu_a}^{gt} - {\mu_a}^{reconstr.}$"]
+   205                                         
+   206                                                 plt.figure(figsize=(20, 15))
+   207                                                 plt.subplots_adjust(hspace=0.5)
+   208                                                 plt.suptitle("Iterative qPAI Reconstruction \n median error = " + str(np.round(median_error, 4)) +
+   209                                                              "\n IQR = " + str(np.round(iqr, 4)), fontsize=10)
+   210                                         
+   211                                                 for i, quantity in enumerate(results_x_z):
+   212                                                     plt.subplot(2, len(results_x_z), i + 1)
+   213                                                     if i == 0:
+   214                                                         plt.ylabel("x-z", fontsize=10)
+   215                                                     plt.title(label[i], fontsize=10)
+   216                                                     plt.imshow(quantity.T)
+   217                                                     plt.xticks(fontsize=6)
+   218                                                     plt.yticks(fontsize=6)
+   219                                                     plt.colorbar()
+   220                                                     if i != 2:
+   221                                                         plt.clim(cmin, cmax)
+   222                                                     else:
+   223                                                         plt.clim(np.min(difference), np.max(difference))
+   224                                         
+   225                                                 for i, quantity in enumerate(results_y_z):
+   226                                                     plt.subplot(2, len(results_x_z), i + len(results_x_z) + 1)
+   227                                                     if i == 0:
+   228                                                         plt.ylabel("y-z", fontsize=10)
+   229                                                     plt.title(label[i], fontsize=10)
+   230                                                     plt.imshow(quantity.T)
+   231                                                     plt.xticks(fontsize=6)
+   232                                                     plt.yticks(fontsize=6)
+   233                                                     plt.colorbar()
+   234                                                     if i != 2:
+   235                                                         plt.clim(cmin, cmax)
+   236                                                     else:
+   237                                                         plt.clim(np.min(difference), np.max(difference))
+   238                                         
+   239                                                 plt.show()
+   240                                                 plt.close()
+
+

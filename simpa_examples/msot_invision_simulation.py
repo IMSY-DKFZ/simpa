@@ -7,12 +7,16 @@ import simpa as sp
 import numpy as np
 from simpa.utils.profiling import profile
 from typing import Union
+import typer
 
 path_manager = sp.PathManager()
 
+app = typer.Typer()
 
+
+@app.command()
 @profile
-def run_msot_invision_simulation(SPACING: Union[int, float] = 0.5, path_manager=sp.PathManager(), visualise: bool = True):
+def run_msot_invision_simulation(SPACING: float = 0.5, path_manager=None, visualise: bool = True):
     """
 
     :param SPACING: The simulation spacing between voxels
@@ -20,6 +24,8 @@ def run_msot_invision_simulation(SPACING: Union[int, float] = 0.5, path_manager=
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
     """
+    if path_manager is None:
+        path_manager = sp.PathManager()
     SPEED_OF_SOUND = 1500
     XZ_DIM = 90
     Y_DIM = 40
@@ -207,4 +213,4 @@ def run_msot_invision_simulation(SPACING: Union[int, float] = 0.5, path_manager=
 
 
 if __name__ == "__main__":
-    run_msot_invision_simulation(SPACING=0.5, path_manager=sp.PathManager(), visualise=True)
+    app()

@@ -13,6 +13,7 @@ import simpa as sp
 from simpa import Tags
 from typing import Union
 from simpa.utils.profiling import profile
+import typer
 
 # FIXME temporary workaround for newest Intel architectures
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -21,9 +22,13 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
 
+app = typer.Typer()
 
+
+@app.command()
 @profile
-def run_perform_iterative_qPAI_reconstruction(SPACING: Union[int, float] = 0.2, path_manager=sp.PathManager(), visualise: bool = True):
+def run_perform_iterative_qPAI_reconstruction(SPACING: float = 0.2, path_manager=None,
+                                              visualise: bool = True):
     """
 
     :param SPACING: The simulation spacing between voxels
@@ -31,6 +36,8 @@ def run_perform_iterative_qPAI_reconstruction(SPACING: Union[int, float] = 0.2, 
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
     """
+    if path_manager is None:
+        path_manager = sp.PathManager()
     VOLUME_TRANSDUCER_DIM_IN_MM = 30
     VOLUME_PLANAR_DIM_IN_MM = 30
     VOLUME_HEIGHT_IN_MM = 30
@@ -241,4 +248,4 @@ def run_perform_iterative_qPAI_reconstruction(SPACING: Union[int, float] = 0.2, 
 
 
 if __name__ == "__main__":
-    run_perform_iterative_qPAI_reconstruction(SPACING=0.5, path_manager=sp.PathManager(), visualise=True)
+    app()

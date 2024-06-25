@@ -7,6 +7,7 @@ import simpa as sp
 import numpy as np
 from simpa.utils.profiling import profile
 from typing import Union
+import typer
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -15,9 +16,12 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
 
+app = typer.Typer()
 
+
+@app.command()
 @profile
-def run_optical_and_acoustic_simulation(SPACING: Union[int, float] = 0.2, path_manager=sp.PathManager(),
+def run_optical_and_acoustic_simulation(SPACING: float = 0.2, path_manager=None,
                                         visualise: bool = True):
     """
 
@@ -26,6 +30,8 @@ def run_optical_and_acoustic_simulation(SPACING: Union[int, float] = 0.2, path_m
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
     """
+    if path_manager is None:
+        path_manager = sp.PathManager()
     VOLUME_TRANSDUCER_DIM_IN_MM = 75
     VOLUME_PLANAR_DIM_IN_MM = 20
     VOLUME_HEIGHT_IN_MM = 25
@@ -211,4 +217,4 @@ def run_optical_and_acoustic_simulation(SPACING: Union[int, float] = 0.2, path_m
 
 
 if __name__ == "__main__":
-    run_optical_and_acoustic_simulation(SPACING=0.2, path_manager=sp.PathManager(), visualise=True)
+    app()

@@ -7,6 +7,7 @@ import simpa as sp
 import numpy as np
 from simpa.utils.profiling import profile
 from typing import Union
+import typer
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -15,9 +16,12 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 # TODO: Please make sure that you have set the correct path to MCX binary and SAVE_PATH in the file path_config.env
 #  located in the simpa_examples directory
 
+app = typer.Typer()
 
+
+@app.command()
 @profile
-def run_minimal_optical_simulation(SPACING: Union[int, float] = 0.5, path_manager=sp.PathManager(), visualise: bool = True):
+def run_minimal_optical_simulation(SPACING: float = 0.5, path_manager=None, visualise: bool = True):
     """
 
     :param SPACING: The simulation spacing between voxels
@@ -25,6 +29,8 @@ def run_minimal_optical_simulation(SPACING: Union[int, float] = 0.5, path_manage
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
     """
+    if path_manager is None:
+        path_manager = sp.PathManager()
     VOLUME_TRANSDUCER_DIM_IN_MM = 60
     VOLUME_PLANAR_DIM_IN_MM = 30
     VOLUME_HEIGHT_IN_MM = 60
@@ -167,4 +173,4 @@ def run_minimal_optical_simulation(SPACING: Union[int, float] = 0.5, path_manage
 
 
 if __name__ == "__main__":
-    run_minimal_optical_simulation(SPACING=0.2, path_manager=sp.PathManager(), visualise=True)
+    app()
