@@ -7,7 +7,7 @@ echo "Options:"
 echo "  -i, --init           First spacing to benchmark: default = 0.2mm"
 echo "  -c, --cease          Final spacing to benchmark: default = 0.4mm"
 echo "  -s, --step           Step between spacings: default = 0.1mm"
-echo "  -f, --file           Where to store the output files: default - TODO specify where!"
+echo "  -f, --file           Where to store the output files: default save in curr; 'print' prints it in console"
 echo "  -t, --time           Profile times taken: if no profile all are set"
 echo "  -g, --gpu            Profile GPU usage: if no profile all are set"
 echo "  -m, --memory         Profile memory usage: if no profile all are set"
@@ -16,9 +16,7 @@ echo "  -h, --help           Display this help message"
 exit 0
 }
 
-start=0.2
-stop=0.4
-step=0.1
+start=0
 profiles=()
 filename='default'
 
@@ -51,6 +49,12 @@ case "$1" in
 esac
 shift 1
 done
+
+if [ $start -eq 0 ]; then
+  start=0.2
+  stop=0.4
+  step=0.1
+fi
 
 if [ ${#profiles[@]} -eq 0 ]; then
     echo "WARNING: using all three profilers by default"

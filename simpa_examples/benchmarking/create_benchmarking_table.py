@@ -8,6 +8,12 @@ from prettytable import PrettyTable
 
 
 def lines_that_contain(string, fp):
+    """
+    Function to determine if a string contains a certain word/phrase
+    :param string: what to check
+    :param fp:
+    :return:
+    """
     return [line for line in fp if string in line]
 
 
