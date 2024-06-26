@@ -16,6 +16,7 @@ docs/objects.inv
 simpa_tests/figures
 simpa_tests/figures/*
 simpa_tests/manual_tests/figures
+simpa_tests/manual_tests/reference_figures
 
 path_config.env
 
