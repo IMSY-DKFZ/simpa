@@ -78,22 +78,26 @@ class TestPathManager(unittest.TestCase):
             self.delete_config_file(self.cwd_file)
 
     def test_instantiate_when_file_is_in_simpa_home(self):
-        if self.home_file_exists:
-            self.hide_config_file(self.home_file)
-        if self.cwd_file_exists:
-            self.hide_config_file(self.cwd_file)
-        if not self.simpa_home_exists:
+        pathmanager_source_file = inspect.getsourcefile(PathManager)
+        if "site-packages" not in pathmanager_source_file:
+            if self.home_file_exists:
+                self.hide_config_file(self.home_file)
+            if self.cwd_file_exists:
+                self.hide_config_file(self.cwd_file)
+            if self.simpa_home_exists:
+                self.hide_config_file(self.simpa_home)
             self.write_config_file(self.simpa_home)
 
-        path_manager = PathManager()
-        self.check_path_manager_correctly_loaded(path_manager)
+            path_manager = PathManager()
+            self.check_path_manager_correctly_loaded(path_manager)
 
-        if self.home_file_exists:
-            self.restore_config_file(self.home_file)
-        if self.cwd_file_exists:
-            self.restore_config_file(self.cwd_file)
-        if not self.simpa_home_exists:
+            if self.home_file_exists:
+                self.restore_config_file(self.home_file)
+            if self.cwd_file_exists:
+                self.restore_config_file(self.cwd_file)
             self.delete_config_file(self.simpa_home)
+            if self.simpa_home_exists:
+                self.restore_config_file(self.simpa_home)
 
     def check_path_manager_correctly_loaded(self, path_manager: PathManager):
         self.assertEqual(path_manager.get_hdf5_file_save_path(), self.save_path)
