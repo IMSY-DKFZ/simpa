@@ -34,12 +34,12 @@ class Spectrum(SerializableSIMPAClass, object):
         self.values = values
 
         if torch.Tensor.size(wavelengths) != torch.Tensor.size(values):
-            raise ValueError("The shape of the wavelengths and the absorption coefficients did not match: " +
+            raise ValueError("The shape of the wavelengths and the values did not match: " +
                              str(torch.Tensor.size(wavelengths)) + " vs " + str(torch.Tensor.size(values)))
 
         new_wavelengths = torch.arange(self.min_wavelength, self.max_wavelength+1, 1)
         new_absorptions_function = interpolate.interp1d(self.wavelengths, self.values)
-        self.new_absorptions = new_absorptions_function(new_wavelengths)
+        self.values_interp = new_absorptions_function(new_wavelengths)
 
     def get_value_over_wavelength(self):
         """
@@ -54,7 +54,10 @@ class Spectrum(SerializableSIMPAClass, object):
         :return: the best matching linearly interpolated values for the given wavelength.
         :raises ValueError: if the given wavelength is not within the range of the spectrum.
         """
-        return self.new_absorptions[wavelength-self.min_wavelength]
+        if wavelength < self.min_wavelength or wavelength > self.max_wavelength:
+            raise ValueError(f"The given wavelength ({wavelength}) is not within the range of the spectrum "
+                             f"({self.min_wavelength} - {self.max_wavelength})")
+        return self.values_interp[wavelength-self.min_wavelength]
 
     def __eq__(self, other):
         if isinstance(other, Spectrum):
