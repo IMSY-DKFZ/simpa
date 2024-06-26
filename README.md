@@ -183,13 +183,15 @@ Please see the github guidelines for creating pull requests: [https://docs.githu
 
 # Performance profiling
 
-Do you wish to know which parts of the simulation pipeline cost the most amount of time? 
-If that is the case then you can use the following commands to profile the execution of your simulation script.
-You simply need to replace the `myscript` name with your script name.
-
-`python -m cProfile -o myscript.cprof myscript.py`
-
-`pyprof2calltree -k -i myscript.cprof`
+When changing the SIMPA core, e.g., by refactoring/optimizing, or if you are curious about how fast your machine runs
+SIMPA, you can run the SIMPA benchmarking scripts. It is recommended to run it once for checking if it works and then 
+change line (TODO) to run it at least 100 times for actual benchmarking. This has to be done with a clean 
+setup, no browser or other applications running (weekend/at night/...). To see if your changes are actually better than 
+the current implementation, you simply have to run the script on the current develop and additionally with your changes
+and compare the resulting benchmarking/benchmarking_data_table.txt files (they will look like
+benchmarking/benchmarking_data/benchmarking_data_table.txt). Make sure to back up the table after your first run, since 
+it otherwise will be overwritten. We recommend using the default settings (besides -file gives the location where the 
+table is saved).
 
 # Troubleshooting
 
