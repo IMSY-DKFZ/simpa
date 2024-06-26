@@ -17,6 +17,7 @@ simpa_tests/figures
 simpa_tests/figures/*
 simpa_tests/manual_tests/figures
 simpa_tests/manual_tests/reference_figures
+simpa_tests/manual_tests/manual_tests_*
 
 path_config.env
 
