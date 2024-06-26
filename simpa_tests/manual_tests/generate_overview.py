@@ -280,6 +280,5 @@ h1 {
 
 if __name__ == '__main__':
     automatic_manual_tests = GenerateOverview()
-    #automatic_manual_tests.run_manual_tests()
-    automatic_manual_tests.run_manual_tests(run_tests=False)
+    automatic_manual_tests.run_manual_tests(run_tests=True)
     automatic_manual_tests.create_html()
