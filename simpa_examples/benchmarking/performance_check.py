@@ -4,12 +4,9 @@
 
 import pathlib
 import os
-
-import typer
-app = typer.Typer()
+from argparse import ArgumentParser
 
 
-@app.command()
 def run_benchmarking_tests(spacing=0.4, profile: str = "TIME", savefolder: str = 'default'):
     """
 
@@ -21,8 +18,8 @@ def run_benchmarking_tests(spacing=0.4, profile: str = "TIME", savefolder: str =
     spacing = float(spacing)
     os.environ["SIMPA_PROFILE"] = profile
     if savefolder == 'default':
-        savefolder = (str(pathlib.Path(__file__).parent.resolve()) + "/benchmarking_data_" + profile + "_" + str(spacing)
-                      + ".txt")
+        savefolder = (str(pathlib.Path(__file__).parent.resolve()) + "/benchmarking_data_" + profile + "_"
+                      + str(spacing) + ".txt")
         os.environ["SIMPA_PROFILE_SAVE_FILE"] = savefolder
     elif savefolder == 'print':
         pass
@@ -30,21 +27,28 @@ def run_benchmarking_tests(spacing=0.4, profile: str = "TIME", savefolder: str =
         os.environ["SIMPA_PROFILE_SAVE_FILE"] = savefolder+"/benchmarking_data_"+profile+"_"+str(spacing)+".txt"
 
     import simpa_examples
-    import simpa as sp
 
-    # examples = [simpa_examples.run_linear_unmixing, simpa_examples.run_minimal_optical_simulation,
-    #             simpa_examples.run_minimal_optical_simulation_uniform_cube, simpa_examples.run_msot_invision_simulation,
-    #             simpa_examples.run_optical_and_acoustic_simulation,
-    #             simpa_examples.run_perform_iterative_qPAI_reconstruction]
-
-    examples = [simpa_examples.run_msot_invision_simulation]
+    examples = [simpa_examples.run_linear_unmixing, simpa_examples.run_minimal_optical_simulation,
+                simpa_examples.run_minimal_optical_simulation_uniform_cube, simpa_examples.run_msot_invision_simulation,
+                simpa_examples.run_optical_and_acoustic_simulation,
+                simpa_examples.run_perform_iterative_qPAI_reconstruction, simpa_examples.segmentation_loader]
 
     for example in examples:
         try:
-            example(SPACING=spacing, path_manager=None, visualise=False)
+            example(spacing=spacing, path_manager=None, visualise=False)
         except AttributeError:
             print("simulation cannot be run on {} with spacing {}".format(example, spacing))
 
 
 if __name__ == "__main__":
-    app()
+    parser = ArgumentParser(description='Run benchmarking tests')
+    parser.add_argument("--spacing", default=0.2, help='the voxel spacing in mm')
+    parser.add_argument("--profile", default="TIME", type=str,
+                        help='the profile to run')
+    parser.add_argument("--savefolder", default='default', type=str, help='where to save the results')
+    config = parser.parse_args()
+
+    spacing = config.spacing
+    profile = config.profile
+    savefolder = config.savefolder
+    run_benchmarking_tests(spacing=float(spacing), profile=config.profile, savefolder=config.savefolder)

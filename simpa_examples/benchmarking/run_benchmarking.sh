@@ -2,6 +2,8 @@
 
 help() {
 echo "Usage: calculate benchmarking for [options]"
+echo "For further details see readme"
+echo "Number of examples can be selected in performance_check.py"
 echo "For contributing, please use default"
 echo "Options:"
 echo "  -i, --init           First spacing to benchmark: default = 0.2mm"
@@ -11,12 +13,13 @@ echo "  -f, --file           Where to store the output files: default save in cu
 echo "  -t, --time           Profile times taken: if no profile all are set"
 echo "  -g, --gpu            Profile GPU usage: if no profile all are set"
 echo "  -m, --memory         Profile memory usage: if no profile all are set"
-echo "  -b, --table          Create pretty table with the primary results"
+echo "  -n, --number         Number of simulations: default = 1)"
 echo "  -h, --help           Display this help message"
 exit 0
 }
 
 start=0
+number=1
 profiles=()
 filename='default'
 
@@ -39,12 +42,13 @@ case "$1" in
  -g | --gpu) profiles+=("GPU_MEMORY")
    ;;
  -m | --memory) profiles+=("MEMORY")
+    ;;
+ -n | --number) number=$2
+ shift 1
    ;;
  -h | --help) help
    ;;
   *) echo "Option $1 not recognized"
-   ;;
- -b | --table) write_table='True'
    ;;
 esac
 shift 1
@@ -63,14 +67,23 @@ if [ ${#profiles[@]} -eq 0 ]; then
     profiles+=($"MEMORY")
 fi
 
-for spacing in $(seq $start $step $stop)
+prfs=''
+for profile in "${profiles[@]}"
 do
-    for profile in "${profiles[@]}"
-    do
-        python3 performance_check.py --spacing $spacing --profile $profile --savefolder $filename
-    done
+  prfs+="$profile"
+  prfs+="%"
 done
 
-if [ -$write_table == 'True' ]; then
-    python3 create_benchmarking_table.py
-fi
+for ((i=0; i < number; i++))
+do
+  for spacing in $(seq $start $step $stop)
+  do
+      for profile in "${profiles[@]}"
+      do
+          python3 performance_check.py --spacing $spacing --profile $profile --savefolder $filename
+      done
+  done
+  python3 extract_benchmarking_data.py --start $start --stop $stop --step $step --profiles "$prfs" --savefolder $filename
+done
+
+python3 get_final_table.py --savefolder $filename
