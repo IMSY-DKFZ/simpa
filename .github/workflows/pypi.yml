@@ -1,11 +1,10 @@
-# Uploads the current version of the package to PyPI when commit are pushed to main (including merges via pull requests)
+# Uploads the current version of the package to PyPI when publishing a release
 
 name: Upload to PyPI
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
 
 jobs:
   release-build:
