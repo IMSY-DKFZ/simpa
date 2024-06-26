@@ -5,7 +5,7 @@
 import os
 import numpy as np
 from typing import Union
-import typer
+from argparse import ArgumentParser
 
 import simpa as sp
 from simpa import Tags
@@ -15,20 +15,16 @@ from simpa.utils.profiling import profile
 # FIXME temporary workaround for newest Intel architectures
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-app = typer.Typer()
 
-
-@app.command()
 @profile
-def run_linear_unmixing(SPACING: float = 0.25, path_manager=None, visualise: bool = True):
+def run_linear_unmixing(spacing: Union[float, int] = 0.25, path_manager=None, visualise: bool = True):
     """
 
-    :param SPACING: The simulation spacing between voxels
+    :param spacing: The simulation spacing between voxels
     :param path_manager: the path manager to be used, typically sp.PathManager
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
     """
-    print(SPACING)
     if path_manager is None:
         path_manager = sp.PathManager()
     # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
@@ -115,7 +111,7 @@ def run_linear_unmixing(SPACING: float = 0.25, path_manager=None, visualise: boo
         Tags.RANDOM_SEED: RANDOM_SEED,
         Tags.VOLUME_NAME: VOLUME_NAME,
         Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
-        Tags.SPACING_MM: SPACING,
+        Tags.SPACING_MM: spacing,
         Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
         Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
         Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
@@ -185,4 +181,13 @@ def run_linear_unmixing(SPACING: float = 0.25, path_manager=None, visualise: boo
 
 
 if __name__ == "__main__":
-    app()
+    parser = ArgumentParser(description='Run the linear unmixing example')
+    parser.add_argument("--spacing", default=0.2, type=Union[float, int], help='the voxel spacing in mm')
+    parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
+    parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
+    config = parser.parse_args()
+
+    spacing = config.spacing
+    path_manager = config.path_manager
+    visualise = config.visualise
+    run_linear_unmixing(spacing=spacing, path_manager=path_manager, visualise=visualise)

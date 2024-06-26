@@ -20,7 +20,7 @@ elif profile_type == "TIME":
     profile = LineProfiler()
 
     def print_stats_atexit():
-        return profile.print_stats(stream=stream, output_unit=10**(-6))
+        return profile.print_stats(stream=stream, output_unit=10**(-3))
     atexit.register(print_stats_atexit)
 elif profile_type == "MEMORY":
     from memory_profiler import profile

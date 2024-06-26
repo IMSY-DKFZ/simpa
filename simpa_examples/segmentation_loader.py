@@ -5,28 +5,26 @@
 from simpa import Tags
 import simpa as sp
 import numpy as np
+from typing import Union
 from skimage.data import shepp_logan_phantom
 from scipy.ndimage import zoom
 
 # FIXME temporary workaround for newest Intel architectures
 import os
-import typer
+from argparse import ArgumentParser
 from simpa.utils.profiling import profile
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-# If VISUALIZE is set to True, the simulation result will be plotted
-app = typer.Typer()
 # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
 #  point to the correct file in the PathManager().
 
 
-@app.command()
 @profile
-def run_segmentation_loader(SPACING: float = 0.1, path_manager=None,
+def run_segmentation_loader(spacing: Union[float, int] = 0.1, path_manager=None,
                             visualise: bool = True):
     """
 
-    :param SPACING: The simulation spacing between voxels
+    :param spacing: The simulation spacing between voxels
     :param path_manager: the path manager to be used, typically sp.PathManager
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
@@ -42,7 +40,7 @@ def run_segmentation_loader(SPACING: float = 0.1, path_manager=None,
 
     input_spacing = 0.2
     segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
-    segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/SPACING,
+    segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/spacing,
                                              order=0)).astype(int)
 
     def segmentation_class_mapping():
@@ -69,10 +67,10 @@ def run_segmentation_loader(SPACING: float = 0.1, path_manager=None,
     settings[Tags.VOLUME_NAME] = "SegmentationTest"
     settings[Tags.RANDOM_SEED] = 1234
     settings[Tags.WAVELENGTHS] = [700]
-    settings[Tags.SPACING_MM] = SPACING
-    settings[Tags.DIM_VOLUME_X_MM] = 400 / (SPACING / input_spacing)
-    settings[Tags.DIM_VOLUME_Y_MM] = 128 / (SPACING / input_spacing)
-    settings[Tags.DIM_VOLUME_Z_MM] = 400 / (SPACING / input_spacing)
+    settings[Tags.SPACING_MM] = spacing
+    settings[Tags.DIM_VOLUME_X_MM] = 400 / (spacing / input_spacing)
+    settings[Tags.DIM_VOLUME_Y_MM] = 128 / (spacing / input_spacing)
+    settings[Tags.DIM_VOLUME_Z_MM] = 400 / (spacing / input_spacing)
 
     settings.set_volume_creation_settings({
         Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,
@@ -107,4 +105,13 @@ def run_segmentation_loader(SPACING: float = 0.1, path_manager=None,
 
 
 if __name__ == "__main__":
-    app()
+    parser = ArgumentParser(description='Run the segmentation loader example')
+    parser.add_argument("--spacing", default=0.2, type=Union[float, int], help='the voxel spacing in mm')
+    parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
+    parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
+    config = parser.parse_args()
+
+    spacing = config.spacing
+    path_manager = config.path_manager
+    visualise = config.visualise
+    run_segmentation_loader(spacing=spacing, path_manager=path_manager, visualise=visualise)
