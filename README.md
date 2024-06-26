@@ -193,6 +193,9 @@ benchmarking/benchmarking_data/benchmarking_data_table.txt). Make sure to back u
 it otherwise will be overwritten. We recommend using the default settings (besides -file gives the location where the 
 table is saved).
 
+You can add or remove simpa examples from the benchmarking in the performance_check.py (examples= ...). If examples
+do not run on your device (eg to small GPU RAM), the skript should work either way. #300
+
 # Troubleshooting
 
 In this section, known problems are listed with their solutions (if available):

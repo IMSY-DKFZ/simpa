@@ -20,7 +20,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_segmentation_loader(spacing: Union[float, int] = 0.1, path_manager=None,
+def run_segmentation_loader(spacing: Union[float, int] = .1, path_manager=None,
                             visualise: bool = True):
     """
 
