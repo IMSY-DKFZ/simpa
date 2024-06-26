@@ -15,7 +15,7 @@ from simpa.utils.serializer import SerializableSIMPAClass
 
 class Spectrum(SerializableSIMPAClass, object):
     """
-    An instance of this class represents the absorption spectrum over wavelength for a particular
+    An instance of this class represents a spectrum over a range of wavelengths.
     """
 
     def __init__(self, spectrum_name: str, wavelengths: np.ndarray, values: np.ndarray):
@@ -43,15 +43,16 @@ class Spectrum(SerializableSIMPAClass, object):
 
     def get_value_over_wavelength(self):
         """
-        :return: numpy array with the available wavelengths and the corresponding absorption properties
+        :return: numpy array with the available wavelengths and the corresponding properties
         """
         return np.asarray([self.wavelengths, self.values])
 
     def get_value_for_wavelength(self, wavelength: int) -> float:
         """
-        :param wavelength: the wavelength to retrieve a optical absorption value for [cm^{-1}].
+        :param wavelength: the wavelength to retrieve a value from the defined spectrum.
                            Must be an integer value between the minimum and maximum wavelength.
-        :return: the best matching linearly interpolated absorption value for the given wavelength.
+        :return: the best matching linearly interpolated values for the given wavelength.
+        :raises ValueError: if the given wavelength is not within the range of the spectrum.
         """
         return self.new_absorptions[wavelength-self.min_wavelength]
 

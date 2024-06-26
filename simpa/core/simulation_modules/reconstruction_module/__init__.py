@@ -110,7 +110,7 @@ def create_reconstruction_settings(speed_of_sound_in_m_per_s: int = 1540, time_s
         Tags.SPACING_MM: sensor_spacing_in_mm,
         Tags.RECONSTRUCTION_APODIZATION_METHOD: apodization,
         Tags.RECONSTRUCTION_MODE: recon_mode,
-        Tags.SENSOR_SAMPLING_RATE_MHZ: (1.0 / time_spacing_in_s) / 1000000
     })
+    settings[Tags.K_WAVE_SPECIFIC_DT] = time_spacing_in_s
 
     return settings
