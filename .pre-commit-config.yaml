@@ -23,7 +23,7 @@ repos:
       types: [python]
       args:
         - --license-filepath
-        - license_header.txt        # defaults to: LICENSE.txt
+        - pre_commit_configs/license_header.txt        # defaults to: LICENSE.txt
 
 -   repo: https://github.com/jorisroovers/gitlint # Uses MIT License (MIT compatible)
     rev:  v0.19.1
@@ -36,6 +36,10 @@ repos:
       - id: markdown-link-check # checks if links in markdown files work
         exclude: docs/
         types: [markdown]
+        args: 
+           - -c
+           - pre_commit_configs/link-config.json
+        always_run: true
 
 # toggle comment to perform git config user email check. Note that you have to place the check-email.sh script in your .git/hooks/ folder
 # -   repo: local
