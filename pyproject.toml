@@ -49,7 +49,7 @@ profile = [
 
 [project.urls]
 Homepage = "https://github.com/IMSY-DKFZ/simpa"
-Documentation = "https://simpa.readthedocs.io/en/develop/"
+Documentation = "https://simpa.readthedocs.io/en/main/"
 Repository = "https://github.com/IMSY-DKFZ/simpa"
 
 [tool.setuptools.packages.find]
