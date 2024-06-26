@@ -2,20 +2,19 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import os
-import sys
-import glob
-import re
-import inspect # TODO use getdoc or getsource
-#import unittest # TODO: delete
-from mdutils.mdutils import MdUtils
-import pypandoc
-#from simpa_tests import manual_test_classes
-#import simpa_tests.manual_tests.acoustic_forward_models.KWaveAcousticForwardConvenienceFunction as specific_module # TODO delete
-#import simpa_tests.manual_tests as test_module # TODO delete
 import ast
+import glob
 import importlib
+import inspect
 import logging
+import os
+import shutil
+import sys
+import zipfile
+
+import pypandoc
+import requests
+from mdutils.mdutils import MdUtils
 
 
 class GenerateOverview():
@@ -42,34 +41,69 @@ class GenerateOverview():
         self.mdFile = MdUtils(file_name=self.md_name, title='<u>Overview of Manual Test Results</u>')
         self.set_style()
 
-        # TODO delete the following
+        # TODO fix issue in PointSourceReconstruction.py file (make it consistent with the other manual tests)
         self.scripts_to_neglect = ["PointSourceReconstruction.py"]
-        #self.scripts_to_neglect += ["PointSourceReconstruction.py", "KWaveAcousticForwardConvenienceFunction.py"] # TODO: let script not stop for not running manual tests and mention this errors in overview
-        #self.scripts_to_neglect += ["DelayAndSumReconstruction.py", "SignedDelayMultiplyAndSumReconstruction.py", "DelayMultiplyAndSumReconstruction.py",
-        #                           "TimeReversalReconstruction.py", "MinimalKWaveTest.py", "ReproduceDISMeasurements.py",
-        #                           "QPAIReconstruction.py", "TestLinearUnmixingVisual.py", "SegmentationLoader.py", "SimulationWithMSOTInvision.py",
-        #                           "VisualiseDevices.py", "AbsorptionAndScatteringWithinHomogenousMedium.py", "ComputeDiffuseReflectance.py", 
-        #                           "CompareMCXResultsWithDiffusionTheory.py", "AbsorptionAndScatteringWithInifinitesimalSlabExperiment.py"]
-        #self.scripts_to_neglect.remove("DelayAndSumReconstruction.py")
-        #self.scripts_to_neglect.remove("MinimalKWaveTest.py")
-        #self.scripts_to_neglect.remove("SegmentationLoader.py")
-        #self.scripts_to_neglect = []
+        # For testing this file one can ignore the time consuming scripts
+        """self.scripts_to_neglect += ["DelayAndSumReconstruction.py", 
+                                   "SignedDelayMultiplyAndSumReconstruction.py", "DelayMultiplyAndSumReconstruction.py",
+                                   "TimeReversalReconstruction.py", "MinimalKWaveTest.py", "ReproduceDISMeasurements.py",
+                                   "QPAIReconstruction.py", "TestLinearUnmixingVisual.py", "SegmentationLoader.py", "SimulationWithMSOTInvision.py",
+                                   "VisualiseDevices.py", "AbsorptionAndScatteringWithinHomogenousMedium.py", "ComputeDiffuseReflectance.py", 
+                                   "CompareMCXResultsWithDiffusionTheory.py", "AbsorptionAndScatteringWithInifinitesimalSlabExperiment.py"]"""
+        
+    def download_reference_images(self):
+        """
+        removes the current reference figures directory and downloads the latest references from nextcloud
+        """
+        ref_imgs_path = os.path.join(self.current_dir,"reference_figures")
+        if os.path.exists(ref_imgs_path):
+            # Remove the directory
+            shutil.rmtree(ref_imgs_path)
+            print(f'Directory {ref_imgs_path} removed successfully.')
+        # nextcloud url with the reference images
+        self.nextcloud_url = "https://hub.dkfz.de/s/Xb96SFXbmiE5Fk8" # shared "reference_figures" folder on nextcloud
+        # Specify the local directory to save the files
+        zip_filepath = os.path.join(self.current_dir, "downloaded.zip")#'downloaded_folder.zip')       
+        # Construct the download URL based on the public share link
+        download_url = self.nextcloud_url.replace('/s/', '/index.php/s/') + '/download'
+        # Send a GET request to download the file
+        response = requests.get(download_url)
+
+        if response.status_code == 200:
+            # Save the file
+            with open(zip_filepath, 'wb') as f:
+                f.write(response.content)
+            print(f'File downloaded successfully and stored at {zip_filepath}.')
+        else:
+            print(f'Failed to download file. Status code: {response.status_code}')
+
+        # Open the zip file
+        with zipfile.ZipFile(zip_filepath, 'r') as zip_ref:
+            # Extract all the contents into the specified directory
+            zip_ref.extractall(self.current_dir)
+
+        print(f'Files extracted to {self.current_dir}')
+
+        # Remove the zip file after extraction
+        os.remove(zip_filepath)
+        print(f'{zip_filepath} removed successfully.')
 
     def clean_dir(self, dir):
         """
-        Deletes "__pycache__" and "__init__.py" strings from dir list
+        Deletes scripts from dir list that shall not be runned
 
         :param dir: list of files or directories
         :type dir: list
 
-        :return: cleaned list of directories
+        :return: None but updateds dir to be a cleaned list without scripts that can not be runned
         """
 
-        to_delete = ["__pycache__", "__init__.py", self.file_name, "test_data", "utils.py", "manual_tests_overview.md",
-                     "manual_tests_overview.pdf", "manual_tests_overview.html",
-         "mdutils_example_temp.py", "Example_Markdown.md", "figures", "reference_figures", "path_config.env"]
+        # do not execute the following files in the manual_tests folder
+        to_be_ignored = ["__pycache__", "__init__.py", self.file_name, "test_data", "utils.py",
+                         "manual_tests_overview.md", "manual_tests_overview.pdf", "manual_tests_overview.html",
+                         "figures", "reference_figures", "path_config.env"]
 
-        for name in to_delete:
+        for name in to_be_ignored:
             try:
                 dir.remove(name)
             except ValueError:
@@ -77,7 +111,12 @@ class GenerateOverview():
 
     def run_manual_tests(self, run_tests: bool = True):
         """
-        
+        runs all the scripts and creates md file with the results figures
+
+        :param run_tests: if true scripts are executed
+        :type run_tests: bool
+
+        :return: None
         """
         print("NEGLECT THE FOLLOWING FILES", self.scripts_to_neglect)
 
@@ -86,22 +125,19 @@ class GenerateOverview():
         self.clean_dir(directories)
  
         for dir_num, dir_ in enumerate(directories):
-            print() #TODO delete this print
-            print(dir_) #TODO delete this print
+            print("\n" , dir_)
             dir_title = f"{dir_num+1}. " + dir_.replace("_", " ").capitalize()
             self.mdFile.new_header(level=1, title=dir_title)
             files = os.listdir(os.path.join(self.current_dir, dir_))
             files.sort()
             self.clean_dir(files)
 
-            
-            
+            # iterate through scripts
             for file_num, file in enumerate(files):
-                print() #TODO delete this print
-                print(" ", file) #TODO delete this print
+                print("\n ", file) 
 
-                if file in self.scripts_to_neglect: #TODO automatically let also try not working manual tests and print this in overview!
-                    #print(file, "has bug and has to be neglected")
+                if file in self.scripts_to_neglect:
+                    print(file, "has bug or is not compatible and has to be neglected")
                     continue
                 
                 file_title = f"{dir_num+1}.{file_num+1} " + file.split(".py")[0]
@@ -140,7 +176,7 @@ class GenerateOverview():
                 except Exception as e:
                     logging.warning(f"Error Name: {type(e).__name__}")
                     logging.warning(f"Error Message: {e}")
-                    self.mdFile.write(f"<font color=red>ERROR occured:</font><br>Error: {type(e).__name__}<br>Error message: {e}")
+                    self.mdFile.write(f"<font color=red><b>ERROR occured:</b></font><br>- Error: {type(e).__name__}<br>- Error message: {e}\n")
 
                 # Write comparison of reference image and new generated image in markdown file
                 self.mdFile.write("\n- <b>Comparison of reference and generated image:</b><br>\n")
@@ -280,5 +316,6 @@ h1 {
 
 if __name__ == '__main__':
     automatic_manual_tests = GenerateOverview()
+    automatic_manual_tests.download_reference_images()
     automatic_manual_tests.run_manual_tests(run_tests=True)
     automatic_manual_tests.create_html()
