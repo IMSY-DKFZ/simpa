@@ -62,10 +62,9 @@ class HorizontalLayerStructure(GeometricalStructure):
         target_vector_voxels = target_vector_voxels[:, :, :, 2]
         if self.do_deformation:
             # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
-            deformation_values_mm = self.deformation_functional_mm(torch.arange(self.volume_dimensions_voxels[0], dtype=torch.float) *
-                                                                   self.voxel_spacing,
-                                                                   torch.arange(self.volume_dimensions_voxels[1], dtype=torch.float) *
-                                                                   self.voxel_spacing).T
+            eval_points = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0], dtype=torch.float) * self.voxel_spacing,
+                                         torch.arange(self.volume_dimensions_voxels[1], dtype=torch.float) * self.voxel_spacing, indexing='ij')
+            deformation_values_mm = self.deformation_functional_mm(eval_points)
             target_vector_voxels = (target_vector_voxels + torch.from_numpy(deformation_values_mm.reshape(
                 self.volume_dimensions_voxels[0],
                 self.volume_dimensions_voxels[1], 1)).to(self.torch_device) / self.voxel_spacing).float()
