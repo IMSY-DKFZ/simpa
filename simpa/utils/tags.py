@@ -170,13 +170,13 @@ class Tags:
 
     DEFORMATION_X_COORDINATES_MM = "deformation_x_coordinates"
     """
-    Mesh that defines the x coordinates of the deformation.\n
+    Array that defines the x coordinates of the deformation.\n
     Usage: adapter versatile_volume_creation, naming convention
     """
 
     DEFORMATION_Y_COORDINATES_MM = "deformation_y_coordinates"
     """
-    Mesh that defines the y coordinates of the deformation.\n
+    Array that defines the y coordinates of the deformation.\n
     Usage: adapter versatile_volume_creation, naming convention
     """
 
