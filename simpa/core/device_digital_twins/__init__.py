@@ -8,7 +8,7 @@ import numpy as np
 import hashlib
 import uuid
 from simpa.utils.serializer import SerializableSIMPAClass
-from simpa.utils.utils import are_equal
+from simpa.utils.calculate import are_equal
 
 class DigitalDeviceTwinBase(SerializableSIMPAClass):
     """

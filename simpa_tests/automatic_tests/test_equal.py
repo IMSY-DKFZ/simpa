@@ -4,7 +4,8 @@
 
 import unittest
 import numpy as np
-from simpa.utils.utils import are_equal
+from simpa.utils.calculate import are_equal
+
 
 class TestEqual(unittest.TestCase):
 
