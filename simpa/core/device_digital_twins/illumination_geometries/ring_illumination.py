@@ -18,7 +18,9 @@ class RingIlluminationGeometry(IlluminationGeometryBase):
     Note: To create a ring light which illuminates a square tissue with the same center and any inner radius r,
     create the following geometry using the tissue width:
 
-    >>> ring_light = RingIlluminationGeometry(inner_radius_in_mm=r, outer_radius_in_mm=tissue_width / 2., device_position_mm=np.array([tissue_width / 2., tissue_width / 2., 0]))
+    >>> ring_light = RingIlluminationGeometry(inner_radius_in_mm=r,
+                                              outer_radius_in_mm=tissue_width / 2.,
+                                              device_position_mm=np.array([tissue_width / 2., tissue_width / 2., 0]))
     """
 
     def __init__(self,
@@ -54,12 +56,12 @@ class RingIlluminationGeometry(IlluminationGeometryBase):
                                                        source_direction_vector=source_direction_vector,
                                                        field_of_view_extent_mm=field_of_view_extent_mm)
 
-        assert inner_radius_in_mm >= 0, inner_radius_in_mm
+        assert inner_radius_in_mm >= 0, f"The inner radius has to be 0 or positive, not {inner_radius_in_mm}!"
         assert outer_radius_in_mm >= inner_radius_in_mm, \
             f"The outer radius ({outer_radius_in_mm}) has to be at least as large " \
             f"as the inner radius ({inner_radius_in_mm})!"
 
-        assert lower_angular_bound >= 0, lower_angular_bound
+        assert lower_angular_bound >= 0, f"The lower angular bound has to be 0 or positive, not {lower_angular_bound}!"
         assert upper_angular_bound >= lower_angular_bound, \
             f"The outer radius ({upper_angular_bound}) has to be at least as large " \
             f"as the inner radius ({lower_angular_bound})!"
