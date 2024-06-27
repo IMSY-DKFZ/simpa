@@ -101,24 +101,6 @@ class Tags:
     Volume Creation Settings
     """
 
-    VOLUME_CREATOR = ("volume_creator", str)
-    """
-    Choice of the volume creator adapter.\n 
-    Usage: module volume_creation_module, module device_digital_twins
-    """
-
-    VOLUME_CREATOR_VERSATILE = "volume_creator_versatile"
-    """
-    Corresponds to the ModelBasedVolumeCreator.\n
-    Usage: module volume_creation_module, naming convention
-    """
-
-    VOLUME_CREATOR_SEGMENTATION_BASED = "volume_creator_segmentation_based"
-    """
-    Corresponds to the SegmentationBasedVolumeCreator.\n
-    Usage: module volume_creation_module, naming convention
-    """
-
     INPUT_SEGMENTATION_VOLUME = ("input_segmentation_volume", np.ndarray)
     """
     Array that defines a segmented volume.\n

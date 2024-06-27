@@ -126,7 +126,6 @@ def get_settings():
         Tags.DIM_VOLUME_Z_MM: XZ_DIM,
         Tags.DIM_VOLUME_X_MM: XZ_DIM,
         Tags.DIM_VOLUME_Y_MM: Y_DIM,
-        Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
         Tags.GPU: True,
         Tags.WAVELENGTHS: [700]
     }

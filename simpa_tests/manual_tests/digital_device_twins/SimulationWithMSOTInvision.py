@@ -130,7 +130,6 @@ class MSOTInvisionSimulationTest(ManualIntegrationTestClass):
             Tags.DIM_VOLUME_Z_MM: 90,
             Tags.DIM_VOLUME_X_MM: 90,
             Tags.DIM_VOLUME_Y_MM: 40,
-            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
             Tags.GPU: True,
             Tags.WAVELENGTHS: [700]
         }

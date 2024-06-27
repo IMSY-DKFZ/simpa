@@ -96,7 +96,6 @@ general_settings = {
     Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
     Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
     Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-    Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
     Tags.GPU: True,
 
     # The following parameters set the optical forward model
