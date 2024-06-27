@@ -70,10 +70,9 @@ class CircularTubularStructure(GeometricalStructure):
 
         if self.do_deformation:
             # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
-            deformation_values_mm = self.deformation_functional_mm(torch.arange(self.volume_dimensions_voxels[0]) *
-                                                                   self.voxel_spacing,
-                                                                   torch.arange(self.volume_dimensions_voxels[1]) *
-                                                                   self.voxel_spacing).T
+            eval_points = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0]) * self.voxel_spacing,
+                                         torch.arange(self.volume_dimensions_voxels[1]) * self.voxel_spacing, indexing='ij')
+            deformation_values_mm = self.deformation_functional_mm(eval_points)
             deformation_values_mm = deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
                                                                   self.volume_dimensions_voxels[1], 1, 1)
             deformation_values_mm = torch.tile(torch.as_tensor(
