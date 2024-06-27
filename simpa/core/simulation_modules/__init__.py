@@ -10,7 +10,8 @@ from typing import List
 
 class SimulationModule(PipelineModule):
     """
-    Defines a simulation module that is a step in the simulation pipeline.
+    Defines a simulation module that is a step in the simulation pipeline. 
+    Each simulation module can only be one of Volume Creation, Light Propagation Modeling, Acoustic Wave Propagation Modeling, Image Reconstruction.
     """
 
     def __init__(self, global_settings: Settings):
@@ -41,17 +42,3 @@ class SimulationModule(PipelineModule):
                 if flag not in cmd:
                     cmd.append(str(flag))
         return cmd
-        
-    def before_running(self):
-        """
-        Called before running the run method from PipelineModule
-        """
-        self.logger.info(f"Starts running {self.__class__.__name__}")
-
-    def after_running(self):
-        """
-        Called after running the run method from PipelineModule
-        """
-        self.logger.info(f"Ended running {self.__class__.__name__}")
-
-    

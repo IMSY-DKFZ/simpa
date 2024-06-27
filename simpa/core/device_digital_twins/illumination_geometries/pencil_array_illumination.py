@@ -5,7 +5,7 @@
 import numpy as np
 
 from simpa.core.device_digital_twins import IlluminationGeometryBase
-from simpa.utils import Settings, Tags
+from simpa.utils import Tags
 
 
 class PencilArrayIlluminationGeometry(IlluminationGeometryBase):

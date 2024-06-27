@@ -6,7 +6,7 @@ import numpy as np
 import subprocess
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
-from simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base import IlluminationGeometryBase
+from simpa.core.device_digital_twins.illumination_geometries import IlluminationGeometryBase
 import json
 import jdata
 import os
