@@ -1250,7 +1250,7 @@ class Tags:
     Default filename of the SIMPA output if not specified otherwise.\n
     Usage: SIMPA package, naming convention
     """
-    SIMPA_VERSION = "simpa_version"
+    SIMPA_VERSION = ("simpa_version", str)
     """
     Version number of the currently installed simpa package
     Usage: SIMPA package
