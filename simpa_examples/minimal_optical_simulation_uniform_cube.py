@@ -9,7 +9,6 @@
 from simpa import Tags
 import simpa as sp
 import numpy as np
-from typing import Union
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -22,7 +21,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_minimal_optical_simulation_uniform_cube(spacing: Union[float, int] = 0.5, path_manager=None,
+def run_minimal_optical_simulation_uniform_cube(spacing: float | int = 0.5, path_manager=None,
                                                 visualise: bool = True):
     """
 
@@ -109,12 +108,10 @@ def run_minimal_optical_simulation_uniform_cube(spacing: Union[float, int] = 0.5
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Run the minimal optical simulation uniform cube example')
-    parser.add_argument("--spacing", default=0.2, type=Union[float, int], help='the voxel spacing in mm')
+    parser.add_argument("--spacing", default=0.2, type=float, help='the voxel spacing in mm')
     parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()
 
-    spacing = config.spacing
-    path_manager = config.path_manager
-    visualise = config.visualise
-    run_minimal_optical_simulation_uniform_cube(spacing=spacing, path_manager=path_manager, visualise=visualise)
+    run_minimal_optical_simulation_uniform_cube(spacing=config.spacing, path_manager=config.path_manager,
+                                                visualise=config.visualise)

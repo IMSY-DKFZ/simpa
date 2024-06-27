@@ -4,7 +4,6 @@
 
 import os
 import numpy as np
-from typing import Union
 from argparse import ArgumentParser
 
 import simpa as sp
@@ -17,7 +16,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_linear_unmixing(spacing: Union[float, int] = 0.25, path_manager=None, visualise: bool = True):
+def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualise: bool = True):
     """
 
     :param spacing: The simulation spacing between voxels
@@ -187,7 +186,4 @@ if __name__ == "__main__":
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()
 
-    spacing = config.spacing
-    path_manager = config.path_manager
-    visualise = config.visualise
-    run_linear_unmixing(spacing=spacing, path_manager=path_manager, visualise=visualise)
+    run_linear_unmixing(spacing=config.spacing, path_manager=config.path_manager, visualise=config.visualise)

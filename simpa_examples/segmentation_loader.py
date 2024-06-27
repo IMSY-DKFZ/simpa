@@ -5,7 +5,6 @@
 from simpa import Tags
 import simpa as sp
 import numpy as np
-from typing import Union
 from skimage.data import shepp_logan_phantom
 from scipy.ndimage import zoom
 
@@ -20,7 +19,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_segmentation_loader(spacing: Union[float, int] = .1, path_manager=None,
+def run_segmentation_loader(spacing: float | int = .1, path_manager=None,
                             visualise: bool = True):
     """
 
@@ -106,12 +105,9 @@ def run_segmentation_loader(spacing: Union[float, int] = .1, path_manager=None,
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Run the segmentation loader example')
-    parser.add_argument("--spacing", default=0.2, type=Union[float, int], help='the voxel spacing in mm')
+    parser.add_argument("--spacing", default=0.2, type=float, help='the voxel spacing in mm')
     parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()
 
-    spacing = config.spacing
-    path_manager = config.path_manager
-    visualise = config.visualise
-    run_segmentation_loader(spacing=spacing, path_manager=path_manager, visualise=visualise)
+    run_segmentation_loader(spacing=config.spacing, path_manager=config.path_manager, visualise=config.visualise)

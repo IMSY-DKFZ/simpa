@@ -11,7 +11,6 @@ from scipy.ndimage import zoom
 
 import simpa as sp
 from simpa import Tags
-from typing import Union
 from simpa.utils.profiling import profile
 from argparse import ArgumentParser
 
@@ -24,7 +23,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_perform_iterative_qPAI_reconstruction(spacing: Union[float, int] = 0.2, path_manager=None,
+def run_perform_iterative_qPAI_reconstruction(spacing: float | int = 0.2, path_manager=None,
                                               visualise: bool = True):
     """
 
@@ -246,12 +245,10 @@ def run_perform_iterative_qPAI_reconstruction(spacing: Union[float, int] = 0.2, 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Run the iterative qPAI reconstruction example')
-    parser.add_argument("--spacing", default=0.2, type=Union[float, int], help='the voxel spacing in mm')
+    parser.add_argument("--spacing", default=0.2, type=float, help='the voxel spacing in mm')
     parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()
 
-    spacing = config.spacing
-    path_manager = config.path_manager
-    visualise = config.visualise
-    run_perform_iterative_qPAI_reconstruction(spacing=spacing, path_manager=path_manager, visualise=visualise)
+    run_perform_iterative_qPAI_reconstruction(spacing=config.spacing, path_manager=config.path_manager,
+                                              visualise=config.visualise)

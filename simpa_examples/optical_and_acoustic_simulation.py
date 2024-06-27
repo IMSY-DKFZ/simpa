@@ -6,7 +6,6 @@ from simpa import Tags
 import simpa as sp
 import numpy as np
 from simpa.utils.profiling import profile
-from typing import Union
 from argparse import ArgumentParser
 
 # FIXME temporary workaround for newest Intel architectures
@@ -18,7 +17,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_optical_and_acoustic_simulation(spacing: Union[float, int] = 0.2, path_manager=None,
+def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager=None,
                                         visualise: bool = True):
     """
 
@@ -215,12 +214,10 @@ def run_optical_and_acoustic_simulation(spacing: Union[float, int] = 0.2, path_m
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Run the optical and acoustic simulation example')
-    parser.add_argument("--spacing", default=0.2, type=Union[float, int], help='the voxel spacing in mm')
+    parser.add_argument("--spacing", default=0.2, type=float, help='the voxel spacing in mm')
     parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()
 
-    spacing = config.spacing
-    path_manager = config.path_manager
-    visualise = config.visualise
-    run_optical_and_acoustic_simulation(spacing=spacing, path_manager=path_manager, visualise=visualise)
+    run_optical_and_acoustic_simulation(spacing=config.spacing, path_manager=config.path_manager,
+                                        visualise=config.visualise)
