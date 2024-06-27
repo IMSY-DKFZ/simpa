@@ -41,6 +41,15 @@ repos:
            - pre_commit_configs/link-config.json
         always_run: true
 
+-   repo: local
+    hooks:
+      - id: build-sphinx-docs
+        name: Build Sphinx documentation
+        entry: make -C docs html # builds the sphinx documentation
+        language: system
+        pass_filenames: false
+        always_run: true
+
 # toggle comment to perform git config user email check. Note that you have to place the check-email.sh script in your .git/hooks/ folder
 # -   repo: local
 #     hooks:
