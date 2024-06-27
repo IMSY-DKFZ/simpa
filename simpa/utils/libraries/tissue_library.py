@@ -9,21 +9,39 @@ from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, Sc
 from simpa.utils.calculate import randomize_uniform
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
 
+from typing import Union
+import torch
+
 
 class TissueLibrary(object):
     """
-    TODO
+    A library, returning molecular compositions for various typical tissue segmentations.
     """
 
-    def get_blood_volume_fractions(self, total_blood_volume_fraction=1e-10, oxygenation=1e-10):
+    def get_blood_volume_fractions(self, oxygenation: Union[float, int, torch.Tensor] = 1e-10,
+                                   blood_volume_fraction: Union[float, int, torch.Tensor] = 1e-10):
         """
-        TODO
+        A function that returns the volume fraction of the oxygenated and deoxygenated blood.
+        :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
+        Default: 1e-10
+        :param blood_volume_fraction: The total blood volume fraction (including oxygenated and deoxygenated blood).
+        Default: 1e-10
+        :return: the blood volume fraction of the oxygenated and deoxygenated blood separately.
         """
-        return [total_blood_volume_fraction*oxygenation, total_blood_volume_fraction*(1-oxygenation)]
+        return [blood_volume_fraction*oxygenation, blood_volume_fraction*(1-oxygenation)]
 
-    def constant(self, mua=1e-10, mus=1e-10, g=1e-10):
+    def constant(self, mua: Union[float, int, torch.Tensor] = 1e-10, mus: Union[float, int, torch.Tensor] = 1e-10,
+                 g: Union[float, int, torch.Tensor] = 1e-10):
         """
-        TODO
+        A function returning a molecular composition as specified by the user. Typically intended for the use of wanting
+        specific mua, mus and g values.
+        :param mua: optical absorption coefficient
+        Default: 1e-10
+        :param mus: optical scattering coefficient
+        Default: 1e-10
+        :param g: optical scattering anisotropy
+        Default: 1e-10
+        :return: the molecular composition as specified by the user
         """
         return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
                                                                 absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
@@ -34,25 +52,25 @@ class TissueLibrary(object):
                                                                 CONSTANT_ANISOTROPY_ARBITRARY(g)))
                 .get_molecular_composition(SegmentationClasses.GENERIC))
 
-    def muscle(self, background_oxy=None, blood_volume_fraction=None):
+    def muscle(self, oxygenation: Union[float, int, torch.Tensor] = None,
+               blood_volume_fraction: Union[float, int, torch.Tensor] = None):
         """
-
+        Create a molecular composition mimicking that of a muscle
+        :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
+        Default: 0.175
+        :param blood_volume_fraction: The total blood volume fraction (including oxygenated and deoxygenated blood).
+        Default: 0.06
         :return: a settings dictionary containing all min and max parameters fitting for muscle tissue.
         """
-
         # Determine muscle oxygenation
-        if background_oxy is None:
-            oxy = 0.175
-        else:
-            oxy = background_oxy
+        if oxygenation is None:
+            oxygenation = 0.175
 
         # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         if blood_volume_fraction is None:
-            bvf = 0.06
-        else:
-            bvf = blood_volume_fraction
+            blood_volume_fraction = 0.06
 
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(bvf, oxy)
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
 
         # Get the water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
@@ -77,27 +95,28 @@ class TissueLibrary(object):
                 .append(custom_water)
                 .get_molecular_composition(SegmentationClasses.MUSCLE))
 
-    def soft_tissue(self, background_oxy=None, blood_volume_fraction=None):
+    def soft_tissue(self, oxygenation: Union[float, int, torch.Tensor] = None,
+                    blood_volume_fraction: Union[float, int, torch.Tensor] = None):
         """
         IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
         It is a mixture of muscle (mostly optical properties) and water (mostly acoustic properties).
         This tissue type roughly resembles the generic background tissue that we see in real PA images.
+        :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
+        Default: OpticalTissueProperties.BACKGROUND_OXYGENATION
+        :param blood_volume_fraction: The total blood volume fraction (including oxygenated and deoxygenated blood).
+        Default: OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE
         :return: a settings dictionary containing all min and max parameters fitting for generic soft tissue.
         """
 
         # Determine muscle oxygenation
-        if background_oxy is None:
-            oxy = OpticalTissueProperties.BACKGROUND_OXYGENATION
-        else:
-            oxy = background_oxy
+        if oxygenation is None:
+            oxygenation = OpticalTissueProperties.BACKGROUND_OXYGENATION
 
         # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         if blood_volume_fraction is None:
-            bvf = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE
-        else:
-            bvf = blood_volume_fraction
+            blood_volume_fraction = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE
 
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(bvf, oxy)
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
 
         # Get the water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
@@ -122,9 +141,11 @@ class TissueLibrary(object):
                 .append(custom_water)
                 .get_molecular_composition(SegmentationClasses.SOFT_TISSUE))
 
-    def epidermis(self, melanosom_volume_fraction=None):
+    def epidermis(self, melanosom_volume_fraction: Union[float, int, torch.Tensor] = None):
         """
-
+        Create a molecular composition mimicking that of epidermis
+        :param melanosom_volume_fraction: The total melanosom volume fraction
+        Default: 0.014
         :return: a settings dictionary containing all min and max parameters fitting for epidermis tissue.
         """
 
@@ -140,45 +161,53 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.epidermal_scatterer(1 - melanin_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.EPIDERMIS))
 
-    def dermis(self, background_oxy=None, blood_volume_fraction=None):
+    def dermis(self, oxygenation: Union[float, int, torch.Tensor] = None,
+               blood_volume_fraction: Union[float, int, torch.Tensor] = None):
         """
-
+        Create a molecular composition mimicking that of dermis
+        :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
+        Default: 0.5
+        :param blood_volume_fraction: The total blood volume fraction (including oxygenated and deoxygenated blood).
+        Default: 0.002
         :return: a settings dictionary containing all min and max parameters fitting for dermis tissue.
         """
 
         # Determine muscle oxygenation
-        if background_oxy is None:
-            oxy = 0.5
-        else:
-            oxy = background_oxy
+        if oxygenation is None:
+            oxygenation = 0.5
 
         if blood_volume_fraction is None:
-            bvf = 0.002
-        else:
-            bvf = blood_volume_fraction
+            blood_volume_fraction = 0.002
 
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(bvf, oxy)
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
-                .append(MOLECULE_LIBRARY.dermal_scatterer(1.0 - bvf))
+                .append(MOLECULE_LIBRARY.dermal_scatterer(1.0 - blood_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.DERMIS))
 
-    def subcutaneous_fat(self, oxy=OpticalTissueProperties.BACKGROUND_OXYGENATION):
+    def subcutaneous_fat(self,
+                         oxygenation: Union[float, int, torch.Tensor] = OpticalTissueProperties.BACKGROUND_OXYGENATION,
+                         blood_volume_fraction: Union[float, int, torch.Tensor]
+                         = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE):
         """
-
+        Create a molecular composition mimicking that of subcutaneous fat
+        :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
+        Default: OpticalTissueProperties.BACKGROUND_OXYGENATION
+        :param blood_volume_fraction: The total blood volume fraction (including oxygenated and deoxygenated blood).
+        Default: OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE
         :return: a settings dictionary containing all min and max parameters fitting for subcutaneous fat tissue.
         """
 
         # Get water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
 
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(
-            OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE, oxy)
+            oxygenation, blood_volume_fraction)
 
         # Determine fat volume fraction
         fat_volume_fraction = randomize_uniform(0.2, 1 - (water_volume_fraction + fraction_oxy + fraction_deoxy))
@@ -193,17 +222,19 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.FAT))
 
-    def blood(self, oxygenation=None):
+    def blood(self, oxygenation: Union[float, int, torch.Tensor] = None):
         """
-
+        Create a molecular composition mimicking that of blood
+        :param oxygenation: The oxygenation level of the blood(as a decimal).
+        Default: random oxygenation between 0 and 1.
         :return: a settings dictionary containing all min and max parameters fitting for full blood.
         """
 
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         if oxygenation is None:
             oxygenation = randomize_uniform(0.0, 1.0)
 
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(1.0, oxygenation)
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, 1.0)
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
@@ -213,9 +244,9 @@ class TissueLibrary(object):
 
     def bone(self):
         """
-
-            :return: a settings dictionary containing all min and max parameters fitting for full blood.
-            """
+        Create a molecular composition mimicking that of bone
+        :return: a settings dictionary fitting for bone.
+        """
         # Get water volume fraction
         water_volume_fraction = randomize_uniform(OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_MEAN -
                                                   OpticalTissueProperties.WATER_VOLUME_FRACTION_BONE_STD,
@@ -230,36 +261,53 @@ class TissueLibrary(object):
                 .get_molecular_composition(SegmentationClasses.BONE))
 
     def mediprene(self):
+        """
+        Create a molecular composition mimicking that of mediprene
+        :return: a settings dictionary fitting for mediprene.
+        """
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.mediprene())
                 .get_molecular_composition(SegmentationClasses.MEDIPRENE))
 
     def heavy_water(self):
+        """
+            Create a molecular composition mimicking that of heavy water
+            :return: a settings dictionary containing all min and max parameters fitting for heavy water.
+        """
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.heavy_water())
                 .get_molecular_composition(SegmentationClasses.HEAVY_WATER))
 
     def ultrasound_gel(self):
+        """
+            Create a molecular composition mimicking that of ultrasound gel
+            :return: a settings dictionary fitting for generic ultrasound gel.
+        """
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.water())
                 .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
 
-    def lymph_node(self, oxy=None, blood_volume_fraction=None):
+    def lymph_node(self, oxygenation: Union[float, int, torch.Tensor] = None,
+                   blood_volume_fraction: Union[float, int, torch.Tensor] = None):
         """
         IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
         It is a mixture of oxyhemoglobin, deoxyhemoglobin, and lymph node customized water.
+        :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
+        Default: 0.175
+        :param blood_volume_fraction: The total blood volume fraction (including oxygenated and deoxygenated blood).
+        Default: 0.06
         :return: a settings dictionary fitting for generic lymph node tissue.
         """
 
         # Determine muscle oxygenation
-        if oxy is None:
-            oxy = OpticalTissueProperties.LYMPH_NODE_OXYGENATION
+        if oxygenation is None:
+            oxygenation = OpticalTissueProperties.LYMPH_NODE_OXYGENATION
 
         # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         if blood_volume_fraction is None:
             blood_volume_fraction = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_LYMPH_NODE
 
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(blood_volume_fraction, oxy)
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
 
         # Get the water volume fraction
         # water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
