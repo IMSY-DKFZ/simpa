@@ -7,10 +7,9 @@ from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.constants import wavelength_independent_properties, property_tags
 import torch
-from simpa.core import SimulationModule
+from simpa.core.simulation_modules import SimulationModule
 from simpa.io_handling import save_data_field
 from simpa.utils.quality_assurance.data_sanity_testing import assert_equal_shapes, assert_array_well_defined
-from simpa.utils.processing_device import get_processing_device
 
 
 class VolumeCreatorModuleBase(SimulationModule):
@@ -21,8 +20,13 @@ class VolumeCreatorModuleBase(SimulationModule):
 
     def __init__(self, global_settings: Settings):
         super(VolumeCreatorModuleBase, self).__init__(global_settings=global_settings)
-        self.component_settings = global_settings.get_volume_creation_settings()
-        self.torch_device = get_processing_device(self.global_settings)
+        
+    def load_component_settings(self) -> Settings:
+        """Implements abstract method to serve volume creation settings as component settings
+
+        :return: Settings: volume creation component settings
+        """
+        return self.global_settings.get_volume_creation_settings()
 
     def create_empty_volumes(self):
         volumes = dict()

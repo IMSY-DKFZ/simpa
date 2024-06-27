@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
-from simpa.core.device_digital_twins.detection_geometries.detection_geometry_base import DetectionGeometryBase
+from simpa.core.device_digital_twins.detection_geometries import DetectionGeometryBase
 from simpa.log.file_logger import Logger
 from simpa.core.device_digital_twins.detection_geometries.linear_array import LinearArrayDetectionGeometry
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_image_dimensions
