@@ -4,19 +4,20 @@
 
 import unittest
 from coverage import Coverage
-from simpa_tests import automatic_test_classes
 import sys
-
 import os
+
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 cov = Coverage(source=['simpa'])
 cov.start()
 
-suite = unittest.TestSuite()
-for test_class in automatic_test_classes:
-    suite.addTests(unittest.defaultTestLoader.loadTestsFromName(test_class))
-automatic_test_return = not unittest.TextTestRunner().run(suite).wasSuccessful()
+# Discover all tests in the 'simpa_tests' package
+loader = unittest.TestLoader()
+tests = loader.discover('automatic_tests')  # Specify the directory where your tests are located
+print(tests)
+runner = unittest.TextTestRunner()
+result = runner.run(tests)
 
 cov.stop()
 cov.save()
@@ -24,4 +25,5 @@ cov.save()
 cov.report(skip_empty=True, skip_covered=False)
 cov.html_report(directory="../docs/test_coverage")
 
-sys.exit(automatic_test_return)
+# Exit with an appropriate code based on the test results
+sys.exit(not result.wasSuccessful())
