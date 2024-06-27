@@ -226,7 +226,6 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
         else:
             if save_path is None:
                 save_path = ""
-            save_path = save_path + "DIS_measurement_simulation_a.png"
 
         visualise_data(path_to_hdf5_file=self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
                        wavelength=800,
@@ -234,7 +233,7 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
                        show_absorption=True,
                        show_fluence=True,
                        log_scale=True,
-                       save_path=save_path)
+                       save_path=save_path + "DIS_measurement_simulation_a.png")
 
         measured_transmittance = np.asarray([self.transmittance_spectrum.get_value_for_wavelength(wl)
                                              for wl in self.settings[Tags.WAVELENGTHS]])
