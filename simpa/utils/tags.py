@@ -1494,5 +1494,8 @@ class Tags:
 
     ADDITIONAL_FLAGS = ("additional_flags", Iterable)
     """
-    Defines a sequence of extra flags to be parsed to executables for simulation modules
+    Defines a sequence of extra flags to be parsed to executables for simulation modules.
+    Caution: The user is responsible for checking if these flags exist and don't break the predefined flags' behaviour.
+    It is assumed that if flags are specified multiple times the flag provided last is considered. 
+    This can for example be used to override predefined flags.
     """
