@@ -21,7 +21,8 @@ class TissueLibrary(object):
     """
 
     def get_blood_volume_fractions(self, oxygenation: float | int | torch.Tensor = 1e-10,
-                                   blood_volume_fraction: float | int | torch.Tensor = 1e-10):
+                                   blood_volume_fraction: float | int | torch.Tensor = 1e-10)\
+            -> list[int | float | torch.Tensor]:
         """
         A function that returns the volume fraction of the oxygenated and deoxygenated blood.
         :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
@@ -33,7 +34,7 @@ class TissueLibrary(object):
         return [blood_volume_fraction*oxygenation, blood_volume_fraction*(1-oxygenation)]
 
     def constant(self, mua: float | int | torch.Tensor = 1e-10, mus: float | int | torch.Tensor = 1e-10,
-                 g: float | int | torch.Tensor = 1e-10):
+                 g: float | int | torch.Tensor = 1e-10) -> MolecularComposition:
         """
         A function returning a molecular composition as specified by the user. Typically intended for the use of wanting
         specific mua, mus and g values.
@@ -78,7 +79,7 @@ class TissueLibrary(object):
                 .get_molecular_composition(SegmentationClasses.GENERIC))
 
     def muscle(self, oxygenation: float | int | torch.Tensor = None,
-               blood_volume_fraction: float | int | torch.Tensor = None):
+               blood_volume_fraction: float | int | torch.Tensor = None) -> MolecularComposition:
         """
 
         :return: a settings dictionary containing all min and max parameters fitting for muscle tissue.
@@ -117,7 +118,7 @@ class TissueLibrary(object):
                 .get_molecular_composition(SegmentationClasses.MUSCLE))
 
     def soft_tissue(self, oxygenation: float | int | torch.Tensor = None,
-                    blood_volume_fraction: float | int | torch.Tensor = None):
+                    blood_volume_fraction: float | int | torch.Tensor = None) -> MolecularComposition:
         """
         IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
         It is a mixture of muscle (mostly optical properties) and water (mostly acoustic properties).
@@ -162,7 +163,7 @@ class TissueLibrary(object):
                 .append(custom_water)
                 .get_molecular_composition(SegmentationClasses.SOFT_TISSUE))
 
-    def epidermis(self, melanosom_volume_fraction: float | int | torch.Tensor = None):
+    def epidermis(self, melanosom_volume_fraction: float | int | torch.Tensor = None) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of epidermis
         :param melanosom_volume_fraction: The total melanosom volume fraction
@@ -183,7 +184,7 @@ class TissueLibrary(object):
                 .get_molecular_composition(SegmentationClasses.EPIDERMIS))
 
     def dermis(self, oxygenation: float | int | torch.Tensor = None,
-               blood_volume_fraction: float | int | torch.Tensor = None):
+               blood_volume_fraction: float | int | torch.Tensor = None) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of dermis
         :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
@@ -213,7 +214,7 @@ class TissueLibrary(object):
     def subcutaneous_fat(self,
                          oxygenation: float | int | torch.Tensor = OpticalTissueProperties.BACKGROUND_OXYGENATION,
                          blood_volume_fraction: float | int | torch.Tensor
-                         = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE):
+                         = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of subcutaneous fat
         :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
@@ -243,7 +244,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.FAT))
 
-    def blood(self, oxygenation: float | int | torch.Tensor = None):
+    def blood(self, oxygenation: float | int | torch.Tensor = None) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of blood
         :param oxygenation: The oxygenation level of the blood(as a decimal).
@@ -263,7 +264,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
                 .get_molecular_composition(SegmentationClasses.BLOOD))
 
-    def bone(self):
+    def bone(self) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of bone
         :return: a settings dictionary fitting for bone.
@@ -281,7 +282,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.BONE))
 
-    def mediprene(self):
+    def mediprene(self) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of mediprene
         :return: a settings dictionary fitting for mediprene.
@@ -290,7 +291,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.mediprene())
                 .get_molecular_composition(SegmentationClasses.MEDIPRENE))
 
-    def heavy_water(self):
+    def heavy_water(self) -> MolecularComposition:
         """
             Create a molecular composition mimicking that of heavy water
             :return: a settings dictionary containing all min and max parameters fitting for heavy water.
@@ -299,7 +300,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.heavy_water())
                 .get_molecular_composition(SegmentationClasses.HEAVY_WATER))
 
-    def ultrasound_gel(self):
+    def ultrasound_gel(self) -> MolecularComposition:
         """
             Create a molecular composition mimicking that of ultrasound gel
             :return: a settings dictionary fitting for generic ultrasound gel.
@@ -309,7 +310,7 @@ class TissueLibrary(object):
                 .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
 
     def lymph_node(self, oxygenation: float | int | torch.Tensor = None,
-                   blood_volume_fraction: float | int | torch.Tensor = None):
+                   blood_volume_fraction: float | int | torch.Tensor = None) -> MolecularComposition:
         """
         IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
         It is a mixture of oxyhemoglobin, deoxyhemoglobin, and lymph node customized water.
