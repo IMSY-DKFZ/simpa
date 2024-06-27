@@ -1,22 +1,19 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
-import os
-import sys
 
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from argparse import ArgumentParser
-from typing import Union
 
 
 def lines_that_contain(string, fp):
     """
-    Function to determine if a string contains a certain word/phrase
-    :param string: what to check
-    :param fp:
-    :return:
+    Function to determine if a string contains a certain word/phrase and the returns the full line
+    :param string: string the line in the fp is compared to
+    :param fp: full page of text from profiler output
+    :return: lines in the full page that contain 'string'
     """
     return [line for line in fp if string in line]
 
@@ -36,7 +33,7 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
 
     # init defaults
     if savefolder is None or savefolder == "default":
-        savefolder = str(Path(__file__).parent.resolve())
+        savefolder = Path(__file__).parent.resolve()
 
     if profiles is None:
         profiles = ['TIME', "GPU_MEMORY", "MEMORY"]
@@ -50,7 +47,8 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
     benchmarking_lists = []  # init result
     for profile in profiles:
         for spacing in spacings:
-            file_name = savefolder + "/benchmarking_data_" + profile + "_" + str(np.round(spacing, 4)) + ".txt"
+            txt_file = "benchmarking_data_" + profile + "_" + str(np.round(spacing, 4)) + ".txt"
+            file_name = savefolder / txt_file
             benchmarking_file = open(file_name, 'r')
             current_examples = []
 
@@ -75,7 +73,7 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
                     else:
                         break
 
-            if profile == 'MEMORY':
+            elif profile == 'MEMORY':
                 example_name_lines = lines_that_contain("Filename:", benchmarking_file)
 
                 for enl in example_name_lines:
@@ -141,12 +139,7 @@ if __name__ == "__main__":
     parser.add_argument("--savefolder", default=None, type=str, help='where to save the results')
     config = parser.parse_args()
 
-    start = config.start
-    stop = config.stop
-    step = config.step
     profiles = config.profiles
-    savefolder = config.savefolder
-
     profiles = profiles.split('%')[:-1]
-    read_out_benchmarking_data(start=float(start), stop=float(stop), step=float(step), profiles=profiles,
-                               savefolder=savefolder)
+    read_out_benchmarking_data(start=float(config.start), stop=float(config.stop), step=float(config.step),
+                               profiles=profiles, savefolder=config.savefolder)

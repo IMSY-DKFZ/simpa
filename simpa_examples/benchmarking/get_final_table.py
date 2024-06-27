@@ -16,10 +16,10 @@ def get_final_table(savefolder):
     :raise: None
     """
     if savefolder is None or savefolder == "default":
-        savefolder = str(Path(__file__).parent.resolve())
+        savefolder = Path(__file__).parent.resolve()
 
     # read the csv file
-    df_file = Path(savefolder + '/benchmarking_data_frame.csv')
+    df_file = savefolder / 'benchmarking_data_frame.csv'
     new_df = pd.read_csv(df_file)
 
     # init result

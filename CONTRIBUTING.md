@@ -35,12 +35,12 @@ In general the following steps are involved during a contribution:
 5.	Perform test driven development on feature branch. 
         A new implemented feature / a bug fix should be accompanied by a test. 
         Additionally, all previously existing tests must still pass after the contribution. 
-6.	Run pre-commit hooks and make sure all hooks are passing.
-7.  If changing core simpa modules/refactoring/optimisation, run benchmarking bash script on develop before and after the changes (see readme).
+6.	Run pre-commit hooks and make sure all hooks are passing. 
+7.  If you want to benchmark your contributions please use the benchmarking bash script (see [benchmarking.md](docs/source/benchmarking.md) for more details).
 8.	Once development is finished, create a pull request including your changes. 
         For more information on how to create pull request, see GitHub's [about pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
 9.     If there are conflicts between the simpa develop branch and your branch, you should update your feature branch with the simpa develop branch using a "merge" strategy instead of "rebase". 
-10. member of the core development team will review your pull request and potentially require further changes 
+10. A member of the core development team will review your pull request and potentially require further changes 
         (see [Contribution review and integration](#contribution-review-and-integration)). 
         Once all remarks have been resolved, your changes will be merged into the develop branch.
 

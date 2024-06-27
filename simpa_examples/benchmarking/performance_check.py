@@ -48,7 +48,4 @@ if __name__ == "__main__":
     parser.add_argument("--savefolder", default='default', type=str, help='where to save the results')
     config = parser.parse_args()
 
-    spacing = config.spacing
-    profile = config.profile
-    savefolder = config.savefolder
-    run_benchmarking_tests(spacing=float(spacing), profile=config.profile, savefolder=config.savefolder)
+    run_benchmarking_tests(spacing=float(config.spacing), profile=config.profile, savefolder=config.savefolder)
