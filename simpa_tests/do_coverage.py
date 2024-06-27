@@ -15,7 +15,6 @@ cov.start()
 # Discover all tests in the 'simpa_tests' package
 loader = unittest.TestLoader()
 tests = loader.discover('automatic_tests')  # Specify the directory where your tests are located
-print(tests)
 runner = unittest.TextTestRunner()
 result = runner.run(tests)
 
