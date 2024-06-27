@@ -1,10 +1,13 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import typing
 
 from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
+from simpa.utils import Spectrum
+from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils.calculate import randomize_uniform
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
@@ -43,23 +46,42 @@ class TissueLibrary(object):
         Default: 1e-10
         :return: the molecular composition as specified by the user
         """
-        return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
-                                                                absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
+        mua_as_spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua)
+        mus_as_spectrum = ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(mus)
+        g_as_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(g)
+        return self.generic_tissue(mua_as_spectrum, mus_as_spectrum, g_as_spectrum, "constant_mua_mus_g")
+
+    def generic_tissue(self,
+                       mua: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
+                       mus: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
+                       g: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
+                       molecule_name: typing.Optional[str] = "generic_tissue") -> MolecularComposition:
+        """
+        Returns a generic issue defined by the provided optical parameters.
+
+        :param mua: The absorption coefficient spectrum in cm^{-1}.
+        :param mus: The scattering coefficient spectrum in cm^{-1}.
+        :param g: The anisotropy spectrum.
+        :param molecule_name: The molecule name.
+
+        :returns: The molecular composition of the tissue.
+        """
+        assert isinstance(mua, Spectrum), type(mua)
+        assert isinstance(mus, Spectrum), type(mus)
+        assert isinstance(g, Spectrum), type(g)
+        assert isinstance(molecule_name, str) or molecule_name is None, type(molecule_name)
+
+        return (MolecularCompositionGenerator().append(Molecule(name=molecule_name,
+                                                                absorption_spectrum=mua,
                                                                 volume_fraction=1.0,
-                                                                scattering_spectrum=ScatteringSpectrumLibrary.
-                                                                CONSTANT_SCATTERING_ARBITRARY(mus),
-                                                                anisotropy_spectrum=AnisotropySpectrumLibrary.
-                                                                CONSTANT_ANISOTROPY_ARBITRARY(g)))
+                                                                scattering_spectrum=mus,
+                                                                anisotropy_spectrum=g))
                 .get_molecular_composition(SegmentationClasses.GENERIC))
 
     def muscle(self, oxygenation: Union[float, int, torch.Tensor] = None,
                blood_volume_fraction: Union[float, int, torch.Tensor] = None):
         """
-        Create a molecular composition mimicking that of a muscle
-        :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
-        Default: 0.175
-        :param blood_volume_fraction: The total blood volume fraction (including oxygenated and deoxygenated blood).
-        Default: 0.06
+
         :return: a settings dictionary containing all min and max parameters fitting for muscle tissue.
         """
         # Determine muscle oxygenation

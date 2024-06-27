@@ -100,7 +100,7 @@ for further (and much better) guidance under:
 
 As a pipelining tool that serves as a communication layer between different numerical forward models and
 processing tools, SIMPA needs to be configured with the paths to these tools on your local hard drive.
-You have to a couple of options to define the required path variables. 
+You have a couple of options to define the required path variables. 
 ### Option 1: 
 Ensure that the environment variables defined in `simpa_examples/path_config.env.example` are accessible to your script during runtime. This can be done through any method you prefer, as long as the environment variables are accessible through `os.environ`. 
 ### Option 2:
