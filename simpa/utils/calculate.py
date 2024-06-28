@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: MIT
 
 
+from typing import Union
 import numpy as np
+import torch
 from scipy.interpolate import interp1d
 
 
@@ -57,7 +59,7 @@ def calculate_bvf(molecule_list):
 
     return (hb + hbO2)
 
-    
+
 def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spacing=0.1):
     """
     Creates a functional that simulates distortion along the y position
@@ -155,9 +157,9 @@ def rotation_x(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.array([[1, 0, 0],
-                    [0, np.cos(theta), -np.sin(theta)],
-                    [0, np.sin(theta), np.cos(theta)]])
+    return torch.tensor([[1, 0, 0],
+                         [0, torch.cos(theta), -torch.sin(theta)],
+                         [0, torch.sin(theta), torch.cos(theta)]])
 
 
 def rotation_y(theta):
@@ -167,9 +169,9 @@ def rotation_y(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.array([[np.cos(theta), 0, np.sin(theta)],
-                    [0, 1, 0],
-                    [-np.sin(theta), 0, np.cos(theta)]])
+    return torch.tensor([[torch.cos(theta), 0, torch.sin(theta)],
+                         [0, 1, 0],
+                         [-torch.sin(theta), 0, torch.cos(theta)]])
 
 
 def rotation_z(theta):
@@ -179,9 +181,9 @@ def rotation_z(theta):
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.array([[np.cos(theta), -np.sin(theta), 0],
-                    [np.sin(theta), np.cos(theta), 0],
-                    [0, 0, 1]])
+    return torch.tensor([[torch.cos(theta), -torch.sin(theta), 0],
+                         [torch.sin(theta), torch.cos(theta), 0],
+                         [0, 0, 1]])
 
 
 def rotation(angles):
@@ -245,5 +247,24 @@ def positive_gauss(mean, std) -> float:
     random_value = np.random.normal(mean, std)
     if random_value <= 0:
         return positive_gauss(mean, std)
-    else: 
+    else:
         return random_value
+
+
+def are_equal(obj1: Union[list, tuple, np.ndarray, object], obj2: Union[list, tuple, np.ndarray, object]) -> bool:
+    """Compare if two objects are equal. For lists, tuples and arrays, all entries need to be equal to return True.
+
+    :param obj1: The first object to compare. Can be of any type, but typically a list, numpy array, or scalar.
+    :type obj1: Union[list, tuple, np.ndarray, object]
+    :param obj2: The second object to compare. Can be of any type, but typically a list, numpy array, or scalar.
+    :type obj2: Union[list, tuple, np.ndarray, object]
+    :return: True if the objects are equal, False otherwise. For lists and numpy arrays, returns True only if all
+        corresponding elements are equal.
+    :rtype: bool
+    """
+    # Check if one object is numpy array or list
+    if isinstance(obj1, (list, np.ndarray, tuple)) or isinstance(obj2, (list, np.ndarray, tuple)):
+        return np.array_equal(obj1, obj2)
+    # For other types, use standard equality check which also works for lists
+    else:
+        return obj1 == obj2

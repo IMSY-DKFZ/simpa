@@ -40,7 +40,8 @@ for rst_file in rst_files:
 if os.path.exists(os.path.join(current_dir, "simpa_examples.rst")):
     os.remove(os.path.join(current_dir, "simpa_examples.rst"))
 simpa_examples_rst_file = open(os.path.join(current_dir, "simpa_examples.rst"), "w")
-simpa_examples_rst_file.write("simpa\_examples\n=========================================\n\n.. toctree::\n   :maxdepth: 2\n\n")
+simpa_examples_rst_file.write(
+    "simpa\_examples\n=========================================\n\n.. toctree::\n   :maxdepth: 2\n\n")
 examples = glob.glob(os.path.join(current_dir, "../" + folder_level + "simpa_examples/*.py"))
 for example in examples:
     example_file_name = example.split("/")[-1]
@@ -51,7 +52,8 @@ for example in examples:
     if os.path.exists(os.path.join(current_dir, example_file_name_rst)):
         os.remove(os.path.join(current_dir, example_file_name_rst))
     example_rst_file = open(os.path.join(current_dir, example_file_name_rst), "a")
-    example_rst_file.write("{}\n=========================================\n\n.. literalinclude:: ../{}\n   :language: python\n   :lines: 1-\n\n".format(example_file_name, f'../simpa_examples/{example_file_name}.py'))
+    example_rst_file.write("{}\n=========================================\n\n.. literalinclude:: ../{}\n   :language: python\n   :lines: 1-\n\n".format(
+        example_file_name, f'../simpa_examples/{example_file_name}.py'))
     example_rst_file.close()
     simpa_examples_rst_file.writelines("   {}\n".format(example_file_name))
 

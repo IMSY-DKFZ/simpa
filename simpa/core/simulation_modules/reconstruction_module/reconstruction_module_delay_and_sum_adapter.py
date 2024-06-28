@@ -6,7 +6,7 @@ from simpa.utils import Tags
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 import numpy as np
 import torch
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values,\
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_delay_and_sum_values, \
     compute_image_dimensions, preparing_reconstruction_and_obtaining_reconstruction_settings
 from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.core.simulation_modules.reconstruction_module import create_reconstruction_settings

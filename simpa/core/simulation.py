@@ -3,17 +3,15 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.utils import Tags
-from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
+from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5, save_data_field, load_data_field
 from simpa.io_handling.ipasc import export_to_ipasc
 from simpa.utils.settings import Settings
 from simpa.log import Logger
-from .device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
+from .device_digital_twins import DigitalDeviceTwinBase
 
-from pathlib import Path
 import numpy as np
 import os
 import time
-import pkg_resources
 
 
 def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin: DigitalDeviceTwinBase):
@@ -55,15 +53,30 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     else:
         simpa_output_path = path + settings[Tags.VOLUME_NAME]
 
-    settings[Tags.SIMPA_OUTPUT_PATH] = simpa_output_path + ".hdf5"    
-    settings[Tags.SIMPA_VERSION] = pkg_resources.require("simpa")[0].version 
+    settings[Tags.SIMPA_OUTPUT_PATH] = simpa_output_path + ".hdf5"
 
     simpa_output[Tags.SETTINGS] = settings
     simpa_output[Tags.DIGITAL_DEVICE] = digital_device_twin
     simpa_output[Tags.SIMULATION_PIPELINE] = [type(x).__name__ for x in simulation_pipeline]
 
     logger.debug("Saving settings dictionary...")
-    save_hdf5(simpa_output, settings[Tags.SIMPA_OUTPUT_PATH])
+
+    # In case of continuation, the simulation script doesn't overwrite the existing file.
+
+    if Tags.CONTINUE_SIMULATION in settings and settings[Tags.CONTINUE_SIMULATION]:
+        try:
+            old_pipe = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.SIMULATION_PIPELINE)
+        except KeyError as e:
+            old_pipe = list()
+        simpa_output[Tags.SIMULATION_PIPELINE] = old_pipe + simpa_output[Tags.SIMULATION_PIPELINE]
+        previous_settings = load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], Tags.SETTINGS)
+        previous_settings.update(settings)
+        simpa_output[Tags.SETTINGS] = previous_settings
+
+        for i in [Tags.SETTINGS, Tags.DIGITAL_DEVICE, Tags.SIMULATION_PIPELINE]:
+            save_data_field(simpa_output[i], settings[Tags.SIMPA_OUTPUT_PATH], i)
+    else:
+        save_hdf5(simpa_output, settings[Tags.SIMPA_OUTPUT_PATH])
     logger.debug("Saving settings dictionary...[Done]")
 
     for wavelength in settings[Tags.WAVELENGTHS]:
@@ -87,7 +100,7 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     # code does not dynamically change. This can be remedied by re-writing the file after the simulation
     # terminates. As it might have a negative impact on simulation performance, it must be activated
     # by the user manually. Active by default.
-    if not(Tags.DO_FILE_COMPRESSION in settings and
+    if not (Tags.DO_FILE_COMPRESSION in settings and
             not settings[Tags.DO_FILE_COMPRESSION]):
         all_data = load_hdf5(settings[Tags.SIMPA_OUTPUT_PATH])
         if Tags.VOLUME_CREATION_MODEL_SETTINGS in all_data[Tags.SETTINGS] and \

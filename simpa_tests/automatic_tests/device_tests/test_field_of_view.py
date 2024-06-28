@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
-from simpa.core.device_digital_twins.detection_geometries.detection_geometry_base import DetectionGeometryBase
+from simpa.core.device_digital_twins.detection_geometries import DetectionGeometryBase
 from simpa.log.file_logger import Logger
 from simpa.core.device_digital_twins.detection_geometries.linear_array import LinearArrayDetectionGeometry
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_image_dimensions
@@ -23,15 +23,14 @@ class TestFieldOfView(unittest.TestCase):
         detection_geometry.field_of_view_extent_mm = field_of_view_extent_mm
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
             detection_geometry, spacing_in_mm, self.logger)
-        
+
         assert type(xdim) == int and type(ydim) == int and type(zdim) == int, "dimensions should be integers"
         assert xdim >= 1 and ydim >= 1 and zdim >= 1, "dimensions should be positive"
 
         return xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end
-        
 
-    def symmetric_test(self):
-        image_dimensions = self._test([-25,25,0,0,-12,8], 0.2, self.detection_geometry)
+    def test_symmetric(self):
+        image_dimensions = self._test([-25, 25, 0, 0, -12, 8], 0.2, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
         assert zdim == 1, "With no FOV extend in z dimension only one slice should be created"
@@ -44,7 +43,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-    def symmetric_test_with_small_spacing(self):
+    def test_symmetric_with_small_spacing(self):
         image_dimensions = self._test([-25, 25, 0, 0, -12, 8], 0.1, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
@@ -58,7 +57,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-    def unsymmetric_test_with_small_spacing(self):
+    def test_unsymmetric_with_small_spacing(self):
         image_dimensions = self._test([-25, 24.9, 0, 0, -12, 8], 0.1, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
@@ -72,7 +71,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-    def unsymmetric_test(self):
+    def test_unsymmetric(self):
         image_dimensions = self._test([-25, 24.9, 0, 0, -12, 8], 0.2, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
@@ -86,7 +85,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-    def symmetric_test_with_odd_number_of_elements(self):
+    def test_symmetric_with_odd_number_of_elements(self):
         """
         The number of sensor elements should not affect the image dimensionality
         """
@@ -103,12 +102,3 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-
-if __name__ == '__main__':
-    test = TestFieldOfView()
-    test.setUp()
-    test.symmetric_test()
-    test.symmetric_test_with_small_spacing()
-    test.unsymmetric_test_with_small_spacing()
-    test.unsymmetric_test()
-    test.symmetric_test_with_odd_number_of_elements()

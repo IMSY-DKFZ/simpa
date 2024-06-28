@@ -5,7 +5,7 @@
 import numpy as np
 
 from simpa.core.device_digital_twins import IlluminationGeometryBase
-from simpa.utils import Settings, Tags
+from simpa.utils import Tags
 
 
 class SlitIlluminationGeometry(IlluminationGeometryBase):
@@ -13,6 +13,7 @@ class SlitIlluminationGeometry(IlluminationGeometryBase):
     This class represents a slit illumination geometry.
     The device position is defined as the middle of the slit.
     """
+
     def __init__(self, slit_vector_mm=None, direction_vector_mm=None, device_position_mm=None,
                  field_of_view_extent_mm=None):
         """
@@ -40,10 +41,6 @@ class SlitIlluminationGeometry(IlluminationGeometryBase):
             direction_vector_mm = [0, 0, 1]
 
         self.slit_vector_mm = slit_vector_mm
-        direction_vector_mm[0] = direction_vector_mm[0] / np.linalg.norm(direction_vector_mm)
-        direction_vector_mm[1] = direction_vector_mm[1] / np.linalg.norm(direction_vector_mm)
-        direction_vector_mm[2] = direction_vector_mm[2] / np.linalg.norm(direction_vector_mm)
-        self.direction_vector_norm = direction_vector_mm
 
     def get_mcx_illuminator_definition(self, global_settings) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_SLIT

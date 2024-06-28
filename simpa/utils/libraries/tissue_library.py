@@ -1,10 +1,13 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import typing
 
 from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
+from simpa.utils import Spectrum
+from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils.calculate import randomize_uniform
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
@@ -21,20 +24,46 @@ class TissueLibrary(object):
         """
         return [total_blood_volume_fraction*oxygenation, total_blood_volume_fraction*(1-oxygenation)]
 
-    def constant(self, mua=1e-10, mus=1e-10, g=1e-10):
+    def constant(self, mua: float = 1e-10, mus: float = 1e-10, g: float = 1e-10) -> MolecularComposition:
         """
-        TODO
+        Returns a generic issue defined by the provided constant optical parameters.
+
+        :param mua: The absorption coefficient in cm^{-1}.
+        :param mus: The scattering coefficient in cm^{-1}.
+        :param g: The anisotropy.
+
+        :returns: The molecular composition of the tissue.
         """
-        return (MolecularCompositionGenerator().append(Molecule(name="constant_mua_mus_g",
-                                                                absorption_spectrum=
-                                                                AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua),
+        mua_as_spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua)
+        mus_as_spectrum = ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(mus)
+        g_as_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(g)
+        return self.generic_tissue(mua_as_spectrum, mus_as_spectrum, g_as_spectrum, "constant_mua_mus_g")
+
+    def generic_tissue(self,
+                       mua: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
+                       mus: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
+                       g: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
+                       molecule_name: typing.Optional[str] = "generic_tissue") -> MolecularComposition:
+        """
+        Returns a generic issue defined by the provided optical parameters.
+
+        :param mua: The absorption coefficient spectrum in cm^{-1}.
+        :param mus: The scattering coefficient spectrum in cm^{-1}.
+        :param g: The anisotropy spectrum.
+        :param molecule_name: The molecule name.
+
+        :returns: The molecular composition of the tissue.
+        """
+        assert isinstance(mua, Spectrum), type(mua)
+        assert isinstance(mus, Spectrum), type(mus)
+        assert isinstance(g, Spectrum), type(g)
+        assert isinstance(molecule_name, str) or molecule_name is None, type(molecule_name)
+
+        return (MolecularCompositionGenerator().append(Molecule(name=molecule_name,
+                                                                absorption_spectrum=mua,
                                                                 volume_fraction=1.0,
-                                                                scattering_spectrum=
-                                                                ScatteringSpectrumLibrary.
-                                                                CONSTANT_SCATTERING_ARBITRARY(mus),
-                                                                anisotropy_spectrum=
-                                                                AnisotropySpectrumLibrary.
-                                                                CONSTANT_ANISOTROPY_ARBITRARY(g)))
+                                                                scattering_spectrum=mus,
+                                                                anisotropy_spectrum=g))
                 .get_molecular_composition(SegmentationClasses.GENERIC))
 
     def muscle(self, background_oxy=None, blood_volume_fraction=None):
@@ -62,7 +91,7 @@ class TissueLibrary(object):
 
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
+            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
         custom_water.alpha_coefficient = 1.58
         custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_MUSCLE + 16
         custom_water.density = StandardProperties.DENSITY_MUSCLE + 41
@@ -107,7 +136,7 @@ class TissueLibrary(object):
 
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
-                            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
+            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
         custom_water.alpha_coefficient = 0.08
         custom_water.speed_of_sound = StandardProperties.SPEED_OF_SOUND_WATER
         custom_water.density = StandardProperties.DENSITY_WATER
@@ -123,7 +152,7 @@ class TissueLibrary(object):
                         volume_fraction=1 - fraction_oxy - fraction_deoxy - water_volume_fraction),
                         key="muscle_scatterers")
                 .append(custom_water)
-                .get_molecular_composition(SegmentationClasses.MUSCLE))
+                .get_molecular_composition(SegmentationClasses.SOFT_TISSUE))
 
     def epidermis(self, melanosom_volume_fraction=None):
         """
@@ -246,6 +275,38 @@ class TissueLibrary(object):
         return (MolecularCompositionGenerator()
                 .append(MOLECULE_LIBRARY.water())
                 .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
+
+    def lymph_node(self, oxy=None, blood_volume_fraction=None):
+        """
+        IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
+        It is a mixture of oxyhemoglobin, deoxyhemoglobin, and lymph node customized water.
+        :return: a settings dictionary fitting for generic lymph node tissue.
+        """
+
+        # Determine muscle oxygenation
+        if oxy is None:
+            oxy = OpticalTissueProperties.LYMPH_NODE_OXYGENATION
+
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        if blood_volume_fraction is None:
+            blood_volume_fraction = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_LYMPH_NODE
+
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(blood_volume_fraction, oxy)
+
+        # Get the water volume fraction
+        # water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
+
+        lymphatic_fluid = MOLECULE_LIBRARY.water(1 - fraction_deoxy - fraction_oxy)
+        lymphatic_fluid.speed_of_sound = StandardProperties.SPEED_OF_SOUND_LYMPH_NODE + 1.22
+        lymphatic_fluid.density = StandardProperties.DENSITY_LYMPH_NODE - 2.30
+        lymphatic_fluid.alpha_coefficient = StandardProperties.ALPHA_COEFF_LYMPH_NODE + 0.36
+
+        # generate the tissue dictionary
+        return (MolecularCompositionGenerator()
+                .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(lymphatic_fluid)
+                .get_molecular_composition(SegmentationClasses.LYMPH_NODE))
 
 
 TISSUE_LIBRARY = TissueLibrary()

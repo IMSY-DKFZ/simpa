@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 import numpy as np
-from simpa.core import SimulationModule
+from simpa.core.simulation_modules import SimulationModule
 from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
@@ -33,7 +33,13 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
 
     def __init__(self, global_settings: Settings):
         super(AcousticForwardModelBaseAdapter, self).__init__(global_settings=global_settings)
-        self.component_settings = global_settings.get_acoustic_settings()
+        
+    def load_component_settings(self) -> Settings:
+        """Implements abstract method to serve acoustic settings as component settings
+
+        :return: Settings: acoustic component settings
+        """
+        return self.global_settings.get_acoustic_settings()
 
     @abstractmethod
     def forward_model(self, detection_geometry) -> np.ndarray:
@@ -62,14 +68,16 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         elif isinstance(digital_device_twin, PhotoacousticDevice):
             _device = digital_device_twin.get_detection_geometry()
         else:
-            raise TypeError(f"The optical forward modelling does not support devices of type {type(digital_device_twin)}")
+            raise TypeError(
+                f"The optical forward modelling does not support devices of type {type(digital_device_twin)}")
 
         time_series_data = self.forward_model(_device)
 
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_array_well_defined(time_series_data, array_name="time_series_data")
 
-        acoustic_output_path = generate_dict_path(Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
+        acoustic_output_path = generate_dict_path(
+            Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 
         save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
 

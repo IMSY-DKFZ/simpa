@@ -13,7 +13,7 @@ from simpa.utils.serializer import SerializableSIMPAClass
 
 class Spectrum(SerializableSIMPAClass, object):
     """
-    An instance of this class represents the absorption spectrum over wavelength for a particular
+    An instance of this class represents a spectrum over a range of wavelengths. 
     """
 
     def __init__(self, spectrum_name: str, wavelengths: np.ndarray, values: np.ndarray):
@@ -29,25 +29,29 @@ class Spectrum(SerializableSIMPAClass, object):
         self.values = values
 
         if np.shape(wavelengths) != np.shape(values):
-            raise ValueError("The shape of the wavelengths and the absorption coefficients did not match: " +
+            raise ValueError("The shape of the wavelengths and the values did not match: " +
                              str(np.shape(wavelengths)) + " vs " + str(np.shape(values)))
 
         new_wavelengths = np.arange(self.min_wavelength, self.max_wavelength+1, 1)
-        self.new_absorptions = np.interp(new_wavelengths, self.wavelengths, self.values)
+        self.values_interp = np.interp(new_wavelengths, self.wavelengths, self.values)
 
     def get_value_over_wavelength(self):
         """
-        :return: numpy array with the available wavelengths and the corresponding absorption properties
+        :return: numpy array with the available wavelengths and the corresponding properties
         """
         return np.asarray([self.wavelengths, self.values])
 
     def get_value_for_wavelength(self, wavelength: int) -> float:
         """
-        :param wavelength: the wavelength to retrieve a optical absorption value for [cm^{-1}].
+        :param wavelength: the wavelength to retrieve a value from the defined spectrum.
                            Must be an integer value between the minimum and maximum wavelength.
-        :return: the best matching linearly interpolated absorption value for the given wavelength.
+        :return: the best matching linearly interpolated values for the given wavelength.
+        :raises ValueError: if the given wavelength is not within the range of the spectrum.
         """
-        return self.new_absorptions[wavelength-self.min_wavelength]
+        if wavelength < self.min_wavelength or wavelength > self.max_wavelength:
+            raise ValueError(f"The given wavelength ({wavelength}) is not within the range of the spectrum "
+                             f"({self.min_wavelength} - {self.max_wavelength})")
+        return self.values_interp[wavelength-self.min_wavelength]
 
     def __eq__(self, other):
         if isinstance(other, Spectrum):
@@ -104,7 +108,8 @@ class SpectraLibrary(object):
             if spectrum.spectrum_name == spectrum_name:
                 return spectrum
 
-        raise LookupError(f"No spectrum for the given name exists ({spectrum_name}). Try one of: {self.get_spectra_names()}")
+        raise LookupError(
+            f"No spectrum for the given name exists ({spectrum_name}). Try one of: {self.get_spectra_names()}")
 
 
 class AnisotropySpectrumLibrary(SpectraLibrary):

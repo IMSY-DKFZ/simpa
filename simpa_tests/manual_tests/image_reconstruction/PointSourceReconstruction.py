@@ -88,20 +88,20 @@ np.random.seed(RANDOM_SEED)
 VOLUME_NAME = "CompletePipelineTestMSOT_"+str(RANDOM_SEED)
 
 general_settings = {
-            # These parameters set the general properties of the simulated volume
-            Tags.RANDOM_SEED: RANDOM_SEED,
-            Tags.VOLUME_NAME: VOLUME_NAME,
-            Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
-            Tags.SPACING_MM: SPACING,
-            Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
-            Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
-            Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
-            Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
-            Tags.GPU: True,
+    # These parameters set the general properties of the simulated volume
+    Tags.RANDOM_SEED: RANDOM_SEED,
+    Tags.VOLUME_NAME: VOLUME_NAME,
+    Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
+    Tags.SPACING_MM: SPACING,
+    Tags.DIM_VOLUME_Z_MM: VOLUME_HEIGHT_IN_MM,
+    Tags.DIM_VOLUME_X_MM: VOLUME_TRANSDUCER_DIM_IN_MM,
+    Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
+    Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
+    Tags.GPU: True,
 
-            # The following parameters set the optical forward model
-            Tags.WAVELENGTHS: [700]
-        }
+    # The following parameters set the optical forward model
+    Tags.WAVELENGTHS: [700]
+}
 settings = Settings(general_settings)
 np.random.seed(RANDOM_SEED)
 
@@ -136,8 +136,8 @@ settings.set_reconstruction_settings({
     Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
     Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
     Tags.TUKEY_WINDOW_ALPHA: 0.5,
-    Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
-    Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e4),
+    Tags.BANDPASS_CUTOFF_LOWPASS_IN_HZ: int(8e6),
+    Tags.BANDPASS_CUTOFF_HIGHPASS_IN_HZ: int(0.1e4),
     Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: False,
     Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
     Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
@@ -226,7 +226,8 @@ dist.append(simulate_and_evaluate_with_device(MSOTAcuityEcho(device_position_mm=
                                                                                           VOLUME_PLANAR_DIM_IN_MM/2,
                                                                                           35]),
                                                              field_of_view_extent_mm=np.array([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
-                                                                                               (2 * np.sin(0.34 / 40 * 128) * 40) / 2,
+                                                                                               (2 * np.sin(0.34 /
+                                                                                                40 * 128) * 40) / 2,
                                                                                                0, 0, -25, 25]))))
 
 dist.append(simulate_and_evaluate_with_device(InVision256TF(device_position_mm=np.array([VOLUME_TRANSDUCER_DIM_IN_MM/2,
