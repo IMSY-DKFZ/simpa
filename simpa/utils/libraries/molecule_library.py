@@ -9,7 +9,7 @@ from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils import Spectrum
-from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
+from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature, calculate_bvf
 from simpa.utils.serializer import SerializableSIMPAClass
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
 
@@ -35,6 +35,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
         self.internal_properties = TissueProperties()
         self.internal_properties[Tags.DATA_FIELD_SEGMENTATION] = self.segmentation_type
         self.internal_properties[Tags.DATA_FIELD_OXYGENATION] = calculate_oxygenation(self)
+        self.internal_properties[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = calculate_bvf(self)
         for molecule in self:
             self.internal_properties.volume_fraction += molecule.volume_fraction
             self.internal_properties[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] += \
