@@ -39,6 +39,5 @@ class SimulationModule(PipelineModule):
         cmd = []
         if Tags.ADDITIONAL_FLAGS in self.component_settings:
             for flag in self.component_settings[Tags.ADDITIONAL_FLAGS]:
-                if flag not in cmd:
-                    cmd.append(str(flag))
+                cmd.append(str(flag))
         return cmd
