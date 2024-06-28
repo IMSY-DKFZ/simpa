@@ -12,7 +12,7 @@ from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, Sc
 from simpa.utils.calculate import randomize_uniform
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
 
-from typing import Union, Optional
+from typing import Union, List
 import torch
 
 
@@ -23,7 +23,7 @@ class TissueLibrary(object):
 
     def get_blood_volume_fractions(self, oxygenation: Union[float, int, torch.Tensor] = 1e-10,
                                    blood_volume_fraction: Union[float, int, torch.Tensor] = 1e-10)\
-            -> list[Union[int, float, torch.Tensor]]:
+            -> List[Union[int, float, torch.Tensor]]:
         """
         A function that returns the volume fraction of the oxygenated and deoxygenated blood.
         :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
