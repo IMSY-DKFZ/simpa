@@ -16,7 +16,7 @@ from typing import List, Dict, Tuple
 class MCXAdapter(OpticalForwardModuleBase):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA. This adapter only allows for
-    computation of fluence, for computations of diffuse reflectance, take a look at `simpa.ReflectanceMcxAdapter`
+    computation of fluence, for computations of diffuse reflectance, take a look at `simpa.MCXAdapterReflectance`
 
     .. note::
         MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue:

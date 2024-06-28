@@ -4,13 +4,14 @@ simpa\_examples
 .. toctree::
    :maxdepth: 2
 
-   perform_iterative_qPAI_reconstruction
+   create_a_custom_digital_device_twin
+   create_custom_tissues
    linear_unmixing
    msot_invision_simulation
-   create_custom_tissues
-   perform_image_reconstruction
-   minimal_optical_simulation_uniform_cube
-   minimal_optical_simulation
    optical_and_acoustic_simulation
-   create_a_custom_digital_device_twin
+   perform_image_reconstruction
    segmentation_loader
+   min_min_optical_simulation
+   minimal_optical_simulation
+   minimal_optical_simulation_uniform_cube
+   perform_iterative_qPAI_reconstruction

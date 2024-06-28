@@ -131,6 +131,7 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
             field_of_view_extent_mm=dictionary_to_deserialize["field_of_view_extent_mm"])
         return deserialized_device
 
+
 """
 It is important to have these relative imports after the definition of the DigitalDeviceTwinBase class to avoid circular imports triggered by imported child classes
 """
