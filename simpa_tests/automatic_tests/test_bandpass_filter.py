@@ -261,12 +261,3 @@ class TestBandpassFilter(unittest.TestCase):
         if show_figure_on_screen:
             self.visualize_filtered_spectrum(FILTERED_SIGNAL)
 
-
-if __name__ == '__main__':
-    test = TestBandpassFilter()
-    test.setUp()
-    test.test_tukey_bandpass_filter(show_figure_on_screen=False)
-    test.test_tukey_window_function(show_figure_on_screen=False)
-    test.test_butter_bandpass_filter(show_figure_on_screen=False)
-    test.test_tukey_filter_with_random_signal(show_figure_on_screen=False)
-    test.test_butter_filter_with_random_signal(show_figure_on_screen=False)
