@@ -10,6 +10,7 @@ import uuid
 from simpa.utils.serializer import SerializableSIMPAClass
 from simpa.utils.calculate import are_equal
 
+
 class DigitalDeviceTwinBase(SerializableSIMPAClass):
     """
     This class represents a device that can be used for illumination, detection or a combined photoacoustic device
@@ -130,20 +131,21 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
             field_of_view_extent_mm=dictionary_to_deserialize["field_of_view_extent_mm"])
         return deserialized_device
 
-from .pa_devices import PhotoacousticDevice
-from simpa.core.device_digital_twins.detection_geometries import DetectionGeometryBase
-from simpa.core.device_digital_twins.illumination_geometries import IlluminationGeometryBase
-from .detection_geometries.curved_array import CurvedArrayDetectionGeometry
-from .detection_geometries.linear_array import LinearArrayDetectionGeometry
-from .detection_geometries.planar_array import PlanarArrayDetectionGeometry
-from .illumination_geometries.slit_illumination import SlitIlluminationGeometry
-from .illumination_geometries.gaussian_beam_illumination import GaussianBeamIlluminationGeometry
-from .illumination_geometries.pencil_array_illumination import PencilArrayIlluminationGeometry
-from .illumination_geometries.pencil_beam_illumination import PencilBeamIlluminationGeometry
-from .illumination_geometries.disk_illumination import DiskIlluminationGeometry
-from .illumination_geometries.rectangle_illumination import RectangleIlluminationGeometry
-from .illumination_geometries.ithera_msot_acuity_illumination import MSOTAcuityIlluminationGeometry
-from .illumination_geometries.ithera_msot_invision_illumination import MSOTInVisionIlluminationGeometry
-from .pa_devices.ithera_msot_invision import InVision256TF
-from .pa_devices.ithera_msot_acuity import MSOTAcuityEcho
-from .pa_devices.ithera_rsom import RSOMExplorerP50
+
+from .pa_devices import PhotoacousticDevice  # nopep8
+from simpa.core.device_digital_twins.detection_geometries import DetectionGeometryBase  # nopep8
+from simpa.core.device_digital_twins.illumination_geometries import IlluminationGeometryBase  # nopep8
+from .detection_geometries.curved_array import CurvedArrayDetectionGeometry  # nopep8
+from .detection_geometries.linear_array import LinearArrayDetectionGeometry  # nopep8
+from .detection_geometries.planar_array import PlanarArrayDetectionGeometry  # nopep8
+from .illumination_geometries.slit_illumination import SlitIlluminationGeometry  # nopep8
+from .illumination_geometries.gaussian_beam_illumination import GaussianBeamIlluminationGeometry  # nopep8
+from .illumination_geometries.pencil_array_illumination import PencilArrayIlluminationGeometry  # nopep8
+from .illumination_geometries.pencil_beam_illumination import PencilBeamIlluminationGeometry  # nopep8
+from .illumination_geometries.disk_illumination import DiskIlluminationGeometry  # nopep8
+from .illumination_geometries.rectangle_illumination import RectangleIlluminationGeometry  # nopep8
+from .illumination_geometries.ithera_msot_acuity_illumination import MSOTAcuityIlluminationGeometry  # nopep8
+from .illumination_geometries.ithera_msot_invision_illumination import MSOTInVisionIlluminationGeometry  # nopep8
+from .pa_devices.ithera_msot_invision import InVision256TF  # nopep8
+from .pa_devices.ithera_msot_acuity import MSOTAcuityEcho  # nopep8
+from .pa_devices.ithera_rsom import RSOMExplorerP50  # nopep8
