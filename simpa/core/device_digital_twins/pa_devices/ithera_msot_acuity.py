@@ -4,6 +4,9 @@
 
 from simpa.core.device_digital_twins import PhotoacousticDevice, \
     CurvedArrayDetectionGeometry, MSOTAcuityIlluminationGeometry
+
+from simpa.core.device_digital_twins.pa_devices import PhotoacousticDevice
+from simpa.core.device_digital_twins.detection_geometries.curved_array import CurvedArrayDetectionGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY

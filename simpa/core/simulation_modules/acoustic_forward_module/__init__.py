@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 import numpy as np
-from simpa.core import SimulationModule
+from simpa.core.simulation_modules import SimulationModule
 from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
@@ -33,7 +33,13 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
 
     def __init__(self, global_settings: Settings):
         super(AcousticForwardModelBaseAdapter, self).__init__(global_settings=global_settings)
-        self.component_settings = global_settings.get_acoustic_settings()
+        
+    def load_component_settings(self) -> Settings:
+        """Implements abstract method to serve acoustic settings as component settings
+
+        :return: Settings: acoustic component settings
+        """
+        return self.global_settings.get_acoustic_settings()
 
     @abstractmethod
     def forward_model(self, detection_geometry) -> np.ndarray:
