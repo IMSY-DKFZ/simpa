@@ -12,7 +12,7 @@ from simpa.core.device_digital_twins import PhotoacousticDevice, LinearArrayDete
 
 class TestDeviceUUID(unittest.TestCase):
 
-    def testUUIDGeneration(self):
+    def test_UUIDGeneration(self):
         device1 = RSOMExplorerP50()
         device2 = InVision256TF()
         device3 = MSOTAcuityEcho()
