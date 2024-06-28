@@ -7,9 +7,8 @@ from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5, save_data_field, loa
 from simpa.io_handling.ipasc import export_to_ipasc
 from simpa.utils.settings import Settings
 from simpa.log import Logger
-from .device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
+from .device_digital_twins import DigitalDeviceTwinBase
 
-from pathlib import Path
 import numpy as np
 import os
 import time
