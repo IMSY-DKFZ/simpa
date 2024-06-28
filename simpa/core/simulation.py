@@ -4,6 +4,7 @@
 
 from simpa.utils import Tags
 from simpa import __version__
+
 from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5, save_data_field, load_data_field
 from simpa.io_handling.ipasc import export_to_ipasc
 from simpa.utils.settings import Settings
@@ -56,7 +57,7 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
         simpa_output_path = path + settings[Tags.VOLUME_NAME]
 
     settings[Tags.SIMPA_OUTPUT_PATH] = simpa_output_path + ".hdf5"
-
+    
     simpa_output[Tags.SIMPA_VERSION] = __version__
     simpa_output[Tags.SETTINGS] = settings
     simpa_output[Tags.DIGITAL_DEVICE] = digital_device_twin
