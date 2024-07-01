@@ -44,7 +44,7 @@ class TissueLibrary(object):
         :param mus: optical scattering coefficient
         Default: 1e-10 cm^⁻1
         :param g: optical scattering anisotropy
-        Default: 1e-10 cm^⁻1
+        Default: 1e-10
         :return: the molecular composition as specified by the user
         """
         mua_as_spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua)
