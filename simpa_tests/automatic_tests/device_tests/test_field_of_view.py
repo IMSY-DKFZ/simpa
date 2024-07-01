@@ -29,7 +29,7 @@ class TestFieldOfView(unittest.TestCase):
 
         return xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end
 
-    def symmetric_test(self):
+    def test_symmetric(self):
         image_dimensions = self._test([-25, 25, 0, 0, -12, 8], 0.2, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
@@ -43,7 +43,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-    def symmetric_test_with_small_spacing(self):
+    def test_symmetric_with_small_spacing(self):
         image_dimensions = self._test([-25, 25, 0, 0, -12, 8], 0.1, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
@@ -57,7 +57,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-    def unsymmetric_test_with_small_spacing(self):
+    def test_unsymmetric_with_small_spacing(self):
         image_dimensions = self._test([-25, 24.9, 0, 0, -12, 8], 0.1, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
@@ -71,7 +71,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-    def unsymmetric_test(self):
+    def test_unsymmetric(self):
         image_dimensions = self._test([-25, 24.9, 0, 0, -12, 8], 0.2, self.detection_geometry)
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = image_dimensions
 
@@ -85,7 +85,7 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-    def symmetric_test_with_odd_number_of_elements(self):
+    def test_symmetric_with_odd_number_of_elements(self):
         """
         The number of sensor elements should not affect the image dimensionality
         """
@@ -102,12 +102,3 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
 
-
-if __name__ == '__main__':
-    test = TestFieldOfView()
-    test.setUp()
-    test.symmetric_test()
-    test.symmetric_test_with_small_spacing()
-    test.unsymmetric_test_with_small_spacing()
-    test.unsymmetric_test()
-    test.symmetric_test_with_odd_number_of_elements()
