@@ -147,11 +147,19 @@ else
     datacast = 'single';
 end
 
+
+basename = strsplit(optical_path, '/');
+basename = strsplit(basename{end}, '.');
+basename = basename{1};
+date_str = datestr(now, 'HH-MM-SS-FFF');
+pid = feature('GetPid');
+tmp_path_name = ['kwave__' basename '__' date_str '__' num2str(pid)];
+
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
                'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
                'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
                'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale, ...
-               'Smooth', p0_smoothing};
+               'Smooth', p0_smoothing, 'DataName', tmp_path_name};
 
 if settings.gpu == true
     time_series_data = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
