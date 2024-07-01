@@ -33,6 +33,7 @@ dependencies = [
     "jdata>=0.5.2",            # Uses Apache 2.0-License (MIT compatible)
     "pre-commit>=3.2.2",       # Uses MIT-License (MIT compatible)
     "PyWavelets",              # Uses MIT-License (MIT compatible)
+    "scikit-learn>=1.1.0",     # Uses BSD-License (MIT compatible)
 ]
 
 [project.optional-dependencies]
