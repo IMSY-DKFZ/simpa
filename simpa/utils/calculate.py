@@ -30,8 +30,12 @@ def calculate_oxygenation(molecule_list):
     elif hbO2 is None:
         hbO2 = 0
 
-    if hb + hbO2 < 1e-10:  # negative values are not allowed and division by (approx) zero
-        return None        # will lead to negative side effects.
+    if isinstance(hb, torch.Tensor) or isinstance(hbO2, torch.Tensor):
+        return torch.where(hb + hbO2 < 1e-10, 0, hbO2 / (hb + hbO2))
+
+    else:
+        if hb + hbO2 < 1e-10:
+            return None
 
     return hbO2 / (hb + hbO2)
 

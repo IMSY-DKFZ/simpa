@@ -7,6 +7,7 @@ from abc import abstractmethod
 from simpa.core import PipelineModule
 from simpa.utils import Settings
 
+
 class SimulationModule(PipelineModule):
     """
     Defines a simulation module that is a step in the simulation pipeline. 

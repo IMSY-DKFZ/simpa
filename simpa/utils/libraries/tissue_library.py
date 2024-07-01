@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import numpy as np
 import typing
 
+from simpa.utils import Settings
 from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
 from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
@@ -89,6 +91,16 @@ class TissueLibrary(object):
         # Get the water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
 
+        if isinstance(blood_volume_fraction, np.ndarray):
+            if (blood_volume_fraction + water_volume_fraction - 1 > 1e-5).any():
+                raise AssertionError(f"Blood volume fraction too large, must be less than {1 - water_volume_fraction}"
+                                     f"everywhere to leave space for water")
+
+        else:
+            if bvf + water_volume_fraction - 1 > 1e-5:
+                raise AssertionError(f"Blood volume fraction too large, must be less than {1 - water_volume_fraction}"
+                                     f"everywhere to leave space for water")
+
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
             OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
@@ -133,6 +145,10 @@ class TissueLibrary(object):
 
         # Get the water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
+
+        if (blood_volume_fraction + water_volume_fraction - 1 > 1e-5).any():
+            raise AssertionError(f"Blood volume fraction too large, must be less than {1 - water_volume_fraction}"
+                                 f"everywhere to leave space for water")
 
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
@@ -189,7 +205,7 @@ class TissueLibrary(object):
         else:
             bvf = blood_volume_fraction
 
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(bvf, oxy)
 
         # generate the tissue dictionary
@@ -208,7 +224,7 @@ class TissueLibrary(object):
         # Get water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
 
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(
             OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE, oxy)
 

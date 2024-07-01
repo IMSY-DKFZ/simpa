@@ -19,4 +19,3 @@ class ProcessingComponent(PipelineModule, ABC):
         """
         super(ProcessingComponent, self).__init__(global_settings=global_settings)
         self.component_settings = global_settings[component_settings_key]
-        

@@ -33,7 +33,7 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
 
     def __init__(self, global_settings: Settings):
         super(AcousticForwardModelBaseAdapter, self).__init__(global_settings=global_settings)
-        
+
     def load_component_settings(self) -> Settings:
         """Implements abstract method to serve acoustic settings as component settings
 
