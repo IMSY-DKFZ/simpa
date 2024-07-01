@@ -296,13 +296,19 @@ def view_saved_spectra(save_path=None, mode="absorption"):
     plt.figure(figsize=(11, 8))
     if mode == "absorption":
         for spectrum in AbsorptionSpectrumLibrary():
-            plt.semilogy(spectrum.wavelengths, spectrum.values, label=spectrum.spectrum_name)
+            plt.semilogy(spectrum.wavelengths,
+                         spectrum.values,
+                         label=spectrum.spectrum_name)
     elif mode == "scattering":
         for spectrum in ScatteringSpectrumLibrary():
-            plt.semilogy(spectrum.wavelengths, spectrum.values, label=spectrum.spectrum_name)
+            plt.semilogy(spectrum.wavelengths,
+                         spectrum.values,
+                         label=spectrum.spectrum_name)
     elif mode == "anisotropy":
         for spectrum in AnisotropySpectrumLibrary():
-            plt.semilogy(spectrum.wavelengths, spectrum.values, label=spectrum.spectrum_name)
+            plt.semilogy(spectrum.wavelengths,
+                         spectrum.values,
+                         label=spectrum.spectrum_name)
     else:
         raise ValueError(f"Invalid mode: {mode}. Choose from 'absorption', 'scattering', or 'anisotropy'.")
 
