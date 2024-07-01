@@ -172,7 +172,7 @@ class TissueLibrary(object):
         :return: a settings dictionary containing all min and max parameters fitting for dermis tissue.
         """
 
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
 
         # generate the tissue dictionary
@@ -227,7 +227,7 @@ class TissueLibrary(object):
         if oxygenation is None:
             oxygenation = randomize_uniform(0.0, 1.0)
 
-        # Get the bloood volume fractions for oxyhemoglobin and deoxyhemoglobin
+        # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
         [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, 1.0)
 
         # generate the tissue dictionary
