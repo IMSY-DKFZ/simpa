@@ -53,7 +53,7 @@ Documentation = "https://simpa.readthedocs.io/en/main/"
 Repository = "https://github.com/IMSY-DKFZ/simpa"
 
 [tool.setuptools.packages.find]
-include = ["simpa", "simpa_tests"]
+include = ["simpa", "simpa_tests", "simpa_examples"]
 
 [tool.setuptools_scm]
 

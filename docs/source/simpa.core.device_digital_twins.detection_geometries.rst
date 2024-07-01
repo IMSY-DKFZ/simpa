@@ -12,12 +12,6 @@ detection\_geometries
    :show-inheritance:
 
 
-.. automodule:: simpa.core.device_digital_twins.detection_geometries.detection_geometry_base
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 .. automodule:: simpa.core.device_digital_twins.detection_geometries.linear_array
    :members:
    :undoc-members:

@@ -16,6 +16,9 @@ docs/objects.inv
 simpa_tests/figures
 simpa_tests/figures/*
 
+simpa_examples/benchmarking/*.csv
+simpa_examples/benchmarking/*.txt
+
 path_config.env
 
 *.orig
