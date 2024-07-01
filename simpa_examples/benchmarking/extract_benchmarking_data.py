@@ -34,6 +34,8 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
     # init defaults
     if savefolder is None or savefolder == "default":
         savefolder = Path(__file__).parent.resolve()
+    else:
+        savefolder = Path(savefolder)
 
     if profiles is None:
         profiles = ['TIME', "GPU_MEMORY", "MEMORY"]
@@ -44,6 +46,10 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
     info_starts = {"MEMORY": 19, "GPU_MEMORY": 12, "TIME": 16}
     info_ends = {"MEMORY": 29, "GPU_MEMORY": 26, "TIME": 29}
 
+    profiling_strings = {"TIME": ("File:", "simpa_examples/", ".py"),
+                         "GPU_MEMORY": ("##", "run_", "\n"),
+                         "MEMORY": ("Filename:", "simpa_examples/", ".py"), }
+
     benchmarking_lists = []  # init result
     for profile in profiles:
         for spacing in spacings:
@@ -53,35 +59,13 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
             current_examples = []
 
             # where to find which files have successfully run
-            if profile == 'TIME':
-                example_name_lines = lines_that_contain("File:", benchmarking_file)
-
-                for enl in example_name_lines:
-                    example = enl.rpartition("simpa_examples/")[2].rpartition(".py")[0]
-                    if example not in current_examples:
-                        current_examples.append(example)
-                    else:
-                        break
-
-            elif profile == 'GPU_MEMORY':
-                example_name_lines = lines_that_contain("##", benchmarking_file)
-
-                for enl in example_name_lines:
-                    example = enl.rpartition("run_")[2].rpartition("\n")[0]
-                    if example not in current_examples:
-                        current_examples.append(example)
-                    else:
-                        break
-
-            elif profile == 'MEMORY':
-                example_name_lines = lines_that_contain("Filename:", benchmarking_file)
-
-                for enl in example_name_lines:
-                    example = enl.rpartition("simpa_examples/")[2].rpartition(".py")[0]
-                    if example not in current_examples:
-                        current_examples.append(example)
-                    else:
-                        break
+            example_name_lines = lines_that_contain(profiling_strings[profile][0], benchmarking_file)
+            for enl in example_name_lines:
+                example = enl.rpartition(profiling_strings[profile][1])[2].rpartition(profiling_strings[profile][2])[0]
+                if example not in current_examples:
+                    current_examples.append(example)
+                else:
+                    break
 
             benchmarking_file = open(file_name, 'r')
             lines_with_sp_simulate = lines_that_contain("sp.simulate", benchmarking_file)
@@ -119,7 +103,7 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
     new_df.astype(dtype={"Example": "str", "Spacing": "float64", "Profile": "str", "Value": "float64"})
 
     # if exists: load old dataframe and append OR just save df
-    df_file = Path(savefolder + '/benchmarking_data_frame.csv')
+    df_file = savefolder / 'benchmarking_data_frame.csv'
     if df_file.is_file():
         old_df = pd.read_csv(df_file)
         new_df = pd.concat([old_df, new_df])
@@ -140,6 +124,7 @@ if __name__ == "__main__":
     config = parser.parse_args()
 
     profiles = config.profiles
-    profiles = profiles.split('%')[:-1]
+    if profiles:
+        profiles = profiles.split('%')[:-1]
     read_out_benchmarking_data(start=float(config.start), stop=float(config.stop), step=float(config.step),
                                profiles=profiles, savefolder=config.savefolder)

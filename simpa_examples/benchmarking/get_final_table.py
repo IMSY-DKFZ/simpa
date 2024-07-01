@@ -8,7 +8,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 
 
-def get_final_table(savefolder):
+def get_final_table(savefolder: str = None):
     """ Function to get the final table from a benchmarking file. Just call it after the last iteration of the
     benchmarking. Saves csv in same location as savefolder!
     :param savefolder:  str to csv file containing benchmarking data frame
@@ -17,6 +17,8 @@ def get_final_table(savefolder):
     """
     if savefolder is None or savefolder == "default":
         savefolder = Path(__file__).parent.resolve()
+    else:
+        savefolder = Path(savefolder)
 
     # read the csv file
     df_file = savefolder / 'benchmarking_data_frame.csv'
