@@ -5,13 +5,13 @@ simpa\_examples
    :maxdepth: 2
 
    create_a_custom_digital_device_twin
-   minimal_optical_simulation_heterogeneous_tissue
    create_custom_tissues
-   minimal_optical_simulation
-   minimal_optical_simulation_uniform_cube
-   msot_invision_simulation
    linear_unmixing
+   minimal_optical_simulation_uniform_cube
    optical_and_acoustic_simulation
-   perform_image_reconstruction
    perform_iterative_qPAI_reconstruction
+   minimal_optical_simulation_heterogeneous_tissue
+   minimal_optical_simulation
+   msot_invision_simulation
+   perform_image_reconstruction
    segmentation_loader

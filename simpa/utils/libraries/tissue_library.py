@@ -91,9 +91,15 @@ class TissueLibrary(object):
         # Get the water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
 
-        if (blood_volume_fraction + water_volume_fraction - 1 > 1e-5).any():
-            raise AssertionError(f"Blood volume fraction too large, must be less than {1 - water_volume_fraction}"
-                                 f"everywhere to leave space for water")
+        if isinstance(blood_volume_fraction, np.ndarray):
+            if (blood_volume_fraction + water_volume_fraction - 1 > 1e-5).any():
+                raise AssertionError(f"Blood volume fraction too large, must be less than {1 - water_volume_fraction}"
+                                     f"everywhere to leave space for water")
+
+        else:
+            if bvf + water_volume_fraction - 1 > 1e-5:
+                raise AssertionError(f"Blood volume fraction too large, must be less than {1 - water_volume_fraction}"
+                                     f"everywhere to leave space for water")
 
         custom_water = MOLECULE_LIBRARY.water(water_volume_fraction)
         custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
