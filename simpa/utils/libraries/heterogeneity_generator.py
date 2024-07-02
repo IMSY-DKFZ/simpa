@@ -155,6 +155,9 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
     """
     This heterogeneity generator takes a pre-specified 2D image, currently only supporting numpy arrays, and uses them
     as a map for heterogeneity within the tissue.
+
+    Attributes:
+        map: the np array of the heterogeneity map transformed and augments to fill the area
     """
 
     def __init__(self, xdim: int, ydim: int, zdim: int, heterogeneity_image: np.ndarray,
@@ -219,7 +222,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         self.map = np.repeat(area_fill_image[:, np.newaxis, :], ydim, axis=1)
 
     def upsize_to_fill_area(self, xdim: int, zdim: int, image: np.ndarray, scaling_type: Optional[str] = None,
-                            constant: Union[int, float] = 0):
+                            constant: Union[int, float] = 0) -> np.ndarray:
         """
         Fills an area with an image through various methods of expansion
         :param xdim: the x dimension of the area to be filled in voxels
@@ -254,7 +257,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         return scaled_image
 
     def crop_image(self, xdim: int, zdim: int, image: np.ndarray,
-                   crop_placement: Union[str, tuple] = Tags.CROP_POSITION_CENTRE):
+                   crop_placement: Union[str, tuple] = Tags.CROP_POSITION_CENTRE) -> np.ndarray:
         """
         Crop the image to fit specified dimensions xdim and zdim
         :param xdim: the x dimension of the area to be filled in voxels
@@ -306,7 +309,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         return cropped_image
 
     def change_resolution(self, image: np.ndarray, spacing_mm: Union[int, float],
-                          image_pixel_spacing_mm: Union[int, float]):
+                          image_pixel_spacing_mm: Union[int, float]) -> np.ndarray:
         """
         Method to change the resolution of an image
         :param image: input image

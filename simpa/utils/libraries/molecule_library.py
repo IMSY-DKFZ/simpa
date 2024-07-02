@@ -148,7 +148,7 @@ class Molecule(SerializableSIMPAClass, object):
 
         if volume_fraction is None:
             volume_fraction = 0.0
-        if not isinstance(volume_fraction, (float, np.ndarray)):
+        if not isinstance(volume_fraction, (int, float, np.int64, np.ndarray)):
             raise TypeError(f"The given volume_fraction was not of type float or array instead of "
                             f"{type(volume_fraction)}!")
         if isinstance(volume_fraction, np.ndarray):
