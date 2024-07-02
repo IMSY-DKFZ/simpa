@@ -35,7 +35,7 @@ class TissueLibrary(object):
         return [blood_volume_fraction*oxygenation, blood_volume_fraction*(1-oxygenation)]
 
     def constant(self, mua: Union[float, int, torch.Tensor] = 1e-10, mus: Union[float, int, torch.Tensor] = 1e-10,
-                 g: Union[float, int, torch.Tensor] = 1e-10) -> MolecularComposition:
+                 g: Union[float, int, torch.Tensor] = 0) -> MolecularComposition:
         """
         A function returning a molecular composition as specified by the user. Typically intended for the use of wanting
         specific mua, mus and g values.
@@ -44,7 +44,7 @@ class TissueLibrary(object):
         :param mus: optical scattering coefficient
         Default: 1e-10 cm^⁻1
         :param g: optical scattering anisotropy
-        Default: 1e-10
+        Default: 0
         :return: the molecular composition as specified by the user
         """
         mua_as_spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua)

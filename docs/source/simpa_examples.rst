@@ -10,7 +10,7 @@ simpa\_examples
    perform_image_reconstruction
    minimal_optical_simulation
    minimal_optical_simulation_uniform_cube
-   optical_and_acoustic_simulation
    perform_iterative_qPAI_reconstruction
    segmentation_loader
    msot_invision_simulation
+   optical_and_acoustic_simulation
