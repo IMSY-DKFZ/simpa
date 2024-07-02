@@ -23,7 +23,7 @@ repos:
       types: [python]
       args:
         - --license-filepath
-        - pre_commit_configs/license_header.txt        # defaults to: LICENSE.txt
+        - .pre_commit_configs/license_header.txt        # defaults to: LICENSE.txt
 
 -   repo: https://github.com/jorisroovers/gitlint # Uses MIT License (MIT compatible)
     rev:  v0.19.1
@@ -38,7 +38,7 @@ repos:
         types: [markdown]
         args: 
            - -c
-           - pre_commit_configs/link-config.json
+           - .pre_commit_configs/link-config.json
         always_run: true
 
 -   repo: local
