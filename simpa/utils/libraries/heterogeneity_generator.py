@@ -301,7 +301,8 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
 
         cropped_image = image[crop_horizontal: crop_horizontal + crop_width, crop_vertical: crop_vertical + crop_height]
 
-        self.logger.warning("The input image has been cropped to the dimensions of the simulation volume")
+        self.logger.warning(
+            "The input image has been cropped to the dimensions of the simulation volume ({} {})".format(xdim, zdim))
         return cropped_image
 
     def change_resolution(self, image: np.ndarray, spacing_mm: Union[int, float],
@@ -318,5 +319,6 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         new_image_pixel_width = round(image_width_mm / spacing_mm)
         new_image_pixel_height = round(image_height_mm / spacing_mm)
 
-        self.logger.warning("The input image has changed pixel spacing to match the simulation volume")
+        self.logger.warning(
+            "The input image has changed pixel spacing to {} to match the simulation volume".format(spacing_mm))
         return transform.resize(image, (new_image_pixel_width, new_image_pixel_height))
