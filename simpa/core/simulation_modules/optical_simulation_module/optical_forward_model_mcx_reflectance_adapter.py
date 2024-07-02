@@ -79,6 +79,7 @@ class MCXAdapterReflectance(MCXAdapter):
         self.generate_mcx_json_input(settings_dict=settings_dict)
         # run the simulation
         cmd = self.get_command()
+        self.logger.info(cmd)
         self.run_mcx(cmd)
 
         # Read output
@@ -117,6 +118,7 @@ class MCXAdapterReflectance(MCXAdapter):
         if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
             cmd.append("--saveref")  # save diffuse reflectance at 0 filled voxels outside of domain
+        cmd += self.get_additional_flags()
         return cmd
 
     def read_mcx_output(self, **kwargs) -> Dict:
