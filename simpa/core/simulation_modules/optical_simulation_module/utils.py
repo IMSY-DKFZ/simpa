@@ -10,11 +10,14 @@ import numpy as np
 from simpa import load_data_field, Tags
 
 
-def get_spectral_image_from_optical_simulation(simulation_hdf_file_path: typing.Union[str, pathlib.Path]) -> np.ndarray:
+def get_spectral_image_from_optical_simulation(simulation_hdf_file_path: typing.Union[str, pathlib.Path],
+                                               target_height: int,
+                                               target_width: int) -> np.ndarray:
     """
     Returns the spectral image from the simulated reflectance data.
     :param simulation_hdf_file_path: The path to the file containing the MCX simulation results.
-
+    :param target_height: The height of the spectral image in voxels.
+    :param target_width: The width of the spectral image in voxels.
     :return: The spectral image in H x W x C.
     """
     refl_by_wavelength = load_data_field(simulation_hdf_file_path, Tags.DATA_FIELD_DIFFUSE_REFLECTANCE)
@@ -24,12 +27,6 @@ def get_spectral_image_from_optical_simulation(simulation_hdf_file_path: typing.
         (f"The reflectance values contain different wavelengths\n({refl_by_wavelength.keys()})\n"
          f"than the reflectance positions\n({refl_pos_by_wavelength.keys()})\n!")
     wavelengths_in_nm = [int(w) for w in refl_by_wavelength.keys()]
-
-    spacing_mm = load_data_field(simulation_hdf_file_path, Tags.SPACING_MM)
-    dim_volume_x_mm = load_data_field(simulation_hdf_file_path, Tags.DIM_VOLUME_X_MM)
-    dim_volume_y_mm = load_data_field(simulation_hdf_file_path, Tags.DIM_VOLUME_Y_MM)
-    target_height = round(dim_volume_y_mm / spacing_mm)
-    target_width = round(dim_volume_x_mm / spacing_mm)
 
     return get_spectral_image_from_simulated_reflectances(wavelengths_in_nm=wavelengths_in_nm,
                                                           refl_by_wavelength=refl_by_wavelength,
@@ -52,7 +49,7 @@ def get_spectral_image_from_simulated_reflectances(wavelengths_in_nm: typing.Uni
 
     :return: The spectral image in H x W x C.
     """
-    spectral_image = np.zeros((len(wavelengths_in_nm), target_height, target_width))
+    spectral_image = np.zeros((target_height, target_width, len(wavelengths_in_nm)))
 
     for j, wavelength in enumerate(wavelengths_in_nm):
         reflectances = refl_by_wavelength[str(wavelength)]
