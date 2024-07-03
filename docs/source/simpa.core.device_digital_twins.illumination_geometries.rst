@@ -48,6 +48,12 @@ illumination\_geometries
    :show-inheritance:
 
 
+.. automodule:: simpa.core.device_digital_twins.illumination_geometries.ring_illumination
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 .. automodule:: simpa.core.device_digital_twins.illumination_geometries.slit_illumination
    :members:
    :undoc-members:
