@@ -4,13 +4,16 @@
 
 import os
 import numpy as np
-from simpa import MCXAdapter,  ModelBasedVolumeCreationAdapter, simulate
-from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
+from simpa import MCXAdapter,  ModelBasedVolumeCreationAdapter, simulate, KWaveAdapter
+from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry, LinearArrayDetectionGeometry
 from simpa.utils import Settings, Tags, TISSUE_LIBRARY, PathManager
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
-class MCXAdditionalFlags(ManualIntegrationTestClass):
+class MATLABAdditionalFlags(ManualIntegrationTestClass):
+    """
+    Tests if using Tags.ADDITIONAL_FLAGS to set additional flags for MATLAB works in the KWaveAdapter.
+    """
 
     def create_example_tissue(self):
         """
@@ -41,7 +44,8 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
             Tags.DIM_VOLUME_X_MM: 100,
             Tags.DIM_VOLUME_Y_MM: 100,
             Tags.DIM_VOLUME_Z_MM: 100,
-            Tags.RANDOM_SEED: 4711
+            Tags.RANDOM_SEED: 4711,
+            Tags.GPU: True
         })
 
         self.settings.set_volume_creation_settings({
@@ -56,20 +60,38 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
             Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
             Tags.MCX_ASSUMED_ANISOTROPY: 0.9
         })
+        self.settings.set_acoustic_settings({
+            Tags.ACOUSTIC_SIMULATION_3D: False,
+            Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+            Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+            Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+            Tags.KWAVE_PROPERTY_PMLInside: False,
+            Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+            Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+            Tags.KWAVE_PROPERTY_PlotPML: False,
+            Tags.RECORDMOVIE: False,
+            Tags.MOVIENAME: "visualization_log",
+            Tags.ACOUSTIC_LOG_SCALE: True
+        })
 
         self.device = PhotoacousticDevice(device_position_mm=np.asarray([self.settings[Tags.DIM_VOLUME_X_MM] / 2 - 0.5,
                                                                          self.settings[Tags.DIM_VOLUME_Y_MM] / 2 - 0.5,
                                                                          0]))
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
+        self.device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=self.device.device_position_mm,
+                                                              pitch_mm=0.25,
+                                                              number_detector_elements=100,
+                                                              field_of_view_extent_mm=np.asarray([-15, 15, 0, 0, 0, 20])))
 
-        self.output_name = f'{os.path.join(self.settings[Tags.SIMULATION_PATH], self.settings[Tags.VOLUME_NAME])}_output'
-        self.output_file_name = f'{self.output_name}.log' 
+        output_name = f'{os.path.join(self.settings[Tags.SIMULATION_PATH], self.settings[Tags.VOLUME_NAME])}'
+        self.output_file_name = f'{output_name}.log' 
 
     def run_simulation(self):
-        # run pipeline including volume creation and optical mcx simulation
+        # run pipeline including volume creation and optical mcx simulation and acoustic matlab kwave simulation
         pipeline = [
             ModelBasedVolumeCreationAdapter(self.settings),
             MCXAdapter(self.settings),
+            KWaveAdapter(self.settings)
         ]
         simulate(pipeline, self.settings, self.device)
 
@@ -80,11 +102,11 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
         """
         
         # perform cleaning before test 
-        if os.path.exists(self. output_file_name):
+        if os.path.exists(self.output_file_name):
             os.remove(self.output_file_name)
         
         # run simulation
-        self.settings.get_optical_settings()[Tags.ADDITIONAL_FLAGS] = ['-l', 1, '-s', self.output_name]
+        self.settings.get_acoustic_settings()[Tags.ADDITIONAL_FLAGS] = ['-logfile', self.output_file_name]
         self.run_simulation()
 
         # checking if file exists afterwards
@@ -96,20 +118,18 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
 
         :raises FileNotFoundError: if correct log file does not exist at expected location
         """
-        output_name = f'{os.path.join(self.settings[Tags.SIMULATION_PATH], self.settings[Tags.VOLUME_NAME])}_output'
-        output_file_name = f'{output_name}.log' 
-
-        # perform cleaning before test 
-        if os.path.exists(output_file_name):
-            os.remove(output_file_name)
+        
+        # perform cleaning before test
+        if os.path.exists(self.output_file_name):
+            os.remove(self.output_file_name)
         
         # run simulation
-        self.settings.get_optical_settings()[Tags.ADDITIONAL_FLAGS] = ['-l', 1, '-s', 'temp_name',  '-s', output_name]
+        self.settings.get_acoustic_settings()[Tags.ADDITIONAL_FLAGS] = ['-logfile', 'temp_name', '-logfile', self.output_file_name]
         self.run_simulation()
 
         # checking if file exists afterwards
-        if not os.path.exists(output_file_name):
-            raise FileNotFoundError(f"Log file wasn't created with correct last given name at expected path {output_file_name}")
+        if not os.path.exists(self.output_file_name):
+            raise FileNotFoundError(f"Log file wasn't created with correct last given name at expected path {self.output_file_name}")
 
     def perform_test(self):
         """
@@ -122,5 +142,5 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
         pass # no figures are created that could be visualized
      
 if __name__ == '__main__':
-    test = MCXAdditionalFlags()
+    test = MATLABAdditionalFlags()
     test.run_test(show_figure_on_screen=False)
