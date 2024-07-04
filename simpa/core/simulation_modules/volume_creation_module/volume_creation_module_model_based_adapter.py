@@ -64,8 +64,9 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                                               dtype=torch.float, device=self.torch_device)
         max_added_fractions = torch.zeros((x_dim_px, y_dim_px, z_dim_px), dtype=torch.float, device=self.torch_device)
         wavelength = self.global_settings[Tags.WAVELENGTH]
+        volume_size = torch.tensor([x_dim_px, y_dim_px, z_dim_px])
 
-        for structure in priority_sorted_structures(self.global_settings, self.component_settings):
+        for structure in priority_sorted_structures(self.global_settings, self.component_settings, volume_size):
             self.logger.debug(type(structure))
 
             structure_properties = structure.properties_for_wavelength(self.global_settings, wavelength)

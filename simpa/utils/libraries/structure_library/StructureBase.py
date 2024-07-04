@@ -66,12 +66,16 @@ class GeometricalStructure:
         else:
             self.partial_volume = False
 
-        self.molecule_composition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
+        self.molecule_composition: MolecularComposition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
         self.molecule_composition.update_internal_properties(global_settings)
 
         self.geometrical_volume = np.zeros(self.volume_dimensions_voxels, dtype=np.float32)
         self.params = self.get_params_from_settings(single_structure_settings)
         self.fill_internal_volume()
+
+        assert ((self.molecule_composition.internal_properties.volume_fraction[self.geometrical_volume != 0] - 1 < 1e-5)
+                .all()), ("Invalid Molecular composition! The volume fractions of all molecules in the structure must"
+                          "be exactly 100%!")
 
     def fill_internal_volume(self):
         """
