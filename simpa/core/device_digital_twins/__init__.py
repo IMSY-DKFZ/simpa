@@ -131,6 +131,7 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
             field_of_view_extent_mm=dictionary_to_deserialize["field_of_view_extent_mm"])
         return deserialized_device
 
+
 """
 It is important to have these relative imports after the definition of the DigitalDeviceTwinBase class to avoid circular imports triggered by imported child classes
 """
@@ -146,6 +147,7 @@ from .illumination_geometries.pencil_array_illumination import PencilArrayIllumi
 from .illumination_geometries.pencil_beam_illumination import PencilBeamIlluminationGeometry  # nopep8
 from .illumination_geometries.disk_illumination import DiskIlluminationGeometry  # nopep8
 from .illumination_geometries.rectangle_illumination import RectangleIlluminationGeometry  # nopep8
+from .illumination_geometries.ring_illumination import RingIlluminationGeometry  # nopep8
 from .illumination_geometries.ithera_msot_acuity_illumination import MSOTAcuityIlluminationGeometry  # nopep8
 from .illumination_geometries.ithera_msot_invision_illumination import MSOTInVisionIlluminationGeometry  # nopep8
 from .pa_devices.ithera_msot_invision import InVision256TF  # nopep8
