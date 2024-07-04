@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
-import torch
 
 from simpa.core.device_digital_twins import PhotoacousticDevice, \
     CurvedArrayDetectionGeometry, MSOTAcuityIlluminationGeometry
@@ -144,14 +143,6 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                     0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
                     2] + z_dim_position_shift_mm
-                for molecule in structure_dict[Tags.MOLECULE_COMPOSITION]:
-                    old_vol = getattr(molecule, "volume_fraction")
-                    if isinstance(old_vol, torch.Tensor):
-                        width_shift_pixels = int(width_shift_for_structures_mm / global_settings[Tags.SPACING_MM])
-                        z_shift_pixels = int(z_dim_position_shift_mm / global_settings[Tags.SPACING_MM])
-                        padding = (z_shift_pixels, 0, 0, 0, width_shift_pixels, width_shift_pixels)
-                        padded_vol = torch.nn.functional.pad(old_vol, padding, mode='')
-                        setattr(molecule, "volume_fraction", padded_vol)
             if Tags.STRUCTURE_END_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
                     0] + width_shift_for_structures_mm
