@@ -114,7 +114,7 @@ class HorizontalLayerStructure(GeometricalStructure):
                 structure_size = structure_end_voxels - structure_start_voxels
 
                 if self.volume_dimensions_voxels[2] != old_vol.shape[2]:
-                    if (self.volume_dimensions_voxels[2] == structure_size[2]).any:
+                    if self.volume_dimensions_voxels[2] == structure_size[2]:
                         pad_start = structure_start_voxels.flip(dims=[0])
                         pad_end = ((torch.from_numpy(self.volume_dimensions_voxels) - structure_end_voxels)
                                    .flip(dims=[0]))
