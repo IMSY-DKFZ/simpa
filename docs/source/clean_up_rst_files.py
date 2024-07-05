@@ -42,7 +42,7 @@ if os.path.exists(os.path.join(current_dir, "simpa_examples.rst")):
 simpa_examples_rst_file = open(os.path.join(current_dir, "simpa_examples.rst"), "w")
 simpa_examples_rst_file.write(
     "simpa\_examples\n=========================================\n\n.. toctree::\n   :maxdepth: 2\n\n")
-examples = glob.glob(os.path.join(current_dir, "../" + folder_level + "simpa_examples/*.py"))
+examples = sorted(glob.glob(os.path.join(current_dir, "../" + folder_level + "simpa_examples/*.py")))
 for example in examples:
     example_file_name = example.split("/")[-1]
     if example_file_name == "__init__.py":
