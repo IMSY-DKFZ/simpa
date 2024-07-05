@@ -26,7 +26,8 @@ def create_deformation_settings(bounds_mm, maximum_z_elevation_mm=1, filter_sigm
 
     # Add random permutations to the y-axis of the division knots
     all_scaling_value = np.multiply.outer(
-        np.cos(x_positions_vector / (bounds_mm[0][1] * (cosine_scaling_factor / np.pi)) - np.pi / (cosine_scaling_factor * 2)) ** 2,
+        np.cos(x_positions_vector / (bounds_mm[0][1] * (cosine_scaling_factor /
+               np.pi)) - np.pi / (cosine_scaling_factor * 2)) ** 2,
         np.cos(y_positions_vector / (bounds_mm[1][1] * (cosine_scaling_factor / np.pi)) - np.pi / (cosine_scaling_factor * 2)) ** 2)
     surface_elevations *= all_scaling_value
 
@@ -60,7 +61,8 @@ def get_functional_from_deformation_settings(deformation_settings: dict):
     z_elevations_mm = deformation_settings[Tags.DEFORMATION_Z_ELEVATIONS_MM]
     order = "cubic"
 
-    functional_mm = RegularGridInterpolator(points=[x_coordinates_mm, y_coordinates_mm], values=z_elevations_mm, method=order)
+    functional_mm = RegularGridInterpolator(
+        points=[x_coordinates_mm, y_coordinates_mm], values=z_elevations_mm, method=order)
     return functional_mm
 
 
