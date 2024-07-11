@@ -50,7 +50,7 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                         assigned_prop = torch.nan
                     volumes[prop_tag][segmentation_volume == seg_class] = assigned_prop
                 elif len(torch.Tensor.size(class_properties[prop_tag])) == 3:  # 3D map
-                    assigned_prop = class_properties[prop_tag][segmentation_volume == seg_class]
+                    assigned_prop = class_properties[prop_tag][torch.tensor(segmentation_volume == seg_class)]
                     assigned_prop[assigned_prop is None] = torch.nan
                     volumes[prop_tag][torch.tensor(segmentation_volume == seg_class)] = assigned_prop
                 else:

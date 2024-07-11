@@ -21,8 +21,7 @@ class TissueProperties(dict):
     def __init__(self, settings: Settings):
         super().__init__()
         volume_x_dim, volume_y_dim, volume_z_dim = settings.get_volume_dimensions_voxels()
-        self.volume_fraction = torch.zeros((volume_x_dim, volume_y_dim, volume_z_dim),
-                                           device=get_processing_device(settings))
+        self.volume_fraction = torch.zeros((volume_x_dim, volume_y_dim, volume_z_dim), dtype=torch.float32)
         for key in property_tags:
             self[key] = 0
 

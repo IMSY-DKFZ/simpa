@@ -62,7 +62,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
         search_list = self.copy()
 
         for molecule in search_list:
-            self.internal_properties.volume_fraction += molecule.get_volume_fraction(settings)
+            self.internal_properties.volume_fraction += molecule.get_volume_fraction()
             self.internal_properties[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] += \
                 molecule.volume_fraction * molecule.gruneisen_parameter
             self.internal_properties[Tags.DATA_FIELD_DENSITY] += molecule.volume_fraction * molecule.density
@@ -187,7 +187,7 @@ class Molecule(SerializableSIMPAClass, object):
             raise TypeError(f"The given volume_fraction was not of type float or array instead of "
                             f"{type(volume_fraction)}!")
         if isinstance(volume_fraction, np.ndarray):
-            volume_fraction = torch.from_numpy(volume_fraction)
+            volume_fraction = torch.tensor(volume_fraction, dtype=torch.float32)
         self.volume_fraction = volume_fraction
 
         if scattering_spectrum is None:
