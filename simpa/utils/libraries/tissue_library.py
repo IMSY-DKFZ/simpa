@@ -96,7 +96,7 @@ class TissueLibrary(object):
         if isinstance(blood_volume_fraction, np.ndarray):
             if (blood_volume_fraction + water_volume_fraction - 1 > 1e-5).any():
                 raise AssertionError(f"Blood volume fraction too large, must be less than {1 - water_volume_fraction}"
-                                     f"everywhere to leave space for water")
+                                     f" everywhere to leave space for water")
 
         else:
             if blood_volume_fraction + water_volume_fraction - 1 > 1e-5:

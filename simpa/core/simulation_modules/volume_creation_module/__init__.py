@@ -40,7 +40,7 @@ class VolumeCreatorModuleBase(SimulationModule):
             # Create wavelength-independent properties only in the first wavelength run
             if key in wavelength_independent_properties and wavelength != first_wavelength:
                 continue
-            volumes[key] = torch.zeros(sizes, dtype=torch.float)
+            volumes[key] = torch.zeros(sizes, dtype=torch.float, device=self.torch_device)
 
         return volumes, volume_x_dim, volume_y_dim, volume_z_dim
 

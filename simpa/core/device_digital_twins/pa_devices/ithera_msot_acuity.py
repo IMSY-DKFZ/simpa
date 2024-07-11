@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 import torch
 import torch.nn.functional as F
+import pandas as pd
 
 from simpa.core.device_digital_twins import PhotoacousticDevice, \
     CurvedArrayDetectionGeometry, MSOTAcuityIlluminationGeometry
@@ -90,7 +91,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                                                             -y_pos_relative_to_membrane,
                                                                                             -43.2]))
 
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         """
         Updates the volume creation settings of the model based volume creator according to the size of the device.
         :param global_settings: Settings for the entire simulation pipeline.
@@ -222,47 +223,79 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         })
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
 
-    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings, heavy_water_tag=None):
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings: Settings,
+                                                                     add_layers: list = [Tags.ADD_US_GEL,
+                                                                                         Tags.ADD_MEDIPRENE,
+                                                                                         Tags.ADD_HEAVY_WATER],
+                                                                     current_heavy_water_depth: int = 0,
+                                                                     heavy_water_tag: int = None):
         """
-        Updates the volume creation settings of the model based volume creator according to the size of the device.
+        Updates the volume creation settings of the segmentation based volume creator according to the size of the device.
         :param global_settings: Settings for the entire simulation pipeline.
         :type global_settings: Settings
         """
         try:
             volume_creator_settings = Settings(global_settings.get_volume_creation_settings())
         except KeyError as e:
-            self.logger.warning("You called the update_settings_for_use_of_model_based_volume_creator method "
+            self.logger.warning("You called the update_settings_for_use_of_segmentation_based_volume_creator method "
                                 "even though there are no volume creation settings defined in the "
                                 "settings dictionary.")
             return
 
-        probe_size_mm = self.probe_height_mm
         segmentation_map = volume_creator_settings[Tags.INPUT_SEGMENTATION_VOLUME]
-        mediprene_layer_height_mm = self.mediprene_membrane_height_mm
+        segmentation_class_mapping = volume_creator_settings[Tags.SEGMENTATION_CLASS_MAPPING]
+        # mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         spacing_mm = global_settings[Tags.SPACING_MM]
+        z_dim_position_shift_mm = 0
 
-        if heavy_water_tag == None:
-            heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+        # if Tags.ADD_US_GEL in add_layers:
+        #     us_gel_thickness_mm = np.random.normal(0.4, 0.1)
+        #     us_gel_thickness_pix = round(us_gel_thickness_mm/spacing_mm)
+        #     padding_dims = ((0, 0), (0, 0), (round(us_gel_thickness_mm/spacing_mm), 0))
+        #     segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=64)
+        #     segmentation_class_mapping[64] = TISSUE_LIBRARY.ultrasound_gel()
+        #     z_dim_position_shift_mm += us_gel_thickness_pix * spacing_mm
+        #
+        #
+        # if Tags.ADD_MEDIPRENE in add_layers:
+        #     mediprene_layer_height_mm = self.mediprene_membrane_height_mm
+        #     mediprene_layer_height_pix = round(mediprene_layer_height_mm/spacing_mm)
+        #     padding_dims = ((0, 0), (0, 0), (mediprene_layer_height_pix, 0))
+        #     segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=128)
+        #     segmentation_class_mapping[128] = TISSUE_LIBRARY.mediprene()
+        #     z_dim_position_shift_mm += mediprene_layer_height_pix * spacing_mm
 
-            if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
-                us_gel_thickness = np.random.normal(0.4, 0.1)
-            else:
-                us_gel_thickness = 0
+        if Tags.ADD_HEAVY_WATER in add_layers:
+            if heavy_water_tag is None:
+                heavy_water_tag = 256
+                segmentation_class_mapping[256] = TISSUE_LIBRARY.heavy_water()
+            probe_size_mm = self.probe_height_mm
+            mediprene_layer_height_mm = self.mediprene_membrane_height_mm
+            heavy_water_layer_height_mm = probe_size_mm - current_heavy_water_depth - mediprene_layer_height_mm
+            heavy_water_layer_height_pix = round(heavy_water_layer_height_mm / spacing_mm)
+            padding_dims = ((0, 0), (0, 0), (heavy_water_layer_height_pix, 0))
+            segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=heavy_water_tag)
+            segmentation_class_mapping[heavy_water_tag] = TISSUE_LIBRARY.heavy_water()
+            z_dim_position_shift_mm += heavy_water_layer_height_mm
 
-        else:
-            for row, count in enumerate(segmentation_map):
-                if (row == heavy_water_tag).any:
-                    current_heavy_water_layer_thickness = count * spacing_mm
-                    heavy_water_layer_height_mm = (probe_size_mm - current_heavy_water_layer_thickness -
-                                                   mediprene_layer_height_mm)
-                    us_gel_thickness = 0
-
-        z_dim_position_shift_mm = mediprene_layer_height_mm + heavy_water_layer_height_mm + us_gel_thickness
+        # if heavy_water_tag == None:
+        #     heavy_water_tag == 64
+        #     heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+        #     if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
+        #         us_gel_thickness = np.random.normal(0.4, 0.1)
+        #     else:
+        #         us_gel_thickness = 0
+        #     z_dim_position_shift_mm = mediprene_layer_height_mm + heavy_water_layer_height_mm + us_gel_thickness
+        # else:
+        #     heavy_water_layer_height_mm = (probe_size_mm - current_heavy_water_depth -
+        #                                    mediprene_layer_height_mm)
+        #     z_dim_position_shift_mm =  heavy_water_layer_height_mm
 
         new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + z_dim_position_shift_mm
 
         # adjust the z-dim to msot probe height
         global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
+        self.logger.debug(f"Changed Tags.DIM_VOLUME_Z_MM to {global_settings[Tags.DIM_VOLUME_Z_MM]}")
 
         # adjust the x-dim to msot probe width
         # 1 voxel is added (0.5 on both sides) to make sure no rounding errors lead to a detector element being outside
@@ -278,13 +311,32 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
         self.logger.debug(volume_creator_settings)
 
-        width_shift_pixels = int(width_shift_for_structures_mm / spacing_mm)
-        z_shift_pixels = int(z_dim_position_shift_mm / spacing_mm)
+        width_shift_pixels = round(width_shift_for_structures_mm / spacing_mm)
+        z_shift_pixels = round(z_dim_position_shift_mm / spacing_mm)
         padding_height = ((0, 0), (0, 0), (z_shift_pixels, 0))
         padding_width = ((width_shift_pixels, width_shift_pixels), (0, 0), (0, 0))
-        padded_up = np.pad(segmentation_map, padding_height, mode='edge')
-        padded_vol = np.pad(padded_up, padding_width, mode='edge')
-        setattr(volume_creator_settings, "input_segmentation_volume", padded_vol)
+        # padded_up = np.pad(segmentation_map, padding_height, mode='edge')
+        padded_vol = np.pad(segmentation_map, padding_width, mode='edge')
+        global_settings[Tags.VOLUME_CREATION_MODEL_SETTINGS][Tags.INPUT_SEGMENTATION_VOLUME] = padded_vol
+
+        for structure_key in volume_creator_settings[Tags.SEGMENTATION_CLASS_MAPPING]:
+            self.logger.debug("Adjusting " + str(structure_key))
+            structure_dict = volume_creator_settings[Tags.SEGMENTATION_CLASS_MAPPING][structure_key]
+            search_dict = structure_dict
+            for molecule in structure_dict:
+                try:
+                    old_volume_fraction = getattr(molecule, Tags.VOLUME_FRACTION)
+                except AttributeError:
+                    continue
+                if isinstance(old_volume_fraction, torch.Tensor):
+                    if old_volume_fraction.shape[2] != padded_vol.shape[2]:
+                        width_shift_pixels = int(width_shift_for_structures_mm / spacing_mm)
+                        z_shift_pixels = int(z_dim_position_shift_mm / spacing_mm)
+                        padding_height = ((0, 0), (0, 0), (z_shift_pixels, 0))
+                        padding_width = ((width_shift_pixels, width_shift_pixels), (0, 0), (0, 0))
+                        padded_up = np.pad(old_volume_fraction.numpy(), padding_height, mode='edge')
+                        padded_vol = np.pad(padded_up, padding_width, mode='edge')
+                        setattr(molecule, Tags.VOLUME_FRACTION, torch.from_numpy(padded_vol))
 
         self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0,
                                                                             probe_size_mm]))
