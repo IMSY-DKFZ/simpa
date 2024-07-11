@@ -222,6 +222,92 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         })
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
 
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings, heavy_water_tag=None):
+        """
+        Updates the volume creation settings of the model based volume creator according to the size of the device.
+        :param global_settings: Settings for the entire simulation pipeline.
+        :type global_settings: Settings
+        """
+        try:
+            volume_creator_settings = Settings(global_settings.get_volume_creation_settings())
+        except KeyError as e:
+            self.logger.warning("You called the update_settings_for_use_of_model_based_volume_creator method "
+                                "even though there are no volume creation settings defined in the "
+                                "settings dictionary.")
+            return
+
+        probe_size_mm = self.probe_height_mm
+        segmentation_map = volume_creator_settings[Tags.INPUT_SEGMENTATION_VOLUME]
+        mediprene_layer_height_mm = self.mediprene_membrane_height_mm
+        spacing_mm = global_settings[Tags.SPACING_MM]
+
+        if heavy_water_tag == None:
+            heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+
+            if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
+                us_gel_thickness = np.random.normal(0.4, 0.1)
+            else:
+                us_gel_thickness = 0
+
+        else:
+            for row, count in enumerate(segmentation_map):
+                if (row == heavy_water_tag).any:
+                    current_heavy_water_layer_thickness = count * spacing_mm
+                    heavy_water_layer_height_mm = (probe_size_mm - current_heavy_water_layer_thickness -
+                                                   mediprene_layer_height_mm)
+                    us_gel_thickness = 0
+
+        z_dim_position_shift_mm = mediprene_layer_height_mm + heavy_water_layer_height_mm + us_gel_thickness
+
+        new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + z_dim_position_shift_mm
+
+        # adjust the z-dim to msot probe height
+        global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
+
+        # adjust the x-dim to msot probe width
+        # 1 voxel is added (0.5 on both sides) to make sure no rounding errors lead to a detector element being outside
+        # of the simulated volume.
+
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + spacing_mm:
+            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) + spacing_mm -
+                                             global_settings[Tags.DIM_VOLUME_X_MM]) / 2
+            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + spacing_mm
+            self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
+        else:
+            width_shift_for_structures_mm = 0
+
+        self.logger.debug(volume_creator_settings)
+
+        width_shift_pixels = int(width_shift_for_structures_mm / spacing_mm)
+        z_shift_pixels = int(z_dim_position_shift_mm / spacing_mm)
+        padding_height = ((0, 0), (0, 0), (z_shift_pixels, 0))
+        padding_width = ((width_shift_pixels, width_shift_pixels), (0, 0), (0, 0))
+        padded_up = np.pad(segmentation_map, padding_height, mode='edge')
+        padded_vol = np.pad(padded_up, padding_width, mode='edge')
+        setattr(volume_creator_settings, "input_segmentation_volume", padded_vol)
+
+        self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0,
+                                                                            probe_size_mm]))
+        self.detection_geometry_position_vector = np.add(self.device_position_mm,
+                                                         np.array([0, 0,
+                                                                   self.focus_in_field_of_view_mm]))
+        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.34,
+                                                          radius_mm=40,
+                                                          number_detector_elements=256,
+                                                          detector_element_width_mm=0.24,
+                                                          detector_element_length_mm=13,
+                                                          center_frequency_hz=3.96e6,
+                                                          bandwidth_percent=55,
+                                                          sampling_frequency_mhz=40,
+                                                          angular_origin_offset=np.pi,
+                                                          device_position_mm=self.detection_geometry_position_vector,
+                                                          field_of_view_extent_mm=self.field_of_view_extent_mm)
+
+        self.set_detection_geometry(detection_geometry)
+        for illumination_geom in self.illumination_geometries:
+            illumination_geom.device_position_mm = np.add(illumination_geom.device_position_mm,
+                                                          np.array([width_shift_for_structures_mm, 0, probe_size_mm]))
+
     def serialize(self) -> dict:
         serialized_device = self.__dict__
         device_dict = {"MSOTAcuityEcho": serialized_device}
