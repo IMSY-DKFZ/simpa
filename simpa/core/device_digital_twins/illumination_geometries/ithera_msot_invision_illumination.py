@@ -16,6 +16,8 @@ class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
     def __init__(self, invision_position: list = [0, 0, 0]):
         super().__init__()
 
+        self.invision_position = invision_position
+
         det_sep_half = 24.74 / 2
         detector_iso_distance = 74.05 / 2
         detector_width = 2 * 6.12
