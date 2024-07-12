@@ -227,12 +227,18 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                                      add_layers: list = [Tags.ADD_US_GEL,
                                                                                          Tags.ADD_MEDIPRENE,
                                                                                          Tags.ADD_HEAVY_WATER],
-                                                                     current_heavy_water_depth: int = 0,
+                                                                     current_heavy_water_depth: (float, int) = 0,
                                                                      heavy_water_tag: int = None):
         """
-        Updates the volume creation settings of the segmentation based volume creator according to the size of the device.
+        Updates the volume creation settings of the segmentation based volume creator according to the size of the
+        device. On the occasion that your segmentation already includes the mediprene, ultrasound gel and some of the
+        heavy water, you may specify the existing depth of the heavy water so that it can be adapted to the depth of
+        device.
+        :param add_layers: The layers to add to the volume, all configured to the typical thicknesses for MSOT acuity
+        echo.
+        :param current_heavy_water_depth: the current heavy water depth (mm).
+        :param heavy_water_tag: the existing heavy water tag in the segmentation map.
         :param global_settings: Settings for the entire simulation pipeline.
-        :type global_settings: Settings
         """
         try:
             volume_creator_settings = Settings(global_settings.get_volume_creation_settings())
@@ -244,26 +250,26 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
         segmentation_map = volume_creator_settings[Tags.INPUT_SEGMENTATION_VOLUME]
         segmentation_class_mapping = volume_creator_settings[Tags.SEGMENTATION_CLASS_MAPPING]
-        # mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         spacing_mm = global_settings[Tags.SPACING_MM]
         z_dim_position_shift_mm = 0
+        mediprene_layer_height_mm = 0
+        heavy_water_layer_height_mm = 0
 
-        # if Tags.ADD_US_GEL in add_layers:
-        #     us_gel_thickness_mm = np.random.normal(0.4, 0.1)
-        #     us_gel_thickness_pix = round(us_gel_thickness_mm/spacing_mm)
-        #     padding_dims = ((0, 0), (0, 0), (round(us_gel_thickness_mm/spacing_mm), 0))
-        #     segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=64)
-        #     segmentation_class_mapping[64] = TISSUE_LIBRARY.ultrasound_gel()
-        #     z_dim_position_shift_mm += us_gel_thickness_pix * spacing_mm
-        #
-        #
-        # if Tags.ADD_MEDIPRENE in add_layers:
-        #     mediprene_layer_height_mm = self.mediprene_membrane_height_mm
-        #     mediprene_layer_height_pix = round(mediprene_layer_height_mm/spacing_mm)
-        #     padding_dims = ((0, 0), (0, 0), (mediprene_layer_height_pix, 0))
-        #     segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=128)
-        #     segmentation_class_mapping[128] = TISSUE_LIBRARY.mediprene()
-        #     z_dim_position_shift_mm += mediprene_layer_height_pix * spacing_mm
+        if Tags.ADD_US_GEL in add_layers:
+            us_gel_thickness_mm = np.random.normal(0.4, 0.1)
+            us_gel_thickness_pix = int(round(us_gel_thickness_mm/spacing_mm))
+            padding_dims = ((0, 0), (0, 0), (us_gel_thickness_pix, 0))
+            segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=64)
+            segmentation_class_mapping[64] = TISSUE_LIBRARY.ultrasound_gel()
+            z_dim_position_shift_mm += us_gel_thickness_pix * spacing_mm
+
+        if Tags.ADD_MEDIPRENE in add_layers:
+            mediprene_layer_height_mm = self.mediprene_membrane_height_mm
+            mediprene_layer_height_pix = int(round(mediprene_layer_height_mm/spacing_mm))
+            padding_dims = ((0, 0), (0, 0), (mediprene_layer_height_pix, 0))
+            segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=128)
+            segmentation_class_mapping[128] = TISSUE_LIBRARY.mediprene()
+            z_dim_position_shift_mm += mediprene_layer_height_pix * spacing_mm
 
         if Tags.ADD_HEAVY_WATER in add_layers:
             if heavy_water_tag is None:
@@ -272,24 +278,11 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             probe_size_mm = self.probe_height_mm
             mediprene_layer_height_mm = self.mediprene_membrane_height_mm
             heavy_water_layer_height_mm = probe_size_mm - current_heavy_water_depth - mediprene_layer_height_mm
-            heavy_water_layer_height_pix = round(heavy_water_layer_height_mm / spacing_mm)
+            heavy_water_layer_height_pix = int(round(heavy_water_layer_height_mm / spacing_mm))
             padding_dims = ((0, 0), (0, 0), (heavy_water_layer_height_pix, 0))
             segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=heavy_water_tag)
             segmentation_class_mapping[heavy_water_tag] = TISSUE_LIBRARY.heavy_water()
-            z_dim_position_shift_mm += heavy_water_layer_height_mm
-
-        # if heavy_water_tag == None:
-        #     heavy_water_tag == 64
-        #     heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
-        #     if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
-        #         us_gel_thickness = np.random.normal(0.4, 0.1)
-        #     else:
-        #         us_gel_thickness = 0
-        #     z_dim_position_shift_mm = mediprene_layer_height_mm + heavy_water_layer_height_mm + us_gel_thickness
-        # else:
-        #     heavy_water_layer_height_mm = (probe_size_mm - current_heavy_water_depth -
-        #                                    mediprene_layer_height_mm)
-        #     z_dim_position_shift_mm =  heavy_water_layer_height_mm
+            z_dim_position_shift_mm += heavy_water_layer_height_pix * spacing_mm
 
         new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + z_dim_position_shift_mm
 
@@ -304,42 +297,41 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + spacing_mm:
             width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) + spacing_mm -
                                              global_settings[Tags.DIM_VOLUME_X_MM]) / 2
-            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + spacing_mm
+            # specific left and right to avoid rounding errors
+            left_shift_pixels = int(round(width_shift_for_structures_mm / spacing_mm))
+            right_shift_pixels = int(round((round(self.detection_geometry.probe_width_mm) + spacing_mm -
+                                            global_settings[Tags.DIM_VOLUME_X_MM])/spacing_mm)) - left_shift_pixels
+            padding_width = ((left_shift_pixels, right_shift_pixels), (0, 0), (0, 0))
+            segmentation_map = np.pad(segmentation_map, padding_width, mode='edge')
+            global_settings[Tags.DIM_VOLUME_X_MM] = int(round(self.detection_geometry.probe_width_mm)) + spacing_mm
             self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
+
         else:
             width_shift_for_structures_mm = 0
+            padding_width = ((0, 0), (0, 0), (0, 0))
 
-        self.logger.debug(volume_creator_settings)
-
-        width_shift_pixels = round(width_shift_for_structures_mm / spacing_mm)
-        z_shift_pixels = round(z_dim_position_shift_mm / spacing_mm)
-        padding_height = ((0, 0), (0, 0), (z_shift_pixels, 0))
-        padding_width = ((width_shift_pixels, width_shift_pixels), (0, 0), (0, 0))
-        # padded_up = np.pad(segmentation_map, padding_height, mode='edge')
-        padded_vol = np.pad(segmentation_map, padding_width, mode='edge')
-        global_settings[Tags.VOLUME_CREATION_MODEL_SETTINGS][Tags.INPUT_SEGMENTATION_VOLUME] = padded_vol
+        global_settings[Tags.VOLUME_CREATION_MODEL_SETTINGS][Tags.INPUT_SEGMENTATION_VOLUME] = segmentation_map
+        self.logger.debug("The segmentation volume has been adjusted to fit the MSOT device")
 
         for structure_key in volume_creator_settings[Tags.SEGMENTATION_CLASS_MAPPING]:
             self.logger.debug("Adjusting " + str(structure_key))
             structure_dict = volume_creator_settings[Tags.SEGMENTATION_CLASS_MAPPING][structure_key]
-            search_dict = structure_dict
             for molecule in structure_dict:
                 try:
                     old_volume_fraction = getattr(molecule, Tags.VOLUME_FRACTION)
                 except AttributeError:
                     continue
                 if isinstance(old_volume_fraction, torch.Tensor):
-                    if old_volume_fraction.shape[2] != padded_vol.shape[2]:
-                        width_shift_pixels = int(width_shift_for_structures_mm / spacing_mm)
-                        z_shift_pixels = int(z_dim_position_shift_mm / spacing_mm)
+                    if old_volume_fraction.shape != segmentation_map.shape:
+                        z_shift_pixels = int(round(z_dim_position_shift_mm / spacing_mm))
                         padding_height = ((0, 0), (0, 0), (z_shift_pixels, 0))
-                        padding_width = ((width_shift_pixels, width_shift_pixels), (0, 0), (0, 0))
                         padded_up = np.pad(old_volume_fraction.numpy(), padding_height, mode='edge')
                         padded_vol = np.pad(padded_up, padding_width, mode='edge')
-                        setattr(molecule, Tags.VOLUME_FRACTION, torch.from_numpy(padded_vol))
+                        setattr(molecule, Tags.VOLUME_FRACTION, torch.tensor(padded_vol, dtype=torch.float32))
 
+        device_change_in_height = mediprene_layer_height_mm + heavy_water_layer_height_mm
         self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0,
-                                                                            probe_size_mm]))
+                                                                            device_change_in_height]))
         self.detection_geometry_position_vector = np.add(self.device_position_mm,
                                                          np.array([0, 0,
                                                                    self.focus_in_field_of_view_mm]))
@@ -358,7 +350,8 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         self.set_detection_geometry(detection_geometry)
         for illumination_geom in self.illumination_geometries:
             illumination_geom.device_position_mm = np.add(illumination_geom.device_position_mm,
-                                                          np.array([width_shift_for_structures_mm, 0, probe_size_mm]))
+                                                          np.array([width_shift_for_structures_mm, 0,
+                                                                    device_change_in_height]))
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
