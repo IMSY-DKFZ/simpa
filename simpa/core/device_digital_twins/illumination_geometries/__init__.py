@@ -13,7 +13,8 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
     This class is the base class for representing all illumination geometries.
     """
 
-    def __init__(self, device_position_mm=None, source_direction_vector=None, field_of_view_extent_mm=None):
+    def __init__(self, device_position_mm=None, source_direction_vector: np.ndarray = None,
+                 field_of_view_extent_mm=None):
         """
         :param device_position_mm: Each device has an internal position which serves as origin for internal \
         representations of illuminator positions.
@@ -38,7 +39,7 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
             self.source_direction_vector)
 
     @abstractmethod
-    def get_mcx_illuminator_definition(self, global_settings) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings: Settings) -> dict:
         """
         IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
         mcx simulation tool to represent the illumination geometry of this device.

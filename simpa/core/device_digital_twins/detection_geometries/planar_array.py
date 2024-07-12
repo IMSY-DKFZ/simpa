@@ -5,6 +5,7 @@ import numpy as np
 
 from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils import Settings, Tags
+from typing import Union
 
 
 class PlanarArrayDetectionGeometry(DetectionGeometryBase):
@@ -14,7 +15,7 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
 
     """
 
-    def __init__(self, pitch_mm=0.5,
+    def __init__(self, pitch_mm: Union[float, int] = 0.5,
                  number_detector_elements_x=100,
                  number_detector_elements_y=100,
                  detector_element_width_mm=0.24,
