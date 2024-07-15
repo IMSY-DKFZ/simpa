@@ -176,7 +176,7 @@ class GenerateOverview():
                 except Exception as e:
                     logging.warning(f"Error Name: {type(e).__name__}")
                     logging.warning(f"Error Message: {e}")
-                    self.mdFile.write(f"<font color=red><b>ERROR occured:</b></font><br>- Error: {type(e).__name__}<br>- Error message: {e}\n")
+                    self.mdFile.write(f"\n- <font color=red><b>ERROR occured:</b></font><br>- Error: {type(e).__name__}<br>- Error message: {e}\n")
 
                 # Write comparison of reference image and new generated image in markdown file
                 self.mdFile.write("\n- <b>Comparison of reference and generated image:</b><br>\n")
