@@ -6,8 +6,6 @@ import torch
 from simpa.core.device_digital_twins import PhotoacousticDevice, \
     CurvedArrayDetectionGeometry, MSOTAcuityIlluminationGeometry
 
-from simpa.core.device_digital_twins.pa_devices import PhotoacousticDevice
-from simpa.core.device_digital_twins.detection_geometries.curved_array import CurvedArrayDetectionGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
@@ -246,7 +244,10 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             padding_dims = ((0, 0), (0, 0), (us_gel_thickness_pix, 0))
             segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=64)
             segmentation_class_mapping[64] = TISSUE_LIBRARY.ultrasound_gel()
+            # Whilst it may seem strange, to avoid rounding differences through the pipline it is best to let the
+            # z dimension shift us the same rounding as the pixel thickness. (This is the same for all three layers)
             z_dim_position_shift_mm += us_gel_thickness_pix * spacing_mm
+            self.logger.debug("Added a ultrasound gel layer to the segmentation map.")
 
         if Tags.ADD_MEDIPRENE in add_layers:
             mediprene_layer_height_mm = self.mediprene_membrane_height_mm
@@ -255,6 +256,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=128)
             segmentation_class_mapping[128] = TISSUE_LIBRARY.mediprene()
             z_dim_position_shift_mm += mediprene_layer_height_pix * spacing_mm
+            self.logger.debug("Added a mediprene layer to the segmentation map.")
 
         if Tags.ADD_HEAVY_WATER in add_layers:
             if heavy_water_tag is None:
@@ -268,6 +270,8 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=heavy_water_tag)
             segmentation_class_mapping[heavy_water_tag] = TISSUE_LIBRARY.heavy_water()
             z_dim_position_shift_mm += heavy_water_layer_height_pix * spacing_mm
+            self.logger.debug(f"Added a {heavy_water_layer_height_pix * spacing_mm}mm heavy water layer to the"
+                              f"segmentation map.")
 
         new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + z_dim_position_shift_mm
 
@@ -289,7 +293,8 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             padding_width = ((left_shift_pixels, right_shift_pixels), (0, 0), (0, 0))
             segmentation_map = np.pad(segmentation_map, padding_width, mode='edge')
             global_settings[Tags.DIM_VOLUME_X_MM] = int(round(self.detection_geometry.probe_width_mm)) + spacing_mm
-            self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
+            self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}, and expanded"
+                              f"the segmentation map accordingly using edge padding")
 
         else:
             width_shift_for_structures_mm = 0

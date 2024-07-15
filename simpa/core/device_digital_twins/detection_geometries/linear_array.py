@@ -4,9 +4,8 @@
 import numpy as np
 from typing import Union
 
-from simpa import Settings
 from simpa.core.device_digital_twins import DetectionGeometryBase
-from simpa.utils import Tags
+from simpa.utils import Settings, Tags
 
 
 class LinearArrayDetectionGeometry(DetectionGeometryBase):

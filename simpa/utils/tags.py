@@ -1497,6 +1497,12 @@ class Tags:
     Identifier for the environment varibale that defines the path the the matlab executable.
     """
 
+    VOLUME_FRACTION = "volume_fraction"
+    """
+    Identifier for the volume fraction for the simulation
+    Usage: simpa.core.digital_device_twins.pa_devices.ithera_msot_acuity
+    """
+
     ADD_US_GEL = "add_us_gel"
     """
     Identifier to add ultrasound gel to the segmentation
