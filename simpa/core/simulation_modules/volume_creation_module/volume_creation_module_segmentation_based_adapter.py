@@ -26,7 +26,7 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
         for key in volumes.keys():
             volumes[key] = volumes[key].to('cpu')
 
-        segmentation_volume = self.component_settings[Tags.INPUT_SEGMENTATION_VOLUME].astype(np.int64)
+        segmentation_volume = self.component_settings[Tags.INPUT_SEGMENTATION_VOLUME]
         segmentation_classes = np.unique(segmentation_volume, return_counts=False)
         x_dim_seg_px, y_dim_seg_px, z_dim_seg_px = np.shape(segmentation_volume)
 
