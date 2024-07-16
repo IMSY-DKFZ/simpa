@@ -86,12 +86,12 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
     @abstractmethod
     def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings: Settings):
         """
-    This method can be overwritten by a PA device if the device poses special constraints to the
-    volume that should be considered by the segmentation-based volume creator.
+        This method can be overwritten by a PA device if the device poses special constraints to the
+        volume that should be considered by the segmentation-based volume creator.
 
-    :param global_settings: Settings for the entire simulation pipeline.
-    :type global_settings: Settings
-    """
+        :param global_settings: Settings for the entire simulation pipeline.
+        :type global_settings: Settings
+        """
 
     def get_field_of_view_mm(self) -> np.ndarray:
         """

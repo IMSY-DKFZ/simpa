@@ -206,7 +206,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         })
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
 
-    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings: Settings,
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings,
                                                                      add_layers: list = [Tags.ADD_US_GEL,
                                                                                          Tags.ADD_MEDIPRENE,
                                                                                          Tags.ADD_HEAVY_WATER],
