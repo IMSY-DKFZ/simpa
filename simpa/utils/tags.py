@@ -1490,3 +1490,33 @@ class Tags:
     """
     Identifier for the environment varibale that defines the path the the matlab executable.
     """
+
+    LOGGER_DEBUG = "debug"
+    """
+    Identifies the logging level to be set to logging.DEBUG.
+    Usage: log.file_logger
+    """
+
+    LOGGER_INFO = "info"
+    """
+    Identifies the logging level to be set to logging.INFO.
+    Usage: log.file_logger
+    """
+
+    LOGGER_WARNING = "warning"
+    """
+    Identifies the logging level to be set to logging.WARNING.
+    Usage: log.file_logger
+    """
+
+    LOGGER_ERROR = "error"
+    """
+    Identifies the logging level to be set to logging.ERROR.
+    Usage: log.file_logger
+    """
+
+    LOGGER_CRITICAL = "critical"
+    """
+    Identifies the logging level to be set to logging.CRITICAL.
+    Usage: log.file_logger
+    """

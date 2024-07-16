@@ -10,6 +10,10 @@ import numpy as np
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
+# TODO: set the level at which you wish to receive a log for
+logger = sp.log.Logger(logging_level=Tags.LOGGER_WARNING)
+
+
 VOLUME_TRANSDUCER_DIM_IN_MM = 75
 VOLUME_PLANAR_DIM_IN_MM = 20
 VOLUME_HEIGHT_IN_MM = 25
