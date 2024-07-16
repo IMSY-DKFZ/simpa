@@ -9,8 +9,8 @@ simpa\_examples
    linear_unmixing
    minimal_optical_simulation
    minimal_optical_simulation_uniform_cube
-   perform_iterative_qPAI_reconstruction
-   optical_and_acoustic_simulation
-   segmentation_loader
    msot_invision_simulation
+   optical_and_acoustic_simulation
    perform_image_reconstruction
+   perform_iterative_qPAI_reconstruction
+   segmentation_loader
