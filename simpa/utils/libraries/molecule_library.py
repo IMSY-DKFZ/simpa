@@ -38,7 +38,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
         """
         super().__init__()
         self.segmentation_type = segmentation_type
-        self.internal_properties = None
+        self.internal_properties: TissueProperties = None
 
         if molecular_composition_settings is None:
             return
@@ -70,7 +70,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
             self.internal_properties[Tags.DATA_FIELD_ALPHA_COEFF] += molecule.volume_fraction * \
                 molecule.alpha_coefficient
 
-        if (np.abs(self.internal_properties.volume_fraction - 1.0) > 1e-5).any():
+        if not (torch.abs(self.internal_properties.volume_fraction - 1.0) < 1e-5).any():
             raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
                                  "exactly 100%!")
 

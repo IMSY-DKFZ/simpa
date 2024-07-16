@@ -66,12 +66,17 @@ class GeometricalStructure:
         else:
             self.partial_volume = False
 
-        self.molecule_composition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
+        self.molecule_composition: MolecularComposition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
+        self.update_molecule_volume_fractions(single_structure_settings)
         self.molecule_composition.update_internal_properties(global_settings)
 
         self.geometrical_volume = np.zeros(self.volume_dimensions_voxels, dtype=np.float32)
         self.params = self.get_params_from_settings(single_structure_settings)
         self.fill_internal_volume()
+
+        assert ((self.molecule_composition.internal_properties.volume_fraction[self.geometrical_volume != 0] - 1 < 1e-5)
+                .all()), ("Invalid Molecular composition! The volume fractions of all molecules in the structure must"
+                          "be exactly 100%!")
 
     def fill_internal_volume(self):
         """
@@ -95,7 +100,7 @@ class GeometricalStructure:
         pass
 
     @abstractmethod
-    def get_params_from_settings(self, single_structure_settings):
+    def get_params_from_settings(self, single_structure_settings: Settings):
         """
         Gets all the parameters required for the specific GeometricalStructure.
         :param single_structure_settings: Settings which describe the specific GeometricalStructure.
@@ -111,6 +116,17 @@ class GeometricalStructure:
         :return: optical/acoustic properties
         """
         return self.molecule_composition.get_properties_for_wavelength(settings, wavelength)
+
+    def update_molecule_volume_fractions(self, single_structure_settings: Settings):
+        """
+        In particular cases, only molecule volume fractions are determined by tensors that expand the structure. This
+        method allows the tensor to only have the size of the structure, with the rest of the volume filled with volume
+        fractions of 0.
+        In the case where the tensors defined are such that they fill the volume, they will be left. Later, when
+        using priority_sorted_structures the volume used will be that within the boundaries in the shape.
+        :param single_structure_settings: Settings which describe the specific GeometricalStructure.
+        """
+        pass
 
     @abstractmethod
     def to_settings(self) -> Settings:
