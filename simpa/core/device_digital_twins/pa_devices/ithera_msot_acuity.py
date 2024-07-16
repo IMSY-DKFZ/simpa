@@ -90,7 +90,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                                                             -y_pos_relative_to_membrane,
                                                                                             -43.2]))
 
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         """
         Updates the volume creation settings of the model based volume creator according to the size of the device.
         :param global_settings: Settings for the entire simulation pipeline.

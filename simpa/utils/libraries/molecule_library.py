@@ -13,6 +13,7 @@ from simpa.utils import Spectrum
 from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
 from simpa.utils.serializer import SerializableSIMPAClass
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
+from simpa.utils.processing_device import get_processing_device
 
 from typing import Optional, Union
 
@@ -70,7 +71,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
             self.internal_properties[Tags.DATA_FIELD_ALPHA_COEFF] += molecule.volume_fraction * \
                 molecule.alpha_coefficient
 
-        if not (torch.abs(self.internal_properties.volume_fraction - 1.0) < 1e-5).any():
+        if (torch.abs(self.internal_properties.volume_fraction - 1.0) > 1e-5).any():
             raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
                                  "exactly 100%!")
 
@@ -186,7 +187,7 @@ class Molecule(SerializableSIMPAClass, object):
             raise TypeError(f"The given volume_fraction was not of type float or array instead of "
                             f"{type(volume_fraction)}!")
         if isinstance(volume_fraction, np.ndarray):
-            volume_fraction = torch.from_numpy(volume_fraction)
+            volume_fraction = torch.tensor(volume_fraction, dtype=torch.float32)
         self.volume_fraction = volume_fraction
 
         if scattering_spectrum is None:

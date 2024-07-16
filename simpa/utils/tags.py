@@ -1565,3 +1565,8 @@ class Tags:
     """
     Identifier for the environment varibale that defines the path the the matlab executable.
     """
+
+    VOLUME_FRACTION = "volume_fraction"
+    """
+    Identifier for the volume fraction for the simulation
+    """

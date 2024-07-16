@@ -23,6 +23,8 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
     def create_simulation_volume(self) -> dict:
         volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes()
         wavelength = self.global_settings[Tags.WAVELENGTH]
+        for key in volumes.keys():
+            volumes[key] = volumes[key].to('cpu')
 
         segmentation_volume = self.component_settings[Tags.INPUT_SEGMENTATION_VOLUME]
         segmentation_classes = np.unique(segmentation_volume, return_counts=False)
@@ -43,15 +45,15 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
         for seg_class in segmentation_classes:
             class_properties = class_mapping[seg_class].get_properties_for_wavelength(self.global_settings, wavelength)
             for prop_tag in property_tags:
-                if len(torch.Tensor.size(class_properties[prop_tag])) == 0:  # scalar
+                if isinstance(class_properties[prop_tag], (int, float)) or class_properties[prop_tag] == None:  # scalar
                     assigned_prop = class_properties[prop_tag]
                     if assigned_prop is None:
                         assigned_prop = torch.nan
                     volumes[prop_tag][segmentation_volume == seg_class] = assigned_prop
                 elif len(torch.Tensor.size(class_properties[prop_tag])) == 3:  # 3D map
-                    assigned_prop = class_properties[prop_tag][segmentation_volume == seg_class]
+                    assigned_prop = class_properties[prop_tag][torch.tensor(segmentation_volume == seg_class)]
                     assigned_prop[assigned_prop is None] = torch.nan
-                    volumes[prop_tag][segmentation_volume == seg_class] = assigned_prop
+                    volumes[prop_tag][torch.tensor(segmentation_volume == seg_class)] = assigned_prop
                 else:
                     raise AssertionError("Properties need to either be a scalar or a 3D map.")
 
@@ -59,6 +61,6 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
 
         # convert volumes back to CPU
         for key in volumes.keys():
-            volumes[key] = volumes[key].cpu().numpy().astype(np.float64, copy=False)
+            volumes[key] = volumes[key].numpy().astype(np.float64, copy=False)
 
         return volumes
