@@ -30,7 +30,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
     def setup(self):
         """
         Runs a pipeline consisting of volume creation and optical simulation. The resulting hdf5 file of the
-        simple test volume is saved at SAVE_PATH location defined in the path_config.env file.
+        simple test volume is saved at SIMPA_SAVE_PATH location defined in the path_config.env file.
         """
 
         self.path_manager = PathManager()
