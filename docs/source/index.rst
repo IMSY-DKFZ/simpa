@@ -21,6 +21,7 @@ pipeline according to their specific use cases and tool requirements.
 
    intro_link
    contributing_link
+   understanding_link.md
 
 ===================================
 
