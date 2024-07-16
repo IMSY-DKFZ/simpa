@@ -25,7 +25,7 @@ from simpa.utils.libraries.structure_library.VesselStructure import VesselStruct
     define_vessel_structure_settings
 
 
-def priority_sorted_structures(settings: Settings, volume_creator_settings: dict, volume_size: torch.Tensor):
+def priority_sorted_structures(settings: Settings, volume_creator_settings: dict):
     """
     A generator function to lazily construct structures in descending order of priority
     """
