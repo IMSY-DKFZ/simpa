@@ -3,12 +3,14 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
+from rich import measure
 from sklearn.datasets import make_blobs
 from scipy.ndimage.filters import gaussian_filter
 from skimage import transform
 from simpa.utils import Tags
 from typing import Union, Optional
 from simpa.log import Logger
+from simpa.utils import Settings
 
 
 class HeterogeneityGeneratorBase(object):
@@ -149,6 +151,43 @@ class BlobHeterogeneity(HeterogeneityGeneratorBase):
                                                                      (np.percentile(x[:, 2], 5),
                                                                          np.percentile(x[:, 2], 95))))[0]
         self.map = gaussian_filter(self.map, 5)
+
+
+class SpecificDiffusiveBlobs(object):
+    """
+    Here the aim is to create diffusion blobs based on the positions of the sources/sinks.
+    """
+
+    def __init__(self, xdim: int, ydim: int, zdim: int, spacing_mm: Union[int, float], segmentation_area: np.ndarray,
+                 segmentation_mapping: dict, segments_to_include: list, diffusion_const: Union[int, float],
+                 n_steps: int = 10000, ):
+        ds2 = spacing_mm**2
+        dt = ds2 ** 2 / (4 * diffusion_const * ds2)
+
+        initial_conditions = np.zeros(segmentation_area.shape)
+        for segment in segments_to_include:
+            initial_conditions[np.where(segmentation_area == segment)] = segmentation_mapping[segment]
+
+        u0 = initial_conditions.copy()
+        u0[np.where(initial_conditions == 0)] = 0.7
+        u = u0.copy()
+
+        for m in range(n_steps):
+            u0, u = self.do_timestep(u0, u)
+
+        self.map = u0
+
+    def do_timestep(self, u0, u, initial_conditions, D, dt, ds2):
+        # Propagate with forward-difference in time, central-difference in space
+        u[1:-1, 1:-1] = u0[1:-1, 1:-1] + D * dt * (
+            (u0[2:, 1:-1] - 2 * u0[1:-1, 1:-1] + u0[:-2, 1:-1]) / ds2
+            + (u0[1:-1, 2:] - 2 * u0[1:-1, 1:-1] + u0[1:-1, :-2]) / ds2)
+        u[np.where(initial_conditions != 0)] = initial_conditions[np.where(initial_conditions != 0)]
+        u0 = u.copy()
+        return u0, u
+
+    def get_map(self):
+        return self.map.astype(float)
 
 
 class ImageHeterogeneity(HeterogeneityGeneratorBase):
