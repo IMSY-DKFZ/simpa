@@ -4,6 +4,8 @@
 
 import numpy as np
 from abc import ABC
+
+from simpa import Settings
 from simpa.core.device_digital_twins import DigitalDeviceTwinBase
 
 
@@ -139,6 +141,9 @@ class PhotoacousticDevice(DigitalDeviceTwinBase, ABC):
         return _result
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        pass
+
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings):
         pass
 
     def serialize(self) -> dict:

@@ -9,6 +9,7 @@ import hashlib
 import uuid
 from simpa.utils.serializer import SerializableSIMPAClass
 from simpa.utils.calculate import are_equal
+from simpa.utils import Settings
 
 
 class DigitalDeviceTwinBase(SerializableSIMPAClass):
@@ -17,7 +18,7 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
     which has representations of both.
     """
 
-    def __init__(self, device_position_mm=None, field_of_view_extent_mm=None):
+    def __init__(self, device_position_mm: np.ndarray = None, field_of_view_extent_mm: np.ndarray = None):
         """
         :param device_position_mm: Each device has an internal position which serves as origin for internal \
         representations of e.g. detector element positions or illuminator positions.
@@ -54,7 +55,7 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
         return False
 
     @abstractmethod
-    def check_settings_prerequisites(self, global_settings) -> bool:
+    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         """
         It might be that certain device geometries need a certain dimensionality of the simulated PAI volume, or that
         it requires the existence of certain Tags in the global global_settings.
@@ -72,7 +73,7 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
         pass
 
     @abstractmethod
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         """
         This method can be overwritten by a PA device if the device poses special constraints to the
         volume that should be considered by the model-based volume creator.
@@ -81,6 +82,16 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
         :type global_settings: Settings
         """
         pass
+
+    @abstractmethod
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings: Settings):
+        """
+        This method can be overwritten by a PA device if the device poses special constraints to the
+        volume that should be considered by the segmentation-based volume creator.
+
+        :param global_settings: Settings for the entire simulation pipeline.
+        :type global_settings: Settings
+        """
 
     def get_field_of_view_mm(self) -> np.ndarray:
         """
@@ -133,7 +144,8 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
 
 
 """
-It is important to have these relative imports after the definition of the DigitalDeviceTwinBase class to avoid circular imports triggered by imported child classes
+It is important to have these relative imports after the definition of the DigitalDeviceTwinBase class to avoid circular
+imports triggered by imported child classes
 """
 from .pa_devices import PhotoacousticDevice  # nopep8
 from simpa.core.device_digital_twins.detection_geometries import DetectionGeometryBase  # nopep8

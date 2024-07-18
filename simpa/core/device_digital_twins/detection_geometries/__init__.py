@@ -5,6 +5,7 @@
 from abc import abstractmethod
 from simpa.core.device_digital_twins import DigitalDeviceTwinBase
 import numpy as np
+from typing import Union
 
 
 class DetectionGeometryBase(DigitalDeviceTwinBase):
@@ -12,10 +13,10 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
     This class is the base class for representing all detector geometries.
     """
 
-    def __init__(self, number_detector_elements, detector_element_width_mm,
-                 detector_element_length_mm, center_frequency_hz, bandwidth_percent,
-                 sampling_frequency_mhz, device_position_mm: np.ndarray = None,
-                 field_of_view_extent_mm: np.ndarray = None):
+    def __init__(self, number_detector_elements: int, detector_element_width_mm: Union[float, int],
+                 detector_element_length_mm: Union[float, int], center_frequency_hz: Union[float, int],
+                 bandwidth_percent: Union[float, int], sampling_frequency_mhz: Union[float, int],
+                 device_position_mm: np.ndarray = None, field_of_view_extent_mm: np.ndarray = None):
         """
 
         :param number_detector_elements: Total number of detector elements.

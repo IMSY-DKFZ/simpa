@@ -13,13 +13,10 @@ class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
     This class represents the illumination geometry of the MSOT InVision photoacoustic device.
     """
 
-    def __init__(self, invision_position=None):
+    def __init__(self, invision_position: list = [0, 0, 0]):
         super().__init__()
 
-        if invision_position is None:
-            self.invision_position = [0, 0, 0]
-        else:
-            self.invision_position = invision_position
+        self.invision_position = invision_position
 
         det_sep_half = 24.74 / 2
         detector_iso_distance = 74.05 / 2
