@@ -35,9 +35,9 @@ class RSOMExplorerP50(PhotoacousticDevice):
 
     """
 
-    def __init__(self, element_spacing_mm: float = 0.02,
-                 number_elements_x: int = 10,
-                 number_elements_y: int = 10,
+    def __init__(self, element_spacing_mm=0.02,
+                 number_elements_x=10,
+                 number_elements_y=10,
                  device_position_mm: np.ndarray = None,
                  field_of_view_extent_mm: np.ndarray = None):
         """

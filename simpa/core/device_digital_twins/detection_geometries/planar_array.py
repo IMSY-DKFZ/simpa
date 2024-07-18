@@ -5,7 +5,6 @@ import numpy as np
 
 from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils import Settings, Tags
-from typing import Union
 
 
 class PlanarArrayDetectionGeometry(DetectionGeometryBase):
@@ -15,7 +14,7 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
 
     """
 
-    def __init__(self, pitch_mm: Union[float, int] = 0.5,
+    def __init__(self, pitch_mm=0.5,
                  number_detector_elements_x=100,
                  number_detector_elements_y=100,
                  detector_element_width_mm=0.24,
@@ -80,9 +79,6 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
         return True
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
-        pass
-
-    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings: Settings):
         pass
 
     def get_detector_element_positions_base_mm(self) -> np.ndarray:

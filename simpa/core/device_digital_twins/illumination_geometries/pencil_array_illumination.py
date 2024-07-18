@@ -14,8 +14,8 @@ class PencilArrayIlluminationGeometry(IlluminationGeometryBase):
     The device position is defined as the middle of the array.
     """
 
-    def __init__(self, pitch_mm: float = 0.5, number_illuminators_x: int = 100, number_illuminators_y: int = 100,
-                 device_position_mm=None, field_of_view_extent_mm=None):
+    def __init__(self, pitch_mm=0.5, number_illuminators_x=100, number_illuminators_y=100, device_position_mm=None,
+                 field_of_view_extent_mm=None):
         """
         :param pitch_mm: Defines the x and y distance between the illumination positions
         :type pitch_mm: float

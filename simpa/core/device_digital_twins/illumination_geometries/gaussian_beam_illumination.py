@@ -6,7 +6,6 @@ from math import log, sqrt
 from collections.abc import Sized
 from simpa.core.device_digital_twins import IlluminationGeometryBase
 from simpa.utils import Tags
-from typing import Union
 
 
 class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
@@ -15,8 +14,8 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
     The position is defined as the middle of the beam.
     """
 
-    def __init__(self, beam_radius_mm: Union[int, float] = None, focal_length_mm: Union[int, float] = None,
-                 device_position_mm=None, field_of_view_extent_mm=None):
+    def __init__(self, beam_radius_mm=None, focal_length_mm=None, device_position_mm=None,
+                 field_of_view_extent_mm=None):
         """
         :param beam_radius_mm: Initial radius of the gaussian beam at half maximum (full width at half maximum (FWHM))
         in mm.

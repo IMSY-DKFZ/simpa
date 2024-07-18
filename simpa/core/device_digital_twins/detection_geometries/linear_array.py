@@ -2,7 +2,6 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
-from typing import Union
 
 from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.utils import Settings, Tags
@@ -16,7 +15,7 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
 
     """
 
-    def __init__(self, pitch_mm: Union[float, int] = 0.5,
+    def __init__(self, pitch_mm=0.5,
                  number_detector_elements=100,
                  detector_element_width_mm=0.24,
                  detector_element_length_mm=0.5,
@@ -52,7 +51,7 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
         self.pitch_mm = pitch_mm
         self.probe_width_mm = (number_detector_elements - 1) * self.pitch_mm
 
-    def check_settings_prerequisites(self, global_settings) -> bool:
+    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
         if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + global_settings[Tags.SPACING_MM]:
             self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
                               "Must be at least {} mm but was {} mm"
@@ -62,9 +61,6 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
         return True
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
-        pass
-
-    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings: Settings):
         pass
 
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
