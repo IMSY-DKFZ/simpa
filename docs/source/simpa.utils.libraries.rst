@@ -14,12 +14,6 @@ libraries
    simpa.utils.libraries.scattering_spectra_data
    simpa.utils.libraries.structure_library
 
-.. automodule:: simpa.utils.libraries.diffusion model
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 .. automodule:: simpa.utils.libraries.heterogeneity_generator
    :members:
    :undoc-members:
