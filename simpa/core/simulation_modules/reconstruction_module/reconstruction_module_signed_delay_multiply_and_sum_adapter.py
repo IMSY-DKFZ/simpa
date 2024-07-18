@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 from simpa.core.device_digital_twins import DetectionGeometryBase
 import numpy as np
@@ -13,6 +13,23 @@ from simpa.core.simulation_modules.reconstruction_module import create_reconstru
 
 
 class SignedDelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
+
+    def get_default_component_settings(self) -> Settings:
+        """
+        :return: Loads default reconstruction component settings 
+        """
+
+        default_settings = {
+            Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: True,
+            Tags.TUKEY_WINDOW_ALPHA: 0.5,
+            Tags.BANDPASS_CUTOFF_LOWPASS_IN_HZ: int(8e6),
+            Tags.BANDPASS_CUTOFF_HIGHPASS_IN_HZ: int(0.1e6),
+            Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+            Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
+            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
+        }
+
+        return Settings(default_settings) 
 
     def reconstruction_algorithm(self, time_series_sensor_data, detection_geometry: DetectionGeometryBase):
         """

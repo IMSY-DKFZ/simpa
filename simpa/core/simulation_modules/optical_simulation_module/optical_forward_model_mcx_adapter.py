@@ -4,13 +4,14 @@
 
 import numpy as np
 import subprocess
-from simpa.utils import Tags, Settings
+from simpa.utils import Tags, Settings, PathManager
 from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
 from simpa.core.device_digital_twins.illumination_geometries import IlluminationGeometryBase
 import json
 import jdata
 import os
 from typing import List, Dict, Tuple
+
 
 
 class MCXAdapter(OpticalForwardModuleBase):
@@ -37,6 +38,22 @@ class MCXAdapter(OpticalForwardModuleBase):
         self.mcx_volumetric_data_file = None
         self.frames = None
         self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii'}
+
+    def get_default_component_settings(self) -> Settings:
+        """
+        :return: Loads default optical component settings 
+        """
+
+        path_manager = PathManager()
+        
+        default_settings = {
+            Tags.MCX_ASSUMED_ANISOTROPY: 0.9,
+            Tags.OPTICAL_MODEL_BINARY_PATH: path_manager.get_mcx_binary_path(),
+            Tags.COMPUTE_DIFFUSE_REFLECTANCE: False,
+            Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT: False
+        }
+
+        return Settings(default_settings)      
 
     def forward_model(self,
                       absorption_cm: np.ndarray,

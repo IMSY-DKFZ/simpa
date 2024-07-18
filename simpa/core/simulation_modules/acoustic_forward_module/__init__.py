@@ -34,13 +34,13 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
     def __init__(self, global_settings: Settings):
         super(AcousticForwardModelBaseAdapter, self).__init__(global_settings=global_settings)
         
-    def load_component_settings(self) -> Settings:
-        """Implements abstract method to serve acoustic settings as component settings
+    def get_user_set_component_settings(self) -> Settings:
+        """Implements abstract method to serve user set acoustic settings as component settings
 
         :return: Settings: acoustic component settings
         """
         return self.global_settings.get_acoustic_settings()
-
+        
     @abstractmethod
     def forward_model(self, detection_geometry) -> np.ndarray:
         """

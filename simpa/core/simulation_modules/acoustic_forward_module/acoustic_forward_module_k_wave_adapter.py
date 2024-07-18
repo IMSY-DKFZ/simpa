@@ -66,6 +66,30 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
     """
 
+    def get_default_component_settings(self) -> Settings:
+        """
+        :return: Loads default acoustic component settings 
+        """
+
+        path_manager = PathManager()
+        
+        default_settings = {
+            Tags.ACOUSTIC_SIMULATION_3D: False,
+            Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+            Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+            Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+            Tags.KWAVE_PROPERTY_PMLInside: False,
+            Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+            Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+            Tags.KWAVE_PROPERTY_PlotPML: False,
+            Tags.RECORDMOVIE: False,
+            Tags.MOVIENAME: "visualization_log",
+            Tags.ACOUSTIC_LOG_SCALE: True
+        }
+
+        return Settings(default_settings)      
+
+
     def forward_model(self, detection_geometry: DetectionGeometryBase) -> np.ndarray:
         """
         Runs the acoustic forward model and performs reading parameters and values from an hdf5 file

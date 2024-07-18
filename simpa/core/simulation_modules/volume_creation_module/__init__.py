@@ -21,8 +21,8 @@ class VolumeCreatorModuleBase(SimulationModule):
     def __init__(self, global_settings: Settings):
         super(VolumeCreatorModuleBase, self).__init__(global_settings=global_settings)
         
-    def load_component_settings(self) -> Settings:
-        """Implements abstract method to serve volume creation settings as component settings
+    def get_user_set_component_settings(self) -> Settings:
+        """Implements abstract method to serve user set volume creation settings as component settings
 
         :return: Settings: volume creation component settings
         """

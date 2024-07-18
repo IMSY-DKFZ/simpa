@@ -2,9 +2,8 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings, PathManager
 from simpa.utils.matlab import generate_matlab_cmd
-from simpa.utils.settings import Settings
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
 import numpy as np
@@ -27,6 +26,37 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
 
     """
+
+    def get_default_component_settings(self) -> Settings:
+        """
+        :return: Loads default reconstruction component settings 
+        """
+
+        path_manager = PathManager()
+
+        default_settings = {
+            Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: True,
+            Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
+            Tags.ACOUSTIC_SIMULATION_3D: False,
+            Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
+            Tags.TUKEY_WINDOW_ALPHA: 0.5,
+            Tags.BANDPASS_CUTOFF_LOWPASS_IN_HZ: int(8e6),
+            Tags.BANDPASS_CUTOFF_HIGHPASS_IN_HZ: int(0.1e4),
+            Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: False,
+            Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
+            Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
+            Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
+            Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
+            Tags.KWAVE_PROPERTY_PMLInside: False,
+            Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
+            Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
+            Tags.KWAVE_PROPERTY_PlotPML: False,
+            Tags.RECORDMOVIE: False,
+            Tags.MOVIENAME: "visualization_log",
+            Tags.ACOUSTIC_LOG_SCALE: True,
+        }
+
+        return Settings(default_settings) 
 
     def get_acoustic_properties(self, input_data: dict, detection_geometry):
         """

@@ -19,13 +19,28 @@ class SimulationModule(PipelineModule):
          :type global_settings: Settings
         """
         super(SimulationModule, self).__init__(global_settings=global_settings)
-        self.component_settings = self.load_component_settings()
+
+        self.component_settings = self.get_default_component_settings()
+        self.component_settings.update(self.get_user_set_component_settings()) # adds and if necessary overrides default component settings by user given settings
         if self.component_settings is None:
             raise ValueError("The component settings should not be None at this point")
 
     @abstractmethod
-    def load_component_settings(self) -> Settings:
+    def get_user_set_component_settings(self) -> Settings:
         """
-        :return: Loads component settings corresponding to this simulation component
+        :return: Loads component settings corresponding to this simulation component set by the user
         """
         pass
+
+    @abstractmethod
+    def get_default_component_settings(self) -> Settings:
+        """Return the default component settings corresponding to this simulation component
+
+        :return: default component settings of this component
+        :rtype: Settings
+        """
+        pass
+
+        
+
+    

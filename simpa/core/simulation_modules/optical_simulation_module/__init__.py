@@ -30,12 +30,13 @@ class OpticalForwardModuleBase(SimulationModule):
         self.nz = None
         self.temporary_output_files = []
 
-    def load_component_settings(self) -> Settings:
-        """Implements abstract method to serve optical settings as component settings
+    def get_user_set_component_settings(self) -> Settings:
+        """Implements abstract method to serve user set optical settings as component settings
 
         :return: Settings: optical component settings
         """
         return self.global_settings.get_optical_settings()
+        
 
     @abstractmethod
     def forward_model(self,

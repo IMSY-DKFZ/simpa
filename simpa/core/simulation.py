@@ -91,6 +91,7 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
 
         for pipeline_element in simulation_pipeline:
             logger.debug(f"Running {type(pipeline_element)}")
+            pipeline_element.global_settings = settings
             pipeline_element.run(digital_device_twin)
 
         logger.debug(f"Running pipeline for wavelength {wavelength}nm... [Done]")

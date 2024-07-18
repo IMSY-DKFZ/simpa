@@ -4,7 +4,7 @@
 
 from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils.libraries.structure_library import priority_sorted_structures
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings
 import numpy as np
 from simpa.utils import create_deformation_settings
 import torch
@@ -44,6 +44,18 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
 
 
     """
+
+    def get_default_component_settings(self) -> Settings:
+        """
+        :return: Loads default volume creation component settings 
+        """
+
+        default_settings = {
+            Tags.SIMULATE_DEFORMED_LAYERS: True
+        }
+
+        return Settings(default_settings) 
+
 
     def create_simulation_volume(self) -> dict:
 

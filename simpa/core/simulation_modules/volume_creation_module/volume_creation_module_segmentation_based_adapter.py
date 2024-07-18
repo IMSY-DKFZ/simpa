@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings
 from simpa.utils.constants import property_tags
 from simpa.io_handling import save_hdf5
 import numpy as np
@@ -19,6 +19,15 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
 
     With this, an even greater utility is warranted.
     """
+
+    def get_default_component_settings(self) -> Settings:
+        """
+        :return: Loads default volume creation component settings 
+        """
+
+        default_settings = {}
+        return Settings(default_settings) 
+
 
     def create_simulation_volume(self) -> dict:
         volumes, x_dim_px, y_dim_px, z_dim_px = self.create_empty_volumes()

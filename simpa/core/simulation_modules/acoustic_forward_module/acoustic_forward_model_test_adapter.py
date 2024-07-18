@@ -3,11 +3,19 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-from simpa.utils import Tags
+from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.acoustic_forward_module import AcousticForwardModelBaseAdapter
 
 
 class AcousticForwardModelTestAdapter(AcousticForwardModelBaseAdapter):
+
+    def get_default_component_settings(self) -> Settings:
+        """
+        :return: Loads default acoustic component settings 
+        """
+
+        default_settings = {}
+        return Settings(default_settings)      
 
     def forward_model(self, device) -> np.ndarray:
 
