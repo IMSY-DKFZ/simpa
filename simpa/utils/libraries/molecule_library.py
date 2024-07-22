@@ -13,8 +13,7 @@ from simpa.utils import Spectrum
 from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
 from simpa.utils.serializer import SerializableSIMPAClass
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
-from simpa.utils.processing_device import get_processing_device
-
+from simpa.log import Logger
 from typing import Optional, Union
 
 
@@ -40,6 +39,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
         super().__init__()
         self.segmentation_type = segmentation_type
         self.internal_properties: TissueProperties = None
+        self.logger = Logger()
 
         if molecular_composition_settings is None:
             return
@@ -72,8 +72,11 @@ class MolecularComposition(SerializableSIMPAClass, list):
                 molecule.alpha_coefficient
 
         if (torch.abs(self.internal_properties.volume_fraction - 1.0) > 1e-5).any():
-            raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
-                                 "exactly 100%!")
+            if not (torch.abs(self.internal_properties.volume_fraction - 1.0) < 1e-5).any():
+                raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
+                                     "exactly 100% somewhere!")
+            self.logger.warning("Some of the volume has not been filled by this molecular composition. Please check"
+                                "that this is correct")
 
     def get_properties_for_wavelength(self, settings, wavelength) -> TissueProperties:
         """
