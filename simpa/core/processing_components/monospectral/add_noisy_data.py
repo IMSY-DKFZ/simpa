@@ -10,7 +10,7 @@ from simpa.io_handling import load_data_field, save_hdf5, save_data_field
 from simpa.core.processing_components import ProcessingComponent
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filter_with_settings, tukey_bandpass_filtering_with_settings, get_reconstruction_time_step_window, compute_image_dimensions, preparing_reconstruction_and_obtaining_reconstruction_settings
-from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
+from simpa.core.device_digital_twins import DigitalDeviceTwinBase
 
 import matplotlib.pyplot as plt # TODO: Delete if debug plot is removed
 
