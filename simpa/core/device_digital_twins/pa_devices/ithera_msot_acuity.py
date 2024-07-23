@@ -277,6 +277,8 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
         # adjust the z-dim to msot probe height
         global_settings[Tags.DIM_VOLUME_Z_MM] = new_volume_height_mm
+        z_shift_pixels = int(round(z_dim_position_shift_mm / spacing_mm))
+        padding_height = ((0, 0), (0, 0), (z_shift_pixels, 0))
         self.logger.debug(f"Changed Tags.DIM_VOLUME_Z_MM to {global_settings[Tags.DIM_VOLUME_Z_MM]}")
 
         # adjust the x-dim to msot probe width
@@ -311,13 +313,13 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                     old_volume_fraction = getattr(molecule, Tags.VOLUME_FRACTION)
                 except AttributeError:
                     continue
-                if isinstance(old_volume_fraction, torch.Tensor):
-                    if old_volume_fraction.shape != segmentation_map.shape:
-                        z_shift_pixels = int(round(z_dim_position_shift_mm / spacing_mm))
-                        padding_height = ((0, 0), (0, 0), (z_shift_pixels, 0))
-                        padded_up = np.pad(old_volume_fraction.numpy(), padding_height, mode='edge')
-                        padded_vol = np.pad(padded_up, padding_width, mode='edge')
-                        setattr(molecule, Tags.VOLUME_FRACTION, torch.tensor(padded_vol, dtype=torch.float32))
+                for key in molecule.serialize()['Molecule']:
+                    if not key.startswith('_'):
+                        old_tensor = getattr(molecule, key)
+                        if isinstance(old_tensor, torch.Tensor):
+                            padded_up_sos = np.pad(old_tensor.numpy(), padding_height, mode='edge')
+                            padded_vol_sos = np.pad(padded_up_sos, padding_width, mode='edge')
+                            setattr(molecule, key, torch.tensor(padded_vol_sos, dtype=torch.float32))
 
         device_change_in_height = mediprene_layer_height_mm + heavy_water_layer_height_mm
         self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0,
