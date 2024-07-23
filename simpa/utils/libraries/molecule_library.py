@@ -209,29 +209,37 @@ class Molecule(SerializableSIMPAClass, object):
         if gruneisen_parameter is None:
             gruneisen_parameter = calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)
-        if not isinstance(gruneisen_parameter, (int, float)):
+        if not isinstance(gruneisen_parameter, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError(f"The given gruneisen_parameter was not of type int or float instead "
                             f"of {type(gruneisen_parameter)}!")
+        if isinstance(gruneisen_parameter, np.ndarray):
+            gruneisen_parameter = torch.tensor(gruneisen_parameter, dtype=torch.float32)
         self.gruneisen_parameter = gruneisen_parameter
 
         if density is None:
             density = StandardProperties.DENSITY_GENERIC
-        if not isinstance(density, (np.int32, np.int64, int, float)):
+        if not isinstance(density, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError(f"The given density was not of type int or float instead of {type(density)}!")
+        if isinstance(density, np.ndarray):
+            density = torch.tensor(density, dtype=torch.float32)
         self.density = density
 
         if speed_of_sound is None:
             speed_of_sound = StandardProperties.SPEED_OF_SOUND_GENERIC
-        if not isinstance(speed_of_sound, (np.int32, np.int64, int, float)):
+        if not isinstance(speed_of_sound, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError("The given speed_of_sound was not of type int or float instead of {}!"
                             .format(type(speed_of_sound)))
+        if isinstance(speed_of_sound, np.ndarray):
+            speed_of_sound = torch.tensor(speed_of_sound, dtype=torch.float32)
         self.speed_of_sound = speed_of_sound
 
         if alpha_coefficient is None:
             alpha_coefficient = StandardProperties.ALPHA_COEFF_GENERIC
-        if not isinstance(alpha_coefficient, (int, float)):
+        if not isinstance(alpha_coefficient, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError("The given alpha_coefficient was not of type int or float instead of {}!"
                             .format(type(alpha_coefficient)))
+        if isinstance(alpha_coefficient, np.ndarray):
+            alpha_coefficient = torch.tensor(alpha_coefficient, dtype=torch.float32)
         self.alpha_coefficient = alpha_coefficient
 
     def __eq__(self, other) -> bool:
