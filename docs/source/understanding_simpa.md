@@ -1,4 +1,4 @@
-# SIMPA Documentation
+# Understanding SIMPA
 
 ## Understanding Tags
 

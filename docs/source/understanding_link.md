@@ -1,2 +1,2 @@
-```{include} introduction.md
+```{include} understanding_simpa.md
 ```

@@ -191,6 +191,22 @@ You simply need to replace the `myscript` name with your script name.
 
 `pyprof2calltree -k -i myscript.cprof`
 
+# Understanding SIMPA
+
+**Tags** are identifiers in SIMPA used to categorize settings and components within simulations, making configurations
+modular, readable, and manageable. Tags offer organizational, flexible, and reusable benefits by acting as keys in
+configuration dictionaries.
+
+**Settings** in SIMPA control simulation behavior. They include:
+
+- **Global Settings**: Apply to the entire simulation, affecting overall properties and parameters.
+- **Component Settings**: Specific to individual components, allowing for detailed customization and optimization of
+each part of the simulation.
+
+Settings are defined in a hierarchical structure, where global settings are established first, followed by
+component-specific settings. This approach ensures comprehensive and precise control over the simulation process.
+For detailed information, users can refer to the [understanding SIMPA documentation](./docs/source/understanding_simpa.md).
+
 # Troubleshooting
 
 In this section, known problems are listed with their solutions (if available):
@@ -203,6 +219,11 @@ If you encounter an error similar to:
     The filename specified was either not found on the MATLAB path or it contains unsupported characters.
 
 Look up the solution in [this thread of the k-Wave forum](http://www.k-wave.org/forum/topic/error-reading-h5-files-when-using-binaries).  
+
+## 2. KeyError: 'time_series_data'
+
+This is the error which will occur for ANY k-Wave problem. For the actual root of the problem, please either look above in
+the terminal for the source of the bug or run the scripts in Matlab to find it manually.
       
 # Citation
 
