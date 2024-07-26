@@ -22,6 +22,8 @@ class DeviceVisualisationTest(ManualIntegrationTestClass):
         if show_figure_on_screen:
             figure_save_path = [None, None, None]
         else:
+            if save_path is None:
+                save_path = ""
             figure_save_path = [save_path + "device_visualisation_MSOT_Acuity.png",
                                 save_path + "device_visualisation_MSOT_Invision.png",
                                 save_path + "device_visualisation_RSOM_Explorer.png"
