@@ -9,13 +9,18 @@ import torch
 from scipy.interpolate import interp1d
 
 
-def calculate_oxygenation(molecule_list):
+def calculate_oxygenation(molecule_list: list) -> Union[float, int, torch.Tensor]:
     """
-    :param molecule_list: a list of molecules from the MoleculeLibrary
-    :return: an oxygenation value between 0 and 1 if possible, or None, if not computable.
+    Calculate the oxygenation level based on the volume fractions of deoxyhaemoglobin and oxyhaemoglobin.
+
+    This function takes a list of molecules and returns an oxygenation value between 0 and 1 if computable,
+    otherwise returns None.
+
+    :param molecule_list: List of molecules with their spectrum information and volume fractions.
+    :return: An oxygenation value between 0 and 1 if possible, or None if not computable.
     """
-    hb = None
-    hbO2 = None
+    hb = None    # Volume fraction of deoxyhaemoglobin
+    hbO2 = None  # Volume fraction of oxyhaemoglobin
 
     for molecule in molecule_list:
         if molecule.spectrum.spectrum_name == "Deoxyhemoglobin":
@@ -63,7 +68,8 @@ def calculate_bvf(molecule_list):
     return hb + hbO2
 
 
-def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spacing=0.1):
+def create_spline_for_range(xmin_mm: Union[float, int] = 0, xmax_mm: Union[float, int] = 10,
+                            maximum_y_elevation_mm: Union[float, int] = 1, spacing: Union[float, int] = 0.1) -> tuple:
     """
     Creates a functional that simulates distortion along the y position
     between the minimum and maximum x positions. The elevation can never be
@@ -72,6 +78,7 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
     :param xmin_mm: the minimum x axis value the return functional is defined in
     :param xmax_mm: the maximum x axis value the return functional is defined in
     :param maximum_y_elevation_mm: the maximum y axis value the return functional will yield
+    :param spacing: the voxel spacing in the simulation
     :return: a functional that describes a distortion field along the y axis
 
     """
@@ -112,7 +119,22 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
     return spline, max_el
 
 
-def spline_evaluator2d_voxel(x, y, spline, offset_voxel, thickness_voxel):
+def spline_evaluator2d_voxel(x: int, y: int, spline: Union[list, np.ndarray], offset_voxel: Union[float, int],
+                             thickness_voxel: int) -> bool:
+    """
+    Evaluate whether a given point (x, y) lies within the thickness bounds around a spline curve.
+
+    This function checks if the y-coordinate of a point lies within a vertical range defined
+    around a spline curve at a specific x-coordinate. The range is determined by the spline elevation,
+    an offset, and a thickness.
+
+    :param x: The x-coordinate of the point to evaluate.
+    :param y: The y-coordinate of the point to evaluate.
+    :param spline: A 1D array or list representing the spline curve elevations at each x-coordinate.
+    :param offset_voxel: The offset to be added to the spline elevation to define the starting y-coordinate of the range.
+    :param thickness_voxel: The vertical thickness of the range around the spline.
+    :return: True if the point (x, y) lies within the range around the spline, False otherwise.
+    """
     elevation = spline[x]
     y_value = np.round(elevation + offset_voxel)
     if y_value <= y < thickness_voxel + y_value:
@@ -121,7 +143,7 @@ def spline_evaluator2d_voxel(x, y, spline, offset_voxel, thickness_voxel):
         return False
 
 
-def calculate_gruneisen_parameter_from_temperature(temperature_in_celcius):
+def calculate_gruneisen_parameter_from_temperature(temperature_in_celcius: Union[float, int]) -> Union[float, int]:
     """
     This function returns the dimensionless gruneisen parameter based on a heuristic formula that
     was determined experimentally::
@@ -141,7 +163,7 @@ def calculate_gruneisen_parameter_from_temperature(temperature_in_celcius):
     return 0.0043 + 0.0053 * temperature_in_celcius
 
 
-def randomize_uniform(min_value: float, max_value: float):
+def randomize_uniform(min_value: float, max_value: float) -> Union[float, int]:
     """
     returns a uniformly drawn random number in [min_value, max_value[
 
@@ -153,7 +175,7 @@ def randomize_uniform(min_value: float, max_value: float):
     return (np.random.random() * (max_value-min_value)) + min_value
 
 
-def rotation_x(theta):
+def rotation_x(theta: Union[float, int]) -> torch.Tensor:
     """
     Rotation matrix around the x-axis with angle theta.
 
@@ -165,7 +187,7 @@ def rotation_x(theta):
                          [0, torch.sin(theta), torch.cos(theta)]])
 
 
-def rotation_y(theta):
+def rotation_y(theta: Union[float, int]) -> torch.Tensor:
     """
     Rotation matrix around the y-axis with angle theta.
 
@@ -177,7 +199,7 @@ def rotation_y(theta):
                          [-torch.sin(theta), 0, torch.cos(theta)]])
 
 
-def rotation_z(theta):
+def rotation_z(theta: Union[float, int]) -> torch.Tensor:
     """
     Rotation matrix around the z-axis with angle theta.
 
@@ -189,7 +211,7 @@ def rotation_z(theta):
                          [0, 0, 1]])
 
 
-def rotation(angles):
+def rotation(angles: Union[list, np.ndarray]) -> torch.Tensor:
     """
     Rotation matrix around the x-, y-, and z-axis with angles [theta_x, theta_y, theta_z].
 
@@ -199,7 +221,7 @@ def rotation(angles):
     return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])
 
 
-def rotation_matrix_between_vectors(a, b):
+def rotation_matrix_between_vectors(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     Returns the rotation matrix from a to b
 
