@@ -4,12 +4,8 @@ version: 2
 # Set the version of Python and other tools you might need
 build:
   os: ubuntu-22.04
-  tools: {python: "3.10"}
-  jobs:
-    post_create_environment:
-      - pip install poetry
-    post_install:
-      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry install --with docs
+  tools:
+    python: "3.10"
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
@@ -17,6 +13,7 @@ sphinx:
   configuration: docs/source/conf.py
   fail_on_warning: false
 
+# Python configuration
 python:
   install:
     - method: pip

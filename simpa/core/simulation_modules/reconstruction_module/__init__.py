@@ -7,7 +7,7 @@ from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.core.device_digital_twins import PhotoacousticDevice
 from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
-from simpa.core import SimulationModule
+from simpa.core.simulation_modules import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
@@ -25,7 +25,13 @@ class ReconstructionAdapterBase(SimulationModule):
 
     def __init__(self, global_settings: Settings):
         super(ReconstructionAdapterBase, self).__init__(global_settings=global_settings)
-        self.component_settings = global_settings.get_reconstruction_settings()
+        
+    def load_component_settings(self) -> Settings:
+        """Implements abstract method to serve reconstruction settings as component settings
+
+        :return: Settings: reconstruction component settings
+        """
+        return self.global_settings.get_reconstruction_settings()
 
     @abstractmethod
     def reconstruction_algorithm(self, time_series_sensor_data,
@@ -110,7 +116,7 @@ def create_reconstruction_settings(speed_of_sound_in_m_per_s: int = 1540, time_s
         Tags.SPACING_MM: sensor_spacing_in_mm,
         Tags.RECONSTRUCTION_APODIZATION_METHOD: apodization,
         Tags.RECONSTRUCTION_MODE: recon_mode,
-        Tags.SENSOR_SAMPLING_RATE_MHZ: (1.0 / time_spacing_in_s) / 1000000
     })
+    settings[Tags.K_WAVE_SPECIFIC_DT] = time_spacing_in_s
 
     return settings
