@@ -2,13 +2,15 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import unittest
-from simpa.utils import TISSUE_LIBRARY
-from simpa.utils.libraries.tissue_library import TissueLibrary
-from simpa.utils.libraries.molecule_library import MolecularComposition
-from simpa.utils.calculate import calculate_oxygenation, calculate_bvf
 import inspect
+import unittest
+
 import numpy as np
+
+from simpa.utils import TISSUE_LIBRARY
+from simpa.utils.calculate import calculate_bvf, calculate_oxygenation
+from simpa.utils.libraries.molecule_library import MolecularComposition
+from simpa.utils.libraries.tissue_library import TissueLibrary
 
 
 class TestCoreAssumptions(unittest.TestCase):
@@ -23,7 +25,7 @@ class TestCoreAssumptions(unittest.TestCase):
 
     def test_bvf_and_oxygenation_consistency(self):
         # blood_volume_fraction (bvf) and oxygenation of tissue classes defined
-        #         # as input have to be the same as the calculated ones
+        # as input have to be the same as the calculated ones
 
         def compare_input_with_calculations(test_tissue, oxy, bvf):
             calculated_bvf = calculate_bvf(test_tissue)

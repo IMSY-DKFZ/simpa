@@ -11,6 +11,7 @@ from scipy.interpolate import interp1d
 
 def calculate_oxygenation(molecule_list):
     """
+    :param molecule_list: a list of molecules from the MoleculeLibrary
     :return: an oxygenation value between 0 and 1 if possible, or None, if not computable.
     """
     hb = None
@@ -38,6 +39,7 @@ def calculate_oxygenation(molecule_list):
 
 def calculate_bvf(molecule_list):
     """
+    :param molecule_list: a list of molecules from the MoleculeLibrary
     :return: the blood volume fraction value between 0 and 1, or 0, if oxy and deoxy not present.
     """
     hb = None
@@ -46,7 +48,7 @@ def calculate_bvf(molecule_list):
     for molecule in molecule_list:
         if molecule.spectrum.spectrum_name == "Deoxyhemoglobin":
             hb = molecule.volume_fraction
-        if molecule.spectrum.spectrum_name == "Oxyhemoglobin":
+        elif molecule.spectrum.spectrum_name == "Oxyhemoglobin":
             hbO2 = molecule.volume_fraction
 
     if hb is None and hbO2 is None:
@@ -54,10 +56,11 @@ def calculate_bvf(molecule_list):
 
     if hb is None:
         return hbO2
-    elif hbO2 is None:
+    
+    if hbO2 is None:
         return hb
 
-    return (hb + hbO2)
+    return hb + hbO2
 
 
 def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spacing=0.1):
