@@ -147,13 +147,20 @@ else
     datacast = 'single';
 end
 
+% Extract the filename from the optical path, add the current time in milliseconds,
+% and add the process id to make the filename unique 
 
-basename = strsplit(optical_path, '/');
-basename = strsplit(basename{end}, '.');
-basename = basename{1};
-date_str = datestr(now, 'HH-MM-SS-FFF');
+% Extract basename from the optical path
+[~, basename, ~] = fileparts(optical_path);
+
+% Get current time in HH-mm-ss-SSS format
+date_str = char(datetime('now', 'Format', 'HH-mm-ss-SSS'));
+
+% Get the process id
 pid = feature('GetPid');
-tmp_path_name = ['kwave__' basename '__' date_str '__' num2str(pid)];
+
+% Construct the unique temporary path name
+tmp_path_name = sprintf('kwave__%s__%s__%d', basename, date_str, pid);
 
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
                'PMLAlpha', settings.pml_alpha, 'PMLSize', 'auto', ...
