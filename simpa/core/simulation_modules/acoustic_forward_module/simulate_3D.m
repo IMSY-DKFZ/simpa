@@ -148,11 +148,26 @@ else
     datacast = 'single';
 end
 
+% Extract the filename from the optical path, add the current time in milliseconds,
+% and add the process id to make the filename unique 
+
+% Extract basename from the optical path
+[~, basename, ~] = fileparts(optical_path);
+
+% Get current time in HH-mm-ss-SSS format
+date_str = char(datetime('now', 'Format', 'HH-mm-ss-SSS'));
+
+% Get the process id
+pid = feature('GetPid');
+
+% Construct the unique temporary path name
+tmp_path_name = sprintf('kwave__%s__%s__%d', basename, date_str, pid);
+
 input_args = {'DataCast', datacast, 'PMLInside', settings.pml_inside, ...
               'PMLAlpha', double(settings.pml_alpha), 'PMLSize', 'auto', ...
               'PlotPML', settings.plot_pml, 'RecordMovie', settings.record_movie, ...
               'MovieName', settings.movie_name, 'PlotScale', [-1, 1], 'LogScale', settings.acoustic_log_scale, ...
-              'Smooth', p0_smoothing};
+              'Smooth', p0_smoothing, 'DataName', tmp_path_name};
 
 if settings.gpu == true
     time_series_data = kspaceFirstOrder3DG(kgrid, medium, source, sensor, input_args{:});
