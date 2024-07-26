@@ -11,6 +11,7 @@ import os
 import shutil
 import sys
 import zipfile
+from importlib.metadata import version
 
 import pypandoc
 import requests
@@ -22,7 +23,6 @@ from simpa.log import Logger
 class GenerateOverview():
     """
     Runs all scripts automatically and takes the created images and compares it with reference images.
-
     """
 
     def __init__(self, verbose: bool = False, save_path: str = None):
@@ -36,10 +36,8 @@ class GenerateOverview():
             self.save_path = os.path.join(self.current_dir, "figures/")
         else:
             self.save_path = save_path
-        if not os.path.isdir(self.save_path):
-            os.mkdir(self.save_path)
-            self.logger.debug(f"Created {self.save_path} directory")
-        self.ref_path = os.path.join(self.current_dir, "figures_ref/")
+        os.makedirs(self.save_path, exist_ok=True)
+        self.logger.debug(f"Created {self.save_path} directory")
         self.md_name = 'manual_tests_overview'
         self.mdFile = MdUtils(file_name=self.md_name, title='<u>Overview of Manual Test Results</u>')
         self.set_style()
@@ -49,13 +47,14 @@ class GenerateOverview():
         
     def download_reference_images(self):
         """
-        removes the current reference figures directory and downloads the latest references from nextcloud
+        Removes the current reference figures directory and downloads the latest references from nextcloud.
+
+        :return: None
         """
         ref_imgs_path = os.path.join(self.current_dir,"reference_figures")
         if os.path.exists(ref_imgs_path):
             # Remove the directory
             shutil.rmtree(ref_imgs_path)
-            self.logger.debug(f'Directory {ref_imgs_path} removed successfully.')
         # nextcloud url with the reference images
         self.nextcloud_url = "https://hub.dkfz.de/s/Xb96SFXbmiE5Fk8" # shared "reference_figures" folder on nextcloud
         # Specify the local directory to save the files
@@ -63,8 +62,8 @@ class GenerateOverview():
         # Construct the download URL based on the public share link
         download_url = self.nextcloud_url.replace('/s/', '/index.php/s/') + '/download'
         # Send a GET request to download the file
+        self.logger.debug(f'Download folder with reference figures from nextcloud...')
         response = requests.get(download_url)
-
         if response.status_code == 200:
             # Save the file
             with open(zip_filepath, 'wb') as f:
@@ -87,24 +86,59 @@ class GenerateOverview():
 
     def clean_dir(self, dir):
         """
-        Deletes scripts from dir list that shall not be runned
+        Removes scripts from the directory list that should not be run.
 
-        :param dir: list of files or directories
+        :param dir: List of files or directories.
         :type dir: list
 
-        :return: None but updateds dir to be a cleaned list without scripts that can not be runned
+        :return: None
         """
 
         # do not execute the following files in the manual_tests folder
         to_be_ignored = ["__pycache__", "__init__.py", self.file_name, "test_data", "utils.py",
                          "manual_tests_overview.md", "manual_tests_overview.pdf", "manual_tests_overview.html",
-                         "figures", "reference_figures", "path_config.env"]
+                         "figures", "reference_figures", "path_config.env", "version.txt"]
 
         for name in to_be_ignored:
             try:
                 dir.remove(name)
             except ValueError:
                 pass 
+
+    def log_version(self):
+        """
+        Logs the current 'simpa' version to a file and compares it with a reference version.
+        
+        :return: None
+        """
+        self.simpa_version = version("simpa")
+        with open(os.path.join(self.save_path, "simpa_version.txt"), "w") as file:
+            file.write(self.simpa_version)
+
+        ref_version_path = os.path.join(self.reference_figures_path, "simpa_version.txt")
+        try:
+            with open(ref_version_path, 'r') as file:
+                reference_sp_version = file.read()
+            self.mdFile.write(f"""
+<b>SIMPA versions:</b><br>\n\n
+<table>
+    <tr>
+        <td>Reference simpa version:</td>
+        <td>{reference_sp_version}</td>
+    </tr>
+    <tr>
+        <td>Your simpa version:</td>
+        <td>{self.simpa_version}</td>
+    </tr>
+</table>
+""")
+            if self.simpa_version != reference_sp_version:
+                self.logger.debug("Your simpa version does not match with the simpa version used for generating the reference figures")
+        except FileNotFoundError:
+            self.logger.warning(f"The reference simpa version file at {ref_version_path} was not found")
+        except IOError:
+            self.logger.warning(f"An error occurred while reading the file at {ref_version_path}")
+
 
     def run_manual_tests(self, run_tests: bool = True):
         """
@@ -132,6 +166,8 @@ class GenerateOverview():
             # iterate through scripts
             for file_num, file in enumerate(files):
                 self.logger.debug(f"Enter file: {file}") 
+                test_save_path = os.path.join(self.save_path, file.split(".py")[0] + "/")
+                os.makedirs(test_save_path, exist_ok=True)
 
                 if file in self.scripts_to_neglect:
                     self.logger.debug(f"{file} has bug or is not compatible and has to be neglected")
@@ -166,9 +202,9 @@ class GenerateOverview():
                             test_object = class_()
                             if run_tests:
                                 if not self.verbosity:
-                                    self.deafen(test_object.run_test, show_figure_on_screen=False, save_path=self.save_path)
+                                    self.deafen(test_object.run_test, show_figure_on_screen=False, save_path=test_save_path)
                                 else:
-                                    test_object.run_test(show_figure_on_screen=False, save_path=self.save_path)
+                                    test_object.run_test(show_figure_on_screen=False, save_path=test_save_path)
                 except Exception as e:
                     self.logger.warning(f"Error Name: {type(e).__name__}")
                     self.logger.warning(f"Error Message: {e}")
@@ -184,7 +220,7 @@ class GenerateOverview():
                     ref_img_list.sort()
                     for ref_img_path in ref_img_list:
                         img_name = os.path.basename(ref_img_path)
-                        img_path = os.path.join(self.save_path, img_name)
+                        img_path = os.path.join(test_save_path, img_name)
                         self.create_comparison_html_table(ref_img_path, img_path)
                 except:
                     self.mdFile.write("Could not load any figures.")
@@ -195,14 +231,17 @@ class GenerateOverview():
         self.mdFile.create_md_file()
 
     # Helper Functions
-    def create_pdf(self):
-        mdFile = MdUtils(file_name='manual_tests_overview', title='Overview of Manual Test Results')
-        mdFile.new_header(level=1, title='Overview of Manual Test results') 
-
-        self.logger.debug(f"Saving pdf file in {os.getcwd()=}")
-        mdFile.create_md_file()
-
     def create_comparison_html_table(self, img1_path=None, img2_path=None):
+        """
+        Creates an HTML table to compare two images, with optional size specification.
+
+        :param img1_path: Path to the first image.
+        :type img1_path: str or None
+        :param img2_path: Path to the second image.
+        :type img2_path: str or None
+
+        :return: None
+        """
         specify_size = False
         if specify_size:
             self.mdFile.write(f"""
@@ -231,6 +270,11 @@ class GenerateOverview():
 </table>
 """)
     def set_style(self):
+        """
+        Writes CSS styles to the Markdown file for image and header formatting, including zoom functionality.
+
+        :return: None
+        """
         self.mdFile.write("""
 <style>
 img {
@@ -269,6 +313,17 @@ h1 {
 """)
                           
     def deafen(self, method, **kwargs):
+        """
+        Suppresses output and logging temporarily while executing a specified method.
+
+        :param method: The method to execute with suppressed output and logging.
+        :type method: callable
+        :param kwargs: Keyword arguments to pass to the method.
+        :type kwargs: dict
+
+        :return: None
+        """
+
         os.system("set -v")
         self.logger._logger.setLevel(logging.CRITICAL)
         real_stdout = sys.stdout
@@ -279,6 +334,11 @@ h1 {
         os.system("set +v")
 
     def create_html(self):
+        """
+        Creates an HTML table to compare generated and reference figures.
+
+        :return: None
+        """
         try:
             self.logger.debug(f"Saving html file in {os.getcwd()=}")
             with open(os.path.join(os.getcwd(), self.md_name+".html"), "w") as html_file:
@@ -308,5 +368,6 @@ h1 {
 if __name__ == '__main__':
     automatic_manual_tests = GenerateOverview()
     automatic_manual_tests.download_reference_images()
-    automatic_manual_tests.run_manual_tests(run_tests=True)
+    automatic_manual_tests.log_version()
+    automatic_manual_tests.run_manual_tests(run_tests=False)
     automatic_manual_tests.create_html()
