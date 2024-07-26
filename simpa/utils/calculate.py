@@ -42,13 +42,17 @@ def calculate_oxygenation(molecule_list: list) -> Union[float, int, torch.Tensor
     return hbO2 / (hb + hbO2)
 
 
-def calculate_bvf(molecule_list):
+def calculate_bvf(molecule_list: list) -> Union[float, int]:
     """
-    :param molecule_list: a list of molecules from the MoleculeLibrary
-    :return: the blood volume fraction value between 0 and 1, or 0, if oxy and deoxy not present.
+    Calculate the blood volume fraction based on the volume fractions of deoxyhaemoglobin and oxyhaemoglobin.
+
+    This function takes a list of molecules and returns a blood volume fraction value between 0 and 1.
+
+    :param molecule_list: List of molecules with their spectrum information and volume fractions.
+    :return: The blood volume fraction value between 0 and 1, or 0, if oxy and deoxy not present.
     """
-    hb = None
-    hbO2 = None
+    hb = None # Volume fraction of deoxyhaemoglobin
+    hbO2 = None # Volume fraction of oxyhaemoglobin
 
     for molecule in molecule_list:
         if molecule.spectrum.spectrum_name == "Deoxyhemoglobin":
