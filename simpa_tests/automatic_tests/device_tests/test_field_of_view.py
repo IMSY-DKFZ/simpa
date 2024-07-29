@@ -101,4 +101,3 @@ class TestFieldOfView(unittest.TestCase):
         self.assertAlmostEqual(ydim_end, 40)
         self.assertAlmostEqual(zdim_start, 0)
         self.assertAlmostEqual(zdim_end, 0)
-
