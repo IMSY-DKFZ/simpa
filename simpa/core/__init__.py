@@ -8,10 +8,12 @@ from simpa.log import Logger
 from simpa.utils import Settings
 from simpa.utils.processing_device import get_processing_device
 
+
 class PipelineModule:
     """
     Defines a pipeline module (either simulation or processing module) that implements a run method and can be called by running the pipeline's simulate method.
     """
+
     def __init__(self, global_settings: Settings):
         """
          :param global_settings: The SIMPA settings dictionary
@@ -29,4 +31,3 @@ class PipelineModule:
         :param digital_device_twin: The digital twin that can be used by the digital device_twin.
         """
         pass
-  
