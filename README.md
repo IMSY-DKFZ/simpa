@@ -43,6 +43,7 @@ The SIMPA path management takes care of that.
 * [SIMPA installation instructions](#simpa-installation-instructions)
 * [External tools installation instructions](#external-tools-installation-instructions)
 * [Path Management](#path-management)
+* [Testing](#run-manual-tests)
 
 ## SIMPA installation instructions
 

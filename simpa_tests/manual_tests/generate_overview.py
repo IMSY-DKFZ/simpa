@@ -27,9 +27,10 @@ class GenerateOverview():
 
     def __init__(self, verbose: bool = False, save_path: str = None):
         self.verbosity = verbose
-        self.logger= Logger()
+        self.logger = Logger()
         self.import_path = "simpa_tests.manual_tests"
-        self.current_dir = os.path.dirname(os.path.realpath(__file__)) # directory of this script, i.e ~/simpa/simpa_tests/manual_tests
+        # directory of this script, i.e ~/simpa/simpa_tests/manual_tests
+        self.current_dir = os.path.dirname(os.path.realpath(__file__))
         self.file_name = os.path.basename(__file__)
         self.reference_figures_path = os.path.join(self.current_dir, "reference_figures/")
         if save_path == None:
@@ -44,21 +45,21 @@ class GenerateOverview():
 
         # Note: Open issue in PointSourceReconstruction.py file (make it consistent with the other manual tests)
         self.scripts_to_neglect = ["PointSourceReconstruction.py"]
-        
+
     def download_reference_images(self):
         """
         Removes the current reference figures directory and downloads the latest references from nextcloud.
 
         :return: None
         """
-        ref_imgs_path = os.path.join(self.current_dir,"reference_figures")
+        ref_imgs_path = os.path.join(self.current_dir, "reference_figures")
         if os.path.exists(ref_imgs_path):
             # Remove the directory
             shutil.rmtree(ref_imgs_path)
         # nextcloud url with the reference images
-        self.nextcloud_url = "https://hub.dkfz.de/s/Xb96SFXbmiE5Fk8" # shared "reference_figures" folder on nextcloud
+        self.nextcloud_url = "https://hub.dkfz.de/s/Xb96SFXbmiE5Fk8"  # shared "reference_figures" folder on nextcloud
         # Specify the local directory to save the files
-        zip_filepath = os.path.join(self.current_dir, "downloaded.zip")      
+        zip_filepath = os.path.join(self.current_dir, "downloaded.zip")
         # Construct the download URL based on the public share link
         download_url = self.nextcloud_url.replace('/s/', '/index.php/s/') + '/download'
         # Send a GET request to download the file
@@ -103,12 +104,12 @@ class GenerateOverview():
             try:
                 dir.remove(name)
             except ValueError:
-                pass 
+                pass
 
     def log_version(self):
         """
         Logs the current 'simpa' version to a file and compares it with a reference version.
-        
+
         :return: None
         """
         self.simpa_version = version("simpa")
@@ -133,12 +134,12 @@ class GenerateOverview():
 </table>
 """)
             if self.simpa_version != reference_sp_version:
-                self.logger.debug("Your simpa version does not match with the simpa version used for generating the reference figures")
+                self.logger.debug(
+                    "Your simpa version does not match with the simpa version used for generating the reference figures")
         except FileNotFoundError:
             self.logger.warning(f"The reference simpa version file at {ref_version_path} was not found")
         except IOError:
             self.logger.warning(f"An error occurred while reading the file at {ref_version_path}")
-
 
     def run_manual_tests(self, run_tests: bool = True):
         """
@@ -154,7 +155,7 @@ class GenerateOverview():
         directories = os.listdir(self.current_dir)
         directories.sort()
         self.clean_dir(directories)
- 
+
         for dir_num, dir_ in enumerate(directories):
             self.logger.debug(f"Enter dir: {dir_}")
             dir_title = f"{dir_num+1}. " + dir_.replace("_", " ").capitalize()
@@ -165,18 +166,18 @@ class GenerateOverview():
 
             # iterate through scripts
             for file_num, file in enumerate(files):
-                self.logger.debug(f"Enter file: {file}") 
+                self.logger.debug(f"Enter file: {file}")
                 test_save_path = os.path.join(self.save_path, file.split(".py")[0] + "/")
                 os.makedirs(test_save_path, exist_ok=True)
 
                 if file in self.scripts_to_neglect:
                     self.logger.debug(f"{file} has bug or is not compatible and has to be neglected")
                     continue
-                
+
                 file_title = f"{dir_num+1}.{file_num+1} " + file.split(".py")[0]
                 self.mdFile.new_header(level=2, title=file_title)
-                
-                global_path = os.path.join(self.current_dir, dir_, file)            
+
+                global_path = os.path.join(self.current_dir, dir_, file)
                 module_name = ".".join([self.import_path, dir_, file.split(".")[0]])
 
                 # execute all manual test scripts
@@ -190,7 +191,7 @@ class GenerateOverview():
                         classes = [node.name for node in ast.walk(p) if isinstance(node, ast.ClassDef)]
                         for class_name in classes:
                             self.logger.debug(f"Run {class_name}")
-                            
+
                             class_ = getattr(module, class_name)
 
                             # write class documentation string in the markdown file
@@ -202,13 +203,15 @@ class GenerateOverview():
                             test_object = class_()
                             if run_tests:
                                 if not self.verbosity:
-                                    self.deafen(test_object.run_test, show_figure_on_screen=False, save_path=test_save_path)
+                                    self.deafen(test_object.run_test, show_figure_on_screen=False,
+                                                save_path=test_save_path)
                                 else:
                                     test_object.run_test(show_figure_on_screen=False, save_path=test_save_path)
                 except Exception as e:
                     self.logger.warning(f"Error Name: {type(e).__name__}")
                     self.logger.warning(f"Error Message: {e}")
-                    self.mdFile.write(f"\n- <font color=red><b>ERROR occured:</b></font><br>- Error: {type(e).__name__}<br>- Error message: {e}\n")
+                    self.mdFile.write(
+                        f"\n- <font color=red><b>ERROR occured:</b></font><br>- Error: {type(e).__name__}<br>- Error message: {e}\n")
 
                 # Write comparison of reference image and new generated image in markdown file
                 self.mdFile.write("\n- <b>Comparison of reference and generated image:</b><br>\n")
@@ -224,7 +227,7 @@ class GenerateOverview():
                         self.create_comparison_html_table(ref_img_path, img_path)
                 except:
                     self.mdFile.write("Could not load any figures.")
-                
+
         # Create a table of contents
         self.mdFile.new_table_of_contents(table_title='Contents', depth=2)
         self.logger.debug(f"Saving md file in {os.getcwd()=}")
@@ -269,6 +272,7 @@ class GenerateOverview():
     </tr>
 </table>
 """)
+
     def set_style(self):
         """
         Writes CSS styles to the Markdown file for image and header formatting, including zoom functionality.
@@ -311,7 +315,7 @@ h1 {
 }
 </style>
 """)
-                          
+
     def deafen(self, method, **kwargs):
         """
         Suppresses output and logging temporarily while executing a specified method.
@@ -342,7 +346,8 @@ h1 {
         try:
             self.logger.debug(f"Saving html file in {os.getcwd()=}")
             with open(os.path.join(os.getcwd(), self.md_name+".html"), "w") as html_file:
-                text = pypandoc.convert_text(self.mdFile.get_md_text(), "html", format="md", extra_args=['--markdown-headings=atx'])
+                text = pypandoc.convert_text(self.mdFile.get_md_text(), "html", format="md",
+                                             extra_args=['--markdown-headings=atx'])
                 updated_text = ""
                 for row in text.split("\n"):
                     if 'href="#' in row:
@@ -361,13 +366,14 @@ h1 {
                     else:
                         updated_text += (row+"\n")
                 html_file.write(updated_text)
-            #pypandoc.convert_file(self.md_name + ".md", 'html', outputfile=self.md_name + '.html')
+            # pypandoc.convert_file(self.md_name + ".md", 'html', outputfile=self.md_name + '.html')
         except Exception as e:
-            self.logger.warning("Check installtion of needed requirements (pypandoc, pypandoc_binary).") 
+            self.logger.warning("Check installation of needed requirements (pypandoc, pypandoc_binary).")
+
 
 if __name__ == '__main__':
     automatic_manual_tests = GenerateOverview()
     automatic_manual_tests.download_reference_images()
     automatic_manual_tests.log_version()
-    automatic_manual_tests.run_manual_tests(run_tests=False)
+    automatic_manual_tests.run_manual_tests(run_tests=True)
     automatic_manual_tests.create_html()
