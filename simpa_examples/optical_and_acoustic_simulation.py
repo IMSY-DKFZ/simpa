@@ -111,6 +111,7 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
         Tags.ILLUMINATION_TYPE: Tags.ILLUMINATION_TYPE_MSOT_ACUITY_ECHO,
         Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE: 50,
         Tags.MCX_ASSUMED_ANISOTROPY: 0.9,
+        Tags.ADDITIONAL_FLAGS: ['--printgpu']  # to print MCX GPU information
     })
 
     settings.set_acoustic_settings({
