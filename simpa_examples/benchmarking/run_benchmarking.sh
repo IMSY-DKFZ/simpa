@@ -19,6 +19,8 @@ exit 0
 }
 
 start=0
+stop=0
+step=0
 number=1
 profiles=()
 filename='default'
@@ -54,9 +56,15 @@ esac
 shift 1
 done
 
-if [ $start -eq 0 ]; then
+if [ "$start" == 0 ]; then
   start=0.2
+fi
+
+if [ "$stop" == 0 ]; then
   stop=0.4
+fi
+
+if [ "$step" == 0 ]; then
   step=0.1
 fi
 
