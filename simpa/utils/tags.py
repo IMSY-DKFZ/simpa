@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from numbers import Number
+from typing import Iterable
 
 import numpy as np
 
@@ -1256,7 +1257,7 @@ class Tags:
     Default filename of the SIMPA output if not specified otherwise.\n
     Usage: SIMPA package, naming convention
     """
-    SIMPA_VERSION = ("simpa_version", str)
+    SIMPA_VERSION = "simpa_version"
     """
     Version number of the currently installed simpa package
     Usage: SIMPA package
@@ -1564,6 +1565,14 @@ class Tags:
     MATLAB_BINARY_PATH_VARNAME = "MATLAB_BINARY_PATH"
     """
     Identifier for the environment varibale that defines the path the the matlab executable.
+    """
+
+    ADDITIONAL_FLAGS = ("additional_flags", Iterable)
+    """
+    Defines a sequence of extra flags to be parsed to executables for simulation modules.
+    Caution: The user is responsible for checking if these flags exist and don't break the predefined flags' behaviour.
+    It is assumed that if flags are specified multiple times the flag provided last is considered. 
+    This can for example be used to override predefined flags.
     """
 
     VOLUME_FRACTION = "volume_fraction"

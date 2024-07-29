@@ -260,4 +260,3 @@ class TestBandpassFilter(unittest.TestCase):
 
         if show_figure_on_screen:
             self.visualize_filtered_spectrum(FILTERED_SIGNAL)
-
