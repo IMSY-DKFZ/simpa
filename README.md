@@ -43,6 +43,7 @@ The SIMPA path management takes care of that.
 * [SIMPA installation instructions](#simpa-installation-instructions)
 * [External tools installation instructions](#external-tools-installation-instructions)
 * [Path Management](#path-management)
+* [Testing](#run-manual-tests)
 
 ## SIMPA installation instructions
 
@@ -54,7 +55,7 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 4. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
-virtual environment activated (we also recommend python 3.8)
+virtual environment activated (we also recommend python 3.10)
 1. `pip install .`
 2. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
@@ -100,15 +101,22 @@ for further (and much better) guidance under:
 
 As a pipelining tool that serves as a communication layer between different numerical forward models and
 processing tools, SIMPA needs to be configured with the paths to these tools on your local hard drive.
-To this end, we have implemented the `PathManager` class that you can import to your project using
-`from simpa.utils import PathManager`. The PathManager looks for a `path_config.env` file (just like the
-one we provided in the `simpa_examples`) in the following places in this order:
+You have a couple of options to define the required path variables. 
+### Option 1: 
+Ensure that the environment variables defined in `simpa_examples/path_config.env.example` are accessible to your script during runtime. This can be done through any method you prefer, as long as the environment variables are accessible through `os.environ`. 
+### Option 2:
+Import the `PathManager` class to your project using
+`from simpa.utils import PathManager`. If a path to a `.env` file is not provided, the `PathManager` looks for a `path_config.env` file (just like the
+one we provided in the `simpa_examples/path_config.env.example`) in the following places, in this order:
 1. The optional path you give the PathManager
 2. Your $HOME$ directory
 3. The current working directory
 4. The SIMPA home directory path
+   
+For this option, please follow the instructions in the `simpa_examples/path_config.env.example` file. 
 
-Please follow the instructions in the `path_config.env` file in the `simpa_examples` folder. 
+## Run manual tests
+To check the success of your installation ot to assess how your contributions affect the Simpa simulation outcomes, you can run the manual tests automatically. Install the testing requirements by doing `pip install .[testing]` and run the `simpa_tests/manual_tests/generate_overview.py` file. This script runs all manual tests and generates both a markdown and an HTML file that compare your results with the reference results.
 
 # Simulation examples
 
@@ -179,13 +187,17 @@ Please see the github guidelines for creating pull requests: [https://docs.githu
 
 # Performance profiling
 
-Do you wish to know which parts of the simulation pipeline cost the most amount of time? 
-If that is the case then you can use the following commands to profile the execution of your simulation script.
-You simply need to replace the `myscript` name with your script name.
+When changing the SIMPA core, e.g., by refactoring/optimizing, or if you are curious about how fast your machine runs
+SIMPA, you can run the SIMPA [benchmarking scripts](simpa_examples/benchmarking/run_benchmarking.sh). It is recommended 
+to run:
 
-`python -m cProfile -o myscript.cprof myscript.py`
+```bash
+bash ./run_benchmark.sh
+```
 
-`pyprof2calltree -k -i myscript.cprof`
+once for checking if it works and then parse [--number 100] to run it at eg 100 times for actual benchmarking.
+Please see [benchmarking.md](docs/source/benchmarking.md) for a complete explanation.
+
 
 # Troubleshooting
 

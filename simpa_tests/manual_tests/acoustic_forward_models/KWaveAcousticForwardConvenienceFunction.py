@@ -33,7 +33,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
     def setup(self):
         """
         Runs a pipeline consisting of volume creation and optical simulation. The resulting hdf5 file of the
-        simple test volume is saved at SAVE_PATH location defined in the path_config.env file.
+        simple test volume is saved at SIMPA_SAVE_PATH location defined in the path_config.env file.
         """
 
         self.path_manager = PathManager()
@@ -114,7 +114,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
                                                                       get_detection_geometry(),
                                                                       speed_of_sound=1540, density=1000,
                                                                       alpha_coeff=0.0, spacing_mm=0.25)
-        
+
         # reconstruct the time series data to compare it with initial pressure
         self.settings.set_reconstruction_settings({
             Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
