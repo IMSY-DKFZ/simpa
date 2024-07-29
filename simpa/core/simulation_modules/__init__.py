@@ -8,6 +8,7 @@ from simpa.core import PipelineModule
 from simpa.utils import Settings, Tags
 from typing import List
 
+
 class SimulationModule(PipelineModule):
     """
     Defines a simulation module that is a step in the simulation pipeline. 
