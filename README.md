@@ -114,6 +114,9 @@ one we provided in the `simpa_examples/path_config.env.example`) in the followin
    
 For this option, please follow the instructions in the `simpa_examples/path_config.env.example` file. 
 
+## Run manual tests
+To check the success of your installation ot to assess how your contributions affect the Simpa simulation outcomes, you can run the manual tests automatically. Install the testing requirements by doing `pip install .[testing]` and run the `simpa_tests/manual_tests/generate_overview.py` file. This script runs all manual tests and generates both a markdown and an HTML file that compare your results with the reference results.
+
 # Simulation examples
 
 To get started with actual simulations, SIMPA provides an [example package](simpa_examples) of simple simulation 
