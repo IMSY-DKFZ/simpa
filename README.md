@@ -54,7 +54,7 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 4. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
-virtual environment activated (we also recommend python 3.8)
+virtual environment activated (we also recommend python 3.10)
 1. `pip install .`
 2. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
@@ -183,13 +183,17 @@ Please see the github guidelines for creating pull requests: [https://docs.githu
 
 # Performance profiling
 
-Do you wish to know which parts of the simulation pipeline cost the most amount of time? 
-If that is the case then you can use the following commands to profile the execution of your simulation script.
-You simply need to replace the `myscript` name with your script name.
+When changing the SIMPA core, e.g., by refactoring/optimizing, or if you are curious about how fast your machine runs
+SIMPA, you can run the SIMPA [benchmarking scripts](simpa_examples/benchmarking/run_benchmarking.sh). It is recommended 
+to run:
 
-`python -m cProfile -o myscript.cprof myscript.py`
+```bash
+bash ./run_benchmark.sh
+```
 
-`pyprof2calltree -k -i myscript.cprof`
+once for checking if it works and then parse [--number 100] to run it at eg 100 times for actual benchmarking.
+Please see [benchmarking.md](docs/source/benchmarking.md) for a complete explanation.
+
 
 # Troubleshooting
 
