@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 help() {
 echo "Usage: calculate benchmarking for [options]"
 echo "For further details see readme"

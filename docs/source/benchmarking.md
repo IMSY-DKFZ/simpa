@@ -7,15 +7,20 @@ It allows customization of initial spacing, final spacing, step size, output fil
 To check and amend which simulations are run, see the [performance check script](../../simpa_examples/benchmarking/performance_check.py).
 
 ## Usage
-To use this script, run it from the command line with the desired options. Please ensure you check two things before
-running the script: First, ensure that the device will not be in use for the duration - ideally restart before 
-benchmarking - of the benchmarking process, 
+In order to be able to use this script, please first ensure that you have the dependencies required for the benchmarking
+scripts. To do this, please navigate to the simpa directory and execute `pip install .[profile]`.
+
+Now, you can run [performance_check.py](../../simpa_examples/benchmarking/performance_check.py) and [run_benchmarking.sh](../../simpa_examples/benchmarking/run_benchmarking.sh) from the command line with the desired
+options. Please ensure you check two things before running the script: First, ensure that the device will not be in use
+for the duration - ideally restart before benchmarking - of the benchmarking process, 
 as this will create large uncertainties within the outcomes. Second, ensure that you don't accidentally write over any 
 existing file by saving the files created by this script after runtime to different location.
 
-The script will create multiple text files (eg. benchmarking_data_TIME_0.2.txt), showing the line by line profiling of
-the most recent runs, as well as two csv's with the data from all the runs (benchmarking_data_frame.csv) and the means
-and standard deviations of all the runs (benchmarking_data_frame_mean.csv).
+The both scripts create text files (eg. benchmarking_data_TIME_0.2.txt), showing the line by line profiling of
+the most recent runs. The [run_benchmarking.sh](../../simpa_examples/benchmarking/run_benchmarking.sh) also creates two csv's: one with the data from all the runs
+(benchmarking_data_frame.csv) and one with the means and standard deviations of all the runs
+(benchmarking_data_frame_mean.csv). With both scripts, unless the user intentionally changes the save folder name,
+the output files will be overwritten.
 
 Below is a description of the available options and how to use them.
 
