@@ -47,6 +47,11 @@ profile = [
     "line_profiler>=4.0.0,<5.0.0",
     "memory_profiler>=0.61.0,<0.62.0"
 ]
+testing = [
+    "mdutils>=1.4.0",          # Uses MIT-License (MIT compatible)
+    "pypandoc>=1.13",          # Uses MIT-License (MIT compatible)
+    "pypandoc_binary>=1.13"    # Uses MIT-License (MIT compatible)
+    ]
 
 [project.urls]
 Homepage = "https://github.com/IMSY-DKFZ/simpa"
