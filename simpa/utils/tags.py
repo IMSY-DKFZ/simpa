@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from numbers import Number
+from typing import Iterable
 
 import numpy as np
 
@@ -880,6 +881,12 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
+    DATA_FIELD_BLOOD_VOLUME_FRACTION = "bvf"
+    """
+    Blood volume fraction of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DATA_FIELD_SEGMENTATION = "seg"
     """
     Segmentation of the generated volume/structure.\n
@@ -1256,7 +1263,7 @@ class Tags:
     Default filename of the SIMPA output if not specified otherwise.\n
     Usage: SIMPA package, naming convention
     """
-    SIMPA_VERSION = ("simpa_version", str)
+    SIMPA_VERSION = "simpa_version"
     """
     Version number of the currently installed simpa package
     Usage: SIMPA package
@@ -1519,4 +1526,12 @@ class Tags:
     """
     Identifier to add heavy water to the segmentation
     Usage:simpa.core.digital_device_twins.pa_devices.ithera_msot_acuity
+    """
+
+    ADDITIONAL_FLAGS = ("additional_flags", Iterable)
+    """
+    Defines a sequence of extra flags to be parsed to executables for simulation modules.
+    Caution: The user is responsible for checking if these flags exist and don't break the predefined flags' behaviour.
+    It is assumed that if flags are specified multiple times the flag provided last is considered. 
+    This can for example be used to override predefined flags.
     """
