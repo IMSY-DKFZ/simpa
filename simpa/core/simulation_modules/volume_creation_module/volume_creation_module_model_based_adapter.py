@@ -107,6 +107,10 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
 
             global_volume_fractions[mask] += added_volume_fraction[mask]
 
+        if (torch.abs(global_volume_fractions[global_volume_fractions > 1]) < 1e-5).any():
+            raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
+                                 "exactly 100%!")
+
         # convert volumes back to CPU
         for key in volumes.keys():
             volumes[key] = volumes[key].cpu().numpy().astype(np.float64, copy=False)

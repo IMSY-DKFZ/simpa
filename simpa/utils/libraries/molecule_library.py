@@ -10,11 +10,10 @@ from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
 from simpa.utils import Spectrum
-from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
+from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature, calculate_bvf
 from simpa.utils.serializer import SerializableSIMPAClass
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
-from simpa.utils.processing_device import get_processing_device
-
+from simpa.log import Logger
 from typing import Optional, Union
 
 
@@ -40,6 +39,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
         super().__init__()
         self.segmentation_type = segmentation_type
         self.internal_properties: TissueProperties = None
+        self.logger = Logger()
 
         if molecular_composition_settings is None:
             return
@@ -59,6 +59,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
         self.internal_properties = TissueProperties(settings)
         self.internal_properties[Tags.DATA_FIELD_SEGMENTATION] = self.segmentation_type
         self.internal_properties[Tags.DATA_FIELD_OXYGENATION] = calculate_oxygenation(self)
+        self.internal_properties[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = calculate_bvf(self)
         search_list = self.copy()
 
         for molecule in search_list:
@@ -72,8 +73,11 @@ class MolecularComposition(SerializableSIMPAClass, list):
                 molecule.alpha_coefficient
 
         if (torch.abs(self.internal_properties.volume_fraction - 1.0) > 1e-5).any():
-            raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
-                                 "exactly 100%!")
+            if not (torch.abs(self.internal_properties.volume_fraction - 1.0) < 1e-5).any():
+                raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
+                                     "exactly 100% somewhere!")
+            self.logger.warning("Some of the volume has not been filled by this molecular composition. Please check"
+                                "that this is correct")
 
     def get_properties_for_wavelength(self, settings, wavelength) -> TissueProperties:
         """
@@ -90,10 +94,8 @@ class MolecularComposition(SerializableSIMPAClass, list):
         for molecule in search_list:
             self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] += \
                 (molecule.volume_fraction * molecule.spectrum.get_value_for_wavelength(wavelength))
-
             self.internal_properties[Tags.DATA_FIELD_SCATTERING_PER_CM] += \
                 (molecule.volume_fraction * (molecule.scattering_spectrum.get_value_for_wavelength(wavelength)))
-
             self.internal_properties[Tags.DATA_FIELD_ANISOTROPY] += \
                 molecule.volume_fraction * molecule.anisotropy_spectrum.get_value_for_wavelength(wavelength)
 
@@ -206,29 +208,37 @@ class Molecule(SerializableSIMPAClass, object):
         if gruneisen_parameter is None:
             gruneisen_parameter = calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)
-        if not isinstance(gruneisen_parameter, (int, float)):
+        if not isinstance(gruneisen_parameter, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError(f"The given gruneisen_parameter was not of type int or float instead "
                             f"of {type(gruneisen_parameter)}!")
+        if isinstance(gruneisen_parameter, np.ndarray):
+            gruneisen_parameter = torch.tensor(gruneisen_parameter, dtype=torch.float32)
         self.gruneisen_parameter = gruneisen_parameter
 
         if density is None:
             density = StandardProperties.DENSITY_GENERIC
-        if not isinstance(density, (np.int32, np.int64, int, float)):
+        if not isinstance(density, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError(f"The given density was not of type int or float instead of {type(density)}!")
+        if isinstance(density, np.ndarray):
+            density = torch.tensor(density, dtype=torch.float32)
         self.density = density
 
         if speed_of_sound is None:
             speed_of_sound = StandardProperties.SPEED_OF_SOUND_GENERIC
-        if not isinstance(speed_of_sound, (np.int32, np.int64, int, float)):
+        if not isinstance(speed_of_sound, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError("The given speed_of_sound was not of type int or float instead of {}!"
                             .format(type(speed_of_sound)))
+        if isinstance(speed_of_sound, np.ndarray):
+            speed_of_sound = torch.tensor(speed_of_sound, dtype=torch.float32)
         self.speed_of_sound = speed_of_sound
 
         if alpha_coefficient is None:
             alpha_coefficient = StandardProperties.ALPHA_COEFF_GENERIC
-        if not isinstance(alpha_coefficient, (int, float)):
+        if not isinstance(alpha_coefficient, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError("The given alpha_coefficient was not of type int or float instead of {}!"
                             .format(type(alpha_coefficient)))
+        if isinstance(alpha_coefficient, np.ndarray):
+            alpha_coefficient = torch.tensor(alpha_coefficient, dtype=torch.float32)
         self.alpha_coefficient = alpha_coefficient
 
     def __eq__(self, other) -> bool:

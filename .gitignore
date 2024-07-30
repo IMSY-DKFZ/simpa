@@ -17,6 +17,12 @@ simpa_tests/figures
 simpa_tests/figures/*
 simpa_tests/**/figures
 simpa_tests/**/figures/*
+simpa_tests/manual_tests/figures
+simpa_tests/manual_tests/reference_figures
+simpa_tests/manual_tests/manual_tests_*
+
+simpa_examples/benchmarking/*.csv
+simpa_examples/benchmarking/*.txt
 
 path_config.env
 
