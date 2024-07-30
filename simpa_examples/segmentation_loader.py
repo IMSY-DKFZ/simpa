@@ -7,6 +7,7 @@ import simpa as sp
 import numpy as np
 from skimage.data import shepp_logan_phantom
 from scipy.ndimage import zoom
+from skimage.transform import resize
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -35,8 +36,8 @@ def run_segmentation_loader(spacing: float | int = 1.0, input_spacing: float | i
     label_mask = shepp_logan_phantom()
 
     label_mask = np.digitize(label_mask, bins=np.linspace(0.0, 1.0, 11), right=True)
-
-    label_mask = np.reshape(label_mask, (400, 1, 400))
+    label_mask = label_mask[100:300, 100:300]
+    label_mask = np.reshape(label_mask, (label_mask.shape[0], 1, label_mask.shape[1]))
 
     segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
     segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/spacing,
@@ -67,9 +68,9 @@ def run_segmentation_loader(spacing: float | int = 1.0, input_spacing: float | i
     settings[Tags.RANDOM_SEED] = 1234
     settings[Tags.WAVELENGTHS] = [700]
     settings[Tags.SPACING_MM] = spacing
-    settings[Tags.DIM_VOLUME_X_MM] = 400 / (spacing / input_spacing)
-    settings[Tags.DIM_VOLUME_Y_MM] = 128 / (spacing / input_spacing)
-    settings[Tags.DIM_VOLUME_Z_MM] = 400 / (spacing / input_spacing)
+    settings[Tags.DIM_VOLUME_X_MM] = segmentation_volume_mask.shape[0] * spacing
+    settings[Tags.DIM_VOLUME_Y_MM] = segmentation_volume_mask.shape[1] * spacing
+    settings[Tags.DIM_VOLUME_Z_MM] = segmentation_volume_mask.shape[2] * spacing
 
     settings.set_volume_creation_settings({
         Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,
