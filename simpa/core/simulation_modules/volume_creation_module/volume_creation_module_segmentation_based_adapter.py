@@ -4,7 +4,7 @@
 
 from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils import Tags
-from simpa.utils.constants import property_tags
+from simpa.utils.constants import wavelength_dependent_properties
 from simpa.io_handling import save_hdf5
 import numpy as np
 import torch
@@ -42,13 +42,11 @@ class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
 
         for seg_class in segmentation_classes:
             class_properties = class_mapping[seg_class].get_properties_for_wavelength(wavelength)
-            for prop_tag in property_tags:
-                assigned_prop = class_properties[prop_tag]
+            for volume_key in volumes.keys():
+                assigned_prop = class_properties[volume_key]
                 if assigned_prop is None:
                     assigned_prop = torch.nan
-                volumes[prop_tag][segmentation_volume == seg_class] = assigned_prop
-
-        save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
+                volumes[volume_key][segmentation_volume == seg_class] = assigned_prop
 
         # convert volumes back to CPU
         for key in volumes.keys():
