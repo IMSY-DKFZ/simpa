@@ -4,8 +4,6 @@
 
 from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
 from simpa.utils import Tags
-from simpa.utils.constants import wavelength_dependent_properties
-from simpa.io_handling import save_hdf5
 import numpy as np
 import torch
 
