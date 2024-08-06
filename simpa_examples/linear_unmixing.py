@@ -10,6 +10,7 @@ import simpa as sp
 from simpa import Tags
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa.utils.profiling import profile
+from typing import Union
 
 # FIXME temporary workaround for newest Intel architectures
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
