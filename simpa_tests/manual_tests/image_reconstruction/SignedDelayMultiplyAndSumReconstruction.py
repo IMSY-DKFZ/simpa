@@ -49,7 +49,7 @@ class SignedDelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseCla
 
         # reconstruct via convenience function
         self.reconstructed_image_convenience = reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data, self.device.get_detection_geometry(), reconstruction_settings[Tags.DATA_FIELD_SPEED_OF_SOUND],  1.0 / (
-            self.device.get_detection_geometry().sampling_frequency_MHz * 1000), self.settings[Tags.SPACING_MM], reconstruction_settings[Tags.RECONSTRUCTION_MODE], reconstruction_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD])
+            self.device.get_detection_geometry().sampling_frequency_MHz * 1_000_000), self.settings[Tags.SPACING_MM], reconstruction_settings[Tags.RECONSTRUCTION_MODE], reconstruction_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD])
 
         # apply envelope detection method if set
         if reconstruction_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:
