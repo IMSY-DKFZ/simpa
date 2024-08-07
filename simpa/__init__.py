@@ -4,7 +4,14 @@
 
 from .utils import *
 from .log import Logger
+from importlib.metadata import version, PackageNotFoundError
 
+
+try:
+    __version__ = version("simpa")
+except PackageNotFoundError:
+    __version__ = "unknown version"
+    
 from .core.simulation_modules.volume_creation_module.model_based_adapter import \
     ModelBasedAdapter
 from .core.simulation_modules.volume_creation_module.segmentation_based_adapter import \

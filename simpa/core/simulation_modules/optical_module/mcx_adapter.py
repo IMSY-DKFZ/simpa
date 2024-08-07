@@ -73,6 +73,7 @@ class MCXAdapter(OpticalAdapterBase):
         self.generate_mcx_json_input(settings_dict=settings_dict)
         # run the simulation
         cmd = self.get_command()
+        self.logger.info(cmd)
         self.run_mcx(cmd)
 
         # Read output
@@ -184,6 +185,7 @@ class MCXAdapter(OpticalAdapterBase):
         cmd.append("1")
         cmd.append("-F")
         cmd.append("jnii")
+        cmd += self.get_additional_flags()
         return cmd
 
     @staticmethod

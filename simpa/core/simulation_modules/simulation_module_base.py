@@ -5,7 +5,8 @@
 from abc import abstractmethod
 
 from simpa.core import PipelineElementBase
-from simpa.utils import Settings
+from simpa.utils import Settings, Tags
+from typing import List
 
 
 class SimulationModuleBase(PipelineElementBase):
@@ -30,3 +31,14 @@ class SimulationModuleBase(PipelineElementBase):
         :return: Loads component settings corresponding to this simulation component
         """
         pass
+
+    def get_additional_flags(self) -> List[str]:
+        """Reads the list of additional flags from the corresponding component settings Tags.ADDITIONAL_FLAGS
+
+        :return: List[str]: list of additional flags 
+        """
+        cmd = []
+        if Tags.ADDITIONAL_FLAGS in self.component_settings:
+            for flag in self.component_settings[Tags.ADDITIONAL_FLAGS]:
+                cmd.append(str(flag))
+        return cmd

@@ -5,6 +5,7 @@
 import gc
 import os
 import subprocess
+from typing import List 
 
 import numpy as np
 import scipy.io as sio
@@ -238,7 +239,7 @@ class KWaveAdapter(AcousticAdapterBase):
             simulation_script_path = "simulate_2D"
 
         matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
-        cmd = generate_matlab_cmd(matlab_binary_path, simulation_script_path, optical_path)
+        cmd = generate_matlab_cmd(matlab_binary_path, simulation_script_path, optical_path, self.get_additional_flags())
 
         cur_dir = os.getcwd()
         self.logger.info(cmd)
