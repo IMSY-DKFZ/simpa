@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
+from simpa.core.simulation_modules.volume_creation_module import VolumeCreationAdapterBase
 from simpa.utils.libraries.structure_library import priority_sorted_structures
 from simpa.utils import Tags
 import numpy as np
@@ -10,7 +10,7 @@ from simpa.utils import create_deformation_settings
 import torch
 
 
-class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
+class ModelBasedAdapter(VolumeCreationAdapterBase):
     """
     The model-based volume creator uses a set of rules how to generate structures
     to create a simulation volume.

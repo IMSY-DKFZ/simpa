@@ -6,7 +6,7 @@ from typing import Dict, Union
 
 import numpy as np
 
-from simpa.core.simulation_modules import SimulationModule
+from simpa.core.simulation_modules import SimulationModuleBase
 from simpa.core.device_digital_twins import (IlluminationGeometryBase,
                                              PhotoacousticDevice)
 from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
@@ -16,7 +16,7 @@ from simpa.utils.quality_assurance.data_sanity_testing import \
     assert_array_well_defined
 
 
-class OpticalForwardModuleBase(SimulationModule):
+class OpticalAdapterBase(SimulationModuleBase):
     """
     Use this class as a base for implementations of optical forward models.
     This class has the attributes `self.temporary_output_files` which stores file paths that are temporarily created as
@@ -24,7 +24,7 @@ class OpticalForwardModuleBase(SimulationModule):
     """
 
     def __init__(self, global_settings: Settings):
-        super(OpticalForwardModuleBase, self).__init__(global_settings=global_settings)
+        super(OpticalAdapterBase, self).__init__(global_settings=global_settings)
         self.nx = None
         self.ny = None
         self.nz = None

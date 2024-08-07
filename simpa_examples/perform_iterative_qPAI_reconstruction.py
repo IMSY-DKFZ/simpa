@@ -132,7 +132,7 @@ settings["iterative_qpai_reconstruction"] = {
 
 # run pipeline including iterative qPAI method
 pipeline = [
-    sp.ModelBasedVolumeCreationAdapter(settings),
+    sp.ModelBasedAdapter(settings),
     sp.MCXAdapter(settings),
     sp.GaussianNoise(settings, "noise_model"),
     sp.IterativeqPAI(settings, "iterative_qpai_reconstruction")

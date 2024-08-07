@@ -5,7 +5,7 @@
 import numpy as np
 import subprocess
 from simpa.utils import Tags, Settings
-from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
+from simpa.core.simulation_modules.optical_module import OpticalAdapterBase
 from simpa.core.device_digital_twins.illumination_geometries import IlluminationGeometryBase
 import json
 import jdata
@@ -13,7 +13,7 @@ import os
 from typing import List, Dict, Tuple
 
 
-class MCXAdapter(OpticalForwardModuleBase):
+class MCXAdapter(OpticalAdapterBase):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA. This adapter only allows for
     computation of fluence, for computations of diffuse reflectance, take a look at `simpa.ReflectanceMcxAdapter`

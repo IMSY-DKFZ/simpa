@@ -5,9 +5,9 @@
 
 from simpa.core.device_digital_twins import SlitIlluminationGeometry, LinearArrayDetectionGeometry, PhotoacousticDevice
 from simpa import perform_k_wave_acoustic_forward_simulation
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \
+from simpa.core.simulation_modules.reconstruction_module.delay_and_sum_adapter import \
     reconstruct_delay_and_sum_pytorch
-from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
+from simpa import MCXAdapter, ModelBasedAdapter, \
     GaussianNoise
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
@@ -88,7 +88,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
 
         # run pipeline including volume creation and optical mcx simulation
         self.pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_model")
         ]

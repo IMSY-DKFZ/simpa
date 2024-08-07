@@ -4,11 +4,11 @@
 
 from abc import abstractmethod
 
-from simpa.core import PipelineModule
+from simpa.core import PipelineElementBase
 from simpa.utils import Settings
 
 
-class SimulationModule(PipelineModule):
+class SimulationModuleBase(PipelineElementBase):
     """
     Defines a simulation module that is a step in the simulation pipeline. 
     Each simulation module can only be one of Volume Creation, Light Propagation Modeling, Acoustic Wave Propagation Modeling, Image Reconstruction.
@@ -19,7 +19,7 @@ class SimulationModule(PipelineModule):
          :param global_settings: The SIMPA settings dictionary
          :type global_settings: Settings
         """
-        super(SimulationModule, self).__init__(global_settings=global_settings)
+        super(SimulationModuleBase, self).__init__(global_settings=global_settings)
         self.component_settings = self.load_component_settings()
         if self.component_settings is None:
             raise ValueError("The component settings should not be None at this point")

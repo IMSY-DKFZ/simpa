@@ -2,4 +2,4 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from .simulation_module import SimulationModule
+from .simulation_module_base import SimulationModuleBase

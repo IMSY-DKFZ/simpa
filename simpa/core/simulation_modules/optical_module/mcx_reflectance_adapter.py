@@ -8,11 +8,11 @@ import os
 from typing import List, Tuple, Dict, Union
 
 from simpa.utils import Tags, Settings
-from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import MCXAdapter
+from simpa.core.simulation_modules.optical_module.mcx_adapter import MCXAdapter
 from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
 
 
-class MCXAdapterReflectance(MCXAdapter):
+class MCXReflectanceAdapter(MCXAdapter):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA. This class targets specifically
     diffuse reflectance simulations. Specifically, it implements the capability to run diffuse reflectance simulations.
@@ -35,7 +35,7 @@ class MCXAdapterReflectance(MCXAdapter):
 
         :param global_settings: global settings used during simulations
         """
-        super(MCXAdapterReflectance, self).__init__(global_settings=global_settings)
+        super(MCXReflectanceAdapter, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
         self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii',

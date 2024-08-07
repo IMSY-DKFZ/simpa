@@ -5,32 +5,32 @@
 from .utils import *
 from .log import Logger
 
-from .core.simulation_modules.volume_creation_module.volume_creation_module_model_based_adapter import \
-    ModelBasedVolumeCreationAdapter
-from .core.simulation_modules.volume_creation_module.volume_creation_module_segmentation_based_adapter import \
-    SegmentationBasedVolumeCreationAdapter
-from .core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import \
+from .core.simulation_modules.volume_creation_module.model_based_adapter import \
+    ModelBasedAdapter
+from .core.simulation_modules.volume_creation_module.segmentation_based_adapter import \
+    SegmentationBasedAdapter
+from .core.simulation_modules.optical_module.mcx_adapter import \
     MCXAdapter
-from .core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter import \
-    MCXAdapterReflectance
-from .core.simulation_modules.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import \
+from .core.simulation_modules.optical_module.mcx_reflectance_adapter import \
+    MCXReflectanceAdapter
+from .core.simulation_modules.acoustic_module.k_wave_adapter import \
     KWaveAdapter
-from .core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \
+from .core.simulation_modules.reconstruction_module.delay_and_sum_adapter import \
     DelayAndSumAdapter
-from .core.simulation_modules.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter import \
+from .core.simulation_modules.reconstruction_module.delay_multiply_and_sum_adapter import \
     DelayMultiplyAndSumAdapter
-from .core.simulation_modules.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter import \
+from .core.simulation_modules.reconstruction_module.signed_delay_multiply_and_sum_adapter import \
     SignedDelayMultiplyAndSumAdapter
-from .core.simulation_modules.reconstruction_module.reconstruction_module_time_reversal_adapter import \
+from .core.simulation_modules.reconstruction_module.time_reversal_adapter import \
     TimeReversalAdapter
 
-from .core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \
+from .core.simulation_modules.reconstruction_module.delay_and_sum_adapter import \
     reconstruct_delay_and_sum_pytorch
-from .core.simulation_modules.reconstruction_module.reconstruction_module_delay_multiply_and_sum_adapter import \
+from .core.simulation_modules.reconstruction_module.delay_multiply_and_sum_adapter import \
     reconstruct_delay_multiply_and_sum_pytorch
-from .core.simulation_modules.reconstruction_module.reconstruction_module_signed_delay_multiply_and_sum_adapter import \
+from .core.simulation_modules.reconstruction_module.signed_delay_multiply_and_sum_adapter import \
     reconstruct_signed_delay_multiply_and_sum_pytorch
-from .core.simulation_modules.acoustic_forward_module.acoustic_forward_module_k_wave_adapter import \
+from .core.simulation_modules.acoustic_module.k_wave_adapter import \
     perform_k_wave_acoustic_forward_simulation
 
 from simpa.core.processing_components.monospectral.noise import GaussianNoise

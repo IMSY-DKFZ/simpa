@@ -2,4 +2,4 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from .processing_component import ProcessingComponent
+from .processing_component_base import ProcessingComponentBase

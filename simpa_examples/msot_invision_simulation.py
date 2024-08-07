@@ -16,7 +16,7 @@ Y_DIM = 40
 
 def create_pipeline(_settings: sp.Settings):
     return [
-        sp.ModelBasedVolumeCreationAdapter(settings),
+        sp.ModelBasedAdapter(settings),
         sp.MCXAdapter(settings),
         sp.KWaveAdapter(settings),
         sp.FieldOfViewCropping(settings),

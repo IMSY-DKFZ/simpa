@@ -144,7 +144,7 @@ device.update_settings_for_use_of_model_based_volume_creator(settings)
 
 # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
 pipeline = [
-    sp.ModelBasedVolumeCreationAdapter(settings),
+    sp.ModelBasedAdapter(settings),
     sp.MCXAdapter(settings),
     sp.FieldOfViewCropping(settings),
 ]

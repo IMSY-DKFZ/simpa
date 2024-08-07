@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
+from simpa.core.simulation_modules.volume_creation_module import VolumeCreationAdapterBase
 from simpa.utils import Tags
 from simpa.utils.constants import property_tags
 from simpa.io_handling import save_hdf5
@@ -10,7 +10,7 @@ import numpy as np
 import torch
 
 
-class SegmentationBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
+class SegmentationBasedAdapter(VolumeCreationAdapterBase):
     """
     This volume creator expects a np.ndarray to be in the settigs
     under the Tags.INPUT_SEGMENTATION_VOLUME tag and uses this array

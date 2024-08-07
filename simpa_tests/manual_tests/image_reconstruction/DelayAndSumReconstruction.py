@@ -8,7 +8,7 @@ from simpa.utils import Tags
 from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa import KWaveAdapter, MCXAdapter, \
-    DelayAndSumAdapter, ModelBasedVolumeCreationAdapter, GaussianNoise
+    DelayAndSumAdapter, ModelBasedAdapter, GaussianNoise
 from simpa import reconstruct_delay_and_sum_pytorch
 from simpa_tests.manual_tests import ReconstructionAlgorithmTestBaseClass
 
@@ -28,7 +28,7 @@ class DelayAndSumReconstruction(ReconstructionAlgorithmTestBaseClass):
         self.device.update_settings_for_use_of_model_based_volume_creator(self.settings)
 
         SIMUATION_PIPELINE = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_initial_pressure"),
             KWaveAdapter(self.settings),

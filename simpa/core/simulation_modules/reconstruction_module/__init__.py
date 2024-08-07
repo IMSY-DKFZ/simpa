@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
-from .reconstruction_module_base_adapter import ReconstructionAdapterBase
+from .reconstruction_adapter_base import ReconstructionAdapterBase
 
 from simpa.utils import Tags, Settings
 

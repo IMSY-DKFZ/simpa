@@ -7,19 +7,19 @@ from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.constants import wavelength_independent_properties, property_tags
 import torch
-from simpa.core.simulation_modules import SimulationModule
+from simpa.core.simulation_modules import SimulationModuleBase
 from simpa.io_handling import save_data_field
 from simpa.utils.quality_assurance.data_sanity_testing import assert_equal_shapes, assert_array_well_defined
 
 
-class VolumeCreatorModuleBase(SimulationModule):
+class VolumeCreationAdapterBase(SimulationModuleBase):
     """
     Use this class to define your own volume creation adapter.
 
     """
 
     def __init__(self, global_settings: Settings):
-        super(VolumeCreatorModuleBase, self).__init__(global_settings=global_settings)
+        super(VolumeCreationAdapterBase, self).__init__(global_settings=global_settings)
 
     def load_component_settings(self) -> Settings:
         """Implements abstract method to serve volume creation settings as component settings

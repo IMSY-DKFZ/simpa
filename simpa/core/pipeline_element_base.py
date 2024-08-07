@@ -9,9 +9,9 @@ from simpa.utils import Settings
 from simpa.utils.processing_device import get_processing_device
 
 
-class PipelineModule:
+class PipelineElementBase:
     """
-    Defines a pipeline module (either simulation or processing module) that implements a run method and can be called by running the pipeline's simulate method.
+    Defines a pipeline element (either simulation or processing module) that implements a run method and can be called by running the pipeline's simulate method.
     """
 
     def __init__(self, global_settings: Settings):

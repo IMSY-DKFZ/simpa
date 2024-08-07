@@ -76,8 +76,8 @@ settings.set_optical_settings({
 })
 
 pipeline = [
-    sp.ModelBasedVolumeCreationAdapter(settings),
-    sp.MCXAdapterReflectance(settings),
+    sp.ModelBasedAdapter(settings),
+    sp.MCXReflectanceAdapter(settings),
 ]
 
 device = sp.PencilBeamIlluminationGeometry(device_position_mm=np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,

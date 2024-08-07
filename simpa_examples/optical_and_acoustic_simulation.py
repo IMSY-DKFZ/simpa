@@ -176,7 +176,7 @@ device.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[100
 
 
 SIMULATION_PIPELINE = [
-    sp.ModelBasedVolumeCreationAdapter(settings),
+    sp.ModelBasedAdapter(settings),
     sp.MCXAdapter(settings),
     sp.GaussianNoise(settings, "noise_initial_pressure"),
     sp.KWaveAdapter(settings),

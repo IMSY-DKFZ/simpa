@@ -2,4 +2,4 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from .volume_creator_base_adapter import VolumeCreatorModuleBase
+from .volume_creation_adapter_base import VolumeCreationAdapterBase

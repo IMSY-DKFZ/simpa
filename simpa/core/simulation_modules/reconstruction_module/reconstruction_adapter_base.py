@@ -7,7 +7,7 @@ from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.core.device_digital_twins import PhotoacousticDevice
 from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
-from simpa.core.simulation_modules import SimulationModule
+from simpa.core.simulation_modules import SimulationModuleBase
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
@@ -16,7 +16,7 @@ from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils im
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
-class ReconstructionAdapterBase(SimulationModule):
+class ReconstructionAdapterBase(SimulationModuleBase):
     """
     This class is the main entry point to perform image reconstruction using the SIMPA toolkit.
     All information necessary for the respective reconstruction method must be contained in the
