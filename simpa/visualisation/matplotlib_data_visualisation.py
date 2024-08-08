@@ -4,7 +4,7 @@
 
 from simpa.io_handling import load_hdf5
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Button, Slider
+from matplotlib.widgets import Slider
 import matplotlib as mpl
 import numpy as np
 from simpa.utils import SegmentationClasses, Tags
@@ -12,7 +12,6 @@ from simpa.utils.path_manager import PathManager
 from simpa.utils.settings import Settings
 from simpa.utils import get_data_field_from_simpa_output
 from simpa.log import Logger
-from abc import ABC
 
 
 class VisualiseData:
