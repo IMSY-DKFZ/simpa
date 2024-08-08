@@ -198,7 +198,7 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
 
     sp.simulate(SIMULATION_PIPELINE, settings, device)
 
-    if Tags.WAVELENGTH in settings:
+    if Tags.WAVELENGTHS in settings:
         WAVELENGTHS = settings[Tags.WAVELENGTHS]
     else:
         WAVELENGTHS = [700]
