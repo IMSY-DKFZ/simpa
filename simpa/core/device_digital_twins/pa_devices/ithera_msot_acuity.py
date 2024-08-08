@@ -323,7 +323,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
         device_change_in_height = mediprene_layer_height_mm + heavy_water_layer_height_mm
         self.device_position_mm = np.add(self.device_position_mm, np.array([width_shift_for_structures_mm, 0,
-                                                                            device_change_in_height]))
+                                                                            self.probe_height_mm]))
         self.detection_geometry_position_vector = np.add(self.device_position_mm,
                                                          np.array([0, 0,
                                                                    self.focus_in_field_of_view_mm]))
@@ -343,7 +343,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         for illumination_geom in self.illumination_geometries:
             illumination_geom.device_position_mm = np.add(illumination_geom.device_position_mm,
                                                           np.array([width_shift_for_structures_mm, 0,
-                                                                    device_change_in_height]))
+                                                                    self.probe_height_mm]))
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
