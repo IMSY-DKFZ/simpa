@@ -173,7 +173,7 @@ def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualis
     # Visualize linear unmixing result
     if visualise:
         visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-                       wavelength=WAVELENGTHS[0],
+                       wavelengths=WAVELENGTHS,
                        show_initial_pressure=True,
                        show_oxygenation=True,
                        show_linear_unmixing_sO2=True)
@@ -181,7 +181,7 @@ def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualis
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Run the linear unmixing example')
-    parser.add_argument("--spacing", default=0.2, type=Union[float, int], help='the voxel spacing in mm')
+    parser.add_argument("--spacing", default=0.2, type=float, help='the voxel spacing in mm')
     parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()

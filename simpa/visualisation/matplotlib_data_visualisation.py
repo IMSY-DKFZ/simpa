@@ -15,9 +15,32 @@ from simpa.log import Logger
 from abc import ABC
 
 
-class visualise_data():
+class VisualiseData:
     """
+    A class to visualize data stored in an HDF5 file. It provides options to display various
+    physical properties such as absorption, scattering, anisotropy, speed of sound, tissue density,
+    fluence, initial pressure, time series data, reconstructed data, segmentation maps,
+    oxygenation, blood volume fraction, and linear unmixing results.
 
+    The class supports visualizing data in 2D (xz-plane and zy-plane), and includes features such as
+    logarithmic scaling, saving visualizations, and adding a slider for wavelength selection.
+
+    Attributes
+    ----------
+    fig : matplotlib.figure.Figure
+        Figure object for plotting.
+    axes : numpy.ndarray
+        Array of axes for subplots.
+    logger : Logger
+        Logger object for handling logging.
+
+    Methods
+    -------
+    plot_data_for_wavelength(wavelength, colour_bar=True):
+        Plots data for a specific wavelength.
+
+    get_segmentation_colormap():
+        Returns the colormap for the segmentation map.
     """
 
     def __init__(self,
@@ -42,8 +65,34 @@ class visualise_data():
                  log_scale=False,
                  show_xz_only=False,
                  save_path=None,
-                 add_wavelengths_slider: bool = True,
-                 wavelength_step: bool = 10):
+                 add_wavelengths_slider: bool = True):
+        """
+        :param wavelengths: A list of wavelengths to be visualized.
+        :param path_to_hdf5_file: Path to the HDF5 file containing the data. If not provided, it is constructed from settings and path_manager.
+        :param settings: An instance of Settings containing configuration parameters, including the volume name and wavelengths.
+        :param path_manager: An instance of PathManager used to manage file paths. It is used to generate the path to the HDF5 file if not provided.
+        :param show_absorption: If True, display the absorption coefficient.
+        :param show_scattering: If True, display the scattering coefficient.
+        :param show_anisotropy: If True, display the anisotropy.
+        :param show_speed_of_sound: If True, display the speed of sound.
+        :param show_tissue_density: If True, display the tissue density.
+        :param show_fluence: If True, display the fluence.
+        :param show_initial_pressure: If True, display the initial pressure.
+        :param show_time_series_data: If True, display the time series data.
+        :param show_reconstructed_data: If True, display the reconstructed data.
+        :param show_segmentation_map: If True, display the segmentation map.
+        :param show_oxygenation: If True, display the oxygenation.
+        :param show_blood_volume_fraction: If True, display the blood volume fraction.
+        :param show_linear_unmixing_sO2: If True, display the linear unmixing of oxygen saturation (sO2).
+        :param show_diffuse_reflectance: If True, display the diffuse reflectance.
+        :param log_scale: If True, use a logarithmic scale for the data.
+        :param show_xz_only: If True, display only the xz-plane.
+        :param save_path: Path to save the visualization. If None, the visualization will be displayed instead of saved.
+        :param add_wavelengths_slider: If True, add a slider for wavelength selection to the visualization.
+
+        :raises ValueError: If both path_to_hdf5_file and the combination of settings and path_manager are None.
+        """
+
         super().__init__()
 
         if path_to_hdf5_file is None and (settings is None or path_manager is None):
@@ -53,8 +102,7 @@ class visualise_data():
             path_to_hdf5_file = path_manager.get_hdf5_file_save_path() + "/" + settings[Tags.VOLUME_NAME] + ".hdf5"
 
         if settings is not None and Tags.WAVELENGTHS in settings:
-            if wavelengths is None or wavelengths not in settings[Tags.WAVELENGTHS]:
-                wavelengths = settings[Tags.WAVELENGTHS]
+            wavelengths = settings[Tags.WAVELENGTHS]
 
         self.show_absorption = show_absorption
         self.show_scattering = show_scattering
@@ -92,8 +140,11 @@ class visualise_data():
         plt.tight_layout()
 
         if len(wavelengths) != 0 and add_wavelengths_slider:
+            # find the step in the wavelengths
+            wavelength_step = wavelengths[1] - wavelengths[0]
 
-            # Make a vertically oriented slider to control the amplitude
+            # Make a slider to control the wavelength
+            self.fig.subplots_adjust(left=0.25)
             ax_wavelength = self.fig.add_axes([0.1, 0.25, 0.0225, 0.63])
             wavelength_slider = Slider(
                 ax=ax_wavelength,
@@ -105,12 +156,12 @@ class visualise_data():
                 orientation="vertical"
             )
 
-            # The function to be called anytime a slider's value changes
+            # Function to update the value with the slider
             def update(val):
                 self.plot_data_for_wavelength(val, colour_bar=False)
                 self.fig.canvas.draw_idle()
 
-            # register the update function with each slider
+            # update on changed slider value
             wavelength_slider.on_changed(update)
 
             plt.show()
@@ -122,6 +173,15 @@ class visualise_data():
         plt.close()
 
     def plot_data_for_wavelength(self, wavelength: int = None, colour_bar: bool = True):
+        """
+        Plots the data for a specific wavelength. The method handles various types of data,
+        including absorption, scattering, fluence, initial pressure, etc.
+
+        :param wavelength: The wavelength for which data should be plotted.
+        :type wavelength: int
+        :param colour_bar: Whether to display the color bar.
+        :type colour_bar: bool
+        """
 
         fluence = None
         initial_pressure = None
@@ -223,7 +283,7 @@ class visualise_data():
                 show_linear_unmixing_sO2 = False
                 linear_unmixing_sO2 = None
 
-        cmap_label_names, cmap_label_values, cmap = self.get_segmentation_colormap()
+        cmap_label_names, cmap_label_values, cmap = self.get_segmentation_colourmap()
 
         data_to_show = []
         data_item_names = []
@@ -232,7 +292,7 @@ class visualise_data():
 
         if diffuse_reflectance is not None and self.show_diffuse_reflectance:
             fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-            plt.set_title("Diffuse reflectance")
+            plt.title("Diffuse reflectance")
             ax.scatter(diffuse_reflectance_position[:, 0],
                        diffuse_reflectance_position[:, 1],
                        diffuse_reflectance_position[:, 2],
@@ -373,7 +433,20 @@ class visualise_data():
                 if colour_bar:
                     plt.colorbar(img, ax=self.axes[1][i])
 
-    def get_segmentation_colormap(self):
+    def get_segmentation_colourmap(self):
+        """
+        Generates a colormap for segmentation classes.
+
+        This method creates a custom colormap based on the segmentation classes defined in the
+        `SegmentationClasses` class. Each class is assigned a random color.
+
+        :return: A tuple containing the names of the segmentation classes, their corresponding values, and the colormap.
+        :rtype: tuple (np.ndarray, np.ndarray, mpl.colors.LinearSegmentedColormap)
+            - names: An array of the segmentation class names.
+            - values: An array of the segmentation class values.
+            - cmap: A matplotlib colormap object created from random colors.
+        """
+
         values = []
         names = []
 
