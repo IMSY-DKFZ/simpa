@@ -10,7 +10,7 @@ try:
     __version__ = version("simpa")
 except PackageNotFoundError:
     __version__ = "unknown version"
-    
+
 from .core.simulation_modules.volume_creation_module.volume_creation_module_model_based_adapter import \
     ModelBasedVolumeCreationAdapter
 from .core.simulation_modules.volume_creation_module.volume_creation_module_segmentation_based_adapter import \
@@ -56,7 +56,7 @@ from .io_handling import load_data_field, load_hdf5, save_data_field, save_hdf5
 from .io_handling.zenodo_download import download_from_zenodo
 from .io_handling.ipasc import export_to_ipasc
 
-from .visualisation.matplotlib_data_visualisation import visualise_data
+from .visualisation.matplotlib_data_visualisation import VisualiseData
 from .visualisation.matplotlib_device_visualisation import visualise_device
 
 from .utils.quality_assurance.data_sanity_testing import assert_equal_shapes

@@ -154,18 +154,19 @@ def run_minimal_optical_simulation(spacing: float | int = 0.5, path_manager=None
 
     sp.simulate(pipeline, settings, device)
 
-    if Tags.WAVELENGTH in settings:
-        WAVELENGTH = settings[Tags.WAVELENGTH]
+    if Tags.WAVELENGTHS in settings:
+        WAVELENGTHS = settings[Tags.WAVELENGTHS]
+
     else:
-        WAVELENGTH = 700
+        WAVELENGTHS = [798]
 
     if visualise:
-        sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-                          wavelength=WAVELENGTH,
-                          show_initial_pressure=True,
-                          show_absorption=True,
-                          show_diffuse_reflectance=SAVE_REFLECTANCE,
-                          log_scale=True)
+        sp.VisualiseData(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+                         wavelengths=WAVELENGTHS,
+                         show_initial_pressure=True,
+                         show_absorption=True,
+                         show_diffuse_reflectance=SAVE_REFLECTANCE,
+                         log_scale=True)
 
 
 if __name__ == "__main__":

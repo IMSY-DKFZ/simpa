@@ -199,18 +199,18 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
     sp.simulate(SIMULATION_PIPELINE, settings, device)
 
     if Tags.WAVELENGTH in settings:
-        WAVELENGTH = settings[Tags.WAVELENGTH]
+        WAVELENGTHS = settings[Tags.WAVELENGTHS]
     else:
-        WAVELENGTH = 700
+        WAVELENGTHS = [700]
 
     if visualise:
-        sp.visualise_data(path_to_hdf5_file=settings[Tags.SIMPA_OUTPUT_PATH],
-                          wavelength=WAVELENGTH,
-                          show_time_series_data=True,
-                          show_initial_pressure=True,
-                          show_reconstructed_data=True,
-                          log_scale=False,
-                          show_xz_only=False)
+        sp.VisualiseData(path_to_hdf5_file=settings[Tags.SIMPA_OUTPUT_PATH],
+                         wavelengths=WAVELENGTHS,
+                         show_time_series_data=True,
+                         show_initial_pressure=True,
+                         show_reconstructed_data=True,
+                         log_scale=False,
+                         show_xz_only=False)
 
 
 if __name__ == "__main__":

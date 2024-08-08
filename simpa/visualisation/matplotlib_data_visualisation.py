@@ -139,7 +139,7 @@ class VisualiseData:
         self.plot_data_for_wavelength(wavelengths[0])
         plt.tight_layout()
 
-        if len(wavelengths) != 0 and add_wavelengths_slider:
+        if len(wavelengths) != 1 and add_wavelengths_slider:
             # find the step in the wavelengths
             wavelength_step = wavelengths[1] - wavelengths[0]
 

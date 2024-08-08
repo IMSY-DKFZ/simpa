@@ -92,18 +92,18 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
         else:
             save_path = save_path + "SegmentationLoaderExample.png"
 
-        sp.visualise_data(path_to_hdf5_file=self.path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5",
-                          wavelength=700,
-                          show_initial_pressure=True,
-                          show_segmentation_map=True,
-                          show_absorption=True,
-                          show_fluence=True,
-                          show_tissue_density=True,
-                          show_speed_of_sound=True,
-                          show_anisotropy=True,
-                          show_scattering=True,
-                          save_path=save_path,
-                          log_scale=False)
+        sp.VisualiseData(path_to_hdf5_file=self.path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5",
+                         wavelengths=[700],
+                         show_initial_pressure=True,
+                         show_segmentation_map=True,
+                         show_absorption=True,
+                         show_fluence=True,
+                         show_tissue_density=True,
+                         show_speed_of_sound=True,
+                         show_anisotropy=True,
+                         show_scattering=True,
+                         save_path=save_path,
+                         log_scale=False)
 
 
 if __name__ == "__main__":

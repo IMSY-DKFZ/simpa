@@ -92,15 +92,15 @@ def run_segmentation_loader(spacing: float | int = .1, path_manager=None,
     sp.simulate(pipeline, settings, sp.RSOMExplorerP50(element_spacing_mm=1.0))
 
     if Tags.WAVELENGTH in settings:
-        WAVELENGTH = settings[Tags.WAVELENGTH]
+        WAVELENGTHS = settings[Tags.WAVELENGTHS]
     else:
-        WAVELENGTH = 700
+        WAVELENGTHS = [700]
 
     if visualise:
-        sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5",
-                          wavelength=WAVELENGTH,
-                          show_initial_pressure=True,
-                          show_segmentation_map=True)
+        sp.VisualiseData(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + "SegmentationTest" + ".hdf5",
+                         wavelength=WAVELENGTHS,
+                         show_initial_pressure=True,
+                         show_segmentation_map=True)
 
 
 if __name__ == "__main__":

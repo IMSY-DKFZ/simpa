@@ -200,12 +200,12 @@ def run_msot_invision_simulation(spacing: float | int = 0.5, path_manager=None, 
     sp.simulate(simulation_pipeline=pipeline, digital_device_twin=device, settings=settings)
 
     if visualise:
-        sp.visualise_data(settings=settings,
-                          path_manager=path_manager,
-                          show_absorption=True,
-                          show_initial_pressure=True,
-                          show_reconstructed_data=True,
-                          show_xz_only=True)
+        sp.VisualiseData(settings=settings,
+                         path_manager=path_manager,
+                         show_absorption=True,
+                         show_initial_pressure=True,
+                         show_reconstructed_data=True,
+                         show_xz_only=True)
 
 
 if __name__ == "__main__":
