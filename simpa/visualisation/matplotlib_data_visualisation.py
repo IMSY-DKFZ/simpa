@@ -28,6 +28,7 @@ def visualise_data(wavelength: int = None,
                    show_reconstructed_data=False,
                    show_segmentation_map=False,
                    show_oxygenation=False,
+                   show_blood_volume_fraction=False,
                    show_linear_unmixing_sO2=False,
                    show_diffuse_reflectance=False,
                    log_scale=False,
@@ -55,6 +56,7 @@ def visualise_data(wavelength: int = None,
     time_series_data = None
     reconstructed_data = None
     oxygenation = None
+    blood_volume_fraction = None
     linear_unmixing_sO2 = None
     diffuse_reflectance = None
     diffuse_reflectance_position = None
@@ -118,6 +120,15 @@ def visualise_data(wavelength: int = None,
             logger.critical("The key " + str(Tags.DATA_FIELD_OXYGENATION) + " was not in the simpa output.")
             show_oxygenation = False
             oxygenation = None
+
+    if show_blood_volume_fraction:
+        try:
+            blood_volume_fraction = get_data_field_from_simpa_output(
+                file, Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION) + " was not in the simpa output.")
+            show_blood_volume_fraction = False
+            blood_volume_fraction = None
 
     if show_linear_unmixing_sO2:
         try:
@@ -196,6 +207,11 @@ def visualise_data(wavelength: int = None,
     if oxygenation is not None and show_oxygenation:
         data_to_show.append(oxygenation)
         data_item_names.append("Oxygenation")
+        cmaps.append("viridis")
+        logscales.append(False and log_scale)
+    if blood_volume_fraction is not None and show_blood_volume_fraction:
+        data_to_show.append(blood_volume_fraction)
+        data_item_names.append("Blood Volume Fraction")
         cmaps.append("viridis")
         logscales.append(False and log_scale)
     if linear_unmixing_sO2 is not None and show_linear_unmixing_sO2:
