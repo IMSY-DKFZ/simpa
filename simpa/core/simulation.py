@@ -16,7 +16,8 @@ import os
 import time
 
 
-def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin: DigitalDeviceTwinBase):
+def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin: DigitalDeviceTwinBase,
+             logging_level: str = Tags.LOGGER_DEBUG):
     """
     This method constitutes the staring point for the simulation pipeline
     of the SIMPA toolkit.
@@ -25,12 +26,13 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
     :param settings: settings dictionary containing the simulation instructions
     :param digital_device_twin: a digital device twin of an imaging device as specified by the DigitalDeviceTwinBase
         class.
+    :param logging_level: The logging level of the simulation pipeline.
     :raises TypeError: if one of the given parameters is not of the correct type
     :raises AssertionError: if the digital device twin is not able to simulate the settings specification
     :return: list with the save paths of the simulated data within the HDF5 file.
     """
     start_time = time.time()
-    logger = Logger()
+    logger = Logger(logging_level=logging_level, force_new_instance=True)
     if not isinstance(settings, Settings):
         logger.critical("The second argument was not a settings instance!")
         raise TypeError("Use a Settings instance from simpa.utils.settings_generator as simulation input.")
@@ -56,7 +58,7 @@ def simulate(simulation_pipeline: list, settings: Settings, digital_device_twin:
         simpa_output_path = path + settings[Tags.VOLUME_NAME]
 
     settings[Tags.SIMPA_OUTPUT_PATH] = simpa_output_path + ".hdf5"
-    
+
     simpa_output[Tags.SIMPA_VERSION] = __version__
     simpa_output[Tags.SETTINGS] = settings
     simpa_output[Tags.DIGITAL_DEVICE] = digital_device_twin

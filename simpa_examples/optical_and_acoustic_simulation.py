@@ -200,7 +200,7 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
         sp.FieldOfViewCropping(settings)
     ]
 
-    sp.simulate(SIMULATION_PIPELINE, settings, device)
+    sp.simulate(SIMULATION_PIPELINE, settings, device, logging_level=Tags.LOGGER_ERROR)
 
     if Tags.WAVELENGTH in settings:
         WAVELENGTH = settings[Tags.WAVELENGTH]
