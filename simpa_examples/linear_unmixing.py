@@ -183,7 +183,7 @@ def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualis
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Run the linear unmixing example')
-    parser.add_argument("--spacing", default=0.2, type=float, help='the voxel spacing in mm')
+    parser.add_argument("--spacing", default=0.2, type=Union[float, int], help='the voxel spacing in mm')
     parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()
