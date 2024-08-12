@@ -47,23 +47,23 @@ class VisualiseData:
                  path_to_hdf5_file: str = None,
                  settings: Settings = None,
                  path_manager: PathManager = None,
-                 show_absorption=False,
-                 show_scattering=False,
-                 show_anisotropy=False,
-                 show_speed_of_sound=False,
-                 show_tissue_density=False,
-                 show_fluence=False,
-                 show_initial_pressure=False,
-                 show_time_series_data=False,
-                 show_reconstructed_data=False,
-                 show_segmentation_map=False,
-                 show_oxygenation=False,
-                 show_blood_volume_fraction=False,
-                 show_linear_unmixing_sO2=False,
-                 show_diffuse_reflectance=False,
-                 log_scale=False,
-                 show_xz_only=False,
-                 save_path=None,
+                 show_absorption: bool = False,
+                 show_scattering: bool = False,
+                 show_anisotropy: bool = False,
+                 show_speed_of_sound: bool = False,
+                 show_tissue_density: bool = False,
+                 show_fluence: bool = False,
+                 show_initial_pressure: bool = False,
+                 show_time_series_data: bool = False,
+                 show_reconstructed_data: bool = False,
+                 show_segmentation_map: bool = False,
+                 show_oxygenation: bool = False,
+                 show_blood_volume_fraction: bool = False,
+                 show_linear_unmixing_sO2: bool = False,
+                 show_diffuse_reflectance: bool = False,
+                 log_scale: bool = False,
+                 show_xz_only: bool = False,
+                 save_path: bool = None,
                  add_wavelengths_slider: bool = True):
         """
         :param wavelengths: A list of wavelengths to be visualized.
@@ -206,7 +206,7 @@ class VisualiseData:
                 fluence = get_data_field_from_simpa_output(self.path_to_hdf5_file, Tags.DATA_FIELD_FLUENCE, wavelength)
             except KeyError as e:
                 self.logger.critical("The key " + str(Tags.DATA_FIELD_FLUENCE) + " was not in the simpa output.")
-                show_fluence = False
+                self.show_fluence = False
                 fluence = None
 
         if self.show_diffuse_reflectance:
@@ -219,7 +219,7 @@ class VisualiseData:
                                                                                 wavelength)
             except KeyError as e:
                 self.logger.critical("The key " + str(Tags.DATA_FIELD_FLUENCE) + " was not in the simpa output.")
-                show_fluence = False
+                self.show_fluence = False
                 fluence = None
 
         if self.show_initial_pressure:
@@ -229,7 +229,7 @@ class VisualiseData:
             except KeyError as e:
                 self.logger.critical("The key " + str(Tags.DATA_FIELD_INITIAL_PRESSURE) +
                                      " was not in the simpa output.")
-                show_initial_pressure = False
+                self.show_initial_pressure = False
                 initial_pressure = None
 
         if self.show_time_series_data:
@@ -239,7 +239,7 @@ class VisualiseData:
             except KeyError as e:
                 self.logger.critical("The key " + str(Tags.DATA_FIELD_TIME_SERIES_DATA) +
                                      " was not in the simpa output.")
-                show_time_series_data = False
+                self.show_time_series_data = False
                 time_series_data = None
 
         if self.show_reconstructed_data:
@@ -249,7 +249,7 @@ class VisualiseData:
             except KeyError as e:
                 self.logger.critical("The key " + str(Tags.DATA_FIELD_RECONSTRUCTED_DATA) +
                                      " was not in the simpa output.")
-                show_reconstructed_data = False
+                self.show_reconstructed_data = False
                 reconstructed_data = None
 
         if self.show_oxygenation:
@@ -258,7 +258,7 @@ class VisualiseData:
                     self.path_to_hdf5_file, Tags.DATA_FIELD_OXYGENATION, wavelength)
             except KeyError as e:
                 self.logger.critical("The key " + str(Tags.DATA_FIELD_OXYGENATION) + " was not in the simpa output.")
-                show_oxygenation = False
+                self.show_oxygenation = False
                 oxygenation = None
 
         if self.show_blood_volume_fraction:
@@ -268,7 +268,7 @@ class VisualiseData:
             except KeyError as e:
                 self.logger.critical("The key " + str(Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION) +
                                      " was not in the simpa output.")
-                show_blood_volume_fraction = False
+                self.show_blood_volume_fraction = False
                 blood_volume_fraction = None
 
         if self.show_linear_unmixing_sO2:
@@ -279,7 +279,7 @@ class VisualiseData:
             except KeyError as e:
                 self.logger.critical("The key " + str(Tags.LINEAR_UNMIXING_RESULT) + " was not in the simpa output or blood "
                                      "oxygen saturation was not computed.")
-                show_linear_unmixing_sO2 = False
+                self.show_linear_unmixing_sO2 = False
                 linear_unmixing_sO2 = None
 
         cmap_label_names, cmap_label_values, cmap = self.get_segmentation_colourmap()
