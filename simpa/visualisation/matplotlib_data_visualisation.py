@@ -43,7 +43,7 @@ class VisualiseData:
     """
 
     def __init__(self,
-                 wavelengths: list = None,
+                 wavelength: int | float = None,
                  path_to_hdf5_file: str = None,
                  settings: Settings = None,
                  path_manager: PathManager = None,
@@ -62,11 +62,9 @@ class VisualiseData:
                  show_linear_unmixing_sO2: bool = False,
                  show_diffuse_reflectance: bool = False,
                  log_scale: bool = False,
-                 show_xz_only: bool = False,
-                 save_path: bool = None,
-                 add_wavelengths_slider: bool = True):
+                 show_xz_only: bool = False):
         """
-        :param wavelengths: A list of wavelengths to be visualized.
+        :param wavelength: The wavelength to be initially visualized.
         :param path_to_hdf5_file: Path to the HDF5 file containing the data. If not provided, it is constructed from settings and path_manager.
         :param settings: An instance of Settings containing configuration parameters, including the volume name and wavelengths.
         :param path_manager: An instance of PathManager used to manage file paths. It is used to generate the path to the HDF5 file if not provided.
@@ -94,14 +92,19 @@ class VisualiseData:
 
         super().__init__()
 
+        if settings is not None and Tags.WAVELENGTHS in settings:
+            if wavelength is None or wavelength not in settings[Tags.WAVELENGTHS]:
+                wavelength = settings[Tags.WAVELENGTHS][0]
+
+        if settings is not None and Tags.WAVELENGTH in settings:
+            wavelength = settings[Tags.WAVELENGTH]
+
         if path_to_hdf5_file is None and (settings is None or path_manager is None):
-            raise ValueError("Either the path_to_hdf5_file or the given settings and path_manager must not be None!")
+            raise ValueError(
+                "Either the path_to_hdf5_file or the given settings and path_manager must not be None!")
 
         if path_to_hdf5_file is None:
             path_to_hdf5_file = path_manager.get_hdf5_file_save_path() + "/" + settings[Tags.VOLUME_NAME] + ".hdf5"
-
-        if settings is not None and Tags.WAVELENGTHS in settings:
-            wavelengths = settings[Tags.WAVELENGTHS]
 
         self.show_absorption = show_absorption
         self.show_scattering = show_scattering
@@ -126,7 +129,6 @@ class VisualiseData:
         self.show_xz_only = show_xz_only
         self.path_to_hdf5_file = load_hdf5(path_to_hdf5_file)
         self.log_scale = log_scale
-        self.save_path = save_path
         self.logger = Logger()
 
         if self.show_xz_only:
@@ -135,41 +137,8 @@ class VisualiseData:
             num_rows = 2
         self.fig, self.axes = plt.subplots(num_rows, num_cols, figsize=(num_cols*4, num_rows*3.5))
 
-        self.plot_data_for_wavelength(wavelengths[0])
+        self.plot_data_for_wavelength(wavelength)
         plt.tight_layout()
-
-        if len(wavelengths) != 1 and add_wavelengths_slider:
-            # find the step in the wavelengths
-            wavelength_step = wavelengths[1] - wavelengths[0]
-
-            # Make a slider to control the wavelength
-            self.fig.subplots_adjust(left=0.25)
-            ax_wavelength = self.fig.add_axes([0.1, 0.25, 0.0225, 0.63])
-            wavelength_slider = Slider(
-                ax=ax_wavelength,
-                label="Wavelength (nm)",
-                valmin=np.min(wavelengths),
-                valmax=np.max(wavelengths),
-                valinit=np.min(wavelengths),
-                valstep=wavelength_step,
-                orientation="vertical"
-            )
-
-            # Function to update the value with the slider
-            def update(val):
-                self.plot_data_for_wavelength(val, colour_bar=False)
-                self.fig.canvas.draw_idle()
-
-            # update on changed slider value
-            wavelength_slider.on_changed(update)
-
-            plt.show()
-
-        if save_path is not None:
-            plt.savefig(save_path, dpi=500)
-        else:
-            plt.show()
-        plt.close()
 
     def plot_data_for_wavelength(self, wavelength: int = None, colour_bar: bool = True):
         """
@@ -177,9 +146,7 @@ class VisualiseData:
         including absorption, scattering, fluence, initial pressure, etc.
 
         :param wavelength: The wavelength for which data should be plotted.
-        :type wavelength: int
         :param colour_bar: Whether to display the color bar.
-        :type colour_bar: bool
         """
 
         fluence = None
@@ -465,3 +432,129 @@ class VisualiseData:
             'Custom cmap', colors, len(names))
 
         return names, values, cmap
+
+    def add_wavelength_slider(self, wavelengths, settings):
+        """
+        Add a slider for the wavelengths
+        :param settings: The settings object that contains the wavelength values.
+        :param wavelengths: The wavelengths the slider can use
+        """
+
+        if settings is not None and Tags.WAVELENGTH in settings:
+            wavelengths = settings[Tags.WAVELENGTHS]
+        # find the step in the wavelengths
+        wavelength_step = wavelengths[1] - wavelengths[0]
+
+        # Make a slider to control the wavelength
+        self.fig.subplots_adjust(left=0.25)
+        ax_wavelength = self.fig.add_axes([0.1, 0.25, 0.0225, 0.63])
+        wavelength_slider = Slider(
+            ax=ax_wavelength,
+            label="Wavelength (nm)",
+            valmin=np.min(wavelengths),
+            valmax=np.max(wavelengths),
+            valinit=np.min(wavelengths),
+            valstep=wavelength_step,
+            orientation="vertical"
+        )
+
+        # Function to update the value with the slider
+        def update(val):
+            self.plot_data_for_wavelength(val, colour_bar=False)
+            self.fig.canvas.draw_idle()
+
+        # update on changed slider value
+        wavelength_slider.on_changed(update)
+        plt.show()
+
+    def save_fig(self, save_path):
+        """
+        Save the figure to a file.
+        :param save_path: Path to save the visualization. If None, the visualization will be displayed instead of saved.
+        """
+        plt.savefig(save_path, dpi=500)
+
+    def show_fig(self):
+        """
+        Show the plot
+        """
+        plt.show()
+
+
+def visualise_data(wavelength: int | float = None,
+                   wavelengths: list = None,
+                   path_to_hdf5_file: str = None,
+                   settings: Settings = None,
+                   path_manager: PathManager = None,
+                   show_absorption: bool = False,
+                   show_scattering: bool = False,
+                   show_anisotropy: bool = False,
+                   show_speed_of_sound: bool = False,
+                   show_tissue_density: bool = False,
+                   show_fluence: bool = False,
+                   show_initial_pressure: bool = False,
+                   show_time_series_data: bool = False,
+                   show_reconstructed_data: bool = False,
+                   show_segmentation_map: bool = False,
+                   show_oxygenation: bool = False,
+                   show_blood_volume_fraction: bool = False,
+                   show_linear_unmixing_sO2: bool = False,
+                   show_diffuse_reflectance: bool = False,
+                   log_scale: bool = False,
+                   show_xz_only: bool = False,
+                   save_path: str = None,
+                   add_wavelengths_slider: bool = False):
+    """
+
+    :param wavelength: The wavelength to be initially visualized.
+    :param wavelengths: The wavelengths to be visualized in the slider.
+    :param path_to_hdf5_file: Path to the HDF5 file containing the data. If not provided, it is constructed from settings and path_manager.
+    :param settings: An instance of Settings containing configuration parameters, including the volume name and wavelengths.
+    :param path_manager: An instance of PathManager used to manage file paths. It is used to generate the path to the HDF5 file if not provided.
+    :param show_absorption: If True, display the absorption coefficient.
+    :param show_scattering: If True, display the scattering coefficient.
+    :param show_anisotropy: If True, display the anisotropy.
+    :param show_speed_of_sound: If True, display the speed of sound.
+    :param show_tissue_density: If True, display the tissue density.
+    :param show_fluence: If True, display the fluence.
+    :param show_initial_pressure: If True, display the initial pressure.
+    :param show_time_series_data: If True, display the time series data.
+    :param show_reconstructed_data: If True, display the reconstructed data.
+    :param show_segmentation_map: If True, display the segmentation map.
+    :param show_oxygenation: If True, display the oxygenation.
+    :param show_blood_volume_fraction: If True, display the blood volume fraction.
+    :param show_linear_unmixing_sO2: If True, display the linear unmixing of oxygen saturation (sO2).
+    :param show_diffuse_reflectance: If True, display the diffuse reflectance.
+    :param log_scale: If True, use a logarithmic scale for the data.
+    :param show_xz_only: If True, display only the xz-plane.
+    :param save_path: Path to save the visualization. If None, the visualization will be displayed instead of saved.
+    :param add_wavelengths_slider: If True, add a slider for wavelength selection to the visualization.
+    """
+    plot = VisualiseData(wavelength,
+                         path_to_hdf5_file,
+                         settings,
+                         path_manager,
+                         show_absorption,
+                         show_scattering,
+                         show_anisotropy,
+                         show_speed_of_sound,
+                         show_tissue_density,
+                         show_fluence,
+                         show_initial_pressure,
+                         show_time_series_data,
+                         show_reconstructed_data,
+                         show_segmentation_map,
+                         show_oxygenation,
+                         show_blood_volume_fraction,
+                         show_linear_unmixing_sO2,
+                         show_diffuse_reflectance,
+                         log_scale,
+                         show_xz_only)
+
+    if add_wavelengths_slider:
+        plot.add_wavelength_slider(wavelengths, settings)
+
+    if save_path is not None:
+        plot.save_fig(save_path)
+    else:
+        plot.show_fig()

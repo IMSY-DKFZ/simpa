@@ -23,7 +23,7 @@ from simpa.utils.libraries.spectrum_library import Spectrum, AnisotropySpectrumL
 from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import *
 import numpy as np
-from simpa.visualisation.matplotlib_data_visualisation import VisualiseData
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 from simpa import ModelBasedVolumeCreationAdapter, MCXAdapter
 from simpa_tests.manual_tests.test_with_experimental_measurements.utils import read_reference_spectra, read_rxt_file
 from simpa_tests.manual_tests import ManualIntegrationTestClass
@@ -227,13 +227,13 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
             if save_path is None:
                 save_path = ""
 
-        VisualiseData(path_to_hdf5_file=self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
-                      wavelengths=[800],
-                      show_segmentation_map=False,
-                      show_absorption=True,
-                      show_fluence=True,
-                      log_scale=True,
-                      save_path=save_path + "DIS_measurement_simulation_a.png")
+        visualise_data(path_to_hdf5_file=self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
+                       wavelength=800,
+                       show_segmentation_map=False,
+                       show_absorption=True,
+                       show_fluence=True,
+                       log_scale=True,
+                       save_path=save_path + "DIS_measurement_simulation_a.png")
 
         measured_transmittance = np.asarray([self.transmittance_spectrum.get_value_for_wavelength(wl)
                                              for wl in self.settings[Tags.WAVELENGTHS]])

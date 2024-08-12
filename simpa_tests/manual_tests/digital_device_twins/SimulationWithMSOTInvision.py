@@ -9,7 +9,7 @@ from simpa.utils.settings import Settings
 from simpa.utils.libraries.molecule_library import Molecule, MolecularCompositionGenerator
 from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary, AnisotropySpectrumLibrary, \
     ScatteringSpectrumLibrary
-from simpa.visualisation.matplotlib_data_visualisation import VisualiseData
+from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.utils.path_manager import PathManager
 from simpa import DelayAndSumAdapter, MCXAdapter, KWaveAdapter, ModelBasedVolumeCreationAdapter, FieldOfViewCropping
@@ -197,13 +197,13 @@ class MSOTInvisionSimulationTest(ManualIntegrationTestClass):
         os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
-        VisualiseData(settings=self.settings,
-                      path_manager=self.path_manager,
-                      show_absorption=True,
-                      show_initial_pressure=True,
-                      show_reconstructed_data=True,
-                      show_xz_only=True,
-                      save_path=save_path + "InvisionSimulationTest.png")
+        visualise_data(settings=self.settings,
+                       path_manager=self.path_manager,
+                       show_absorption=True,
+                       show_initial_pressure=True,
+                       show_reconstructed_data=True,
+                       show_xz_only=True,
+                       save_path=save_path + "InvisionSimulationTest.png")
 
 
 if __name__ == "__main__":

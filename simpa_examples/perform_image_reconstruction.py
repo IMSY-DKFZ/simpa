@@ -50,10 +50,10 @@ def run_perform_image_reconstruction(SPACING: Union[int, float] = 0.5, path_mana
     reconstructed_image = np.squeeze(reconstructed_image)
 
     if visualise:
-        sp.VisualiseData(path_to_hdf5_file=PATH,
-                         wavelengths=settings[Tags.WAVELENGTHS],
-                         show_reconstructed_data=True,
-                         show_xz_only=True)
+        sp.visualise_data(path_to_hdf5_file=PATH,
+                          wavelength=settings[Tags.WAVELENGTH],
+                          show_reconstructed_data=True,
+                          show_xz_only=True)
 
 
 if __name__ == "__main__":

@@ -98,12 +98,12 @@ def run_minimal_optical_simulation_uniform_cube(spacing: float | int = 0.5, path
     sp.simulate(pipeline, settings, device)
 
     if visualise:
-        sp.VisualiseData(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
-                         wavelengths=settings[Tags.WAVELENGTHS],
-                         show_initial_pressure=True,
-                         show_absorption=True,
-                         show_diffuse_reflectance=SAVE_REFLECTANCE,
-                         log_scale=True)
+        sp.visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
+                          wavelength=settings[Tags.WAVELENGTH],
+                          show_initial_pressure=True,
+                          show_absorption=True,
+                          show_diffuse_reflectance=SAVE_REFLECTANCE,
+                          log_scale=True)
 
 
 if __name__ == "__main__":
