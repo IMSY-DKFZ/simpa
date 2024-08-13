@@ -5,9 +5,9 @@
 
 from simpa.core.device_digital_twins import SlitIlluminationGeometry, LinearArrayDetectionGeometry, PhotoacousticDevice
 from simpa import perform_k_wave_acoustic_forward_simulation
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \
+from simpa.core.simulation_modules.reconstruction_module.delay_and_sum_adapter import \
     reconstruct_delay_and_sum_pytorch
-from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
+from simpa import MCXAdapter, ModelBasedAdapter, \
     GaussianNoise
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
@@ -88,7 +88,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
 
         # run pipeline including volume creation and optical mcx simulation
         self.pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_model")
         ]
@@ -114,7 +114,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
                                                                       get_detection_geometry(),
                                                                       speed_of_sound=1540, density=1000,
                                                                       alpha_coeff=0.0, spacing_mm=0.25)
-        
+
         # reconstruct the time series data to compare it with initial pressure
         self.settings.set_reconstruction_settings({
             Tags.RECONSTRUCTION_MODE: Tags.RECONSTRUCTION_MODE_PRESSURE,
@@ -128,7 +128,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         self.reconstructed = reconstruct_delay_and_sum_pytorch(
             time_series_data.copy(), self.device.get_detection_geometry(),
             speed_of_sound_in_m_per_s=1540,
-            time_spacing_in_s=1/40_000_000_000,
+            time_spacing_in_s=1/40_000_000,
             sensor_spacing_in_mm=self.device.get_detection_geometry().pitch_mm,
             recon_mode=Tags.RECONSTRUCTION_MODE_PRESSURE,
         )

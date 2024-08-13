@@ -9,11 +9,11 @@ from simpa.core.simulation import simulate
 import numpy as np
 from simpa_tests.test_utils import create_test_structure_parameters
 import os
-from simpa import ModelBasedVolumeCreationAdapter
-from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_test_adapter import \
-    OpticalForwardModelTestAdapter
-from simpa.core.simulation_modules.acoustic_forward_module.acoustic_forward_model_test_adapter import \
-    AcousticForwardModelTestAdapter
+from simpa import ModelBasedAdapter
+from simpa.core.simulation_modules.optical_module.optical_test_adapter import \
+    OpticalTestAdapter
+from simpa.core.simulation_modules.acoustic_module.acoustic_test_adapter import \
+    AcousticTestAdapter
 from simpa.core.device_digital_twins import RSOMExplorerP50
 
 
@@ -72,9 +72,9 @@ class TestPipeline(unittest.TestCase):
         })
 
         simulation_pipeline = [
-            ModelBasedVolumeCreationAdapter(settings),
-            OpticalForwardModelTestAdapter(settings),
-            AcousticForwardModelTestAdapter(settings),
+            ModelBasedAdapter(settings),
+            OpticalTestAdapter(settings),
+            AcousticTestAdapter(settings),
         ]
 
         simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
