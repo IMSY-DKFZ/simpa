@@ -114,9 +114,9 @@ class Tags:
     Usage: module volume_creation_module, naming convention
     """
 
-    VOLUME_CREATOR_SEGMENTATION_BASED = "volume_creator_segmentation_based"
+    VOLUME_CREATOR_SEGMENTATION_BASED = "segmentation_based_adapter"
     """
-    Corresponds to the SegmentationBasedVolumeCreator.\n
+    Corresponds to the SegmentationBasedAdapter.\n
     Usage: module volume_creation_module, naming convention
     """
 

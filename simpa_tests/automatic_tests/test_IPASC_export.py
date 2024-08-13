@@ -10,13 +10,13 @@ from simpa.core.simulation import simulate
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.utils import Tags, Settings
 from simpa_tests.test_utils import create_test_structure_parameters
-from simpa import ModelBasedVolumeCreationAdapter
-from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_test_adapter import \
-    OpticalForwardModelTestAdapter
-from simpa.core.simulation_modules.acoustic_forward_module.acoustic_forward_model_test_adapter import \
-    AcousticForwardModelTestAdapter
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_test_adapter import \
-    ReconstructionModuleTestAdapter
+from simpa import ModelBasedAdapter
+from simpa.core.simulation_modules.optical_module.optical_test_adapter import \
+    OpticalTestAdapter
+from simpa.core.simulation_modules.acoustic_module.acoustic_test_adapter import \
+    AcousticTestAdapter
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_test_adapter import \
+    ReconstructionTestAdapter
 
 from pacfish import load_data as load_ipasc
 from simpa.io_handling import load_hdf5 as load_simpa
@@ -63,21 +63,21 @@ class TestDeviceUUID(unittest.TestCase):
         })
 
         self.acoustic_simulation_pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
-            OpticalForwardModelTestAdapter(self.settings),
-            AcousticForwardModelTestAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
+            OpticalTestAdapter(self.settings),
+            AcousticTestAdapter(self.settings),
         ]
 
         self.optical_simulation_pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
-            OpticalForwardModelTestAdapter(self.settings)
+            ModelBasedAdapter(self.settings),
+            OpticalTestAdapter(self.settings)
         ]
 
         self.full_simulation_pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
-            OpticalForwardModelTestAdapter(self.settings),
-            AcousticForwardModelTestAdapter(self.settings),
-            ReconstructionModuleTestAdapter(self.settings)
+            ModelBasedAdapter(self.settings),
+            OpticalTestAdapter(self.settings),
+            AcousticTestAdapter(self.settings),
+            ReconstructionTestAdapter(self.settings)
         ]
 
         self.device = RSOMExplorerP50(0.1, 12, 12)

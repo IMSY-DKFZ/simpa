@@ -4,7 +4,7 @@
 
 from simpa.utils import Tags, PathManager, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
-from simpa import ModelBasedVolumeCreationAdapter, MCXAdapter
+from simpa import ModelBasedAdapter, MCXAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 from simpa.io_handling import load_data_field
 import numpy as np
@@ -130,7 +130,7 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
         ]
         simulate(pipeline, self.settings, self.device)

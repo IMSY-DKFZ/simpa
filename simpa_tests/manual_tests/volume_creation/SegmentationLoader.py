@@ -72,7 +72,7 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
         })
 
         self.pipeline = [
-            sp.SegmentationBasedVolumeCreationAdapter(self.settings),
+            sp.SegmentationBasedAdapter(self.settings),
             sp.MCXAdapter(self.settings)
         ]
 
