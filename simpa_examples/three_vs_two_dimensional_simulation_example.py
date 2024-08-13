@@ -1,5 +1,5 @@
-# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
-# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-FileCopyrightText: 2024 Division of Intelligent Medical Systems, DKFZ
+# SPDX-FileCopyrightText: 2024 Janek Groehl
 # SPDX-License-Identifier: MIT
 
 from simpa import Tags
@@ -22,10 +22,12 @@ def run_3Dvs2D_simulation_example(spacing: float | int = 0.2, path_manager=None,
                                   visualise: bool = True):
     """
 
+    A run through of the 3D vs 2D example. In this example, the same simulation script is run twice, with the
+    only difference being the simulation run is either 2D or 3D.
+
     :param spacing: The simulation spacing between voxels
     :param path_manager: the path manager to be used, typically sp.PathManager
-    :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
-    :return: a run through of the example
+    :param visualise: If visualise is set to True, the result swill be plotted using matplotlib
     """
 
     def run_sim(run_3D:bool = True, path_manager=path_manager):
