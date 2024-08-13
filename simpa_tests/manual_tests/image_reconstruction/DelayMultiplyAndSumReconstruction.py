@@ -1,7 +1,8 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import apply_b_mode
 from simpa.utils import Tags
 from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
@@ -43,10 +44,16 @@ class DelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseClass):
         time_series_sensor_data = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
                                                   Tags.DATA_FIELD_TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
 
-        # reconstruct image using convenience function
-        self.reconstructed_image_convenience = reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data,
-                                                                         self.device.get_detection_geometry(),
-                                                                         self.settings)
+        reconstruction_settings = self.settings.get_reconstruction_settings()
+
+        # reconstruct via convenience function
+        self.reconstructed_image_convenience = reconstruct_delay_multiply_and_sum_pytorch(time_series_sensor_data, self.device.get_detection_geometry(), reconstruction_settings[Tags.DATA_FIELD_SPEED_OF_SOUND],  1.0 / (
+            self.device.get_detection_geometry().sampling_frequency_MHz * 1000), self.settings[Tags.SPACING_MM], reconstruction_settings[Tags.RECONSTRUCTION_MODE], reconstruction_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD])
+
+        # apply envelope detection method if set
+        if reconstruction_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:
+            self.reconstructed_image_convenience = apply_b_mode(
+                self.reconstructed_image_convenience, reconstruction_settings[Tags.RECONSTRUCTION_BMODE_METHOD])
 
 
 if __name__ == '__main__':

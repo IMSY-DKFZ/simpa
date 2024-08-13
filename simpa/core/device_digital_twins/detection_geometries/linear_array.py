@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
@@ -40,22 +40,23 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
                                                   number_detector_elements * pitch_mm / 2,
                                                   0, 0, 0, 50])
         super(LinearArrayDetectionGeometry, self).__init__(
-              number_detector_elements=number_detector_elements,
-              detector_element_width_mm=detector_element_width_mm,
-              detector_element_length_mm=detector_element_length_mm,
-              center_frequency_hz=center_frequency_hz,
-              bandwidth_percent=bandwidth_percent,
-              sampling_frequency_mhz=sampling_frequency_mhz,
-              device_position_mm=device_position_mm,
-              field_of_view_extent_mm=field_of_view_extent_mm)
+            number_detector_elements=number_detector_elements,
+            detector_element_width_mm=detector_element_width_mm,
+            detector_element_length_mm=detector_element_length_mm,
+            center_frequency_hz=center_frequency_hz,
+            bandwidth_percent=bandwidth_percent,
+            sampling_frequency_mhz=sampling_frequency_mhz,
+            device_position_mm=device_position_mm,
+            field_of_view_extent_mm=field_of_view_extent_mm)
         self.pitch_mm = pitch_mm
         self.probe_width_mm = (number_detector_elements - 1) * self.pitch_mm
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + 1:
+        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + global_settings[Tags.SPACING_MM]:
             self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
                               "Must be at least {} mm but was {} mm"
-                              .format(self.probe_width_mm + 1, global_settings[Tags.DIM_VOLUME_X_MM]))
+                              .format(self.probe_width_mm + global_settings[Tags.SPACING_MM],
+                                      global_settings[Tags.DIM_VOLUME_X_MM]))
             return False
         return True
 
@@ -66,8 +67,17 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
 
         detector_positions = np.zeros((self.number_detector_elements, 3))
 
-        det_elements = np.arange(-int(self.number_detector_elements / 2),
-                                 int(self.number_detector_elements / 2)) * self.pitch_mm + 0.5 * self.pitch_mm
+        if self.number_detector_elements > 1:
+            if self.number_detector_elements % 2 == 0:
+                # even number of detector elements
+                det_elements = np.arange(-int(self.number_detector_elements / 2),
+                                         int(self.number_detector_elements / 2)) * self.pitch_mm + 0.5 * self.pitch_mm
+            else:
+                # odd number of detector elements
+                det_elements = np.arange(-int(self.number_detector_elements / 2),
+                                         int(self.number_detector_elements / 2) + 1) * self.pitch_mm
+        else:
+            det_elements = 0
 
         detector_positions[:, 0] = det_elements
 

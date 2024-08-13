@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -22,26 +22,26 @@ import os
 
 class IterativeqPAI(ProcessingComponent):
     """
-        Applies iterative qPAI Algorithm [1] on simulated initial pressure map and saves the
-        reconstruction result in the hdf5 output file. If a 2-d map of initial_pressure is passed the algorithm saves
-        the reconstructed absorption coefficients as a 2-d map, else a 3-d absorption reconstruction is
-        saved.
-        The reconstruction result is saved as an image processing entry "iterative_qpai_result" in the hdf5 output file.
-        If intended (e.g. for testing) a list of intermediate iteration updates (only 2-d middle slices) can be saved
-        as a npy file.
-        To run the reconstruction the scattering coefficients must be known a priori.
-        :param kwargs:
-           **Tags.DOWNSCALE_FACTOR (default: 0.73)
-           **Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION (default: False)
-           **Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER (default: 10)
-           **Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA (default: 0.01)
-           **Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS (default: False)
-           **Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL (default: 0.03)
-           **settings (required)
-           **component_settings_key (required)
+    Applies iterative qPAI Algorithm [1] on simulated initial pressure map and saves the
+    reconstruction result in the hdf5 output file. If a 2-d map of initial_pressure is passed the algorithm saves
+    the reconstructed absorption coefficients as a 2-d map, else a 3-d absorption reconstruction is
+    saved.
+    The reconstruction result is saved as an image processing entry "iterative_qpai_result" in the hdf5 output file.
+    If intended (e.g. for testing) a list of intermediate iteration updates (only 2-d middle slices) can be saved
+    as a npy file.
+    To run the reconstruction the scattering coefficients must be known a priori.
+    Parameters:
+    Tags.DOWNSCALE_FACTOR (default: 0.73)
+    Tags.ITERATIVE_RECONSTRUCTION_CONSTANT_REGULARIZATION (default: False)
+    Tags.ITERATIVE_RECONSTRUCTION_MAX_ITERATION_NUMBER (default: 10)
+    Tags.ITERATIVE_RECONSTRUCTION_REGULARIZATION_SIGMA (default: 0.01)
+    Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS (default: False)
+    Tags.ITERATIVE_RECONSTRUCTION_STOPPING_LEVEL (default: 0.03)
+    global_settings (required)
+    component_settings_key (required)
 
-        [1] B. T. Cox et al. 2006, "Two-dimensional quantitative photoacoustic image reconstruction of absorption
-        distributions in scattering media by use of a simple iterative method", https://doi.org/10.1364/ao.45.001866
+    [1] B. T. Cox et al. 2006, "Two-dimensional quantitative photoacoustic image reconstruction of absorption
+    distributions in scattering media by use of a simple iterative method", https://doi.org/10.1364/ao.45.001866
     """
 
     def __init__(self, global_settings, component_settings_key: str):
@@ -114,7 +114,7 @@ class IterativeqPAI(ProcessingComponent):
         if Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS in self.iterative_method_settings:
             if self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS]:
                 dst = self.global_settings[Tags.SIMULATION_PATH] + "/List_reconstructed_qpai_absorptions_" \
-                      + str(wavelength) + "_"
+                    + str(wavelength) + "_"
                 np.save(dst + self.global_settings[Tags.VOLUME_NAME] + ".npy", list_of_intermediate_absorptions)
 
         self.logger.info("Reconstructing absorption using iterative qPAI method...[Done]")
@@ -417,16 +417,14 @@ class IterativeqPAI(ProcessingComponent):
             results = forward_model_implementation.forward_model(absorption_cm=absorption,
                                                                  scattering_cm=scattering,
                                                                  anisotropy=anisotropy,
-                                                                 illumination_geometry=_device[0],
-                                                                 probe_position_mm=pa_device.device_position_mm)
+                                                                 illumination_geometry=_device[0])
             fluence = results[Tags.DATA_FIELD_FLUENCE]
             for idx in range(1, len(_device)):
                 # we already looked at the 0th element, so go from 1 to n-1
                 results = forward_model_implementation.forward_model(absorption_cm=absorption,
                                                                      scattering_cm=scattering,
                                                                      anisotropy=anisotropy,
-                                                                     illumination_geometry=_device[idx + 1],
-                                                                     probe_position_mm=pa_device.device_position_mm)
+                                                                     illumination_geometry=_device[idx + 1])
                 fluence += results[Tags.DATA_FIELD_FLUENCE]
 
             fluence = fluence / len(_device)
@@ -435,8 +433,7 @@ class IterativeqPAI(ProcessingComponent):
             results = forward_model_implementation.forward_model(absorption_cm=absorption,
                                                                  scattering_cm=scattering,
                                                                  anisotropy=anisotropy,
-                                                                 illumination_geometry=_device,
-                                                                 probe_position_mm=pa_device.device_position_mm)
+                                                                 illumination_geometry=_device)
             fluence = results[Tags.DATA_FIELD_FLUENCE]
 
         print("Simulating the optical forward process...[Done]")

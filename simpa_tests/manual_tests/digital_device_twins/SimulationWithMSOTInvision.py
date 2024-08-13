@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -40,7 +40,8 @@ class MSOTInvisionSimulationTest(ManualIntegrationTestClass):
     def create_volume(self):
         inclusion_material = Molecule(volume_fraction=1.0,
                                       anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9),
-                                      scattering_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(100.0),
+                                      scattering_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                                          100.0),
                                       absorption_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(4.0),
                                       speed_of_sound=self.SPEED_OF_SOUND,
                                       alpha_coefficient=1e-4,
@@ -93,8 +94,8 @@ class MSOTInvisionSimulationTest(ManualIntegrationTestClass):
         inclusion_1_dictionary[Tags.STRUCTURE_Y_EXTENT_MM] = 20
         inclusion_1_dictionary[Tags.STRUCTURE_Z_EXTENT_MM] = 10
         inclusion_1_dictionary[Tags.MOLECULE_COMPOSITION] = (MolecularCompositionGenerator()
-                                                                  .append(inclusion_material)
-                                                                  .get_molecular_composition(segmentation_type=1))
+                                                             .append(inclusion_material)
+                                                             .get_molecular_composition(segmentation_type=1))
         inclusion_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = False
         inclusion_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.RECTANGULAR_CUBOID_STRUCTURE
 
@@ -115,9 +116,9 @@ class MSOTInvisionSimulationTest(ManualIntegrationTestClass):
         tissue_dict["inclusion_1"] = inclusion_1_dictionary
         tissue_dict["inclusion_2"] = inclusion_2_dictionary
         return {
-                   Tags.STRUCTURES: tissue_dict,
-                   Tags.SIMULATE_DEFORMED_LAYERS: False
-               }
+            Tags.STRUCTURES: tissue_dict,
+            Tags.SIMULATE_DEFORMED_LAYERS: False
+        }
 
     def get_settings(self):
         general_settings = {

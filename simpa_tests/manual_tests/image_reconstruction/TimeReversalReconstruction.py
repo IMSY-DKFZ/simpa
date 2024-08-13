@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -26,7 +26,7 @@ class TimeReversalReconstruction(ReconstructionAlgorithmTestBaseClass):
 
         self.device.update_settings_for_use_of_model_based_volume_creator(self.settings)
 
-        SIMUATION_PIPELINE = [
+        SIMULATION_PIPELINE = [
             ModelBasedVolumeCreationAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_initial_pressure"),
@@ -34,7 +34,7 @@ class TimeReversalReconstruction(ReconstructionAlgorithmTestBaseClass):
             TimeReversalAdapter(self.settings)
         ]
 
-        simulate(SIMUATION_PIPELINE, self.settings, self.device)
+        simulate(SIMULATION_PIPELINE, self.settings, self.device)
 
         self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
                                                             self.settings[Tags.WAVELENGTH])

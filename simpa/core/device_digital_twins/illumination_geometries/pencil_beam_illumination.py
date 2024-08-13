@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -12,14 +12,14 @@ class PencilBeamIlluminationGeometry(IlluminationGeometryBase):
     The device position is defined as the exact position of the pencil beam.
     """
 
-    def get_mcx_illuminator_definition(self, global_settings, probe_position_mm) -> dict:
+    def get_mcx_illuminator_definition(self, global_settings) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_PENCILARRAY
 
         spacing = global_settings[Tags.SPACING_MM]
 
-        device_position = probe_position_mm / spacing + 0.5
+        device_position = list(self.device_position_mm / spacing + 0.5)
 
-        source_direction = [0, 0, 1]
+        source_direction = list(self.normalized_source_direction_vector)
 
         source_param1 = [0, 0, 0, 0]
 

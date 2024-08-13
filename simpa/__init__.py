@@ -1,10 +1,16 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
 from .utils import *
 from .log import Logger
+from importlib.metadata import version, PackageNotFoundError
 
+try:
+    __version__ = version("simpa")
+except PackageNotFoundError:
+    __version__ = "unknown version"
+    
 from .core.simulation_modules.volume_creation_module.volume_creation_module_model_based_adapter import \
     ModelBasedVolumeCreationAdapter
 from .core.simulation_modules.volume_creation_module.volume_creation_module_segmentation_based_adapter import \

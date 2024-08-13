@@ -1,8 +1,6 @@
-"""
-SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
-SPDX-FileCopyrightText: 2021 VISION Lab, Cancer Research UK Cambridge Institute (CRUK CI)
-SPDX-License-Identifier: MIT
-"""
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
 import numpy as np
 import struct
 import jdata
@@ -20,8 +18,8 @@ class MCXAdapterReflectance(MCXAdapter):
     diffuse reflectance simulations. Specifically, it implements the capability to run diffuse reflectance simulations.
 
     .. warning::
-        This MCX adapter requires a version of MCX containing the revision: `Rev::077060`, which was published in the
-        Nightly build  on `2022-01-26`.
+        This MCX adapter requires a version of MCX containing the commit 56eca8ae7e9abde309053759d6d6273ac4795fc5,
+        which was published in the Nightly build on `2024-03-10`.
 
     .. note::
         MCX is a GPU-enabled Monte-Carlo model simulation of photon transport in tissue:
@@ -47,8 +45,7 @@ class MCXAdapterReflectance(MCXAdapter):
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
-                      illumination_geometry: IlluminationGeometryBase,
-                      probe_position_mm: np.ndarray) -> Dict:
+                      illumination_geometry: IlluminationGeometryBase) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
         input for MCX. A JSON serializable file containing the configuration required by MCx is also generated.
@@ -75,7 +72,6 @@ class MCXAdapterReflectance(MCXAdapter):
                                     assumed_anisotropy=_assumed_anisotropy)
 
         settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
-                                              probe_position_mm=probe_position_mm,
                                               assumed_anisotropy=_assumed_anisotropy,
                                               )
 
@@ -83,6 +79,7 @@ class MCXAdapterReflectance(MCXAdapter):
         self.generate_mcx_json_input(settings_dict=settings_dict)
         # run the simulation
         cmd = self.get_command()
+        self.logger.info(cmd)
         self.run_mcx(cmd)
 
         # Read output
@@ -105,6 +102,9 @@ class MCXAdapterReflectance(MCXAdapter):
         cmd.append(self.mcx_json_config_file)
         cmd.append("-O")
         cmd.append("F")
+        # use 'C' order array format for binary input file
+        cmd.append("-a")
+        cmd.append("1")
         cmd.append("-F")
         cmd.append("jnii")
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
@@ -118,6 +118,7 @@ class MCXAdapterReflectance(MCXAdapter):
         if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
             cmd.append("--saveref")  # save diffuse reflectance at 0 filled voxels outside of domain
+        cmd += self.get_additional_flags()
         return cmd
 
     def read_mcx_output(self, **kwargs) -> Dict:
@@ -132,6 +133,9 @@ class MCXAdapterReflectance(MCXAdapter):
                 self.mcx_output_suffixes['mcx_volumetric_data_file']):
             content = jdata.load(self.mcx_volumetric_data_file)
             fluence = content['NIFTIData']
+            if fluence.ndim > 3:
+                # remove the 1 or 2 (for mcx >= v2024.1) additional dimensions of size 1 if present to obtain a 3d array
+                fluence = fluence.reshape(fluence.shape[0], fluence.shape[1], -1)
             ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
             fluence = self.post_process_volumes(**{'arrays': (fluence,)})[0]
             fluence *= 100  # Convert from J/mm^2 to J/cm^2
@@ -243,8 +247,7 @@ class MCXAdapterReflectance(MCXAdapter):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device[0],
-                                         probe_position_mm=device.device_position_mm)
+                                         illumination_geometry=_device[0])
             self._append_results(results=results,
                                  reflectance=reflectance,
                                  reflectance_position=reflectance_position,
@@ -256,8 +259,7 @@ class MCXAdapterReflectance(MCXAdapter):
                 results = self.forward_model(absorption_cm=absorption,
                                              scattering_cm=scattering,
                                              anisotropy=anisotropy,
-                                             illumination_geometry=_device[idx],
-                                             probe_position_mm=device.device_position_mm)
+                                             illumination_geometry=_device[idx])
                 self._append_results(results=results,
                                      reflectance=reflectance,
                                      reflectance_position=reflectance_position,
@@ -271,8 +273,7 @@ class MCXAdapterReflectance(MCXAdapter):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device,
-                                         probe_position_mm=device.device_position_mm)
+                                         illumination_geometry=_device)
             self._append_results(results=results,
                                  reflectance=reflectance,
                                  reflectance_position=reflectance_position,

@@ -1,17 +1,19 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
-import numpy as np
-from typing import List, Union, Dict
 from abc import abstractmethod
-import gc
+from typing import Dict, Union
 
-from simpa.utils import Tags, Settings
-from simpa.core import SimulationModule
+import numpy as np
+
+from simpa.core.simulation_modules import SimulationModule
+from simpa.core.device_digital_twins import (IlluminationGeometryBase,
+                                             PhotoacousticDevice)
+from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
+from simpa.utils import Settings, Tags
 from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.io_handling.io_hdf5 import save_hdf5, load_hdf5
-from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
-from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
+from simpa.utils.quality_assurance.data_sanity_testing import \
+    assert_array_well_defined
 
 
 class OpticalForwardModuleBase(SimulationModule):
@@ -23,19 +25,24 @@ class OpticalForwardModuleBase(SimulationModule):
 
     def __init__(self, global_settings: Settings):
         super(OpticalForwardModuleBase, self).__init__(global_settings=global_settings)
-        self.component_settings = self.global_settings.get_optical_settings()
         self.nx = None
         self.ny = None
         self.nz = None
         self.temporary_output_files = []
+
+    def load_component_settings(self) -> Settings:
+        """Implements abstract method to serve optical settings as component settings
+
+        :return: Settings: optical component settings
+        """
+        return self.global_settings.get_optical_settings()
 
     @abstractmethod
     def forward_model(self,
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
-                      illumination_geometry: IlluminationGeometryBase,
-                      probe_position_mm: np.ndarray):
+                      illumination_geometry: IlluminationGeometryBase):
         """
         A deriving class needs to implement this method according to its model.
 
@@ -43,7 +50,6 @@ class OpticalForwardModuleBase(SimulationModule):
         :param scattering_cm: Scattering in units of per centimeter
         :param anisotropy: Dimensionless scattering anisotropy
         :param illumination_geometry: A device that represents a detection geometry
-        :param probe_position_mm: parameters defining the position of a probe if any
         :return: Fluence in units of J/cm^2
         """
         pass
@@ -59,16 +65,13 @@ class OpticalForwardModuleBase(SimulationModule):
 
         self.logger.info("Simulating the optical forward process...")
 
-        properties_path = generate_dict_path(Tags.SIMULATION_PROPERTIES,
-                                             wavelength=self.global_settings[Tags.WAVELENGTH])
+        file_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH]
+        wl = str(self.global_settings[Tags.WAVELENGTH])
 
-        optical_properties = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], properties_path)
-        absorption = optical_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
-        scattering = optical_properties[Tags.DATA_FIELD_SCATTERING_PER_CM][str(self.global_settings[Tags.WAVELENGTH])]
-        anisotropy = optical_properties[Tags.DATA_FIELD_ANISOTROPY][str(self.global_settings[Tags.WAVELENGTH])]
-        gruneisen_parameter = optical_properties[Tags.DATA_FIELD_GRUNEISEN_PARAMETER]
-        del optical_properties
-        gc.collect()
+        absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl)
+        scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, wl)
+        anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, wl)
+        gruneisen_parameter = load_data_field(file_path, Tags.DATA_FIELD_GRUNEISEN_PARAMETER)
 
         _device = None
         if isinstance(device, IlluminationGeometryBase):
@@ -133,16 +136,14 @@ class OpticalForwardModuleBase(SimulationModule):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device[0],
-                                         probe_position_mm=device.device_position_mm)
+                                         illumination_geometry=_device[0])
             fluence = results[Tags.DATA_FIELD_FLUENCE]
             for idx in range(1, len(_device)):
                 # we already looked at the 0th element, so go from 1 to n-1
                 results = self.forward_model(absorption_cm=absorption,
                                              scattering_cm=scattering,
                                              anisotropy=anisotropy,
-                                             illumination_geometry=_device[idx],
-                                             probe_position_mm=device.device_position_mm)
+                                             illumination_geometry=_device[idx])
                 fluence += results[Tags.DATA_FIELD_FLUENCE]
 
             fluence = fluence / len(_device)
@@ -151,7 +152,6 @@ class OpticalForwardModuleBase(SimulationModule):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device,
-                                         probe_position_mm=device.device_position_mm)
+                                         illumination_geometry=_device)
             fluence = results[Tags.DATA_FIELD_FLUENCE]
         return {Tags.DATA_FIELD_FLUENCE: fluence}

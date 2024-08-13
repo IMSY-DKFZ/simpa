@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -11,17 +11,17 @@ def create_custom_absorber():
     absorber = sp.Spectrum(spectrum_name="random absorber",
                            wavelengths=wavelengths,
                            values=np.random.random(
-                                      np.shape(wavelengths)))
+                               np.shape(wavelengths)))
     return absorber
 
 
 def create_custom_chromophore(volume_fraction: float = 1.0):
     chromophore = sp.Molecule(
-            absorption_spectrum=create_custom_absorber(),
-            volume_fraction=volume_fraction,
-            scattering_spectrum=sp.ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(40.0),
-            anisotropy_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9)
-        )
+        absorption_spectrum=create_custom_absorber(),
+        volume_fraction=volume_fraction,
+        scattering_spectrum=sp.ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(40.0),
+        anisotropy_spectrum=sp.AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9)
+    )
     return chromophore
 
 

@@ -1,11 +1,11 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
 import numpy as np
 
 from simpa.core.device_digital_twins import IlluminationGeometryBase
-from simpa.utils import Settings, Tags
+from simpa.utils import Tags
 
 
 class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
@@ -13,75 +13,61 @@ class MSOTInVisionIlluminationGeometry(IlluminationGeometryBase):
     This class represents the illumination geometry of the MSOT InVision photoacoustic device.
     """
 
-    def __init__(self, geometry_id=0):
-        """
-        :param geometry_id: ID of the specific InVision illuminator.
-        :type geometry_id: int
-        """
+    def __init__(self, invision_position=None):
         super().__init__()
-        self.geometry_id = geometry_id
 
-    def get_mcx_illuminator_definition(self, global_settings: Settings, probe_position_mm: np.ndarray):
-        self.logger.debug(probe_position_mm)
-        source_type = Tags.ILLUMINATION_TYPE_MSOT_INVISION
+        if invision_position is None:
+            self.invision_position = [0, 0, 0]
+        else:
+            self.invision_position = invision_position
+
+        det_sep_half = 24.74 / 2
+        detector_iso_distance = 74.05 / 2
+        detector_width = 2 * 6.12
+
+        self.device_positions_mm = list()
+        self.source_direction_vectors = list()
+        self.slit_vectors_mm = list()
+
+        for index in [0, 1, 2, 3, 4]:
+            for y_offset_factor in [+1, -1]:
+                angle = index * 2.0 * np.pi / 5.0
+                illumination_angle = -0.41608649 * y_offset_factor
+                v = np.array([-np.sin(angle), np.sin(illumination_angle), -np.cos(angle)])
+                v /= np.linalg.norm(v)
+                slit_vector = np.array([np.cos(angle), 0, -np.sin(angle)]) * detector_width
+                slit_middle_on_circle = np.array([np.sin(angle), 0.0, np.cos(angle)]) * detector_iso_distance
+                y_offset = np.array([0.0, det_sep_half * y_offset_factor, 0.0])
+                pos = np.array(self.invision_position) + slit_middle_on_circle + y_offset - 0.5*slit_vector
+                self.device_positions_mm.append(pos)
+                self.source_direction_vectors.append(v)
+                self.slit_vectors_mm.append(slit_vector)
+
+        divergence_angle = 0.165806  # full beam divergence angle measured at Full Width at Half Maximum (FWHM)
+        full_width_at_half_maximum = 2.0 * np.tan(0.5 * divergence_angle)  # FWHM of beam divergence
+        # standard deviation of gaussian with FWHM
+        self.sigma = full_width_at_half_maximum / (2.0 * np.sqrt(2.0 * np.log(2.0)))
+
+    def get_mcx_illuminator_definition(self, global_settings):
+        self.logger.debug(self.invision_position)
+        source_type = Tags.ILLUMINATION_TYPE_SLIT
 
         spacing = global_settings[Tags.SPACING_MM]
 
-        angle = 0.0
-        det_sep_half = 24.74 / (2 * spacing)
-        detector_iso_distance = 74.05 / (2 * spacing)
-        illumination_angle = -0.41608649
+        source_positions = list(list(pos / spacing + 1) for pos in self.device_positions_mm)
 
-        if self.geometry_id == 0:
-            angle = 0.0
-        elif self.geometry_id == 1:
-            angle = 0.0
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
-        elif self.geometry_id == 2:
-            angle = 1.25664
-        elif self.geometry_id == 3:
-            angle = 1.25664
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
-        elif self.geometry_id == 4:
-            angle = -1.25664
-        elif self.geometry_id == 5:
-            angle = -1.25664
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
-        elif self.geometry_id == 6:
-            angle = 2.51327
-        elif self.geometry_id == 7:
-            angle = 2.51327
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
-        elif self.geometry_id == 8:
-            angle = -2.51327
-        elif self.geometry_id == 9:
-            angle = -2.51327
-            det_sep_half = -det_sep_half
-            illumination_angle = -illumination_angle
+        source_directions = list(list(v) for v in self.source_direction_vectors)
 
-        source_position = [probe_position_mm[0]/spacing + 1 + np.sin(angle) * detector_iso_distance,
-                           probe_position_mm[1]/spacing + 1 + det_sep_half,
-                           probe_position_mm[2]/spacing + 1 + np.cos(angle) * detector_iso_distance]
+        source_param1s = list(list(slit_vector / spacing) + [0.0] for slit_vector in self.slit_vectors_mm)
 
-        length = np.sqrt(np.sin(angle) ** 2 + np.sin(illumination_angle) ** 2 + np.cos(angle) ** 2)
-        source_direction = [-np.sin(angle) / length,
-                            np.sin(illumination_angle) / length,
-                            np.cos(angle) / length]
-
-        source_param1 = [spacing, self.geometry_id, 0, 0]
-
-        source_param2 = [0, 0, 0, 0]
+        source_param2s = [[self.sigma, 0, 0, 0]]*len(self.device_positions_mm)
 
         return {
             "Type": source_type,
-            "Pos": source_position,
-            "Dir": source_direction,
-            "Param1": source_param1,
-            "Param2": source_param2
+            "Pos": source_positions,
+            "Dir": source_directions,
+            "Param1": source_param1s,
+            "Param2": source_param2s
         }
 
     def serialize(self) -> dict:

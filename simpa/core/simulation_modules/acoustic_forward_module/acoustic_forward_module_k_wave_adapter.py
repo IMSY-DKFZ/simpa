@@ -1,22 +1,27 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils.path_manager import PathManager
-import numpy as np
-import subprocess
-from simpa.utils import Tags
-from simpa.io_handling.io_hdf5 import load_hdf5, save_hdf5, load_data_field
-from simpa.utils.dict_path_manager import generate_dict_path
-from simpa.utils.settings import Settings
-from simpa.utils.calculate import rotation_matrix_between_vectors
-from simpa.core.device_digital_twins import CurvedArrayDetectionGeometry, DetectionGeometryBase
+import gc
 import os
-import inspect
+import subprocess
+from typing import List 
+
+import numpy as np
 import scipy.io as sio
 from scipy.spatial.transform import Rotation
-from simpa.core.simulation_modules.acoustic_forward_module import AcousticForwardModelBaseAdapter
-import gc
+
+from simpa.core.device_digital_twins import (CurvedArrayDetectionGeometry,
+                                             DetectionGeometryBase)
+from simpa.core.simulation_modules.acoustic_forward_module import \
+    AcousticForwardModelBaseAdapter
+from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
+from simpa.utils import Tags
+from simpa.utils.matlab import generate_matlab_cmd
+from simpa.utils.calculate import rotation_matrix_between_vectors
+from simpa.utils.dict_path_manager import generate_dict_path
+from simpa.utils.path_manager import PathManager
+from simpa.utils.settings import Settings
 
 
 class KWaveAdapter(AcousticForwardModelBaseAdapter):
@@ -72,25 +77,26 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
         """
 
+        wavelength = self.global_settings[Tags.WAVELENGTH]
         optical_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME,
-                                          wavelength=self.global_settings[Tags.WAVELENGTH])
+                                          wavelength=wavelength)
 
         self.logger.debug(f"OPTICAL_PATH: {str(optical_path)}")
 
-        data_dict = load_hdf5(self.global_settings[Tags.SIMPA_OUTPUT_PATH], optical_path)
-        if Tags.DATA_FIELD_FLUENCE in data_dict:
-            del data_dict[Tags.DATA_FIELD_FLUENCE]
-        gc.collect()
-
-        tmp_ac_data = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.SIMULATION_PROPERTIES,
-                                      self.global_settings[Tags.WAVELENGTH])
+        data_dict = {}
+        file_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH]
+        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = load_data_field(file_path, Tags.DATA_FIELD_INITIAL_PRESSURE,
+                                                                      wavelength=wavelength)
+        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = load_data_field(file_path, Tags.DATA_FIELD_SPEED_OF_SOUND)
+        data_dict[Tags.DATA_FIELD_DENSITY] = load_data_field(file_path, Tags.DATA_FIELD_DENSITY)
+        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = load_data_field(file_path, Tags.DATA_FIELD_ALPHA_COEFF)
 
         pa_device = detection_geometry
         pa_device.check_settings_prerequisites(self.global_settings)
         field_of_view_extent = pa_device.field_of_view_extent_mm
         detector_positions_mm = pa_device.get_detector_element_positions_accounting_for_device_position_mm()
         self.logger.debug(f"field_of_view_extent: {field_of_view_extent}")
-        
+
         detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
         detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
         if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
@@ -104,16 +110,11 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         else:
             axes = (0, 2)
             image_slice = np.s_[:]
-        
-        wavelength = str(self.global_settings[Tags.WAVELENGTH])
-        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice],
-                                                             3, axes=axes)
-        data_dict[Tags.DATA_FIELD_DENSITY] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_DENSITY][image_slice],
-                                                      3, axes=axes)
-        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = np.rot90(tmp_ac_data[Tags.DATA_FIELD_ALPHA_COEFF][image_slice],
-                                                          3, axes=axes)
-        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = np.rot90(data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE]
-                                                                  [wavelength][image_slice], 3, axes=axes)
+
+        data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice].T
+        data_dict[Tags.DATA_FIELD_DENSITY] = data_dict[Tags.DATA_FIELD_DENSITY][image_slice].T
+        data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = data_dict[Tags.DATA_FIELD_ALPHA_COEFF][image_slice].T
+        data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE][image_slice].T
 
         time_series_data, global_settings = self.k_wave_acoustic_forward_model(
             detection_geometry,
@@ -237,26 +238,14 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
             self.logger.info("Simulating 2D....")
             simulation_script_path = "simulate_2D"
 
-        base_script_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
+        cmd = generate_matlab_cmd(matlab_binary_path, simulation_script_path, optical_path, self.get_additional_flags())
 
-        cmd = list()
-        cmd.append(self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH])
-        cmd.append("-nodisplay")
-        cmd.append("-nosplash")
-        cmd.append("-automation")
-        cmd.append("-wait")
-        cmd.append("-r")
-        cmd.append("addpath('" + base_script_path + "');" +
-                   simulation_script_path + "('" + optical_path + "');exit;")
         cur_dir = os.getcwd()
         self.logger.info(cmd)
         subprocess.run(cmd)
 
         raw_time_series_data = sio.loadmat(optical_path)[Tags.DATA_FIELD_TIME_SERIES_DATA]
-
-        # reverse the order of detector elements from matlab to python order
-        raw_time_series_data = raw_time_series_data[::-1, :]
-
         time_grid = sio.loadmat(optical_path + "dt.mat")
         num_time_steps = int(np.round(time_grid["number_time_steps"]))
 

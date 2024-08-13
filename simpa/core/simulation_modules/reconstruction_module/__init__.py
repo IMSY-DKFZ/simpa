@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -7,12 +7,12 @@ from simpa.core.device_digital_twins import DetectionGeometryBase
 from simpa.core.device_digital_twins import PhotoacousticDevice
 from simpa.io_handling.io_hdf5 import load_data_field
 from abc import abstractmethod
-from simpa.core import SimulationModule
+from simpa.core.simulation_modules import SimulationModule
 from simpa.utils.dict_path_manager import generate_dict_path
 from simpa.io_handling.io_hdf5 import save_hdf5
 import numpy as np
 from simpa.utils import Settings
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filtering_with_settings, apply_b_mode
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import bandpass_filter_with_settings, apply_b_mode
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
@@ -25,7 +25,13 @@ class ReconstructionAdapterBase(SimulationModule):
 
     def __init__(self, global_settings: Settings):
         super(ReconstructionAdapterBase, self).__init__(global_settings=global_settings)
-        self.component_settings = global_settings.get_reconstruction_settings()
+
+    def load_component_settings(self) -> Settings:
+        """Implements abstract method to serve reconstruction settings as component settings
+
+        :return: Settings: reconstruction component settings
+        """
+        return self.global_settings.get_reconstruction_settings()
 
     @abstractmethod
     def reconstruction_algorithm(self, time_series_sensor_data,
@@ -54,12 +60,12 @@ class ReconstructionAdapterBase(SimulationModule):
             raise TypeError(f"Type {type(device)} is not supported for performing image reconstruction.")
 
         if Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING in self.component_settings and \
-                self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING] is True:
+                self.component_settings[Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING]:
 
-            time_series_sensor_data = bandpass_filtering_with_settings(time_series_sensor_data,
-                                                                       self.global_settings,
-                                                                       self.component_settings,
-                                                                       _device)
+            time_series_sensor_data = bandpass_filter_with_settings(time_series_sensor_data,
+                                                                    self.global_settings,
+                                                                    self.component_settings,
+                                                                    _device)
 
         # check for B-mode methods and perform envelope detection on time series data if specified
         if Tags.RECONSTRUCTION_BMODE_BEFORE_RECONSTRUCTION in self.component_settings \
@@ -87,3 +93,30 @@ class ReconstructionAdapterBase(SimulationModule):
                   reconstruction_output_path)
 
         self.logger.info("Performing reconstruction...[Done]")
+
+
+def create_reconstruction_settings(speed_of_sound_in_m_per_s: int = 1540, time_spacing_in_s: float = 2.5e-8,
+                                   sensor_spacing_in_mm: float = 0.1,
+                                   recon_mode: str = Tags.RECONSTRUCTION_MODE_PRESSURE,
+                                   apodization: str = Tags.RECONSTRUCTION_APODIZATION_BOX) -> Settings:
+    """
+    Function that creates SIMPA settings for reconstruction convenience function.
+
+    :param speed_of_sound_in_m_per_s: (int) speed of sound in medium in meters per second (default: 1540 m/s)
+    :param time_spacing_in_s: (float) time between sampling points in seconds (default: 2.5e-8 s which is equal to 40 MHz)
+    :param sensor_spacing_in_mm: (float) space between sensor elements in millimeters (default: 0.1 mm)
+    :param recon_mode: SIMPA Tag defining the reconstruction mode - pressure default OR differential
+    :param apodization: SIMPA Tag defining the apodization function (default box)
+    :return: SIMPA settings
+    """
+
+    settings = Settings()
+    settings.set_reconstruction_settings({
+        Tags.DATA_FIELD_SPEED_OF_SOUND: speed_of_sound_in_m_per_s,
+        Tags.SPACING_MM: sensor_spacing_in_mm,
+        Tags.RECONSTRUCTION_APODIZATION_METHOD: apodization,
+        Tags.RECONSTRUCTION_MODE: recon_mode,
+    })
+    settings[Tags.K_WAVE_SPECIFIC_DT] = time_spacing_in_s
+
+    return settings

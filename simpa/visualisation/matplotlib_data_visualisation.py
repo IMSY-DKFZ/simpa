@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -28,6 +28,7 @@ def visualise_data(wavelength: int = None,
                    show_reconstructed_data=False,
                    show_segmentation_map=False,
                    show_oxygenation=False,
+                   show_blood_volume_fraction=False,
                    show_linear_unmixing_sO2=False,
                    show_diffuse_reflectance=False,
                    log_scale=False,
@@ -55,6 +56,7 @@ def visualise_data(wavelength: int = None,
     time_series_data = None
     reconstructed_data = None
     oxygenation = None
+    blood_volume_fraction = None
     linear_unmixing_sO2 = None
     diffuse_reflectance = None
     diffuse_reflectance_position = None
@@ -118,6 +120,15 @@ def visualise_data(wavelength: int = None,
             logger.critical("The key " + str(Tags.DATA_FIELD_OXYGENATION) + " was not in the simpa output.")
             show_oxygenation = False
             oxygenation = None
+
+    if show_blood_volume_fraction:
+        try:
+            blood_volume_fraction = get_data_field_from_simpa_output(
+                file, Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION, wavelength)
+        except KeyError as e:
+            logger.critical("The key " + str(Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION) + " was not in the simpa output.")
+            show_blood_volume_fraction = False
+            blood_volume_fraction = None
 
     if show_linear_unmixing_sO2:
         try:
@@ -198,6 +209,11 @@ def visualise_data(wavelength: int = None,
         data_item_names.append("Oxygenation")
         cmaps.append("viridis")
         logscales.append(False and log_scale)
+    if blood_volume_fraction is not None and show_blood_volume_fraction:
+        data_to_show.append(blood_volume_fraction)
+        data_item_names.append("Blood Volume Fraction")
+        cmaps.append("viridis")
+        logscales.append(False and log_scale)
     if linear_unmixing_sO2 is not None and show_linear_unmixing_sO2:
         data_to_show.append(linear_unmixing_sO2)
         data_item_names.append("Linear Unmixed Oxygenation")
@@ -221,10 +237,10 @@ def visualise_data(wavelength: int = None,
         plt.title(data_item_names[i])
         if len(np.shape(data_to_show[i])) > 2:
             pos = int(np.shape(data_to_show[i])[1] / 2) - 1
-            data = np.rot90(data_to_show[i][:, pos, :], -1)
+            data = data_to_show[i][:, pos, :].T
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         else:
-            data = np.rot90(data_to_show[i][:, :], -1)
+            data = data_to_show[i][:, :].T
             plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
         plt.colorbar()
 
@@ -233,10 +249,10 @@ def visualise_data(wavelength: int = None,
             plt.title(data_item_names[i])
             if len(np.shape(data_to_show[i])) > 2:
                 pos = int(np.shape(data_to_show[i])[0] / 2)
-                data = np.rot90(data_to_show[i][pos, :, :], -1)
+                data = data_to_show[i][pos, :, :].T
                 plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
             else:
-                data = np.rot90(data_to_show[i][:, :], -1)
+                data = data_to_show[i][:, :].T
                 plt.imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
             plt.colorbar()
 

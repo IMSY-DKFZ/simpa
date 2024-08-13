@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
@@ -44,14 +44,14 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
                                                   0, 100])
 
         super(PlanarArrayDetectionGeometry, self).__init__(
-              number_detector_elements=number_detector_elements_x * number_detector_elements_y,
-              detector_element_width_mm=detector_element_width_mm,
-              detector_element_length_mm=detector_element_length_mm,
-              center_frequency_hz=center_frequency_hz,
-              bandwidth_percent=bandwidth_percent,
-              sampling_frequency_mhz=sampling_frequency_mhz,
-              device_position_mm=device_position_mm,
-              field_of_view_extent_mm=field_of_view_extent_mm)
+            number_detector_elements=number_detector_elements_x * number_detector_elements_y,
+            detector_element_width_mm=detector_element_width_mm,
+            detector_element_length_mm=detector_element_length_mm,
+            center_frequency_hz=center_frequency_hz,
+            bandwidth_percent=bandwidth_percent,
+            sampling_frequency_mhz=sampling_frequency_mhz,
+            device_position_mm=device_position_mm,
+            field_of_view_extent_mm=field_of_view_extent_mm)
         self.pitch_mm = pitch_mm
         self.number_detector_elements_x = number_detector_elements_x
         self.number_detector_elements_y = number_detector_elements_y
@@ -66,14 +66,14 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
                            0, 100])
 
     def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + 1:
+        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + global_settings[Tags.SPACING_MM]:
             self.logger.error(f"Volume x dimension is too small to encompass RSOM device in simulation!"
-                              f"Must be at least {self.probe_width_mm + 1} mm but "
+                              f"Must be at least {self.probe_width_mm + global_settings[Tags.SPACING_MM]} mm but "
                               f"was {global_settings[Tags.DIM_VOLUME_X_MM]} mm")
             return False
-        if global_settings[Tags.DIM_VOLUME_Y_MM] < self.probe_depth_mm + 1:
+        if global_settings[Tags.DIM_VOLUME_Y_MM] < self.probe_depth_mm + global_settings[Tags.SPACING_MM]:
             self.logger.error(f"Volume y dimension is too small to encompass RSOM device in simulation!"
-                              f"Must be at least {self.probe_depth_mm + 1} mm but "
+                              f"Must be at least {self.probe_depth_mm + global_settings[Tags.SPACING_MM]} mm but "
                               f"was {global_settings[Tags.DIM_VOLUME_X_MM]} mm")
             return False
         return True

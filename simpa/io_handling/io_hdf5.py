@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -119,13 +119,20 @@ def load_hdf5(file_path, file_dictionary_path="/"):
 
         :param file: hdf5 file instance to load the data from.
         :param path: Current group path in hdf5 file group structure.
-        :returns: Dictionary
+        :returns: Dictionary or np.array
         """
+
+        if isinstance(h5file[path], h5py._hl.dataset.Dataset):
+            if isinstance(h5file[path][()], bytes):
+                return h5file[path][()].decode("utf-8")
+            return h5file[path][()]
+
         dictionary = {}
         for key, item in h5file[path].items():
             if isinstance(item, h5py._hl.dataset.Dataset):
-                if item[()] is not None:
-                    dictionary[key] = item[()]
+                item = item[()]
+                if item is not None:
+                    dictionary[key] = item
                     if isinstance(dictionary[key], bytes):
                         dictionary[key] = dictionary[key].decode("utf-8")
                     elif isinstance(dictionary[key], np.bool_):
@@ -142,8 +149,9 @@ def load_hdf5(file_path, file_dictionary_path="/"):
                     dictionary_list = [None for x in item.keys()]
                     for listkey in sorted(item.keys()):
                         if isinstance(item[listkey], h5py._hl.dataset.Dataset):
-                            if item[listkey][()] is not None:
-                                list_item = item[listkey][()]
+                            listkey_item = item[listkey][()]
+                            if listkey_item is not None:
+                                list_item = listkey_item
                                 if isinstance(list_item, bytes):
                                     list_item = list_item.decode("utf-8")
                                 elif isinstance(list_item, np.bool_):
@@ -163,10 +171,8 @@ def load_hdf5(file_path, file_dictionary_path="/"):
 
 
 def load_data_field(file_path, data_field, wavelength=None):
-    dict_path = generate_dict_path(data_field, wavelength=wavelength)
-    data_field_key = dict_path.split("/")[-2]
-    dict_path = "/".join(dict_path.split("/")[:-2]) + "/"
-    data = load_hdf5(file_path, dict_path)[data_field_key]
+    path = generate_dict_path(data_field, wavelength=wavelength)
+    data = load_hdf5(file_path, path)
     return data
 
 

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
@@ -40,10 +40,10 @@ class InVision256TF(PhotoacousticDevice):
         super(InVision256TF, self).__init__(device_position_mm=device_position_mm,
                                             field_of_view_extent_mm=field_of_view_extent_mm)
 
-        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.74,
+        detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=0.735,
                                                           radius_mm=40,
                                                           number_detector_elements=256,
-                                                          detector_element_width_mm=0.64,
+                                                          detector_element_width_mm=0.635,
                                                           detector_element_length_mm=15,
                                                           center_frequency_hz=5e6,
                                                           bandwidth_percent=55,
@@ -54,8 +54,7 @@ class InVision256TF(PhotoacousticDevice):
 
         self.field_of_view_extent_mm = detection_geometry.field_of_view_extent_mm
         self.set_detection_geometry(detection_geometry)
-        for i in range(10):
-            self.add_illumination_geometry(MSOTInVisionIlluminationGeometry(i))
+        self.add_illumination_geometry(MSOTInVisionIlluminationGeometry(invision_position=self.device_position_mm))
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__

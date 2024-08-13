@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import os
@@ -46,8 +46,6 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
     def __init__(self):
         self.reconstructed_image_pipeline = None
         self.reconstructed_image_convenience = None
-
-
 
     @abstractmethod
     def test_reconstruction_of_simulation(self):
@@ -124,8 +122,8 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         self.settings.set_reconstruction_settings({
             Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING: False,
             Tags.TUKEY_WINDOW_ALPHA: 0.5,
-            Tags.BANDPASS_CUTOFF_LOWPASS: int(8e6),
-            Tags.BANDPASS_CUTOFF_HIGHPASS: int(0.1e6),
+            Tags.BANDPASS_CUTOFF_LOWPASS_IN_HZ: int(8e6),
+            Tags.BANDPASS_CUTOFF_HIGHPASS_IN_HZ: int(0.1e6),
             Tags.RECONSTRUCTION_BMODE_METHOD: Tags.RECONSTRUCTION_BMODE_METHOD_HILBERT_TRANSFORM,
             Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION: True,
             Tags.RECONSTRUCTION_APODIZATION_METHOD: Tags.RECONSTRUCTION_APODIZATION_BOX,
@@ -230,15 +228,15 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
         plt.figure(figsize=(9, 3))
         plt.subplot(1, 3, 1)
         plt.title("Initial pressure")
-        plt.imshow(np.rot90(initial_pressure[:, 20, :], 3))
+        plt.imshow(initial_pressure[:, 20, :].T)
         plt.subplot(1, 3, 2)
         plt.title("Pipeline\nReconstruction")
         if self.reconstructed_image_pipeline is not None:
-            plt.imshow(np.rot90(self.reconstructed_image_pipeline, 3))
+            plt.imshow(self.reconstructed_image_pipeline.T)
         plt.subplot(1, 3, 3)
         plt.title("Convenience Method\nReconstruction")
         if self.reconstructed_image_convenience is not None:
-            plt.imshow(np.rot90(self.reconstructed_image_convenience, 3))
+            plt.imshow(self.reconstructed_image_convenience.T)
 
         plt.tight_layout()
         if show_figure_on_screen:

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -13,7 +13,7 @@ def read_rxt_file(file_path: str) -> (np.ndarray, np.ndarray, np.ndarray, float)
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"You need to supply the path to a file, not {file_path}")
 
-    dataframe = pd.read_csv(file_path, " ", skiprows=1, header=None)
+    dataframe = pd.read_csv(file_path, sep=" ", skiprows=1, header=None)
 
     with open(file_path, "r") as metadata_path:
         metadata = metadata_path.readline().split("\t")

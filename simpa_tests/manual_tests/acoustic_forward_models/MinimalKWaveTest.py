@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import os
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
+
 class MinimalKWaveTest(ManualIntegrationTestClass):
 
     def setup(self):
@@ -26,12 +27,11 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
         if os.path.exists(p0_path):
             self.initial_pressure = np.load(p0_path)["initial_pressure"]
         else:
-            initial_pressure = np.zeros((100, 100, 100))
-            initial_pressure[50, :, 50] = 1
+            self.initial_pressure = np.zeros((100, 100, 100))
+            self.initial_pressure[50, :, 50] = 1
         self.speed_of_sound = np.ones((100, 30, 100)) * self.SPEED_OF_SOUND
         self.density = np.ones((100, 30, 100)) * 1000
         self.alpha = np.ones((100, 30, 100)) * 0.01
-
 
         def get_settings():
             general_settings = {
@@ -75,6 +75,7 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
             _settings = Settings(general_settings)
             _settings.set_acoustic_settings(acoustic_settings)
             _settings.set_reconstruction_settings(reconstruction_settings)
+            _settings.set_volume_creation_settings({})
             return _settings
 
         self.settings = get_settings()
@@ -120,13 +121,13 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
         plt.figure(figsize=(9, 3))
         plt.subplot(1, 3, 1)
         plt.title(f"{self.SPEED_OF_SOUND * 0.975} m/s")
-        plt.imshow(np.rot90(self.reconstructed_image_950, 3))
+        plt.imshow(self.reconstructed_image_950.T)
         plt.subplot(1, 3, 2)
         plt.title(f"{self.SPEED_OF_SOUND} m/s")
-        plt.imshow(np.rot90(self.reconstructed_image_1000, 3))
+        plt.imshow(self.reconstructed_image_1000.T)
         plt.subplot(1, 3, 3)
         plt.title(f"{self.SPEED_OF_SOUND * 1.025} m/s")
-        plt.imshow(np.rot90(self.reconstructed_image_1050, 3))
+        plt.imshow(self.reconstructed_image_1050.T)
         plt.tight_layout()
         if show_figure_on_screen:
             plt.show()
@@ -135,6 +136,7 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
                 save_path = ""
             plt.savefig(save_path + f"minimal_kwave_test.png")
         plt.close()
+
 
 if __name__ == "__main__":
     test = MinimalKWaveTest()

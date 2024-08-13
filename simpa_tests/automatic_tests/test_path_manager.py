@@ -1,12 +1,15 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+import inspect
+import os
 import unittest
-import os, inspect
-from simpa.utils import PathManager
+from unittest.mock import patch
 from pathlib import Path
-from dotenv import unset_key
+
+from simpa.utils import PathManager
+from simpa import Tags
 
 
 class TestPathManager(unittest.TestCase):
@@ -18,7 +21,7 @@ class TestPathManager(unittest.TestCase):
         self.file_content = (f"# Example path_config file. Please define all required paths for your simulation here.\n"
                              f"# Afterwards, either copy this file to your current working directory, to your home directory,\n"
                              f"# or to the SIMPA base directry.\n"
-                             f"SAVE_PATH={self.save_path}\n"
+                             f"SIMPA_SAVE_PATH={self.save_path}\n"
                              f"MCX_BINARY_PATH={self.mcx_path}\n"
                              f"MATLAB_BINARY_PATH={self.matlab_path}")
         self.home_file = str(Path.home()) + self.path
@@ -30,8 +33,18 @@ class TestPathManager(unittest.TestCase):
         self.simpa_home_exists = os.path.exists(self.simpa_home)
 
     @unittest.expectedFailure
-    def test_instantiate_path_manager_with_wrong_path(self):
-        PathManager("rubbish/path/does/not/exist")
+    def test_variables_not_set():
+        path_manager = PathManager()
+        _ = path_manager.get_mcx_binary_path()
+        _ = path_manager.get_hdf5_file_save_path()
+        _ = path_manager.get_matlab_binary_path()
+
+    @patch.dict(os.environ, {Tags.SIMPA_SAVE_PATH_VARNAME: "test_simpa_save_path",
+                             Tags.MCX_BINARY_PATH_VARNAME: "test_mcx_path"})
+    def test_instantiate_without_file(self):
+        path_manager = PathManager()
+        self.assertEqual(path_manager.get_mcx_binary_path(), "test_mcx_path")
+        self.assertEqual(path_manager.get_hdf5_file_save_path(), "test_simpa_save_path")
 
     def test_instantiate_when_file_is_in_home(self):
 
@@ -45,26 +58,6 @@ class TestPathManager(unittest.TestCase):
         self.delete_config_file(self.home_file)
         if self.home_file_exists:
             self.restore_config_file(self.home_file)
-
-    @unittest.expectedFailure
-    def test_fail_if_no_default_directories_set(self):
-
-        if self.home_file_exists:
-            self.hide_config_file(self.home_file)
-        if self.cwd_file_exists:
-            self.hide_config_file(self.cwd_file)
-        if self.simpa_home_exists:
-            self.hide_config_file(self.simpa_home)
-
-        try:
-            PathManager()
-        finally:
-            if self.home_file_exists:
-                self.restore_config_file(self.home_file)
-            if self.cwd_file_exists:
-                self.restore_config_file(self.cwd_file)
-            if self.simpa_home_exists:
-                self.restore_config_file(self.simpa_home)
 
     def test_instantiate_when_file_is_in_cwd(self):
         if self.home_file_exists:
@@ -85,22 +78,26 @@ class TestPathManager(unittest.TestCase):
             self.delete_config_file(self.cwd_file)
 
     def test_instantiate_when_file_is_in_simpa_home(self):
-        if self.home_file_exists:
-            self.hide_config_file(self.home_file)
-        if self.cwd_file_exists:
-            self.hide_config_file(self.cwd_file)
-        if not self.simpa_home_exists:
+        pathmanager_source_file = inspect.getsourcefile(PathManager)
+        if "site-packages" not in pathmanager_source_file:
+            if self.home_file_exists:
+                self.hide_config_file(self.home_file)
+            if self.cwd_file_exists:
+                self.hide_config_file(self.cwd_file)
+            if self.simpa_home_exists:
+                self.hide_config_file(self.simpa_home)
             self.write_config_file(self.simpa_home)
 
-        path_manager = PathManager()
-        self.check_path_manager_correctly_loaded(path_manager)
+            path_manager = PathManager()
+            self.check_path_manager_correctly_loaded(path_manager)
 
-        if self.home_file_exists:
-            self.restore_config_file(self.home_file)
-        if self.cwd_file_exists:
-            self.restore_config_file(self.cwd_file)
-        if not self.simpa_home_exists:
+            if self.home_file_exists:
+                self.restore_config_file(self.home_file)
+            if self.cwd_file_exists:
+                self.restore_config_file(self.cwd_file)
             self.delete_config_file(self.simpa_home)
+            if self.simpa_home_exists:
+                self.restore_config_file(self.simpa_home)
 
     def check_path_manager_correctly_loaded(self, path_manager: PathManager):
         self.assertEqual(path_manager.get_hdf5_file_save_path(), self.save_path)

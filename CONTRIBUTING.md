@@ -25,22 +25,24 @@ Once you reached out to us, you will be provided with the information on how to 
 In general the following steps are involved during a contribution:
 
 ### Contribution process
-1.	Create feature request / bug report on the [SIMPA issues page](https://github.com/CAMI-DKFZ/simpa/issues)
+1.	Create feature request / bug report on the [SIMPA issues page](https://github.com/IMSY-DKFZ/simpa/issues)
 2.	Discuss potential contribution with core development team
-3.	Fork the [SIMPA repository](https://github.com/CAMI-DKFZ/simpa)
+3.	Fork the [SIMPA repository](https://github.com/IMSY-DKFZ/simpa)
 4.	Create feature branch from develop using the naming convention T<Issue#>_<FeatureName>, 
-      where <Issue#> represent the number github assigned the created issue and <FeatureName> describes 
-      what is being developed in CamelCaseNotation.
-    Examples: `T13_FixSimulatorBug`, `T27_AddNewSimulator`
-
+        where <Issue#> represent the number github assigned the created issue and <FeatureName> describes 
+        what is being developed in CamelCaseNotation.
+        Examples: `T13_FixSimulatorBug`, `T27_AddNewSimulator`
 5.	Perform test driven development on feature branch. 
-      A new implemented feature / a bug fix should be accompanied by a test. 
-      Additionally, all previously existing tests must still pass after the contribution. 
-6.	Once development is finished, create a pull request including your changes. 
-      For more information on how to create pull request, see GitHub's [about pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
-7.	A member of the core development team will review your pull request and potentially require further changes 
-      (see [Contribution review and integration](#contribution-review-and-integration)). 
-      Once all remarks have been resolved, your changes will be merged into the develop branch.
+        A new implemented feature / a bug fix should be accompanied by a test. 
+        Additionally, all previously existing tests must still pass after the contribution. 
+6.	Run pre-commit hooks and make sure all hooks are passing. 
+7.  If you want to benchmark your contributions please use the benchmarking bash script (see [benchmarking.md](docs/source/benchmarking.md) for more details).
+8.	Once development is finished, create a pull request including your changes. 
+        For more information on how to create pull request, see GitHub's [about pull requests](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
+9.     If there are conflicts between the simpa develop branch and your branch, you should update your feature branch with the simpa develop branch using a "merge" strategy instead of "rebase". 
+10. A member of the core development team will review your pull request and potentially require further changes 
+        (see [Contribution review and integration](#contribution-review-and-integration)). 
+        Once all remarks have been resolved, your changes will be merged into the develop branch.
 
 For each contribution, please make sure to consider the following:
 
@@ -86,8 +88,37 @@ In case already existing commits need to be signed off, you can make use of the 
 
 `git commit --amend --signoff`
 
+### Install pre-commit hooks
+
+In your SIMPA root directory run `pre-commit install` to set up the pre-commit hooks defined in `.pre-commit-config.yaml`. This will generate pre-commit hooks in `.git/hooks/` and run them for every commit. To run them manually before you commit, call `pre-commit run --all-files`.
+
+<details>
+<summary>Further information on pre-commit hooks</summary>
+
+#### git config user email address checking
+The `git-config-email-check` hook is by default commented out in `pre-commit-config.yaml`. If you want to get a warning when you are not using a specified git config user email address domain, then you might want to comment this hook in. Then you would have to place a file according to the given path, e.g. at `.git/hooks/check-email.sh` with the following content:
+
+```shell
+#!/bin/bash
+PWD=`pwd`
+EMAIL=$(git config user.email)
+if [[ $EMAIL == *"@yourdomain.com"* ]]; then
+  echo "[INFO] Verified email: $EMAIL"
+else
+  echo "[ERROR] Invalid email: $EMAIL => Please configure the company email and retry."
+  echo "Steps:"
+  echo "   cd $PWD"
+  echo '   git config user.email "<user>@yourdomain.com"'
+  echo ""
+  exit 1;
+fi;
+```
+
+Change the domain in lines 4 and 10 according to your specific domain (e.g. corporate email domain) or even whole email address.
+</details>
+
 ### Contribution review and integration
-To ensure correctness and high quality of the submitted code, each contribution will be reviewed by a member of the core development team regarding among others the following aspects:
+To ensure correctness and high quality of the submitted code, each contribution will be checked by pre-commit hooks and reviewed by a member of the core development team regarding among others the following aspects:
 - The code is correct and implements the described feature / fixes the described issue.
 - The code follows the [SIMPA coding style](#coding-style)
 - The code is [documented appropriately](#documenting-your-code)
@@ -104,7 +135,7 @@ We also have a Slack workspace that you can join if you are interested to contri
 
 ## Coding style
 
-When writing code for SIMPA, please use the [PEP 8](https://www.python.org/dev/peps/pep-0008/) python coding conventions
+When writing code for SIMPA, please use the [PEP 8](https://www.python.org/dev/peps/pep-0008/) python coding conventions (which will be checked with the [autopep8 pre-commit hook](https://github.com/pre-commit/mirrors-autopep8))
 and consider using the following structures in your code in order to make a new
 developer or someone external always know exactly what to expect.
 

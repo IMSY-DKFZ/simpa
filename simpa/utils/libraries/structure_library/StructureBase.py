@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -10,6 +10,7 @@ from simpa.log import Logger
 from simpa.utils import Settings, Tags, get_functional_from_deformation_settings
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.tissue_properties import TissueProperties
+from simpa.utils.processing_device import get_processing_device
 
 
 class GeometricalStructure:
@@ -25,6 +26,7 @@ class GeometricalStructure:
     def __init__(self, global_settings: Settings,
                  single_structure_settings: Settings = None):
 
+        self.torch_device = get_processing_device(global_settings)
         self.logger = Logger()
 
         self.voxel_spacing = global_settings[Tags.SPACING_MM]
@@ -59,12 +61,15 @@ class GeometricalStructure:
         if Tags.PRIORITY in single_structure_settings:
             self.priority = single_structure_settings[Tags.PRIORITY]
 
-        self.partial_volume = single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME]
+        if Tags.CONSIDER_PARTIAL_VOLUME in single_structure_settings:
+            self.partial_volume = single_structure_settings[Tags.CONSIDER_PARTIAL_VOLUME]
+        else:
+            self.partial_volume = False
 
         self.molecule_composition = single_structure_settings[Tags.MOLECULE_COMPOSITION]
         self.molecule_composition.update_internal_properties()
 
-        self.geometrical_volume = np.zeros(self.volume_dimensions_voxels)
+        self.geometrical_volume = np.zeros(self.volume_dimensions_voxels, dtype=np.float32)
         self.params = self.get_params_from_settings(single_structure_settings)
         self.fill_internal_volume()
 

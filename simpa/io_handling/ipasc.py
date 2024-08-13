@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
@@ -10,8 +10,8 @@ from simpa.io_handling import load_data_field, load_hdf5
 from simpa.core.device_digital_twins import DigitalDeviceTwinBase, PhotoacousticDevice
 from simpa.utils import Settings, Tags
 
-from ipasc_tool import BaseAdapter, MetaDatum, DeviceMetaDataCreator, DetectionElementCreator, MetadataAcquisitionTags
-from ipasc_tool.iohandler import write_data as write_ipasc_data
+from pacfish import BaseAdapter, MetaDatum, DeviceMetaDataCreator, DetectionElementCreator, MetadataAcquisitionTags
+from pacfish.iohandler import write_data as write_ipasc_data
 
 
 class IpascSimpaAdapter(BaseAdapter):
@@ -22,6 +22,7 @@ class IpascSimpaAdapter(BaseAdapter):
 
     def __init__(self, hdf5_file_path: str, device: DigitalDeviceTwinBase, settings: Settings = None):
         self.logger = Logger()
+        raise RuntimeError("Please do not use this adapter currently! It is still under construction!")
 
         # Input validation with descriptive error messages
         if not os.path.exists(hdf5_file_path):
@@ -80,7 +81,7 @@ class IpascSimpaAdapter(BaseAdapter):
     def generate_binary_data(self) -> np.ndarray:
         return self.time_series_data
 
-    def generate_meta_data_device(self) -> dict:
+    def generate_device_meta_data(self) -> dict:
         device_creator = DeviceMetaDataCreator()
         device_creator.set_general_information(uuid=self.device.generate_uuid(),
                                                fov=self.device.field_of_view_extent_mm/1000)

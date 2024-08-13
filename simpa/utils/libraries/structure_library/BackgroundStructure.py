@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -24,7 +24,7 @@ class Background(GeometricalStructure):
     def get_enclosed_indices(self):
         array = np.ones((self.volume_dimensions_voxels[0],
                          self.volume_dimensions_voxels[1],
-                         self.volume_dimensions_voxels[2]))
+                         self.volume_dimensions_voxels[2]), dtype=np.float32)
         return array == 1, 1
 
     def get_params_from_settings(self, single_structure_settings):

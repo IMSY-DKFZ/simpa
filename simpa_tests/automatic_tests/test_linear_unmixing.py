@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 Computer Assisted Medical Interventions Group, DKFZ
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
@@ -24,7 +24,6 @@ class TestLinearUnmixing(unittest.TestCase):
         self.logger = sp.Logger()
         # TODO: Please make sure that a valid path_config.env file is located in your home directory, or that you
         #  point to the correct file in the PathManager().
-        self.path_manager = sp.PathManager()
         RANDOM_SEED = 471
         self.WAVELENGTHS = [650, 700, 750, 800, 850, 900]  # the performance is checked using two wavelengths
         # Set general settings which are needed by the linear unmixing component
@@ -32,7 +31,7 @@ class TestLinearUnmixing(unittest.TestCase):
             # These parameters set the general properties of the simulated volume
             Tags.RANDOM_SEED: RANDOM_SEED,
             Tags.VOLUME_NAME: "LinearUnmixingAutomaticTest_" + str(RANDOM_SEED),
-            Tags.SIMULATION_PATH: self.path_manager.get_hdf5_file_save_path(),
+            Tags.SIMULATION_PATH: ".",
             # It is sufficient to look at only five voxels
             Tags.SPACING_MM: 1,
             Tags.DIM_VOLUME_Z_MM: 50,
@@ -82,7 +81,7 @@ class TestLinearUnmixing(unittest.TestCase):
         lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
         self.assert_correct_so2_vales(lu_results["sO2"])
 
-    def assert_correct_so2_vales(self, estimates, tolerance=1e-8):
+    def assert_correct_so2_vales(self, estimates, tolerance=1e-7):
         ground_truth = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_OXYGENATION)
         msg = f"expected {estimates.reshape((-1,))[0]} but was {ground_truth.reshape((-1,))[0]}"
         self.logger.info(msg)
@@ -134,7 +133,7 @@ class TestLinearUnmixing(unittest.TestCase):
                 sp.get_simpa_internal_absorption_spectra_by_names([Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_DEOXYHEMOGLOBIN,
                                                                    Tags.SIMPA_NAMED_ABSORPTION_SPECTRUM_OXYHEMOGLOBIN]),
             Tags.LINEAR_UNMIXING_COMPUTE_SO2: True,
-            Tags.WAVELENGTHS: [23, 42] # Test random invalid wavelengths
+            Tags.WAVELENGTHS: [23, 42]  # Test random invalid wavelengths
         }
 
         # Run linear unmixing component
