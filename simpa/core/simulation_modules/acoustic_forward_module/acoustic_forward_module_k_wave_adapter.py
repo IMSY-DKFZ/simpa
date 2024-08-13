@@ -99,7 +99,8 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
         detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
         detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
-        if not self.component_settings[Tags.ACOUSTIC_SIMULATION_3D] and \
+        if not (Tags.ACOUSTIC_SIMULATION_3D in self.component_settings
+                and self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]) and \
                 (detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis):
             if detectors_are_aligned_along_y_axis:
                 transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM]))) - 1
