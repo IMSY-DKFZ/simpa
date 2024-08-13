@@ -5,7 +5,7 @@
 import gc
 import os
 import subprocess
-from typing import List 
+from typing import List
 
 import numpy as np
 import scipy.io as sio
@@ -99,8 +99,9 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
 
         detectors_are_aligned_along_x_axis = field_of_view_extent[2] == 0 and field_of_view_extent[3] == 0
         detectors_are_aligned_along_y_axis = field_of_view_extent[0] == 0 and field_of_view_extent[1] == 0
-        if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
-            axes = (0, 1)
+        if not (Tags.ACOUSTIC_SIMULATION_3D in self.component_settings
+                and self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]) and \
+                (detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis):
             if detectors_are_aligned_along_y_axis:
                 transducer_plane = int(round((detector_positions_mm[0, 0] / self.global_settings[Tags.SPACING_MM]))) - 1
                 image_slice = np.s_[transducer_plane, :, :]
@@ -108,7 +109,6 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
                 transducer_plane = int(round((detector_positions_mm[0, 1] / self.global_settings[Tags.SPACING_MM]))) - 1
                 image_slice = np.s_[:, transducer_plane, :]
         else:
-            axes = (0, 2)
             image_slice = np.s_[:]
 
         data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND][image_slice].T
@@ -156,7 +156,8 @@ class KWaveAdapter(AcousticForwardModelBaseAdapter):
         field_of_view = pa_device.get_field_of_view_mm()
         detector_positions_mm = pa_device.get_detector_element_positions_accounting_for_device_position_mm()
 
-        if not self.component_settings.get(Tags.ACOUSTIC_SIMULATION_3D):
+        if not (Tags.ACOUSTIC_SIMULATION_3D in self.component_settings
+                and self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]):
             detectors_are_aligned_along_x_axis = np.abs(field_of_view[2] - field_of_view[3]) < 1e-5
             detectors_are_aligned_along_y_axis = np.abs(field_of_view[0] - field_of_view[1]) < 1e-5
             if detectors_are_aligned_along_x_axis or detectors_are_aligned_along_y_axis:
