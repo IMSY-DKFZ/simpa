@@ -106,6 +106,8 @@ the simulation settings using: [set_optical_settings](../../simpa/utils/settings
 Settings for the reconstruction model, which reconstructs the image from the simulated signals. It is added to the
 simulation settings using: [set_reconstruction_settings](../../simpa/utils/settings.py).
 
+#### Examples of Reconstruction Settings
+
 - `Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION`: Specifies whether an envelope detection should be performed after
 reconstruction.
 - `Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING`: Whether bandpass filtering should be applied or not.
