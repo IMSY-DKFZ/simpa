@@ -33,8 +33,8 @@ Please put this in the conversation of the pull request, and not add it to the f
 
 ## Options
 - **`-i, --init`**: First spacing to benchmark (default = 0.2mm).
-- **`-c, --cease`**: Final spacing to benchmark (default = 0.4mm).
-- **`-s, --step`**: Step between spacings (default = 0.1mm).
+- **`-c, --cease`**: Final spacing to benchmark (default = 0.25mm).
+- **`-s, --step`**: Step between spacings (default = 0.05mm).
 - **`-f, --file`**: Where to store the output files (default = save in current directory; 'print' prints it in console).
 - **`-t, --time`**: Profile times taken (if no profile is specified, all are set).
 - **`-g, --gpu`**: Profile GPU usage (if no profile is specified, all are set).
@@ -45,9 +45,9 @@ Please put this in the conversation of the pull request, and not add it to the f
 ## Default Values
 If no options are provided for initial spacing, final spacing, or step size, the script uses the following default
 values:
-- **Initial Spacing**: 0.2mm
-- **Final Spacing**: 0.4mm
-- **Step Size**: 0.1mm
+- **Initial Spacing**: 0.15mm
+- **Final Spacing**: 0.25mm
+- **Step Size**: 0.05mm
 
 If no profiling options are specified, all three profilers (time, GPU memory, and memory) are used by default.
 
