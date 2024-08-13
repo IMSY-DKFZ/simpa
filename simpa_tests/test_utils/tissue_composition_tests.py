@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils import Tags, SegmentationClasses, calculate_gruneisen_parameter_from_temperature
+from simpa.utils import Tags, Settings, SegmentationClasses, calculate_gruneisen_parameter_from_temperature
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.constants import property_tags
@@ -10,6 +10,14 @@ from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 import numpy as np
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+
+TEST_SETTINGS = Settings({
+    # These parameters set the general properties of the simulated volume
+    Tags.SPACING_MM: 1,
+    Tags.DIM_VOLUME_Z_MM: 1,
+    Tags.DIM_VOLUME_X_MM: 1,
+    Tags.DIM_VOLUME_Y_MM: 1
+})
 
 
 def validate_expected_values_dictionary(expected_values: dict):
@@ -41,8 +49,9 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
         num_subplots = len(property_tags)
 
     for wavelength in expected_values.keys():
-        molecular_composition.update_internal_properties()
-        composition_properties = molecular_composition.get_properties_for_wavelength(wavelength=wavelength)
+        molecular_composition.update_internal_properties(TEST_SETTINGS)
+        composition_properties = molecular_composition.get_properties_for_wavelength(
+            TEST_SETTINGS, wavelength=wavelength)
         expected_properties = expected_values[wavelength]
 
         if visualise_values:
@@ -92,7 +101,7 @@ def get_epidermis_reference_dictionary():
     """
     reference_dict = dict()
 
-    values450nm = TissueProperties()
+    values450nm = TissueProperties(TEST_SETTINGS)
     values450nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 13.5
     values450nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 121.6
     values450nm[Tags.DATA_FIELD_ANISOTROPY] = 0.728
@@ -104,7 +113,7 @@ def get_epidermis_reference_dictionary():
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values500nm = TissueProperties()
+    values500nm = TissueProperties(TEST_SETTINGS)
     values500nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 9.77
     values500nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 93.01
     values500nm[Tags.DATA_FIELD_ANISOTROPY] = 0.745
@@ -116,7 +125,7 @@ def get_epidermis_reference_dictionary():
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values550nm = TissueProperties()
+    values550nm = TissueProperties(TEST_SETTINGS)
     values550nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 6.85
     values550nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 74.7
     values550nm[Tags.DATA_FIELD_ANISOTROPY] = 0.759
@@ -128,7 +137,7 @@ def get_epidermis_reference_dictionary():
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values600nm = TissueProperties()
+    values600nm = TissueProperties(TEST_SETTINGS)
     values600nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 5.22
     values600nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 63.76
     values600nm[Tags.DATA_FIELD_ANISOTROPY] = 0.774
@@ -140,7 +149,7 @@ def get_epidermis_reference_dictionary():
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values650nm = TissueProperties()
+    values650nm = TissueProperties(TEST_SETTINGS)
     values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 3.68
     values650nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 55.48
     values650nm[Tags.DATA_FIELD_ANISOTROPY] = 0.7887
@@ -152,7 +161,7 @@ def get_epidermis_reference_dictionary():
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624.0
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values700nm = TissueProperties()
+    values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 3.07
     values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 54.66
     values700nm[Tags.DATA_FIELD_ANISOTROPY] = 0.804
@@ -195,7 +204,7 @@ def get_dermis_reference_dictionary():
     """
     reference_dict = dict()
 
-    values450nm = TissueProperties()
+    values450nm = TissueProperties(TEST_SETTINGS)
     values450nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 2.105749981
     values450nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 244.6
     values450nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -207,7 +216,7 @@ def get_dermis_reference_dictionary():
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values500nm = TissueProperties()
+    values500nm = TissueProperties(TEST_SETTINGS)
     values500nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.924812913
     values500nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 175.0
     values500nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -219,7 +228,7 @@ def get_dermis_reference_dictionary():
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values550nm = TissueProperties()
+    values550nm = TissueProperties(TEST_SETTINGS)
     values550nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.974386604
     values550nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 131.1
     values550nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -231,7 +240,7 @@ def get_dermis_reference_dictionary():
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values600nm = TissueProperties()
+    values600nm = TissueProperties(TEST_SETTINGS)
     values600nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.440476363
     values600nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 101.9
     values600nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -243,7 +252,7 @@ def get_dermis_reference_dictionary():
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values650nm = TissueProperties()
+    values650nm = TissueProperties(TEST_SETTINGS)
     values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.313052704
     values650nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 81.7
     values650nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -255,7 +264,7 @@ def get_dermis_reference_dictionary():
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values700nm = TissueProperties()
+    values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.277003236
     values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 67.1
     values700nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -267,7 +276,7 @@ def get_dermis_reference_dictionary():
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values750nm = TissueProperties()
+    values750nm = TissueProperties(TEST_SETTINGS)
     values750nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.264286111
     values750nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 56.3
     values750nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -279,7 +288,7 @@ def get_dermis_reference_dictionary():
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values800nm = TissueProperties()
+    values800nm = TissueProperties(TEST_SETTINGS)
     values800nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.256933531
     values800nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 48.1
     values800nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -291,7 +300,7 @@ def get_dermis_reference_dictionary():
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values850nm = TissueProperties()
+    values850nm = TissueProperties(TEST_SETTINGS)
     values850nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.255224508
     values850nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 41.8
     values850nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -303,7 +312,7 @@ def get_dermis_reference_dictionary():
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values900nm = TissueProperties()
+    values900nm = TissueProperties(TEST_SETTINGS)
     values900nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.254198591
     values900nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 36.7
     values900nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -315,7 +324,7 @@ def get_dermis_reference_dictionary():
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1624
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.35
 
-    values950nm = TissueProperties()
+    values950nm = TissueProperties(TEST_SETTINGS)
     values950nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.254522563
     values950nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 32.6
     values950nm[Tags.DATA_FIELD_ANISOTROPY] = 0.715
@@ -359,7 +368,7 @@ def get_muscle_reference_dictionary():
     """
     reference_dict = dict()
 
-    values650nm = TissueProperties()
+    values650nm = TissueProperties(TEST_SETTINGS)
     values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 1.04
     values650nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 87.5
     values650nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9
@@ -371,7 +380,7 @@ def get_muscle_reference_dictionary():
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
 
-    values700nm = TissueProperties()
+    values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.48
     values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 81.8
     values700nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9
@@ -383,7 +392,7 @@ def get_muscle_reference_dictionary():
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
 
-    values750nm = TissueProperties()
+    values750nm = TissueProperties(TEST_SETTINGS)
     values750nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.41
     values750nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 77.1
     values750nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9
@@ -395,7 +404,7 @@ def get_muscle_reference_dictionary():
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
 
-    values800nm = TissueProperties()
+    values800nm = TissueProperties(TEST_SETTINGS)
     values800nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.28
     values800nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 70.4
     values800nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9
@@ -407,7 +416,7 @@ def get_muscle_reference_dictionary():
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
 
-    values850nm = TissueProperties()
+    values850nm = TissueProperties(TEST_SETTINGS)
     values850nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.3
     values850nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 66.7
     values850nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9
@@ -419,7 +428,7 @@ def get_muscle_reference_dictionary():
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
 
-    values900nm = TissueProperties()
+    values900nm = TissueProperties(TEST_SETTINGS)
     values900nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.32
     values900nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 62.1
     values900nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9
@@ -431,7 +440,7 @@ def get_muscle_reference_dictionary():
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1588.4
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 1.09
 
-    values950nm = TissueProperties()
+    values950nm = TissueProperties(TEST_SETTINGS)
     values950nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0.46
     values950nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 59.0
     values950nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9
@@ -475,7 +484,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     """
     reference_dict = dict()
 
-    values450nm = TissueProperties()
+    values450nm = TissueProperties(TEST_SETTINGS)
     values450nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 336
     values450nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 772
     values450nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9447
@@ -487,7 +496,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values500nm = TissueProperties()
+    values500nm = TissueProperties(TEST_SETTINGS)
     values500nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 112
     values500nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 868.3
     values500nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9761
@@ -499,7 +508,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values550nm = TissueProperties()
+    values550nm = TissueProperties(TEST_SETTINGS)
     values550nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 230
     values550nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 714.9
     values550nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9642
@@ -511,7 +520,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values600nm = TissueProperties()
+    values600nm = TissueProperties(TEST_SETTINGS)
     values600nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 17
     values600nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 868.8
     values600nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9794
@@ -523,7 +532,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values650nm = TissueProperties()
+    values650nm = TissueProperties(TEST_SETTINGS)
     values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 2
     values650nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 880.1
     values650nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9825
@@ -535,7 +544,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values700nm = TissueProperties()
+    values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 1.6
     values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 857.0
     values700nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9836
@@ -547,7 +556,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values750nm = TissueProperties()
+    values750nm = TissueProperties(TEST_SETTINGS)
     values750nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 2.8
     values750nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 802.2
     values750nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9837
@@ -559,7 +568,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values800nm = TissueProperties()
+    values800nm = TissueProperties(TEST_SETTINGS)
     values800nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 4.4
     values800nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 767.3
     values800nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9833
@@ -571,7 +580,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values850nm = TissueProperties()
+    values850nm = TissueProperties(TEST_SETTINGS)
     values850nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 5.7
     values850nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 742.0
     values850nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9832
@@ -583,7 +592,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values900nm = TissueProperties()
+    values900nm = TissueProperties(TEST_SETTINGS)
     values900nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 6.4
     values900nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 688.6
     values900nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9824
@@ -595,7 +604,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values950nm = TissueProperties()
+    values950nm = TissueProperties(TEST_SETTINGS)
     values950nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 6.4
     values950nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 652.1
     values950nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9808
@@ -644,7 +653,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     """
     reference_dict = dict()
 
-    values450nm = TissueProperties()
+    values450nm = TissueProperties(TEST_SETTINGS)
     values450nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 553
     values450nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 772
     values450nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9447
@@ -656,7 +665,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values500nm = TissueProperties()
+    values500nm = TissueProperties(TEST_SETTINGS)
     values500nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 112
     values500nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 868.3
     values500nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9761
@@ -668,7 +677,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values550nm = TissueProperties()
+    values550nm = TissueProperties(TEST_SETTINGS)
     values550nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 286
     values550nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 714.9
     values550nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9642
@@ -680,7 +689,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values600nm = TissueProperties()
+    values600nm = TissueProperties(TEST_SETTINGS)
     values600nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 79
     values600nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 868.8
     values600nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9794
@@ -692,7 +701,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values650nm = TissueProperties()
+    values650nm = TissueProperties(TEST_SETTINGS)
     values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 20.1
     values650nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 880.1
     values650nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9825
@@ -704,7 +713,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values700nm = TissueProperties()
+    values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 9.6
     values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 857.0
     values700nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9836
@@ -716,7 +725,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values750nm = TissueProperties()
+    values750nm = TissueProperties(TEST_SETTINGS)
     values750nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 7.5
     values750nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 802.2
     values750nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9837
@@ -728,7 +737,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values800nm = TissueProperties()
+    values800nm = TissueProperties(TEST_SETTINGS)
     values800nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 4.1
     values800nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 767.3
     values800nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9833
@@ -740,7 +749,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values850nm = TissueProperties()
+    values850nm = TissueProperties(TEST_SETTINGS)
     values850nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 3.7
     values850nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 742.0
     values850nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9832
@@ -752,7 +761,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values900nm = TissueProperties()
+    values900nm = TissueProperties(TEST_SETTINGS)
     values900nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 4.1
     values900nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 688.6
     values900nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9824
@@ -764,7 +773,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
 
-    values950nm = TissueProperties()
+    values950nm = TissueProperties(TEST_SETTINGS)
     values950nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 3.2
     values950nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 652.1
     values950nm[Tags.DATA_FIELD_ANISOTROPY] = 0.9808
@@ -799,7 +808,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     """
     reference_dict = dict()
 
-    values450nm = TissueProperties()
+    values450nm = TissueProperties(TEST_SETTINGS)
     values450nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values450nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values450nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -811,7 +820,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values500nm = TissueProperties()
+    values500nm = TissueProperties(TEST_SETTINGS)
     values500nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values500nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values500nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -823,7 +832,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values550nm = TissueProperties()
+    values550nm = TissueProperties(TEST_SETTINGS)
     values550nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values550nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values550nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -835,7 +844,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values600nm = TissueProperties()
+    values600nm = TissueProperties(TEST_SETTINGS)
     values600nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values600nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values600nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -847,7 +856,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values650nm = TissueProperties()
+    values650nm = TissueProperties(TEST_SETTINGS)
     values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values650nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values650nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -859,7 +868,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values700nm = TissueProperties()
+    values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values700nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -871,7 +880,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values750nm = TissueProperties()
+    values750nm = TissueProperties(TEST_SETTINGS)
     values750nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values750nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values750nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -883,7 +892,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values800nm = TissueProperties()
+    values800nm = TissueProperties(TEST_SETTINGS)
     values800nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values800nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values800nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -895,7 +904,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values850nm = TissueProperties()
+    values850nm = TissueProperties(TEST_SETTINGS)
     values850nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values850nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values850nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -907,7 +916,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values900nm = TissueProperties()
+    values900nm = TissueProperties(TEST_SETTINGS)
     values900nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values900nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values900nm[Tags.DATA_FIELD_ANISOTROPY] = None
@@ -919,7 +928,7 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1586
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 2.50
 
-    values950nm = TissueProperties()
+    values950nm = TissueProperties(TEST_SETTINGS)
     values950nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = None
     values950nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = None
     values950nm[Tags.DATA_FIELD_ANISOTROPY] = None
