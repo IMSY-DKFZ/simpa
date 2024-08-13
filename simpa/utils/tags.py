@@ -1466,7 +1466,7 @@ class Tags:
     """
     Identifier for the diffuse reflectance values at the surface of the volume (interface to 0-values voxels) 
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
-  """
+    """
 
     DATA_FIELD_DIFFUSE_REFLECTANCE_POS = "diffuse_reflectance_pos"
     """
@@ -1487,6 +1487,75 @@ class Tags:
     Identifier for the direction of photons when they exit the volume. Currently only photon exiting along the Z axis 
     are detected.
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    IMAGE_SCALING_SYMMETRIC = "symmetric"
+    """
+    Flag indicating the use of reflection on edges during interpolation when rescaling an image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_STRETCH = "stretch"
+    """
+    Flag indicating the use of reflection on edges during interpolation when rescaling an image
+    At the boundary, the image will reflect to fill the area
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_WRAP = "wrap"
+    """
+    Flag indicating tessellating during interpolation when rescaling an image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_CONSTANT = "constant"
+    """
+    Flag indicating the use of a constant on edges during interpolation when rescaling an image
+    The rest of the area will be filled by a constant value
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_EDGE = "edge"
+    """
+    Flag indicating the expansion of the edges during interpolation when rescaling an image
+    The edge value will continue across the area
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_TOP = "top"
+    """
+    Flag indicating the crop position: along top edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_BOTTOM = "bottom"
+    """
+    Flag indicating the crop position: along bottom edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_CENTRE = "centre"
+    """
+    Flag indicating the crop position: along centre edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_LEFT = "left"
+    """
+    Flag indicating the crop position: along left-hand edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_RIGHT = "right"
+    """
+    Flag indicating the crop position: along right-hand edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_RANDOM = "random"
+    """
+    Flag indicating the crop position: random placement
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
     """
 
     SIMPA_SAVE_PATH_VARNAME = "SIMPA_SAVE_PATH"
@@ -1510,4 +1579,9 @@ class Tags:
     Caution: The user is responsible for checking if these flags exist and don't break the predefined flags' behaviour.
     It is assumed that if flags are specified multiple times the flag provided last is considered. 
     This can for example be used to override predefined flags.
+    """
+
+    VOLUME_FRACTION = "volume_fraction"
+    """
+    Identifier for the volume fraction for the simulation
     """
