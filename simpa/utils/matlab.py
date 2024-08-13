@@ -21,7 +21,7 @@ def generate_matlab_cmd(matlab_binary_path: str, simulation_script_path: str, da
     :return: list of command parts
     :rtype: List[str]
     """
- 
+
     # get path of calling script to add to matlab path
     base_script_path = os.path.dirname(os.path.abspath(inspect.stack()[1].filename))
     # ensure data path is an absolute path

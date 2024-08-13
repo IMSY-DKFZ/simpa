@@ -31,13 +31,10 @@ def run_benchmarking_tests(spacing=0.4, profile: str = "TIME", savefolder: str =
     examples = [simpa_examples.run_linear_unmixing, simpa_examples.run_minimal_optical_simulation,
                 simpa_examples.run_minimal_optical_simulation_uniform_cube, simpa_examples.run_msot_invision_simulation,
                 simpa_examples.run_optical_and_acoustic_simulation,
-                simpa_examples.run_perform_iterative_qPAI_reconstruction]
+                simpa_examples.run_perform_iterative_qPAI_reconstruction, simpa_examples.run_segmentation_loader]
 
     for example in examples:
-        try:
-            example(spacing=spacing, path_manager=None, visualise=False)
-        except AttributeError:
-            print("simulation cannot be run on {} with spacing {}".format(example, spacing))
+        example(spacing=spacing, path_manager=None, visualise=False)
 
 
 if __name__ == "__main__":

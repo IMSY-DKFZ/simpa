@@ -69,6 +69,32 @@ class Settings(dict, SerializableSIMPAClass):
             except KeyError:
                 raise KeyError("The key '{}' is not in the Settings dictionary".format(key)) from None
 
+    def get_volume_dimensions_voxels(self):
+        """
+        returns: tuple
+             the x, y, and z dimension of the volumes as a tuple
+             the volume dimension gets rounded after converting from a mm grid to a voxel grid of unit Tags.SPACING_MM.
+        """
+        if Tags.SPACING_MM not in self:
+            raise AssertionError("The simpa.Tags.SPACING_MM tag must be set "
+                                 "to compute the volume dimensions in voxels")
+        if Tags.DIM_VOLUME_X_MM not in self:
+            raise AssertionError("The simpa.Tags.DIM_VOLUME_X_MM tag must be "
+                                 "set to compute the volume dimensions in voxels")
+        if Tags.DIM_VOLUME_Y_MM not in self:
+            raise AssertionError("The simpa.Tags.DIM_VOLUME_Y_MM tag must be "
+                                 "set to compute the volume dimensions in voxels")
+        if Tags.DIM_VOLUME_Z_MM not in self:
+            raise AssertionError("The simpa.Tags.DIM_VOLUME_Z_MM tag must be "
+                                 "set to compute the volume dimensions in voxels")
+
+        voxel_spacing = self[Tags.SPACING_MM]
+        volume_x_dim = int(round(self[Tags.DIM_VOLUME_X_MM] / voxel_spacing))
+        volume_y_dim = int(round(self[Tags.DIM_VOLUME_Y_MM] / voxel_spacing))
+        volume_z_dim = int(round(self[Tags.DIM_VOLUME_Z_MM] / voxel_spacing))
+
+        return volume_x_dim, volume_y_dim, volume_z_dim
+
     def get_optical_settings(self):
         """"
         Returns the settings for the optical forward model that are saved in this settings dictionary
