@@ -13,8 +13,8 @@ from scipy.spatial.transform import Rotation
 
 from simpa.core.device_digital_twins import (CurvedArrayDetectionGeometry,
                                              DetectionGeometryBase)
-from simpa.core.simulation_modules.acoustic_forward_module import \
-    AcousticForwardModelBaseAdapter
+from simpa.core.simulation_modules.acoustic_module import \
+    AcousticAdapterBase
 from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
 from simpa.utils import Tags
 from simpa.utils.matlab import generate_matlab_cmd
@@ -24,9 +24,9 @@ from simpa.utils.path_manager import PathManager
 from simpa.utils.settings import Settings
 
 
-class KWaveAdapter(AcousticForwardModelBaseAdapter):
+class KWaveAdapter(AcousticAdapterBase):
     """
-    The KwaveAcousticForwardModel adapter enables acoustic simulations to be run with the
+    The KwaveAdapter enables acoustic simulations to be run with the
     k-wave MATLAB toolbox. k-Wave is a free toolbox (http://www.k-wave.org/) developed by Bradley Treeby
     and Ben Cox (University College London) and Jiri Jaros (Brno University of Technology).
 

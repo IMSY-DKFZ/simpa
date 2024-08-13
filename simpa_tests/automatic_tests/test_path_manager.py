@@ -13,6 +13,7 @@ from simpa import Tags
 
 
 class TestPathManager(unittest.TestCase):
+
     def setUp(self):
         self.path = '/path_config.env'
         self.save_path = "/workplace/data/"
@@ -33,8 +34,10 @@ class TestPathManager(unittest.TestCase):
         self.simpa_home_exists = os.path.exists(self.simpa_home)
 
     @unittest.expectedFailure
-    def test_variables_not_set():
-        path_manager = PathManager()
+    @patch.dict(os.environ, {Tags.SIMPA_SAVE_PATH_VARNAME: None,
+                             Tags.MCX_BINARY_PATH_VARNAME: None})
+    def test_variables_not_set(self):
+        path_manager = PathManager("/path/to/nowhere/")
         _ = path_manager.get_mcx_binary_path()
         _ = path_manager.get_hdf5_file_save_path()
         _ = path_manager.get_matlab_binary_path()
@@ -42,7 +45,7 @@ class TestPathManager(unittest.TestCase):
     @patch.dict(os.environ, {Tags.SIMPA_SAVE_PATH_VARNAME: "test_simpa_save_path",
                              Tags.MCX_BINARY_PATH_VARNAME: "test_mcx_path"})
     def test_instantiate_without_file(self):
-        path_manager = PathManager()
+        path_manager = PathManager("/path/to/nowhere/")
         self.assertEqual(path_manager.get_mcx_binary_path(), "test_mcx_path")
         self.assertEqual(path_manager.get_hdf5_file_save_path(), "test_simpa_save_path")
 
