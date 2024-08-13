@@ -170,7 +170,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
         cmd = generate_matlab_cmd(matlab_binary_path, time_reversal_script, acoustic_path, self.get_additional_flags())
-        
+
         cur_dir = os.getcwd()
         os.chdir(self.global_settings[Tags.SIMULATION_PATH])
         self.logger.info(cmd)

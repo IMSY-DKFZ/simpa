@@ -35,6 +35,7 @@ class DeviceVisualisationTest(ManualIntegrationTestClass):
         sp.visualise_device(sp.RSOMExplorerP50(device_position_mm=np.asarray([50, 10, 0])),
                             figure_save_path[2])
 
+
 if __name__ == "__main__":
     test = DeviceVisualisationTest()
     test.run_test(show_figure_on_screen=False)

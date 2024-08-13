@@ -12,7 +12,7 @@ from scipy.interpolate import interp1d
 def extract_hemoglobin_fractions(molecule_list: List) -> Dict[str, float]:
     """
     Extract hemoglobin volume fractions from a list of molecules.
-    
+
     :param molecule_list: List of molecules with their spectrum information and volume fractions.
     :return: A dictionary with hemoglobin types as keys and their volume fractions as values.
     """
@@ -34,7 +34,7 @@ def extract_hemoglobin_fractions(molecule_list: List) -> Dict[str, float]:
 def calculate_oxygenation(molecule_list: List) -> Optional[float]:
     """
     Calculate the oxygenation level based on the volume fractions of deoxyhemoglobin and oxyhemoglobin.
-    
+
     :param molecule_list: List of molecules with their spectrum information and volume fractions.
     :return: An oxygenation value between 0 and 1 if possible, or None if not computable.
     """
@@ -44,16 +44,20 @@ def calculate_oxygenation(molecule_list: List) -> Optional[float]:
     total = hb + hbO2
 
     # Avoid division by zero. If none of the hemoglobin types are present, the oxygenation level is not computable.
-    if total < 1e-10:
-        return None
+    if isinstance(hb, torch.Tensor) or isinstance(hbO2, torch.Tensor):
+        return torch.where(total < 1e-10, 0, hbO2 / total)
 
-    return hbO2 / total
+    else:
+        if total < 1e-10:
+            return None
+        else:
+            return hbO2 / total
 
 
 def calculate_bvf(molecule_list: List) -> Union[float, int]:
     """
     Calculate the blood volume fraction based on the volume fractions of deoxyhemoglobin and oxyhemoglobin.
-    
+
     :param molecule_list: List of molecules with their spectrum information and volume fractions.
     :return: The blood volume fraction value between 0 and 1, or 0, if oxy and deoxy not present.
     """
