@@ -45,7 +45,7 @@ Please put this in the conversation of the pull request, and not add it to the f
 ## Default Values
 If no options are provided for initial spacing, final spacing, or step size, the script uses the following default
 values:
-- **Initial Spacing**: 0.15mm
+- **Initial Spacing**: 0.2mm
 - **Final Spacing**: 0.25mm
 - **Step Size**: 0.05mm
 
