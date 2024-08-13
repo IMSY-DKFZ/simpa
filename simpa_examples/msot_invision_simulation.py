@@ -28,7 +28,7 @@ def run_msot_invision_simulation(spacing: float | int = 0.5, path_manager=None, 
 
     def create_pipeline(_settings: sp.Settings):
         return [
-            sp.ModelBasedVolumeCreationAdapter(settings),
+            sp.ModelBasedAdapter(settings),
             sp.MCXAdapter(settings),
             sp.KWaveAdapter(settings),
             sp.FieldOfViewCropping(settings),

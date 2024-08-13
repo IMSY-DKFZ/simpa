@@ -7,7 +7,7 @@ from simpa.utils import Tags
 from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa import KWaveAdapter, MCXAdapter, \
-    SignedDelayMultiplyAndSumAdapter, ModelBasedVolumeCreationAdapter
+    SignedDelayMultiplyAndSumAdapter, ModelBasedAdapter
 from simpa.core.processing_components.monospectral.noise import GaussianNoise
 from simpa import reconstruct_signed_delay_multiply_and_sum_pytorch
 from simpa_tests.manual_tests import ReconstructionAlgorithmTestBaseClass
@@ -28,7 +28,7 @@ class SignedDelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseCla
         self.device.update_settings_for_use_of_model_based_volume_creator(self.settings)
 
         SIMUATION_PIPELINE = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_initial_pressure"),
             KWaveAdapter(self.settings),
@@ -49,7 +49,7 @@ class SignedDelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseCla
 
         # reconstruct via convenience function
         self.reconstructed_image_convenience = reconstruct_signed_delay_multiply_and_sum_pytorch(time_series_sensor_data, self.device.get_detection_geometry(), reconstruction_settings[Tags.DATA_FIELD_SPEED_OF_SOUND],  1.0 / (
-            self.device.get_detection_geometry().sampling_frequency_MHz * 1000), self.settings[Tags.SPACING_MM], reconstruction_settings[Tags.RECONSTRUCTION_MODE], reconstruction_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD])
+            self.device.get_detection_geometry().sampling_frequency_MHz * 1_000_000), self.settings[Tags.SPACING_MM], reconstruction_settings[Tags.RECONSTRUCTION_MODE], reconstruction_settings[Tags.RECONSTRUCTION_APODIZATION_METHOD])
 
         # apply envelope detection method if set
         if reconstruction_settings[Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION]:

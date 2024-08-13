@@ -85,7 +85,7 @@ def run_segmentation_loader(spacing: float | int = .1, path_manager=None,
     })
 
     pipeline = [
-        sp.SegmentationBasedVolumeCreationAdapter(settings),
+        sp.SegmentationBasedAdapter(settings),
         sp.MCXAdapter(settings)
     ]
 
