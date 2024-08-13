@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
+# SPDX-FileCopyrightText: 2021 Janek Groehl
+# SPDX-License-Identifier: MIT
+
 # SPDX-FileCopyrightText: 2024 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2024 Janek Groehl
 # SPDX-License-Identifier: MIT
@@ -30,7 +34,7 @@ def run_3Dvs2D_simulation_example(spacing: float | int = 0.2, path_manager=None,
     :param visualise: If visualise is set to True, the result swill be plotted using matplotlib
     """
 
-    def run_sim(run_3D:bool = True, path_manager=path_manager):
+    def run_sim(run_3D: bool = True, path_manager=path_manager):
         if path_manager is None:
             path_manager = sp.PathManager()
         VOLUME_TRANSDUCER_DIM_IN_MM = 75

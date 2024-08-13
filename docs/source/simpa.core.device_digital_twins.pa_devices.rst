@@ -22,3 +22,9 @@ pa\_devices
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+.. automodule:: simpa.core.device_digital_twins.pa_devices.photoacoustic_device
+   :members:
+   :undoc-members:
+   :show-inheritance:

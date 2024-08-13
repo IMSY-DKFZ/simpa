@@ -11,7 +11,6 @@ from argparse import ArgumentParser
 path_manager = sp.PathManager()
 
 
-@profile
 def run_msot_invision_simulation(spacing: float | int = 0.5, path_manager=None, visualise: bool = True):
     """
 
