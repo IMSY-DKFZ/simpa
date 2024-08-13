@@ -152,7 +152,7 @@ def run_minimal_optical_simulation(spacing: float | int = 0.5, path_manager=None
 
     device = ExampleDeviceSlitIlluminationLinearDetector()
 
-    sp.simulate(pipeline, settings, device)
+    sp.simulate(pipeline, settings, device, logging_level=Tags.LOGGER_ERROR)
 
     if Tags.WAVELENGTH in settings:
         WAVELENGTH = settings[Tags.WAVELENGTH]
