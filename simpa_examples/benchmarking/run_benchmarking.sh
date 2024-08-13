@@ -8,7 +8,7 @@ echo "For further details see readme"
 echo "Number of examples can be selected in performance_check.py"
 echo "For comparable benchmarks, please use default"
 echo "Options:"
-echo "  -i, --init           First spacing to benchmark: default = 0.15mm"
+echo "  -i, --init           First spacing to benchmark: default = 0.2mm"
 echo "  -c, --cease          Final spacing to benchmark: default = 0.25mm"
 echo "  -s, --step           Step between spacings: default = 0.05mm"
 echo "  -f, --file           Where to store the output files: default save in current directory; 'print' prints it in console"
@@ -59,7 +59,7 @@ shift 1
 done
 
 if [ "$start" == 0 ]; then
-  start=0.15
+  start=0.2
 fi
 
 if [ "$stop" == 0 ]; then

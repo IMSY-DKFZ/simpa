@@ -152,7 +152,7 @@ def run_msot_invision_simulation(spacing: float | int = 0.5, path_manager=None, 
         }
 
         acoustic_settings = {
-            Tags.ACOUSTIC_SIMULATION_3D: True,
+            Tags.ACOUSTIC_SIMULATION_3D: False,
             Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
             Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
             Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
