@@ -93,7 +93,7 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
         Tags.DIM_VOLUME_Y_MM: VOLUME_PLANAR_DIM_IN_MM,
         Tags.VOLUME_CREATOR: Tags.VOLUME_CREATOR_VERSATILE,
         Tags.GPU: True,
-        Tags.WAVELENGTHS: [700, 800],
+        Tags.WAVELENGTHS: [700],
         Tags.DO_FILE_COMPRESSION: True,
         Tags.DO_IPASC_EXPORT: True
     }
@@ -115,7 +115,7 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
     })
 
     settings.set_acoustic_settings({
-        Tags.ACOUSTIC_SIMULATION_3D: False,
+        # Tags.ACOUSTIC_SIMULATION_3D: False,
         Tags.ACOUSTIC_MODEL_BINARY_PATH: path_manager.get_matlab_binary_path(),
         Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
         Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
