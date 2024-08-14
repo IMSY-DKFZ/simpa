@@ -157,7 +157,12 @@ class BlobHeterogeneity(HeterogeneityGeneratorBase):
 class ImageHeterogeneity(HeterogeneityGeneratorBase):
     """
     This heterogeneity generator takes a pre-specified 2D image, currently only supporting numpy arrays, and uses them
-    as a map for heterogeneity within the tissue.
+    as a map for heterogeneity within the tissue. By default, it will use download and use beef ultrasound images taken
+    by our team.
+
+    ##########
+    This example will (if not previously downloaded) download a folder with beef ultrasound images
+    ##########
 
     Attributes:
         map: the np array of the heterogeneity map transformed and augments to fill the area

@@ -17,14 +17,19 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 #  point to the correct file in the PathManager().
 
 
-def exponential_image(image, factor):
-    return np.exp(factor * image / np.max(image))
-
-
 @profile
 def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager=None,
                                         visualise: bool = True):
     """
+    ##########
+    This example will (if not previously downloaded) download a folder with beef ultrasound images
+    ##########
+
+    An example of the full phptoacoustic pipeline and reconstruction with a heterogeneous muscle blood volume fraction
+    and the MSOT AcuityEcho.
+    The Novelty of this example comes in the origin of its heterogeneous background. Here the heterogeneity come from an
+    ultrasound image taken of a piece of beef. For a full description of how the data was obtained, please refeer to the
+    md file in the downloaded folder.
 
     :param spacing: The simulation spacing between voxels
     :param path_manager: the path manager to be used, typically sp.PathManager
