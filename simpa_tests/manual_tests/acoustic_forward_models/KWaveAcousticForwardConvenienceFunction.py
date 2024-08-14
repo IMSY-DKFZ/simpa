@@ -5,9 +5,9 @@
 
 from simpa.core.device_digital_twins import SlitIlluminationGeometry, LinearArrayDetectionGeometry, PhotoacousticDevice
 from simpa import perform_k_wave_acoustic_forward_simulation
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_delay_and_sum_adapter import \
+from simpa.core.simulation_modules.reconstruction_module.delay_and_sum_adapter import \
     reconstruct_delay_and_sum_pytorch
-from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
+from simpa import MCXAdapter, ModelBasedAdapter, \
     GaussianNoise
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
@@ -33,7 +33,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
     def setup(self):
         """
         Runs a pipeline consisting of volume creation and optical simulation. The resulting hdf5 file of the
-        simple test volume is saved at SAVE_PATH location defined in the path_config.env file.
+        simple test volume is saved at SIMPA_SAVE_PATH location defined in the path_config.env file.
         """
 
         self.path_manager = PathManager()
@@ -82,14 +82,13 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         self.device = PhotoacousticDevice(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                        self.VOLUME_PLANAR_DIM_IN_MM/2,
                                                                        0]))
-        self.device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=
-                                                                        self.device.device_position_mm, pitch_mm=0.25,
-                                                                        number_detector_elements=200))
+        self.device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=self.device.device_position_mm, pitch_mm=0.25,
+                                                                        number_detector_elements=200, field_of_view_extent_mm=[-37.5, 37.5, 0, 0, 0, 25]))
         self.device.add_illumination_geometry(SlitIlluminationGeometry(slit_vector_mm=[100, 0, 0]))
 
         # run pipeline including volume creation and optical mcx simulation
         self.pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_model")
         ]
@@ -108,28 +107,13 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
                                            self.VOLUME_NAME + ".hdf5",
                                            Tags.DATA_FIELD_INITIAL_PRESSURE, wavelength=700)
         image_slice = np.s_[:, 40, :]
-        self.initial_pressure = np.rot90(initial_pressure[image_slice], -1)
+        self.initial_pressure = initial_pressure[image_slice].T
 
-        # define acoustic settings and run simulation with convenience function
-        acoustic_settings = {
-            Tags.ACOUSTIC_SIMULATION_3D: True,
-            Tags.ACOUSTIC_MODEL_BINARY_PATH: self.path_manager.get_matlab_binary_path(),
-            Tags.KWAVE_PROPERTY_ALPHA_POWER: 0.00,
-            Tags.KWAVE_PROPERTY_SENSOR_RECORD: "p",
-            Tags.KWAVE_PROPERTY_PMLInside: False,
-            Tags.KWAVE_PROPERTY_PMLSize: [31, 32],
-            Tags.KWAVE_PROPERTY_PMLAlpha: 1.5,
-            Tags.KWAVE_PROPERTY_PlotPML: False,
-            Tags.RECORDMOVIE: False,
-            Tags.MOVIENAME: "visualization_log",
-            Tags.ACOUSTIC_LOG_SCALE: True,
-            Tags.MODEL_SENSOR_FREQUENCY_RESPONSE: False
-        }
         time_series_data = perform_k_wave_acoustic_forward_simulation(initial_pressure=self.initial_pressure,
                                                                       detection_geometry=self.device.
                                                                       get_detection_geometry(),
                                                                       speed_of_sound=1540, density=1000,
-                                                                      alpha_coeff=0.0)
+                                                                      alpha_coeff=0.0, spacing_mm=0.25)
 
         # reconstruct the time series data to compare it with initial pressure
         self.settings.set_reconstruction_settings({
@@ -144,7 +128,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         self.reconstructed = reconstruct_delay_and_sum_pytorch(
             time_series_data.copy(), self.device.get_detection_geometry(),
             speed_of_sound_in_m_per_s=1540,
-            time_spacing_in_s=1/40_000_000_000,
+            time_spacing_in_s=1/40_000_000,
             sensor_spacing_in_mm=self.device.get_detection_geometry().pitch_mm,
             recon_mode=Tags.RECONSTRUCTION_MODE_PRESSURE,
         )
@@ -156,7 +140,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         plt.imshow(self.initial_pressure)
         plt.subplot(2, 2, 2)
         plt.title("Reconstructed Image Pipeline")
-        plt.imshow(np.rot90(self.reconstructed, -1))
+        plt.imshow(self.reconstructed.T)
         plt.tight_layout()
         if show_figure_on_screen:
             plt.show()

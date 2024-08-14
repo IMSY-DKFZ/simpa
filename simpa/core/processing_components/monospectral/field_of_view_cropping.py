@@ -4,22 +4,20 @@
 
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_image_dimensions
 from simpa.utils import Tags, Settings
-from simpa.utils.tissue_properties import TissueProperties
+from simpa.utils.constants import property_tags, wavelength_independent_properties, toolkit_tags
 from simpa.io_handling import load_data_field, save_data_field
-from simpa.core.processing_components import ProcessingComponent
+from simpa.core.processing_components import ProcessingComponentBase
 from simpa.core.device_digital_twins import DigitalDeviceTwinBase, PhotoacousticDevice
 import numpy as np
 
 
-class FieldOfViewCropping(ProcessingComponent):
+class FieldOfViewCropping(ProcessingComponentBase):
 
     def __init__(self, global_settings, settings_key=None):
         if settings_key is None:
-            # TODO Extract from global settings all the fields that should be cropped
             global_settings["FieldOfViewCropping"] = Settings({
-                      Tags.DATA_FIELD: TissueProperties.property_tags +
-                                           [Tags.DATA_FIELD_FLUENCE,
-                                            Tags.DATA_FIELD_INITIAL_PRESSURE]})
+                Tags.DATA_FIELD: property_tags + toolkit_tags
+                + [Tags.DATA_FIELD_FLUENCE, Tags.DATA_FIELD_INITIAL_PRESSURE]})
         super(FieldOfViewCropping, self).__init__(global_settings, "FieldOfViewCropping")
     """
     Applies Gaussian noise to the defined data field.
@@ -60,14 +58,21 @@ class FieldOfViewCropping(ProcessingComponent):
 
         self.logger.debug(f"field of view to crop: {field_of_view_voxels}")
 
-        for data_field in data_fields:
-            self.logger.debug(f"Cropping data field {data_field}...")
+        wavelength = self.global_settings[Tags.WAVELENGTH]
 
-            # load
-            wavelength = self.global_settings[Tags.WAVELENGTH]
-            data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
-            self.logger.debug(f"data array shape before cropping: {np.shape(data_array)}")
-            self.logger.debug(f"data array shape len: {len(np.shape(data_array))}")
+        for data_field in data_fields:
+            # Crop wavelength-independent properties only in the last wavelength run
+            if (data_field in wavelength_independent_properties
+                    and wavelength != self.global_settings[Tags.WAVELENGTHS][-1]):
+                continue
+            try:
+                self.logger.debug(f"Cropping data field {data_field}...")
+                data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+
+                self.logger.debug(f"data array shape before cropping: {np.shape(data_array)}")
+                self.logger.debug(f"data array shape len: {len(np.shape(data_array))}")
+            except KeyError:
+                continue
 
             # input validation
             if not isinstance(data_array, np.ndarray):

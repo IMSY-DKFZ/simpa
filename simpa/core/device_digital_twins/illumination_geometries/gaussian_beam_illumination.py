@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+from math import log, sqrt
+from collections.abc import Sized
 from simpa.core.device_digital_twins import IlluminationGeometryBase
 from simpa.utils import Tags
 
@@ -12,10 +14,15 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
     The position is defined as the middle of the beam.
     """
 
-    def __init__(self, beam_radius_mm=None, device_position_mm=None, field_of_view_extent_mm=None):
+    def __init__(self, beam_radius_mm=None, focal_length_mm=None, device_position_mm=None,
+                 field_of_view_extent_mm=None):
         """
-        :param beam_radius_mm: Radius of the gaussian beam at half maximum (full width at half maximum (FWHM)) in mm.
+        :param beam_radius_mm: Initial radius of the gaussian beam at half maximum (full width at half maximum (FWHM))
+        in mm.
         :type beam_radius_mm: int, float
+        :param focal_length_mm: Focal length of the gaussian beam in mm. Can be positive (focussed beam), negative
+        (cone-shaped beam) or None (collimated beam).
+        :type focal_length_mm: int, float
         :param device_position_mm: Each device has an internal position which serves as origin for internal \
         representations of illuminator positions.
         :type device_position_mm: ndarray
@@ -31,6 +38,7 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
             beam_radius_mm = 0
 
         self.beam_radius_mm = beam_radius_mm
+        self.focal_length_mm = focal_length_mm
 
     def get_mcx_illuminator_definition(self, global_settings) -> dict:
         source_type = Tags.ILLUMINATION_TYPE_GAUSSIAN
@@ -40,8 +48,12 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
         device_position = list(self.device_position_mm / spacing + 0.5)
 
         source_direction = list(self.normalized_source_direction_vector)
+        if self.focal_length_mm is not None:  # the focal length can optionally be added as 4th parameter
+            source_direction.append(self.focal_length_mm / spacing)
 
-        source_param1 = [int(round(self.beam_radius_mm / spacing)), 0, 0, 0]
+        # mcx takes the beam_radius in at the 1/e^2 (2 * sigma) threshold, but we use FWHM (sqrt(2*ln2))*sigma)
+        # by multiplying the input radius by (2 / sqrt(2 * log(2))) we can convert it
+        source_param1 = [self.beam_radius_mm / spacing * 2 / sqrt(2 * log(2)), 0, 0, 0]
 
         source_param2 = [0, 0, 0, 0]
 
@@ -62,5 +74,6 @@ class GaussianBeamIlluminationGeometry(IlluminationGeometryBase):
     def deserialize(dictionary_to_deserialize):
         deserialized_device = GaussianBeamIlluminationGeometry()
         for key, value in dictionary_to_deserialize.items():
-            deserialized_device.__dict__[key] = value
+            if not isinstance(value, Sized) and value != 'None':
+                deserialized_device.__dict__[key] = value
         return deserialized_device

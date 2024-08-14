@@ -2,11 +2,14 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import numpy as np
+import torch
 
 from simpa.utils import Tags
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.libraries.structure_library.StructureBase import GeometricalStructure
+from simpa.log import Logger
+
+logger = Logger()
 
 
 class HorizontalLayerStructure(GeometricalStructure):
@@ -41,8 +44,8 @@ class HorizontalLayerStructure(GeometricalStructure):
         return settings
 
     def get_enclosed_indices(self):
-        start_mm = np.asarray(self.params[0])
-        end_mm = np.asarray(self.params[1])
+        start_mm = torch.tensor(self.params[0], dtype=torch.float).to(self.torch_device)
+        end_mm = torch.tensor(self.params[1], dtype=torch.float).to(self.torch_device)
         partial_volume = self.params[2]
         start_voxels = start_mm / self.voxel_spacing
         direction_mm = end_mm - start_mm
@@ -51,36 +54,38 @@ class HorizontalLayerStructure(GeometricalStructure):
         if direction_mm[0] != 0 or direction_mm[1] != 0 or direction_mm[2] == 0:
             raise ValueError("Horizontal Layer structure needs a start and end vector in the form of [0, 0, n].")
 
-        x, y, z = np.meshgrid(np.arange(self.volume_dimensions_voxels[0]),
-                              np.arange(self.volume_dimensions_voxels[1]),
-                              np.arange(self.volume_dimensions_voxels[2]),
-                              indexing='ij')
+        target_vector_voxels = torch.stack(torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0], dtype=torch.float, device=self.torch_device),
+                                                          torch.arange(
+                                                              self.volume_dimensions_voxels[1], dtype=torch.float, device=self.torch_device),
+                                                          torch.arange(
+                                                              self.volume_dimensions_voxels[2], dtype=torch.float, device=self.torch_device),
+                                                          indexing='ij'), dim=-1)
 
-        target_vector_voxels = np.subtract(np.stack([x, y, z], axis=-1), start_voxels)
+        target_vector_voxels -= start_voxels
         target_vector_voxels = target_vector_voxels[:, :, :, 2]
         if self.do_deformation:
             # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
-            deformation_values_mm = self.deformation_functional_mm(np.arange(self.volume_dimensions_voxels[0], step=1) *
-                                                                   self.voxel_spacing,
-                                                                   np.arange(self.volume_dimensions_voxels[1], step=1) *
-                                                                   self.voxel_spacing).T
-            target_vector_voxels = target_vector_voxels + (deformation_values_mm.reshape(
+            eval_points = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0], dtype=torch.float) * self.voxel_spacing,
+                                         torch.arange(self.volume_dimensions_voxels[1], dtype=torch.float) * self.voxel_spacing, indexing='ij')
+            deformation_values_mm = self.deformation_functional_mm(eval_points)
+            target_vector_voxels = (target_vector_voxels + torch.from_numpy(deformation_values_mm.reshape(
                 self.volume_dimensions_voxels[0],
-                self.volume_dimensions_voxels[1], 1) / self.voxel_spacing)
+                self.volume_dimensions_voxels[1], 1)).to(self.torch_device) / self.voxel_spacing).float()
 
-        volume_fractions = np.zeros(self.volume_dimensions_voxels)
+        volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels),
+                                       dtype=torch.float, device=self.torch_device)
 
         if partial_volume:
             bools_first_layer = ((target_vector_voxels >= -1) & (target_vector_voxels < 0))
 
-            volume_fractions[bools_first_layer] = 1 - np.abs(target_vector_voxels[bools_first_layer])
+            volume_fractions[bools_first_layer] = 1 - torch.abs(target_vector_voxels[bools_first_layer])
 
-            initial_fractions = np.max(volume_fractions, axis=2, keepdims=True)
-            floored_depth_voxels = np.floor(depth_voxels - initial_fractions)
+            initial_fractions = torch.max(volume_fractions, dim=2, keepdims=True)[0]
+            floored_depth_voxels = torch.floor(depth_voxels - initial_fractions)
 
             bools_fully_filled_layers = ((target_vector_voxels >= 0) & (target_vector_voxels < floored_depth_voxels))
 
-            bools_last_layer = ((target_vector_voxels >= floored_depth_voxels) &
+            bools_last_layer = ((target_vector_voxels >= 0) & (target_vector_voxels >= floored_depth_voxels) &
                                 (target_vector_voxels <= floored_depth_voxels + 1))
 
             volume_fractions[bools_last_layer] = depth_voxels - target_vector_voxels[bools_last_layer]
@@ -96,7 +101,37 @@ class HorizontalLayerStructure(GeometricalStructure):
 
         volume_fractions[bools_fully_filled_layers] = 1
 
-        return bools_all_layers, volume_fractions[bools_all_layers]
+        return bools_all_layers.cpu().numpy(), volume_fractions[bools_all_layers].cpu().numpy()
+
+    def update_molecule_volume_fractions(self, single_structure_settings):
+        for molecule in self.molecule_composition:
+            old_vol = getattr(molecule, "volume_fraction")
+            if isinstance(old_vol, torch.Tensor):
+                structure_start_voxels = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM]) /
+                                          self.voxel_spacing)
+                structure_end_voxels = (torch.tensor(single_structure_settings[Tags.STRUCTURE_END_MM]) /
+                                        self.voxel_spacing)
+                structure_size = structure_end_voxels - structure_start_voxels
+
+                if self.volume_dimensions_voxels[2] != old_vol.shape[2]:
+                    if self.volume_dimensions_voxels[2] == structure_size[2]:
+                        pad_start = structure_start_voxels.flip(dims=[0])
+                        pad_end = ((torch.from_numpy(self.volume_dimensions_voxels) - structure_end_voxels)
+                                   .flip(dims=[0]))
+                        for count, structure_end in enumerate(structure_end_voxels):
+                            if structure_end == 0:
+                                pad_end[2 - count] = 0
+
+                        if (pad_start > 1e-6).any() or (pad_end > 1e-6).any():
+                            padding_list = torch.flatten(torch.stack((pad_start, pad_end), 1)).tolist()
+                            padding = tuple(map(int, padding_list))
+                            padded_vol = torch.nn.functional.pad(old_vol, padding, mode='constant', value=0)
+                            setattr(molecule, "volume_fraction", padded_vol)
+                    else:
+                        logger.critical("Tensor does not have the same dimensionality as the area it should fill" +
+                                        "{} or the dimensions of the entire ".format(old_vol.shape) +
+                                        "simulation volume{}! Please change this.".format(
+                                            self.volume_dimensions_voxels.shape))
 
 
 def define_horizontal_layer_structure_settings(molecular_composition: MolecularComposition,

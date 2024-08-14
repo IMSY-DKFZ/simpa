@@ -1,9 +1,14 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import torch
+import torch.nn.functional as F
 
 from simpa.core.device_digital_twins import PhotoacousticDevice, \
     CurvedArrayDetectionGeometry, MSOTAcuityIlluminationGeometry
+
+from simpa.core.device_digital_twins.pa_devices import PhotoacousticDevice
+from simpa.core.device_digital_twins.detection_geometries.curved_array import CurvedArrayDetectionGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
@@ -85,7 +90,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                                                             -y_pos_relative_to_membrane,
                                                                                             -43.2]))
 
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings: Settings):
         """
         Updates the volume creation settings of the model based volume creator according to the size of the device.
         :param global_settings: Settings for the entire simulation pipeline.
@@ -102,6 +107,8 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         probe_size_mm = self.probe_height_mm
         mediprene_layer_height_mm = self.mediprene_membrane_height_mm
         heavy_water_layer_height_mm = probe_size_mm - mediprene_layer_height_mm
+        spacing_mm = global_settings[Tags.SPACING_MM]
+        old_volume_height_pixels = round(global_settings[Tags.DIM_VOLUME_Z_MM] / spacing_mm)
 
         if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
             us_gel_thickness = np.random.normal(0.4, 0.1)
@@ -119,13 +126,10 @@ class MSOTAcuityEcho(PhotoacousticDevice):
         # 1 voxel is added (0.5 on both sides) to make sure no rounding errors lead to a detector element being outside
         # of the simulated volume.
 
-        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + \
-                global_settings[Tags.SPACING_MM]:
-            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) +
-                                             global_settings[Tags.SPACING_MM] -
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + spacing_mm:
+            width_shift_for_structures_mm = (round(self.detection_geometry.probe_width_mm) + spacing_mm -
                                              global_settings[Tags.DIM_VOLUME_X_MM]) / 2
-            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + \
-                                                    global_settings[Tags.SPACING_MM]
+            global_settings[Tags.DIM_VOLUME_X_MM] = round(self.detection_geometry.probe_width_mm) + spacing_mm
             self.logger.debug(f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}")
         else:
             width_shift_for_structures_mm = 0
@@ -136,21 +140,32 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             self.logger.debug("Adjusting " + str(structure_key))
             structure_dict = volume_creator_settings[Tags.STRUCTURES][structure_key]
             if Tags.STRUCTURE_START_MM in structure_dict:
+                for molecule in structure_dict[Tags.MOLECULE_COMPOSITION]:
+                    old_volume_fraction = getattr(molecule, "volume_fraction")
+                    if isinstance(old_volume_fraction, torch.Tensor):
+                        if old_volume_fraction.shape[2] == old_volume_height_pixels:
+                            width_shift_pixels = round(width_shift_for_structures_mm / spacing_mm)
+                            z_shift_pixels = round(z_dim_position_shift_mm / spacing_mm)
+                            padding_height = (z_shift_pixels, 0, 0, 0, 0, 0)
+                            padding_width = ((width_shift_pixels, width_shift_pixels), (0, 0), (0, 0))
+                            padded_up = F.pad(old_volume_fraction, padding_height, mode='constant', value=0)
+                            padded_vol = np.pad(padded_up.numpy(), padding_width, mode='edge')
+                            setattr(molecule, "volume_fraction", torch.from_numpy(padded_vol))
                 structure_dict[Tags.STRUCTURE_START_MM][0] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                                 0] + width_shift_for_structures_mm
+                    0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_START_MM][2] = structure_dict[Tags.STRUCTURE_START_MM][
-                                                                 2] + z_dim_position_shift_mm
+                    2] + z_dim_position_shift_mm
             if Tags.STRUCTURE_END_MM in structure_dict:
                 structure_dict[Tags.STRUCTURE_END_MM][0] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                               0] + width_shift_for_structures_mm
+                    0] + width_shift_for_structures_mm
                 structure_dict[Tags.STRUCTURE_END_MM][2] = structure_dict[Tags.STRUCTURE_END_MM][
-                                                               2] + z_dim_position_shift_mm
+                    2] + z_dim_position_shift_mm
 
         if Tags.CONSIDER_PARTIAL_VOLUME_IN_DEVICE in volume_creator_settings:
             consider_partial_volume = volume_creator_settings[Tags.CONSIDER_PARTIAL_VOLUME_IN_DEVICE]
         else:
             consider_partial_volume = False
-        
+
         if Tags.US_GEL in volume_creator_settings and volume_creator_settings[Tags.US_GEL]:
             us_gel_layer_settings = Settings({
                 Tags.PRIORITY: 5,

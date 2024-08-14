@@ -27,12 +27,11 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
         if os.path.exists(p0_path):
             self.initial_pressure = np.load(p0_path)["initial_pressure"]
         else:
-            self.initial_pressure = np.zeros((100, 100, 100))
+            self.initial_pressure = np.zeros((100, 30, 100))
             self.initial_pressure[50, :, 50] = 1
         self.speed_of_sound = np.ones((100, 30, 100)) * self.SPEED_OF_SOUND
         self.density = np.ones((100, 30, 100)) * 1000
         self.alpha = np.ones((100, 30, 100)) * 0.01
-
 
         def get_settings():
             general_settings = {
@@ -122,13 +121,13 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
         plt.figure(figsize=(9, 3))
         plt.subplot(1, 3, 1)
         plt.title(f"{self.SPEED_OF_SOUND * 0.975} m/s")
-        plt.imshow(np.rot90(self.reconstructed_image_950, 3))
+        plt.imshow(self.reconstructed_image_950.T)
         plt.subplot(1, 3, 2)
         plt.title(f"{self.SPEED_OF_SOUND} m/s")
-        plt.imshow(np.rot90(self.reconstructed_image_1000, 3))
+        plt.imshow(self.reconstructed_image_1000.T)
         plt.subplot(1, 3, 3)
         plt.title(f"{self.SPEED_OF_SOUND * 1.025} m/s")
-        plt.imshow(np.rot90(self.reconstructed_image_1050, 3))
+        plt.imshow(self.reconstructed_image_1050.T)
         plt.tight_layout()
         if show_figure_on_screen:
             plt.show()
@@ -137,6 +136,7 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
                 save_path = ""
             plt.savefig(save_path + f"minimal_kwave_test.png")
         plt.close()
+
 
 if __name__ == "__main__":
     test = MinimalKWaveTest()

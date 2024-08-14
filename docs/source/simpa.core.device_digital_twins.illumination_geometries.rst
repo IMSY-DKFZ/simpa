@@ -18,12 +18,6 @@ illumination\_geometries
    :show-inheritance:
 
 
-.. automodule:: simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
 .. automodule:: simpa.core.device_digital_twins.illumination_geometries.ithera_msot_acuity_illumination
    :members:
    :undoc-members:
@@ -43,6 +37,18 @@ illumination\_geometries
 
 
 .. automodule:: simpa.core.device_digital_twins.illumination_geometries.pencil_beam_illumination
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. automodule:: simpa.core.device_digital_twins.illumination_geometries.rectangle_illumination
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. automodule:: simpa.core.device_digital_twins.illumination_geometries.ring_illumination
    :members:
    :undoc-members:
    :show-inheritance:

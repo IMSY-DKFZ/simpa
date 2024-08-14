@@ -28,7 +28,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter
+from simpa import MCXAdapter, ModelBasedAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 from simpa.core.simulation import simulate
 from simpa.io_handling import load_data_field
@@ -38,7 +38,7 @@ from simpa_tests.manual_tests import ManualIntegrationTestClass
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrationTestClass):
+class TestAbsorptionAndScatteringWithinHomogeneousMedium(ManualIntegrationTestClass):
 
     def create_example_tissue(self, scattering_value=1e-30, absorption_value=1e-30, anisotropy_value=0.0):
         """
@@ -101,115 +101,115 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        return self.test_simultion(absorption_value_1=0.01,
-                                   absorption_value_2=0.01,
-                                   scattering_value_1=1.0,
-                                   scattering_value_2=10.0,
-                                   anisotropy_value_1=0.0,
-                                   anisotropy_value_2=0.9,
-                                   title="Low Abs. Low Scat.")
+        return self.test_simulation(absorption_value_1=0.01,
+                                    absorption_value_2=0.01,
+                                    scattering_value_1=1.0,
+                                    scattering_value_2=10.0,
+                                    anisotropy_value_1=0.0,
+                                    anisotropy_value_2=0.9,
+                                    title="Low Abs. Low Scat.")
 
     def test_medium_scattering(self):
         """
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        return self.test_simultion(absorption_value_1=0.01,
-                                   absorption_value_2=0.01,
-                                   scattering_value_1=10.0,
-                                   scattering_value_2=100.0,
-                                   anisotropy_value_1=0.0,
-                                   anisotropy_value_2=0.9,
-                                   title="Low Abs. Medium Scat.")
+        return self.test_simulation(absorption_value_1=0.01,
+                                    absorption_value_2=0.01,
+                                    scattering_value_1=10.0,
+                                    scattering_value_2=100.0,
+                                    anisotropy_value_1=0.0,
+                                    anisotropy_value_2=0.9,
+                                    title="Low Abs. Medium Scat.")
 
     def test_high_scattering_090(self):
         """
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        return self.test_simultion(absorption_value_1=0.01,
-                                   absorption_value_2=0.01,
-                                   scattering_value_1=50.0,
-                                   scattering_value_2=500.0,
-                                   anisotropy_value_1=0.0,
-                                   anisotropy_value_2=0.9,
-                                   title="Anisotropy 0.9")
+        return self.test_simulation(absorption_value_1=0.01,
+                                    absorption_value_2=0.01,
+                                    scattering_value_1=50.0,
+                                    scattering_value_2=500.0,
+                                    anisotropy_value_1=0.0,
+                                    anisotropy_value_2=0.9,
+                                    title="Anisotropy 0.9")
 
     def simulate_perfect_result(self):
         """
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        return self.test_simultion(absorption_value_1=0.01,
-                                   absorption_value_2=0.01,
-                                   scattering_value_1=50.0,
-                                   scattering_value_2=50.0,
-                                   anisotropy_value_1=0.0,
-                                   anisotropy_value_2=0.0,
-                                   title="Ideal Result")
+        return self.test_simulation(absorption_value_1=0.01,
+                                    absorption_value_2=0.01,
+                                    scattering_value_1=50.0,
+                                    scattering_value_2=50.0,
+                                    anisotropy_value_1=0.0,
+                                    anisotropy_value_2=0.0,
+                                    title="Ideal Result")
 
     def test_high_scattering_075(self):
         """
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        return self.test_simultion(absorption_value_1=0.01,
-                                   absorption_value_2=0.01,
-                                   scattering_value_1=50.0,
-                                   scattering_value_2=200.0,
-                                   anisotropy_value_1=0.0,
-                                   anisotropy_value_2=0.75,
-                                   title="Anisotropy 0.75")
+        return self.test_simulation(absorption_value_1=0.01,
+                                    absorption_value_2=0.01,
+                                    scattering_value_1=50.0,
+                                    scattering_value_2=200.0,
+                                    anisotropy_value_1=0.0,
+                                    anisotropy_value_2=0.75,
+                                    title="Anisotropy 0.75")
 
     def test_high_scattering_025(self):
         """
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        return self.test_simultion(absorption_value_1=0.01,
-                                   absorption_value_2=0.01,
-                                   scattering_value_1=50.0,
-                                   scattering_value_2=66.666666666666667,
-                                   anisotropy_value_1=0.0,
-                                   anisotropy_value_2=0.25,
-                                   title="Anisotropy 0.25")
+        return self.test_simulation(absorption_value_1=0.01,
+                                    absorption_value_2=0.01,
+                                    scattering_value_1=50.0,
+                                    scattering_value_2=66.666666666666667,
+                                    anisotropy_value_1=0.0,
+                                    anisotropy_value_2=0.25,
+                                    title="Anisotropy 0.25")
 
     def test_ignore_mcx_anisotropy_025(self):
         """
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        return self.test_simultion(absorption_value_1=0.01,
-                                   absorption_value_2=0.01,
-                                   scattering_value_1=50.0,
-                                   scattering_value_2=66.666666666666667,
-                                   anisotropy_value_1=0.0,
-                                   anisotropy_value_2=0.25,
-                                   title="Ignore MCX Anisotropy 0.25",
-                                   use_mcx_anisotropy=False)
+        return self.test_simulation(absorption_value_1=0.01,
+                                    absorption_value_2=0.01,
+                                    scattering_value_1=50.0,
+                                    scattering_value_2=66.666666666666667,
+                                    anisotropy_value_1=0.0,
+                                    anisotropy_value_2=0.25,
+                                    title="Ignore MCX Anisotropy 0.25",
+                                    use_mcx_anisotropy=False)
 
     def test_ignore_mcx_anisotropy_075(self):
         """
         Here, the slab is 10 mm long, mua and mus are both used with values of 0.05 mm^-1, so that mua+mus=0.1 mm^-1.
         We expect a decay ratio of e^1.
         """
-        return self.test_simultion(absorption_value_1=0.01,
-                                   absorption_value_2=0.01,
-                                   scattering_value_1=50.0,
-                                   scattering_value_2=200.0,
-                                   anisotropy_value_1=0.0,
-                                   anisotropy_value_2=0.75,
-                                   title="Ignore MCX Anisotropy 0.75",
-                                   use_mcx_anisotropy=False)
+        return self.test_simulation(absorption_value_1=0.01,
+                                    absorption_value_2=0.01,
+                                    scattering_value_1=50.0,
+                                    scattering_value_2=200.0,
+                                    anisotropy_value_1=0.0,
+                                    anisotropy_value_2=0.75,
+                                    title="Ignore MCX Anisotropy 0.75",
+                                    use_mcx_anisotropy=False)
 
-    def test_simultion(self, scattering_value_1=1e-30,
-                       absorption_value_1=1e-30,
-                       anisotropy_value_1=1.0,
-                       scattering_value_2=1e-30,
-                       absorption_value_2=1e-30,
-                       anisotropy_value_2=1.0,
-                       title="Medium Abs. High Scat.",
-                       use_mcx_anisotropy=True):
+    def test_simulation(self, scattering_value_1=1e-30,
+                        absorption_value_1=1e-30,
+                        anisotropy_value_1=1.0,
+                        scattering_value_2=1e-30,
+                        absorption_value_2=1e-30,
+                        anisotropy_value_2=1.0,
+                        title="Medium Abs. High Scat.",
+                        use_mcx_anisotropy=True):
 
         # RUN SIMULATION 1
 
@@ -220,10 +220,13 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
                                                         anisotropy_value=anisotropy_value_1)
         })
 
-        self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value_1
+        if use_mcx_anisotropy:
+            self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value_1
+        else:
+            self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value_2
 
         pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings)
         ]
 
@@ -241,13 +244,10 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
                                                         anisotropy_value=anisotropy_value_2)
         })
 
-        if use_mcx_anisotropy:
-            self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value_2
-        else:
-            self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = 0.9
+        self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value_2
 
         pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings)
         ]
 
@@ -260,7 +260,6 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
 
         return [title, anisotropy_value_1, scattering_value_1, fluence_1,
                 anisotropy_value_2, scattering_value_2, fluence_2, illuminator_point]
-
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         print(len(self.results))
@@ -310,5 +309,5 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
 
 
 if __name__ == '__main__':
-    test = TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment()
+    test = TestAbsorptionAndScatteringWithinHomogeneousMedium()
     test.run_test(show_figure_on_screen=False)

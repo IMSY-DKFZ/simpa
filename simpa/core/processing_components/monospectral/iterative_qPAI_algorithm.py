@@ -11,16 +11,16 @@ from simpa.utils import Tags
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
-from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import \
+from simpa.core.simulation_modules.optical_module.mcx_adapter import \
     MCXAdapter
 from simpa.utils import Settings
 from simpa.io_handling import save_data_field, load_data_field
 from simpa.utils import TISSUE_LIBRARY
-from simpa.core.processing_components import ProcessingComponent
+from simpa.core.processing_components import ProcessingComponentBase
 import os
 
 
-class IterativeqPAI(ProcessingComponent):
+class IterativeqPAI(ProcessingComponentBase):
     """
     Applies iterative qPAI Algorithm [1] on simulated initial pressure map and saves the
     reconstruction result in the hdf5 output file. If a 2-d map of initial_pressure is passed the algorithm saves
@@ -45,7 +45,7 @@ class IterativeqPAI(ProcessingComponent):
     """
 
     def __init__(self, global_settings, component_settings_key: str):
-        super(ProcessingComponent, self).__init__(global_settings=global_settings)
+        super(ProcessingComponentBase, self).__init__(global_settings=global_settings)
 
         self.global_settings = global_settings
         self.optical_settings = global_settings.get_optical_settings()
@@ -114,7 +114,7 @@ class IterativeqPAI(ProcessingComponent):
         if Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS in self.iterative_method_settings:
             if self.iterative_method_settings[Tags.ITERATIVE_RECONSTRUCTION_SAVE_INTERMEDIATE_RESULTS]:
                 dst = self.global_settings[Tags.SIMULATION_PATH] + "/List_reconstructed_qpai_absorptions_" \
-                      + str(wavelength) + "_"
+                    + str(wavelength) + "_"
                 np.save(dst + self.global_settings[Tags.VOLUME_NAME] + ".npy", list_of_intermediate_absorptions)
 
         self.logger.info("Reconstructing absorption using iterative qPAI method...[Done]")
@@ -369,7 +369,7 @@ class IterativeqPAI(ProcessingComponent):
             scattering = float(self.global_settings[Tags.DATA_FIELD_SCATTERING_PER_CM]) * np.ones(shape)
         else:
             background_dict = TISSUE_LIBRARY.muscle()
-            scattering = float(MolecularComposition.get_properties_for_wavelength(background_dict,
+            scattering = float(MolecularComposition.get_properties_for_wavelength(background_dict, self.global_settings,
                                                                                   wavelength=800)["mus"])
             scattering = scattering * np.ones(shape)
 

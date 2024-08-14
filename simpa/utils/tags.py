@@ -2,8 +2,10 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import numpy as np
 from numbers import Number
+from typing import Iterable
+
+import numpy as np
 
 
 class Tags:
@@ -31,6 +33,14 @@ class Tags:
     SIMULATION_PIPELINE = "simulation_pipeline"
     """
     List of SimulationModules that are used within a simulation pipeline.\n
+    Usage: SIMPA package
+    """
+
+    CONTINUE_SIMULATION = ("continue_simulation", bool)
+    """
+    Boolean whether the user just wants to continue a previously existing simulation or 
+    if they want to start a new simulation from scratch. In case of continuation, 
+    the simulation script doesn't overwrite the existing file.
     Usage: SIMPA package
     """
 
@@ -104,9 +114,9 @@ class Tags:
     Usage: module volume_creation_module, naming convention
     """
 
-    VOLUME_CREATOR_SEGMENTATION_BASED = "volume_creator_segmentation_based"
+    VOLUME_CREATOR_SEGMENTATION_BASED = "segmentation_based_adapter"
     """
-    Corresponds to the SegmentationBasedVolumeCreator.\n
+    Corresponds to the SegmentationBasedAdapter.\n
     Usage: module volume_creation_module, naming convention
     """
 
@@ -161,13 +171,13 @@ class Tags:
 
     DEFORMATION_X_COORDINATES_MM = "deformation_x_coordinates"
     """
-    Mesh that defines the x coordinates of the deformation.\n
+    Array that defines the x coordinates of the deformation.\n
     Usage: adapter versatile_volume_creation, naming convention
     """
 
     DEFORMATION_Y_COORDINATES_MM = "deformation_y_coordinates"
     """
-    Mesh that defines the y coordinates of the deformation.\n
+    Array that defines the y coordinates of the deformation.\n
     Usage: adapter versatile_volume_creation, naming convention
     """
 
@@ -462,6 +472,12 @@ class Tags:
     Usage: adapter mcx_adapter, naming convention
     """
 
+    ILLUMINATION_TYPE_RING = "ring"
+    """
+    Corresponds to ring source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
     ILLUMINATION_TYPE_SLIT = "slit"
     """
     Corresponds to slit source in mcx.\n
@@ -752,14 +768,14 @@ class Tags:
     """
 
     RECONSTRUCTION_PERFORM_BANDPASS_FILTERING = ("reconstruction_perform_bandpass_filtering",
-                                    (bool, np.bool_))
+                                                 (bool, np.bool_))
     """
     Whether bandpass filtering should be applied or not. Default should be True\n
     Usage: adapter PyTorchDASAdapter
     """
 
     RECONSTRUCTION_PERFORM_RESAMPLING_FOR_FFT = ("reconstruction_perform_resampling_for_fft",
-                                    (bool, np.bool_))
+                                                 (bool, np.bool_))
     """
     Whether the data is resampled to a power of 2 in time dimension before applying the FFT 
     and resampled back after filtering for performance reasons. Default should be False\n
@@ -798,13 +814,13 @@ class Tags:
     Usage: reconstruction utils
     """
 
-    BANDPASS_CUTOFF_LOWPASS = ("bandpass_cuttoff_lowpass", Number)
+    BANDPASS_CUTOFF_LOWPASS_IN_HZ = ("bandpass_cuttoff_lowpass_in_HZ", Number)
     """
     Sets the cutoff threshold in Hz for lowpass filtering, i.e. upper limit of the tukey filter. Default is 8 MHz\n
     Usage: adapter PyTorchDASAdapter
     """
 
-    BANDPASS_CUTOFF_HIGHPASS = ("bandpass_cuttoff_highpass", Number)
+    BANDPASS_CUTOFF_HIGHPASS_IN_HZ = ("bandpass_cuttoff_highpass_in_HZ", Number)
     """
     Sets the cutoff threshold in Hz for highpass filtering, i.e. lower limit of the tukey filter. Default is 0.1 MHz\n
     Usage: adapter PyTorchDASAdapter
@@ -862,6 +878,12 @@ class Tags:
     DATA_FIELD_OXYGENATION = "oxy"
     """
     Oxygenation of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
+    DATA_FIELD_BLOOD_VOLUME_FRACTION = "bvf"
+    """
+    Blood volume fraction of the generated volume/structure.\n
     Usage: SIMPA package, naming convention
     """
 
@@ -1241,7 +1263,7 @@ class Tags:
     Default filename of the SIMPA output if not specified otherwise.\n
     Usage: SIMPA package, naming convention
     """
-    SIMPA_VERSION = ("simpa_version", str)
+    SIMPA_VERSION = "simpa_version"
     """
     Version number of the currently installed simpa package
     Usage: SIMPA package
@@ -1444,7 +1466,7 @@ class Tags:
     """
     Identifier for the diffuse reflectance values at the surface of the volume (interface to 0-values voxels) 
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
-  """
+    """
 
     DATA_FIELD_DIFFUSE_REFLECTANCE_POS = "diffuse_reflectance_pos"
     """
@@ -1465,4 +1487,101 @@ class Tags:
     Identifier for the direction of photons when they exit the volume. Currently only photon exiting along the Z axis 
     are detected.
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    IMAGE_SCALING_SYMMETRIC = "symmetric"
+    """
+    Flag indicating the use of reflection on edges during interpolation when rescaling an image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_STRETCH = "stretch"
+    """
+    Flag indicating the use of reflection on edges during interpolation when rescaling an image
+    At the boundary, the image will reflect to fill the area
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_WRAP = "wrap"
+    """
+    Flag indicating tessellating during interpolation when rescaling an image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_CONSTANT = "constant"
+    """
+    Flag indicating the use of a constant on edges during interpolation when rescaling an image
+    The rest of the area will be filled by a constant value
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_EDGE = "edge"
+    """
+    Flag indicating the expansion of the edges during interpolation when rescaling an image
+    The edge value will continue across the area
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_TOP = "top"
+    """
+    Flag indicating the crop position: along top edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_BOTTOM = "bottom"
+    """
+    Flag indicating the crop position: along bottom edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_CENTRE = "centre"
+    """
+    Flag indicating the crop position: along centre edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_LEFT = "left"
+    """
+    Flag indicating the crop position: along left-hand edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_RIGHT = "right"
+    """
+    Flag indicating the crop position: along right-hand edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_RANDOM = "random"
+    """
+    Flag indicating the crop position: random placement
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    SIMPA_SAVE_PATH_VARNAME = "SIMPA_SAVE_PATH"
+    """
+    Identifier for the environment variable that defines where the results generated with SIMPA will be sotred
+    """
+
+    MCX_BINARY_PATH_VARNAME = "MCX_BINARY_PATH"
+    """
+    Identified for the environment varibale that defines the path to the MCX executable.
+    """
+
+    MATLAB_BINARY_PATH_VARNAME = "MATLAB_BINARY_PATH"
+    """
+    Identifier for the environment varibale that defines the path the the matlab executable.
+    """
+
+    ADDITIONAL_FLAGS = ("additional_flags", Iterable)
+    """
+    Defines a sequence of extra flags to be parsed to executables for simulation modules.
+    Caution: The user is responsible for checking if these flags exist and don't break the predefined flags' behaviour.
+    It is assumed that if flags are specified multiple times the flag provided last is considered. 
+    This can for example be used to override predefined flags.
+    """
+
+    VOLUME_FRACTION = "volume_fraction"
+    """
+    Identifier for the volume fraction for the simulation
     """

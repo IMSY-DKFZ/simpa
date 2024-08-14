@@ -24,7 +24,7 @@ from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import *
 import numpy as np
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa import ModelBasedVolumeCreationAdapter, MCXAdapter
+from simpa import ModelBasedAdapter, MCXAdapter
 from simpa_tests.manual_tests.test_with_experimental_measurements.utils import read_reference_spectra, read_rxt_file
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 import inspect
@@ -94,7 +94,6 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
             volume_fraction=1.0
         )
 
-
         def create_measurement_setup(sample_tickness_mm):
             """
             This is a very simple example script of how to create a tissue definition.
@@ -112,15 +111,15 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
             inclusion_tissue[Tags.STRUCTURE_END_MM] = [0, 0, self.VOLUME_HEIGHT_IN_MM/2 + sample_tickness_mm/2]
             inclusion_tissue[Tags.MOLECULE_COMPOSITION] = (MolecularCompositionGenerator()
                                                            .append(molecule)
-                                                           .get_molecular_composition(segmentation_type=
-                                                                                      SegmentationClasses.GENERIC))
+                                                           .get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC))
             inclusion_tissue[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
             air_tube = Settings()
             air_tube[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
             air_tube[Tags.PRIORITY] = 9
             air_tube[Tags.STRUCTURE_START_MM] = [self.VOLUME_LENGTH_MM/2, self.VOLUME_LENGTH_MM/2, 0]
-            air_tube[Tags.STRUCTURE_END_MM] = [self.VOLUME_LENGTH_MM/2, self.VOLUME_LENGTH_MM/2, self.VOLUME_HEIGHT_IN_MM]
+            air_tube[Tags.STRUCTURE_END_MM] = [self.VOLUME_LENGTH_MM /
+                                               2, self.VOLUME_LENGTH_MM/2, self.VOLUME_HEIGHT_IN_MM]
             air_tube[Tags.STRUCTURE_RADIUS_MM] = 5.0
             air_tube[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-5, 1, 1.0)
             air_tube[Tags.CONSIDER_PARTIAL_VOLUME] = True
@@ -129,8 +128,10 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
 
             absorbing_layer[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
             absorbing_layer[Tags.PRIORITY] = 8
-            absorbing_layer[Tags.STRUCTURE_START_MM] = [0, 0, self.VOLUME_HEIGHT_IN_MM / 2 - sample_tickness_mm / 2 - self.SPACING]
-            absorbing_layer[Tags.STRUCTURE_END_MM] = [0, 0, self.VOLUME_HEIGHT_IN_MM / 2 + sample_tickness_mm / 2 + self.SPACING]
+            absorbing_layer[Tags.STRUCTURE_START_MM] = [
+                0, 0, self.VOLUME_HEIGHT_IN_MM / 2 - sample_tickness_mm / 2 - self.SPACING]
+            absorbing_layer[Tags.STRUCTURE_END_MM] = [
+                0, 0, self.VOLUME_HEIGHT_IN_MM / 2 + sample_tickness_mm / 2 + self.SPACING]
             absorbing_layer[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(10000, 0.1, 0.0)
             absorbing_layer[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
@@ -141,7 +142,6 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
             tissue_dict["air_tube"] = air_tube
             # tissue_dict["detector"] = detector_tissue
             return tissue_dict
-
 
         # Seed the numpy random configuration prior to creating the global_settings file in
         # order to ensure that the same volume
@@ -177,13 +177,13 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
         })
 
         self.pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
         ]
 
         self.device = PhotoacousticDevice(device_position_mm=np.asarray([self.VOLUME_LENGTH_MM / 2 + self.SPACING,
-                                                                    self.VOLUME_LENGTH_MM / 2,
-                                                                    self.VOLUME_HEIGHT_IN_MM / 2 -
+                                                                         self.VOLUME_LENGTH_MM / 2,
+                                                                         self.VOLUME_HEIGHT_IN_MM / 2 -
                                                                          self.inclusion_thickness / 2 - 2 * self.SPACING]))
         self.device.add_illumination_geometry(GaussianBeamIlluminationGeometry(beam_radius_mm=4.0))
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
@@ -226,7 +226,6 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
         else:
             if save_path is None:
                 save_path = ""
-            save_path = save_path + "DIS_measurement_simulation_a.png"
 
         visualise_data(path_to_hdf5_file=self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
                        wavelength=800,
@@ -234,7 +233,7 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
                        show_absorption=True,
                        show_fluence=True,
                        log_scale=True,
-                       save_path=save_path)
+                       save_path=save_path + "DIS_measurement_simulation_a.png")
 
         measured_transmittance = np.asarray([self.transmittance_spectrum.get_value_for_wavelength(wl)
                                              for wl in self.settings[Tags.WAVELENGTHS]])
@@ -243,9 +242,9 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
         plt.subplot(1, 2, 1)
         plt.title("Transmittance")
         plt.plot(self.settings[Tags.WAVELENGTHS], (simulated_transmittance - np.mean(simulated_transmittance)) /
-                                                    np.std(simulated_transmittance), label="simulation", color="red")
+                 np.std(simulated_transmittance), label="simulation", color="red")
         plt.plot(self.settings[Tags.WAVELENGTHS], (measured_transmittance - np.mean(measured_transmittance)) /
-                                                    np.std(measured_transmittance), label="measurement", color="green")
+                 np.std(measured_transmittance), label="measurement", color="green")
         plt.legend(loc="best")
 
         measured_reflectance = np.asarray([self.reflectance_spectrum.get_value_for_wavelength(wl)
@@ -254,9 +253,9 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
         plt.subplot(1, 2, 2)
         plt.title("Reflectance")
         plt.plot(self.settings[Tags.WAVELENGTHS], (simulated_reflectance - np.mean(simulated_reflectance)) /
-                                                    np.std(simulated_reflectance), label="simulation", color="red")
+                 np.std(simulated_reflectance), label="simulation", color="red")
         plt.plot(self.settings[Tags.WAVELENGTHS], (measured_reflectance - np.mean(measured_reflectance)) /
-                                                    np.std(measured_reflectance), label="measurement", color="green")
+                 np.std(measured_reflectance), label="measurement", color="green")
         plt.legend(loc="best")
 
         if show_figure_on_screen:
@@ -267,7 +266,7 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
             plt.savefig(save_path + "DIS_measurement_simulation_b.png")
         plt.close()
 
+
 if __name__ == '__main__':
     test = TestDoubleIntegratingSphereSimulation()
     test.run_test(show_figure_on_screen=False)
-

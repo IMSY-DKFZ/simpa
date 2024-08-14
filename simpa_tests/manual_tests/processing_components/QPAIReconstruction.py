@@ -4,21 +4,20 @@
 
 
 # FIXME temporary workaround for newest Intel architectures
+from simpa_tests.manual_tests import ManualIntegrationTestClass
+from simpa.core.device_digital_twins import RSOMExplorerP50
+from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI
+from simpa import MCXAdapter, ModelBasedAdapter, \
+    GaussianNoise
+from simpa.utils import Tags, Settings, TISSUE_LIBRARY
+from simpa.core.simulation import simulate
+from simpa.io_handling import load_data_field
+from scipy.ndimage import zoom
+import matplotlib.pyplot as plt
+import numpy as np
+from simpa.utils.path_manager import PathManager
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-from simpa.utils.path_manager import PathManager
-import numpy as np
-import os
-import matplotlib.pyplot as plt
-from scipy.ndimage import zoom
-from simpa.io_handling import load_data_field
-from simpa.core.simulation import simulate
-from simpa.utils import Tags, Settings, TISSUE_LIBRARY
-from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
-    GaussianNoise
-from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI
-from simpa.core.device_digital_twins import RSOMExplorerP50
-from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
 class TestqPAIReconstruction(ManualIntegrationTestClass):
@@ -31,7 +30,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
     def setup(self):
         """
         Runs a pipeline consisting of volume creation and optical simulation. The resulting hdf5 file of the
-        simple test volume is saved at SAVE_PATH location defined in the path_config.env file.
+        simple test volume is saved at SIMPA_SAVE_PATH location defined in the path_config.env file.
         """
 
         self.path_manager = PathManager()
@@ -86,7 +85,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_model")
         ]
@@ -130,7 +129,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
 
         # get reconstructed absorptions (2-d middle slices) at each iteration step
         self.list_reconstructions_result_path = self.path_manager.get_hdf5_file_save_path() + \
-                        "/List_reconstructed_qpai_absorptions_" + str(self.wavelength) + "_" + self.VOLUME_NAME + ".npy"
+            "/List_reconstructed_qpai_absorptions_" + str(self.wavelength) + "_" + self.VOLUME_NAME + ".npy"
         self.list_2d_reconstructed_absorptions = np.load(self.list_reconstructions_result_path)
 
     def tear_down(self):
@@ -169,7 +168,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
                        difference_absorption[x_pos, :, :]]
 
         label = ["Absorption coefficients: ${\mu_a}^{gt}$", "Reconstruction: ${\mu_a}^{reconstr.}$",
-             "Difference: ${\mu_a}^{gt} - {\mu_a}^{reconstr.}$"]
+                 "Difference: ${\mu_a}^{gt} - {\mu_a}^{reconstr.}$"]
 
         plt.figure(figsize=(20, 15))
         plt.subplots_adjust(hspace=0.5, wspace=0.1)
@@ -179,7 +178,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
             plt.subplot(4, int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)), i + 1)
             if i == 0:
                 plt.ylabel("y-z", fontsize=10)
-            plt.imshow(np.rot90(quantity, -1))
+            plt.imshow(quantity.T)
             plt.title(label[i], fontsize=10)
             plt.xticks(fontsize=6)
             plt.yticks(fontsize=6)
@@ -194,7 +193,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
                         i + int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)) + 1)
             if i == 0:
                 plt.ylabel("x-z", fontsize=10)
-            plt.imshow(np.rot90(quantity, -1))
+            plt.imshow(quantity.T)
             plt.title(label[i], fontsize=10)
             plt.xticks(fontsize=6)
             plt.yticks(fontsize=6)
@@ -208,7 +207,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
             plt.subplot(4, int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)),
                         i + 2 * int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)) + 1)
             plt.title("Iteration step: " + str(i + 1), fontsize=8)
-            plt.imshow(np.rot90(quantity, -1))  # absorption maps in list are already 2-d
+            plt.imshow(quantity.T)  # absorption maps in list are already 2-d
             plt.colorbar()
             plt.clim(cmin, cmax)
             plt.axis('off')

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from abc import abstractmethod
-from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
+from simpa.core.device_digital_twins import DigitalDeviceTwinBase
 import numpy as np
 
 
@@ -11,6 +11,7 @@ class DetectionGeometryBase(DigitalDeviceTwinBase):
     """
     This class is the base class for representing all detector geometries.
     """
+
     def __init__(self, number_detector_elements, detector_element_width_mm,
                  detector_element_length_mm, center_frequency_hz, bandwidth_percent,
                  sampling_frequency_mhz, device_position_mm: np.ndarray = None,
