@@ -21,11 +21,6 @@ def exponential_image(image, factor):
     return np.exp(factor * image / np.max(image))
 
 
-image = np.load("/home/f762e/Workspace/data/Real_data/meat_measurements/meat_database_simpa/Scan_2.npy")
-inverted_image = exponential_image(np.max(image) - image, 6)
-image = exponential_image(image, 6)
-
-
 @profile
 def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager=None,
                                         visualise: bool = True):
@@ -62,13 +57,13 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
 
         muscle_dictionary = sp.Settings()
         muscle_dictionary[Tags.PRIORITY] = 1
-        muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 1]
-        muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 22]
+        muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
+        muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 34]
         muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.muscle(
             oxygenation=0.6,
             blood_volume_fraction=sp.ImageHeterogeneity(xdim=dim_x, ydim=dim_y, zdim=dim_z,
                                                         spacing_mm=spacing, target_min=0, target_max=0.05,
-                                                        scaling_type=Tags.IMAGE_SCALING_EDGE).get_map())
+                                                        scaling_type=Tags.IMAGE_SCALING_SYMMETRIC).get_map())
         muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
         muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE

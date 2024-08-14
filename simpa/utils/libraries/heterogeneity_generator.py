@@ -165,7 +165,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
 
     def __init__(self, xdim: int, ydim: int, zdim: int, spacing_mm: Union[int, float],
                  heterogeneity_image: np.ndarray = None, image_pixel_spacing_mm: Union[int, float] = None,
-                 scaling_type: str = Tags.IMAGE_SCALING_STRETCH, constant: Union[int, float] = 0,
+                 scaling_type: str = Tags.IMAGE_SCALING_SYMMETRIC, constant: Union[int, float] = 0,
                  crop_placement=('centre', 'centre'), target_mean: Union[int, float] = None,
                  target_std: Union[int, float] = None, target_min: Union[int, float] = None,
                  target_max: Union[int, float] = None, beef_ultrasound_database_path: str = None):
@@ -178,11 +178,11 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         :param image_pixel_spacing_mm: the pixel spacing of the image in mm (pixel spacing)
         :param scaling_type: the scaling type of the heterogeneity map, with default being that no scaling occurs
             OPTIONS:
-            TAGS.IMAGE_SCALING_SYMMETRIC: symmetric reflections of the image to span the area
-            TAGS.IMAGE_SCALING_STRETCH: stretch the image to span the area
-            TAGS.IMAGE_SCALING_WRAP: multiply the image to span the area
-            TAGS.IMAGE_SCALING_EDGE: continue the values at the edge of the area to fill the shape
-            TAGS.IMAGE_SCALING_CONSTANT: span the left-over area with a constant
+            Tags.IMAGE_SCALING_SYMMETRIC: symmetric reflections of the image to span the area
+            Tags.IMAGE_SCALING_STRETCH: stretch the image to span the area
+            Tags.IMAGE_SCALING_WRAP: multiply the image to span the area
+            Tags.IMAGE_SCALING_EDGE: continue the values at the edge of the area to fill the shape
+            Tags.IMAGE_SCALING_CONSTANT: span the left-over area with a constant
         :param constant: the scaling constant of the heterogeneity map, used only for scaling type 'constant'
             WARNING: scaling constant must be in reference to the values in the heterogeneity_image
         :param crop_placement: the placement of where the heterogeneity map is cropped
@@ -202,36 +202,36 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         if image_pixel_spacing_mm is None:
             image_pixel_spacing_mm = spacing_mm
 
-        (image_width_pixels, image_height_pixels) = self.heterogeneity_image.shape
-        [image_width_mm, image_height_mm] = np.array([image_width_pixels, image_height_pixels]) * image_pixel_spacing_mm
-        (xdim_mm, ydim_mm, zdim_mm) = np.array([xdim, ydim, zdim]) * spacing_mm
-
-        wider = image_width_mm > xdim_mm
-        taller = image_height_mm > zdim_mm
-
-        if taller or wider:
-            self.change_resolution(spacing_mm=spacing_mm, image_pixel_spacing_mm=image_pixel_spacing_mm)
-            self.crop_image(xdim, zdim, crop_placement)
-            if not taller and not wider:
-                self.upsize_to_fill_area(xdim, zdim, scaling_type, constant)
-
-        else:
-            self.change_resolution(spacing_mm=spacing_mm, image_pixel_spacing_mm=image_pixel_spacing_mm)
-            self.upsize_to_fill_area(xdim, zdim, scaling_type, constant)
-
         if scaling_type == Tags.IMAGE_SCALING_STRETCH:
             self.heterogeneity_image = transform.resize(self.heterogeneity_image, output_shape=(xdim, zdim),
                                                         mode='symmetric')
+        else:
+            (image_width_pixels, image_height_pixels) = self.heterogeneity_image.shape
+            [image_width_mm, image_height_mm] = np.array(
+                [image_width_pixels, image_height_pixels]) * image_pixel_spacing_mm
+            (xdim_mm, ydim_mm, zdim_mm) = np.array([xdim, ydim, zdim]) * spacing_mm
+
+            wider = image_width_mm > xdim_mm
+            taller = image_height_mm > zdim_mm
+
+            if taller or wider:
+                self.change_resolution(spacing_mm=spacing_mm, image_pixel_spacing_mm=image_pixel_spacing_mm)
+                self.crop_image(xdim, zdim, crop_placement)
+                if not taller and not wider:
+                    self.upsize_to_fill_area(xdim, zdim, scaling_type, constant)
+
+            else:
+                self.change_resolution(spacing_mm=spacing_mm, image_pixel_spacing_mm=image_pixel_spacing_mm)
+                self.upsize_to_fill_area(xdim, zdim, scaling_type, constant)
 
         self.map = np.repeat(self.heterogeneity_image[:, np.newaxis, :], ydim, axis=1)
 
-    def upsize_to_fill_area(self, xdim: int, zdim: int, scaling_type: str = Tags.IMAGE_SCALING_STRETCH,
+    def upsize_to_fill_area(self, xdim: int, zdim: int, scaling_type: str = Tags.IMAGE_SCALING_SYMMETRIC,
                             constant: Union[int, float] = 0):
         """
         Fills an area with an image through various methods of expansion
         :param xdim: the x dimension of the area to be filled in voxels
         :param zdim: the z dimension of the area to be filled in voxels
-        :param image: the input image
         :param scaling_type: the scaling type of the heterogeneity map, with default being that no scaling occurs
             OPTIONS:
             TAGS.IMAGE_SCALING_SYMMETRIC: symmetric reflections of the image to span the area
@@ -353,7 +353,8 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
 
 def download_ultrasound_images(save_dir):
     """
-    Removes the current reference figures directory and downloads the latest references from nextcloud.
+    Downloads the latest beef ultrasound images from nextcloud. The metadata about these images can be found in the
+    folder
 
     :return: None
     """
