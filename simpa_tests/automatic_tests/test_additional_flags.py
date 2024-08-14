@@ -1,8 +1,9 @@
 import unittest
 import numpy as np
 
-from simpa import MCXAdapterReflectance, MCXAdapter, KWaveAdapter, TimeReversalAdapter, Tags, Settings
+from simpa import MCXReflectanceAdapter, MCXAdapter, KWaveAdapter, TimeReversalAdapter, Tags, Settings
 from simpa.utils.matlab import generate_matlab_cmd
+
 
 class TestAdditionalFlags(unittest.TestCase):
     def setUp(self) -> None:
@@ -14,7 +15,7 @@ class TestAdditionalFlags(unittest.TestCase):
             Tags.OPTICAL_MODEL_BINARY_PATH: '.',
             Tags.ADDITIONAL_FLAGS: self.additional_flags
         })
-        mcx_reflectance_adapter =  MCXAdapterReflectance(global_settings=self.settings)
+        mcx_reflectance_adapter =  MCXReflectanceAdapter(global_settings=self.settings)
         cmd = mcx_reflectance_adapter.get_command()
         for flag in self.additional_flags:
             self.assertIn(flag, cmd, f"{flag} was not in command returned by mcx reflectance adapter but was defined as additional flag")
@@ -46,8 +47,7 @@ class TestAdditionalFlags(unittest.TestCase):
         cmd = generate_matlab_cmd("./matlab.exe", "time_reversal_2D.m", "my_hdf5.mat", time_reversal_adapter.get_additional_flags())
         for flag in self.additional_flags:
             self.assertIn(flag, cmd, f"{flag} was not in command returned by time reversal adapter but was defined as additional flag")            
-        
-    
+
 
 if __name__ == '__main__':
     unittest.main()

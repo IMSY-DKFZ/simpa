@@ -50,7 +50,7 @@ class TestLinearUnmixing(unittest.TestCase):
         self.device = sp.PencilBeamIlluminationGeometry()
 
         # Run empty pipeline simulation to "fill" hdf5 file following usual procedure
-        pipeline = [sp.ModelBasedVolumeCreationAdapter(self.settings)]
+        pipeline = [sp.ModelBasedAdapter(self.settings)]
         sp.simulate(pipeline, self.settings, self.device)
 
     def test(self):
