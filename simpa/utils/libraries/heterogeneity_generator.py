@@ -344,6 +344,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
 
     @staticmethod
     def get_default_ultrasound_image(beef_ultrasound_database_path):
+        logger = Logger()
         if not beef_ultrasound_database_path:
             current_dir = os.getcwd()
             beef_ultrasound_database_path = os.path.join(current_dir, "beef_ultrasound_database")
@@ -352,6 +353,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         # make the image be random
         rng = np.random.default_rng()
         scan_number = rng.integers(low=2, high=63)
+        logger.debug("Scan number {} was used for this simulation".format(scan_number))
         heterogeneity_image = np.load(beef_ultrasound_database_path + "/Scan_" + str(scan_number) + ".npy")
         return heterogeneity_image
 
