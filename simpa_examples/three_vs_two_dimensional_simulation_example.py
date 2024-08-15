@@ -22,8 +22,8 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_3Dvs2D_simulation_example(spacing: float | int = 0.2, path_manager=None,
-                                  visualise: bool = True):
+def run_three_vs_two_dimensional_simulation_example(spacing: float | int = 0.2, path_manager=None,
+                                                    visualise: bool = True):
     """
 
     A run through of the 3D vs 2D example. In this example, the same simulation script is run twice, with the

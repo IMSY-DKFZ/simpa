@@ -30,13 +30,14 @@ def run_benchmarking_tests(spacing=0.4, profile: str = "TIME", savefolder: str =
     from simpa_examples.minimal_optical_simulation_uniform_cube import run_minimal_optical_simulation_uniform_cube
     from simpa_examples.optical_and_acoustic_simulation import run_optical_and_acoustic_simulation
     from simpa_examples.segmentation_loader import run_segmentation_loader
-    from simpa_examples.three_vs_two_dimensional_simulation_example import run_3Dvs2D_simulation_example
+    from simpa_examples.three_vs_two_dimensional_simulation_example import (
+        run_three_vs_two_dimensional_simulation_example)
 
     examples = [run_minimal_optical_simulation,
                 run_minimal_optical_simulation_uniform_cube,
                 run_optical_and_acoustic_simulation,
                 run_segmentation_loader,
-                run_3Dvs2D_simulation_example
+                run_three_vs_two_dimensional_simulation_example
                 ]
 
     for example in examples:
