@@ -101,7 +101,7 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
     new_df = pd.DataFrame(benchmarking_lists, columns=['Example', 'Spacing', 'Profile', 'Value'])
     new_df.astype(dtype={"Example": "str", "Spacing": "float64", "Profile": "str", "Value": "float64"})
 
-    # if exists: load old dataframe and append OR just save df
+    # if exists: remove old file
     df_file = savefolder / 'benchmarking_data_frame.csv'
     if df_file.is_file():
         os.remove(df_file)
