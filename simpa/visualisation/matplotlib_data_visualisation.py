@@ -12,6 +12,7 @@ from simpa.utils.path_manager import PathManager
 from simpa.utils.settings import Settings
 from simpa.utils import get_data_field_from_simpa_output
 from simpa.log import Logger
+from typing import Union
 
 
 class VisualiseData:
@@ -43,7 +44,7 @@ class VisualiseData:
     """
 
     def __init__(self,
-                 wavelength: int | float = None,
+                 wavelength: Union[int, float] = None,
                  path_to_hdf5_file: str = None,
                  settings: Settings = None,
                  path_manager: PathManager = None,
@@ -481,7 +482,7 @@ class VisualiseData:
         plt.show()
 
 
-def visualise_data(wavelength: int | float = None,
+def visualise_data(wavelength: Union[int, float] = None,
                    wavelengths: list = None,
                    path_to_hdf5_file: str = None,
                    settings: Settings = None,
