@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import os
 
 import numpy as np
 import pandas as pd
@@ -103,8 +104,7 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
     # if exists: load old dataframe and append OR just save df
     df_file = savefolder / 'benchmarking_data_frame.csv'
     if df_file.is_file():
-        old_df = pd.read_csv(df_file)
-        new_df = pd.concat([old_df, new_df])
+        os.remove(df_file)
     new_df.to_csv(df_file, index=False)
 
 
