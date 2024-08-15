@@ -7,6 +7,7 @@ import simpa as sp
 import numpy as np
 from skimage.data import shepp_logan_phantom
 from scipy.ndimage import zoom
+from skimage.transform import resize
 
 # FIXME temporary workaround for newest Intel architectures
 import os
@@ -19,11 +20,12 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_segmentation_loader(spacing: float | int = .1, path_manager=None,
+def run_segmentation_loader(spacing: float | int = 1.0, input_spacing: float | int = 0.2, path_manager=None,
                             visualise: bool = True):
     """
 
-    :param spacing: The simulation spacing between voxels
+    :param spacing: The simulation spacing between voxels in mm
+    :param input_spacing: The input spacing between voxels in mm
     :param path_manager: the path manager to be used, typically sp.PathManager
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
@@ -34,10 +36,9 @@ def run_segmentation_loader(spacing: float | int = .1, path_manager=None,
     label_mask = shepp_logan_phantom()
 
     label_mask = np.digitize(label_mask, bins=np.linspace(0.0, 1.0, 11), right=True)
+    label_mask = label_mask[100:300, 100:300]
+    label_mask = np.reshape(label_mask, (label_mask.shape[0], 1, label_mask.shape[1]))
 
-    label_mask = np.reshape(label_mask, (400, 1, 400))
-
-    input_spacing = 0.2
     segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
     segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/spacing,
                                              order=0)).astype(int)
@@ -67,9 +68,9 @@ def run_segmentation_loader(spacing: float | int = .1, path_manager=None,
     settings[Tags.RANDOM_SEED] = 1234
     settings[Tags.WAVELENGTHS] = [700]
     settings[Tags.SPACING_MM] = spacing
-    settings[Tags.DIM_VOLUME_X_MM] = 400 / (spacing / input_spacing)
-    settings[Tags.DIM_VOLUME_Y_MM] = 128 / (spacing / input_spacing)
-    settings[Tags.DIM_VOLUME_Z_MM] = 400 / (spacing / input_spacing)
+    settings[Tags.DIM_VOLUME_X_MM] = segmentation_volume_mask.shape[0] * spacing
+    settings[Tags.DIM_VOLUME_Y_MM] = segmentation_volume_mask.shape[1] * spacing
+    settings[Tags.DIM_VOLUME_Z_MM] = segmentation_volume_mask.shape[2] * spacing
 
     settings.set_volume_creation_settings({
         Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,
@@ -85,7 +86,7 @@ def run_segmentation_loader(spacing: float | int = .1, path_manager=None,
     })
 
     pipeline = [
-        sp.SegmentationBasedVolumeCreationAdapter(settings),
+        sp.SegmentationBasedAdapter(settings),
         sp.MCXAdapter(settings)
     ]
 
@@ -105,9 +106,11 @@ def run_segmentation_loader(spacing: float | int = .1, path_manager=None,
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Run the segmentation loader example')
-    parser.add_argument("--spacing", default=0.2, type=float, help='the voxel spacing in mm')
+    parser.add_argument("--spacing", default=1, type=float, help='the voxel spacing in mm')
+    parser.add_argument("--input_spacing", default=0.2, type=float, help='the input spacing in mm')
     parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()
 
-    run_segmentation_loader(spacing=config.spacing, path_manager=config.path_manager, visualise=config.visualise)
+    run_segmentation_loader(spacing=config.spacing, input_spacing=config.input_spacing,
+                            path_manager=config.path_manager, visualise=config.visualise)

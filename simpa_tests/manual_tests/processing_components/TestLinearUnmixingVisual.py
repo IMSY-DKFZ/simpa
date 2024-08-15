@@ -65,7 +65,7 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
 
         # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
         self.pipeline = [
-            sp.ModelBasedVolumeCreationAdapter(self.settings)
+            sp.ModelBasedAdapter(self.settings)
         ]
 
     def perform_test(self):

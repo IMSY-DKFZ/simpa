@@ -7,7 +7,7 @@ name = "simpa"
 dynamic = ["version"]
 authors = [
     {name = "Division of Intelligent Medical Systems (IMSY), DKFZ", email = "k.dreher@dkfz-heidelberg.de"},
-    {name = "Janek Groehl"}
+    {name = "Janek Groehl <janekgroehl@live.de>"}
 ]
 description = "Simulation and Image Processing for Photonics and Acoustics"
 license = {text = "MIT"}
@@ -32,7 +32,8 @@ dependencies = [
     "wget>=3.2",               # Is Public Domain (MIT compatible)
     "jdata>=0.5.2",            # Uses Apache 2.0-License (MIT compatible)
     "pre-commit>=3.2.2",       # Uses MIT-License (MIT compatible)
-    "PyWavelets"               # Uses MIT-License (MIT compatible)
+    "PyWavelets",              # Uses MIT-License (MIT compatible)
+    "scikit-learn>=1.1.0",     # Uses BSD-License (MIT compatible)
 ]
 
 [project.optional-dependencies]
