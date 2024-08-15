@@ -13,7 +13,7 @@ from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.core.simulation import simulate
 from simpa.utils import TISSUE_LIBRARY
 from simpa.io_handling import load_data_field
-from simpa import ModelBasedVolumeCreationAdapter
+from simpa import ModelBasedAdapter
 
 
 class TestNoiseModels(unittest.TestCase):
@@ -63,7 +63,7 @@ class TestNoiseModels(unittest.TestCase):
         settings["noise_model_settings"] = noise_model_settings
 
         simulation_pipeline = [
-            ModelBasedVolumeCreationAdapter(settings),
+            ModelBasedAdapter(settings),
             noise_model(settings, "noise_model_settings")
         ]
 

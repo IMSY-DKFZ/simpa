@@ -5,13 +5,13 @@
 from simpa.utils import Tags
 from simpa.utils import EPS
 from simpa.io_handling import load_data_field, save_data_field
-from simpa.core.processing_components import ProcessingComponent
+from simpa.core.processing_components import ProcessingComponentBase
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 import numpy as np
 import torch
 
 
-class GaussianNoise(ProcessingComponent):
+class GaussianNoise(ProcessingComponentBase):
     """
     Applies Gaussian noise to the defined data field.
     The noise will be applied to all wavelengths.

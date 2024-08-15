@@ -7,7 +7,7 @@
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI
-from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
+from simpa import MCXAdapter, ModelBasedAdapter, \
     GaussianNoise
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
@@ -85,7 +85,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_model")
         ]

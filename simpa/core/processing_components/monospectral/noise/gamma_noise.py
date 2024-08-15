@@ -5,13 +5,13 @@
 import numpy as np
 import torch
 
-from simpa.core.processing_components import ProcessingComponent
+from simpa.core.processing_components import ProcessingComponentBase
 from simpa.io_handling import load_data_field, save_data_field
 from simpa.utils import Tags
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
-class GammaNoise(ProcessingComponent):
+class GammaNoise(ProcessingComponentBase):
     """
     Applies Gamma noise to the defined data field.
     The noise will be applied to all wavelengths.
