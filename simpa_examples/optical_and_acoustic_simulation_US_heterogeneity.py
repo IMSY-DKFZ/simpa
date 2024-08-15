@@ -60,15 +60,19 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
         tissue_dict = sp.Settings()
         tissue_dict[Tags.BACKGROUND] = background_dictionary
 
+        us_heterogeneity = sp.ImageHeterogeneity(xdim=dim_x, ydim=dim_y, zdim=dim_z,
+                                                 spacing_mm=spacing, target_min=0, target_max=0.05,
+                                                 scaling_type=Tags.IMAGE_SCALING_SYMMETRIC)
+        us_heterogeneity.invert_image()
+        us_heterogeneity.exponential()
+        bvf = us_heterogeneity.get_map()
+
         muscle_dictionary = sp.Settings()
         muscle_dictionary[Tags.PRIORITY] = 1
         muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
         muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 34]
-        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.muscle(
-            oxygenation=0.6,
-            blood_volume_fraction=sp.ImageHeterogeneity(xdim=dim_x, ydim=dim_y, zdim=dim_z,
-                                                        spacing_mm=spacing, target_min=0, target_max=0.05,
-                                                        scaling_type=Tags.IMAGE_SCALING_SYMMETRIC).get_map())
+        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.muscle(oxygenation=0.6,
+                                                                                blood_volume_fraction=bvf)
         muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
         muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
