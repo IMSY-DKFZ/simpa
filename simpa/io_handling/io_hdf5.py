@@ -123,6 +123,8 @@ def load_hdf5(file_path, file_dictionary_path="/"):
         """
 
         if isinstance(h5file[path], h5py._hl.dataset.Dataset):
+            if isinstance(h5file[path][()], bytes):
+                return h5file[path][()].decode("utf-8")
             return h5file[path][()]
 
         dictionary = {}

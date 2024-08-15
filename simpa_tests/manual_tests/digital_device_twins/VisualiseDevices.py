@@ -19,12 +19,21 @@ class DeviceVisualisationTest(ManualIntegrationTestClass):
         pass
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
+        if show_figure_on_screen:
+            figure_save_path = [None, None, None]
+        else:
+            if save_path is None:
+                save_path = ""
+            figure_save_path = [save_path + "device_visualisation_MSOT_Acuity.png",
+                                save_path + "device_visualisation_MSOT_Invision.png",
+                                save_path + "device_visualisation_RSOM_Explorer.png"
+                                ]
         sp.visualise_device(sp.MSOTAcuityEcho(device_position_mm=np.asarray([50, 10, 0])),
-                            save_path + "device_visualisation_MSOT_Acuity.png")
+                            figure_save_path[0])
         sp.visualise_device(sp.InVision256TF(device_position_mm=np.asarray([50, 10, 50])),
-                            save_path + "device_visualisation_MSOT_Invision.png")
+                            figure_save_path[1])
         sp.visualise_device(sp.RSOMExplorerP50(device_position_mm=np.asarray([50, 10, 0])),
-                            save_path + "device_visualisation_RSOM_Explorer.png")
+                            figure_save_path[2])
 
 
 if __name__ == "__main__":

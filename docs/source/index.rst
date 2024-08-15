@@ -20,6 +20,8 @@ pipeline according to their specific use cases and tool requirements.
    :caption: SIMPA toolkit
 
    intro_link
+   understanding_link.md
+   bench_link.md
    contributing_link
 
 ===================================

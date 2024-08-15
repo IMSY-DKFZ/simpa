@@ -7,6 +7,9 @@ import torch
 from simpa.utils import Tags
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.libraries.structure_library.StructureBase import GeometricalStructure
+from simpa.log import Logger
+
+logger = Logger()
 
 
 class HorizontalLayerStructure(GeometricalStructure):
@@ -99,6 +102,36 @@ class HorizontalLayerStructure(GeometricalStructure):
         volume_fractions[bools_fully_filled_layers] = 1
 
         return bools_all_layers.cpu().numpy(), volume_fractions[bools_all_layers].cpu().numpy()
+
+    def update_molecule_volume_fractions(self, single_structure_settings):
+        for molecule in self.molecule_composition:
+            old_vol = getattr(molecule, "volume_fraction")
+            if isinstance(old_vol, torch.Tensor):
+                structure_start_voxels = (torch.tensor(single_structure_settings[Tags.STRUCTURE_START_MM]) /
+                                          self.voxel_spacing)
+                structure_end_voxels = (torch.tensor(single_structure_settings[Tags.STRUCTURE_END_MM]) /
+                                        self.voxel_spacing)
+                structure_size = structure_end_voxels - structure_start_voxels
+
+                if self.volume_dimensions_voxels[2] != old_vol.shape[2]:
+                    if self.volume_dimensions_voxels[2] == structure_size[2]:
+                        pad_start = structure_start_voxels.flip(dims=[0])
+                        pad_end = ((torch.from_numpy(self.volume_dimensions_voxels) - structure_end_voxels)
+                                   .flip(dims=[0]))
+                        for count, structure_end in enumerate(structure_end_voxels):
+                            if structure_end == 0:
+                                pad_end[2 - count] = 0
+
+                        if (pad_start > 1e-6).any() or (pad_end > 1e-6).any():
+                            padding_list = torch.flatten(torch.stack((pad_start, pad_end), 1)).tolist()
+                            padding = tuple(map(int, padding_list))
+                            padded_vol = torch.nn.functional.pad(old_vol, padding, mode='constant', value=0)
+                            setattr(molecule, "volume_fraction", padded_vol)
+                    else:
+                        logger.critical("Tensor does not have the same dimensionality as the area it should fill" +
+                                        "{} or the dimensions of the entire ".format(old_vol.shape) +
+                                        "simulation volume{}! Please change this.".format(
+                                            self.volume_dimensions_voxels.shape))
 
 
 def define_horizontal_layer_structure_settings(molecular_composition: MolecularComposition,

@@ -5,12 +5,12 @@
 from simpa.utils import Tags, Settings
 from simpa.utils.constants import property_tags, wavelength_independent_properties, toolkit_tags
 from simpa.io_handling import load_data_field, save_data_field
-from simpa.core.processing_components import ProcessingComponent
+from simpa.core.processing_components import ProcessingComponentBase
 from simpa.core.device_digital_twins import DigitalDeviceTwinBase, PhotoacousticDevice
 import numpy as np
 
 
-class FieldOfViewCropping(ProcessingComponent):
+class FieldOfViewCropping(ProcessingComponentBase):
 
     def __init__(self, global_settings, settings_key=None):
         if settings_key is None:
