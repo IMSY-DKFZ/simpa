@@ -141,6 +141,9 @@ class PhotoacousticDevice(DigitalDeviceTwinBase, ABC):
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
         pass
 
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings):
+        pass
+
     def serialize(self) -> dict:
         serialized_device = self.__dict__
         device_dict = {"PhotoacousticDevice": serialized_device}
