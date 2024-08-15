@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 help() {
 echo "Usage: calculate benchmarking for [options]"
 echo "For further details see readme"
@@ -7,8 +9,8 @@ echo "Number of examples can be selected in performance_check.py"
 echo "For comparable benchmarks, please use default"
 echo "Options:"
 echo "  -i, --init           First spacing to benchmark: default = 0.2mm"
-echo "  -c, --cease          Final spacing to benchmark: default = 0.4mm"
-echo "  -s, --step           Step between spacings: default = 0.1mm"
+echo "  -c, --cease          Final spacing to benchmark: default = 0.25mm"
+echo "  -s, --step           Step between spacings: default = 0.05mm"
 echo "  -f, --file           Where to store the output files: default save in current directory; 'print' prints it in console"
 echo "  -t, --time           Profile times taken: if no profile, all are set"
 echo "  -g, --gpu            Profile GPU usage: if no profile, all are set"
@@ -61,11 +63,11 @@ if [ "$start" == 0 ]; then
 fi
 
 if [ "$stop" == 0 ]; then
-  stop=0.4
+  stop=0.25
 fi
 
 if [ "$step" == 0 ]; then
-  step=0.1
+  step=0.05
 fi
 
 if [ ${#profiles[@]} -eq 0 ]; then

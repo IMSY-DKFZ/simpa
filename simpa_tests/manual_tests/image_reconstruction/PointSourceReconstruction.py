@@ -12,7 +12,7 @@ from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary, An
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.utils.path_manager import PathManager
-from simpa import DelayAndSumAdapter, MCXAdapter, KWaveAdapter, ModelBasedVolumeCreationAdapter, FieldOfViewCropping
+from simpa import DelayAndSumAdapter, MCXAdapter, KWaveAdapter, ModelBasedAdapter, FieldOfViewCropping
 from simpa.core.device_digital_twins import *
 from simpa.io_handling import load_data_field
 
@@ -155,7 +155,7 @@ settings.set_reconstruction_settings({
 })
 
 SIMUATION_PIPELINE = [
-    ModelBasedVolumeCreationAdapter(settings),
+    ModelBasedAdapter(settings),
     MCXAdapter(settings),
     KWaveAdapter(settings),
     FieldOfViewCropping(settings),

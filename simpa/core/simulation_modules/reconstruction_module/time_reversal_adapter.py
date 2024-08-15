@@ -55,7 +55,8 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             raise AttributeError("Please specify a value for SPACING_MM")
 
         detector_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
-        detector_positions_voxels = np.round(detector_positions / spacing_in_mm).astype(int)
+        # we add eps of 1e-10 because numpy rounds 0.5 to the next even number
+        detector_positions_voxels = np.round(detector_positions / spacing_in_mm + 1e-10).astype(int)
 
         # plus 2 because of off-
         volume_x_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_X_MM] / spacing_in_mm) + 1)
@@ -170,7 +171,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
         cmd = generate_matlab_cmd(matlab_binary_path, time_reversal_script, acoustic_path, self.get_additional_flags())
-        
+
         cur_dir = os.getcwd()
         os.chdir(self.global_settings[Tags.SIMULATION_PATH])
         self.logger.info(cmd)

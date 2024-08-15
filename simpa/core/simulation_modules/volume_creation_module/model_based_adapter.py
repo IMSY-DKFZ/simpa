@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
+from simpa.core.simulation_modules.volume_creation_module import VolumeCreationAdapterBase
 from simpa.utils.libraries.structure_library import priority_sorted_structures
 from simpa.utils import Tags
 import numpy as np
@@ -10,7 +10,7 @@ from simpa.utils import create_deformation_settings
 import torch
 
 
-class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
+class ModelBasedAdapter(VolumeCreationAdapterBase):
     """
     The model-based volume creator uses a set of rules how to generate structures
     to create a simulation volume.
@@ -95,7 +95,6 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                     max_added_fractions[added_fraction_greater_than_any_added_fraction & mask] = \
                         added_volume_fraction[added_fraction_greater_than_any_added_fraction & mask]
                 else:
-                    # FIXME: This bit needs to be adjusted to torch operations!
                     if isinstance(structure_properties[key], torch.Tensor):
                         volumes[key][mask] += added_volume_fraction[mask] * \
                             structure_properties[key].to(self.torch_device)[mask]
