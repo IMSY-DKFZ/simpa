@@ -162,7 +162,8 @@ It is also easily possible to build the SIMPA documentation from scratch.
 When the installation succeeded, and you want to make sure that you have the latest documentation
 you should do the following steps in a command line:
 
-1. Navigate to the `simpa/docs` directory
+1. Make sure that you've installed the optional dependencies needed for the documentation by running `pip install .[docs]`
+2. Navigate to the `simpa/docs` directory
 2. If you would like the documentation to have the https://readthedocs.org/ style, type `pip install sphinx-rtd-theme`
 3. Type `make html`
 4. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser.
