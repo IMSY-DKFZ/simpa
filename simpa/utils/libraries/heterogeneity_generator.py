@@ -161,7 +161,8 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
     by our team.
 
     ##########
-    This example will (if not previously downloaded) download a folder with beef ultrasound images
+    This class will (if not previously downloaded in the directory of the simulation) download a folder with beef
+    ultrasound images
     ##########
 
     Attributes:
@@ -264,13 +265,14 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         self.logger.warning("The input image has filled the area by using {} scaling type".format(scaling_type))
 
     def crop_image(self, xdim: int, zdim: int,
-                   crop_placement: Union[str, tuple] = Tags.CROP_POSITION_CENTRE) -> np.ndarray:
+                   crop_placement: Union[str, tuple] = Tags.CROP_POSITION_CENTRE):
         """
         Crop the image to fit specified dimensions xdim and zdim
         :param xdim: the x dimension of the area to be filled in voxels
         :param zdim: the z dimension of the area to be filled in voxels
         :param crop_placement: the placement of where the heterogeneity map is cropped
             OPTIONS: TAGS.CROP_PLACEMENT_[TOP,BOTTOM,LEFT,RIGHT,CENTRE,RANDOM] or position of left hand corner on image
+        :raises: ValueError for invalid placements
         """
         (image_width_pixels, image_height_pixels) = self.heterogeneity_image.shape
         crop_width = min(xdim, image_width_pixels)
@@ -342,8 +344,23 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         self.heterogeneity_image = transform.resize(self.heterogeneity_image, (new_image_pixel_width,
                                                                                new_image_pixel_height))
 
+    def exponential(self, factor: Union[int, float] = 6):
+        """
+        Method to put an exponential weighting on the image. This is implemented as we believe the images created the
+        MSOT Acuity Echo device might be exponential, and hence this method will reverse this.
+        :param factor: The exponential factor
+        """
+        self.heterogeneity_image = np.exp(factor * self.heterogeneity_image / np.max(self.heterogeneity_image))
+
+    def invert_image(self):
+        """
+        Method to invert the image
+        """
+        self.heterogeneity_image = np.max(self.heterogeneity_image) - self.heterogeneity_image
+
     @staticmethod
-    def get_default_ultrasound_image(beef_ultrasound_database_path):
+    def get_default_ultrasound_image(beef_ultrasound_database_path: str = None):
+
         logger = Logger()
         if not beef_ultrasound_database_path:
             current_dir = os.getcwd()
@@ -358,7 +375,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         return heterogeneity_image
 
 
-def download_ultrasound_images(save_dir):
+def download_ultrasound_images(save_dir: str):
     """
     Downloads the latest beef ultrasound images from nextcloud. The metadata about these images can be found in the
     folder
