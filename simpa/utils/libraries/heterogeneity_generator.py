@@ -174,7 +174,8 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
                  scaling_type: str = Tags.IMAGE_SCALING_SYMMETRIC, constant: Union[int, float] = 0,
                  crop_placement=('centre', 'centre'), target_mean: Union[int, float] = None,
                  target_std: Union[int, float] = None, target_min: Union[int, float] = None,
-                 target_max: Union[int, float] = None, beef_ultrasound_database_path: str = None):
+                 target_max: Union[int, float] = None, beef_ultrasound_database_path: str = None,
+                 ultrasound_image_type: str = None):
         """
         :param xdim: the x dimension of the volume in voxels
         :param ydim: the y dimension of the volume in voxels
@@ -202,7 +203,8 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         self.heterogeneity_image = heterogeneity_image
 
         if self.heterogeneity_image is None:
-            self.heterogeneity_image = self.get_default_ultrasound_image(beef_ultrasound_database_path)
+            self.heterogeneity_image = self.get_ultrasound_image(beef_ultrasound_database_path,
+                                                                 image_type=ultrasound_image_type)
             image_pixel_spacing_mm = 0.2
 
         if image_pixel_spacing_mm is None:
@@ -359,7 +361,7 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         self.heterogeneity_image = np.max(self.heterogeneity_image) - self.heterogeneity_image
 
     @staticmethod
-    def get_default_ultrasound_image(beef_ultrasound_database_path: str = None):
+    def get_ultrasound_image(beef_ultrasound_database_path: str = None, image_type: str = Tags.MEAT_ULTRASOUND_CROPPED):
 
         logger = Logger()
         if not beef_ultrasound_database_path:
@@ -371,7 +373,8 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         rng = np.random.default_rng()
         scan_number = rng.integers(low=2, high=63)
         logger.debug("Scan number {} was used for this simulation".format(scan_number))
-        heterogeneity_image = np.load(beef_ultrasound_database_path + "/Scan_" + str(scan_number) + ".npy")
+        heterogeneity_image = np.load(beef_ultrasound_database_path + "/" + image_type + "/Scan_" + str(scan_number)
+                                      + ".npy")
         return heterogeneity_image
 
 
