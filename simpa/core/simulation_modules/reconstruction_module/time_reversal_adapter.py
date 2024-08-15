@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_image_dimensions
-from simpa.utils import Tags
+from simpa.utils import Tags, round_away_from_zero
 from simpa.utils.matlab import generate_matlab_cmd
 from simpa.utils.settings import Settings
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
@@ -57,7 +57,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         detector_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
         # we add eps of 1e-10 because numpy rounds 0.5 to the next even number
-        detector_positions_voxels = np.round(detector_positions / spacing_in_mm + 1e-10).astype(int)
+        detector_positions_voxels = round_away_from_zero(detector_positions / spacing_in_mm + 1e-10)
 
         # plus 2 because of off-
         volume_x_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_X_MM] / spacing_in_mm) + 1)
@@ -185,7 +185,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         field_of_view_mm = detection_geometry.get_field_of_view_mm()
         _, _, _, xdim_start, xdim_end,  ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(field_of_view_mm, spacing_in_mm, self.logger)
         field_of_view_voxels = [xdim_start, xdim_end, zdim_start, zdim_end, ydim_start, ydim_end] # change ordering
-        field_of_view_voxels = [int(dim) for dim in field_of_view_voxels] # cast to int
+        field_of_view_voxels = [round_away_from_zero(dim) for dim in field_of_view_voxels] # cast to int
         
         self.logger.debug(f"FOV (voxels): {field_of_view_voxels}")
         # In case it should be cropped from A to A, then crop from A to A+1

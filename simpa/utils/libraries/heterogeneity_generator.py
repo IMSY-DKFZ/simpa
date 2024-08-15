@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.datasets import make_blobs
 from scipy.ndimage.filters import gaussian_filter
 from skimage import transform
-from simpa.utils import Tags
+from simpa.utils import Tags, round_away_from_zero
 from typing import Union, Optional
 from simpa.log import Logger
 
@@ -135,7 +135,7 @@ class BlobHeterogeneity(HeterogeneityGeneratorBase):
         super().__init__(xdim, ydim, zdim, spacing_mm, target_mean, target_std, target_min, target_max)
 
         if num_centers is None:
-            num_centers = int(np.round(np.float_power((xdim * ydim * zdim) * spacing_mm, 1 / 3)))
+            num_centers = round_away_from_zero(np.float_power((xdim * ydim * zdim) * spacing_mm, 1 / 3))
 
         if cluster_std is None:
             cluster_std = 1

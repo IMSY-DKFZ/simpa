@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 
-from typing import Union, List, Dict, Optional
+from typing import Union, List, Dict, Optional, Sized
 import numpy as np
 import torch
 from scipy.interpolate import interp1d
@@ -135,7 +135,7 @@ def spline_evaluator2d_voxel(x: int, y: int, spline: Union[list, np.ndarray], of
     :return: True if the point (x, y) lies within the range around the spline, False otherwise.
     """
     elevation = spline[x]
-    y_value = np.round(elevation + offset_voxel)
+    y_value = round_away_from_zero(elevation + offset_voxel)
     if y_value <= y < thickness_voxel + y_value:
         return True
     else:
@@ -292,3 +292,26 @@ def are_equal(obj1: Union[list, tuple, np.ndarray, object], obj2: Union[list, tu
     # For other types, use standard equality check which also works for lists
     else:
         return obj1 == obj2
+
+
+def round_away_from_zero(x):
+    """
+    Round a number away from zero. The np.round function rounds 0.5 to the nearest even number, which is not always the
+    desired behavior. This function always rounds 0.5 away from zero. For example, 0.5 will be rounded to 1, and -0.5
+    will be rounded to -1. All other numbers are rounded to the nearest integer.
+    :param x: input number or array of numbers
+    :return: rounded number or array of numbers
+    :rtype: int or np.ndarray of int
+    """
+
+    def round_single_value(value):
+        # If the value is positive, add 0.5 and use floor to round away from zero
+        # If the value is negative, subtract 0.5 and use ceil to round away from zero
+        return int(np.floor(value + 0.5)) if value > 0 else int(np.ceil(value - 0.5))
+
+    if isinstance(x, (np.ndarray, list, tuple)):
+        # Apply rounding function to each element in the array
+        return np.array([round_away_from_zero(val) for val in x], dtype=int)
+    else:
+        # Apply rounding to a single value
+        return round_single_value(x)

@@ -11,12 +11,6 @@ from .libraries.literature_values import StandardProperties
 from .libraries.literature_values import OpticalTissueProperties
 from .constants import SegmentationClasses
 
-# Heterogeneity
-
-from .libraries.heterogeneity_generator import RandomHeterogeneity
-from .libraries.heterogeneity_generator import BlobHeterogeneity
-from .libraries.heterogeneity_generator import ImageHeterogeneity
-
 # Then load classes and methods with an <b>increasing</b> amount of internal dependencies.
 # If there are import errors in the tests, it is probably due to an incorrect
 # initialization order
@@ -37,6 +31,7 @@ from .libraries.tissue_library import TISSUE_LIBRARY
 from .calculate import calculate_oxygenation
 from .calculate import calculate_gruneisen_parameter_from_temperature
 from .calculate import randomize_uniform
+from .calculate import round_away_from_zero
 
 from .deformation_manager import create_deformation_settings
 from .deformation_manager import get_functional_from_deformation_settings
@@ -61,6 +56,12 @@ from .libraries.structure_library.RectangularCuboidStructure import RectangularC
     define_rectangular_cuboid_structure_settings
 from .libraries.structure_library.SphericalStructure import SphericalStructure, define_spherical_structure_settings
 from .libraries.structure_library.VesselStructure import VesselStructure, define_vessel_structure_settings
+
+# Heterogeneity
+
+from .libraries.heterogeneity_generator import RandomHeterogeneity
+from .libraries.heterogeneity_generator import BlobHeterogeneity
+from .libraries.heterogeneity_generator import ImageHeterogeneity
 
 if __name__ == "__main__":
     view_saved_spectra()

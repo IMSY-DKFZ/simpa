@@ -7,7 +7,7 @@ from abc import abstractmethod
 import numpy as np
 
 from simpa.log import Logger
-from simpa.utils import Settings, Tags, get_functional_from_deformation_settings
+from simpa.utils import Settings, Tags, get_functional_from_deformation_settings, round_away_from_zero
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.processing_device import get_processing_device
@@ -30,9 +30,9 @@ class GeometricalStructure:
         self.logger = Logger()
 
         self.voxel_spacing = global_settings[Tags.SPACING_MM]
-        volume_x_dim = int(np.round(global_settings[Tags.DIM_VOLUME_X_MM] / self.voxel_spacing))
-        volume_y_dim = int(np.round(global_settings[Tags.DIM_VOLUME_Y_MM] / self.voxel_spacing))
-        volume_z_dim = int(np.round(global_settings[Tags.DIM_VOLUME_Z_MM] / self.voxel_spacing))
+        volume_x_dim = round_away_from_zero(global_settings[Tags.DIM_VOLUME_X_MM] / self.voxel_spacing)
+        volume_y_dim = round_away_from_zero(global_settings[Tags.DIM_VOLUME_Y_MM] / self.voxel_spacing)
+        volume_z_dim = round_away_from_zero(global_settings[Tags.DIM_VOLUME_Z_MM] / self.voxel_spacing)
         self.volume_dimensions_voxels = np.asarray([volume_x_dim, volume_y_dim, volume_z_dim])
 
         self.volume_dimensions_mm = self.volume_dimensions_voxels * self.voxel_spacing
