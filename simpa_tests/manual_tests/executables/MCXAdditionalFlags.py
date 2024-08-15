@@ -31,7 +31,7 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
         """
 
         path_manager = PathManager()
-        
+
         self.settings = Settings({
             Tags.WAVELENGTHS: [800],
             Tags.WAVELENGTH: 800,
@@ -63,7 +63,7 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
         self.output_name = f'{os.path.join(self.settings[Tags.SIMULATION_PATH], self.settings[Tags.VOLUME_NAME])}_output'
-        self.output_file_name = f'{self.output_name}.log' 
+        self.output_file_name = f'{self.output_name}.log'
 
     def run_simulation(self):
         # run pipeline including volume creation and optical mcx simulation
@@ -78,11 +78,11 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
 
         :raises FileNotFoundError: if log file does not exist at expected location
         """
-        
-        # perform cleaning before test 
+
+        # perform cleaning before test
         if os.path.exists(self. output_file_name):
             os.remove(self.output_file_name)
-        
+
         # run simulation
         self.settings.get_optical_settings()[Tags.ADDITIONAL_FLAGS] = ['-l', 1, '-s', self.output_name]
         self.run_simulation()
@@ -90,26 +90,27 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
         # checking if file exists afterwards
         if not os.path.exists(self.output_file_name):
             raise FileNotFoundError(f"Log file wasn't created at expected path {self.output_file_name}")
-        
+
     def test_if_last_flag_is_used(self):
         """Tests if log file is created with correct last given name by setting multiple additional parameters
 
         :raises FileNotFoundError: if correct log file does not exist at expected location
         """
         output_name = f'{os.path.join(self.settings[Tags.SIMULATION_PATH], self.settings[Tags.VOLUME_NAME])}_output'
-        output_file_name = f'{output_name}.log' 
+        output_file_name = f'{output_name}.log'
 
-        # perform cleaning before test 
+        # perform cleaning before test
         if os.path.exists(output_file_name):
             os.remove(output_file_name)
-        
+
         # run simulation
         self.settings.get_optical_settings()[Tags.ADDITIONAL_FLAGS] = ['-l', 1, '-s', 'temp_name',  '-s', output_name]
         self.run_simulation()
 
         # checking if file exists afterwards
         if not os.path.exists(output_file_name):
-            raise FileNotFoundError(f"Log file wasn't created with correct last given name at expected path {output_file_name}")
+            raise FileNotFoundError(
+                f"Log file wasn't created with correct last given name at expected path {output_file_name}")
 
     def perform_test(self):
         """
@@ -119,8 +120,9 @@ class MCXAdditionalFlags(ManualIntegrationTestClass):
         self.test_if_last_flag_is_used()
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
-        pass # no figures are created that could be visualized
-     
+        pass  # no figures are created that could be visualized
+
+
 if __name__ == '__main__':
     test = MCXAdditionalFlags()
     test.run_test(show_figure_on_screen=False)

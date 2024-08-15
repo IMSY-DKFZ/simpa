@@ -28,7 +28,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter
+from simpa import MCXAdapter, ModelBasedAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 from simpa.core.simulation import simulate
 from simpa.io_handling import load_data_field
@@ -208,7 +208,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         self.settings.get_optical_settings()[Tags.MCX_ASSUMED_ANISOTROPY] = anisotropy_value
 
         pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings)
         ]
 

@@ -9,7 +9,12 @@ simulation\_modules
 .. toctree::
    :maxdepth: 4
 
-   simpa.core.simulation_modules.acoustic_forward_module
-   simpa.core.simulation_modules.optical_simulation_module
+   simpa.core.simulation_modules.acoustic_module
+   simpa.core.simulation_modules.optical_module
    simpa.core.simulation_modules.reconstruction_module
    simpa.core.simulation_modules.volume_creation_module
+
+.. automodule:: simpa.core.simulation_modules.simulation_module_base
+   :members:
+   :undoc-members:
+   :show-inheritance:

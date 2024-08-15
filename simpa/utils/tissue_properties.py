@@ -3,13 +3,25 @@
 # SPDX-License-Identifier: MIT
 
 from simpa.utils.constants import property_tags
+from simpa.utils import Settings
+from simpa.utils.processing_device import get_processing_device
+import torch
 
 
 class TissueProperties(dict):
+    """
+    The tissue properties contain a volumetric representation of each tissue parameter currently
+    modelled in the SIMPA framework.
 
-    def __init__(self):
+    It is a dictionary that is populated with each of the parameters.
+    The values of the parameters can be either numbers or numpy arrays.
+    It also contains a volume fraction field.
+    """
+
+    def __init__(self, settings: Settings):
         super().__init__()
-        self.volume_fraction = 0
+        volume_x_dim, volume_y_dim, volume_z_dim = settings.get_volume_dimensions_voxels()
+        self.volume_fraction = torch.zeros((volume_x_dim, volume_y_dim, volume_z_dim), dtype=torch.float32)
         for key in property_tags:
             self[key] = 0
 
