@@ -24,7 +24,7 @@ from simpa.io_handling import load_data_field
 from simpa.core.device_digital_twins import *
 import numpy as np
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa import ModelBasedVolumeCreationAdapter, MCXAdapter
+from simpa import ModelBasedAdapter, MCXAdapter
 from simpa_tests.manual_tests.test_with_experimental_measurements.utils import read_reference_spectra, read_rxt_file
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 import inspect
@@ -177,7 +177,7 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
         })
 
         self.pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
         ]
 

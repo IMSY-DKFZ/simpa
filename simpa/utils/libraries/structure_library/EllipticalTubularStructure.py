@@ -94,7 +94,7 @@ class EllipticalTubularStructure(GeometricalStructure):
         main_axis_vector = main_axis_vector/torch.linalg.norm(main_axis_vector) * main_axis_length
 
         minor_axis_length = main_axis_length*torch.sqrt(1-eccentricity**2)
-        minor_axis_vector = torch.cross(cylinder_vector, main_axis_vector)
+        minor_axis_vector = torch.linalg.cross(cylinder_vector, main_axis_vector)
         minor_axis_vector = minor_axis_vector / torch.linalg.norm(minor_axis_vector) * minor_axis_length
 
         dot_product = torch.matmul(target_vector, cylinder_vector)/torch.linalg.norm(cylinder_vector)

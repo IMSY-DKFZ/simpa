@@ -36,6 +36,7 @@ def priority_sorted_structures(settings: Settings, volume_creator_settings: dict
     sorted_structure_settings = sorted(
         [structure_setting for structure_setting in volume_creator_settings[Tags.STRUCTURES].values()],
         key=lambda s: s[Tags.PRIORITY] if Tags.PRIORITY in s else 0, reverse=True)
+
     for structure_setting in sorted_structure_settings:
         try:
             structure_class = globals()[structure_setting[Tags.STRUCTURE_TYPE]]

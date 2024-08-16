@@ -88,8 +88,8 @@ def run_minimal_optical_simulation_uniform_cube(spacing: float | int = 0.5, path
     })
 
     pipeline = [
-        sp.ModelBasedVolumeCreationAdapter(settings),
-        sp.MCXAdapterReflectance(settings),
+        sp.ModelBasedAdapter(settings),
+        sp.MCXReflectanceAdapter(settings),
     ]
 
     device = sp.PencilBeamIlluminationGeometry(device_position_mm=np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,

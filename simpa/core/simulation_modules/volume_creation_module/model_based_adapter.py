@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.core.simulation_modules.volume_creation_module import VolumeCreatorModuleBase
+from simpa.core.simulation_modules.volume_creation_module import VolumeCreationAdapterBase
 from simpa.utils.libraries.structure_library import priority_sorted_structures
 from simpa.utils import Tags
 import numpy as np
@@ -10,7 +10,7 @@ from simpa.utils import create_deformation_settings
 import torch
 
 
-class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
+class ModelBasedAdapter(VolumeCreationAdapterBase):
     """
     The model-based volume creator uses a set of rules how to generate structures
     to create a simulation volume.
@@ -68,7 +68,7 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
         for structure in priority_sorted_structures(self.global_settings, self.component_settings):
             self.logger.debug(type(structure))
 
-            structure_properties = structure.properties_for_wavelength(wavelength)
+            structure_properties = structure.properties_for_wavelength(self.global_settings, wavelength)
 
             structure_volume_fractions = torch.as_tensor(
                 structure.geometrical_volume, dtype=torch.float, device=self.torch_device)
@@ -95,9 +95,20 @@ class ModelBasedVolumeCreationAdapter(VolumeCreatorModuleBase):
                     max_added_fractions[added_fraction_greater_than_any_added_fraction & mask] = \
                         added_volume_fraction[added_fraction_greater_than_any_added_fraction & mask]
                 else:
-                    volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
+                    if isinstance(structure_properties[key], torch.Tensor):
+                        volumes[key][mask] += added_volume_fraction[mask] * \
+                            structure_properties[key].to(self.torch_device)[mask]
+                    elif isinstance(structure_properties[key], (float, np.float64, int, np.int64)):
+                        volumes[key][mask] += added_volume_fraction[mask] * structure_properties[key]
+                    else:
+                        raise ValueError(f"Unsupported type of structure property. "
+                                         f"Was {type(structure_properties[key])}.")
 
             global_volume_fractions[mask] += added_volume_fraction[mask]
+
+        if (torch.abs(global_volume_fractions[global_volume_fractions > 1]) < 1e-5).any():
+            raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
+                                 "exactly 100%!")
 
         # convert volumes back to CPU
         for key in volumes.keys():
