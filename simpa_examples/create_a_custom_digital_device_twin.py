@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     positions = device.get_detection_geometry().get_detector_element_positions_accounting_for_device_position_mm()
     detector_elements = device.get_detection_geometry().get_detector_element_orientations()
-    positions = sp.round_away_from_zero(positions/settings[Tags.SPACING_MM])
+    positions = sp.round_x5_away_from_zero(positions/settings[Tags.SPACING_MM])
     xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(device.get_detection_geometry().field_of_view_extent_mm, settings[Tags.SPACING_MM], Logger())
 
     import matplotlib.pyplot as plt

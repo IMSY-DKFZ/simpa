@@ -31,7 +31,7 @@ from .libraries.tissue_library import TISSUE_LIBRARY
 from .calculate import calculate_oxygenation
 from .calculate import calculate_gruneisen_parameter_from_temperature
 from .calculate import randomize_uniform
-from .calculate import round_away_from_zero
+from .calculate import round_x5_away_from_zero
 
 from .deformation_manager import create_deformation_settings
 from .deformation_manager import get_functional_from_deformation_settings

@@ -9,7 +9,7 @@ from simpa.utils.processing_device import get_processing_device
 from simpa.utils.settings import Settings
 from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.utils import Tags
-from simpa.utils import round_away_from_zero
+from simpa.utils import round_x5_away_from_zero
 import torch
 import torch.fft
 from torch import Tensor
@@ -484,7 +484,7 @@ def compute_image_dimensions(field_of_view_in_mm: np.ndarray, spacing_in_mm: flo
         start_temp = start_in_mm / spacing_in_mm
         end_temp = end_in_mm / spacing_in_mm
         dim_temp = np.abs(end_temp - start_temp)
-        dim = round_away_from_zero(dim_temp)
+        dim = round_x5_away_from_zero(dim_temp)
         diff = dim_temp - dim # the sign is important here
         start = start_temp - np.sign(start_temp) * diff/2
         end = end_temp - np.sign(end_temp) * diff/2
