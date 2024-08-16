@@ -7,7 +7,7 @@ from sklearn.datasets import make_blobs
 from scipy.ndimage.filters import gaussian_filter
 from skimage import transform
 from simpa.utils import Tags
-from typing import Union, Optional
+from typing import Union
 from simpa.log import Logger
 import os
 import requests
@@ -352,13 +352,13 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         MSOT Acuity Echo device might be exponential, and hence this method will reverse this.
         :param factor: The exponential factor
         """
-        self.heterogeneity_image = np.exp(factor * self.heterogeneity_image / np.max(self.heterogeneity_image))
+        self.map = np.exp(factor * self.map / np.max(self.map))
 
     def invert_image(self):
         """
         Method to invert the image
         """
-        self.heterogeneity_image = np.max(self.heterogeneity_image) - self.heterogeneity_image
+        self.map = np.max(self.map) - self.map
 
     @staticmethod
     def get_ultrasound_image(beef_ultrasound_database_path: str = None, image_type: str = Tags.MEAT_ULTRASOUND_CROPPED):
@@ -387,13 +387,13 @@ def download_ultrasound_images(save_dir: str):
     """
     logger = Logger()
     # nextcloud url with the reference images
-    nextcloud_url = "https://hub.dkfz.de/s/g8fLZiY5D6ZC3Hx"  # shared "reference_figures" folder on nextcloud
+    nextcloud_url = "https://hub.dkfz.de/s/g8fLZiY5D6ZC3Hx"  # shared "beef_ultrasound_database" folder on nextcloud
     # Specify the local directory to save the files
     zip_filepath = os.path.join(save_dir, "downloaded.zip")
     # Construct the download URL based on the public share link
     download_url = nextcloud_url.replace('/s/', '/index.php/s/') + '/download'
     # Send a GET request to download the file
-    logger.debug(f'Download folder with reference figures from nextcloud...')
+    logger.debug(f'Download folder with ultrasound figures from nextcloud...')
     response = requests.get(download_url)
     if response.status_code == 200:
         # Save the file
