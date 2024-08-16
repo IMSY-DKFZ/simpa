@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
-    plt.gca().add_patch(Rectangle((xdim_start + 50/2, ydim_start), xdim + 50/2, -ydim, linewidth=1, edgecolor='r', facecolor='r', alpha=.5))
+    plt.gca().add_patch(Rectangle((xdim_start + 50, ydim_start), xdim, -ydim, linewidth=1, edgecolor='r', facecolor='r', alpha=.5))
     plt.scatter(positions[:, 0], positions[:, 2])
     plt.quiver(positions[:, 0], positions[:, 2], detector_elements[:, 0], detector_elements[:, 2])
     plt.show()
