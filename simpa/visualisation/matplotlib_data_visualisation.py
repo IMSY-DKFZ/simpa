@@ -46,8 +46,6 @@ class VisualiseData:
     def __init__(self,
                  wavelength: Union[int, float] = None,
                  path_to_hdf5_file: str = None,
-                 settings: Settings = None,
-                 path_manager: PathManager = None,
                  show_absorption: bool = False,
                  show_scattering: bool = False,
                  show_anisotropy: bool = False,
@@ -66,9 +64,7 @@ class VisualiseData:
                  show_xz_only: bool = False):
         """
         :param wavelength: The wavelength to be initially visualized.
-        :param path_to_hdf5_file: Path to the HDF5 file containing the data. If not provided, it is constructed from settings and path_manager.
-        :param settings: An instance of Settings containing configuration parameters, including the volume name and wavelengths.
-        :param path_manager: An instance of PathManager used to manage file paths. It is used to generate the path to the HDF5 file if not provided.
+        :param path_to_hdf5_file: Path to the HDF5 file containing the data.
         :param show_absorption: If True, display the absorption coefficient.
         :param show_scattering: If True, display the scattering coefficient.
         :param show_anisotropy: If True, display the anisotropy.
@@ -85,27 +81,11 @@ class VisualiseData:
         :param show_diffuse_reflectance: If True, display the diffuse reflectance.
         :param log_scale: If True, use a logarithmic scale for the data.
         :param show_xz_only: If True, display only the xz-plane.
-        :param save_path: Path to save the visualization. If None, the visualization will be displayed instead of saved.
-        :param add_wavelengths_slider: If True, add a slider for wavelength selection to the visualization.
 
         :raises ValueError: If both path_to_hdf5_file and the combination of settings and path_manager are None.
         """
 
         super().__init__()
-
-        if settings is not None and Tags.WAVELENGTHS in settings:
-            if wavelength is None or wavelength not in settings[Tags.WAVELENGTHS]:
-                wavelength = settings[Tags.WAVELENGTHS][0]
-
-        if settings is not None and Tags.WAVELENGTH in settings:
-            wavelength = settings[Tags.WAVELENGTH]
-
-        if path_to_hdf5_file is None and (settings is None or path_manager is None):
-            raise ValueError(
-                "Either the path_to_hdf5_file or the given settings and path_manager must not be None!")
-
-        if path_to_hdf5_file is None:
-            path_to_hdf5_file = path_manager.get_hdf5_file_save_path() + "/" + settings[Tags.VOLUME_NAME] + ".hdf5"
 
         self.show_absorption = show_absorption
         self.show_scattering = show_scattering
@@ -335,6 +315,9 @@ class VisualiseData:
             cmaps.append(cmap)
             logscales.append(False)
 
+        if len(data_to_show) == 1:
+            self.axes = [self.axes]
+
         for i in range(len(data_to_show)):
 
             if self.show_xz_only:
@@ -349,31 +332,6 @@ class VisualiseData:
                     img = self.axes[i].imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
                 if colour_bar:
                     plt.colorbar(img, ax=self.axes[i])
-
-            elif len(data_to_show) == 1 and not self.show_xz_only:
-                self.axes[0].clear()
-                self.axes[0].set_title(data_item_names)
-                if len(np.shape(data_to_show[i])) > 2:
-                    pos = int(np.shape(data_to_show[i])[1] / 2) - 1
-                    data = data_to_show[i][:, pos, :].T
-                    img = self.axes[0].imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
-                else:
-                    data = data_to_show[i][:, :].T
-                    img = self.axes[0].imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
-                if colour_bar:
-                    plt.colorbar(img, ax=self.axes[0])
-
-                self.axes[1].clear()
-                self.axes[1].set_title(data_item_names)
-                if len(np.shape(data_to_show[i])) > 2:
-                    pos = int(np.shape(data_to_show[i])[0] / 2)
-                    data = data_to_show[i][pos, :, :].T
-                    img = self.axes[1].imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
-                else:
-                    data = data_to_show[i][:, :].T
-                    img = self.axes[1].imshow(np.log10(data) if logscales[i] else data, cmap=cmaps[i])
-                if colour_bar:
-                    plt.colorbar(img, ax=self.axes[1])
 
             elif not self.show_xz_only:
                 self.axes[0][i].clear()
@@ -506,6 +464,13 @@ def visualise_data(wavelength: Union[int, float] = None,
                    save_path: str = None,
                    add_wavelengths_slider: bool = False):
     """
+    A function to visualize simpa output data. It provides options to display various
+    physical properties such as absorption, scattering, anisotropy, speed of sound, tissue density,
+    fluence, initial pressure, time series data, reconstructed data, segmentation maps,
+    oxygenation, blood volume fraction, and linear unmixing results.
+
+    The class supports visualizing data in 2D (xz-plane and zy-plane), and includes features such as
+    logarithmic scaling, saving visualizations, and adding a slider for wavelength selection.
 
     :param wavelength: The wavelength to be initially visualized.
     :param wavelengths: The wavelengths to be visualized in the slider.
@@ -531,10 +496,26 @@ def visualise_data(wavelength: Union[int, float] = None,
     :param save_path: Path to save the visualization. If None, the visualization will be displayed instead of saved.
     :param add_wavelengths_slider: If True, add a slider for wavelength selection to the visualization.
     """
+
+    if settings is not None and Tags.WAVELENGTHS in settings:
+        wavelengths = settings[Tags.WAVELENGTHS]
+        if wavelength is None or wavelength not in settings[Tags.WAVELENGTHS]:
+            wavelength = settings[Tags.WAVELENGTHS][0]
+    elif wavelengths is not None and wavelength is None:
+        wavelength = wavelengths[0]
+
+    if settings is not None and Tags.WAVELENGTH in settings:
+        wavelength = settings[Tags.WAVELENGTH]
+
+    if path_to_hdf5_file is None and (settings is None or path_manager is None):
+        raise ValueError(
+            "Either the path_to_hdf5_file or the given settings and path_manager must not be None!")
+
+    if path_to_hdf5_file is None:
+        path_to_hdf5_file = path_manager.get_hdf5_file_save_path() + "/" + settings[Tags.VOLUME_NAME] + ".hdf5"
+
     plot = VisualiseData(wavelength,
                          path_to_hdf5_file,
-                         settings,
-                         path_manager,
                          show_absorption,
                          show_scattering,
                          show_anisotropy,
