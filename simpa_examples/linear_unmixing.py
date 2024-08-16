@@ -174,9 +174,11 @@ def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualis
     if visualise:
         visualise_data(path_to_hdf5_file=path_manager.get_hdf5_file_save_path() + "/" + VOLUME_NAME + ".hdf5",
                        wavelength=WAVELENGTHS[0],
+                       wavelengths=WAVELENGTHS,
                        show_initial_pressure=True,
                        show_oxygenation=True,
-                       show_linear_unmixing_sO2=True)
+                       show_linear_unmixing_sO2=True,
+                       add_wavelengths_slider=True)
 
 
 if __name__ == "__main__":
