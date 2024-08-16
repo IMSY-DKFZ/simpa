@@ -70,7 +70,7 @@ class TestNoiseModels(unittest.TestCase):
         try:
             simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
 
-            absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_PATH],
+            absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                          data_field=Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                          wavelength=800)
             actual_mean = np.mean(absorption)
@@ -82,10 +82,10 @@ class TestNoiseModels(unittest.TestCase):
                             np.abs(actual_std - expected_std) / expected_std < error_margin,
                             f"The std was not as expected. Expected {expected_std} but was {actual_std}")
         finally:
-            if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
-                    os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
+            if (os.path.exists(settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
+                    os.path.isfile(settings[Tags.SIMPA_OUTPUT_FILE_PATH])):
                 # Delete the created file
-                os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
+                os.remove(settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def setUp(self):
 

@@ -74,5 +74,5 @@ class VolumeCreationAdapterBase(SimulationModuleBase):
                 assert_array_well_defined(volumes[_volume_name], array_name=_volume_name)
 
         for key, value in volumes.items():
-            save_data_field(value, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+            save_data_field(value, self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                             data_field=key, wavelength=self.global_settings[Tags.WAVELENGTH])

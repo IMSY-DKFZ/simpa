@@ -203,7 +203,7 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
         WAVELENGTH = 700
 
     if visualise:
-        sp.visualise_data(path_to_hdf5_file=settings[Tags.SIMPA_OUTPUT_PATH],
+        sp.visualise_data(path_to_hdf5_file=settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                           wavelength=WAVELENGTH,
                           show_time_series_data=True,
                           show_initial_pressure=True,

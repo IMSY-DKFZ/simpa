@@ -194,7 +194,7 @@ class MSOTInvisionSimulationTest(ManualIntegrationTestClass):
         simulate(simulation_pipeline=pipeline, digital_device_twin=device, settings=self.settings)
 
     def tear_down(self):
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         visualise_data(settings=self.settings,

@@ -128,7 +128,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         input_data[Tags.DATA_FIELD_TIME_SERIES_DATA] = time_series_sensor_data
         input_data, spacing_in_mm = self.get_acoustic_properties(input_data, detection_geometry)
-        acoustic_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
+        acoustic_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH] + ".mat"
 
         possible_k_wave_parameters = [Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.KWAVE_PROPERTY_ALPHA_POWER, Tags.GPU, Tags.KWAVE_PROPERTY_PMLInside, Tags.KWAVE_PROPERTY_PMLAlpha, Tags.KWAVE_PROPERTY_PlotPML,

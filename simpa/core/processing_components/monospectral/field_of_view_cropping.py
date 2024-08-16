@@ -64,7 +64,7 @@ class FieldOfViewCropping(ProcessingComponentBase):
                 continue
             try:
                 self.logger.debug(f"Cropping data field {data_field}...")
-                data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+                data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
 
                 self.logger.debug(f"data array shape before cropping: {np.shape(data_array)}")
                 self.logger.debug(f"data array shape len: {len(np.shape(data_array))}")
@@ -101,6 +101,6 @@ class FieldOfViewCropping(ProcessingComponentBase):
 
             self.logger.debug(f"data array shape after cropping: {np.shape(data_array)}")
             # save
-            save_data_field(data_array, self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+            save_data_field(data_array, self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
 
         self.logger.info("Cropping field of view...[Done]")

@@ -30,7 +30,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
     def setup(self):
         """
         Runs a pipeline consisting of volume creation and optical simulation. The resulting hdf5 file of the
-        simple test volume is saved at SIMPA_SAVE_PATH location defined in the path_config.env file.
+        simple test volume is saved at SIMPA_SAVE_DIRECTORY location defined in the path_config.env file.
         """
 
         self.path_manager = PathManager()
@@ -110,7 +110,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
         self.settings["iterative_qpai_reconstruction"] = component_settings
 
         self.wavelength = self.settings[Tags.WAVELENGTH]
-        absorption_gt = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
+        absorption_gt = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                         self.wavelength)
 
         # if the initial pressure is resampled the ground truth has to be resampled to allow for comparison

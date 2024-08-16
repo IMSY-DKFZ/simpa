@@ -36,7 +36,7 @@ class TimeReversalReconstruction(ReconstructionAlgorithmTestBaseClass):
 
         simulate(SIMULATION_PIPELINE, self.settings, self.device)
 
-        self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
+        self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
                                                             self.settings[Tags.WAVELENGTH])
 
     def test_convenience_function(self):
