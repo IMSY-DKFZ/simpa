@@ -294,7 +294,7 @@ def are_equal(obj1: Union[list, tuple, np.ndarray, object], obj2: Union[list, tu
         return obj1 == obj2
 
 
-def round_x5_away_from_zero(x):
+def round_x5_away_from_zero(x: Union[float, np.ndarray]) -> Union[int, np.ndarray]:
     """
     Round a number away from zero. The np.round function rounds x.5 to the nearest even number, which is not always the
     desired behavior. This function always rounds x.5 away from zero. For example, x.5 will be rounded to 1, and -x.5
