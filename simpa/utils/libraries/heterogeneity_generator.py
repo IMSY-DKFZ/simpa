@@ -216,9 +216,9 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         self.heterogeneity_image = heterogeneity_image
 
         if self.heterogeneity_image is None:
-            self.heterogeneity_image = self.get_ultrasound_image(beef_ultrasound_database_path,
-                                                                 image_type=ultrasound_image_type,
-                                                                 scan_number=scan_number)
+            self.heterogeneity_image = get_ultrasound_image(beef_ultrasound_database_path=beef_ultrasound_database_path,
+                                                            image_type=ultrasound_image_type,
+                                                            scan_number=scan_number)
             image_pixel_spacing_mm = 0.2
 
         if image_pixel_spacing_mm is None:
@@ -374,8 +374,8 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         self.map = np.max(self.map) - self.map
 
     def get_map(self):
-        self.normalise_map()
         self.map = np.repeat(self.heterogeneity_image[:, np.newaxis, :], self._ydim, axis=1)
+        self.normalise_map()
         return self.map.astype(float)
 
 
