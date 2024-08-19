@@ -43,7 +43,8 @@ def run_segmentation_loader(spacing: float | int = 1.0, input_spacing: float | i
         scan = random.choice(scans)
 
         blood_volume_fraction = sp.ImageHeterogeneity(xdim=400, ydim=200, zdim=400, spacing_mm=spacing, target_min=0,
-                                                      target_max=0.05, ultrasound_image_type=Tags.MEAT_ULTRASOUND_FULL)
+                                                      target_max=0.05, ultrasound_image_type=Tags.MEAT_ULTRASOUND_FULL,
+                                                      scan_number=scan)
         blood_volume_fraction.exponential(6)
         blood_volume_fraction.invert_image()
 
