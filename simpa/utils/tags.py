@@ -1609,3 +1609,15 @@ class Tags:
     """
     Identifier for the volume fraction for the simulation
     """
+
+    MEAT_ULTRASOUND_CROPPED = "cropped_images"
+    """
+    Flag to use the cropped beef ultrasound images
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    MEAT_ULTRASOUND_FULL = "full_images"
+    """
+    Flag to use the full beef ultrasound images
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
