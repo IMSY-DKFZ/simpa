@@ -366,13 +366,13 @@ class ImageHeterogeneity(HeterogeneityGeneratorBase):
         MSOT Acuity Echo device might be exponential, and hence this method will reverse this.
         :param factor: The exponential factor
         """
-        self.map = np.exp(factor * self.map / np.max(self.map))
+        self.heterogeneity_image = np.exp(factor * self.heterogeneity_image / np.max(self.heterogeneity_image))
 
     def invert_image(self):
         """
         Method to invert the image
         """
-        self.map = np.max(self.map) - self.map
+        self.heterogeneity_image = np.max(self.heterogeneity_image) - self.heterogeneity_image
 
     def get_map(self):
         self.map = np.repeat(self.heterogeneity_image[:, np.newaxis, :], self._ydim, axis=1)
