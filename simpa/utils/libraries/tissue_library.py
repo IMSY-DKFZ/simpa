@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 import numpy as np
 from typing import Union, List, Optional
+import torch
 
 from simpa.utils import OpticalTissueProperties, SegmentationClasses, StandardProperties, MolecularCompositionGenerator
 from simpa.utils import Molecule
@@ -119,6 +120,56 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
                 .append(value=MOLECULE_LIBRARY.muscle_scatterer(
                         volume_fraction=1 - fraction_oxy - fraction_deoxy - water_volume_fraction),
+                        key="muscle_scatterers")
+                .append(custom_water)
+                .get_molecular_composition(SegmentationClasses.MUSCLE))
+
+    def muscle_v(self, oxygenation: Union[float, int, np.ndarray] = 0.175,
+                 blood_volume_fraction: Union[float, int, np.ndarray] = 0.06,
+                 speed_of_sound: (float, torch.Tensor) = StandardProperties.SPEED_OF_SOUND_GENERIC,
+                 density: (float, torch.Tensor) = StandardProperties.DENSITY_GENERIC) -> MolecularComposition:
+        """
+        Create a molecular composition mimicking that of muscle
+        :param density:
+        :param speed_of_sound:
+        :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
+        Default: 0.175
+        :param blood_volume_fraction: The total blood volume fraction (including oxygenated and deoxygenated blood).
+        Default: 0.06
+        :return: a settings dictionary containing all min and max parameters fitting for muscle tissue.
+        """
+
+        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
+
+        # Get the water volume fraction
+        water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
+
+        if isinstance(blood_volume_fraction, np.ndarray):
+            if (blood_volume_fraction + water_volume_fraction - 1 > 1e-5).any():
+                raise AssertionError(f"Blood volume fraction too large, must be less than {1 - water_volume_fraction}"
+                                     f" everywhere to leave space for water")
+
+        else:
+            if blood_volume_fraction + water_volume_fraction - 1 > 1e-5:
+                raise AssertionError(f"Blood volume fraction too large, must be less than {1 - water_volume_fraction}"
+                                     f"everywhere to leave space for water")
+
+        custom_water = MOLECULE_LIBRARY.water_v(water_volume_fraction, speed_of_sound=speed_of_sound, density=density)
+        custom_water.anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+            OpticalTissueProperties.STANDARD_ANISOTROPY - 0.005)
+        custom_water.alpha_coefficient = 1.58
+        custom_water.mus500 = OpticalTissueProperties.MUS500_MUSCLE_TISSUE
+        custom_water.b_mie = OpticalTissueProperties.BMIE_MUSCLE_TISSUE
+        custom_water.f_ray = OpticalTissueProperties.FRAY_MUSCLE_TISSUE
+
+        # generate the tissue dictionary
+        return (MolecularCompositionGenerator()
+                .append(MOLECULE_LIBRARY.oxyhemoglobin(fraction_oxy))
+                .append(MOLECULE_LIBRARY.deoxyhemoglobin(fraction_deoxy))
+                .append(value=MOLECULE_LIBRARY.muscle_scatterer_variable(
+                        volume_fraction=1 - fraction_oxy - fraction_deoxy - water_volume_fraction,
+                        speed_of_sound=speed_of_sound,
+                        density=density),
                         key="muscle_scatterers")
                 .append(custom_water)
                 .get_molecular_composition(SegmentationClasses.MUSCLE))

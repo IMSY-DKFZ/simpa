@@ -324,6 +324,28 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
+    def water_v(volume_fraction: (float, torch.Tensor) = 1.0,
+                speed_of_sound: (float, torch.Tensor) = StandardProperties.SPEED_OF_SOUND_WATER,
+                density: (float, torch.Tensor) = StandardProperties.DENSITY_WATER) -> Molecule:
+        """
+        Create a water molecule with predefined properties.
+
+        :param volume_fraction: The volume fraction of the molecule, defaults to 1.0
+        :return: A Molecule object representing water
+        """
+        return Molecule(name="water",
+                        absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Water"),
+                        volume_fraction=volume_fraction,
+                        scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(
+                            StandardProperties.WATER_MUS),
+                        anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                            StandardProperties.WATER_G),
+                        density=density,
+                        speed_of_sound=speed_of_sound,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
+                        )
+
+    @staticmethod
     def oxyhemoglobin(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create an oxyhemoglobin molecule with predefined properties.
@@ -458,6 +480,28 @@ class MoleculeLibrary(object):
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
                         density=StandardProperties.DENSITY_GENERIC,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
+                        alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
+                        )
+
+    @staticmethod
+    def muscle_scatterer_variable(volume_fraction: (float, torch.Tensor) = 1.0,
+                                  speed_of_sound: (float, torch.Tensor) = StandardProperties.SPEED_OF_SOUND_GENERIC,
+                                  density: (float, torch.Tensor) = StandardProperties.DENSITY_GENERIC) -> Molecule:
+        """
+        Create a muscle scatterer molecule with predefined properties.
+
+        :param speed_of_sound:
+        :param volume_fraction: The volume fraction of the molecule, defaults to 1.0
+        :return: A Molecule object representing a muscle scatterer
+        """
+        return Molecule(name="muscle_scatterer",
+                        absorption_spectrum=AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-20),
+                        volume_fraction=volume_fraction,
+                        scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("muscle_scattering"),
+                        anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
+                            OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        density=density,
+                        speed_of_sound=speed_of_sound,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
                         )
 

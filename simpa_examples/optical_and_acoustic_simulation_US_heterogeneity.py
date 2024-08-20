@@ -63,7 +63,6 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
         us_heterogeneity = sp.ImageHeterogeneity(xdim=dim_x, ydim=dim_y, zdim=dim_z,
                                                  spacing_mm=spacing, target_min=0, target_max=0.05,
                                                  scaling_type=Tags.IMAGE_SCALING_SYMMETRIC)
-        us_heterogeneity.exponential(2)
         us_heterogeneity.invert_image()
         bvf = us_heterogeneity.get_map()
 
