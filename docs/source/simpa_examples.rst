@@ -12,6 +12,7 @@ simpa\_examples
    minimal_optical_simulation_uniform_cube
    msot_invision_simulation
    optical_and_acoustic_simulation
+   optical_and_acoustic_simulation_US_heterogeneity
    perform_image_reconstruction
    perform_iterative_qPAI_reconstruction
    segmentation_loader
