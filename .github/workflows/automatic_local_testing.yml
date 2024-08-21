@@ -28,7 +28,9 @@ jobs:
         pwd
         rm -rf runner-env
         python3 -m venv runner-env
+        which python3
         source runner-env/bin/activate
+        which python3
     - name: Install simpa
       run: |
         python -m pip install --upgrade pip
