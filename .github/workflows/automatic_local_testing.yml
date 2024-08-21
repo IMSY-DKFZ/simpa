@@ -24,7 +24,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Activate virtual env
       run: |
-        source runner-env/bin/activate
+        source _work/runner-env/bin/activate
     - name: Install simpa
       run: |
         python -m pip install --upgrade pip
