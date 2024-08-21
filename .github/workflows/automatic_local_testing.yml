@@ -24,6 +24,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Create a clean new virtual env and activate it
       run: |
+        ls
         pwd
         rm -rf runner-env
         python3 -m venv runner-env
