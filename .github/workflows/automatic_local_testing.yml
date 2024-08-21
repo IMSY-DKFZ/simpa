@@ -24,7 +24,7 @@ jobs:
     - name: Clean current working directory
       run: |
         pwd
-        rm -rf .
+        rm -rf /home/tom/dev/actions-runner/_work/simpa/simpa
     - uses: actions/checkout@v2
     - name: Create and activate virtual env
       run: |
