@@ -5,7 +5,6 @@
 import gc
 import os
 import subprocess
-from typing import List
 
 import numpy as np
 import scipy.io as sio
