@@ -23,6 +23,7 @@ The paper that introduces SIMPA including visualisations and explanations can be
 * [Getting started](#getting-started)
 * [Simulation examples](#simulation-examples)
 * [Documentation](#documentation)
+* [Reproducibility](#reproducibility)
 * [Contributing](#how-to-contribute)
 * [Performance profiling](#performance-profiling)
 * [Troubleshooting](#troubleshooting)
@@ -56,7 +57,7 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
 virtual environment activated (we also recommend python 3.10)
-1. `pip install .`
+1. `pip install .` or `pip install -e .` for an editable mode. 
 2. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
 If no error messages arise, you are now setup to use SIMPA in your project.
@@ -151,6 +152,12 @@ device = sp.CustomDevice()
 # Simulate the pipeline
 sp.simulate(simulation_pipeline, settings, device)
 ```
+
+# Reproducibility
+
+For reproducibility, we provide the exact version number including the commit hash in the simpa output file.
+This can be accessed via `simpa.__version__` or by checking the tag `Tags.SIMPA_VERSION` in the output file.
+This way, you can always trace back the exact version of the code that was used to generate the simulation results.
 
 # Documentation
 
