@@ -15,7 +15,6 @@ from simpa.utils.profiling import profile
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-@profile
 def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualise: bool = True):
     """
 
