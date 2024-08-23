@@ -140,9 +140,9 @@ settings.set_acoustic_settings(acoustic_settings)
 settings.set_reconstruction_settings(reconstruction_settings)
 
 # Set the simulation pipeline
-simulation_pipeline = [sp.VolumeCreatorModule(settings),
-    sp.OpticalForwardModule(settings),
-    sp.AcousticForwardModule(settings),
+simulation_pipeline = [sp.VolumeCreationModule(settings),
+    sp.OpticalModule(settings),
+    sp.AcousticModule(settings),
     sp.ReconstructionModule(settings)]
     
 # Choose a PA device with device position in the volume
@@ -189,8 +189,8 @@ Please see the github guidelines for creating pull requests: [https://docs.githu
 # Performance profiling
 
 When changing the SIMPA core, e.g., by refactoring/optimizing, or if you are curious about how fast your machine runs
-SIMPA, you can run the SIMPA [benchmarking scripts](simpa_examples/benchmarking/run_benchmarking.sh). It is recommended 
-to run:
+SIMPA, you can run the SIMPA [benchmarking scripts](simpa_examples/benchmarking/run_benchmarking.sh). Make sure to install the necessary dependencies via 
+`pip install .[profile]` and then run:
 
 ```bash
 bash ./run_benchmark.sh
