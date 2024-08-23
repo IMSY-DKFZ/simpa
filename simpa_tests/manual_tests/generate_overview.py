@@ -57,7 +57,7 @@ class GenerateOverview():
             # Remove the directory
             shutil.rmtree(ref_imgs_path)
         # nextcloud url with the reference images
-        self.nextcloud_url = "https://hub.dkfz.de/s/Xb96SFXbmiE5Fk8"  # shared "reference_figures" folder on nextcloud
+        self.nextcloud_url = "https://hub.dkfz.de/s/nsXKMGAaN6tPPsq"  # shared "reference_figures" folder on nextcloud
         # Specify the local directory to save the files
         zip_filepath = os.path.join(self.current_dir, "downloaded.zip")
         # Construct the download URL based on the public share link
