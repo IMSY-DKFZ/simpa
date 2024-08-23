@@ -183,10 +183,11 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         reconstructed_data = reconstructed_data.T
 
         field_of_view_mm = detection_geometry.get_field_of_view_mm()
-        _, _, _, xdim_start, xdim_end,  ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(field_of_view_mm, spacing_in_mm, self.logger)
-        field_of_view_voxels = [xdim_start, xdim_end, zdim_start, zdim_end, ydim_start, ydim_end] # change ordering
-        field_of_view_voxels = [int(dim) for dim in field_of_view_voxels] # cast to int
-        
+        _, _, _, xdim_start, xdim_end,  ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
+            field_of_view_mm, spacing_in_mm, self.logger)
+        field_of_view_voxels = [xdim_start, xdim_end, zdim_start, zdim_end, ydim_start, ydim_end]  # change ordering
+        field_of_view_voxels = [int(dim) for dim in field_of_view_voxels]  # cast to int
+
         self.logger.debug(f"FOV (voxels): {field_of_view_voxels}")
         # In case it should be cropped from A to A, then crop from A to A+1
         x_offset_correct = 1 if (field_of_view_voxels[1] - field_of_view_voxels[0]) < 1 else 0

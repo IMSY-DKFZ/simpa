@@ -23,7 +23,7 @@ class TestFieldOfView(unittest.TestCase):
         detection_geometry.field_of_view_extent_mm = field_of_view_extent_mm
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
             detection_geometry.field_of_view_extent_mm, spacing_in_mm, self.logger)
-        
+
         assert type(xdim) == int and type(ydim) == int and type(zdim) == int, "dimensions should be integers"
         assert xdim >= 1 and ydim >= 1 and zdim >= 1, "dimensions should be positive"
 
@@ -127,6 +127,7 @@ class TestFieldOfView(unittest.TestCase):
             self.assertAlmostEqual(ydim_end, expected_ydim_ends[i])
             self.assertAlmostEqual(zdim_start, 0)
             self.assertAlmostEqual(zdim_end, 0)
+
 
 if __name__ == '__main__':
     test = TestFieldOfView()

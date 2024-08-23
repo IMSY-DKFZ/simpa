@@ -142,9 +142,9 @@ settings.set_reconstruction_settings(reconstruction_settings)
 
 # Set the simulation pipeline
 simulation_pipeline = [sp.VolumeCreationModule(settings),
-    sp.OpticalModule(settings),
-    sp.AcousticModule(settings),
-    sp.ReconstructionModule(settings)]
+                       sp.OpticalModule(settings),
+                       sp.AcousticModule(settings),
+                       sp.ReconstructionModule(settings)]
     
 # Choose a PA device with device position in the volume
 device = sp.CustomDevice()

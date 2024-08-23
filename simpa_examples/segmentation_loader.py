@@ -41,7 +41,7 @@ def run_segmentation_loader(spacing: float | int = 1.0, input_spacing: float | i
 
     segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
     segmentation_volume_mask = sp.round_x5_away_from_zero(zoom(segmentation_volume_tiled, input_spacing/spacing,
-                                                            order=0)).astype(int)
+                                                               order=0)).astype(int)
 
     def segmentation_class_mapping():
         ret_dict = dict()

@@ -445,6 +445,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     return (time_series_sensor_data, sensor_positions, speed_of_sound_in_m_per_s, spacing_in_mm,
             time_spacing_in_ms, torch_device)
 
+
 def compute_image_dimensions(field_of_view_in_mm: np.ndarray, spacing_in_mm: float,
                              logger: Logger) -> Tuple[int, int, int, np.float64, np.float64,
                                                       np.float64, np.float64, np.float64, np.float64]:
@@ -485,7 +486,7 @@ def compute_image_dimensions(field_of_view_in_mm: np.ndarray, spacing_in_mm: flo
         end_temp = end_in_mm / spacing_in_mm
         dim_temp = np.abs(end_temp - start_temp)
         dim = round_x5_away_from_zero(dim_temp)
-        diff = dim_temp - dim # the sign is important here
+        diff = dim_temp - dim  # the sign is important here
         start = start_temp - np.sign(start_temp) * diff/2
         end = end_temp - np.sign(end_temp) * diff/2
         return dim, start, end
