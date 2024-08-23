@@ -24,7 +24,7 @@ class AcousticAdapterBase(SimulationModuleBase):
 
     tag in the settings dictionary.
 
-    :param settings: The settings dictionary containing key-value pairs that determine the simulation.
+    :param global_settings: The settings dictionary containing key-value pairs that determine the simulation.
         Here, it must contain the Tags.ACOUSTIC_MODEL tag and any tags that might be required by the specific
         acoustic model.
     :raises AssertionError: an assertion error is raised if the Tags.ACOUSTIC_MODEL tag is not given or

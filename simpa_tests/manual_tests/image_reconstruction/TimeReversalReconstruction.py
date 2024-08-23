@@ -8,7 +8,6 @@ from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa import KWaveAdapter, MCXAdapter, \
     TimeReversalAdapter, ModelBasedAdapter, GaussianNoise
-from simpa import reconstruct_delay_and_sum_pytorch
 from simpa_tests.manual_tests import ReconstructionAlgorithmTestBaseClass
 
 # FIXME temporary workaround for newest Intel architectures

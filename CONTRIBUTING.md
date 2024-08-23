@@ -31,10 +31,10 @@ In general the following steps are involved during a contribution:
 4. Make sure that you've installed all the optional dependencies by running `pip install .[docs,profile,testing]` 
    in the root directory of the repository.
 5. Create feature branch from develop using the naming convention T<Issue#>_<FeatureName>, 
-        where <Issue#> represent the number Github assigned the created issue and <FeatureName> describes 
+        where <Issue#> represents the number Github assigned the created issue and <FeatureName> describes 
         what is being developed in CamelCaseNotation.
         Examples: `T13_FixSimulatorBug`, `T27_AddNewSimulator`
-6. Perform test driven development on feature branch. 
+6. Perform test driven development on a feature branch. 
         A new implemented feature / a bug fix should be accompanied by a test. 
         Additionally, all previously existing tests must still pass after the contribution. 
 7. Run pre-commit hooks and make sure all hooks are passing. 

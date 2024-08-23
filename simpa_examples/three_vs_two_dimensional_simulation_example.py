@@ -187,8 +187,10 @@ def run_three_vs_two_dimensional_simulation_example(spacing: float | int = 0.2, 
         else:
             WAVELENGTH = 800
 
-        return (sp.load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], sp.Tags.DATA_FIELD_TIME_SERIES_DATA, WAVELENGTH),
-                sp.load_data_field(settings[Tags.SIMPA_OUTPUT_PATH], sp.Tags.DATA_FIELD_RECONSTRUCTED_DATA, WAVELENGTH))
+        return (sp.load_data_field(settings[Tags.SIMPA_OUTPUT_FILE_PATH],
+                                   sp.Tags.DATA_FIELD_TIME_SERIES_DATA, WAVELENGTH),
+                sp.load_data_field(settings[Tags.SIMPA_OUTPUT_FILE_PATH],
+                                   sp.Tags.DATA_FIELD_RECONSTRUCTED_DATA, WAVELENGTH))
 
     two_d_time_series, two_d_recon = run_sim(False)
     three_d_time_series, three_d_recon = run_sim(True)
@@ -214,5 +216,5 @@ if __name__ == "__main__":
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()
 
-    run_3Dvs2D_simulation_example(spacing=config.spacing, path_manager=config.path_manager,
-                                  visualise=config.visualise)
+    run_three_vs_two_dimensional_simulation_example(spacing=config.spacing, path_manager=config.path_manager,
+                                                    visualise=config.visualise)
