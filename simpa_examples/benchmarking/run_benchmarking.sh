@@ -86,7 +86,7 @@ done
 
 for ((i=0; i < number; i++))
 do
-  for spacing in $(seq $start $step $stop)
+  for spacing in $(LC_NUMERIC=C seq $start $step $stop)
   do
       for profile in "${profiles[@]}"
       do

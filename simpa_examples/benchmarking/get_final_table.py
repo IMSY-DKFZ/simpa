@@ -57,7 +57,7 @@ def get_final_table(savefolder: str = None):
     mean_df.to_csv(str(df_file).replace('.csv', '_mean.csv'), index=False)
 
     # save to markdown for nice visualization
-    mean_df.to_markdown(str(df_file).replace('data_frame.csv', '_mean.md'), index=False)
+    mean_df.to_markdown(str(df_file).replace('data_frame.csv', 'mean.md'), index=False)
 
 
 if __name__ == "__main__":
