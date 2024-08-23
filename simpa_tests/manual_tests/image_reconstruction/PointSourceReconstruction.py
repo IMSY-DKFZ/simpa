@@ -205,7 +205,7 @@ class PointSourceReconstruction(ReconstructionAlgorithmTestBaseClass):
             print("Distance:", distance)
 
             if self.save_path is not None:
-                save_path = self.save_path + f"PointSourceReconstruction_{self.figure_number}_{distance=}.png"
+                save_path = self.save_path + f"PointSourceReconstruction_{self.figure_number}.png"
             else:
                 save_path = self.save_path
 
@@ -321,4 +321,4 @@ class PointSourceReconstruction(ReconstructionAlgorithmTestBaseClass):
 
 if __name__ == '__main__':
     test = PointSourceReconstruction()
-    test.run_test(show_figure_on_screen=False)
+    test.run_test(show_figure_on_screen=True)
