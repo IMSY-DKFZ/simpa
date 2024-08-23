@@ -43,8 +43,8 @@ class GenerateOverview():
         self.mdFile = MdUtils(file_name=self.md_name, title='<u>Overview of Manual Test Results</u>')
         self.set_style()
 
-        # Note: Open issue in PointSourceReconstruction.py file (make it consistent with the other manual tests)
-        self.scripts_to_neglect = ["PointSourceReconstruction.py"]
+        # If you manually want to neglect a specific manual test enter the python script name here
+        self.scripts_to_neglect = []
 
     def download_reference_images(self):
         """
