@@ -2,7 +2,8 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils import Tags, Settings
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_image_dimensions
+from simpa.utils import Tags, Settings, round_x5_away_from_zero
 from simpa.utils.constants import property_tags, wavelength_independent_properties, toolkit_tags
 from simpa.io_handling import load_data_field, save_data_field
 from simpa.core.processing_components import ProcessingComponentBase
@@ -45,7 +46,9 @@ class FieldOfViewCropping(ProcessingComponentBase):
         else:
             field_of_view_mm = device.get_field_of_view_mm()
         self.logger.debug(f"FOV (mm): {field_of_view_mm}")
-        field_of_view_voxels = np.round(field_of_view_mm / self.global_settings[Tags.SPACING_MM]).astype(np.int32)
+        _, _, _, xdim_start, xdim_end,  ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(field_of_view_mm, self.global_settings[Tags.SPACING_MM], self.logger)
+        field_of_view_voxels = [xdim_start, xdim_end, zdim_start, zdim_end, ydim_start, ydim_end] # change ordering
+        field_of_view_voxels = [int(dim) for dim in field_of_view_voxels] # cast to int
         self.logger.debug(f"FOV (voxels): {field_of_view_voxels}")
 
         # In case it should be cropped from A to A, then crop from A to A+1

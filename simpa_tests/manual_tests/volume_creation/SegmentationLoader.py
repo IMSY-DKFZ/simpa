@@ -24,8 +24,8 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
         label_mask = np.reshape(label_mask, (400, 1, 400))
         input_spacing = 0.2
         segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
-        segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
-                                                 order=0)).astype(int)
+        segmentation_volume_mask = sp.round_x5_away_from_zero(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
+                                                                order=0)).astype(int)
 
         def segmentation_class_mapping():
             ret_dict = dict()
