@@ -133,14 +133,14 @@ settings["noise_model_1"] = {
 
 if not SAVE_REFLECTANCE and not SAVE_PHOTON_DIRECTION:
     pipeline = [
-        sp.ModelBasedVolumeCreationAdapter(settings),
+        sp.ModelBasedAdapter(settings),
         sp.MCXAdapter(settings),
         sp.GaussianNoise(settings, "noise_model_1")
     ]
 else:
     pipeline = [
-        sp.ModelBasedVolumeCreationAdapter(settings),
-        sp.MCXAdapterReflectance(settings),
+        sp.ModelBasedAdapter(settings),
+        sp.MCXReflectanceAdapter(settings),
     ]
 
 
