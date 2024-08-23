@@ -3,9 +3,8 @@
 # SPDX-License-Identifier: MIT
 
 from abc import abstractmethod
-from simpa.core.device_digital_twins.digital_device_twin_base import DigitalDeviceTwinBase
+from simpa.core.device_digital_twins import DigitalDeviceTwinBase
 from simpa.utils import Settings
-from numpy import ndarray
 import numpy as np
 
 

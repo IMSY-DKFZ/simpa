@@ -222,21 +222,21 @@ class ReconstructionAlgorithmTestBaseClass(ManualIntegrationTestClass):
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         initial_pressure = load_data_field(
-            self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_INITIAL_PRESSURE,
+            self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_INITIAL_PRESSURE,
             wavelength=self.settings[Tags.WAVELENGTH])
 
         plt.figure(figsize=(9, 3))
         plt.subplot(1, 3, 1)
         plt.title("Initial pressure")
-        plt.imshow(np.rot90(initial_pressure[:, 20, :], 3))
+        plt.imshow(initial_pressure[:, 20, :].T)
         plt.subplot(1, 3, 2)
         plt.title("Pipeline\nReconstruction")
         if self.reconstructed_image_pipeline is not None:
-            plt.imshow(np.rot90(self.reconstructed_image_pipeline, 3))
+            plt.imshow(self.reconstructed_image_pipeline.T)
         plt.subplot(1, 3, 3)
         plt.title("Convenience Method\nReconstruction")
         if self.reconstructed_image_convenience is not None:
-            plt.imshow(np.rot90(self.reconstructed_image_convenience, 3))
+            plt.imshow(self.reconstructed_image_convenience.T)
 
         plt.tight_layout()
         if show_figure_on_screen:

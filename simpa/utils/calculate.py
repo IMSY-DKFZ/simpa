@@ -3,38 +3,72 @@
 # SPDX-License-Identifier: MIT
 
 
+from typing import Union, List, Dict, Optional, Sized
 import numpy as np
+import torch
 from scipy.interpolate import interp1d
 
 
-def calculate_oxygenation(molecule_list):
+def extract_hemoglobin_fractions(molecule_list: List) -> Dict[str, float]:
     """
-    :return: an oxygenation value between 0 and 1 if possible, or None, if not computable.
+    Extract hemoglobin volume fractions from a list of molecules.
+
+    :param molecule_list: List of molecules with their spectrum information and volume fractions.
+    :return: A dictionary with hemoglobin types as keys and their volume fractions as values.
     """
-    hb = None
-    hbO2 = None
+
+    # Put 0.0 as default value for both hemoglobin types in case they are not present in the molecule list.
+    hemoglobin = {
+        "Deoxyhemoglobin": 0.0,
+        "Oxyhemoglobin": 0.0
+    }
 
     for molecule in molecule_list:
-        if molecule.spectrum.spectrum_name == "Deoxyhemoglobin":
-            hb = molecule.volume_fraction
-        if molecule.spectrum.spectrum_name == "Oxyhemoglobin":
-            hbO2 = molecule.volume_fraction
+        spectrum_name = molecule.spectrum.spectrum_name
+        if spectrum_name in hemoglobin:
+            hemoglobin[spectrum_name] = molecule.volume_fraction
 
-    if hb is None and hbO2 is None:
-        return None
-
-    if hb is None:
-        hb = 0
-    elif hbO2 is None:
-        hbO2 = 0
-
-    if hb + hbO2 < 1e-10:  # negative values are not allowed and division by (approx) zero
-        return None        # will lead to negative side effects.
-
-    return hbO2 / (hb + hbO2)
+    return hemoglobin
 
 
-def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spacing=0.1):
+def calculate_oxygenation(molecule_list: List) -> Optional[float]:
+    """
+    Calculate the oxygenation level based on the volume fractions of deoxyhemoglobin and oxyhemoglobin.
+
+    :param molecule_list: List of molecules with their spectrum information and volume fractions.
+    :return: An oxygenation value between 0 and 1 if possible, or None if not computable.
+    """
+    hemoglobin = extract_hemoglobin_fractions(molecule_list)
+    hb, hbO2 = hemoglobin["Deoxyhemoglobin"], hemoglobin["Oxyhemoglobin"]
+
+    total = hb + hbO2
+
+    # Avoid division by zero. If none of the hemoglobin types are present, the oxygenation level is not computable.
+    if isinstance(hb, torch.Tensor) or isinstance(hbO2, torch.Tensor):
+        return torch.where(total < 1e-10, 0, hbO2 / total)
+
+    else:
+        if total < 1e-10:
+            return None
+        else:
+            return hbO2 / total
+
+
+def calculate_bvf(molecule_list: List) -> Union[float, int]:
+    """
+    Calculate the blood volume fraction based on the volume fractions of deoxyhemoglobin and oxyhemoglobin.
+
+    :param molecule_list: List of molecules with their spectrum information and volume fractions.
+    :return: The blood volume fraction value between 0 and 1, or 0, if oxy and deoxy not present.
+    """
+    hemoglobin = extract_hemoglobin_fractions(molecule_list)
+    hb, hbO2 = hemoglobin["Deoxyhemoglobin"], hemoglobin["Oxyhemoglobin"]
+    # We can use the sum of hb and hb02 to compute blood volume fraction as the volume fraction of all molecules is 1.
+    return hb + hbO2
+
+
+def create_spline_for_range(xmin_mm: Union[float, int] = 0, xmax_mm: Union[float, int] = 10,
+                            maximum_y_elevation_mm: Union[float, int] = 1, spacing: Union[float, int] = 0.1) -> tuple:
     """
     Creates a functional that simulates distortion along the y position
     between the minimum and maximum x positions. The elevation can never be
@@ -43,6 +77,7 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
     :param xmin_mm: the minimum x axis value the return functional is defined in
     :param xmax_mm: the maximum x axis value the return functional is defined in
     :param maximum_y_elevation_mm: the maximum y axis value the return functional will yield
+    :param spacing: the voxel spacing in the simulation
     :return: a functional that describes a distortion field along the y axis
 
     """
@@ -83,16 +118,31 @@ def create_spline_for_range(xmin_mm=0, xmax_mm=10, maximum_y_elevation_mm=1, spa
     return spline, max_el
 
 
-def spline_evaluator2d_voxel(x, y, spline, offset_voxel, thickness_voxel):
+def spline_evaluator2d_voxel(x: int, y: int, spline: Union[list, np.ndarray], offset_voxel: Union[float, int],
+                             thickness_voxel: int) -> bool:
+    """
+    Evaluate whether a given point (x, y) lies within the thickness bounds around a spline curve.
+
+    This function checks if the y-coordinate of a point lies within a vertical range defined
+    around a spline curve at a specific x-coordinate. The range is determined by the spline elevation,
+    an offset, and a thickness.
+
+    :param x: The x-coordinate of the point to evaluate.
+    :param y: The y-coordinate of the point to evaluate.
+    :param spline: A 1D array or list representing the spline curve elevations at each x-coordinate.
+    :param offset_voxel: The offset to be added to the spline elevation to define the starting y-coordinate of the range.
+    :param thickness_voxel: The vertical thickness of the range around the spline.
+    :return: True if the point (x, y) lies within the range around the spline, False otherwise.
+    """
     elevation = spline[x]
-    y_value = np.round(elevation + offset_voxel)
+    y_value = round_x5_away_from_zero(elevation + offset_voxel)
     if y_value <= y < thickness_voxel + y_value:
         return True
     else:
         return False
 
 
-def calculate_gruneisen_parameter_from_temperature(temperature_in_celcius):
+def calculate_gruneisen_parameter_from_temperature(temperature_in_celcius: Union[float, int]) -> Union[float, int]:
     """
     This function returns the dimensionless gruneisen parameter based on a heuristic formula that
     was determined experimentally::
@@ -112,7 +162,7 @@ def calculate_gruneisen_parameter_from_temperature(temperature_in_celcius):
     return 0.0043 + 0.0053 * temperature_in_celcius
 
 
-def randomize_uniform(min_value: float, max_value: float):
+def randomize_uniform(min_value: float, max_value: float) -> Union[float, int]:
     """
     returns a uniformly drawn random number in [min_value, max_value[
 
@@ -124,43 +174,43 @@ def randomize_uniform(min_value: float, max_value: float):
     return (np.random.random() * (max_value-min_value)) + min_value
 
 
-def rotation_x(theta):
+def rotation_x(theta: Union[float, int]) -> torch.Tensor:
     """
     Rotation matrix around the x-axis with angle theta.
 
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.array([[1, 0, 0],
-                    [0, np.cos(theta), -np.sin(theta)],
-                    [0, np.sin(theta), np.cos(theta)]])
+    return torch.tensor([[1, 0, 0],
+                         [0, torch.cos(theta), -torch.sin(theta)],
+                         [0, torch.sin(theta), torch.cos(theta)]])
 
 
-def rotation_y(theta):
+def rotation_y(theta: Union[float, int]) -> torch.Tensor:
     """
     Rotation matrix around the y-axis with angle theta.
 
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.array([[np.cos(theta), 0, np.sin(theta)],
-                    [0, 1, 0],
-                    [-np.sin(theta), 0, np.cos(theta)]])
+    return torch.tensor([[torch.cos(theta), 0, torch.sin(theta)],
+                         [0, 1, 0],
+                         [-torch.sin(theta), 0, torch.cos(theta)]])
 
 
-def rotation_z(theta):
+def rotation_z(theta: Union[float, int]) -> torch.Tensor:
     """
     Rotation matrix around the z-axis with angle theta.
 
     :param theta: Angle through which the matrix is supposed to rotate.
     :return: rotation matrix
     """
-    return np.array([[np.cos(theta), -np.sin(theta), 0],
-                    [np.sin(theta), np.cos(theta), 0],
-                    [0, 0, 1]])
+    return torch.tensor([[torch.cos(theta), -torch.sin(theta), 0],
+                         [torch.sin(theta), torch.cos(theta), 0],
+                         [0, 0, 1]])
 
 
-def rotation(angles):
+def rotation(angles: Union[list, np.ndarray]) -> torch.Tensor:
     """
     Rotation matrix around the x-, y-, and z-axis with angles [theta_x, theta_y, theta_z].
 
@@ -170,7 +220,7 @@ def rotation(angles):
     return rotation_x(angles[0]) * rotation_y(angles[1]) * rotation_z(angles[2])
 
 
-def rotation_matrix_between_vectors(a, b):
+def rotation_matrix_between_vectors(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     Returns the rotation matrix from a to b
 
@@ -223,3 +273,45 @@ def positive_gauss(mean, std) -> float:
         return positive_gauss(mean, std)
     else:
         return random_value
+
+
+def are_equal(obj1: Union[list, tuple, np.ndarray, object], obj2: Union[list, tuple, np.ndarray, object]) -> bool:
+    """Compare if two objects are equal. For lists, tuples and arrays, all entries need to be equal to return True.
+
+    :param obj1: The first object to compare. Can be of any type, but typically a list, numpy array, or scalar.
+    :type obj1: Union[list, tuple, np.ndarray, object]
+    :param obj2: The second object to compare. Can be of any type, but typically a list, numpy array, or scalar.
+    :type obj2: Union[list, tuple, np.ndarray, object]
+    :return: True if the objects are equal, False otherwise. For lists and numpy arrays, returns True only if all
+        corresponding elements are equal.
+    :rtype: bool
+    """
+    # Check if one object is numpy array or list
+    if isinstance(obj1, (list, np.ndarray, tuple)) or isinstance(obj2, (list, np.ndarray, tuple)):
+        return np.array_equal(obj1, obj2)
+    # For other types, use standard equality check which also works for lists
+    else:
+        return obj1 == obj2
+
+
+def round_x5_away_from_zero(x: Union[float, np.ndarray]) -> Union[int, np.ndarray]:
+    """
+    Round a number away from zero. The np.round function rounds x.5 to the nearest even number, which is not always the
+    desired behavior. This function always rounds x.5 away from zero. For example, x.5 will be rounded to 1, and -x.5
+    will be rounded to -1. All other numbers are rounded to the nearest integer.
+    :param x: input number or array of numbers
+    :return: rounded number or array of numbers
+    :rtype: int or np.ndarray of int
+    """
+
+    def round_single_value(value):
+        # If the value is positive, add 0.5 and use floor to round away from zero
+        # If the value is negative, subtract 0.5 and use ceil to round away from zero
+        return int(np.floor(value + 0.5)) if value > 0 else int(np.ceil(value - 0.5))
+
+    if isinstance(x, (np.ndarray, list, tuple)):
+        # Apply rounding function to each element in the array
+        return np.array([round_x5_away_from_zero(val) for val in x], dtype=int)
+    else:
+        # Apply rounding to a single value
+        return round_single_value(x)

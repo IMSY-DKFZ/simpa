@@ -23,6 +23,7 @@ The paper that introduces SIMPA including visualisations and explanations can be
 * [Getting started](#getting-started)
 * [Simulation examples](#simulation-examples)
 * [Documentation](#documentation)
+* [Reproducibility](#reproducibility)
 * [Contributing](#how-to-contribute)
 * [Performance profiling](#performance-profiling)
 * [Troubleshooting](#troubleshooting)
@@ -43,6 +44,7 @@ The SIMPA path management takes care of that.
 * [SIMPA installation instructions](#simpa-installation-instructions)
 * [External tools installation instructions](#external-tools-installation-instructions)
 * [Path Management](#path-management)
+* [Testing](#run-manual-tests)
 
 ## SIMPA installation instructions
 
@@ -54,8 +56,8 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 4. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
-virtual environment activated (we also recommend python 3.8)
-1. `pip install .`
+virtual environment activated (we also recommend python 3.10)
+1. `pip install .` or `pip install -e .` for an editable mode. 
 2. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
 If no error messages arise, you are now setup to use SIMPA in your project.
@@ -100,15 +102,22 @@ for further (and much better) guidance under:
 
 As a pipelining tool that serves as a communication layer between different numerical forward models and
 processing tools, SIMPA needs to be configured with the paths to these tools on your local hard drive.
-To this end, we have implemented the `PathManager` class that you can import to your project using
-`from simpa.utils import PathManager`. The PathManager looks for a `path_config.env` file (just like the
-one we provided in the `simpa_examples`) in the following places in this order:
+You have a couple of options to define the required path variables. 
+### Option 1: 
+Ensure that the environment variables defined in `simpa_examples/path_config.env.example` are accessible to your script during runtime. This can be done through any method you prefer, as long as the environment variables are accessible through `os.environ`. 
+### Option 2:
+Import the `PathManager` class to your project using
+`from simpa.utils import PathManager`. If a path to a `.env` file is not provided, the `PathManager` looks for a `path_config.env` file (just like the
+one we provided in the `simpa_examples/path_config.env.example`) in the following places, in this order:
 1. The optional path you give the PathManager
 2. Your $HOME$ directory
 3. The current working directory
 4. The SIMPA home directory path
+   
+For this option, please follow the instructions in the `simpa_examples/path_config.env.example` file. 
 
-Please follow the instructions in the `path_config.env` file in the `simpa_examples` folder. 
+## Run manual tests
+To check the success of your installation ot to assess how your contributions affect the Simpa simulation outcomes, you can run the manual tests automatically. Install the testing requirements by doing `pip install .[testing]` and run the `simpa_tests/manual_tests/generate_overview.py` file. This script runs all manual tests and generates both a markdown and an HTML file that compare your results with the reference results.
 
 # Simulation examples
 
@@ -132,10 +141,10 @@ settings.set_acoustic_settings(acoustic_settings)
 settings.set_reconstruction_settings(reconstruction_settings)
 
 # Set the simulation pipeline
-simulation_pipeline = [sp.VolumeCreatorModule(settings),
-    sp.OpticalForwardModule(settings),
-    sp.AcousticForwardModule(settings),
-    sp.ReconstructionModule(settings)]
+simulation_pipeline = [sp.VolumeCreationModule(settings),
+                       sp.OpticalModule(settings),
+                       sp.AcousticModule(settings),
+                       sp.ReconstructionModule(settings)]
     
 # Choose a PA device with device position in the volume
 device = sp.CustomDevice()
@@ -143,6 +152,12 @@ device = sp.CustomDevice()
 # Simulate the pipeline
 sp.simulate(simulation_pipeline, settings, device)
 ```
+
+# Reproducibility
+
+For reproducibility, we provide the exact version number including the commit hash in the simpa output file.
+This can be accessed via `simpa.__version__` or by checking the tag `Tags.SIMPA_VERSION` in the output file.
+This way, you can always trace back the exact version of the code that was used to generate the simulation results.
 
 # Documentation
 
@@ -154,7 +169,8 @@ It is also easily possible to build the SIMPA documentation from scratch.
 When the installation succeeded, and you want to make sure that you have the latest documentation
 you should do the following steps in a command line:
 
-1. Navigate to the `simpa/docs` directory
+1. Make sure that you've installed the optional dependencies needed for the documentation by running `pip install .[docs]`
+2. Navigate to the `simpa/docs` directory
 2. If you would like the documentation to have the https://readthedocs.org/ style, type `pip install sphinx-rtd-theme`
 3. Type `make html`
 4. Open the `index.html` file in the `simpa/docs/build/html` directory with your favourite browser.
@@ -169,6 +185,7 @@ suggested changes. The core developers will then review the suggested changes an
 base.
 
 Please make sure that you have included unit tests for your code and that all previous tests still run through. Please also run the pre-commit hooks and make sure they are passing.
+Details are found in our [contribution guidelines](CONTRIBUTING.md).
 
 There is a regular SIMPA status meeting every Friday on even calendar weeks at 10:00 CET/CEST, and you are very welcome to participate and
 raise any issues or suggest new features. If you want to join this meeting, write one of the core developers.
@@ -178,13 +195,33 @@ Please see the github guidelines for creating pull requests: [https://docs.githu
 
 # Performance profiling
 
-Do you wish to know which parts of the simulation pipeline cost the most amount of time? 
-If that is the case then you can use the following commands to profile the execution of your simulation script.
-You simply need to replace the `myscript` name with your script name.
+When changing the SIMPA core, e.g., by refactoring/optimizing, or if you are curious about how fast your machine runs
+SIMPA, you can run the SIMPA [benchmarking scripts](simpa_examples/benchmarking/run_benchmarking.sh). Make sure to install the necessary dependencies via 
+`pip install .[profile]` and then run:
 
-`python -m cProfile -o myscript.cprof myscript.py`
+```bash
+bash ./run_benchmark.sh
+```
 
-`pyprof2calltree -k -i myscript.cprof`
+once for checking if it works and then parse [--number 100] to run it at eg 100 times for actual benchmarking.
+Please see [benchmarking.md](docs/source/benchmarking.md) for a complete explanation.
+
+
+# Understanding SIMPA
+
+**Tags** are identifiers in SIMPA used to categorize settings and components within simulations, making configurations
+modular, readable, and manageable. Tags offer organizational, flexible, and reusable benefits by acting as keys in
+configuration dictionaries.
+
+**Settings** in SIMPA control simulation behavior. They include:
+
+- **Global Settings**: Apply to the entire simulation, affecting overall properties and parameters.
+- **Component Settings**: Specific to individual components, allowing for detailed customization and optimization of
+each part of the simulation.
+
+Settings are defined in a hierarchical structure, where global settings are established first, followed by
+component-specific settings. This approach ensures comprehensive and precise control over the simulation process.
+For detailed information, users can refer to the [understanding SIMPA documentation](./docs/source/understanding_simpa.md).
 
 # Troubleshooting
 
@@ -198,6 +235,11 @@ If you encounter an error similar to:
     The filename specified was either not found on the MATLAB path or it contains unsupported characters.
 
 Look up the solution in [this thread of the k-Wave forum](http://www.k-wave.org/forum/topic/error-reading-h5-files-when-using-binaries).  
+
+## 2. KeyError: 'time_series_data'
+
+This is the error which will occur for ANY k-Wave problem. For the actual root of the problem, please either look above in
+the terminal for the source of the bug or run the scripts in Matlab to find it manually.
       
 # Citation
 

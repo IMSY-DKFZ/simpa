@@ -7,7 +7,7 @@
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.core.processing_components.monospectral.iterative_qPAI_algorithm import IterativeqPAI
-from simpa import MCXAdapter, ModelBasedVolumeCreationAdapter, \
+from simpa import MCXAdapter, ModelBasedAdapter, \
     GaussianNoise
 from simpa.utils import Tags, Settings, TISSUE_LIBRARY
 from simpa.core.simulation import simulate
@@ -30,7 +30,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
     def setup(self):
         """
         Runs a pipeline consisting of volume creation and optical simulation. The resulting hdf5 file of the
-        simple test volume is saved at SAVE_PATH location defined in the path_config.env file.
+        simple test volume is saved at SIMPA_SAVE_DIRECTORY location defined in the path_config.env file.
         """
 
         self.path_manager = PathManager()
@@ -85,7 +85,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
 
         # run pipeline including volume creation and optical mcx simulation
         pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_model")
         ]
@@ -110,7 +110,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
         self.settings["iterative_qpai_reconstruction"] = component_settings
 
         self.wavelength = self.settings[Tags.WAVELENGTH]
-        absorption_gt = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
+        absorption_gt = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                         self.wavelength)
 
         # if the initial pressure is resampled the ground truth has to be resampled to allow for comparison
@@ -178,7 +178,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
             plt.subplot(4, int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)), i + 1)
             if i == 0:
                 plt.ylabel("y-z", fontsize=10)
-            plt.imshow(np.rot90(quantity, -1))
+            plt.imshow(quantity.T)
             plt.title(label[i], fontsize=10)
             plt.xticks(fontsize=6)
             plt.yticks(fontsize=6)
@@ -193,7 +193,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
                         i + int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)) + 1)
             if i == 0:
                 plt.ylabel("x-z", fontsize=10)
-            plt.imshow(np.rot90(quantity, -1))
+            plt.imshow(quantity.T)
             plt.title(label[i], fontsize=10)
             plt.xticks(fontsize=6)
             plt.yticks(fontsize=6)
@@ -207,7 +207,7 @@ class TestqPAIReconstruction(ManualIntegrationTestClass):
             plt.subplot(4, int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)),
                         i + 2 * int(np.ceil(len(self.list_2d_reconstructed_absorptions) / 2)) + 1)
             plt.title("Iteration step: " + str(i + 1), fontsize=8)
-            plt.imshow(np.rot90(quantity, -1))  # absorption maps in list are already 2-d
+            plt.imshow(quantity.T)  # absorption maps in list are already 2-d
             plt.colorbar()
             plt.clim(cmin, cmax)
             plt.axis('off')

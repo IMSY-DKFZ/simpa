@@ -10,13 +10,13 @@ from simpa.core.simulation import simulate
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.utils import Tags, Settings
 from simpa_tests.test_utils import create_test_structure_parameters
-from simpa import ModelBasedVolumeCreationAdapter
-from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_test_adapter import \
-    OpticalForwardModelTestAdapter
-from simpa.core.simulation_modules.acoustic_forward_module.acoustic_forward_model_test_adapter import \
-    AcousticForwardModelTestAdapter
-from simpa.core.simulation_modules.reconstruction_module.reconstruction_module_test_adapter import \
-    ReconstructionModuleTestAdapter
+from simpa import ModelBasedAdapter
+from simpa.core.simulation_modules.optical_module.optical_test_adapter import \
+    OpticalTestAdapter
+from simpa.core.simulation_modules.acoustic_module.acoustic_test_adapter import \
+    AcousticTestAdapter
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_test_adapter import \
+    ReconstructionTestAdapter
 
 from pacfish import load_data as load_ipasc
 from simpa.io_handling import load_hdf5 as load_simpa
@@ -63,21 +63,21 @@ class TestDeviceUUID(unittest.TestCase):
         })
 
         self.acoustic_simulation_pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
-            OpticalForwardModelTestAdapter(self.settings),
-            AcousticForwardModelTestAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
+            OpticalTestAdapter(self.settings),
+            AcousticTestAdapter(self.settings),
         ]
 
         self.optical_simulation_pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
-            OpticalForwardModelTestAdapter(self.settings)
+            ModelBasedAdapter(self.settings),
+            OpticalTestAdapter(self.settings)
         ]
 
         self.full_simulation_pipeline = [
-            ModelBasedVolumeCreationAdapter(self.settings),
-            OpticalForwardModelTestAdapter(self.settings),
-            AcousticForwardModelTestAdapter(self.settings),
-            ReconstructionModuleTestAdapter(self.settings)
+            ModelBasedAdapter(self.settings),
+            OpticalTestAdapter(self.settings),
+            AcousticTestAdapter(self.settings),
+            ReconstructionTestAdapter(self.settings)
         ]
 
         self.device = RSOMExplorerP50(0.1, 12, 12)
@@ -86,11 +86,11 @@ class TestDeviceUUID(unittest.TestCase):
         self.expected_ipasc_output_path = None
 
     def clean_up(self):
-        print(f"Attempting to clean {self.settings[Tags.SIMPA_OUTPUT_PATH]}")
-        if (os.path.exists(self.settings[Tags.SIMPA_OUTPUT_PATH]) and
-                os.path.isfile(self.settings[Tags.SIMPA_OUTPUT_PATH])):
+        print(f"Attempting to clean {self.settings[Tags.SIMPA_OUTPUT_FILE_PATH]}")
+        if (os.path.exists(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
+                os.path.isfile(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])):
             # Delete the created file
-            os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+            os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
         print(f"Attempting to clean {self.expected_ipasc_output_path}")
         if (os.path.exists(self.expected_ipasc_output_path) and
@@ -131,24 +131,24 @@ class TestDeviceUUID(unittest.TestCase):
 
     def test_file_is_not_created_on_only_optical_simulation(self):
         simulate(self.optical_simulation_pipeline, self.settings, self.device)
-        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
+        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_FILE_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(not os.path.exists(self.expected_ipasc_output_path))
         self.clean_up()
 
     @expectedFailure
     def test_file_is_created_on_acoustic_simulation(self):
         simulate(self.acoustic_simulation_pipeline, self.settings, self.device)
-        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
+        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_FILE_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(os.path.exists(self.expected_ipasc_output_path))
-        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_PATH],
+        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                                                             self.expected_ipasc_output_path)
         self.clean_up()
 
     @expectedFailure
     def test_file_is_created_on_full_simulation(self):
         simulate(self.full_simulation_pipeline, self.settings, self.device)
-        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
+        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_FILE_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(os.path.exists(self.expected_ipasc_output_path))
-        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_PATH],
+        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                                                             self.expected_ipasc_output_path)
         self.clean_up()

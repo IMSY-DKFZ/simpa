@@ -12,7 +12,7 @@ from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary, An
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
 import numpy as np
 from simpa.utils.path_manager import PathManager
-from simpa import DelayAndSumAdapter, MCXAdapter, KWaveAdapter, ModelBasedVolumeCreationAdapter, FieldOfViewCropping
+from simpa import DelayAndSumAdapter, MCXAdapter, KWaveAdapter, ModelBasedAdapter, FieldOfViewCropping
 from simpa.core.device_digital_twins import *
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 import os
@@ -26,7 +26,7 @@ class MSOTInvisionSimulationTest(ManualIntegrationTestClass):
 
     def create_pipeline(self, _settings: Settings):
         return [
-            ModelBasedVolumeCreationAdapter(_settings),
+            ModelBasedAdapter(_settings),
             MCXAdapter(_settings),
             KWaveAdapter(_settings),
             FieldOfViewCropping(_settings),
@@ -194,7 +194,7 @@ class MSOTInvisionSimulationTest(ManualIntegrationTestClass):
         simulate(simulation_pipeline=pipeline, digital_device_twin=device, settings=self.settings)
 
     def tear_down(self):
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         visualise_data(settings=self.settings,

@@ -13,7 +13,7 @@ from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.core.simulation import simulate
 from simpa.utils import TISSUE_LIBRARY
 from simpa.io_handling import load_data_field
-from simpa import ModelBasedVolumeCreationAdapter
+from simpa import ModelBasedAdapter
 
 
 class TestNoiseModels(unittest.TestCase):
@@ -63,14 +63,14 @@ class TestNoiseModels(unittest.TestCase):
         settings["noise_model_settings"] = noise_model_settings
 
         simulation_pipeline = [
-            ModelBasedVolumeCreationAdapter(settings),
+            ModelBasedAdapter(settings),
             noise_model(settings, "noise_model_settings")
         ]
 
         try:
             simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
 
-            absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_PATH],
+            absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                          data_field=Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                          wavelength=800)
             actual_mean = np.mean(absorption)
@@ -82,10 +82,10 @@ class TestNoiseModels(unittest.TestCase):
                             np.abs(actual_std - expected_std) / expected_std < error_margin,
                             f"The std was not as expected. Expected {expected_std} but was {actual_std}")
         finally:
-            if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
-                    os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
+            if (os.path.exists(settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
+                    os.path.isfile(settings[Tags.SIMPA_OUTPUT_FILE_PATH])):
                 # Delete the created file
-                os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
+                os.remove(settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def setUp(self):
 

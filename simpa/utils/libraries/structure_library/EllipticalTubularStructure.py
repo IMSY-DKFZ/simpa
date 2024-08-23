@@ -77,10 +77,9 @@ class EllipticalTubularStructure(GeometricalStructure):
 
         if self.do_deformation:
             # the deformation functional needs mm as inputs and returns the result in reverse indexing order...
-            deformation_values_mm = self.deformation_functional_mm(torch.arange(self.volume_dimensions_voxels[0]) *
-                                                                   self.voxel_spacing,
-                                                                   torch.arange(self.volume_dimensions_voxels[1]) *
-                                                                   self.voxel_spacing).T
+            eval_points = torch.meshgrid(torch.arange(self.volume_dimensions_voxels[0], dtype=torch.float) * self.voxel_spacing,
+                                         torch.arange(self.volume_dimensions_voxels[1], dtype=torch.float) * self.voxel_spacing, indexing='ij')
+            deformation_values_mm = self.deformation_functional_mm(eval_points)
             deformation_values_mm = deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
                                                                   self.volume_dimensions_voxels[1], 1, 1)
             deformation_values_mm = torch.tile(torch.as_tensor(
@@ -95,7 +94,7 @@ class EllipticalTubularStructure(GeometricalStructure):
         main_axis_vector = main_axis_vector/torch.linalg.norm(main_axis_vector) * main_axis_length
 
         minor_axis_length = main_axis_length*torch.sqrt(1-eccentricity**2)
-        minor_axis_vector = torch.cross(cylinder_vector, main_axis_vector)
+        minor_axis_vector = torch.linalg.cross(cylinder_vector, main_axis_vector)
         minor_axis_vector = minor_axis_vector / torch.linalg.norm(minor_axis_vector) * minor_axis_length
 
         dot_product = torch.matmul(target_vector, cylinder_vector)/torch.linalg.norm(cylinder_vector)

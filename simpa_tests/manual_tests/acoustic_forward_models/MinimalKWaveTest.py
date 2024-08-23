@@ -27,7 +27,7 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
         if os.path.exists(p0_path):
             self.initial_pressure = np.load(p0_path)["initial_pressure"]
         else:
-            self.initial_pressure = np.zeros((100, 100, 100))
+            self.initial_pressure = np.zeros((100, 30, 100))
             self.initial_pressure[50, :, 50] = 1
         self.speed_of_sound = np.ones((100, 30, 100)) * self.SPEED_OF_SOUND
         self.density = np.ones((100, 30, 100)) * 1000
@@ -89,31 +89,31 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
             Tags.DATA_FIELD_ALPHA_COEFF: self.alpha
         }
         save_file_path = generate_dict_path(Tags.SIMULATION_PROPERTIES)
-        save_hdf5(acoustic_properties, self.settings[Tags.SIMPA_OUTPUT_PATH], save_file_path)
+        save_hdf5(acoustic_properties, self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], save_file_path)
         optical_output = {
             Tags.DATA_FIELD_INITIAL_PRESSURE: {self.settings[Tags.WAVELENGTHS][0]: self.initial_pressure}
         }
         optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
-        save_hdf5(optical_output, self.settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
+        save_hdf5(optical_output, self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], optical_output_path)
         KWaveAdapter(self.settings).run(self.pa_device)
 
         DelayAndSumAdapter(self.settings).run(self.pa_device)
 
-        self.reconstructed_image_1000 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
+        self.reconstructed_image_1000 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                                         data_field=Tags.DATA_FIELD_RECONSTRUCTED_DATA,
                                                         wavelength=self.settings[Tags.WAVELENGTHS][0])
 
         self.settings.get_reconstruction_settings()[Tags.DATA_FIELD_SPEED_OF_SOUND] = self.SPEED_OF_SOUND * 1.025
         DelayAndSumAdapter(self.settings).run(self.pa_device)
 
-        self.reconstructed_image_1050 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
+        self.reconstructed_image_1050 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                                         data_field=Tags.DATA_FIELD_RECONSTRUCTED_DATA,
                                                         wavelength=self.settings[Tags.WAVELENGTHS][0])
 
         self.settings.get_reconstruction_settings()[Tags.DATA_FIELD_SPEED_OF_SOUND] = self.SPEED_OF_SOUND * 0.975
         DelayAndSumAdapter(self.settings).run(self.pa_device)
 
-        self.reconstructed_image_950 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
+        self.reconstructed_image_950 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                                        data_field=Tags.DATA_FIELD_RECONSTRUCTED_DATA,
                                                        wavelength=self.settings[Tags.WAVELENGTHS][0])
 
@@ -121,13 +121,13 @@ class MinimalKWaveTest(ManualIntegrationTestClass):
         plt.figure(figsize=(9, 3))
         plt.subplot(1, 3, 1)
         plt.title(f"{self.SPEED_OF_SOUND * 0.975} m/s")
-        plt.imshow(np.rot90(self.reconstructed_image_950, 3))
+        plt.imshow(self.reconstructed_image_950.T)
         plt.subplot(1, 3, 2)
         plt.title(f"{self.SPEED_OF_SOUND} m/s")
-        plt.imshow(np.rot90(self.reconstructed_image_1000, 3))
+        plt.imshow(self.reconstructed_image_1000.T)
         plt.subplot(1, 3, 3)
         plt.title(f"{self.SPEED_OF_SOUND * 1.025} m/s")
-        plt.imshow(np.rot90(self.reconstructed_image_1050, 3))
+        plt.imshow(self.reconstructed_image_1050.T)
         plt.tight_layout()
         if show_figure_on_screen:
             plt.show()
