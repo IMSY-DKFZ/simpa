@@ -151,11 +151,11 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
         self.results.append(self.test_spacing_long())
 
     def assertDiffusionTheory(self, distance, spacing):
-        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_FLUENCE,
+        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_FLUENCE,
                                   self.settings[Tags.WAVELENGTH])
-        ref = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_DIFFUSE_REFLECTANCE,
+        ref = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_DIFFUSE_REFLECTANCE,
                               self.settings[Tags.WAVELENGTH])
-        ref_pos = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
+        ref_pos = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
                                   self.settings[Tags.WAVELENGTH])
         reflectance = np.zeros((ref_pos[:, 0].max() + 1, ref_pos[:, 1].max() + 1))
         reflectance[ref_pos[:, 0], ref_pos[:, 1], ...] = ref

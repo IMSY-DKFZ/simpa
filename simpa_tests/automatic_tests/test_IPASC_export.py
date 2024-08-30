@@ -86,11 +86,11 @@ class TestDeviceUUID(unittest.TestCase):
         self.expected_ipasc_output_path = None
 
     def clean_up(self):
-        print(f"Attempting to clean {self.settings[Tags.SIMPA_OUTPUT_PATH]}")
-        if (os.path.exists(self.settings[Tags.SIMPA_OUTPUT_PATH]) and
-                os.path.isfile(self.settings[Tags.SIMPA_OUTPUT_PATH])):
+        print(f"Attempting to clean {self.settings[Tags.SIMPA_OUTPUT_FILE_PATH]}")
+        if (os.path.exists(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
+                os.path.isfile(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])):
             # Delete the created file
-            os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+            os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
         print(f"Attempting to clean {self.expected_ipasc_output_path}")
         if (os.path.exists(self.expected_ipasc_output_path) and
@@ -131,24 +131,24 @@ class TestDeviceUUID(unittest.TestCase):
 
     def test_file_is_not_created_on_only_optical_simulation(self):
         simulate(self.optical_simulation_pipeline, self.settings, self.device)
-        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
+        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_FILE_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(not os.path.exists(self.expected_ipasc_output_path))
         self.clean_up()
 
     @expectedFailure
     def test_file_is_created_on_acoustic_simulation(self):
         simulate(self.acoustic_simulation_pipeline, self.settings, self.device)
-        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
+        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_FILE_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(os.path.exists(self.expected_ipasc_output_path))
-        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_PATH],
+        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                                                             self.expected_ipasc_output_path)
         self.clean_up()
 
     @expectedFailure
     def test_file_is_created_on_full_simulation(self):
         simulate(self.full_simulation_pipeline, self.settings, self.device)
-        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_PATH].replace(".hdf5", "_ipasc.hdf5")
+        self.expected_ipasc_output_path = self.settings[Tags.SIMPA_OUTPUT_FILE_PATH].replace(".hdf5", "_ipasc.hdf5")
         self.assertTrue(os.path.exists(self.expected_ipasc_output_path))
-        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_PATH],
+        self.assert_ipasc_file_binary_contents_is_matching_simpa_simulation(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                                                             self.expected_ipasc_output_path)
         self.clean_up()

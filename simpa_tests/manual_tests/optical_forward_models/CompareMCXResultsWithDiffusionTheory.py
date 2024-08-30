@@ -145,7 +145,7 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
         self.results.append(self.test_spacing_long())
 
     def assertDiffusionTheory(self, distance, spacing):
-        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_FLUENCE,
+        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_FLUENCE,
                                   self.settings[Tags.WAVELENGTH])
         number_of_measurements = np.arange(0, int(distance/self.settings[Tags.SPACING_MM]), 1)
         measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]

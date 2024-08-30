@@ -15,3 +15,4 @@ simpa\_examples
    perform_image_reconstruction
    perform_iterative_qPAI_reconstruction
    segmentation_loader
+   three_vs_two_dimensional_simulation_example

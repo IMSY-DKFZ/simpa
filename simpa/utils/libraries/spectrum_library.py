@@ -9,7 +9,6 @@ import numpy as np
 import matplotlib.pylab as plt
 import torch
 from scipy import interpolate
-from simpa.utils.libraries.literature_values import OpticalTissueProperties
 from simpa.utils.serializer import SerializableSIMPAClass
 
 

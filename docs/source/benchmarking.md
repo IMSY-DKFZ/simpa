@@ -69,12 +69,14 @@ Here are some examples of how to use the script:
    bash ./run_benchmark.sh -t -g -n 3
    ```
 
-To read the csv you can use the following code:
+To read the results, just click on the generated `benchmarking_data_frame_mean.md` file.
+Or you can also read the csv with:
 ```python
 import pandas as pd
-my_simpa_dir = '/home/user/workspace/...'
-benchmarking_results = pd.read_csv(my_simpa_dir + 'simpa/simpa_examples/benchmarking/benchmarking_data_frame_mean.csv')
-display(benchmarking_results)  # display works for ipynb - for py files use print(benchmarking_results)
+from tabulate import tabulate
+benchmarking_results = pd.read_csv('path/to/simpa/simpa_examples/benchmarking/benchmarking_data_frame_mean.csv')
+print(tabulate(benchmarking_results))
+# or use display(benchmarking_results)  which works for ipynb
 ```
 
 The expected outcome should look something similar to the below:

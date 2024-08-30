@@ -115,7 +115,7 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
     def teardown(self):
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def test_both(self):
         """
@@ -215,13 +215,13 @@ class TestAbsorptionAndScatteringWithInifinitesimalSlabExperiment(ManualIntegrat
         simulate(pipeline, self.settings, self.device)
 
         # run_optical_forward_model(self.settings)
-        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_FLUENCE,
+        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_FLUENCE,
                                   self.settings[Tags.WAVELENGTH])
-        absorption = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
+        absorption = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                      self.settings[Tags.WAVELENGTH])
-        scattering = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SCATTERING_PER_CM,
+        scattering = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_SCATTERING_PER_CM,
                                      self.settings[Tags.WAVELENGTH])
-        anisotropy = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ANISOTROPY,
+        anisotropy = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_ANISOTROPY,
                                      self.settings[Tags.WAVELENGTH])
 
         early_point = int((self.z_dim / 2 - distance / 2) / self.settings[Tags.SPACING_MM])
