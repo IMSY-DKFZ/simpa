@@ -81,8 +81,8 @@ class PathManager:
         return None
 
     def get_hdf5_file_save_path(self):
-        path = self.get_path_from_environment(f"{Tags.SIMPA_SAVE_PATH_VARNAME}")
-        self.logger.debug(f"Retrieved {Tags.SIMPA_SAVE_PATH_VARNAME}={path}")
+        path = self.get_path_from_environment(f"{Tags.SIMPA_SAVE_DIRECTORY_VARNAME}")
+        self.logger.debug(f"Retrieved {Tags.SIMPA_SAVE_DIRECTORY_VARNAME}={path}")
         return path
 
     def get_mcx_binary_path(self):

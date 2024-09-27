@@ -65,7 +65,7 @@ class OpticalAdapterBase(SimulationModuleBase):
 
         self.logger.info("Simulating the optical forward process...")
 
-        file_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH]
+        file_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH]
         wl = str(self.global_settings[Tags.WAVELENGTH])
 
         absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl)
@@ -112,7 +112,7 @@ class OpticalAdapterBase(SimulationModuleBase):
             optical_output[k] = {self.global_settings[Tags.WAVELENGTH]: item}
 
         optical_output_path = generate_dict_path(Tags.OPTICAL_MODEL_OUTPUT_NAME)
-        save_hdf5(optical_output, self.global_settings[Tags.SIMPA_OUTPUT_PATH], optical_output_path)
+        save_hdf5(optical_output, self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], optical_output_path)
         self.logger.info("Simulating the optical forward process...[Done]")
 
     def run_forward_model(self,

@@ -22,7 +22,6 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 #  point to the correct file in the PathManager().
 
 
-@profile
 def run_perform_iterative_qPAI_reconstruction(spacing: float | int = 0.2, path_manager=None,
                                               visualise: bool = True):
     """

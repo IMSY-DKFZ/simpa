@@ -94,7 +94,7 @@ class TestAbsorptionAndScatteringWithinHomogeneousMedium(ManualIntegrationTestCl
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
     def teardown(self):
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def test_low_scattering(self):
         """
@@ -232,7 +232,7 @@ class TestAbsorptionAndScatteringWithinHomogeneousMedium(ManualIntegrationTestCl
 
         simulate(pipeline, self.settings, self.device)
 
-        fluence_1 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_FLUENCE,
+        fluence_1 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_FLUENCE,
                                     self.settings[Tags.WAVELENGTH])
 
         # RUN SIMULATION 2
@@ -253,7 +253,7 @@ class TestAbsorptionAndScatteringWithinHomogeneousMedium(ManualIntegrationTestCl
 
         simulate(pipeline, self.settings, self.device)
 
-        fluence_2 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_FLUENCE,
+        fluence_2 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_FLUENCE,
                                     self.settings[Tags.WAVELENGTH])
 
         illuminator_point = int((self.xy_dim / 2) / self.settings[Tags.SPACING_MM]) - 1

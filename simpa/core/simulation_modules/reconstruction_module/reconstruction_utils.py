@@ -9,6 +9,7 @@ from simpa.utils.processing_device import get_processing_device
 from simpa.utils.settings import Settings
 from simpa.io_handling.io_hdf5 import load_data_field
 from simpa.utils import Tags
+from simpa.utils import round_x5_away_from_zero
 import torch
 import torch.fft
 from torch import Tensor
@@ -381,7 +382,7 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
     if Tags.DATA_FIELD_SPEED_OF_SOUND in component_settings and component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]:
         speed_of_sound_in_m_per_s = component_settings[Tags.DATA_FIELD_SPEED_OF_SOUND]
     elif Tags.WAVELENGTH in global_settings and global_settings[Tags.WAVELENGTH]:
-        sound_speed_m = load_data_field(global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SPEED_OF_SOUND)
+        sound_speed_m = load_data_field(global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_SPEED_OF_SOUND)
         speed_of_sound_in_m_per_s = np.mean(sound_speed_m)
     else:
         raise AttributeError("Please specify a value for DATA_FIELD_SPEED_OF_SOUND "
@@ -445,14 +446,15 @@ def preparing_reconstruction_and_obtaining_reconstruction_settings(
             time_spacing_in_ms, torch_device)
 
 
-def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_in_mm: float,
+def compute_image_dimensions(field_of_view_in_mm: np.ndarray, spacing_in_mm: float,
                              logger: Logger) -> Tuple[int, int, int, np.float64, np.float64,
                                                       np.float64, np.float64, np.float64, np.float64]:
     """
     Computes size of beamformed image from field of view of detection geometry given the spacing.
 
-    :param detection_geometry: detection geometry with specified field of view
-    :type detection_geometry: DetectionGeometryBase
+    :param field_of_view_in_mm: field of view in mm as list of xdim_start, xdim_end, ydim_start, ydim_end, 
+    zdim_start, zdim_end
+    :type field_of_view_in_mm: numpy ndarray
     :param spacing_in_mm: space betwenn pixels in mm
     :type spacing_in_mm: float
     :param logger: logger for debugging purposes
@@ -463,14 +465,14 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
     :rtype: Tuple[int, int, int, np.float64, np.float64, np.float64, np.float64, np.float64, np.float64]
     """
 
-    field_of_view = detection_geometry.field_of_view_extent_mm
-    logger.debug(f"Field of view: {field_of_view}")
+    logger.debug(f"Field of view: {field_of_view_in_mm}")
 
     def compute_for_one_dimension(start_in_mm: float, end_in_mm: float) -> Tuple[int, np.float64, np.float64]:
         """
         Helper function to compute the image dimensions for a single dimension given a start and end point in mm.
-        Makes sure that image dimesion is an integer by flooring. 
-        Spaces the pixels symmetrically between start and end.
+        Makes sure that image dimension is an integer by rounding, thus the resulting dimensions might be slightly
+        larger or smaller than the given field of view. The maximal deviation amounts to a quarter spacing on each side.
+        The algorithm spaces the pixels symmetrically between start and end.
 
         :param start_in_mm: lower limit of the field of view in this dimension
         :type start_in_mm: float
@@ -483,15 +485,15 @@ def compute_image_dimensions(detection_geometry: DetectionGeometryBase, spacing_
         start_temp = start_in_mm / spacing_in_mm
         end_temp = end_in_mm / spacing_in_mm
         dim_temp = np.abs(end_temp - start_temp)
-        dim = int(np.floor(dim_temp))
-        diff = np.abs(dim_temp - dim)
+        dim = round_x5_away_from_zero(dim_temp)
+        diff = dim_temp - dim  # the sign is important here
         start = start_temp - np.sign(start_temp) * diff/2
         end = end_temp - np.sign(end_temp) * diff/2
         return dim, start, end
 
-    xdim, xdim_start, xdim_end = compute_for_one_dimension(field_of_view[0], field_of_view[1])
-    zdim, zdim_start, zdim_end = compute_for_one_dimension(field_of_view[2], field_of_view[3])
-    ydim, ydim_start, ydim_end = compute_for_one_dimension(field_of_view[4], field_of_view[5])
+    xdim, xdim_start, xdim_end = compute_for_one_dimension(field_of_view_in_mm[0], field_of_view_in_mm[1])
+    zdim, zdim_start, zdim_end = compute_for_one_dimension(field_of_view_in_mm[2], field_of_view_in_mm[3])
+    ydim, ydim_start, ydim_end = compute_for_one_dimension(field_of_view_in_mm[4], field_of_view_in_mm[5])
 
     if xdim < 1:
         xdim = 1
