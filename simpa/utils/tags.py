@@ -1252,7 +1252,7 @@ class Tags:
     IO settings
     """
 
-    SIMPA_OUTPUT_PATH = ("simpa_output_path", str)
+    SIMPA_OUTPUT_FILE_PATH = ("simpa_output_path", str)
     """
     Default path of the SIMPA output if not specified otherwise.\n
     Usage: SIMPA package
@@ -1558,7 +1558,7 @@ class Tags:
     Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
     """
 
-    SIMPA_SAVE_PATH_VARNAME = "SIMPA_SAVE_PATH"
+    SIMPA_SAVE_DIRECTORY_VARNAME = "SIMPA_SAVE_DIRECTORY"
     """
     Identifier for the environment variable that defines where the results generated with SIMPA will be sotred
     """

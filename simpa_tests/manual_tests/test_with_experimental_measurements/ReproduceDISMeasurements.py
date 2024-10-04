@@ -40,7 +40,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
 
     def tear_down(self):
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def setup(self):
 

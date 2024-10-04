@@ -9,6 +9,7 @@ from simpa.utils.calculate import calculate_oxygenation, calculate_bvf
 from simpa.utils.calculate import randomize_uniform
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
 from simpa.utils.calculate import positive_gauss
+from simpa.utils.calculate import round_x5_away_from_zero
 import numpy as np
 
 
@@ -135,3 +136,26 @@ class TestCalculationUtils(unittest.TestCase):
             std = np.random.rand(1)[0]
             random_value = positive_gauss(mean, std)
             assert random_value > float(0), "positive Gauss value outside the desired range and negative"
+
+    def test_rounding_function(self):
+        assert round_x5_away_from_zero(0.5) == 1
+        assert round_x5_away_from_zero(0.4) == 0
+        assert round_x5_away_from_zero(0.6) == 1
+        assert round_x5_away_from_zero(0.1) == 0
+        assert round_x5_away_from_zero(0.9) == 1
+        assert round_x5_away_from_zero(0.0) == 0
+        assert round_x5_away_from_zero(1.0) == 1
+        assert (round_x5_away_from_zero(np.arange(0, 15) + 0.5) == np.arange(0, 15) + 1).all()
+        assert (round_x5_away_from_zero(np.arange(0, 15) + 0.4) == np.arange(0, 15)).all()
+        assert (round_x5_away_from_zero(np.arange(0, 15) + 0.6) == np.arange(0, 15) + 1).all()
+        assert (round_x5_away_from_zero(np.arange(0, 15) + 0.1) == np.arange(0, 15)).all()
+        assert (round_x5_away_from_zero(np.arange(0, 15) + 0.9) == np.arange(0, 15) + 1).all()
+        assert (round_x5_away_from_zero(np.arange(0, 15) + 0.0) == np.arange(0, 15)).all()
+        assert (round_x5_away_from_zero(np.arange(0, 15) + 1.0) == np.arange(0, 15) + 1).all()
+        assert (round_x5_away_from_zero(np.arange(-15, 0) - 0.5) == np.arange(-15, 0) - 1).all()
+        assert (round_x5_away_from_zero(np.arange(-15, 0) - 0.4) == np.arange(-15, 0)).all()
+        assert (round_x5_away_from_zero(np.arange(-15, 0) - 0.6) == np.arange(-15, 0) - 1).all()
+        assert (round_x5_away_from_zero(np.arange(-15, 0) - 0.1) == np.arange(-15, 0)).all()
+        assert (round_x5_away_from_zero(np.arange(-15, 0) - 0.9) == np.arange(-15, 0) - 1).all()
+        assert (round_x5_away_from_zero(np.arange(-15, 0) - 0.0) == np.arange(-15, 0)).all()
+        assert (round_x5_away_from_zero(np.arange(-15, 0) - 1.0) == np.arange(-15, 0) - 1).all()

@@ -9,13 +9,12 @@ from argparse import ArgumentParser
 import simpa as sp
 from simpa import Tags
 from simpa.visualisation.matplotlib_data_visualisation import visualise_data
-from simpa.utils.profiling import profile
+from typing import Union
 
 # FIXME temporary workaround for newest Intel architectures
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-@profile
 def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualise: bool = True):
     """
 
@@ -152,7 +151,7 @@ def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualis
 
     # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
     pipeline = [
-        sp.ModelBasedVolumeCreationAdapter(settings),
+        sp.ModelBasedAdapter(settings),
         sp.MCXAdapter(settings),
         sp.FieldOfViewCropping(settings),
     ]
