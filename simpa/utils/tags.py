@@ -1573,6 +1573,30 @@ class Tags:
     Identifier for the environment varibale that defines the path the the matlab executable.
     """
 
+    VOLUME_FRACTION = "volume_fraction"
+    """
+    Identifier for the volume fraction for the simulation
+    Usage: simpa.core.digital_device_twins.pa_devices.ithera_msot_acuity
+    """
+
+    ADD_US_GEL = "add_us_gel"
+    """
+    Identifier to add ultrasound gel to the segmentation
+    Usage:simpa.core.digital_device_twins.pa_devices.ithera_msot_acuity
+    """
+
+    ADD_MEDIPRENE = "add_mediprene"
+    """
+    Identifier to add mediprene to the segmentation
+    Usage:simpa.core.digital_device_twins.pa_devices.ithera_msot_acuity
+    """
+
+    ADD_HEAVY_WATER = "add_heavy_water"
+    """
+    Identifier to add heavy water to the segmentation
+    Usage:simpa.core.digital_device_twins.pa_devices.ithera_msot_acuity
+    """
+
     ADDITIONAL_FLAGS = ("additional_flags", Iterable)
     """
     Defines a sequence of extra flags to be parsed to executables for simulation modules.
