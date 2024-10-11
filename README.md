@@ -263,4 +263,4 @@ Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, 
 
 This project has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No. [101002198]).
 
-![ERC](docs/source/images/LOGO_ERC-FLAG_EU_.jpg "ERC")
+![ERC](https://github.com/IMSY-DKFZ/simpa/raw/main/docs/source/images/LOGO_ERC-FLAG_EU_.jpg "ERC")
