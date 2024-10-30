@@ -18,6 +18,12 @@ illumination\_geometries
    :show-inheritance:
 
 
+.. automodule:: simpa.core.device_digital_twins.illumination_geometries.illumination_geometry_base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 .. automodule:: simpa.core.device_digital_twins.illumination_geometries.ithera_msot_acuity_illumination
    :members:
    :undoc-members:

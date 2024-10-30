@@ -65,7 +65,7 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
 
         # Run simulation pipeline for all wavelengths in Tag.WAVELENGTHS
         self.pipeline = [
-            sp.ModelBasedVolumeCreationAdapter(self.settings)
+            sp.ModelBasedAdapter(self.settings)
         ]
 
     def perform_test(self):
@@ -82,22 +82,22 @@ class TestLinearUnmixingVisual(ManualIntegrationTestClass):
         self.logger.info("Testing linear unmixing...")
 
         # Load blood oxygen saturation
-        self.lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+        self.lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.LINEAR_UNMIXING_RESULT)
         self.sO2 = self.lu_results["sO2"]
 
         # Load reference absorption for the first wavelength
-        self.mua = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
+        self.mua = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                       wavelength=self.VISUAL_WAVELENGTHS[0])
 
     def tear_down(self):
         # clean up file after testing
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
         # Visualize linear unmixing result
         # The shape of the linear unmixing result should take after the reference absorption
 
-        ground_truth_sO2 = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_OXYGENATION)
+        ground_truth_sO2 = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_OXYGENATION)
 
         y_dim = int(self.mua.shape[1] / 2)
         plt.figure(figsize=(9, 3))

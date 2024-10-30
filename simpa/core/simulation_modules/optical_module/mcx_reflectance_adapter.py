@@ -4,16 +4,17 @@
 import typing
 
 import numpy as np
+import struct
 import jdata
 import os
 from typing import List, Tuple, Dict, Union
 
 from simpa.utils import Tags, Settings
-from simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_adapter import MCXAdapter
+from simpa.core.simulation_modules.optical_module.mcx_adapter import MCXAdapter
 from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
 
 
-class MCXAdapterReflectance(MCXAdapter):
+class MCXReflectanceAdapter(MCXAdapter):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA. This class targets specifically
     diffuse reflectance simulations. Specifically, it implements the capability to run diffuse reflectance simulations.
@@ -36,7 +37,7 @@ class MCXAdapterReflectance(MCXAdapter):
 
         :param global_settings: global settings used during simulations
         """
-        super(MCXAdapterReflectance, self).__init__(global_settings=global_settings)
+        super(MCXReflectanceAdapter, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
         self.volume_boundary_condition_str = global_settings[Tags.VOLUME_BOUNDARY_BONDITION]
@@ -77,10 +78,12 @@ class MCXAdapterReflectance(MCXAdapter):
         self.generate_mcx_json_input(settings_dict=settings_dict)
         # run the simulation
         cmd = self.get_command()
+        self.logger.info(cmd)
         self.run_mcx(cmd)
 
         # Read output
         results = self.read_mcx_output()
+        struct._clearcache()
 
         # clean temporary files
         self.remove_mcx_output()
@@ -123,7 +126,7 @@ class MCXAdapterReflectance(MCXAdapter):
             cmd.append("--bc")  # save photon exit position and direction
             cmd.append(self.volume_boundary_condition_str)
             cmd.append("--saveref")
-
+        cmd += self.get_additional_flags()
         return cmd
 
     def read_mcx_output(self, **kwargs) -> Dict:

@@ -5,13 +5,13 @@
 import numpy as np
 import torch
 
-from simpa.core.processing_components import ProcessingComponent
+from simpa.core.processing_components import ProcessingComponentBase
 from simpa.io_handling import load_data_field, save_data_field
 from simpa.utils import Tags
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
-class GammaNoise(ProcessingComponent):
+class GammaNoise(ProcessingComponentBase):
     """
     Applies Gamma noise to the defined data field.
     The noise will be applied to all wavelengths.
@@ -51,7 +51,7 @@ class GammaNoise(ProcessingComponent):
         self.logger.debug(f"Noise model scale: {scale}")
 
         wavelength = self.global_settings[Tags.WAVELENGTH]
-        data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+        data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
         data_tensor = torch.as_tensor(data_array, dtype=torch.float32, device=self.torch_device)
         dist = torch.distributions.gamma.Gamma(torch.tensor(shape, dtype=torch.float32, device=self.torch_device),
                                                torch.tensor(1.0/scale, dtype=torch.float32, device=self.torch_device))
@@ -65,6 +65,6 @@ class GammaNoise(ProcessingComponent):
             assert_array_well_defined(data_tensor)
 
         save_data_field(data_tensor.cpu().numpy().astype(np.float64, copy=False),
-                        self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+                        self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
 
         self.logger.info("Applying Gamma Noise Model...[Done]")

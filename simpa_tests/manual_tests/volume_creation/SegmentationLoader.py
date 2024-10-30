@@ -24,8 +24,8 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
         label_mask = np.reshape(label_mask, (400, 1, 400))
         input_spacing = 0.2
         segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
-        segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
-                                                 order=0)).astype(int)
+        segmentation_volume_mask = sp.round_x5_away_from_zero(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
+                                                                   order=0)).astype(int)
 
         def segmentation_class_mapping():
             ret_dict = dict()
@@ -72,7 +72,7 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
         })
 
         self.pipeline = [
-            sp.SegmentationBasedVolumeCreationAdapter(self.settings),
+            sp.SegmentationBasedAdapter(self.settings),
             sp.MCXAdapter(self.settings)
         ]
 
@@ -83,7 +83,7 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
                                                                      device_position_mm=np.asarray([20, 10, 0])))
 
     def tear_down(self):
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
 

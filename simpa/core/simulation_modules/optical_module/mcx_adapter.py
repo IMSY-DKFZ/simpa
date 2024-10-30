@@ -5,7 +5,7 @@
 import numpy as np
 import subprocess
 from simpa.utils import Tags, Settings
-from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
+from simpa.core.simulation_modules.optical_module import OpticalAdapterBase
 from simpa.core.device_digital_twins.illumination_geometries import IlluminationGeometryBase
 import json
 import jdata
@@ -13,7 +13,7 @@ import os
 from typing import List, Dict, Tuple
 
 
-class MCXAdapter(OpticalForwardModuleBase):
+class MCXAdapter(OpticalAdapterBase):
     """
     This class implements a bridge to the mcx framework to integrate mcx into SIMPA. This adapter only allows for
     computation of fluence, for computations of diffuse reflectance, take a look at `simpa.ReflectanceMcxAdapter`
@@ -69,6 +69,7 @@ class MCXAdapter(OpticalForwardModuleBase):
         self.generate_mcx_json_input(settings_dict=settings_dict)
         # run the simulation
         cmd = self.get_command()
+        self.logger.info(cmd)
         self.run_mcx(cmd)
 
         # Read output
@@ -155,7 +156,7 @@ class MCXAdapter(OpticalForwardModuleBase):
             settings_dict["Session"]["RNGSeed"] = self.component_settings[Tags.MCX_SEED]
         return settings_dict
 
-    def get_command(self, bc="aaaaaa") -> List:
+    def get_command(self) -> List:
         """
         generates list of commands to be parse to MCX in a subprocess
 
@@ -171,13 +172,8 @@ class MCXAdapter(OpticalForwardModuleBase):
         cmd.append("-a")
         cmd.append("1")
         cmd.append("-F")
-        cmd.append("bnii")
-        cmd.append("-Z")
-        cmd.append("2")
-        cmd.append("-b")
-        cmd.append("1")
-        cmd.append("--bc")
-        cmd.append(bc)
+        cmd.append("jnii")
+        cmd += self.get_additional_flags()
         return cmd
 
     @staticmethod

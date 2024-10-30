@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 import numpy as np
-from simpa.core.simulation_modules import SimulationModule
+from simpa.core.simulation_modules import SimulationModuleBase
 from simpa.utils import Tags, Settings
 from simpa.io_handling.io_hdf5 import save_hdf5
 from simpa.utils.dict_path_manager import generate_dict_path
@@ -12,7 +12,7 @@ from simpa.core.device_digital_twins import PhotoacousticDevice, DetectionGeomet
 from simpa.utils.quality_assurance.data_sanity_testing import assert_array_well_defined
 
 
-class AcousticForwardModelBaseAdapter(SimulationModule):
+class AcousticAdapterBase(SimulationModuleBase):
     """
     This method is the entry method for running an acoustic forward model.
     It is invoked in the *simpa.core.simulation.simulate* method, but can also be called
@@ -24,7 +24,7 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
 
     tag in the settings dictionary.
 
-    :param settings: The settings dictionary containing key-value pairs that determine the simulation.
+    :param global_settings: The settings dictionary containing key-value pairs that determine the simulation.
         Here, it must contain the Tags.ACOUSTIC_MODEL tag and any tags that might be required by the specific
         acoustic model.
     :raises AssertionError: an assertion error is raised if the Tags.ACOUSTIC_MODEL tag is not given or
@@ -32,7 +32,7 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
     """
 
     def __init__(self, global_settings: Settings):
-        super(AcousticForwardModelBaseAdapter, self).__init__(global_settings=global_settings)
+        super(AcousticAdapterBase, self).__init__(global_settings=global_settings)
 
     def load_component_settings(self) -> Settings:
         """Implements abstract method to serve acoustic settings as component settings
@@ -79,6 +79,6 @@ class AcousticForwardModelBaseAdapter(SimulationModule):
         acoustic_output_path = generate_dict_path(
             Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 
-        save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
+        save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], acoustic_output_path)
 
         self.logger.info("Simulating the acoustic forward process...[Done]")

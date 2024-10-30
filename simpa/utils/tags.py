@@ -2,9 +2,9 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from numbers import Number
-
 import numpy as np
+from numbers import Number
+from typing import Iterable
 
 
 class Tags:
@@ -113,9 +113,9 @@ class Tags:
     Usage: module volume_creation_module, naming convention
     """
 
-    VOLUME_CREATOR_SEGMENTATION_BASED = "volume_creator_segmentation_based"
+    VOLUME_CREATOR_SEGMENTATION_BASED = "segmentation_based_adapter"
     """
-    Corresponds to the SegmentationBasedVolumeCreator.\n
+    Corresponds to the SegmentationBasedAdapter.\n
     Usage: module volume_creation_module, naming convention
     """
 
@@ -879,6 +879,12 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
+    DATA_FIELD_BLOOD_VOLUME_FRACTION = "bvf"
+    """
+    Blood volume fraction of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DATA_FIELD_SEGMENTATION = "seg"
     """
     Segmentation of the generated volume/structure.\n
@@ -1244,7 +1250,7 @@ class Tags:
     IO settings
     """
 
-    SIMPA_OUTPUT_PATH = ("simpa_output_path", str)
+    SIMPA_OUTPUT_FILE_PATH = ("simpa_output_path", str)
     """
     Default path of the SIMPA output if not specified otherwise.\n
     Usage: SIMPA package
@@ -1255,7 +1261,7 @@ class Tags:
     Default filename of the SIMPA output if not specified otherwise.\n
     Usage: SIMPA package, naming convention
     """
-    SIMPA_VERSION = ("simpa_version", str)
+    SIMPA_VERSION = "simpa_version"
     """
     Version number of the currently installed simpa package
     Usage: SIMPA package
@@ -1449,6 +1455,9 @@ class Tags:
     """
 
     VOLUME_BOUNDARY_BONDITION = "volume_boundary_condition"
+    """
+    FIXME
+    """
 
     COMPUTE_PHOTON_DIRECTION_AT_EXIT = "save_dir_at_exit"
     """
@@ -1460,7 +1469,7 @@ class Tags:
     """
     Identifier for the diffuse reflectance values at the surface of the volume (interface to 0-values voxels) 
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
-  """
+    """
 
     DATA_FIELD_DIFFUSE_REFLECTANCE_POS = "diffuse_reflectance_pos"
     """
@@ -1483,7 +1492,76 @@ class Tags:
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
     """
 
-    SIMPA_SAVE_PATH_VARNAME = "SIMPA_SAVE_PATH"
+    IMAGE_SCALING_SYMMETRIC = "symmetric"
+    """
+    Flag indicating the use of reflection on edges during interpolation when rescaling an image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_STRETCH = "stretch"
+    """
+    Flag indicating the use of reflection on edges during interpolation when rescaling an image
+    At the boundary, the image will reflect to fill the area
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_WRAP = "wrap"
+    """
+    Flag indicating tessellating during interpolation when rescaling an image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_CONSTANT = "constant"
+    """
+    Flag indicating the use of a constant on edges during interpolation when rescaling an image
+    The rest of the area will be filled by a constant value
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    IMAGE_SCALING_EDGE = "edge"
+    """
+    Flag indicating the expansion of the edges during interpolation when rescaling an image
+    The edge value will continue across the area
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_TOP = "top"
+    """
+    Flag indicating the crop position: along top edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_BOTTOM = "bottom"
+    """
+    Flag indicating the crop position: along bottom edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_CENTRE = "centre"
+    """
+    Flag indicating the crop position: along centre edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_LEFT = "left"
+    """
+    Flag indicating the crop position: along left-hand edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_RIGHT = "right"
+    """
+    Flag indicating the crop position: along right-hand edge of image
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    CROP_POSITION_RANDOM = "random"
+    """
+    Flag indicating the crop position: random placement
+    Usage: simpa.utils.libraries.structure_library.heterogeneity_generator
+    """
+
+    SIMPA_SAVE_DIRECTORY_VARNAME = "SIMPA_SAVE_DIRECTORY"
     """
     Identifier for the environment variable that defines where the results generated with SIMPA will be sotred
     """
@@ -1496,4 +1574,17 @@ class Tags:
     MATLAB_BINARY_PATH_VARNAME = "MATLAB_BINARY_PATH"
     """
     Identifier for the environment varibale that defines the path the the matlab executable.
+    """
+
+    ADDITIONAL_FLAGS = ("additional_flags", Iterable)
+    """
+    Defines a sequence of extra flags to be parsed to executables for simulation modules.
+    Caution: The user is responsible for checking if these flags exist and don't break the predefined flags' behaviour.
+    It is assumed that if flags are specified multiple times the flag provided last is considered. 
+    This can for example be used to override predefined flags.
+    """
+
+    VOLUME_FRACTION = "volume_fraction"
+    """
+    Identifier for the volume fraction for the simulation
     """

@@ -50,7 +50,7 @@ class TestLinearUnmixing(unittest.TestCase):
         self.device = sp.PencilBeamIlluminationGeometry()
 
         # Run empty pipeline simulation to "fill" hdf5 file following usual procedure
-        pipeline = [sp.ModelBasedVolumeCreationAdapter(self.settings)]
+        pipeline = [sp.ModelBasedAdapter(self.settings)]
         sp.simulate(pipeline, self.settings, self.device)
 
     def test(self):
@@ -78,11 +78,11 @@ class TestLinearUnmixing(unittest.TestCase):
         lu.run()
 
         # Load blood oxygen saturation
-        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.LINEAR_UNMIXING_RESULT)
         self.assert_correct_so2_vales(lu_results["sO2"])
 
     def assert_correct_so2_vales(self, estimates, tolerance=1e-7):
-        ground_truth = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_OXYGENATION)
+        ground_truth = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_OXYGENATION)
         msg = f"expected {estimates.reshape((-1,))[0]} but was {ground_truth.reshape((-1,))[0]}"
         self.logger.info(msg)
         self.assertTrue(np.allclose(estimates, ground_truth, atol=tolerance), msg=msg)
@@ -113,7 +113,7 @@ class TestLinearUnmixing(unittest.TestCase):
         lu.run()
 
         # Load blood oxygen saturation
-        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.LINEAR_UNMIXING_RESULT)
         self.assert_correct_so2_vales(lu_results["sO2"])
 
     @expectedFailure
@@ -164,7 +164,7 @@ class TestLinearUnmixing(unittest.TestCase):
         lu.run()
 
         # assert correct estimates
-        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.LINEAR_UNMIXING_RESULT)
         self.assert_correct_so2_vales(lu_results["sO2"])
 
     def test_subset_of_3_wavelengths(self):
@@ -189,7 +189,7 @@ class TestLinearUnmixing(unittest.TestCase):
         # Run linear unmixing component
         lu = sp.LinearUnmixing(self.settings, "linear_unmixing")
         lu.run()
-        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.LINEAR_UNMIXING_RESULT)
         self.assert_correct_so2_vales(lu_results["sO2"])
 
     @expectedFailure
@@ -248,12 +248,12 @@ class TestLinearUnmixing(unittest.TestCase):
         # Run linear unmixing component
         lu = sp.LinearUnmixing(self.settings, "linear_unmixing")
         lu.run()
-        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.LINEAR_UNMIXING_RESULT)
+        lu_results = sp.load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.LINEAR_UNMIXING_RESULT)
         self.assert_correct_so2_vales(lu_results["sO2"], tolerance=1e-2)
 
     def tearDown(self):
         # Clean up file after testing
-        if (os.path.exists(self.settings[Tags.SIMPA_OUTPUT_PATH]) and
-                os.path.isfile(self.settings[Tags.SIMPA_OUTPUT_PATH])):
+        if (os.path.exists(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
+                os.path.isfile(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])):
             # Delete the created file
-            os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+            os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])

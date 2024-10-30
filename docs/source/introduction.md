@@ -7,6 +7,7 @@ The SIMPA path management takes care of that.
 * [SIMPA installation instructions](#simpa-installation-instructions)
 * [External tools installation instructions](#external-tools-installation-instructions)
 * [Path Management](#path-management)
+* [Testing](#run-manual-tests)
 
 ## SIMPA installation instructions
 
@@ -18,8 +19,8 @@ The recommended way to install SIMPA is a manual installation from the GitHub re
 4. `git pull`
 
 Now open a python instance in the 'simpa' folder that you have just downloaded. Make sure that you have your preferred
-virtual environment activated (we also recommend python 3.8)
-1. `pip install .`
+virtual environment activated (we also recommend python 3.10)
+1. `pip install .` or `pip install -e .` for an editable mode. 
 2. Test if the installation worked by using `python` followed by `import simpa` then `exit()`
 
 If no error messages arise, you are now setup to use SIMPA in your project.
@@ -78,6 +79,9 @@ one we provided in the `simpa_examples/path_config.env.example`) in the followin
    
 For this option, please follow the instructions in the `simpa_examples/path_config.env.example` file. 
 
+## Run manual tests
+To check the success of your installation ot to assess how your contributions affect the Simpa simulation outcomes, you can run the manual tests automatically. Install the testing requirements by doing `pip install .[testing]` and run the `simpa_tests/manual_tests/generate_overview.py` file. This script runs all manual tests and generates both a markdown and an HTML file that compare your results with the reference results.
+
 # Simulation examples
 
 To get started with actual simulations, SIMPA provides an [example package](simpa_examples) of simple simulation 
@@ -100,10 +104,10 @@ settings.set_acoustic_settings(acoustic_settings)
 settings.set_reconstruction_settings(reconstruction_settings)
 
 # Set the simulation pipeline
-simulation_pipeline = [sp.VolumeCreatorModule(settings),
-    sp.OpticalForwardModule(settings),
-    sp.AcousticForwardModule(settings),
-    sp.ReconstructionModule(settings)]
+simulation_pipeline = [sp.VolumeCreationModule(settings),
+                       sp.OpticalModule(settings),
+                       sp.AcousticModule(settings),
+                       sp.ReconstructionModule(settings)]
     
 # Choose a PA device with device position in the volume
 device = sp.CustomDevice()
@@ -111,4 +115,10 @@ device = sp.CustomDevice()
 # Simulate the pipeline
 sp.simulate(simulation_pipeline, settings, device)
 ```
+
+# Reproducibility
+
+For reproducibility, we provide the exact version number including the commit hash in the simpa output file.
+This can be accessed via `simpa.__version__` or by checking the tag `Tags.SIMPA_VERSION` in the output file.
+This way, you can always trace back the exact version of the code that was used to generate the simulation results.
 

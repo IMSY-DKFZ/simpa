@@ -7,8 +7,7 @@ from simpa.utils import Tags
 from simpa.io_handling import load_data_field
 from simpa.core.simulation import simulate
 from simpa import KWaveAdapter, MCXAdapter, \
-    TimeReversalAdapter, ModelBasedVolumeCreationAdapter, GaussianNoise
-from simpa import reconstruct_delay_and_sum_pytorch
+    TimeReversalAdapter, ModelBasedAdapter, GaussianNoise
 from simpa_tests.manual_tests import ReconstructionAlgorithmTestBaseClass
 
 # FIXME temporary workaround for newest Intel architectures
@@ -27,7 +26,7 @@ class TimeReversalReconstruction(ReconstructionAlgorithmTestBaseClass):
         self.device.update_settings_for_use_of_model_based_volume_creator(self.settings)
 
         SIMULATION_PIPELINE = [
-            ModelBasedVolumeCreationAdapter(self.settings),
+            ModelBasedAdapter(self.settings),
             MCXAdapter(self.settings),
             GaussianNoise(self.settings, "noise_initial_pressure"),
             KWaveAdapter(self.settings),
@@ -36,7 +35,7 @@ class TimeReversalReconstruction(ReconstructionAlgorithmTestBaseClass):
 
         simulate(SIMULATION_PIPELINE, self.settings, self.device)
 
-        self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
+        self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
                                                             self.settings[Tags.WAVELENGTH])
 
     def test_convenience_function(self):

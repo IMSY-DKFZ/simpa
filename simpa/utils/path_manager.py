@@ -20,9 +20,10 @@ class PathManager:
     one we provided in the `simpa_examples`) in the following places in this order:
 
         1. The optional path you give the PathManager
-        2. Your $HOME$ directory
-        3. The current working directory
-        4. The SIMPA home directory path
+        2. Your set environment variables
+        3. Your $HOME$ directory
+        4. The current working directory
+        5. The SIMPA home directory path
     """
 
     def __init__(self, environment_path=None):
@@ -32,6 +33,7 @@ class PathManager:
         """
         self.logger = Logger()
         self.path_config_file_name = 'path_config.env'
+        override = False
         if environment_path is None:
             environment_path = os.path.join(str(Path.home()), self.path_config_file_name)
             self.logger.debug(f"Using $HOME$ path to search for config file: {environment_path}")
@@ -44,13 +46,14 @@ class PathManager:
                                   f"for {self.path_config_file_name}")
                 environment_path = os.path.join(environment_path, self.path_config_file_name)
             self.logger.debug(f"Using supplied path to search for config file: {environment_path}")
+            override = True
 
         if environment_path is None or not os.path.exists(environment_path) or not os.path.isfile(environment_path):
             error_message = f"Did not find a { self.path_config_file_name} file in any of the standard directories..."
             self.logger.warning(error_message)
 
         self.environment_path = environment_path
-        load_dotenv(environment_path, override=True)
+        load_dotenv(environment_path, override=override)
 
     def detect_local_path_config(self):
         """
@@ -78,8 +81,8 @@ class PathManager:
         return None
 
     def get_hdf5_file_save_path(self):
-        path = self.get_path_from_environment(f"{Tags.SIMPA_SAVE_PATH_VARNAME}")
-        self.logger.debug(f"Retrieved {Tags.SIMPA_SAVE_PATH_VARNAME}={path}")
+        path = self.get_path_from_environment(f"{Tags.SIMPA_SAVE_DIRECTORY_VARNAME}")
+        self.logger.debug(f"Retrieved {Tags.SIMPA_SAVE_DIRECTORY_VARNAME}={path}")
         return path
 
     def get_mcx_binary_path(self):

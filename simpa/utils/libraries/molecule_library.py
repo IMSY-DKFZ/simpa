@@ -4,6 +4,7 @@
 from typing import Optional, Union
 
 import numpy as np
+import torch
 from simpa.utils import Tags
 
 from simpa.utils.tissue_properties import TissueProperties
@@ -11,24 +12,35 @@ from simpa.utils.libraries.literature_values import OpticalTissueProperties, Sta
 from simpa.utils.libraries.spectrum_library import (AnisotropySpectrumLibrary, ScatteringSpectrumLibrary,
                                                     RefractiveIndexSpectrumLibrary, AbsorptionSpectrumLibrary)
 from simpa.utils import Spectrum
-from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature
+from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature, calculate_bvf
 from simpa.utils.serializer import SerializableSIMPAClass
+from simpa.log import Logger
+from typing import Optional, Union
 
 
 class MolecularComposition(SerializableSIMPAClass, list):
+    """
+    A class representing a molecular composition which is a list of Molecules.
+
+    Attributes:
+        segmentation_type (str): The type of segmentation.
+        internal_properties (TissueProperties): The internal tissue properties.
+    """
 
     def __init__(self, segmentation_type: Optional[str] = None, molecular_composition_settings: Optional[dict] = None):
         """
         Initialize the MolecularComposition object.
 
-        :param segmentation_type: The type of segmentation.
+        :param segmentation_type: The segmentation class associated with this molecular composition.
         :type segmentation_type: str, optional
-        :param molecular_composition_settings: Settings for the molecular composition.
+        :param molecular_composition_settings: A settings dictionary or dict containing the molecules that constitute
+        this composition
         :type molecular_composition_settings: dict, optional
         """
         super().__init__()
         self.segmentation_type = segmentation_type
-        self.internal_properties = TissueProperties()
+        self.internal_properties: TissueProperties = None
+        self.logger = Logger()
 
         if molecular_composition_settings is None:
             return
@@ -37,19 +49,22 @@ class MolecularComposition(SerializableSIMPAClass, list):
         for molecule_name in _keys:
             self.append(molecular_composition_settings[molecule_name])
 
-    def update_internal_properties(self):
+    def update_internal_properties(self, settings):
         """
-        Update the internal tissue properties based on the molecular composition.
+        Re-defines the internal properties of the molecular composition.
+        For each data field and molecule, a linear mixing model is used to arrive at the final parameters.
 
         Raises:
             AssertionError: If the total volume fraction of all molecules is not exactly 100%.
         """
-        self.internal_properties = TissueProperties()
+        self.internal_properties = TissueProperties(settings)
         self.internal_properties[Tags.DATA_FIELD_SEGMENTATION] = self.segmentation_type
         self.internal_properties[Tags.DATA_FIELD_OXYGENATION] = calculate_oxygenation(self)
+        self.internal_properties[Tags.DATA_FIELD_BLOOD_VOLUME_FRACTION] = calculate_bvf(self)
+        search_list = self.copy()
 
-        for molecule in self:
-            self.internal_properties.volume_fraction += molecule.volume_fraction
+        for molecule in search_list:
+            self.internal_properties.volume_fraction += molecule.get_volume_fraction()
             self.internal_properties[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] += \
                 molecule.volume_fraction * molecule.gruneisen_parameter
             self.internal_properties[Tags.DATA_FIELD_DENSITY] += molecule.volume_fraction * molecule.density
@@ -58,24 +73,27 @@ class MolecularComposition(SerializableSIMPAClass, list):
             self.internal_properties[Tags.DATA_FIELD_ALPHA_COEFF] += molecule.volume_fraction * \
                 molecule.alpha_coefficient
 
-        if np.abs(self.internal_properties.volume_fraction - 1.0) > 1e-3:
-            raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
-                                 "exactly 100%!")
+        if (torch.abs(self.internal_properties.volume_fraction - 1.0) > 1e-5).any():
+            if not (torch.abs(self.internal_properties.volume_fraction - 1.0) < 1e-5).any():
+                raise AssertionError("Invalid Molecular composition! The volume fractions of all molecules must be"
+                                     "exactly 100% somewhere!")
+            self.logger.warning("Some of the volume has not been filled by this molecular composition. Please check"
+                                "that this is correct")
 
-    def get_properties_for_wavelength(self, wavelength: Union[int, float]) -> TissueProperties:
+    def get_properties_for_wavelength(self, settings, wavelength: Union[int, float]) -> TissueProperties:
         """
         Get the tissue properties for a specific wavelength.
 
         :param wavelength: The wavelength to get properties for.
         :return: The updated tissue properties.
         """
-        self.update_internal_properties()
+        self.update_internal_properties(settings)
         self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0
         self.internal_properties[Tags.DATA_FIELD_SCATTERING_PER_CM] = 0
         self.internal_properties[Tags.DATA_FIELD_ANISOTROPY] = 0
         self.internal_properties[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 0
-
-        for molecule in self:
+        search_list = self.copy()
+        for molecule in search_list:
             self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] += \
                 (molecule.volume_fraction * molecule.absorption_spectrum.get_value_for_wavelength(wavelength))
 
@@ -97,6 +115,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
         :return: The serialized molecular composition.
         """
         dict_items = self.__dict__
+        dict_items["internal_properties"] = None  # Todo: Explain why.
         list_items = [molecule for molecule in self]
         return {"MolecularComposition": {"dict_items": dict_items, "list_items": list_items}}
 
@@ -174,8 +193,11 @@ class Molecule(SerializableSIMPAClass, object):
 
         if volume_fraction is None:
             volume_fraction = 0.0
-        if not isinstance(volume_fraction, (int, float, np.int64)):
-            raise TypeError(f"The given volume_fraction was not of type float instead of {type(volume_fraction)}!")
+        if not isinstance(volume_fraction, (int, float, np.int64, np.ndarray)):
+            raise TypeError(f"The given volume_fraction was not of type float or array instead of "
+                            f"{type(volume_fraction)}!")
+        if isinstance(volume_fraction, np.ndarray):
+            volume_fraction = torch.tensor(volume_fraction, dtype=torch.float32)
         self.volume_fraction = volume_fraction
 
         if scattering_spectrum is None:
@@ -200,29 +222,37 @@ class Molecule(SerializableSIMPAClass, object):
         if gruneisen_parameter is None:
             gruneisen_parameter = calculate_gruneisen_parameter_from_temperature(
                 StandardProperties.BODY_TEMPERATURE_CELCIUS)
-        if not isinstance(gruneisen_parameter, (int, float)):
+        if not isinstance(gruneisen_parameter, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError(f"The given gruneisen_parameter was not of type int or float instead "
                             f"of {type(gruneisen_parameter)}!")
+        if isinstance(gruneisen_parameter, np.ndarray):
+            gruneisen_parameter = torch.tensor(gruneisen_parameter, dtype=torch.float32)
         self.gruneisen_parameter = gruneisen_parameter
 
         if density is None:
             density = StandardProperties.DENSITY_GENERIC
-        if not isinstance(density, (np.int32, np.int64, int, float)):
+        if not isinstance(density, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError(f"The given density was not of type int or float instead of {type(density)}!")
+        if isinstance(density, np.ndarray):
+            density = torch.tensor(density, dtype=torch.float32)
         self.density = density
 
         if speed_of_sound is None:
             speed_of_sound = StandardProperties.SPEED_OF_SOUND_GENERIC
-        if not isinstance(speed_of_sound, (np.int32, np.int64, int, float)):
+        if not isinstance(speed_of_sound, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError("The given speed_of_sound was not of type int or float instead of {}!"
                             .format(type(speed_of_sound)))
+        if isinstance(speed_of_sound, np.ndarray):
+            speed_of_sound = torch.tensor(speed_of_sound, dtype=torch.float32)
         self.speed_of_sound = speed_of_sound
 
         if alpha_coefficient is None:
             alpha_coefficient = StandardProperties.ALPHA_COEFF_GENERIC
-        if not isinstance(alpha_coefficient, (int, float)):
+        if not isinstance(alpha_coefficient, (np.int32, np.int64, int, float, np.ndarray)):
             raise TypeError("The given alpha_coefficient was not of type int or float instead of {}!"
                             .format(type(alpha_coefficient)))
+        if isinstance(alpha_coefficient, np.ndarray):
+            alpha_coefficient = torch.tensor(alpha_coefficient, dtype=torch.float32)
         self.alpha_coefficient = alpha_coefficient
 
     def __eq__(self, other) -> bool:
@@ -246,6 +276,9 @@ class Molecule(SerializableSIMPAClass, object):
                     )
         else:
             return super().__eq__(other)
+
+    def get_volume_fraction(self):
+        return self.volume_fraction
 
     def serialize(self):
         """
@@ -273,6 +306,7 @@ class Molecule(SerializableSIMPAClass, object):
                                          speed_of_sound=dictionary_to_deserialize["speed_of_sound"],
                                          gruneisen_parameter=dictionary_to_deserialize["gruneisen_parameter"],
                                          anisotropy_spectrum=dictionary_to_deserialize["anisotropy_spectrum"],
+                                         refractive_index=dictionary_to_deserialize["refractive_index"],
                                          density=dictionary_to_deserialize["density"])
         return deserialized_molecule
 
@@ -286,7 +320,7 @@ class MoleculeLibrary(object):
     """
     # Main absorbers
     @staticmethod
-    def water(volume_fraction: float = 1.0) -> Molecule:
+    def water(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a water molecule with predefined properties.
 
@@ -307,7 +341,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def oxyhemoglobin(volume_fraction: float = 1.0) -> Molecule:
+    def oxyhemoglobin(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create an oxyhemoglobin molecule with predefined properties.
 
@@ -327,7 +361,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def deoxyhemoglobin(volume_fraction: float = 1.0) -> Molecule:
+    def deoxyhemoglobin(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a deoxyhemoglobin molecule with predefined properties.
 
@@ -336,7 +370,6 @@ class MoleculeLibrary(object):
         """
         return Molecule(name="deoxyhemoglobin",
                         absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Deoxyhemoglobin"),
-
                         volume_fraction=volume_fraction,
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("blood_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
@@ -348,7 +381,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def melanin(volume_fraction: float = 1.0) -> Molecule:
+    def melanin(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a melanin molecule with predefined properties.
 
@@ -370,7 +403,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def fat(volume_fraction: float = 1.0) -> Molecule:
+    def fat(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a fat molecule with predefined properties.
 
@@ -393,7 +426,7 @@ class MoleculeLibrary(object):
     # Scatterers
     @staticmethod
     def constant_scatterer(scattering_coefficient: float = 100.0, anisotropy: float = 0.9,
-                           refractive_index: float = 1.329, volume_fraction: float = 1.0):
+                           volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a constant scatterer molecule with predefined properties.
 
@@ -415,7 +448,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def soft_tissue_scatterer(volume_fraction: float = 1.0) -> Molecule:
+    def soft_tissue_scatterer(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a soft tissue scatterer molecule with predefined properties.
 
@@ -436,7 +469,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def muscle_scatterer(volume_fraction: float = 1.0) -> Molecule:
+    def muscle_scatterer(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a muscle scatterer molecule with predefined properties.
 
@@ -457,7 +490,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def epidermal_scatterer(volume_fraction: float = 1.0) -> Molecule:
+    def epidermal_scatterer(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create an epidermal scatterer molecule with predefined properties.
 
@@ -479,7 +512,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def dermal_scatterer(volume_fraction: float = 1.0) -> Molecule:
+    def dermal_scatterer(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a dermal scatterer molecule with predefined properties.
 
@@ -500,7 +533,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def bone(volume_fraction: float = 1.0) -> Molecule:
+    def bone(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a bone molecule with predefined properties.
 
@@ -522,7 +555,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def mediprene(volume_fraction: float = 1.0) -> Molecule:
+    def mediprene(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a mediprene molecule with predefined properties.
 
@@ -543,7 +576,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def heavy_water(volume_fraction: float = 1.0) -> Molecule:
+    def heavy_water(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create a heavy water molecule with predefined properties.
 
@@ -565,7 +598,7 @@ class MoleculeLibrary(object):
                         )
 
     @staticmethod
-    def air(volume_fraction: float = 1.0) -> Molecule:
+    def air(volume_fraction: (float, torch.Tensor) = 1.0) -> Molecule:
         """
         Create an air molecule with predefined properties.
 

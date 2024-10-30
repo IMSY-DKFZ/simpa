@@ -2,7 +2,8 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils import Tags
+from simpa.core.simulation_modules.reconstruction_module.reconstruction_utils import compute_image_dimensions
+from simpa.utils import Tags, round_x5_away_from_zero
 from simpa.utils.matlab import generate_matlab_cmd
 from simpa.utils.settings import Settings
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
@@ -55,7 +56,8 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             raise AttributeError("Please specify a value for SPACING_MM")
 
         detector_positions = detection_geometry.get_detector_element_positions_accounting_for_device_position_mm()
-        detector_positions_voxels = np.round(detector_positions / spacing_in_mm).astype(int)
+        # we add eps of 1e-10 because numpy rounds 0.5 to the next even number
+        detector_positions_voxels = round_x5_away_from_zero(detector_positions / spacing_in_mm)
 
         # plus 2 because of off-
         volume_x_dim = int(np.ceil(self.global_settings[Tags.DIM_VOLUME_X_MM] / spacing_in_mm) + 1)
@@ -127,7 +129,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
 
         input_data[Tags.DATA_FIELD_TIME_SERIES_DATA] = time_series_sensor_data
         input_data, spacing_in_mm = self.get_acoustic_properties(input_data, detection_geometry)
-        acoustic_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH] + ".mat"
+        acoustic_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH] + ".mat"
 
         possible_k_wave_parameters = [Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.KWAVE_PROPERTY_ALPHA_POWER, Tags.GPU, Tags.KWAVE_PROPERTY_PMLInside, Tags.KWAVE_PROPERTY_PMLAlpha, Tags.KWAVE_PROPERTY_PlotPML,
@@ -169,7 +171,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             axes = (0, 1)
 
         matlab_binary_path = self.component_settings[Tags.ACOUSTIC_MODEL_BINARY_PATH]
-        cmd = generate_matlab_cmd(matlab_binary_path, time_reversal_script, acoustic_path)
+        cmd = generate_matlab_cmd(matlab_binary_path, time_reversal_script, acoustic_path, self.get_additional_flags())
 
         cur_dir = os.getcwd()
         os.chdir(self.global_settings[Tags.SIMULATION_PATH])
@@ -181,7 +183,11 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         reconstructed_data = reconstructed_data.T
 
         field_of_view_mm = detection_geometry.get_field_of_view_mm()
-        field_of_view_voxels = (field_of_view_mm / spacing_in_mm).astype(np.int32)
+        _, _, _, xdim_start, xdim_end,  ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
+            field_of_view_mm, spacing_in_mm, self.logger)
+        field_of_view_voxels = [xdim_start, xdim_end, zdim_start, zdim_end, ydim_start, ydim_end]  # change ordering
+        field_of_view_voxels = [int(dim) for dim in field_of_view_voxels]  # cast to int
+
         self.logger.debug(f"FOV (voxels): {field_of_view_voxels}")
         # In case it should be cropped from A to A, then crop from A to A+1
         x_offset_correct = 1 if (field_of_view_voxels[1] - field_of_view_voxels[0]) < 1 else 0

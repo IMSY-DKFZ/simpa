@@ -2,11 +2,11 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.core.simulation_modules.optical_simulation_module import OpticalForwardModuleBase
+from simpa.core.simulation_modules.optical_module import OpticalAdapterBase
 from simpa import Tags
 
 
-class OpticalForwardModelTestAdapter(OpticalForwardModuleBase):
+class OpticalTestAdapter(OpticalAdapterBase):
     """
     This Adapter was created for testing purposes and only
     """
