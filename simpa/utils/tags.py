@@ -2,8 +2,9 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import numpy as np
 from numbers import Number
+
+import numpy as np
 
 
 class Tags:
@@ -169,13 +170,13 @@ class Tags:
 
     DEFORMATION_X_COORDINATES_MM = "deformation_x_coordinates"
     """
-    Mesh that defines the x coordinates of the deformation.\n
+    Array that defines the x coordinates of the deformation.\n
     Usage: adapter versatile_volume_creation, naming convention
     """
 
     DEFORMATION_Y_COORDINATES_MM = "deformation_y_coordinates"
     """
-    Mesh that defines the y coordinates of the deformation.\n
+    Array that defines the y coordinates of the deformation.\n
     Usage: adapter versatile_volume_creation, naming convention
     """
 
@@ -460,6 +461,12 @@ class Tags:
     ILLUMINATION_TYPE_DISK = "disk"
     """
     Corresponds to disk source in mcx.\n
+    Usage: adapter mcx_adapter, naming convention
+    """
+
+    ILLUMINATION_TYPE_RING = "ring"
+    """
+    Corresponds to ring source in mcx.\n
     Usage: adapter mcx_adapter, naming convention
     """
 
@@ -1441,6 +1448,8 @@ class Tags:
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
     """
 
+    VOLUME_BOUNDARY_BONDITION = "volume_boundary_condition"
+
     COMPUTE_PHOTON_DIRECTION_AT_EXIT = "save_dir_at_exit"
     """
     Flag that indicates if the direction of photons when they exit the volume should be stored
@@ -1472,4 +1481,19 @@ class Tags:
     Identifier for the direction of photons when they exit the volume. Currently only photon exiting along the Z axis 
     are detected.
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    SIMPA_SAVE_PATH_VARNAME = "SIMPA_SAVE_PATH"
+    """
+    Identifier for the environment variable that defines where the results generated with SIMPA will be sotred
+    """
+
+    MCX_BINARY_PATH_VARNAME = "MCX_BINARY_PATH"
+    """
+    Identified for the environment varibale that defines the path to the MCX executable.
+    """
+
+    MATLAB_BINARY_PATH_VARNAME = "MATLAB_BINARY_PATH"
+    """
+    Identifier for the environment varibale that defines the path the the matlab executable.
     """

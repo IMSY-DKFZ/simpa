@@ -72,7 +72,7 @@ class ParallelepipedStructure(GeometricalStructure):
                                     1/torch.linalg.norm(y_edge_voxels),
                                     1/torch.linalg.norm(z_edge_voxels)], device=self.torch_device)
 
-        filled_mask_bool = (0 <= result) & (result <= 1 - norm_vector)
+        filled_mask_bool = (0 <= result) & (result + norm_vector <= 1)
 
         volume_fractions = torch.zeros(tuple(self.volume_dimensions_voxels),
                                        dtype=torch.float, device=self.torch_device)

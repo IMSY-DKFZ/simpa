@@ -22,3 +22,9 @@ optical\_simulation\_module
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+.. automodule:: simpa.core.simulation_modules.optical_simulation_module.volume_boundary_condition
+   :members:
+   :undoc-members:
+   :show-inheritance:

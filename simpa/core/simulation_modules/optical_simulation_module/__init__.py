@@ -6,7 +6,7 @@ from typing import Dict, Union, Iterable
 
 import numpy as np
 
-from simpa.core import SimulationModule
+from simpa.core.simulation_modules import SimulationModule
 from simpa.core.device_digital_twins import (IlluminationGeometryBase,
                                              PhotoacousticDevice)
 from simpa.io_handling.io_hdf5 import load_data_field, save_hdf5
@@ -25,11 +25,17 @@ class OpticalForwardModuleBase(SimulationModule):
 
     def __init__(self, global_settings: Settings):
         super(OpticalForwardModuleBase, self).__init__(global_settings=global_settings)
-        self.component_settings = self.global_settings.get_optical_settings()
         self.nx = None
         self.ny = None
         self.nz = None
         self.temporary_output_files = []
+
+    def load_component_settings(self) -> Settings:
+        """Implements abstract method to serve optical settings as component settings
+
+        :return: Settings: optical component settings
+        """
+        return self.global_settings.get_optical_settings()
 
     @abstractmethod
     def forward_model(self,
