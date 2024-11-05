@@ -73,7 +73,7 @@ class Spectrum(SerializableSIMPAClass, object):
         if wavelength < self.min_wavelength or wavelength > self.max_wavelength:
             raise ValueError(f"The given wavelength ({wavelength}) is not within the range of the spectrum "
                              f"({self.min_wavelength} - {self.max_wavelength})")
-        return self.values_interp[wavelength-self.min_wavelength]
+        return self.values_interp[wavelength - self.min_wavelength]
 
     def __eq__(self, other):
         """

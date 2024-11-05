@@ -519,6 +519,8 @@ class MoleculeLibrary(object):
         :param volume_fraction: The volume fraction of the molecule, defaults to 1.0
         :return: A Molecule object representing a dermal scatterer
         """
+
+        # Todo: Add refractive index.
         return Molecule(name="dermal_scatterer",
                         absorption_spectrum=AbsorptionSpectrumLibrary().get_spectrum_by_name("Skin_Baseline"),
                         volume_fraction=volume_fraction,

@@ -7,8 +7,9 @@ import numpy as np
 import struct
 import jdata
 import os
-from typing import List, Tuple, Dict, Union
+from typing import Tuple, Dict, Union
 
+from simpa.core.simulation_modules.optical_module.volume_boundary_condition import MCXVolumeBoundaryCondition
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_module.mcx_adapter import MCXAdapter
 from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
@@ -40,7 +41,11 @@ class MCXReflectanceAdapter(MCXAdapter):
         super(MCXReflectanceAdapter, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
-        self.volume_boundary_condition_str = global_settings[Tags.VOLUME_BOUNDARY_BONDITION]
+        if Tags.VOLUME_BOUNDARY_BONDITION in global_settings:
+            self.volume_boundary_condition_str = global_settings[Tags.VOLUME_BOUNDARY_BONDITION]
+        else:
+            self.volume_boundary_condition_str = MCXVolumeBoundaryCondition.DEFAULT.value
+
         self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii',
                                     'mcx_photon_data_file': '_detp.jdat'}
 
