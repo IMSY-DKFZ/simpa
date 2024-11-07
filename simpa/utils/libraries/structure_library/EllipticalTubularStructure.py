@@ -81,11 +81,11 @@ class EllipticalTubularStructure(GeometricalStructure):
                                          torch.arange(self.volume_dimensions_voxels[1], dtype=torch.float) * self.voxel_spacing, indexing='ij')
             deformation_values_mm = self.deformation_functional_mm(eval_points)
             deformation_values_mm = deformation_values_mm.reshape(self.volume_dimensions_voxels[0],
-                                                                  self.volume_dimensions_voxels[1], 1, 1)
+                                                                  self.volume_dimensions_voxels[1], 1)
             deformation_values_mm = torch.tile(torch.as_tensor(
-                deformation_values_mm, device=self.torch_device), (1, 1, self.volume_dimensions_voxels[2], 3))
+                deformation_values_mm, device=self.torch_device), (1, 1, self.volume_dimensions_voxels[2]))
             deformation_values_mm /= self.voxel_spacing
-            target_vector += deformation_values_mm
+            target_vector[..., -1] += deformation_values_mm
             del deformation_values_mm
         cylinder_vector = torch.subtract(end_voxels, start_voxels)
 

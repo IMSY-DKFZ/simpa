@@ -5,7 +5,7 @@
 import unittest
 import numpy as np
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
-from simpa.utils import Tags
+from simpa.utils import Tags, create_deformation_settings
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import EllipticalTubularStructure
 
@@ -122,3 +122,35 @@ class TestEllipticalTubes(unittest.TestCase):
         assert 0 < ets.geometrical_volume[50, 50, 61] < 1
         assert 0 < ets.geometrical_volume[30, 50, 50] < 1
         assert 0 < ets.geometrical_volume[69, 50, 50] < 1
+
+    def test_elliptical_tube_structure_deformation(self):
+        self.global_settings[Tags.DIM_VOLUME_X_MM] = 5
+        self.global_settings[Tags.DIM_VOLUME_Y_MM] = 5
+        self.global_settings[Tags.DIM_VOLUME_Z_MM] = 5
+        self.elliptical_tube_settings[Tags.STRUCTURE_START_MM] = [2.5, 0, 2.5]
+        self.elliptical_tube_settings[Tags.STRUCTURE_END_MM] = [2.5, 5, 2.5]
+        self.elliptical_tube_settings[Tags.STRUCTURE_RADIUS_MM] = 0.4
+        self.elliptical_tube_settings[Tags.STRUCTURE_ECCENTRICITY] = -0.95
+        self.global_settings.set_volume_creation_settings(
+            {
+                Tags.STRUCTURES: self.elliptical_tube_settings,
+                Tags.SIMULATE_DEFORMED_LAYERS: True,
+                Tags.DEFORMED_LAYERS_SETTINGS: create_deformation_settings(
+                    bounds_mm=[[0, self.global_settings[Tags.DIM_VOLUME_X_MM]],
+                               [0, self.global_settings[Tags.DIM_VOLUME_Y_MM]]],
+                    maximum_z_elevation_mm=2,
+                    filter_sigma=0,
+                    cosine_scaling_factor=0)
+            }
+        )
+        ets = EllipticalTubularStructure(self.global_settings, self.elliptical_tube_settings)
+
+        # check that vessel was only deformed along z-axis, so there should only be values in the 3 middle slices
+        assert np.any(ets.geometrical_volume[1:4])
+        assert np.all(ets.geometrical_volume[(0, 4), :, :] == 0)
+
+        # check that the vessel was deformed (different from non-deformed case)
+        center_mask = np.zeros(ets.geometrical_volume.shape, dtype=bool)
+        center_mask[1:4, :, 2] = True
+        assert np.any(ets.geometrical_volume[~center_mask])
+
