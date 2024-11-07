@@ -69,6 +69,11 @@ class Settings(dict, SerializableSIMPAClass):
             except KeyError:
                 raise KeyError("The key '{}' is not in the Settings dictionary".format(key)) from None
 
+    def get(self, key, default=None):
+        if self.__contains__(key):
+            return self[key]
+        return default
+
     def get_volume_dimensions_voxels(self):
         """
         returns: tuple
