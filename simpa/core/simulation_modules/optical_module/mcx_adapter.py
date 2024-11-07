@@ -65,7 +65,6 @@ class MCXAdapter(OpticalAdapterBase):
 
         settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry)
 
-        print(settings_dict)
         self.generate_mcx_json_input(settings_dict=settings_dict)
         # run the simulation
         cmd = self.get_command()

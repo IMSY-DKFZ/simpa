@@ -105,6 +105,8 @@ class MCXReflectanceAdapter(MCXAdapter):
         cmd.append(self.mcx_json_config_file)
         cmd.append("-O")
         cmd.append("F")
+        cmd.append("-b")
+        cmd.append("1")
         # use 'C' order array format for binary input file
         cmd.append("-a")
         cmd.append("1")
