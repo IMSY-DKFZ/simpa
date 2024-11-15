@@ -43,14 +43,14 @@ def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualis
         and two blood vessels.
         """
         background_dictionary = sp.Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.constant(1e-4, 1e-4, 0.9)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
         muscle_dictionary = sp.Settings()
         muscle_dictionary[Tags.PRIORITY] = 1
         muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
         muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.muscle()
+        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.muscle()
         muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
         muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
@@ -64,7 +64,7 @@ def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualis
                                                       12,
                                                       5]
         vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood(oxygenation=0.99)
+        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.blood(oxygenation=0.99)
         vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -77,7 +77,7 @@ def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualis
                                                       12,
                                                       5]
         vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
-        vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.blood(oxygenation=0.75)
+        vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.blood(oxygenation=0.75)
         vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -85,7 +85,7 @@ def run_linear_unmixing(spacing: float | int = 0.25, path_manager=None, visualis
         epidermis_dictionary[Tags.PRIORITY] = 8
         epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
         epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 0.1]
-        epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.epidermis()
+        epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.epidermis()
         epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
         epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
