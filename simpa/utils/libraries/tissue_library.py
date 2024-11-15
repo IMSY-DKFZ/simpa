@@ -346,4 +346,3 @@ class TissueLibrary(object):
                 .get_molecular_composition(SegmentationClasses.LYMPH_NODE))
 
 
-#TISSUE_LIBRARY = TissueLibrary()
