@@ -70,7 +70,7 @@ class Settings(dict, SerializableSIMPAClass):
                 raise KeyError("The key '{}' is not in the Settings dictionary".format(key)) from None
 
     def get(self, key, default=None):
-        if self.__contains__(key):
+        if key in self:
             return self[key]
         return default
 
