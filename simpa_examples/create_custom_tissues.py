@@ -39,11 +39,11 @@ def create_custom_tissue_type():
 
     # Then append chromophores that you want
     tissue_settings_generator.append(key="oxyhemoglobin",
-                                     value=sp.MOLECULE_LIBRARY.oxyhemoglobin(oxygenation * blood_volume_fraction))
+                                     value=sp.MoleculeLibrary.oxyhemoglobin(oxygenation * blood_volume_fraction))
     tissue_settings_generator.append(key="deoxyhemoglobin",
-                                     value=sp.MOLECULE_LIBRARY.deoxyhemoglobin((1 - oxygenation) * blood_volume_fraction))
+                                     value=sp.MoleculeLibrary.deoxyhemoglobin((1 - oxygenation) * blood_volume_fraction))
     tissue_settings_generator.append(key="water",
-                                     value=sp.MOLECULE_LIBRARY.water(water_volume_fraction))
+                                     value=sp.MoleculeLibrary.water(water_volume_fraction))
     tissue_settings_generator.append(key="custom",
                                      value=create_custom_chromophore(custom_chromophore_volume_fraction))
 

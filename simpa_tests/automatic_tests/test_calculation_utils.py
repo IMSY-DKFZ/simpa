@@ -4,7 +4,7 @@
 
 import unittest
 from simpa.utils import SegmentationClasses, MolecularCompositionGenerator
-from simpa.utils.libraries.molecule_library import MOLECULE_LIBRARY
+from simpa.utils.libraries.molecule_library import MoleculeLibrary
 from simpa.utils.calculate import calculate_oxygenation, calculate_bvf
 from simpa.utils.calculate import randomize_uniform
 from simpa.utils.calculate import calculate_gruneisen_parameter_from_temperature
@@ -19,36 +19,36 @@ class TestCalculationUtils(unittest.TestCase):
 
         # Neither oxy nor deoxy:
         mcg = MolecularCompositionGenerator()
-        mcg.append(MOLECULE_LIBRARY.fat(1.0))
+        mcg.append(MoleculeLibrary.fat(1.0))
         oxy_value = calculate_oxygenation(mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC))
         assert oxy_value is None
 
         mcg = MolecularCompositionGenerator()
-        mcg.append(MOLECULE_LIBRARY.fat(1.0))
-        mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(0.0))
+        mcg.append(MoleculeLibrary.fat(1.0))
+        mcg.append(MoleculeLibrary.oxyhemoglobin(0.0))
         oxy_value = calculate_oxygenation(mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC))
         assert oxy_value is None
 
         # FULLY OXYGENATED CASES:
         mcg = MolecularCompositionGenerator()
-        mcg.append(MOLECULE_LIBRARY.fat(1.0))
-        mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(1.0))
+        mcg.append(MoleculeLibrary.fat(1.0))
+        mcg.append(MoleculeLibrary.oxyhemoglobin(1.0))
         fully_oxygenated = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
         oxy_value = calculate_oxygenation(fully_oxygenated)
         assert abs(oxy_value-1.0) < 1e-5, ("oxy value was not 1.0 but " + str(oxy_value))
-        mcg.append(MOLECULE_LIBRARY.deoxyhemoglobin(0.0))
+        mcg.append(MoleculeLibrary.deoxyhemoglobin(0.0))
         fully_oxygenated = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
         oxy_value = calculate_oxygenation(fully_oxygenated)
         assert abs(oxy_value-1.0) < 1e-5, ("oxy value was not 1.0 but " + str(oxy_value))
 
         # FULLY DEOXYGENATED CASES:
         mcg = MolecularCompositionGenerator()
-        mcg.append(MOLECULE_LIBRARY.fat(1.0))
-        mcg.append(MOLECULE_LIBRARY.deoxyhemoglobin(1.0))
+        mcg.append(MoleculeLibrary.fat(1.0))
+        mcg.append(MoleculeLibrary.deoxyhemoglobin(1.0))
         fully_deoxygenated = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
         oxy_value = calculate_oxygenation(fully_deoxygenated)
         assert abs(oxy_value) < 1e-5, ("oxy value was not 0.0 but " + str(oxy_value))
-        mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(0.0))
+        mcg.append(MoleculeLibrary.oxyhemoglobin(0.0))
         fully_deoxygenated = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
         oxy_value = calculate_oxygenation(fully_deoxygenated)
         assert abs(oxy_value) < 1e-5, ("oxy value was not 0.0 but " + str(oxy_value))
@@ -58,9 +58,9 @@ class TestCalculationUtils(unittest.TestCase):
             oxy = np.random.random()
             deoxy = np.random.random()
             mcg = MolecularCompositionGenerator()
-            mcg.append(MOLECULE_LIBRARY.fat(1.0))
-            mcg.append(MOLECULE_LIBRARY.deoxyhemoglobin(deoxy))
-            mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(oxy))
+            mcg.append(MoleculeLibrary.fat(1.0))
+            mcg.append(MoleculeLibrary.deoxyhemoglobin(deoxy))
+            mcg.append(MoleculeLibrary.oxyhemoglobin(oxy))
             sO2_value = calculate_oxygenation(mcg.get_molecular_composition(
                 segmentation_type=SegmentationClasses.GENERIC))
 
@@ -70,34 +70,34 @@ class TestCalculationUtils(unittest.TestCase):
 
         # Neither oxy nor deoxy:
         mcg = MolecularCompositionGenerator()
-        mcg.append(MOLECULE_LIBRARY.fat(1.0))
+        mcg.append(MoleculeLibrary.fat(1.0))
         bvf_value = calculate_bvf(mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC))
         assert bvf_value == 0
 
         mcg = MolecularCompositionGenerator()
-        mcg.append(MOLECULE_LIBRARY.fat(1.0))
-        mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(0.0))
+        mcg.append(MoleculeLibrary.fat(1.0))
+        mcg.append(MoleculeLibrary.oxyhemoglobin(0.0))
         bvf_value = calculate_bvf(mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC))
         assert bvf_value == 0
 
         # Just oxyhemoglobin CASES:
         mcg = MolecularCompositionGenerator()
-        mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(1.0))
+        mcg.append(MoleculeLibrary.oxyhemoglobin(1.0))
         oxy_hemo = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
         bvf_value = calculate_bvf(oxy_hemo)
         assert bvf_value == 1.0
-        mcg.append(MOLECULE_LIBRARY.deoxyhemoglobin(0.0))
+        mcg.append(MoleculeLibrary.deoxyhemoglobin(0.0))
         oxy_hemo = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
         bvf_value = calculate_bvf(oxy_hemo)
         assert bvf_value == 1.0
 
         # Just deoxyhemoglobin CASES:
         mcg = MolecularCompositionGenerator()
-        mcg.append(MOLECULE_LIBRARY.deoxyhemoglobin(1.0))
+        mcg.append(MoleculeLibrary.deoxyhemoglobin(1.0))
         deoxy_hemo = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
         bvf_value = calculate_bvf(deoxy_hemo)
         assert bvf_value == 1.0
-        mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(0.0))
+        mcg.append(MoleculeLibrary.oxyhemoglobin(0.0))
         deoxy_hemo = mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC)
         bvf_value = calculate_bvf(deoxy_hemo)
         assert bvf_value == 1.0
@@ -109,9 +109,9 @@ class TestCalculationUtils(unittest.TestCase):
             fat = np.random.random()
             sum_oxy_deoxy_fat = oxy + deoxy + fat
             mcg = MolecularCompositionGenerator()
-            mcg.append(MOLECULE_LIBRARY.fat(fat/sum_oxy_deoxy_fat))
-            mcg.append(MOLECULE_LIBRARY.deoxyhemoglobin(deoxy/sum_oxy_deoxy_fat))
-            mcg.append(MOLECULE_LIBRARY.oxyhemoglobin(oxy/sum_oxy_deoxy_fat))
+            mcg.append(MoleculeLibrary.fat(fat/sum_oxy_deoxy_fat))
+            mcg.append(MoleculeLibrary.deoxyhemoglobin(deoxy/sum_oxy_deoxy_fat))
+            mcg.append(MoleculeLibrary.oxyhemoglobin(oxy/sum_oxy_deoxy_fat))
             bvf_value = calculate_bvf(mcg.get_molecular_composition(segmentation_type=SegmentationClasses.GENERIC))
             assert abs(bvf_value - (oxy+deoxy)/sum_oxy_deoxy_fat) < 1e-10
 
