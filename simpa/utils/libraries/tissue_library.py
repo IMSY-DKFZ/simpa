@@ -18,7 +18,8 @@ class TissueLibrary(object):
     A library, returning molecular compositions for various typical tissue segmentations.
     """
 
-    def get_blood_volume_fractions(self, oxygenation: Union[float, int, np.ndarray] = 1e-10,
+    @staticmethod
+    def get_blood_volume_fractions(oxygenation: Union[float, int, np.ndarray] = 1e-10,
                                    blood_volume_fraction: Union[float, int, np.ndarray] = 1e-10)\
             -> List[Union[int, float, np.ndarray]]:
         """
@@ -31,7 +32,8 @@ class TissueLibrary(object):
         """
         return [blood_volume_fraction*oxygenation, blood_volume_fraction*(1-oxygenation)]
 
-    def constant(self, mua: Union[float, int, np.ndarray] = 1e-10, mus: Union[float, int, np.ndarray] = 1e-10,
+    @staticmethod
+    def constant(mua: Union[float, int, np.ndarray] = 1e-10, mus: Union[float, int, np.ndarray] = 1e-10,
                  g: Union[float, int, np.ndarray] = 0) -> MolecularComposition:
         """
         A function returning a molecular composition as specified by the user. Typically intended for the use of wanting
@@ -47,10 +49,10 @@ class TissueLibrary(object):
         mua_as_spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua)
         mus_as_spectrum = ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(mus)
         g_as_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(g)
-        return self.generic_tissue(mua_as_spectrum, mus_as_spectrum, g_as_spectrum, "constant_mua_mus_g")
+        return TissueLibrary.generic_tissue(mua_as_spectrum, mus_as_spectrum, g_as_spectrum, "constant_mua_mus_g")
 
-    def generic_tissue(self,
-                       mua: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
+    @staticmethod
+    def generic_tissue(mua: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
                        mus: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
                        g: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
                        molecule_name: Optional[str] = "generic_tissue") -> MolecularComposition:
@@ -76,7 +78,8 @@ class TissueLibrary(object):
                                                                 anisotropy_spectrum=g))
                 .get_molecular_composition(SegmentationClasses.GENERIC))
 
-    def muscle(self, oxygenation: Union[float, int, np.ndarray] = 0.175,
+    @staticmethod
+    def muscle(oxygenation: Union[float, int, np.ndarray] = 0.175,
                blood_volume_fraction: Union[float, int, np.ndarray] = 0.06) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of muscle
@@ -87,7 +90,7 @@ class TissueLibrary(object):
         :return: a settings dictionary containing all min and max parameters fitting for muscle tissue.
         """
 
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
+        [fraction_oxy, fraction_deoxy] = TissueLibrary.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
 
         # Get the water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
@@ -122,7 +125,8 @@ class TissueLibrary(object):
                 .append(custom_water)
                 .get_molecular_composition(SegmentationClasses.MUSCLE))
 
-    def soft_tissue(self, oxygenation: Union[float, int, np.ndarray] = OpticalTissueProperties.BACKGROUND_OXYGENATION,
+    @staticmethod
+    def soft_tissue(oxygenation: Union[float, int, np.ndarray] = OpticalTissueProperties.BACKGROUND_OXYGENATION,
                     blood_volume_fraction: Union[float, int, np.ndarray] = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE) -> MolecularComposition:
         """
         IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
@@ -135,7 +139,7 @@ class TissueLibrary(object):
         :return: a settings dictionary containing all min and max parameters fitting for generic soft tissue.
         """
 
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
+        [fraction_oxy, fraction_deoxy] = TissueLibrary.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
 
         # Get the water volume fraction
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
@@ -170,7 +174,8 @@ class TissueLibrary(object):
                 .append(custom_water)
                 .get_molecular_composition(SegmentationClasses.SOFT_TISSUE))
 
-    def epidermis(self, melanin_volume_fraction: Union[float, int, np.ndarray] = 0.014) -> MolecularComposition:
+    @staticmethod
+    def epidermis(melanin_volume_fraction: Union[float, int, np.ndarray] = 0.014) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of dermis
         :param melanin_volume_fraction: the total volume fraction of melanin
@@ -183,7 +188,8 @@ class TissueLibrary(object):
                 .append(MoleculeLibrary.epidermal_scatterer(1 - melanin_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.EPIDERMIS))
 
-    def dermis(self, oxygenation: Union[float, int, np.ndarray] = 0.5,
+    @staticmethod
+    def dermis(oxygenation: Union[float, int, np.ndarray] = 0.5,
                blood_volume_fraction: Union[float, int, np.ndarray] = 0.002) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of dermis
@@ -195,7 +201,7 @@ class TissueLibrary(object):
         """
 
         # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
+        [fraction_oxy, fraction_deoxy] = TissueLibrary.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
@@ -204,8 +210,8 @@ class TissueLibrary(object):
                 .append(MoleculeLibrary.dermal_scatterer(1.0 - blood_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.DERMIS))
 
-    def subcutaneous_fat(self,
-                         oxygenation: Union[float, int, np.ndarray] = OpticalTissueProperties.BACKGROUND_OXYGENATION,
+    @staticmethod
+    def subcutaneous_fat(oxygenation: Union[float, int, np.ndarray] = OpticalTissueProperties.BACKGROUND_OXYGENATION,
                          blood_volume_fraction: Union[float, int, np.ndarray]
                          = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE) -> MolecularComposition:
         """
@@ -221,7 +227,7 @@ class TissueLibrary(object):
         water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
 
         # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(
+        [fraction_oxy, fraction_deoxy] = TissueLibrary.get_blood_volume_fractions(
             oxygenation, blood_volume_fraction)
 
         # Determine fat volume fraction
@@ -237,7 +243,8 @@ class TissueLibrary(object):
                 .append(MoleculeLibrary.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.FAT))
 
-    def blood(self, oxygenation: Union[float, int, np.ndarray, None] = None) -> MolecularComposition:
+    @staticmethod
+    def blood(oxygenation: Union[float, int, np.ndarray, None] = None) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of blood
         :param oxygenation: The oxygenation level of the blood(as a decimal).
@@ -250,7 +257,7 @@ class TissueLibrary(object):
             oxygenation = randomize_uniform(0.0, 1.0)
 
         # Get the blood volume fractions for oxyhemoglobin and deoxyhemoglobin
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, 1.0)
+        [fraction_oxy, fraction_deoxy] = TissueLibrary.get_blood_volume_fractions(oxygenation, 1.0)
 
         # generate the tissue dictionary
         return (MolecularCompositionGenerator()
@@ -258,7 +265,8 @@ class TissueLibrary(object):
                 .append(MoleculeLibrary.deoxyhemoglobin(fraction_deoxy))
                 .get_molecular_composition(SegmentationClasses.BLOOD))
 
-    def bone(self) -> MolecularComposition:
+    @staticmethod
+    def bone() -> MolecularComposition:
         """
         Create a molecular composition mimicking that of bone
         :return: a settings dictionary fitting for bone.
@@ -276,7 +284,8 @@ class TissueLibrary(object):
                 .append(MoleculeLibrary.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.BONE))
 
-    def mediprene(self) -> MolecularComposition:
+    @staticmethod
+    def mediprene() -> MolecularComposition:
         """
         Create a molecular composition mimicking that of mediprene
         :return: a settings dictionary fitting for mediprene.
@@ -285,7 +294,8 @@ class TissueLibrary(object):
                 .append(MoleculeLibrary.mediprene())
                 .get_molecular_composition(SegmentationClasses.MEDIPRENE))
 
-    def heavy_water(self) -> MolecularComposition:
+    @staticmethod
+    def heavy_water() -> MolecularComposition:
         """
             Create a molecular composition mimicking that of heavy water
             :return: a settings dictionary containing all min and max parameters fitting for heavy water.
@@ -294,7 +304,8 @@ class TissueLibrary(object):
                 .append(MoleculeLibrary.heavy_water())
                 .get_molecular_composition(SegmentationClasses.HEAVY_WATER))
 
-    def ultrasound_gel(self) -> MolecularComposition:
+    @staticmethod
+    def ultrasound_gel() -> MolecularComposition:
         """
             Create a molecular composition mimicking that of ultrasound gel
             :return: a settings dictionary fitting for generic ultrasound gel.
@@ -303,7 +314,8 @@ class TissueLibrary(object):
                 .append(MoleculeLibrary.water())
                 .get_molecular_composition(SegmentationClasses.ULTRASOUND_GEL))
 
-    def lymph_node(self, oxygenation: Union[float, int, np.ndarray] = OpticalTissueProperties.LYMPH_NODE_OXYGENATION,
+    @staticmethod
+    def lymph_node(oxygenation: Union[float, int, np.ndarray] = OpticalTissueProperties.LYMPH_NODE_OXYGENATION,
                    blood_volume_fraction: Union[float, int, np.ndarray] =
                    OpticalTissueProperties.BLOOD_VOLUME_FRACTION_LYMPH_NODE) -> MolecularComposition:
         """
@@ -316,7 +328,7 @@ class TissueLibrary(object):
         :return: a settings dictionary fitting for generic lymph node tissue.
         """
 
-        [fraction_oxy, fraction_deoxy] = self.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
+        [fraction_oxy, fraction_deoxy] = TissueLibrary.get_blood_volume_fractions(oxygenation, blood_volume_fraction)
 
         # Get the water volume fraction
         # water_volume_fraction = OpticalTissueProperties.WATER_VOLUME_FRACTION_HUMAN_BODY
@@ -334,4 +346,4 @@ class TissueLibrary(object):
                 .get_molecular_composition(SegmentationClasses.LYMPH_NODE))
 
 
-TISSUE_LIBRARY = TissueLibrary()
+#TISSUE_LIBRARY = TissueLibrary()

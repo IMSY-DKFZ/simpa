@@ -15,9 +15,10 @@ KNOWN ISSUES:
       calculation of the total reflectance and transmission using he fluence map.
 """
 
-from simpa.utils import Tags, TISSUE_LIBRARY, SegmentationClasses
+from simpa.utils import Tags, SegmentationClasses
 from simpa.core.simulation import simulate
 from simpa.utils.settings import Settings
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.utils.libraries.molecule_library import MolecularCompositionGenerator, Molecule
 from simpa.utils.libraries.spectrum_library import Spectrum, AnisotropySpectrumLibrary
 from simpa.io_handling import load_data_field
@@ -101,7 +102,7 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
             and a blood vessel.
             """
             background_dictionary = Settings()
-            background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-5, 1, 1.0)
+            background_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.constant(1e-5, 1, 1.0)
             background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
             inclusion_tissue = Settings()
@@ -121,7 +122,7 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
             air_tube[Tags.STRUCTURE_END_MM] = [self.VOLUME_LENGTH_MM /
                                                2, self.VOLUME_LENGTH_MM/2, self.VOLUME_HEIGHT_IN_MM]
             air_tube[Tags.STRUCTURE_RADIUS_MM] = 5.0
-            air_tube[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-5, 1, 1.0)
+            air_tube[Tags.MOLECULE_COMPOSITION] = TissueLibrary.constant(1e-5, 1, 1.0)
             air_tube[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
             absorbing_layer = Settings()
@@ -132,7 +133,7 @@ class TestDoubleIntegratingSphereSimulation(ManualIntegrationTestClass):
                 0, 0, self.VOLUME_HEIGHT_IN_MM / 2 - sample_tickness_mm / 2 - self.SPACING]
             absorbing_layer[Tags.STRUCTURE_END_MM] = [
                 0, 0, self.VOLUME_HEIGHT_IN_MM / 2 + sample_tickness_mm / 2 + self.SPACING]
-            absorbing_layer[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(10000, 0.1, 0.0)
+            absorbing_layer[Tags.MOLECULE_COMPOSITION] = TissueLibrary.constant(10000, 0.1, 0.0)
             absorbing_layer[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
             tissue_dict = Settings()

@@ -7,7 +7,7 @@ import unittest
 
 import numpy as np
 
-from simpa.utils import Tags, Settings, TISSUE_LIBRARY
+from simpa.utils import Tags, Settings
 from simpa.utils.calculate import calculate_bvf, calculate_oxygenation
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.libraries.tissue_library import TissueLibrary
@@ -25,7 +25,7 @@ class TestCoreAssumptions(unittest.TestCase):
 
     def test_volume_fractions_sum_to_less_or_equal_one(self):
         for (method_name, method) in self.get_all_tissue_library_methods():
-            molecular_composition = method(TISSUE_LIBRARY)
+            molecular_composition = method()
             tissue_composition = molecular_composition.get_properties_for_wavelength(TEST_SETTINGS, 800)
             total_volume_fraction = tissue_composition.volume_fraction
             self.assertTrue((np.abs(total_volume_fraction-1.0) < 1e-3).all(),
@@ -50,20 +50,20 @@ class TestCoreAssumptions(unittest.TestCase):
         bvf_values = [0., 1., 0., 1., np.random.random()]
         for oxy in oxy_values:
             # assert blood only with varying oxygenation_values
-            test_tissue = TISSUE_LIBRARY.blood(oxygenation=oxy)
+            test_tissue = TissueLibrary.blood(oxygenation=oxy)
             compare_input_with_calculations(test_tissue, oxy, 1.)
             # assert all other tissue classes with varying oxygenation- and bvf_values
             for bvf in bvf_values:
                 for (_, method) in self.get_all_tissue_library_methods():
                     args = inspect.getfullargspec(method).args
                     if "background_oxy" in args and "blood_volume_fraction" in args:
-                        test_tissue = method(TISSUE_LIBRARY, background_oxy=oxy, blood_volume_fraction=bvf)
+                        test_tissue = method(TissueLibrary, background_oxy=oxy, blood_volume_fraction=bvf)
                         compare_input_with_calculations(test_tissue, oxy, bvf)
 
     @staticmethod
     def get_all_tissue_library_methods():
         methods = []
         for method in inspect.getmembers(TissueLibrary, predicate=inspect.isfunction):
-            if isinstance(method[1](TISSUE_LIBRARY), MolecularComposition):
+            if isinstance(method[1](), MolecularComposition):
                 methods.append(method)
         return methods

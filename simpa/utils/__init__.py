@@ -23,10 +23,8 @@ from .libraries.spectrum_library import get_simpa_internal_absorption_spectra_by
 
 from .libraries.molecule_library import Molecule, MolecularCompositionGenerator
 from .libraries.molecule_library import MoleculeLibrary
-from .libraries.molecule_library import MOLECULE_LIBRARY
 
 from .libraries.tissue_library import TissueLibrary
-from .libraries.tissue_library import TISSUE_LIBRARY
 
 from .calculate import calculate_oxygenation
 from .calculate import calculate_gruneisen_parameter_from_temperature

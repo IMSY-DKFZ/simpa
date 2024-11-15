@@ -9,7 +9,7 @@ from simpa.core.simulation_modules.reconstruction_module.delay_and_sum_adapter i
     reconstruct_delay_and_sum_pytorch
 from simpa import MCXAdapter, ModelBasedAdapter, \
     GaussianNoise
-from simpa.utils import Tags, Settings, TISSUE_LIBRARY
+from simpa.utils import Tags, Settings, TissueLibrary
 from simpa.core.simulation import simulate
 from simpa.io_handling import load_data_field
 import numpy as np
@@ -157,14 +157,14 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         and a blood vessel.
         """
         background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(1e-10, 1e-10, 1.0)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.constant(1e-10, 1e-10, 1.0)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
         muscle_dictionary = Settings()
         muscle_dictionary[Tags.PRIORITY] = 1
         muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 0]
         muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.05, 100, 0.9)
+        muscle_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.constant(0.05, 100, 0.9)
         muscle_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         muscle_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
         muscle_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
@@ -176,7 +176,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [
             self.VOLUME_TRANSDUCER_DIM_IN_MM/2, self.VOLUME_PLANAR_DIM_IN_MM, 10]
         vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.blood()
         vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_1_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
         vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
@@ -188,7 +188,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         vessel_2_dictionary[Tags.STRUCTURE_END_MM] = [
             self.VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, self.VOLUME_PLANAR_DIM_IN_MM, 5]
         vessel_2_dictionary[Tags.STRUCTURE_RADIUS_MM] = 2
-        vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.blood()
+        vessel_2_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.blood()
         vessel_2_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_2_dictionary[Tags.ADHERE_TO_DEFORMATION] = False
         vessel_2_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
@@ -197,7 +197,7 @@ class KWaveAcousticForwardConvenienceFunction(ManualIntegrationTestClass):
         epidermis_dictionary[Tags.PRIORITY] = 8
         epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 1]
         epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 1.1]
-        epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.epidermis()
+        epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.epidermis()
         epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         epidermis_dictionary[Tags.ADHERE_TO_DEFORMATION] = True
         epidermis_dictionary[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE

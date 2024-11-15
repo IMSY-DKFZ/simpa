@@ -6,7 +6,8 @@ import os
 import numpy as np
 from simpa import MCXAdapter,  ModelBasedAdapter, simulate, KWaveAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry, LinearArrayDetectionGeometry
-from simpa.utils import Settings, Tags, TISSUE_LIBRARY, PathManager
+from simpa.utils import Settings, Tags, PathManager
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 
 
@@ -21,7 +22,7 @@ class MATLABAdditionalFlags(ManualIntegrationTestClass):
         """
 
         background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(0.1, 100, 0.9)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.constant(0.1, 100, 0.9)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
         tissue_dict = Settings()
         tissue_dict[Tags.BACKGROUND] = background_dictionary

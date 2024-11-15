@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import torch
 from skimage import measure
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import VesselStructure
@@ -29,7 +29,7 @@ class TestVesselTree(unittest.TestCase):
         self.vesseltree_settings[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 20
         self.vesseltree_settings[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 0
         self.vesseltree_settings[Tags.STRUCTURE_CURVATURE_FACTOR] = 0
-        self.vesseltree_settings[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.muscle()
+        self.vesseltree_settings[Tags.MOLECULE_COMPOSITION] = TissueLibrary.muscle()
         self.vesseltree_settings[Tags.ADHERE_TO_DEFORMATION] = True
         self.vesseltree_settings[Tags.CONSIDER_PARTIAL_VOLUME] = True
 
