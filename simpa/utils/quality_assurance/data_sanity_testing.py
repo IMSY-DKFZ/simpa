@@ -20,12 +20,10 @@ def assert_equal_shapes(numpy_arrays: list):
     if len(numpy_arrays) < 2:
         return
 
-    shapes = np.asarray([np.shape(_arr) for _arr in numpy_arrays]).astype(float)
-    mean = np.mean(shapes, axis=0)
-    for i in range(len(shapes)):
-        shapes[i, :] = shapes[i, :] - mean
+    first_array_shape = numpy_arrays[0].shape
+    equal = ([_arr.shape == first_array_shape for _arr in numpy_arrays])
 
-    if not np.sum(np.abs(shapes)) <= 1e-5:
+    if not all(equal):
         raise AssertionError("The given volumes did not all have the same"
                              " dimensions. Please double check the simulation"
                              f" parameters. Called from {inspect.stack()[1].function}")
