@@ -452,8 +452,7 @@ def compute_image_dimensions(field_of_view_in_mm: np.ndarray, spacing_in_mm: flo
     """
     Computes size of beamformed image from field of view of detection geometry given the spacing.
 
-    :param field_of_view_in_mm: field of view in mm as list of xdim_start, xdim_end, ydim_start, ydim_end, 
-    zdim_start, zdim_end
+    :param field_of_view_in_mm: field of view in mm as list of xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end
     :type field_of_view_in_mm: numpy ndarray
     :param spacing_in_mm: space betwenn pixels in mm
     :type spacing_in_mm: float
@@ -473,6 +472,8 @@ def compute_image_dimensions(field_of_view_in_mm: np.ndarray, spacing_in_mm: flo
         Makes sure that image dimension is an integer by rounding, thus the resulting dimensions might be slightly
         larger or smaller than the given field of view. The maximal deviation amounts to a quarter spacing on each side.
         The algorithm spaces the pixels symmetrically between start and end.
+
+        For nomenclature of the x, y and z dimension, please read :doc:`Understanding SIMPA <understanding_simpa>` within the README.
 
         :param start_in_mm: lower limit of the field of view in this dimension
         :type start_in_mm: float
@@ -514,13 +515,49 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
                                  zdim_start: int, zdim_end: int, spacing_in_mm: float, speed_of_sound_in_m_per_s: float,
                                  time_spacing_in_ms: float, logger: Logger, torch_device: torch.device,
                                  component_settings: Settings) -> Tuple[torch.tensor, int]:
-    """
-    Perform the core computation of Delay and Sum, without summing up the delay dependend values.
+    """Perform the core computation of Delay and Sum, without summing up the delay dependend values.
 
-    Returns
-    - values (torch tensor) of the time series data corrected for delay and sensor positioning, ready to be summed up
-    - and n_sensor_elements (int) which might be used for later computations
+    For nomenclature of the x, y and z dimension, please read :doc:`Understanding SIMPA <understanding_simpa>` within the README.
+
+    :param time_series_sensor_data: time series data to be reconstructed
+    :type time_series_sensor_data: Tensor
+    :param sensor_positions: position of the detection geometry sensor elements
+    :type sensor_positions: torch.tensor
+    :param xdim: number of pixels in x dimension
+    :type xdim: int
+    :param ydim: number of pixels in y dimension
+    :type ydim: int
+    :param zdim: number of pixels in z dimension
+    :type zdim: int
+    :param xdim_start: at which pixels the x dimension starts
+    :type xdim_start: int
+    :param xdim_end: at which pixels the x dimension ends
+    :type xdim_end: int
+    :param ydim_start: at which pixels the y dimension starts
+    :type ydim_start: int
+    :param ydim_end: at which pixels the y dimension ends
+    :type ydim_end: int
+    :param zdim_start: at which pixels the z dimension starts
+    :type zdim_start: int
+    :param zdim_end: at which pixels the z dimension ends
+    :type zdim_end: int
+    :param spacing_in_mm: pixel spacing in mm
+    :type spacing_in_mm: float
+    :param speed_of_sound_in_m_per_s: speed of sound in m/s
+    :type speed_of_sound_in_m_per_s: float
+    :param time_spacing_in_ms: time steps spacing of data
+    :type time_spacing_in_ms: float
+    :param logger: object to be used for logging
+    :type logger: Logger
+    :param torch_device: cpu or cuda device used for computation
+    :type torch_device: torch.device
+    :param component_settings: reconstruction component settings
+    :type component_settings: Settings
+    :return: values (torch tensor) of the time series data corrected for delay and sensor positioning, ready to be summed up and n_sensor_elements (int) which might be used for later computations
+    :rtype: Tuple[torch.tensor, int]
     """
+    
+    
 
     if time_series_sensor_data.shape[0] < sensor_positions.shape[0]:
         logger.warning("Warning: The time series data has less sensor element entries than the given sensor positions. "
