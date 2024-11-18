@@ -6,7 +6,7 @@ from simpa import Tags
 import simpa as sp
 import numpy as np
 from skimage.data import shepp_logan_phantom
-from scipy.ndimage import zoom
+from scipy.ndimage import zoom, gaussian_filter
 from skimage.transform import resize
 
 # FIXME temporary workaround for newest Intel architectures
@@ -20,8 +20,8 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 @profile
-def run_segmentation_loader(spacing: float | int = 1.0, input_spacing: float | int = 0.2, path_manager=None,
-                            visualise: bool = True):
+def run_segmentation_loader(spacing: float | int = 1.0, input_spacing: float | int = 0.2, fuzzy: bool = False,
+                            path_manager=None, visualise: bool = True):
     """
 
     :param spacing: The simulation spacing between voxels in mm
@@ -30,18 +30,27 @@ def run_segmentation_loader(spacing: float | int = 1.0, input_spacing: float | i
     :param visualise: If VISUALIZE is set to True, the reconstruction result will be plotted
     :return: a run through of the example
     """
+
     if path_manager is None:
         path_manager = sp.PathManager()
 
+    C = 11  # number of classes
     label_mask = shepp_logan_phantom()
 
-    label_mask = np.digitize(label_mask, bins=np.linspace(0.0, 1.0, 11), right=True)
+    label_mask = np.digitize(label_mask, bins=np.linspace(0.0, 1.0, C), right=True)
     label_mask = label_mask[100:300, 100:300]
     label_mask = np.reshape(label_mask, (label_mask.shape[0], 1, label_mask.shape[1]))
 
     segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
     segmentation_volume_mask = sp.round_x5_away_from_zero(zoom(segmentation_volume_tiled, input_spacing/spacing,
                                                                order=0)).astype(int)
+
+    if fuzzy:
+        segmentation_volume_mask = np.eye(C)[segmentation_volume_mask]
+        segmentation_volume_mask = np.moveaxis(segmentation_volume_mask, -1, 0)
+        segmentation_volume_mask = gaussian_filter(segmentation_volume_mask, sigma=1e-5, axes=(1, 2, 3))  # smooth the segmentation
+        segmentation_volume_mask /= segmentation_volume_mask.sum(axis=0, keepdims=True)
+
 
     def segmentation_class_mapping():
         ret_dict = dict()
@@ -68,14 +77,14 @@ def run_segmentation_loader(spacing: float | int = 1.0, input_spacing: float | i
     settings[Tags.RANDOM_SEED] = 1234
     settings[Tags.WAVELENGTHS] = [700, 800]
     settings[Tags.SPACING_MM] = spacing
-    settings[Tags.DIM_VOLUME_X_MM] = segmentation_volume_mask.shape[0] * spacing
-    settings[Tags.DIM_VOLUME_Y_MM] = segmentation_volume_mask.shape[1] * spacing
-    settings[Tags.DIM_VOLUME_Z_MM] = segmentation_volume_mask.shape[2] * spacing
+    x_dim_mm, y_dim_mm, z_dim_mm = segmentation_volume_mask.shape[-3:]
+    settings[Tags.DIM_VOLUME_X_MM] = x_dim_mm * spacing
+    settings[Tags.DIM_VOLUME_Y_MM] = y_dim_mm * spacing
+    settings[Tags.DIM_VOLUME_Z_MM] = z_dim_mm * spacing
 
     settings.set_volume_creation_settings({
         Tags.INPUT_SEGMENTATION_VOLUME: segmentation_volume_mask,
         Tags.SEGMENTATION_CLASS_MAPPING: segmentation_class_mapping(),
-
     })
 
     settings.set_optical_settings({
@@ -108,9 +117,10 @@ if __name__ == "__main__":
     parser = ArgumentParser(description='Run the segmentation loader example')
     parser.add_argument("--spacing", default=1, type=float, help='the voxel spacing in mm')
     parser.add_argument("--input_spacing", default=0.2, type=float, help='the input spacing in mm')
+    parser.add_argument("--fuzzy", default=False, type=bool, help='whether to use fuzzy segmentation adapter')
     parser.add_argument("--path_manager", default=None, help='the path manager, None uses sp.PathManager')
     parser.add_argument("--visualise", default=True, type=bool, help='whether to visualise the result')
     config = parser.parse_args()
 
-    run_segmentation_loader(spacing=config.spacing, input_spacing=config.input_spacing,
+    run_segmentation_loader(spacing=config.spacing, input_spacing=config.input_spacing, fuzzy=config.fuzzy,
                             path_manager=config.path_manager, visualise=config.visualise)
