@@ -2,9 +2,10 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 import numpy as np
+from typing import Union
 
 from simpa.core.device_digital_twins import DetectionGeometryBase
-from simpa.utils import Tags
+from simpa import Settings, Tags
 
 
 class CurvedArrayDetectionGeometry(DetectionGeometryBase):
@@ -13,17 +14,17 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
     with a curved detection geometry. The origin for this device is the center (focus) of the curved array.
     """
 
-    def __init__(self, pitch_mm=0.5,
-                 radius_mm=40,
-                 number_detector_elements=256,
+    def __init__(self, pitch_mm: Union[float, int] = 0.5,
+                 radius_mm: Union[float, int] = 40,
+                 number_detector_elements: int = 256,
                  detector_element_width_mm=0.24,
                  detector_element_length_mm=13,
                  center_frequency_hz=3.96e6,
                  bandwidth_percent=55,
                  sampling_frequency_mhz=40,
-                 angular_origin_offset=np.pi,
-                 device_position_mm=None,
-                 field_of_view_extent_mm=None):
+                 angular_origin_offset: Union[float, int] = np.pi,
+                 device_position_mm: np.ndarray = None,
+                 field_of_view_extent_mm: np.ndarray = None):
         """
 
         :param pitch_mm: In-plane distance between the beginning of one detector element to the next detector element.
@@ -83,6 +84,9 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         return True
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+        pass
+
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings: Settings):
         pass
 
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
