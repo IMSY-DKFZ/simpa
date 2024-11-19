@@ -16,6 +16,10 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 #  point to the correct file in the PathManager().
 
 
+# TODO: set the level at which you wish to receive a log for
+logger = sp.log.Logger(logging_level=Tags.LOGGER_WARNING)
+
+
 @profile
 def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager=None,
                                         visualise: bool = True):
@@ -195,7 +199,7 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
         sp.FieldOfViewCropping(settings)
     ]
 
-    sp.simulate(SIMULATION_PIPELINE, settings, device)
+    sp.simulate(SIMULATION_PIPELINE, settings, device, logging_level=Tags.LOGGER_ERROR)
 
     if Tags.WAVELENGTH in settings:
         WAVELENGTH = settings[Tags.WAVELENGTH]

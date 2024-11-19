@@ -9,8 +9,6 @@ import numpy as np
 from simpa.log import Logger
 from simpa.utils.serializer import SerializableSIMPAClass
 
-logger = Logger()
-
 
 def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_compression: str = None):
     """
@@ -32,6 +30,7 @@ def save_hdf5(save_item, file_path: str, file_dictionary_path: str = "/", file_c
         :param data_dictionary: Dictionary to save.
         :param compression: possible file compression for the corresponding dataset. Values are: gzip, lzf and szip.
         """
+        logger = Logger()
 
         for key, item in data_dictionary.items():
             key = str(key)
