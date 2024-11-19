@@ -9,9 +9,11 @@ from simpa.utils import Molecule
 from simpa.utils import MOLECULE_LIBRARY
 from simpa.utils import Spectrum
 from simpa.utils.libraries.molecule_library import MolecularComposition
-from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
+from simpa.utils.libraries.spectrum_library import (AnisotropySpectrumLibrary, ScatteringSpectrumLibrary,
+                                                    RefractiveIndexSpectrumLibrary, AbsorptionSpectrumLibrary)
 from simpa.utils.calculate import randomize_uniform
-from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
+
+import torch
 
 
 class TissueLibrary(object):
@@ -19,8 +21,8 @@ class TissueLibrary(object):
     A library, returning molecular compositions for various typical tissue segmentations.
     """
 
-    def get_blood_volume_fractions(self, oxygenation: Union[float, int, np.ndarray] = 1e-10,
-                                   blood_volume_fraction: Union[float, int, np.ndarray] = 1e-10)\
+    def get_blood_volume_fractions(self, oxygenation: Union[float, int, np.ndarray, torch.Tensor] = 1e-10,
+                                   blood_volume_fraction: Union[float, int, np.ndarray, torch.Tensor] = 1e-10)\
             -> List[Union[int, float, np.ndarray]]:
         """
         A function that returns the volume fraction of the oxygenated and deoxygenated blood.
@@ -32,8 +34,8 @@ class TissueLibrary(object):
         """
         return [blood_volume_fraction*oxygenation, blood_volume_fraction*(1-oxygenation)]
 
-    def constant(self, mua: Union[float, int, np.ndarray] = 1e-10, mus: Union[float, int, np.ndarray] = 1e-10,
-                 g: Union[float, int, np.ndarray] = 0) -> MolecularComposition:
+    def constant(self, mua: Union[float, int, np.ndarray, torch.Tensor] = 1e-10, mus: Union[float, int, np.ndarray, torch.Tensor] = 1e-10,
+                 g: Union[float, int, np.ndarray, torch.Tensor] = 0, n: float = 1.3) -> MolecularComposition:
         """
         A function returning a molecular composition as specified by the user. Typically intended for the use of wanting
         specific mua, mus and g values.
@@ -48,12 +50,14 @@ class TissueLibrary(object):
         mua_as_spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(mua)
         mus_as_spectrum = ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(mus)
         g_as_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(g)
-        return self.generic_tissue(mua_as_spectrum, mus_as_spectrum, g_as_spectrum, "constant_mua_mus_g")
+        n_as_spectrum = RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(n)
+        return self.generic_tissue(mua_as_spectrum, mus_as_spectrum, g_as_spectrum, n_as_spectrum, "constant_mua_mus_g_n")
 
     def generic_tissue(self,
                        mua: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
                        mus: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
                        g: Spectrum = AbsorptionSpectrumLibrary().CONSTANT_ABSORBER_ARBITRARY(1e-10),
+                       n: Spectrum = RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.3),
                        molecule_name: Optional[str] = "generic_tissue") -> MolecularComposition:
         """
         Returns a generic issue defined by the provided optical parameters.
@@ -61,6 +65,7 @@ class TissueLibrary(object):
         :param mua: The absorption coefficient spectrum in cm^{-1}.
         :param mus: The scattering coefficient spectrum in cm^{-1}.
         :param g: The anisotropy spectrum.
+        :param n: The refractive index spectrum.
         :param molecule_name: The molecule name.
 
         :returns: The molecular composition of the tissue.
@@ -68,17 +73,19 @@ class TissueLibrary(object):
         assert isinstance(mua, Spectrum), type(mua)
         assert isinstance(mus, Spectrum), type(mus)
         assert isinstance(g, Spectrum), type(g)
+        assert isinstance(n, Spectrum), type(n)
         assert isinstance(molecule_name, str) or molecule_name is None, type(molecule_name)
 
         return (MolecularCompositionGenerator().append(Molecule(name=molecule_name,
                                                                 absorption_spectrum=mua,
                                                                 volume_fraction=1.0,
                                                                 scattering_spectrum=mus,
-                                                                anisotropy_spectrum=g))
+                                                                anisotropy_spectrum=g,
+                                                                refractive_index=n))
                 .get_molecular_composition(SegmentationClasses.GENERIC))
 
-    def muscle(self, oxygenation: Union[float, int, np.ndarray] = 0.175,
-               blood_volume_fraction: Union[float, int, np.ndarray] = 0.06) -> MolecularComposition:
+    def muscle(self, oxygenation: Union[float, int, np.ndarray, torch.Tensor] = 0.175,
+               blood_volume_fraction: Union[float, int, np.ndarray, torch.Tensor] = 0.06) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of muscle
         :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
@@ -123,8 +130,8 @@ class TissueLibrary(object):
                 .append(custom_water)
                 .get_molecular_composition(SegmentationClasses.MUSCLE))
 
-    def soft_tissue(self, oxygenation: Union[float, int, np.ndarray] = OpticalTissueProperties.BACKGROUND_OXYGENATION,
-                    blood_volume_fraction: Union[float, int, np.ndarray] = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE) -> MolecularComposition:
+    def soft_tissue(self, oxygenation: Union[float, int, np.ndarray, torch.Tensor] = OpticalTissueProperties.BACKGROUND_OXYGENATION,
+                    blood_volume_fraction: Union[float, int, np.ndarray, torch.Tensor] = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE) -> MolecularComposition:
         """
         IMPORTANT! This tissue is not tested and it is not based on a specific real tissue type.
         It is a mixture of muscle (mostly optical properties) and water (mostly acoustic properties).
@@ -171,7 +178,7 @@ class TissueLibrary(object):
                 .append(custom_water)
                 .get_molecular_composition(SegmentationClasses.SOFT_TISSUE))
 
-    def epidermis(self, melanin_volume_fraction: Union[float, int, np.ndarray] = 0.014) -> MolecularComposition:
+    def epidermis(self, melanin_volume_fraction: Union[float, int, np.ndarray, torch.Tensor] = 0.014) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of dermis
         :param melanin_volume_fraction: the total volume fraction of melanin
@@ -184,8 +191,8 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.epidermal_scatterer(1 - melanin_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.EPIDERMIS))
 
-    def dermis(self, oxygenation: Union[float, int, np.ndarray] = 0.5,
-               blood_volume_fraction: Union[float, int, np.ndarray] = 0.002) -> MolecularComposition:
+    def dermis(self, oxygenation: Union[float, int, np.ndarray, torch.Tensor] = 0.5,
+               blood_volume_fraction: Union[float, int, np.ndarray, torch.Tensor] = 0.002) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of dermis
         :param oxygenation: The oxygenation level of the blood volume fraction (as a decimal).
@@ -206,8 +213,9 @@ class TissueLibrary(object):
                 .get_molecular_composition(SegmentationClasses.DERMIS))
 
     def subcutaneous_fat(self,
-                         oxygenation: Union[float, int, np.ndarray] = OpticalTissueProperties.BACKGROUND_OXYGENATION,
-                         blood_volume_fraction: Union[float, int, np.ndarray]
+                         oxygenation: Union[float, int, np.ndarray,
+                                            torch.Tensor] = OpticalTissueProperties.BACKGROUND_OXYGENATION,
+                         blood_volume_fraction: Union[float, int, np.ndarray, torch.Tensor]
                          = OpticalTissueProperties.BLOOD_VOLUME_FRACTION_MUSCLE_TISSUE) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of subcutaneous fat
@@ -238,7 +246,7 @@ class TissueLibrary(object):
                 .append(MOLECULE_LIBRARY.water(water_volume_fraction))
                 .get_molecular_composition(SegmentationClasses.FAT))
 
-    def blood(self, oxygenation: Union[float, int, np.ndarray, None] = None) -> MolecularComposition:
+    def blood(self, oxygenation: Union[float, int, np.ndarray, torch.Tensor, None] = None) -> MolecularComposition:
         """
         Create a molecular composition mimicking that of blood
         :param oxygenation: The oxygenation level of the blood(as a decimal).

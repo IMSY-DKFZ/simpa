@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import typing
+
 import numpy as np
 import struct
 import jdata
@@ -38,6 +40,7 @@ class MCXReflectanceAdapter(MCXAdapter):
         super(MCXReflectanceAdapter, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
+        self.volume_boundary_condition_str = global_settings[Tags.VOLUME_BOUNDARY_BONDITION]
         self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii',
                                     'mcx_photon_data_file': '_detp.jdat'}
 
@@ -45,6 +48,7 @@ class MCXReflectanceAdapter(MCXAdapter):
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
+                      refractive_index: np.ndarray,
                       illumination_geometry: IlluminationGeometryBase) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
@@ -55,25 +59,20 @@ class MCXReflectanceAdapter(MCXAdapter):
         :param absorption_cm: array containing the absorption of the tissue in `cm` units
         :param scattering_cm: array containing the scattering of the tissue in `cm` units
         :param anisotropy: array containing the anisotropy of the volume defined by `absorption_cm` and `scattering_cm`
+        :param refractive_index: array containing the refractive index of the volume defined by `absorption_cm` and `scattering_cm`
         :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
         :param probe_position_mm: position of a probe in `mm` units. This is parsed to
             `illumination_geometry.get_mcx_illuminator_definition`
         :return: `Settings` containing the results of optical simulations, the keys in this dictionary-like object
             depend on the Tags defined in `self.component_settings`
         """
-        if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
-            _assumed_anisotropy = self.component_settings[Tags.MCX_ASSUMED_ANISOTROPY]
-        else:
-            _assumed_anisotropy = 0.9
 
         self.generate_mcx_bin_input(absorption_cm=absorption_cm,
                                     scattering_cm=scattering_cm,
-                                    anisotropy=_assumed_anisotropy,
-                                    assumed_anisotropy=_assumed_anisotropy)
+                                    anisotropy=anisotropy,
+                                    refractive_index=refractive_index)
 
-        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
-                                              assumed_anisotropy=_assumed_anisotropy,
-                                              )
+        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry)
 
         print(settings_dict)
         self.generate_mcx_json_input(settings_dict=settings_dict)
@@ -90,9 +89,8 @@ class MCXReflectanceAdapter(MCXAdapter):
         self.remove_mcx_output()
         return results
 
-    def get_command(self) -> List:
-        """
-        generates list of commands to be parse to MCX in a subprocess
+    def get_command(self) -> typing.List:
+        """Generates list of commands to be parse to MCX in a subprocess.
 
         :return: list of MCX commands
         """
@@ -107,17 +105,27 @@ class MCXReflectanceAdapter(MCXAdapter):
         cmd.append("1")
         cmd.append("-F")
         cmd.append("jnii")
-        if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
-                self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
-            cmd.append("-H")
-            cmd.append(f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}")
-            cmd.append("--bc")  # save photon exit position and direction
-            cmd.append("______000010")
+
+        if (
+                Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings
+                and self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]
+        ):
+            # FIXME
+            raise NotImplementedError("Does not work with volume boundary condition")
             cmd.append("--savedetflag")
             cmd.append("XV")
-        if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
-                self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
-            cmd.append("--saveref")  # save diffuse reflectance at 0 filled voxels outside of domain
+
+        if (
+                Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings
+                and self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]
+        ):
+            cmd.append("-H")
+            cmd.append(
+                f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}"
+            )
+            cmd.append("--bc")  # save photon exit position and direction
+            cmd.append(self.volume_boundary_condition_str)
+            cmd.append("--saveref")
         cmd += self.get_additional_flags()
         return cmd
 
@@ -226,7 +234,8 @@ class MCXReflectanceAdapter(MCXAdapter):
                           device: Union[IlluminationGeometryBase, PhotoacousticDevice],
                           absorption: np.ndarray,
                           scattering: np.ndarray,
-                          anisotropy: np.ndarray
+                          anisotropy: np.ndarray,
+                          refractive_index: np.ndarray
                           ) -> Dict:
         """
         runs `self.forward_model` as many times as defined by `device` and aggregates the results.
@@ -236,6 +245,7 @@ class MCXReflectanceAdapter(MCXAdapter):
         :param absorption: Absorption volume
         :param scattering: Scattering volume
         :param anisotropy: Dimensionless scattering anisotropy
+        :param refractive_index: Refractive index
         :return:
         """
         reflectance = []
@@ -247,6 +257,7 @@ class MCXReflectanceAdapter(MCXAdapter):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
+                                         refractive_index=refractive_index,
                                          illumination_geometry=_device[0])
             self._append_results(results=results,
                                  reflectance=reflectance,
@@ -259,6 +270,7 @@ class MCXReflectanceAdapter(MCXAdapter):
                 results = self.forward_model(absorption_cm=absorption,
                                              scattering_cm=scattering,
                                              anisotropy=anisotropy,
+                                             refractive_index=refractive_index,
                                              illumination_geometry=_device[idx])
                 self._append_results(results=results,
                                      reflectance=reflectance,
@@ -273,6 +285,7 @@ class MCXReflectanceAdapter(MCXAdapter):
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
+                                         refractive_index=refractive_index,
                                          illumination_geometry=_device)
             self._append_results(results=results,
                                  reflectance=reflectance,

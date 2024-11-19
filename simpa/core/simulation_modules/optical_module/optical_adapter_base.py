@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 from abc import abstractmethod
-from typing import Dict, Union
+from typing import Dict, Union, Iterable
 
 import numpy as np
 
@@ -42,6 +42,7 @@ class OpticalAdapterBase(SimulationModuleBase):
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
+                      refractive_index: np.ndarray,
                       illumination_geometry: IlluminationGeometryBase):
         """
         A deriving class needs to implement this method according to its model.
@@ -49,6 +50,7 @@ class OpticalAdapterBase(SimulationModuleBase):
         :param absorption_cm: Absorption in units of per centimeter
         :param scattering_cm: Scattering in units of per centimeter
         :param anisotropy: Dimensionless scattering anisotropy
+        :param refractive_index: Refractive index
         :param illumination_geometry: A device that represents a detection geometry
         :return: Fluence in units of J/cm^2
         """
@@ -71,6 +73,7 @@ class OpticalAdapterBase(SimulationModuleBase):
         absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl)
         scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, wl)
         anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, wl)
+        refractive_index = load_data_field(file_path, Tags.DATA_FIELD_REFRACTIVE_INDEX, wl)
         gruneisen_parameter = load_data_field(file_path, Tags.DATA_FIELD_GRUNEISEN_PARAMETER)
 
         _device = None
@@ -85,7 +88,8 @@ class OpticalAdapterBase(SimulationModuleBase):
                                          device=device,
                                          absorption=absorption,
                                          scattering=scattering,
-                                         anisotropy=anisotropy)
+                                         anisotropy=anisotropy,
+                                         refractive_index=refractive_index)
         fluence = results[Tags.DATA_FIELD_FLUENCE]
         if not (Tags.IGNORE_QA_ASSERTIONS in self.global_settings and Tags.IGNORE_QA_ASSERTIONS):
             assert_array_well_defined(fluence, assume_non_negativity=True, array_name="fluence")
@@ -120,7 +124,8 @@ class OpticalAdapterBase(SimulationModuleBase):
                           device: Union[IlluminationGeometryBase, PhotoacousticDevice],
                           absorption: np.ndarray,
                           scattering: np.ndarray,
-                          anisotropy: np.ndarray) -> Dict:
+                          anisotropy: np.ndarray,
+                          refractive_index: np.ndarray) -> Dict:
         """
         runs `self.forward_model` as many times as defined by `device` and aggregates the results.
 
@@ -129,29 +134,14 @@ class OpticalAdapterBase(SimulationModuleBase):
         :param absorption: Absorption volume
         :param scattering: Scattering volume
         :param anisotropy: Dimensionless scattering anisotropy
+        :param refractive_index: Refractive index
         :return:
         """
-        if isinstance(_device, list):
-            # per convention this list has at least two elements
-            results = self.forward_model(absorption_cm=absorption,
+        _devices = _device if isinstance(_device, Iterable) else (_device,)
+        fluence = sum(self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
-                                         illumination_geometry=_device[0])
-            fluence = results[Tags.DATA_FIELD_FLUENCE]
-            for idx in range(1, len(_device)):
-                # we already looked at the 0th element, so go from 1 to n-1
-                results = self.forward_model(absorption_cm=absorption,
-                                             scattering_cm=scattering,
-                                             anisotropy=anisotropy,
-                                             illumination_geometry=_device[idx])
-                fluence += results[Tags.DATA_FIELD_FLUENCE]
-
-            fluence = fluence / len(_device)
-
-        else:
-            results = self.forward_model(absorption_cm=absorption,
-                                         scattering_cm=scattering,
-                                         anisotropy=anisotropy,
-                                         illumination_geometry=_device)
-            fluence = results[Tags.DATA_FIELD_FLUENCE]
-        return {Tags.DATA_FIELD_FLUENCE: fluence}
+                                         refractive_index=refractive_index,
+                                         illumination_geometry=illumination_geometry)[Tags.DATA_FIELD_FLUENCE]
+                      for illumination_geometry in _devices)
+        return {Tags.DATA_FIELD_FLUENCE: fluence / len(_devices)}

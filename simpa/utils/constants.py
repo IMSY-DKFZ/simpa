@@ -34,7 +34,8 @@ class SegmentationClasses:
 wavelength_dependent_properties = [
     Tags.DATA_FIELD_ABSORPTION_PER_CM,
     Tags.DATA_FIELD_SCATTERING_PER_CM,
-    Tags.DATA_FIELD_ANISOTROPY
+    Tags.DATA_FIELD_ANISOTROPY,
+    Tags.DATA_FIELD_REFRACTIVE_INDEX
 ]
 
 wavelength_independent_properties = [

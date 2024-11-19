@@ -24,7 +24,7 @@ def extract_hemoglobin_fractions(molecule_list: List) -> Dict[str, float]:
     }
 
     for molecule in molecule_list:
-        spectrum_name = molecule.spectrum.spectrum_name
+        spectrum_name = molecule.absorption_spectrum.spectrum_name
         if spectrum_name in hemoglobin:
             hemoglobin[spectrum_name] = molecule.volume_fraction
 

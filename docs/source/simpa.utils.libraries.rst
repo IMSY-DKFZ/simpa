@@ -11,6 +11,7 @@ libraries
 
    simpa.utils.libraries.absorption_spectra_data
    simpa.utils.libraries.anisotropy_spectra_data
+   simpa.utils.libraries.refractive_index_spectra_data
    simpa.utils.libraries.scattering_spectra_data
    simpa.utils.libraries.structure_library
 

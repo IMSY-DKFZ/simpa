@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+from typing import Optional, Union
 
 import numpy as np
 import torch
@@ -8,11 +9,11 @@ from simpa.utils import Tags
 
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.libraries.literature_values import OpticalTissueProperties, StandardProperties
-from simpa.utils.libraries.spectrum_library import AnisotropySpectrumLibrary, ScatteringSpectrumLibrary
+from simpa.utils.libraries.spectrum_library import (AnisotropySpectrumLibrary, ScatteringSpectrumLibrary,
+                                                    RefractiveIndexSpectrumLibrary, AbsorptionSpectrumLibrary)
 from simpa.utils import Spectrum
 from simpa.utils.calculate import calculate_oxygenation, calculate_gruneisen_parameter_from_temperature, calculate_bvf
 from simpa.utils.serializer import SerializableSIMPAClass
-from simpa.utils.libraries.spectrum_library import AbsorptionSpectrumLibrary
 from simpa.log import Logger
 from typing import Optional, Union
 
@@ -79,7 +80,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
             self.logger.warning("Some of the volume has not been filled by this molecular composition. Please check"
                                 "that this is correct")
 
-    def get_properties_for_wavelength(self, settings, wavelength) -> TissueProperties:
+    def get_properties_for_wavelength(self, settings, wavelength: Union[int, float]) -> TissueProperties:
         """
         Get the tissue properties for a specific wavelength.
 
@@ -90,14 +91,20 @@ class MolecularComposition(SerializableSIMPAClass, list):
         self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 0
         self.internal_properties[Tags.DATA_FIELD_SCATTERING_PER_CM] = 0
         self.internal_properties[Tags.DATA_FIELD_ANISOTROPY] = 0
+        self.internal_properties[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 0
         search_list = self.copy()
         for molecule in search_list:
             self.internal_properties[Tags.DATA_FIELD_ABSORPTION_PER_CM] += \
-                (molecule.volume_fraction * molecule.spectrum.get_value_for_wavelength(wavelength))
+                (molecule.volume_fraction * molecule.absorption_spectrum.get_value_for_wavelength(wavelength))
+
             self.internal_properties[Tags.DATA_FIELD_SCATTERING_PER_CM] += \
                 (molecule.volume_fraction * (molecule.scattering_spectrum.get_value_for_wavelength(wavelength)))
+
             self.internal_properties[Tags.DATA_FIELD_ANISOTROPY] += \
                 molecule.volume_fraction * molecule.anisotropy_spectrum.get_value_for_wavelength(wavelength)
+
+            self.internal_properties[Tags.DATA_FIELD_REFRACTIVE_INDEX] += \
+                molecule.volume_fraction * molecule.refractive_index.get_value_for_wavelength(wavelength)
 
         return self.internal_properties
 
@@ -108,7 +115,7 @@ class MolecularComposition(SerializableSIMPAClass, list):
         :return: The serialized molecular composition.
         """
         dict_items = self.__dict__
-        dict_items["internal_properties"] = None
+        dict_items["internal_properties"] = None  # Todo: Explain why.
         list_items = [molecule for molecule in self]
         return {"MolecularComposition": {"dict_items": dict_items, "list_items": list_items}}
 
@@ -149,17 +156,18 @@ class Molecule(SerializableSIMPAClass, object):
                  absorption_spectrum: Spectrum = None,
                  volume_fraction: float = None,
                  scattering_spectrum: Spectrum = None,
-                 anisotropy_spectrum: Spectrum = None, gruneisen_parameter: float = None,
+                 anisotropy_spectrum: Spectrum = None,
+                 refractive_index: Spectrum = None,
+                 gruneisen_parameter: float = None,
                  density: float = None, speed_of_sound: float = None,
                  alpha_coefficient: float = None):
         """
-        Initialize the Molecule object.
-
         :param name: The name of the molecule.
         :param absorption_spectrum: The absorption spectrum of the molecule.
         :param volume_fraction: The volume fraction of the molecule.
         :param scattering_spectrum: The scattering spectrum of the molecule.
         :param anisotropy_spectrum: The anisotropy spectrum of the molecule.
+        :param refractive_index: Spectrum
         :param gruneisen_parameter: The Grüneisen parameter of the molecule.
         :param density: The density of the molecule.
         :param speed_of_sound: The speed of sound in the molecule.
@@ -181,7 +189,7 @@ class Molecule(SerializableSIMPAClass, object):
         if not isinstance(absorption_spectrum, Spectrum):
             raise TypeError(f"The given spectrum was not of type AbsorptionSpectrum! Instead: "
                             f"{type(absorption_spectrum)} and reads: {absorption_spectrum}")
-        self.spectrum = absorption_spectrum
+        self.absorption_spectrum = absorption_spectrum
 
         if volume_fraction is None:
             volume_fraction = 0.0
@@ -200,10 +208,16 @@ class Molecule(SerializableSIMPAClass, object):
         self.scattering_spectrum = scattering_spectrum
 
         if anisotropy_spectrum is None:
-            anisotropy_spectrum = 0.0
+            anisotropy_spectrum = AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(1)
         if not isinstance(anisotropy_spectrum, Spectrum):
             raise TypeError(f"The given anisotropy was not of type Spectrum instead of {type(anisotropy_spectrum)}!")
         self.anisotropy_spectrum = anisotropy_spectrum
+
+        if refractive_index is None:
+            refractive_index = RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1)
+        if not isinstance(refractive_index, Spectrum):
+            raise TypeError(f"The refractive index was not of type Spectrum instead of {type(refractive_index)}!")
+        self.refractive_index = refractive_index
 
         if gruneisen_parameter is None:
             gruneisen_parameter = calculate_gruneisen_parameter_from_temperature(
@@ -250,9 +264,10 @@ class Molecule(SerializableSIMPAClass, object):
         """
         if isinstance(other, Molecule):
             return (self.name == other.name and
-                    self.spectrum == other.spectrum and
+                    self.absorption_spectrum == other.absorption_spectrum and
                     self.volume_fraction == other.volume_fraction and
                     self.scattering_spectrum == other.scattering_spectrum and
+                    self.refractive_index == other.refractive_index and
                     self.alpha_coefficient == other.alpha_coefficient and
                     self.speed_of_sound == other.speed_of_sound and
                     self.gruneisen_parameter == other.gruneisen_parameter and
@@ -284,13 +299,14 @@ class Molecule(SerializableSIMPAClass, object):
         :return: The deserialized Molecule object.
         """
         deserialized_molecule = Molecule(name=dictionary_to_deserialize["name"],
-                                         absorption_spectrum=dictionary_to_deserialize["spectrum"],
+                                         absorption_spectrum=dictionary_to_deserialize["absorption_spectrum"],
                                          volume_fraction=dictionary_to_deserialize["volume_fraction"],
                                          scattering_spectrum=dictionary_to_deserialize["scattering_spectrum"],
                                          alpha_coefficient=dictionary_to_deserialize["alpha_coefficient"],
                                          speed_of_sound=dictionary_to_deserialize["speed_of_sound"],
                                          gruneisen_parameter=dictionary_to_deserialize["gruneisen_parameter"],
                                          anisotropy_spectrum=dictionary_to_deserialize["anisotropy_spectrum"],
+                                         refractive_index=dictionary_to_deserialize["refractive_index"],
                                          density=dictionary_to_deserialize["density"])
         return deserialized_molecule
 
@@ -318,6 +334,7 @@ class MoleculeLibrary(object):
                             StandardProperties.WATER_MUS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             StandardProperties.WATER_G),
+                        refractive_index=RefractiveIndexSpectrumLibrary().get_spectrum_by_name("Water"),
                         density=StandardProperties.DENSITY_WATER,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
@@ -337,6 +354,7 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("blood_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.BLOOD_ANISOTROPY),
+                        refractive_index=RefractiveIndexSpectrumLibrary().get_spectrum_by_name("Oxyhemoglobin"),
                         density=StandardProperties.DENSITY_BLOOD,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_BLOOD,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_BLOOD
@@ -356,6 +374,7 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("blood_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.BLOOD_ANISOTROPY),
+                        refractive_index=RefractiveIndexSpectrumLibrary().get_spectrum_by_name("Deoxyhemoglobin"),
                         density=StandardProperties.DENSITY_BLOOD,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_BLOOD,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_BLOOD
@@ -376,6 +395,8 @@ class MoleculeLibrary(object):
                             "epidermis", OpticalTissueProperties.MUS500_EPIDERMIS, OpticalTissueProperties.FRAY_EPIDERMIS,
                             OpticalTissueProperties.BMIE_EPIDERMIS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary().get_spectrum_by_name("Epidermis_Anisotropy"),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.36),
                         density=StandardProperties.DENSITY_SKIN,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN
@@ -395,6 +416,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("fat_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.46),
                         density=StandardProperties.DENSITY_FAT,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_FAT,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_FAT
@@ -418,6 +441,7 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY(
                             scattering_coefficient),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(anisotropy),
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(refractive_index),
                         density=StandardProperties.DENSITY_GENERIC,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
@@ -437,6 +461,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("background_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.39),
                         density=StandardProperties.DENSITY_GENERIC,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
@@ -456,6 +482,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("muscle_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.39),
                         density=StandardProperties.DENSITY_GENERIC,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GENERIC,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_GENERIC
@@ -476,6 +504,8 @@ class MoleculeLibrary(object):
                             "epidermis", OpticalTissueProperties.MUS500_EPIDERMIS, OpticalTissueProperties.FRAY_EPIDERMIS,
                             OpticalTissueProperties.BMIE_EPIDERMIS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary().get_spectrum_by_name("Epidermis_Anisotropy"),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.36),
                         density=StandardProperties.DENSITY_SKIN,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_SKIN,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_SKIN
@@ -517,6 +547,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary().get_spectrum_by_name("bone_scattering"),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             OpticalTissueProperties.STANDARD_ANISOTROPY),
+                        # for n: DOI:10.1371/journal.pone.0150268
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.55),
                         density=StandardProperties.DENSITY_BONE,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_BONE,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_BONE
@@ -536,6 +568,8 @@ class MoleculeLibrary(object):
                         scattering_spectrum=ScatteringSpectrumLibrary.CONSTANT_SCATTERING_ARBITRARY((-np.log(0.85)) -
                                                                                                     (-np.log(0.85) / 10)),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(0.9),
+                        # for n: This is basically just a guess
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1.4),
                         density=StandardProperties.DENSITY_GEL_PAD,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_GEL_PAD,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_GEL_PAD
@@ -557,6 +591,7 @@ class MoleculeLibrary(object):
                             StandardProperties.WATER_MUS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             StandardProperties.WATER_G),
+                        refractive_index=RefractiveIndexSpectrumLibrary().get_spectrum_by_name("Heavy_Water"),
                         density=StandardProperties.DENSITY_HEAVY_WATER,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_HEAVY_WATER,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_WATER
@@ -578,6 +613,7 @@ class MoleculeLibrary(object):
                             StandardProperties.AIR_MUS),
                         anisotropy_spectrum=AnisotropySpectrumLibrary.CONSTANT_ANISOTROPY_ARBITRARY(
                             StandardProperties.AIR_G),
+                        refractive_index=RefractiveIndexSpectrumLibrary.CONSTANT_REFRACTOR_ARBITRARY(1),
                         density=StandardProperties.DENSITY_AIR,
                         speed_of_sound=StandardProperties.SPEED_OF_SOUND_AIR,
                         alpha_coefficient=StandardProperties.ALPHA_COEFF_AIR

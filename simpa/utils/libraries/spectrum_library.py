@@ -40,8 +40,8 @@ class Spectrum(SerializableSIMPAClass, object):
         wavelengths = torch.from_numpy(wavelengths)
         self.spectrum_name = spectrum_name
         self.wavelengths = wavelengths
-        self.max_wavelength = int(torch.max(wavelengths))
-        self.min_wavelength = int(torch.min(wavelengths))
+        self.max_wavelength = int(torch.floor(torch.max(wavelengths)))
+        self.min_wavelength = int(torch.ceil(torch.min(wavelengths)))
         self.values = values
 
         if torch.Tensor.size(wavelengths) != torch.Tensor.size(values):
@@ -277,7 +277,18 @@ class AbsorptionSpectrumLibrary(SpectraLibrary):
                         np.asarray([absorption_coefficient, absorption_coefficient]))
 
 
-def get_simpa_internal_absorption_spectra_by_names(absorption_spectrum_names: list) -> list:
+class RefractiveIndexSpectrumLibrary(SpectraLibrary):
+
+    def __init__(self, additional_folder_path: str = None):
+        super(RefractiveIndexSpectrumLibrary, self).__init__("refractive_index_spectra_data", additional_folder_path)
+
+    @staticmethod
+    def CONSTANT_REFRACTOR_ARBITRARY(refractive_index: float = 1):
+        return Spectrum("Constant Refractor (arb)", np.asarray([450, 1000]),
+                        np.asarray([refractive_index, refractive_index]))
+
+
+def get_simpa_internal_absorption_spectra_by_names(absorption_spectrum_names: list):
     """
     Retrieves SIMPA internal absorption spectra by their names.
 
@@ -296,7 +307,7 @@ def view_saved_spectra(save_path=None, mode="absorption"):
     Opens a matplotlib plot and visualizes the available spectra.
 
     :param save_path: If not None, then the figure will be saved as a PNG file to the destination.
-    :param mode: Specifies the type of spectra to visualize ("absorption", "scattering", or "anisotropy").
+    :param mode: Specifies the type of spectra to visualize ("absorption", "scattering", "anisotropy" or "refractive_index).
     """
     plt.figure(figsize=(11, 8))
     if mode == "absorption":
@@ -314,8 +325,14 @@ def view_saved_spectra(save_path=None, mode="absorption"):
             plt.semilogy(spectrum.wavelengths,
                          spectrum.values,
                          label=spectrum.spectrum_name)
+    elif mode == "refractive_index":
+        for spectrum in RefractiveIndexSpectrumLibrary():
+            plt.semilogy(spectrum.wavelengths,
+                         spectrum.values,
+                         label=spectrum.spectrum_name)
     else:
-        raise ValueError(f"Invalid mode: {mode}. Choose from 'absorption', 'scattering', or 'anisotropy'.")
+        raise ValueError(
+            f"Invalid mode: {mode}. Choose from 'absorption', 'scattering', 'anisotropy' or 'refractive_index'.")
 
     ax = plt.gca()
     box = ax.get_position()

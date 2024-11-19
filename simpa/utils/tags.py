@@ -2,10 +2,9 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+import numpy as np
 from numbers import Number
 from typing import Iterable
-
-import numpy as np
 
 
 class Tags:
@@ -400,13 +399,6 @@ class Tags:
     """
     Specific seed for random initialisation in mcx.\n
     if not set, Tags.RANDOM_SEED will be used instead.
-    Usage: module optical_modelling, adapter mcx_adapter
-    """
-
-    MCX_ASSUMED_ANISOTROPY = ("mcx_assumed_anisotropy", (int, float))
-    """
-    The anisotropy that should be assumed for the mcx simulations.
-    If not set, a default value of 0.9 will be assumed.
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
@@ -872,6 +864,12 @@ class Tags:
     DATA_FIELD_ANISOTROPY = "g"
     """
     Optical scattering anisotropy of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
+    DATA_FIELD_REFRACTIVE_INDEX = "n"
+    """
+    Refractive index of the generated volume/structure.\n
     Usage: SIMPA package, naming convention
     """
 
@@ -1454,6 +1452,11 @@ class Tags:
     Flag that indicates if the diffuse reflectance should be stored in voxels that are filled with 0 in the surrounding
     of the volume. 
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    VOLUME_BOUNDARY_BONDITION = "volume_boundary_condition"
+    """
+    FIXME
     """
 
     COMPUTE_PHOTON_DIRECTION_AT_EXIT = "save_dir_at_exit"
