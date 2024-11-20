@@ -18,6 +18,7 @@ from .libraries.spectrum_library import AbsorptionSpectrumLibrary
 from .libraries.spectrum_library import Spectrum
 from .libraries.spectrum_library import view_saved_spectra
 from .libraries.spectrum_library import AnisotropySpectrumLibrary
+from .libraries.spectrum_library import RefractiveIndexSpectrumLibrary
 from .libraries.spectrum_library import ScatteringSpectrumLibrary
 from .libraries.spectrum_library import get_simpa_internal_absorption_spectra_by_names
 
