@@ -50,7 +50,7 @@ class DelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
             yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=torch_device),
                                             torch.arange(zdim, device=torch_device),
                                             torch.arange(n_sensor_elements, device=torch_device),
-                                            torch.arange(n_sensor_elements, device=torch_device))
+                                            torch.arange(n_sensor_elements, device=torch_device), indexing='ij')
             M = values[x, yy, zz, nn] * values[x, yy, zz, mm]
             M = torch.sign(M) * torch.sqrt(torch.abs(M))
             # only take upper triangle without diagonal and sum up along n and m axis (last two)
