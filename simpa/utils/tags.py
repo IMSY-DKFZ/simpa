@@ -374,7 +374,8 @@ class Tags:
     LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, list,
                                                                              range, tuple, np.ndarray))
     """
-    Laser pulse energy used in the optical simulation.\n
+    Laser pulse energy used in the optical simulation. If it is considered wavelength dependant, should be
+    an iterable compatible with the size of the wavelength list. \n
     Usage: module optical_simulation_module
     """
 

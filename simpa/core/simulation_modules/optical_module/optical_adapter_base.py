@@ -91,12 +91,30 @@ class OpticalAdapterBase(SimulationModuleBase):
             assert_array_well_defined(fluence, assume_non_negativity=True, array_name="fluence")
 
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.component_settings:
+            laser_energies = self.component_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
+
+            if type(laser_energies) in (list, range, tuple, np.ndarray):
+                
+                list_laser_energies = list(laser_energies)
+                wls = self.global_settings[Tags.WAVELENGTHS]
+
+                if len(list_laser_energies) != len(wls):
+                    raise ValueError("The wavelength dependant laser energies need to have compatible dimension with the wavelengths.")
+                else:
+                    laser_energy = laser_energies[wls.index(wl)]
+
+            elif type(laser_energies) in (float, int, np.integer) :
+                laser_energy = laser_energies
+                
+            else:
+                raise TypeError("The laser energies need to be specified as a constant (int, float) or a list if they are \
+                                considered wavelength dependant.")
+            
             units = Tags.UNITS_PRESSURE
             # Initial pressure should be given in units of Pascale
             conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
-            initial_pressure = (absorption * fluence * gruneisen_parameter *
-                                (self.component_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000)
-                                * conversion_factor)
+            initial_pressure = (absorption * fluence * gruneisen_parameter * (laser_energy / 1000) * conversion_factor)
+
         else:
             units = Tags.UNITS_ARBITRARY
             initial_pressure = absorption * fluence
