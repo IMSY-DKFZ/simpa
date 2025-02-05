@@ -66,11 +66,11 @@ class OpticalAdapterBase(SimulationModuleBase):
         self.logger.info("Simulating the optical forward process...")
 
         file_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH]
-        wl = str(self.global_settings[Tags.WAVELENGTH])
+        wl = self.global_settings[Tags.WAVELENGTH]
 
-        absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl)
-        scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, wl)
-        anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, wl)
+        absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, str(wl))
+        scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, str(wl))
+        anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, str(wl))
         gruneisen_parameter = load_data_field(file_path, Tags.DATA_FIELD_GRUNEISEN_PARAMETER)
 
         _device = None
@@ -94,26 +94,25 @@ class OpticalAdapterBase(SimulationModuleBase):
             laser_energies = self.component_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
 
             if type(laser_energies) in (list, range, tuple, np.ndarray):
-                
+
                 list_laser_energies = list(laser_energies)
                 wls = self.global_settings[Tags.WAVELENGTHS]
 
                 if len(list_laser_energies) != len(wls):
-                    raise ValueError("The wavelength dependant laser energies need to have compatible dimension with the wavelengths.")
+                    raise ValueError(
+                        "The wavelength dependant laser energies need to have compatible dimension \
+                        with the wavelengths.")
                 else:
                     laser_energy = laser_energies[wls.index(wl)]
 
-            elif type(laser_energies) in (float, int, np.integer) :
+            elif type(laser_energies) in (float, int, np.integer):
                 laser_energy = laser_energies
-                
-            else:
-                raise TypeError("The laser energies need to be specified as a constant (int, float) or a list if they are \
-                                considered wavelength dependant.")
-            
+
             units = Tags.UNITS_PRESSURE
             # Initial pressure should be given in units of Pascale
             conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
-            initial_pressure = (absorption * fluence * gruneisen_parameter * (laser_energy / 1000) * conversion_factor)
+            initial_pressure = (absorption * fluence * gruneisen_parameter * (laser_energy / 1000)
+                                * conversion_factor)
 
         else:
             units = Tags.UNITS_ARBITRARY
