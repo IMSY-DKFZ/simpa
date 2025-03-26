@@ -247,7 +247,7 @@ class ScatteringSpectrumLibrary(SpectraLibrary):
         :return: A Spectrum instance based on Rayleigh and Mie scattering theory.
         """
         wavelengths = np.arange(400, 1301, 1)
-        reduced_scattering = (mus_at_500_nm * (fraction_rayleigh_scattering * (wavelengths / 500) ** 1e-4 +
+        reduced_scattering = (mus_at_500_nm * (fraction_rayleigh_scattering * (wavelengths / 500) ** -4 +
                                                (1 - fraction_rayleigh_scattering) * (wavelengths / 500) ** -mie_power_law_coefficient))
         return Spectrum(name, wavelengths, reduced_scattering)
 
