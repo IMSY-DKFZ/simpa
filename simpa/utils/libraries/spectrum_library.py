@@ -49,8 +49,8 @@ class Spectrum(SerializableSIMPAClass, object):
                              str(wavelengths.shape) + " vs " + str(values.shape))
 
         new_wavelengths = np.arange(self.min_wavelength, self.max_wavelength + 1, 1)
-        self.values_by_wavelength_function = interpolate.interp1d(self.wavelengths, self.values)
-        self.values_interp = self.values_by_wavelength_function(new_wavelengths)
+        values_by_wavelength_function = interpolate.interp1d(self.wavelengths, self.values)
+        self.values_interp = values_by_wavelength_function(new_wavelengths)
 
     def get_value_over_wavelength(self) -> np.ndarray:
         """
@@ -73,7 +73,7 @@ class Spectrum(SerializableSIMPAClass, object):
         if np.min(wavelength) < self.min_wavelength or np.max(wavelength) > self.max_wavelength:
             raise ValueError(f"The given wavelength ({wavelength}) is not within the range of the spectrum "
                              f"({self.min_wavelength} - {self.max_wavelength})")
-        return self.values_by_wavelength_function(wavelength)
+        return self.values_interp[wavelength - self.min_wavelength]
 
     def __eq__(self, other):
         """
