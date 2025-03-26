@@ -238,18 +238,33 @@ class ScatteringSpectrumLibrary(SpectraLibrary):
                                                 fraction_rayleigh_scattering: float = 0.0,
                                                 mie_power_law_coefficient: float = 0.0) -> Spectrum:
         """
-        Creates a scattering spectrum based on Rayleigh and Mie scattering theory.
+        Creates a reduced scattering spectrum based on Rayleigh and Mie scattering theory.
 
         :param name: The name of the spectrum.
-        :param mus_at_500_nm: Scattering coefficient at 500 nm.
+        :param mus_at_500_nm: Reduced scattering coefficient at 500 nm.
         :param fraction_rayleigh_scattering: Fraction of Rayleigh scattering.
         :param mie_power_law_coefficient: Power law coefficient for Mie scattering.
         :return: A Spectrum instance based on Rayleigh and Mie scattering theory.
         """
-        wavelengths = np.arange(450, 1001, 1)
-        scattering = (mus_at_500_nm * (fraction_rayleigh_scattering * (wavelengths / 500) ** 1e-4 +
-                      (1 - fraction_rayleigh_scattering) * (wavelengths / 500) ** -mie_power_law_coefficient))
-        return Spectrum(name, wavelengths, scattering)
+        wavelengths = np.arange(400, 1301, 1)
+        reduced_scattering = (mus_at_500_nm * (fraction_rayleigh_scattering * (wavelengths / 500) ** 1e-4 +
+                                               (1 - fraction_rayleigh_scattering) * (wavelengths / 500) ** -mie_power_law_coefficient))
+        return Spectrum(name, wavelengths, reduced_scattering)
+
+    @staticmethod
+    def scattering_from_scattering_power(name: str, mus_at_500_nm: float, scattering_power: float) -> Spectrum:
+        """
+        Creates a reduced scattering spectrum based on the first reduced scattering formula of the paper.
+
+        :param name: The name of the spectrum.
+        :param mus_at_500_nm: Reduced scattering coefficient at 500 nm. Corresponds to a in the formula.
+        :param scattering_power: The scattering power. Corresponds to b in the formula.
+
+        :return: The reduced scattering coefficients by wavelengths as a Spectrum instance.
+        """
+        wavelengths = np.arange(400, 1301, 1)
+        reduced_scattering = mus_at_500_nm * np.power(wavelengths / 500, -scattering_power)
+        return Spectrum(name, wavelengths, reduced_scattering)
 
 
 class AbsorptionSpectrumLibrary(SpectraLibrary):
