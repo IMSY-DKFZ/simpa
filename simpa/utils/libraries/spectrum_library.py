@@ -35,22 +35,22 @@ class Spectrum(SerializableSIMPAClass, object):
 
         :raises ValueError: If the shape of wavelengths does not match the shape of values.
         """
-        if isinstance(values, np.ndarray):
-            values = torch.from_numpy(values)
-        wavelengths = torch.from_numpy(wavelengths)
+        assert isinstance(wavelengths, np.ndarray), type(wavelengths)
+        assert isinstance(values, np.ndarray), type(values)
+
         self.spectrum_name = spectrum_name
         self.wavelengths = wavelengths
-        self.max_wavelength = int(torch.floor(torch.max(wavelengths)))
-        self.min_wavelength = int(torch.ceil(torch.min(wavelengths)))
+        self.max_wavelength = int(np.floor(np.max(wavelengths)))
+        self.min_wavelength = int(np.ceil(np.min(wavelengths)))
         self.values = values
 
-        if torch.Tensor.size(wavelengths) != torch.Tensor.size(values):
+        if wavelengths.shape != values.shape:
             raise ValueError("The shape of the wavelengths and the values did not match: " +
-                             str(torch.Tensor.size(wavelengths)) + " vs " + str(torch.Tensor.size(values)))
+                             str(wavelengths.shape) + " vs " + str(values.shape))
 
-        new_wavelengths = torch.arange(self.min_wavelength, self.max_wavelength+1, 1)
-        new_absorptions_function = interpolate.interp1d(self.wavelengths, self.values)
-        self.values_interp = new_absorptions_function(new_wavelengths)
+        new_wavelengths = np.arange(self.min_wavelength, self.max_wavelength + 1, 1)
+        self.values_by_wavelength_function = interpolate.interp1d(self.wavelengths, self.values)
+        self.values_interp = self.values_by_wavelength_function(new_wavelengths)
 
     def get_value_over_wavelength(self) -> np.ndarray:
         """
@@ -60,7 +60,7 @@ class Spectrum(SerializableSIMPAClass, object):
         """
         return np.asarray([self.wavelengths, self.values])
 
-    def get_value_for_wavelength(self, wavelength: int) -> float:
+    def get_value_for_wavelength(self, wavelength: int | np.ndarray) -> float:
         """
         Retrieves the interpolated value for a given wavelength within the spectrum range.
 
@@ -70,10 +70,10 @@ class Spectrum(SerializableSIMPAClass, object):
         :return: the best matching linearly interpolated values for the given wavelength.
         :raises ValueError: if the given wavelength is not within the range of the spectrum.
         """
-        if wavelength < self.min_wavelength or wavelength > self.max_wavelength:
+        if np.min(wavelength) < self.min_wavelength or np.max(wavelength) > self.max_wavelength:
             raise ValueError(f"The given wavelength ({wavelength}) is not within the range of the spectrum "
                              f"({self.min_wavelength} - {self.max_wavelength})")
-        return self.values_interp[wavelength - self.min_wavelength]
+        return self.values_by_wavelength_function(wavelength)
 
     def __eq__(self, other):
         """
