@@ -112,13 +112,16 @@ class MCXReflectanceAdapter(MCXAdapter):
         cmd.append("1")
         cmd.append("-F")
         cmd.append("jnii")
-
+        cmd.append("--bc")
+        cmd.append(self.volume_boundary_condition_str)
+        cmd.append("-H")
+        cmd.append(
+            f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}"
+        )
         if (
                 Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings
                 and self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]
         ):
-            # FIXME
-            raise NotImplementedError("Does not work with volume boundary condition")
             cmd.append("--savedetflag")
             cmd.append("XV")
 
@@ -126,13 +129,8 @@ class MCXReflectanceAdapter(MCXAdapter):
                 Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings
                 and self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]
         ):
-            cmd.append("-H")
-            cmd.append(
-                f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}"
-            )
-            cmd.append("--bc")  # save photon exit position and direction
-            cmd.append(self.volume_boundary_condition_str)
             cmd.append("--saveref")
+
         cmd += self.get_additional_flags()
         return cmd
 
