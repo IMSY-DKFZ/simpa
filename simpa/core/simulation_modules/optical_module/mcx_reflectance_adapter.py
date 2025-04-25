@@ -112,6 +112,8 @@ class MCXReflectanceAdapter(MCXAdapter):
         cmd.append("1")
         cmd.append("-F")
         cmd.append("jnii")
+        cmd.append("-e")
+        cmd.append(str(1e-3))
         cmd.append("--bc")
         cmd.append(self.volume_boundary_condition_str)
         cmd.append("-H")
@@ -312,8 +314,8 @@ class MCXReflectanceAdapter(MCXAdapter):
     def _append_results(results,
                         reflectance,
                         reflectance_position,
-                        photon_position,
-                        photon_direction):
+                        photon_position: list[np.ndarray],
+                        photon_direction: list[np.ndarray]):
         if Tags.DATA_FIELD_DIFFUSE_REFLECTANCE in results:
             reflectance.append(results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE])
             reflectance_position.append(results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS])
