@@ -1454,9 +1454,19 @@ class Tags:
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
     """
 
-    VOLUME_BOUNDARY_BONDITION = "volume_boundary_condition"
+    VOLUME_BOUNDARY_CONDITION = "volume_boundary_condition"
     """
     FIXME
+    """
+
+    MCX_DETECTOR = ("mcx_detector", dict)
+    """
+    The detector property list used in mcx for capturing exiting photons.\n
+    Only use it if you want to capture photon exit properties (COMPUTE_PHOTON_DIRECTION_AT_EXIT is enabled).
+    
+    Example usage is: 
+    
+    settings[Tags.MCX_DETECTOR] = [{"Pos": [30.0, 30.0, 0.0], "R": 45.0}]
     """
 
     COMPUTE_PHOTON_DIRECTION_AT_EXIT = "save_dir_at_exit"

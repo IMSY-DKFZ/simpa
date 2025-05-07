@@ -41,8 +41,8 @@ class MCXReflectanceAdapter(MCXAdapter):
         super(MCXReflectanceAdapter, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
-        if Tags.VOLUME_BOUNDARY_BONDITION in global_settings:
-            self.volume_boundary_condition_str = global_settings[Tags.VOLUME_BOUNDARY_BONDITION]
+        if Tags.VOLUME_BOUNDARY_CONDITION in global_settings:
+            self.volume_boundary_condition_str = global_settings[Tags.VOLUME_BOUNDARY_CONDITION]
         else:
             self.volume_boundary_condition_str = MCXVolumeBoundaryCondition.DEFAULT.value
 
@@ -93,6 +93,31 @@ class MCXReflectanceAdapter(MCXAdapter):
         # clean temporary files
         self.remove_mcx_output()
         return results
+
+    def get_mcx_settings(self,
+                         illumination_geometry: IlluminationGeometryBase,
+                         **kwargs) -> Dict:
+        settings_dict = super().get_mcx_settings(illumination_geometry=illumination_geometry, **kwargs)
+        uses_photon_exit_data = Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and self.component_settings[
+            Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]
+
+        if uses_photon_exit_data:
+            if Tags.MCX_DETECTOR in self.global_settings:
+                settings_dict["Optode"]["Detector"] = self.global_settings[Tags.MCX_DETECTOR]
+            else:
+                # For some reason, the simulation gets slower the larger the detector is
+                width = self.global_settings[Tags.DIM_VOLUME_X_MM] / self.global_settings[Tags.SPACING_MM]
+                height = self.global_settings[Tags.DIM_VOLUME_Y_MM] / self.global_settings[Tags.SPACING_MM]
+                position = [width / 2 + 1, height / 2 + 1, 0.0]
+                radius = np.sqrt(width ** 2 + height ** 2) / 2
+                settings_dict["Optode"]["Detector"] = [
+                    {
+                        "Pos": position,
+                        "R": radius
+                    }
+                ]
+
+        return settings_dict
 
     def get_command(self) -> typing.List:
         """Generates list of commands to be parse to MCX in a subprocess.
