@@ -117,6 +117,7 @@ class MCXAdapter(OpticalAdapterBase):
         self.frames = int(time / dt)
 
         source = illumination_geometry.get_mcx_illuminator_definition(self.global_settings)
+        mcx_length_unit = self.global_settings[Tags.SPACING_MM] if Tags.TRUE_SPACING_MM not in self.global_settings else self.global_settings[Tags.TRUE_SPACING_MM]
         settings_dict = {
             "Session": {
                 "ID": mcx_volumetric_data_file,
@@ -134,7 +135,7 @@ class MCXAdapter(OpticalAdapterBase):
             },
             "Domain": {
                 "OriginType": 0,
-                "LengthUnit": self.global_settings[Tags.SPACING_MM],
+                "LengthUnit": mcx_length_unit,
                 "Media": [
                     {
                         "mua": 0,

@@ -370,6 +370,31 @@ class Tags:
     Usage: module optical_simulation_module
     """
 
+    OPTICAL_CAMERA_SETTINGS = ("optical_camera_settings", dict)
+    """
+    Optical camera settings
+    """
+
+    OPTICAL_CAMERA_OBJECT_TO_LENS_DISTANCE = ("optical_camera_object_to_lens_distance", float | list)
+    """
+    The distance between the object and the camera lens.
+    """
+
+    OPTICAL_CAMERA_LENS_TO_SENSOR_DISTANCE = ("optical_camera_lens_to_sensor_distance", float | list)
+    """
+    The distance between the camera lens and the sensor.
+    """
+
+    OPTICAL_CAMERA_FOCAL_LENGTH = ("optical_camera_focal_length", float | list)
+    """
+    The camera lens focal length.
+    """
+
+    OPTICAL_CAMERA_F_NUMBER = ("optical_camera_f_number", float | list)
+    """
+    The camera f number.
+    """
+
     LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, list,
                                                                              range, tuple, np.ndarray))
     """
@@ -947,6 +972,12 @@ class Tags:
     """
     Isotropic extent of one voxels in mm in the generated volume.\n
     Usage: SIMPA package
+    """
+
+    TRUE_SPACING_MM = ("true_voxel_spacing_mm", Number)
+    """
+    Isotropic extent of one voxels in mm used in MCX. If not set, Tags.SPACING_MM will be used instead.\n
+    Usage: MCXReflectanceAdapter
     """
 
     DIM_VOLUME_X_MM = ("volume_x_dim_mm", Number)
