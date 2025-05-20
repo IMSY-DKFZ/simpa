@@ -100,6 +100,7 @@ class MCXReflectanceAdapter(MCXAdapter):
         settings_dict = super().get_mcx_settings(illumination_geometry=illumination_geometry, **kwargs)
         uses_photon_exit_data = Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and self.component_settings[
             Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]
+        contains_camera_settings = Tags.MCX_CAMERA_SETTINGS in self.global_settings
 
         if uses_photon_exit_data:
             if Tags.MCX_DETECTOR in self.global_settings:
@@ -116,6 +117,15 @@ class MCXReflectanceAdapter(MCXAdapter):
                         "R": radius
                     }
                 ]
+
+        if contains_camera_settings:
+            camera_settings = self.global_settings[Tags.MCX_CAMERA_SETTINGS]
+            settings_dict["Camera"] = {
+                "ObjectDistance": camera_settings[Tags.MCX_OBJECT_DISTANCE],
+                "ProjectionDistance": camera_settings[Tags.MCX_PROJECTION_DISTANCE],
+                "FocalLength": camera_settings[Tags.MCX_FOCAL_LENGTH],
+                "ApertureRadius": camera_settings[Tags.MCX_APERTURE_RADIUS],
+            }
 
         return settings_dict
 

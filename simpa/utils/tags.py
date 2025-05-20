@@ -395,6 +395,31 @@ class Tags:
     The camera f number.
     """
 
+    MCX_CAMERA_SETTINGS = ("mcx_camera_settings", dict)
+    """
+    MCX camera settings
+    """
+
+    MCX_OBJECT_DISTANCE = ("mcx_object_distance", float)
+    """
+    The distance between the object and the camera lens.
+    """
+
+    MCX_PROJECTION_DISTANCE = ("mcx_projection_distance", float)
+    """
+    The distance between the object and the camera lens.
+    """
+
+    MCX_FOCAL_LENGTH = ("mcx_focal_length", float)
+    """
+    The distance between the object and the camera lens.
+    """
+
+    MCX_APERTURE_RADIUS = ("mcx_aperture_radius", float)
+    """
+    The distance between the object and the camera lens.
+    """
+
     LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, list,
                                                                              range, tuple, np.ndarray))
     """
