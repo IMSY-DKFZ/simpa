@@ -240,7 +240,9 @@ class MCXReflectanceAdapter(MCXAdapter):
         check_padding = (Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and
                          self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]) or \
                         (Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and
-                         self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT])
+                         self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]) or \
+            Tags.MCX_CAMERA_SETTINGS in self.global_settings
+
         # check that all volumes on first layer along z have only 0 values
         if np.any([np.any(a[:, :, 0] != 0)] for a in arrays) and check_padding:
             results = tuple(np.pad(a, ((0, 0), (0, 0), (1, 0)), "constant", constant_values=0) for a in arrays)

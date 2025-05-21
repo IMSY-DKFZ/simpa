@@ -19,8 +19,6 @@ class MCXVolumeBoundaryCondition(Enum):
     """The default behavior."""
     MIRROR_REFLECTION = "mm_mm_000000"
     """The photons are totally reflected as if the volume faces are mirrors."""
-    MIRROR_REFLECTION_WITH_DETECTION = "mm_mm_000001"
-    """The photons are totally reflected as if the volume faces are mirrors. The z-axis plane will also serve as a detector."""
     CYCLIC = "cc_cc_000000"
     """The photons reenter from the opposite volume face."""
     ABSORB = "aa_aa_000000"
