@@ -60,7 +60,8 @@ simulation_output = [Tags.DATA_FIELD_FLUENCE,
                      Tags.DATA_FIELD_DIFFUSE_REFLECTANCE,
                      Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
                      Tags.DATA_FIELD_PHOTON_EXIT_POS,
-                     Tags.DATA_FIELD_PHOTON_EXIT_DIR]
+                     Tags.DATA_FIELD_PHOTON_EXIT_DIR,
+                     Tags.DATA_FIELD_CAMERA_INTENSITY]
 
 simulation_output_fields = [Tags.OPTICAL_MODEL_OUTPUT_NAME,
                             Tags.SIMULATION_PROPERTIES]

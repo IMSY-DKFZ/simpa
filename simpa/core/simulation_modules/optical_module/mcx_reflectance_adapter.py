@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import pathlib
 import typing
 
 import numpy as np
@@ -66,8 +67,6 @@ class MCXReflectanceAdapter(MCXAdapter):
         :param anisotropy: array containing the anisotropy of the volume defined by `absorption_cm` and `scattering_cm`
         :param refractive_index: array containing the refractive index of the volume defined by `absorption_cm` and `scattering_cm`
         :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
-        :param probe_position_mm: position of a probe in `mm` units. This is parsed to
-            `illumination_geometry.get_mcx_illuminator_definition`
         :return: `Settings` containing the results of optical simulations, the keys in this dictionary-like object
             depend on the Tags defined in `self.component_settings`
         """
@@ -196,6 +195,11 @@ class MCXReflectanceAdapter(MCXAdapter):
                 self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
             results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = ref
             results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = ref_pos
+        if Tags.MCX_CAMERA_SETTINGS in self.global_settings and self.global_settings[Tags.MCX_CAMERA_SETTINGS]:
+            cam_intensity_file_path = pathlib.Path(self.mcx_volumetric_data_file).with_suffix(".bin")
+            cam_intensity = np.fromfile(cam_intensity_file_path, dtype=np.float32)
+            results[Tags.DATA_FIELD_CAMERA_INTENSITY] = cam_intensity
+
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
             content = jdata.load(self.mcx_photon_data_file)
@@ -296,6 +300,8 @@ class MCXReflectanceAdapter(MCXAdapter):
         reflectance_position = []
         photon_position = []
         photon_direction = []
+        camera_intensity = []
+
         if isinstance(_device, list):
             # per convention this list has at least two elements
             results = self.forward_model(absorption_cm=absorption,
@@ -307,7 +313,9 @@ class MCXReflectanceAdapter(MCXAdapter):
                                  reflectance=reflectance,
                                  reflectance_position=reflectance_position,
                                  photon_position=photon_position,
-                                 photon_direction=photon_direction)
+                                 photon_direction=photon_direction,
+                                 camera_intensity=camera_intensity)
+
             fluence = results[Tags.DATA_FIELD_FLUENCE]
             for idx in range(1, len(_device)):
                 # we already looked at the 0th element, so go from 1 to n-1
@@ -320,9 +328,10 @@ class MCXReflectanceAdapter(MCXAdapter):
                                      reflectance=reflectance,
                                      reflectance_position=reflectance_position,
                                      photon_position=photon_position,
-                                     photon_direction=photon_direction)
-                fluence += results[Tags.DATA_FIELD_FLUENCE]
+                                     photon_direction=photon_direction,
+                                     camera_intensity=camera_intensity)
 
+                fluence += results[Tags.DATA_FIELD_FLUENCE]
             fluence = fluence / len(_device)
 
         else:
@@ -335,7 +344,9 @@ class MCXReflectanceAdapter(MCXAdapter):
                                  reflectance=reflectance,
                                  reflectance_position=reflectance_position,
                                  photon_position=photon_position,
-                                 photon_direction=photon_direction)
+                                 photon_direction=photon_direction,
+                                 camera_intensity=camera_intensity)
+
             fluence = results[Tags.DATA_FIELD_FLUENCE]
         aggregated_results = dict()
         aggregated_results[Tags.DATA_FIELD_FLUENCE] = fluence
@@ -345,6 +356,8 @@ class MCXReflectanceAdapter(MCXAdapter):
         if photon_position:
             aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_POS] = np.concatenate(photon_position, axis=0)
             aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_DIR] = np.concatenate(photon_direction, axis=0)
+        if camera_intensity:
+            aggregated_results[Tags.DATA_FIELD_CAMERA_INTENSITY] = np.concatenate(camera_intensity, axis=0)
         return aggregated_results
 
     @staticmethod
@@ -352,10 +365,13 @@ class MCXReflectanceAdapter(MCXAdapter):
                         reflectance,
                         reflectance_position,
                         photon_position: list[np.ndarray],
-                        photon_direction: list[np.ndarray]):
+                        photon_direction: list[np.ndarray],
+                        camera_intensity: list[np.ndarray]):
         if Tags.DATA_FIELD_DIFFUSE_REFLECTANCE in results:
             reflectance.append(results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE])
             reflectance_position.append(results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS])
         if Tags.DATA_FIELD_PHOTON_EXIT_POS in results:
             photon_position.append(results[Tags.DATA_FIELD_PHOTON_EXIT_POS])
             photon_direction.append(results[Tags.DATA_FIELD_PHOTON_EXIT_DIR])
+        if Tags.DATA_FIELD_CAMERA_INTENSITY in results:
+            camera_intensity.append(results[Tags.DATA_FIELD_CAMERA_INTENSITY])

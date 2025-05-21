@@ -1537,6 +1537,12 @@ class Tags:
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
     """
 
+    DATA_FIELD_CAMERA_INTENSITY = "camera_intensity"
+    """
+    Identifier for the raw camera intensity returned by MCX
+    Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
     DATA_FIELD_DIFFUSE_REFLECTANCE_POS = "diffuse_reflectance_pos"
     """
     Identified for the position within the volumes where the diffuse reflectance was originally stored, interface to
