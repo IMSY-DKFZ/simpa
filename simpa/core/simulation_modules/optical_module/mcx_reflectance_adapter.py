@@ -10,6 +10,8 @@ import jdata
 import os
 from typing import Tuple, Dict, Union
 
+from simpa.io_handling.io_hdf5 import load_data_field
+
 from simpa.core.simulation_modules.optical_module.volume_boundary_condition import MCXVolumeBoundaryCondition
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_module.mcx_adapter import MCXAdapter
@@ -375,3 +377,99 @@ class MCXReflectanceAdapter(MCXAdapter):
             photon_direction.append(results[Tags.DATA_FIELD_PHOTON_EXIT_DIR])
         if Tags.DATA_FIELD_CAMERA_INTENSITY in results:
             camera_intensity.append(results[Tags.DATA_FIELD_CAMERA_INTENSITY])
+
+
+class FastMCXReflectanceAdapter(MCXReflectanceAdapter):
+    """
+    Same functionality of MCXReflectanceAdapter, but saves the simulation output through an event instead
+    of saving it in the HDF output file.
+
+    Note: Does not include fluence.
+    """
+
+    def __init__(self, global_settings: Settings):
+        """
+        initializes MCX-specific configuration and clean-up instances
+
+        :param global_settings: global settings used during simulations
+        """
+        super().__init__(global_settings=global_settings)
+
+        self.simulation_finished_event_listeners = []
+
+    def read_mcx_output(self, **kwargs) -> Dict:
+        """
+        reads the temporary output generated with MCX
+
+        :param kwargs: dummy, used for class inheritance compatibility
+        :return: `Settings` instance containing the MCX output
+        """
+        results = dict()
+        if os.path.isfile(self.mcx_volumetric_data_file) and self.mcx_volumetric_data_file.endswith(
+                self.mcx_output_suffixes['mcx_volumetric_data_file']):
+            if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
+                    self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
+                content = jdata.load(self.mcx_volumetric_data_file)
+                fluence = content['NIFTIData']
+
+                if fluence.ndim > 3:
+                    # remove the 1 or 2 (for mcx >= v2024.1) additional dimensions of size 1 if present to obtain a 3d array
+                    fluence = fluence.reshape(fluence.shape[0], fluence.shape[1], -1)
+
+                ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
+                fluence = self.post_process_volumes(**{'arrays': (fluence,)})[0]
+                fluence *= 100  # Convert from J/mm^2 to J/cm^2
+                results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = ref
+                results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = ref_pos
+        else:
+            raise FileNotFoundError(
+                f"Could not find .jnii file for {self.mcx_volumetric_data_file}, something went wrong!")
+
+        if Tags.MCX_CAMERA_SETTINGS in self.global_settings and self.global_settings[Tags.MCX_CAMERA_SETTINGS]:
+            cam_intensity_file_path = pathlib.Path(self.mcx_volumetric_data_file).with_suffix(".bin")
+            cam_intensity = np.fromfile(cam_intensity_file_path, dtype=np.float32)
+            results[Tags.DATA_FIELD_CAMERA_INTENSITY] = cam_intensity
+
+        if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
+                self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
+            content = jdata.load(self.mcx_photon_data_file)
+            photon_pos = content['MCXData']['PhotonData']['p']
+            photon_dir = content['MCXData']['PhotonData']['v']
+            results[Tags.DATA_FIELD_PHOTON_EXIT_POS] = photon_pos
+            results[Tags.DATA_FIELD_PHOTON_EXIT_DIR] = photon_dir
+        return results
+
+    def run(self, device: Union[IlluminationGeometryBase, PhotoacousticDevice]) -> None:
+        """
+        runs optical simulations. Volumes are first loaded from HDF5 file and parsed to `self.forward_model`, the output
+        is aggregated in case multiple illuminations are defined by `device` and stored in the same HDF5 file.
+
+        :param device: Illumination or Photoacoustic device that defines the illumination geometry
+        :return: None
+        """
+        assert Tags.IGNORE_QA_ASSERTIONS not in self.global_settings, "Not implemented"
+        assert Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE not in self.component_settings, "Not implemented"
+
+        self.logger.info("Simulating the optical forward process...")
+
+        file_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH]
+        wl = str(self.global_settings[Tags.WAVELENGTH])
+
+        absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl)
+        scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, wl)
+        anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, wl)
+        refractive_index = load_data_field(file_path, Tags.DATA_FIELD_REFRACTIVE_INDEX, wl)
+
+        assert isinstance(device, IlluminationGeometryBase), "Not implemented"
+
+        results = self.forward_model(absorption_cm=absorption,
+                                     scattering_cm=scattering,
+                                     anisotropy=anisotropy,
+                                     refractive_index=refractive_index,
+                                     illumination_geometry=device)
+
+        assert Tags.DATA_FIELD_FLUENCE not in results
+        self.logger.info("Simulating the optical forward process...[Done]")
+
+        for event_listener in self.simulation_finished_event_listeners:
+            event_listener(self.global_settings[Tags.WAVELENGTH], results)
