@@ -50,6 +50,7 @@ class MCXReflectanceAdapter(MCXAdapter):
             self.volume_boundary_condition_str = MCXVolumeBoundaryCondition.DEFAULT.value
 
         self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii',
+                                    'mcx_volumetric_data_file_camera': '.bin',
                                     'mcx_photon_data_file': '_detp.jdat'}
 
     def forward_model(self,
