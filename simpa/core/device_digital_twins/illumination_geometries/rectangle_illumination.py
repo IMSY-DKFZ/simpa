@@ -53,7 +53,9 @@ class RectangleIlluminationGeometry(IlluminationGeometryBase):
         assert width_mm > 0
 
         if isinstance(focal_length_in_mm, str):
-            assert focal_length_in_mm == "_NaN_" or focal_length_in_mm == "-_Inf_", f"{focal_length_in_mm} is not supported yet"
+            assert ((focal_length_in_mm == "_NaN_"
+                    or focal_length_in_mm == "-_Inf_")
+                    or focal_length_in_mm == "_Inf_"), f"{focal_length_in_mm} is not supported yet"
 
         self.focal_length_in_mm = focal_length_in_mm
         self.length_mm = length_mm
@@ -73,7 +75,7 @@ class RectangleIlluminationGeometry(IlluminationGeometryBase):
 
         spacing = global_settings[Tags.SPACING_MM]
 
-        device_position = list(np.rint(self.device_position_mm / spacing))
+        device_position = list(self.device_position_mm / spacing)
 
         self.logger.debug(device_position)
 
@@ -97,6 +99,20 @@ class RectangleIlluminationGeometry(IlluminationGeometryBase):
             "Param1": source_param1,
             "Param2": source_param2
         }
+
+    def get_mmc_illuminator_definition(self, global_settings: Settings) -> dict:
+        """
+        Returns the illumination parameters for MMC simulations.
+
+        :param global_settings: The global settings.
+
+        :return: The illumination parameters as a dictionary.
+        """
+
+        mcx_illuminator_definition = self.get_mcx_illuminator_definition(global_settings)
+        mcx_illuminator_definition["Param1"] += [0.0]
+        mcx_illuminator_definition["Param2"] += [0.0]
+        return mcx_illuminator_definition
 
     def serialize(self) -> dict:
         """
