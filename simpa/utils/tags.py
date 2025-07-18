@@ -420,6 +420,27 @@ class Tags:
     The distance between the object and the camera lens.
     """
 
+    MMC_IMAGE_HEIGHT = ("mmc_image_height", int)
+    """
+    The image height. Currently only used in MMC.
+    """
+
+    MMC_IMAGE_WIDTH = ("mmc_image_width", int)
+    """
+    The image width. Currently only used in MMC.
+    """
+
+    MMC_PIXEL_PITCH = ("mmc_pixel_pitch", float)
+    """
+    The pixel pitch. Currently only used in MMC.
+    """
+
+    MMC_RERUNS = ("mmc_reruns", int)
+    """
+    How often to rerun MMC simulations to effectively simulate with much more photons.
+    Currently only used in MMCReflectanceAdapter.
+    """
+
     LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, list,
                                                                              range, tuple, np.ndarray))
     """
