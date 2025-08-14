@@ -181,6 +181,7 @@ if isfield(settings, 'acoustic_simulation_2dt') && settings.acoustic_simulation_
     end
 
     time_steps = reshape(time_steps, [Nx, Ny, kgrid.Nt]);
+    time_steps = time_steps(GEL_LAYER_HEIGHT+1:end, :, :); % crop away US Gel layer
 
     save(strcat(optical_path, 'time_steps.mat'), 'time_steps', '-v7.3');
 end 
