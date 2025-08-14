@@ -8,6 +8,7 @@ import subprocess
 
 import numpy as np
 import scipy.io as sio
+import h5py
 from scipy.spatial.transform import Rotation
 
 from simpa.core.device_digital_twins import (CurvedArrayDetectionGeometry,
@@ -203,7 +204,7 @@ class KWaveAdapter(AcousticAdapterBase):
         possible_k_wave_parameters = [Tags.SPACING_MM, Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.KWAVE_PROPERTY_ALPHA_POWER, Tags.GPU, Tags.KWAVE_PROPERTY_PMLInside, Tags.KWAVE_PROPERTY_PMLAlpha, Tags.KWAVE_PROPERTY_PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
-                                      Tags.SENSOR_DIRECTIVITY_PATTERN, Tags.KWAVE_PROPERTY_INITIAL_PRESSURE_SMOOTHING]
+                                      Tags.SENSOR_DIRECTIVITY_PATTERN, Tags.KWAVE_PROPERTY_INITIAL_PRESSURE_SMOOTHING, Tags.ACOUSTIC_SIMULATION_2Dt]
 
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
@@ -251,6 +252,14 @@ class KWaveAdapter(AcousticAdapterBase):
 
         self.global_settings[Tags.K_WAVE_SPECIFIC_DT] = float(time_grid["time_step"])
         self.global_settings[Tags.K_WAVE_SPECIFIC_NT] = num_time_steps
+
+        if Tags.ACOUSTIC_SIMULATION_2Dt in self.component_settings and \
+                        self.component_settings[Tags.ACOUSTIC_SIMULATION_2Dt]:
+            with h5py.File(optical_path + 'time_steps.mat', 'r') as f:
+                time_steps = f['time_steps'][()]
+
+            save_hdf5(time_steps, self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], generate_dict_path(Tags.DATA_FIELD_TIME_STEPS_DATA, wavelength=self.global_settings[Tags.WAVELENGTH]))
+            os.remove(optical_path + "time_steps.mat")
 
         os.remove(optical_path)
         os.remove(optical_path + "dt.mat")

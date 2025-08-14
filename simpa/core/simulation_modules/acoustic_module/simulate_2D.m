@@ -169,4 +169,20 @@ time_step = kgrid.dt
 number_time_steps = kgrid.Nt
 save(strcat(optical_path, 'dt.mat'), 'time_step', 'number_time_steps');
 
+
+% Repeat simulation but for entire grid and store all time steps
+if isfield(settings, 'acoustic_simulation_2dt') && settings.acoustic_simulation_2dt
+    sensor.mask = ones(Nx, Ny);
+    if settings.gpu == true
+        time_steps = kspaceFirstOrder2DG(kgrid, medium, source, sensor, input_args{:});
+        time_steps = gather(time_steps);
+    else
+        time_steps = kspaceFirstOrder2D(kgrid, medium, source, sensor, input_args{:});
+    end
+
+    time_steps = reshape(time_steps, [Nx, Ny, kgrid.Nt]);
+
+    save(strcat(optical_path, 'time_steps.mat'), 'time_steps', '-v7.3');
+end 
+
 end

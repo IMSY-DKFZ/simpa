@@ -86,6 +86,12 @@ class Tags:
     Usage: SIMPA package
     """
 
+    ACOUSTIC_SIMULATION_2Dt = ("acoustic_simulation_2dt", bool)
+    """
+    If True, simulates the acoustic forward model in 2D plus time, i.e. saves all time step grids.\n
+    Usage: SIMPA package
+    """
+
     MEDIUM_TEMPERATURE_CELCIUS = ("medium_temperature", Number)
     """
     Temperature of the simulated volume.\n
@@ -645,6 +651,12 @@ class Tags:
     DATA_FIELD_TIME_SERIES_DATA = "time_series_data"
     """
     Name of the time series data field in the SIMPA output file.\n
+    Usage: naming convention
+    """
+
+    DATA_FIELD_TIME_STEPS_DATA = "time_steps_data"
+    """
+    Name of the time steps data field in the SIMPA output file.\n
     Usage: naming convention
     """
 
