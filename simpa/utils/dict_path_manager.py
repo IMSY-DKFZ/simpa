@@ -35,7 +35,7 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     elif data_field in simulation_output:
         if data_field in [Tags.DATA_FIELD_FLUENCE, Tags.DATA_FIELD_INITIAL_PRESSURE, Tags.OPTICAL_MODEL_UNITS,
                           Tags.DATA_FIELD_DIFFUSE_REFLECTANCE, Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS,
-                          Tags.DATA_FIELD_PHOTON_EXIT_POS, Tags.DATA_FIELD_PHOTON_EXIT_DIR]:
+                          Tags.DATA_FIELD_PHOTON_EXIT_POS, Tags.DATA_FIELD_PHOTON_EXIT_DIR, Tags.DATA_FIELD_CAMERA_INTENSITY]:
             dict_path = "/" + Tags.SIMULATIONS + "/" + Tags.OPTICAL_MODEL_OUTPUT_NAME + "/" + data_field + wl
         else:
             dict_path = "/" + Tags.SIMULATIONS + "/" + data_field + wl
@@ -50,7 +50,7 @@ def generate_dict_path(data_field, wavelength: (int, float) = None) -> str:
     elif data_field in wavelength_independent_image_processing_output:
         dict_path = "/" + Tags.IMAGE_PROCESSING + "/" + data_field + "/"
     else:
-        raise ValueError(f"The requested data_field: '{data_field}: is not a valid argument. "
+        raise ValueError(f"The requested data_field: '{data_field}': is not a valid argument. "
                          f"Please specify a valid data_field using the Tags from simpa/utils/tags.py!")
 
     return dict_path

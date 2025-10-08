@@ -1,0 +1,7 @@
+{
+    "ignorePatterns": [
+        {
+            "pattern": "https://doi.org/10.1117/1.JBO.27.8.083010"
+        }
+    ]
+}

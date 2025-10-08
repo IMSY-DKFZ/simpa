@@ -51,6 +51,20 @@ class IlluminationGeometryBase(DigitalDeviceTwinBase):
         """
         pass
 
+    @abstractmethod
+    def get_mmc_illuminator_definition(self, global_settings) -> dict:
+        """
+        IMPORTANT: This method creates a dictionary that contains tags as they are expected for the
+        MMC simulation tool to represent the illumination geometry of this device.
+
+        :param global_settings: The global_settings instance containing the simulation instructions.
+        :type global_settings: Settings
+
+        :return: Dictionary that includes all parameters needed for mcx.
+        :rtype: dict
+        """
+        pass
+
     def check_settings_prerequisites(self, global_settings) -> bool:
         return True
 

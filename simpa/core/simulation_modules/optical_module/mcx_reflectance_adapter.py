@@ -1,12 +1,18 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import pathlib
+import typing
+
 import numpy as np
 import struct
 import jdata
 import os
-from typing import List, Tuple, Dict, Union
+from typing import Tuple, Dict, Union
 
+from simpa.io_handling.io_hdf5 import load_data_field
+
+from simpa.core.simulation_modules.optical_module.volume_boundary_condition import MCXVolumeBoundaryCondition
 from simpa.utils import Tags, Settings
 from simpa.core.simulation_modules.optical_module.mcx_adapter import MCXAdapter
 from simpa.core.device_digital_twins import IlluminationGeometryBase, PhotoacousticDevice
@@ -38,13 +44,20 @@ class MCXReflectanceAdapter(MCXAdapter):
         super(MCXReflectanceAdapter, self).__init__(global_settings=global_settings)
         self.mcx_photon_data_file = None
         self.padded = None
+        if Tags.VOLUME_BOUNDARY_CONDITION in global_settings:
+            self.volume_boundary_condition_str = global_settings[Tags.VOLUME_BOUNDARY_CONDITION]
+        else:
+            self.volume_boundary_condition_str = MCXVolumeBoundaryCondition.DEFAULT.value
+
         self.mcx_output_suffixes = {'mcx_volumetric_data_file': '.jnii',
+                                    'mcx_volumetric_data_file_camera': '.bin',
                                     'mcx_photon_data_file': '_detp.jdat'}
 
     def forward_model(self,
                       absorption_cm: np.ndarray,
                       scattering_cm: np.ndarray,
                       anisotropy: np.ndarray,
+                      refractive_index: np.ndarray,
                       illumination_geometry: IlluminationGeometryBase) -> Dict:
         """
         runs the MCX simulations. Binary file containing scattering and absorption volumes is temporarily created as
@@ -55,25 +68,18 @@ class MCXReflectanceAdapter(MCXAdapter):
         :param absorption_cm: array containing the absorption of the tissue in `cm` units
         :param scattering_cm: array containing the scattering of the tissue in `cm` units
         :param anisotropy: array containing the anisotropy of the volume defined by `absorption_cm` and `scattering_cm`
+        :param refractive_index: array containing the refractive index of the volume defined by `absorption_cm` and `scattering_cm`
         :param illumination_geometry: and instance of `IlluminationGeometryBase` defining the illumination geometry
-        :param probe_position_mm: position of a probe in `mm` units. This is parsed to
-            `illumination_geometry.get_mcx_illuminator_definition`
         :return: `Settings` containing the results of optical simulations, the keys in this dictionary-like object
             depend on the Tags defined in `self.component_settings`
         """
-        if Tags.MCX_ASSUMED_ANISOTROPY in self.component_settings:
-            _assumed_anisotropy = self.component_settings[Tags.MCX_ASSUMED_ANISOTROPY]
-        else:
-            _assumed_anisotropy = 0.9
 
         self.generate_mcx_bin_input(absorption_cm=absorption_cm,
                                     scattering_cm=scattering_cm,
-                                    anisotropy=_assumed_anisotropy,
-                                    assumed_anisotropy=_assumed_anisotropy)
+                                    anisotropy=anisotropy,
+                                    refractive_index=refractive_index)
 
-        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry,
-                                              assumed_anisotropy=_assumed_anisotropy,
-                                              )
+        settings_dict = self.get_mcx_settings(illumination_geometry=illumination_geometry)
 
         print(settings_dict)
         self.generate_mcx_json_input(settings_dict=settings_dict)
@@ -90,9 +96,52 @@ class MCXReflectanceAdapter(MCXAdapter):
         self.remove_mcx_output()
         return results
 
-    def get_command(self) -> List:
-        """
-        generates list of commands to be parse to MCX in a subprocess
+    def get_mcx_settings(self,
+                         illumination_geometry: IlluminationGeometryBase,
+                         **kwargs) -> Dict:
+        settings_dict = super().get_mcx_settings(illumination_geometry=illumination_geometry, **kwargs)
+        uses_photon_exit_data = Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and self.component_settings[
+            Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]
+        contains_camera_settings = Tags.MCX_CAMERA_SETTINGS in self.global_settings
+        contains_backtrack_settings = Tags.MCX_BACKTRACK_SETTINGS in self.global_settings
+        assert not contains_camera_settings or not contains_backtrack_settings
+
+        if uses_photon_exit_data:
+            if Tags.MCX_DETECTOR in self.global_settings:
+                settings_dict["Optode"]["Detector"] = self.global_settings[Tags.MCX_DETECTOR]
+            else:
+                # For some reason, the simulation gets slower the larger the detector is
+                width = self.global_settings[Tags.DIM_VOLUME_X_MM] / self.global_settings[Tags.SPACING_MM]
+                height = self.global_settings[Tags.DIM_VOLUME_Y_MM] / self.global_settings[Tags.SPACING_MM]
+                position = [width / 2 + 1, height / 2 + 1, 0.0]
+                radius = np.sqrt(width ** 2 + height ** 2) / 2
+                settings_dict["Optode"]["Detector"] = [
+                    {
+                        "Pos": position,
+                        "R": radius
+                    }
+                ]
+
+        if contains_camera_settings:
+            camera_settings = self.global_settings[Tags.MCX_CAMERA_SETTINGS]
+            settings_dict["Camera"] = {
+                "ObjectDistance": camera_settings[Tags.MCX_OBJECT_DISTANCE],
+                "ProjectionDistance": camera_settings[Tags.MCX_PROJECTION_DISTANCE],
+                "FocalLength": camera_settings[Tags.MCX_FOCAL_LENGTH],
+                "ApertureRadius": camera_settings[Tags.MCX_APERTURE_RADIUS]
+            }
+        elif contains_backtrack_settings:
+            backtrack_settings = self.global_settings.get_mcx_backtrack_settings()
+            settings_dict["Backtrack"] = {
+                "ObjectDistance": backtrack_settings[Tags.MCX_OBJECT_DISTANCE],
+                "IdealDistance": backtrack_settings[Tags.MCX_IDEAL_DISTANCE],
+                "ApertureRadius": backtrack_settings[Tags.MCX_APERTURE_RADIUS],
+                "TrueApertureRadius": backtrack_settings[Tags.MCX_TRUE_APERTURE_RADIUS]
+            }
+        return settings_dict
+
+    def get_command(self) -> typing.List:
+        """Generates list of commands to be parse to MCX in a subprocess.
 
         :return: list of MCX commands
         """
@@ -102,22 +151,34 @@ class MCXReflectanceAdapter(MCXAdapter):
         cmd.append(self.mcx_json_config_file)
         cmd.append("-O")
         cmd.append("F")
+        cmd.append("-b")
+        cmd.append("1")
         # use 'C' order array format for binary input file
         cmd.append("-a")
         cmd.append("1")
         cmd.append("-F")
         cmd.append("jnii")
-        if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
-                self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
-            cmd.append("-H")
-            cmd.append(f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}")
-            cmd.append("--bc")  # save photon exit position and direction
-            cmd.append("______000010")
+        cmd.append("-e")
+        cmd.append(str(1e-3))
+        cmd.append("--bc")
+        cmd.append(self.volume_boundary_condition_str)
+        cmd.append("-H")
+        cmd.append(
+            f"{int(self.component_settings[Tags.OPTICAL_MODEL_NUMBER_PHOTONS])}"
+        )
+        if (
+                Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings
+                and self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]
+        ):
             cmd.append("--savedetflag")
             cmd.append("XV")
-        if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
-                self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
-            cmd.append("--saveref")  # save diffuse reflectance at 0 filled voxels outside of domain
+
+        if (
+                Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings
+                and self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]
+        ):
+            cmd.append("--saveref")
+
         cmd += self.get_additional_flags()
         return cmd
 
@@ -146,6 +207,12 @@ class MCXReflectanceAdapter(MCXAdapter):
                 self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
             results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = ref
             results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = ref_pos
+
+        if (Tags.MCX_CAMERA_SETTINGS in self.global_settings) or (Tags.MCX_BACKTRACK_SETTINGS in self.global_settings):
+            cam_intensity_file_path = pathlib.Path(self.mcx_volumetric_data_file).with_suffix(".bin")
+            cam_intensity = np.fromfile(cam_intensity_file_path, dtype=np.float32)
+            results[Tags.DATA_FIELD_CAMERA_INTENSITY] = cam_intensity
+
         if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
                 self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
             content = jdata.load(self.mcx_photon_data_file)
@@ -190,7 +257,9 @@ class MCXReflectanceAdapter(MCXAdapter):
         check_padding = (Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and
                          self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]) or \
                         (Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and
-                         self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT])
+                         self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]) or \
+            Tags.MCX_CAMERA_SETTINGS in self.global_settings
+
         # check that all volumes on first layer along z have only 0 values
         if np.any([np.any(a[:, :, 0] != 0)] for a in arrays) and check_padding:
             results = tuple(np.pad(a, ((0, 0), (0, 0), (1, 0)), "constant", constant_values=0) for a in arrays)
@@ -226,7 +295,8 @@ class MCXReflectanceAdapter(MCXAdapter):
                           device: Union[IlluminationGeometryBase, PhotoacousticDevice],
                           absorption: np.ndarray,
                           scattering: np.ndarray,
-                          anisotropy: np.ndarray
+                          anisotropy: np.ndarray,
+                          refractive_index: np.ndarray
                           ) -> Dict:
         """
         runs `self.forward_model` as many times as defined by `device` and aggregates the results.
@@ -236,49 +306,60 @@ class MCXReflectanceAdapter(MCXAdapter):
         :param absorption: Absorption volume
         :param scattering: Scattering volume
         :param anisotropy: Dimensionless scattering anisotropy
+        :param refractive_index: Refractive index
         :return:
         """
         reflectance = []
         reflectance_position = []
         photon_position = []
         photon_direction = []
+        camera_intensity = []
+
         if isinstance(_device, list):
             # per convention this list has at least two elements
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
+                                         refractive_index=refractive_index,
                                          illumination_geometry=_device[0])
             self._append_results(results=results,
                                  reflectance=reflectance,
                                  reflectance_position=reflectance_position,
                                  photon_position=photon_position,
-                                 photon_direction=photon_direction)
+                                 photon_direction=photon_direction,
+                                 camera_intensity=camera_intensity)
+
             fluence = results[Tags.DATA_FIELD_FLUENCE]
             for idx in range(1, len(_device)):
                 # we already looked at the 0th element, so go from 1 to n-1
                 results = self.forward_model(absorption_cm=absorption,
                                              scattering_cm=scattering,
                                              anisotropy=anisotropy,
+                                             refractive_index=refractive_index,
                                              illumination_geometry=_device[idx])
                 self._append_results(results=results,
                                      reflectance=reflectance,
                                      reflectance_position=reflectance_position,
                                      photon_position=photon_position,
-                                     photon_direction=photon_direction)
-                fluence += results[Tags.DATA_FIELD_FLUENCE]
+                                     photon_direction=photon_direction,
+                                     camera_intensity=camera_intensity)
 
+                fluence += results[Tags.DATA_FIELD_FLUENCE]
             fluence = fluence / len(_device)
 
         else:
             results = self.forward_model(absorption_cm=absorption,
                                          scattering_cm=scattering,
                                          anisotropy=anisotropy,
+                                         refractive_index=refractive_index,
                                          illumination_geometry=_device)
             self._append_results(results=results,
                                  reflectance=reflectance,
                                  reflectance_position=reflectance_position,
                                  photon_position=photon_position,
-                                 photon_direction=photon_direction)
+                                 photon_direction=photon_direction,
+                                 camera_intensity=camera_intensity)
+
             fluence = results[Tags.DATA_FIELD_FLUENCE]
         aggregated_results = dict()
         aggregated_results[Tags.DATA_FIELD_FLUENCE] = fluence
@@ -288,17 +369,116 @@ class MCXReflectanceAdapter(MCXAdapter):
         if photon_position:
             aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_POS] = np.concatenate(photon_position, axis=0)
             aggregated_results[Tags.DATA_FIELD_PHOTON_EXIT_DIR] = np.concatenate(photon_direction, axis=0)
+        if camera_intensity:
+            aggregated_results[Tags.DATA_FIELD_CAMERA_INTENSITY] = np.concatenate(camera_intensity, axis=0)
         return aggregated_results
 
     @staticmethod
     def _append_results(results,
                         reflectance,
                         reflectance_position,
-                        photon_position,
-                        photon_direction):
+                        photon_position: list[np.ndarray],
+                        photon_direction: list[np.ndarray],
+                        camera_intensity: list[np.ndarray]):
         if Tags.DATA_FIELD_DIFFUSE_REFLECTANCE in results:
             reflectance.append(results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE])
             reflectance_position.append(results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS])
         if Tags.DATA_FIELD_PHOTON_EXIT_POS in results:
             photon_position.append(results[Tags.DATA_FIELD_PHOTON_EXIT_POS])
             photon_direction.append(results[Tags.DATA_FIELD_PHOTON_EXIT_DIR])
+        if Tags.DATA_FIELD_CAMERA_INTENSITY in results:
+            camera_intensity.append(results[Tags.DATA_FIELD_CAMERA_INTENSITY])
+
+
+class FastMCXReflectanceAdapter(MCXReflectanceAdapter):
+    """
+    Same functionality of MCXReflectanceAdapter, but saves the simulation output through an event instead
+    of saving it in the HDF output file.
+
+    Note: Does not include fluence.
+    """
+
+    def __init__(self, global_settings: Settings):
+        """
+        initializes MCX-specific configuration and clean-up instances
+
+        :param global_settings: global settings used during simulations
+        """
+        super().__init__(global_settings=global_settings)
+
+        self.simulation_finished_event_listeners = []
+
+    def read_mcx_output(self, **kwargs) -> Dict:
+        """
+        reads the temporary output generated with MCX
+
+        :param kwargs: dummy, used for class inheritance compatibility
+        :return: `Settings` instance containing the MCX output
+        """
+        results = dict()
+        if os.path.isfile(self.mcx_volumetric_data_file) and self.mcx_volumetric_data_file.endswith(
+                self.mcx_output_suffixes['mcx_volumetric_data_file']):
+            if Tags.COMPUTE_DIFFUSE_REFLECTANCE in self.component_settings and \
+                    self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
+                content = jdata.load(self.mcx_volumetric_data_file)
+                fluence = content['NIFTIData']
+
+                if fluence.ndim > 3:
+                    # remove the 1 or 2 (for mcx >= v2024.1) additional dimensions of size 1 if present to obtain a 3d array
+                    fluence = fluence.reshape(fluence.shape[0], fluence.shape[1], -1)
+
+                ref, ref_pos, _ = self.extract_reflectance_from_fluence(fluence=fluence)
+                results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = ref
+                results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = ref_pos
+        else:
+            raise FileNotFoundError(
+                f"Could not find .jnii file for {self.mcx_volumetric_data_file}, something went wrong!")
+
+        if (Tags.MCX_CAMERA_SETTINGS in self.global_settings) or (Tags.MCX_BACKTRACK_SETTINGS in self.global_settings):
+            cam_intensity_file_path = pathlib.Path(self.mcx_volumetric_data_file).with_suffix(".bin")
+            cam_intensity = np.fromfile(cam_intensity_file_path, dtype=np.float32)
+            results[Tags.DATA_FIELD_CAMERA_INTENSITY] = cam_intensity
+
+        if Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and \
+                self.component_settings[Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]:
+            content = jdata.load(self.mcx_photon_data_file)
+            photon_pos = content['MCXData']['PhotonData']['p']
+            photon_dir = content['MCXData']['PhotonData']['v']
+            results[Tags.DATA_FIELD_PHOTON_EXIT_POS] = photon_pos
+            results[Tags.DATA_FIELD_PHOTON_EXIT_DIR] = photon_dir
+        return results
+
+    def run(self, device: Union[IlluminationGeometryBase, PhotoacousticDevice]) -> None:
+        """
+        runs optical simulations. Volumes are first loaded from HDF5 file and parsed to `self.forward_model`, the output
+        is aggregated in case multiple illuminations are defined by `device` and stored in the same HDF5 file.
+
+        :param device: Illumination or Photoacoustic device that defines the illumination geometry
+        :return: None
+        """
+        assert Tags.IGNORE_QA_ASSERTIONS not in self.global_settings, "Not implemented"
+        assert Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE not in self.component_settings, "Not implemented"
+
+        self.logger.info("Simulating the optical forward process...")
+
+        file_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH]
+        wl = str(self.global_settings[Tags.WAVELENGTH])
+
+        absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl)
+        scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, wl)
+        anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, wl)
+        refractive_index = load_data_field(file_path, Tags.DATA_FIELD_REFRACTIVE_INDEX, wl)
+
+        assert isinstance(device, IlluminationGeometryBase), "Not implemented"
+
+        results = self.forward_model(absorption_cm=absorption,
+                                     scattering_cm=scattering,
+                                     anisotropy=anisotropy,
+                                     refractive_index=refractive_index,
+                                     illumination_geometry=device)
+
+        assert Tags.DATA_FIELD_FLUENCE not in results
+        self.logger.info("Simulating the optical forward process...[Done]")
+
+        for event_listener in self.simulation_finished_event_listeners:
+            event_listener(self.global_settings[Tags.WAVELENGTH], results)

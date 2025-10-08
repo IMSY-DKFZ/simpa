@@ -495,6 +495,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values450nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values450nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.373
 
     values500nm = TissueProperties(TEST_SETTINGS)
     values500nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 112
@@ -507,6 +508,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values500nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values500nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.371
 
     values550nm = TissueProperties(TEST_SETTINGS)
     values550nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 230
@@ -519,6 +521,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values550nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values550nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.370
 
     values600nm = TissueProperties(TEST_SETTINGS)
     values600nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 17
@@ -531,6 +534,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values600nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values600nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.369
 
     values650nm = TissueProperties(TEST_SETTINGS)
     values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 2
@@ -543,6 +547,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values650nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values650nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.368
 
     values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 1.6
@@ -555,6 +560,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values700nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values700nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.367
 
     values750nm = TissueProperties(TEST_SETTINGS)
     values750nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 2.8
@@ -567,6 +573,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values750nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values750nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.367
 
     values800nm = TissueProperties(TEST_SETTINGS)
     values800nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 4.4
@@ -579,6 +586,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values800nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values800nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.366
 
     values850nm = TissueProperties(TEST_SETTINGS)
     values850nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 5.7
@@ -591,6 +599,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values850nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values850nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.365
 
     values900nm = TissueProperties(TEST_SETTINGS)
     values900nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 6.4
@@ -603,6 +612,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values900nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values900nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = None
 
     values950nm = TissueProperties(TEST_SETTINGS)
     values950nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 6.4
@@ -615,6 +625,7 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     values950nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values950nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values950nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values950nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = None
 
     if not only_use_NIR_values:
         reference_dict[450] = values450nm
@@ -626,8 +637,8 @@ def get_fully_oxygenated_blood_reference_dictionary(only_use_NIR_values=False):
     reference_dict[750] = values750nm
     reference_dict[800] = values800nm
     reference_dict[850] = values850nm
-    reference_dict[900] = values900nm
-    reference_dict[950] = values950nm
+    # reference_dict[900] = values900nm  # FIXME: Find refractive index values for 900 and 950 nm.
+    # reference_dict[950] = values950nm
 
     return reference_dict
 
@@ -664,6 +675,8 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values450nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values450nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values450nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values450nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 0.2
+    values450nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.374
 
     values500nm = TissueProperties(TEST_SETTINGS)
     values500nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 112
@@ -676,6 +689,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values500nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values500nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values500nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values500nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.368
 
     values550nm = TissueProperties(TEST_SETTINGS)
     values550nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 286
@@ -688,6 +702,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values550nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values550nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values550nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values550nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.366
 
     values600nm = TissueProperties(TEST_SETTINGS)
     values600nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 79
@@ -700,6 +715,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values600nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values600nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values600nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values600nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.364
 
     values650nm = TissueProperties(TEST_SETTINGS)
     values650nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 20.1
@@ -712,6 +728,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values650nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values650nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values650nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values650nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.362
 
     values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 9.6
@@ -724,6 +741,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values700nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values700nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values700nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values700nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.361
 
     values750nm = TissueProperties(TEST_SETTINGS)
     values750nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 7.5
@@ -736,6 +754,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values750nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values750nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values750nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values750nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.360
 
     values800nm = TissueProperties(TEST_SETTINGS)
     values800nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 4.1
@@ -748,6 +767,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values800nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values800nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values800nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values800nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.358
 
     values850nm = TissueProperties(TEST_SETTINGS)
     values850nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 3.7
@@ -760,6 +780,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values850nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values850nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values850nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values850nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = 1.357
 
     values900nm = TissueProperties(TEST_SETTINGS)
     values900nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 4.1
@@ -772,6 +793,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values900nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values900nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values900nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values900nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = None
 
     values950nm = TissueProperties(TEST_SETTINGS)
     values950nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 3.2
@@ -784,6 +806,7 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     values950nm[Tags.DATA_FIELD_DENSITY] = 1049.75
     values950nm[Tags.DATA_FIELD_SPEED_OF_SOUND] = 1578.2
     values950nm[Tags.DATA_FIELD_ALPHA_COEFF] = 0.2
+    values950nm[Tags.DATA_FIELD_REFRACTIVE_INDEX] = None
 
     if not only_use_NIR_values:
         reference_dict[450] = values450nm
@@ -795,8 +818,8 @@ def get_fully_deoxygenated_blood_reference_dictionary(only_use_NIR_values=False)
     reference_dict[750] = values750nm
     reference_dict[800] = values800nm
     reference_dict[850] = values850nm
-    reference_dict[900] = values900nm
-    reference_dict[950] = values950nm
+    # reference_dict[900] = values900nm # FIXME: Find refractive index values for 900 and 950 nm.
+    # reference_dict[950] = values950nm
 
     return reference_dict
 

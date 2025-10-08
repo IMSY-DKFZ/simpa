@@ -35,22 +35,22 @@ class Spectrum(SerializableSIMPAClass, object):
 
         :raises ValueError: If the shape of wavelengths does not match the shape of values.
         """
-        if isinstance(values, np.ndarray):
-            values = torch.from_numpy(values)
-        wavelengths = torch.from_numpy(wavelengths)
+        assert isinstance(wavelengths, np.ndarray), type(wavelengths)
+        assert isinstance(values, np.ndarray), type(values)
+
         self.spectrum_name = spectrum_name
         self.wavelengths = wavelengths
-        self.max_wavelength = int(torch.max(wavelengths))
-        self.min_wavelength = int(torch.min(wavelengths))
+        self.max_wavelength = int(np.floor(np.max(wavelengths)))
+        self.min_wavelength = int(np.ceil(np.min(wavelengths)))
         self.values = values
 
-        if torch.Tensor.size(wavelengths) != torch.Tensor.size(values):
+        if wavelengths.shape != values.shape:
             raise ValueError("The shape of the wavelengths and the values did not match: " +
-                             str(torch.Tensor.size(wavelengths)) + " vs " + str(torch.Tensor.size(values)))
+                             str(wavelengths.shape) + " vs " + str(values.shape))
 
-        new_wavelengths = torch.arange(self.min_wavelength, self.max_wavelength+1, 1)
-        new_absorptions_function = interpolate.interp1d(self.wavelengths, self.values)
-        self.values_interp = new_absorptions_function(new_wavelengths)
+        new_wavelengths = np.arange(self.min_wavelength, self.max_wavelength + 1, 1)
+        values_by_wavelength_function = interpolate.interp1d(self.wavelengths, self.values)
+        self.values_interp = values_by_wavelength_function(new_wavelengths)
 
     def get_value_over_wavelength(self) -> np.ndarray:
         """
@@ -60,7 +60,7 @@ class Spectrum(SerializableSIMPAClass, object):
         """
         return np.asarray([self.wavelengths, self.values])
 
-    def get_value_for_wavelength(self, wavelength: int) -> float:
+    def get_value_for_wavelength(self, wavelength: int | np.ndarray) -> float:
         """
         Retrieves the interpolated value for a given wavelength within the spectrum range.
 
@@ -70,10 +70,10 @@ class Spectrum(SerializableSIMPAClass, object):
         :return: the best matching linearly interpolated values for the given wavelength.
         :raises ValueError: if the given wavelength is not within the range of the spectrum.
         """
-        if wavelength < self.min_wavelength or wavelength > self.max_wavelength:
+        if np.min(wavelength) < self.min_wavelength or np.max(wavelength) > self.max_wavelength:
             raise ValueError(f"The given wavelength ({wavelength}) is not within the range of the spectrum "
                              f"({self.min_wavelength} - {self.max_wavelength})")
-        return self.values_interp[wavelength-self.min_wavelength]
+        return self.values_interp[wavelength - self.min_wavelength]
 
     def __eq__(self, other):
         """
@@ -238,18 +238,33 @@ class ScatteringSpectrumLibrary(SpectraLibrary):
                                                 fraction_rayleigh_scattering: float = 0.0,
                                                 mie_power_law_coefficient: float = 0.0) -> Spectrum:
         """
-        Creates a scattering spectrum based on Rayleigh and Mie scattering theory.
+        Creates a reduced scattering spectrum based on Rayleigh and Mie scattering theory.
 
         :param name: The name of the spectrum.
-        :param mus_at_500_nm: Scattering coefficient at 500 nm.
+        :param mus_at_500_nm: Reduced scattering coefficient at 500 nm.
         :param fraction_rayleigh_scattering: Fraction of Rayleigh scattering.
         :param mie_power_law_coefficient: Power law coefficient for Mie scattering.
         :return: A Spectrum instance based on Rayleigh and Mie scattering theory.
         """
-        wavelengths = np.arange(450, 1001, 1)
-        scattering = (mus_at_500_nm * (fraction_rayleigh_scattering * (wavelengths / 500) ** 1e-4 +
-                      (1 - fraction_rayleigh_scattering) * (wavelengths / 500) ** -mie_power_law_coefficient))
-        return Spectrum(name, wavelengths, scattering)
+        wavelengths = np.arange(400, 1301, 1)
+        reduced_scattering = (mus_at_500_nm * (fraction_rayleigh_scattering * (wavelengths / 500) ** -4 +
+                                               (1 - fraction_rayleigh_scattering) * (wavelengths / 500) ** -mie_power_law_coefficient))
+        return Spectrum(name, wavelengths, reduced_scattering)
+
+    @staticmethod
+    def scattering_from_scattering_power(name: str, mus_at_500_nm: float, scattering_power: float) -> Spectrum:
+        """
+        Creates a reduced scattering spectrum based on the first reduced scattering formula of the paper.
+
+        :param name: The name of the spectrum.
+        :param mus_at_500_nm: Reduced scattering coefficient at 500 nm. Corresponds to a in the formula.
+        :param scattering_power: The scattering power. Corresponds to b in the formula.
+
+        :return: The reduced scattering coefficients by wavelengths as a Spectrum instance.
+        """
+        wavelengths = np.arange(400, 1301, 1)
+        reduced_scattering = mus_at_500_nm * np.power(wavelengths / 500, -scattering_power)
+        return Spectrum(name, wavelengths, reduced_scattering)
 
 
 class AbsorptionSpectrumLibrary(SpectraLibrary):
@@ -277,7 +292,18 @@ class AbsorptionSpectrumLibrary(SpectraLibrary):
                         np.asarray([absorption_coefficient, absorption_coefficient]))
 
 
-def get_simpa_internal_absorption_spectra_by_names(absorption_spectrum_names: list) -> list:
+class RefractiveIndexSpectrumLibrary(SpectraLibrary):
+
+    def __init__(self, additional_folder_path: str = None):
+        super(RefractiveIndexSpectrumLibrary, self).__init__("refractive_index_spectra_data", additional_folder_path)
+
+    @staticmethod
+    def CONSTANT_REFRACTOR_ARBITRARY(refractive_index: float = 1):
+        return Spectrum("Constant Refractor (arb)", np.asarray([450, 1000]),
+                        np.asarray([refractive_index, refractive_index]))
+
+
+def get_simpa_internal_absorption_spectra_by_names(absorption_spectrum_names: list):
     """
     Retrieves SIMPA internal absorption spectra by their names.
 
@@ -296,7 +322,7 @@ def view_saved_spectra(save_path=None, mode="absorption"):
     Opens a matplotlib plot and visualizes the available spectra.
 
     :param save_path: If not None, then the figure will be saved as a PNG file to the destination.
-    :param mode: Specifies the type of spectra to visualize ("absorption", "scattering", or "anisotropy").
+    :param mode: Specifies the type of spectra to visualize ("absorption", "scattering", "anisotropy" or "refractive_index).
     """
     plt.figure(figsize=(11, 8))
     if mode == "absorption":
@@ -314,8 +340,14 @@ def view_saved_spectra(save_path=None, mode="absorption"):
             plt.semilogy(spectrum.wavelengths,
                          spectrum.values,
                          label=spectrum.spectrum_name)
+    elif mode == "refractive_index":
+        for spectrum in RefractiveIndexSpectrumLibrary():
+            plt.semilogy(spectrum.wavelengths,
+                         spectrum.values,
+                         label=spectrum.spectrum_name)
     else:
-        raise ValueError(f"Invalid mode: {mode}. Choose from 'absorption', 'scattering', or 'anisotropy'.")
+        raise ValueError(
+            f"Invalid mode: {mode}. Choose from 'absorption', 'scattering', 'anisotropy' or 'refractive_index'.")
 
     ax = plt.gca()
     box = ax.get_position()

@@ -2,10 +2,9 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
+import numpy as np
 from numbers import Number
 from typing import Iterable
-
-import numpy as np
 
 
 class Tags:
@@ -371,6 +370,92 @@ class Tags:
     Usage: module optical_simulation_module
     """
 
+    OPTICAL_CAMERA_SETTINGS = ("optical_camera_settings", dict)
+    """
+    Optical camera settings
+    """
+
+    OPTICAL_CAMERA_OBJECT_TO_LENS_DISTANCE = ("optical_camera_object_to_lens_distance", float | list)
+    """
+    The distance between the object and the camera lens.
+    """
+
+    OPTICAL_CAMERA_LENS_TO_SENSOR_DISTANCE = ("optical_camera_lens_to_sensor_distance", float | list)
+    """
+    The distance between the camera lens and the sensor.
+    """
+
+    OPTICAL_CAMERA_FOCAL_LENGTH = ("optical_camera_focal_length", float | list)
+    """
+    The camera lens focal length.
+    """
+
+    OPTICAL_CAMERA_F_NUMBER = ("optical_camera_f_number", float | list)
+    """
+    The camera f number.
+    """
+
+    MCX_CAMERA_SETTINGS = ("mcx_camera_settings", dict)
+    """
+    MCX camera settings
+    """
+
+    MCX_BACKTRACK_SETTINGS = ("mcx_backtrack_settings", dict)
+    """
+    MCX backtrack settings
+    """
+
+    MCX_OBJECT_DISTANCE = ("mcx_object_distance", float)
+    """
+    The distance between the object and the camera lens.
+    """
+
+    MCX_PROJECTION_DISTANCE = ("mcx_projection_distance", float)
+    """
+    The distance between the object and the camera lens.
+    """
+
+    MCX_IDEAL_DISTANCE = ("mcx_ideal_distance", float)
+    """
+    The ideal distance between the object and the camera lens for perfect focus. Only required in backtrack mode.
+    """
+
+    MCX_FOCAL_LENGTH = ("mcx_focal_length", float)
+    """
+    The distance between the object and the camera lens.
+    """
+
+    MCX_APERTURE_RADIUS = ("mcx_aperture_radius", float)
+    """
+    The aperture radius.
+    """
+
+    MCX_TRUE_APERTURE_RADIUS = ("mcx_true_aperture_radius", float)
+    """
+    The true aperture radius. Only required in backtrack mode which uses a larger aperture radius as the radius.
+    """
+
+    MMC_IMAGE_HEIGHT = ("mmc_image_height", int)
+    """
+    The image height. Currently only used in MMC.
+    """
+
+    MMC_IMAGE_WIDTH = ("mmc_image_width", int)
+    """
+    The image width. Currently only used in MMC.
+    """
+
+    MMC_PIXEL_PITCH = ("mmc_pixel_pitch", float)
+    """
+    The pixel pitch. Currently only used in MMC.
+    """
+
+    MMC_RERUNS = ("mmc_reruns", int)
+    """
+    How often to rerun MMC simulations to effectively simulate with much more photons.
+    Currently only used in MMCReflectanceAdapter.
+    """
+
     LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, list,
                                                                              range, tuple, np.ndarray))
     """
@@ -400,13 +485,6 @@ class Tags:
     """
     Specific seed for random initialisation in mcx.\n
     if not set, Tags.RANDOM_SEED will be used instead.
-    Usage: module optical_modelling, adapter mcx_adapter
-    """
-
-    MCX_ASSUMED_ANISOTROPY = ("mcx_assumed_anisotropy", (int, float))
-    """
-    The anisotropy that should be assumed for the mcx simulations.
-    If not set, a default value of 0.9 will be assumed.
     Usage: module optical_modelling, adapter mcx_adapter
     """
 
@@ -875,6 +953,12 @@ class Tags:
     Usage: SIMPA package, naming convention
     """
 
+    DATA_FIELD_REFRACTIVE_INDEX = "n"
+    """
+    Refractive index of the generated volume/structure.\n
+    Usage: SIMPA package, naming convention
+    """
+
     DATA_FIELD_OXYGENATION = "oxy"
     """
     Oxygenation of the generated volume/structure.\n
@@ -949,6 +1033,12 @@ class Tags:
     """
     Isotropic extent of one voxels in mm in the generated volume.\n
     Usage: SIMPA package
+    """
+
+    TRUE_SPACING_MM = ("true_voxel_spacing_mm", Number)
+    """
+    Isotropic extent of one voxels in mm used in MCX. If not set, Tags.SPACING_MM will be used instead.\n
+    Usage: MCXReflectanceAdapter
     """
 
     DIM_VOLUME_X_MM = ("volume_x_dim_mm", Number)
@@ -1456,6 +1546,21 @@ class Tags:
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
     """
 
+    VOLUME_BOUNDARY_CONDITION = "volume_boundary_condition"
+    """
+    FIXME
+    """
+
+    MCX_DETECTOR = ("mcx_detector", dict)
+    """
+    The detector property list used in mcx for capturing exiting photons.\n
+    Only use it if you want to capture photon exit properties (COMPUTE_PHOTON_DIRECTION_AT_EXIT is enabled).
+    
+    Example usage is: 
+    
+    settings[Tags.MCX_DETECTOR] = [{"Pos": [30.0, 30.0, 0.0], "R": 45.0}]
+    """
+
     COMPUTE_PHOTON_DIRECTION_AT_EXIT = "save_dir_at_exit"
     """
     Flag that indicates if the direction of photons when they exit the volume should be stored
@@ -1465,6 +1570,12 @@ class Tags:
     DATA_FIELD_DIFFUSE_REFLECTANCE = "diffuse_reflectance"
     """
     Identifier for the diffuse reflectance values at the surface of the volume (interface to 0-values voxels) 
+    Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
+    """
+
+    DATA_FIELD_CAMERA_INTENSITY = "camera_intensity"
+    """
+    Identifier for the raw camera intensity returned by MCX
     Usage: simpa.core.simulation_modules.optical_simulation_module.optical_forward_model_mcx_reflectance_adapter
     """
 

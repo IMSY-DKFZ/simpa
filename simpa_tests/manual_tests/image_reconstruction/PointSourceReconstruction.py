@@ -31,11 +31,12 @@ class PointSourceReconstruction(ReconstructionAlgorithmTestBaseClass):
     TODO
 
     """
+
     def __init__(self, speed_of_sound: float = 1470, volume_transducer_dim_in_mm: float = 90,
                  volume_planar_dim_in_mm: float = 20, volume_height_in_mm: float = 90,
                  spacing: float = 0.4):
-        
-        self.reconstructed_image_pipeline = None # TODO REMOVE
+
+        self.reconstructed_image_pipeline = None  # TODO REMOVE
 
         self.SPEED_OF_SOUND = speed_of_sound
         self.VOLUME_TRANSDUCER_DIM_IN_MM = volume_transducer_dim_in_mm
@@ -76,11 +77,12 @@ class PointSourceReconstruction(ReconstructionAlgorithmTestBaseClass):
         vessel_1_dictionary = Settings()
         vessel_1_dictionary[Tags.PRIORITY] = 3
         vessel_1_dictionary[Tags.STRUCTURE_START_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM/2-10, 0, 35]
-        vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [self.VOLUME_TRANSDUCER_DIM_IN_MM/2-10, self.VOLUME_PLANAR_DIM_IN_MM, 35]
+        vessel_1_dictionary[Tags.STRUCTURE_END_MM] = [
+            self.VOLUME_TRANSDUCER_DIM_IN_MM/2-10, self.VOLUME_PLANAR_DIM_IN_MM, 35]
         vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = self.SPACING
         vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = (MolecularCompositionGenerator().
-                                                        append(vessel_molecule).
-                                                        get_molecular_composition(-1))
+                                                          append(vessel_molecule).
+                                                          get_molecular_composition(-1))
         vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_1_dictionary[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
@@ -95,7 +97,6 @@ class PointSourceReconstruction(ReconstructionAlgorithmTestBaseClass):
         #  point to the correct file in the PathManager().
         self.path_manager = PathManager()
 
-    
         # Seed the numpy random configuration prior to creating the global_settings file in
         # order to ensure that the same volume
         # is generated with the same random seed every time.
@@ -173,58 +174,56 @@ class PointSourceReconstruction(ReconstructionAlgorithmTestBaseClass):
         self.settings = settings
 
     def simulate_and_evaluate_with_device(self, _device):
-            SIMULATION_PIPELINE = [
-                ModelBasedAdapter(self.settings),
-                MCXAdapter(self.settings),
-                KWaveAdapter(self.settings),
-                FieldOfViewCropping(self.settings),
-                DelayAndSumAdapter(self.settings)
-            ]
+        SIMULATION_PIPELINE = [
+            ModelBasedAdapter(self.settings),
+            MCXAdapter(self.settings),
+            KWaveAdapter(self.settings),
+            FieldOfViewCropping(self.settings),
+            DelayAndSumAdapter(self.settings)
+        ]
 
-            print("Simulating for device:", _device)
-            simulate(SIMULATION_PIPELINE, self.settings, _device)
+        print("Simulating for device:", _device)
+        simulate(SIMULATION_PIPELINE, self.settings, _device)
 
-            if Tags.WAVELENGTH in self.settings:
-                wavelength = self.settings[Tags.WAVELENGTH]
-            else:
-                wavelength = 700
+        if Tags.WAVELENGTH in self.settings:
+            wavelength = self.settings[Tags.WAVELENGTH]
+        else:
+            wavelength = 700
 
-            initial_pressure = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
-                                            data_field=Tags.DATA_FIELD_INITIAL_PRESSURE,
-                                            wavelength=wavelength)
-            reconstruction = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
-                                            data_field=Tags.DATA_FIELD_RECONSTRUCTED_DATA,
-                                            wavelength=wavelength)
+        initial_pressure = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
+                                           data_field=Tags.DATA_FIELD_INITIAL_PRESSURE,
+                                           wavelength=wavelength)
+        reconstruction = load_data_field(self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
+                                         data_field=Tags.DATA_FIELD_RECONSTRUCTED_DATA,
+                                         wavelength=wavelength)
 
-            p0_idx = np.unravel_index(np.argmax(initial_pressure), np.shape(initial_pressure))
-            re_idx = np.unravel_index(np.argmax(reconstruction), np.shape(reconstruction))
+        p0_idx = np.unravel_index(np.argmax(initial_pressure), np.shape(initial_pressure))
+        re_idx = np.unravel_index(np.argmax(reconstruction), np.shape(reconstruction))
 
-            print("x/y in initial pressure map:", p0_idx)
-            print("x/y in reconstruction map:", re_idx)
-            distance = np.sqrt((re_idx[0] - p0_idx[0]) ** 2 + (re_idx[1] - p0_idx[1]) ** 2)
-            print("Distance:", distance)
+        print("x/y in initial pressure map:", p0_idx)
+        print("x/y in reconstruction map:", re_idx)
+        distance = np.sqrt((re_idx[0] - p0_idx[0]) ** 2 + (re_idx[1] - p0_idx[1]) ** 2)
+        print("Distance:", distance)
 
-            if self.save_path is not None:
-                save_path = self.save_path + f"PointSourceReconstruction_{self.figure_number}.png"
-            else:
-                save_path = self.save_path
+        if self.save_path is not None:
+            save_path = self.save_path + f"PointSourceReconstruction_{self.figure_number}.png"
+        else:
+            save_path = self.save_path
 
-            visualise_data(path_to_hdf5_file=self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
-                        wavelength=wavelength,
-                        show_time_series_data=True,
-                        show_absorption=False,
-                        show_reconstructed_data=True,
-                        show_xz_only=True,
-                        show_initial_pressure=True,
-                        show_segmentation_map=False,
-                        log_scale=False,
-                        save_path=save_path)
-            self.figure_number += 1
-            return distance
-    
+        visualise_data(path_to_hdf5_file=self.path_manager.get_hdf5_file_save_path() + "/" + self.VOLUME_NAME + ".hdf5",
+                       wavelength=wavelength,
+                       show_time_series_data=True,
+                       show_absorption=False,
+                       show_reconstructed_data=True,
+                       show_xz_only=True,
+                       show_initial_pressure=True,
+                       show_segmentation_map=False,
+                       log_scale=False,
+                       save_path=save_path)
+        self.figure_number += 1
+        return distance
 
-    def test_reconstruction_of_simulation(self):     
-
+    def test_reconstruction_of_simulation(self):
 
         dist = list()
 
@@ -248,52 +247,52 @@ class PointSourceReconstruction(ReconstructionAlgorithmTestBaseClass):
         #                                                              seed=1234, field_of_view_extent_mm=fov_e))
         # device.add_illumination_geometry(PencilBeamIlluminationGeometry())
         # dist.append(self.simulate_and_evaluate_with_device(device))
-        
+
         dist.append(self.simulate_and_evaluate_with_device(MSOTAcuityEcho(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                                                                self.VOLUME_PLANAR_DIM_IN_MM/2,
-                                                                                                35]),
-                                                                    field_of_view_extent_mm=np.array([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
-                                                                                                    (2 * np.sin(0.34 /
-                                                                                                        40 * 128) * 40) / 2,
-                                                                                                    0, 0, -25, 25]))))
+                                                                                                       self.VOLUME_PLANAR_DIM_IN_MM/2,
+                                                                                                       35]),
+                                                                          field_of_view_extent_mm=np.array([-(2 * np.sin(0.34 / 40 * 128) * 40) / 2,
+                                                                                                            (2 * np.sin(0.34 /
+                                                                                                                        40 * 128) * 40) / 2,
+                                                                                                            0, 0, -25, 25]))))
 
         dist.append(self.simulate_and_evaluate_with_device(InVision256TF(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                                                                self.VOLUME_PLANAR_DIM_IN_MM/2,
-                                                                                                self.VOLUME_HEIGHT_IN_MM/2]))))
+                                                                                                      self.VOLUME_PLANAR_DIM_IN_MM/2,
+                                                                                                      self.VOLUME_HEIGHT_IN_MM/2]))))
         device = PhotoacousticDevice(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                                self.VOLUME_PLANAR_DIM_IN_MM/2,
-                                                                30]),
-                                    field_of_view_extent_mm=np.asarray([-self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
+                                                                  self.VOLUME_PLANAR_DIM_IN_MM/2,
+                                                                  30]),
+                                     field_of_view_extent_mm=np.asarray([-self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                         self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                                         0, 0, 0, self.VOLUME_HEIGHT_IN_MM]))
         device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
-                                                                pitch_mm=0.2,
-                                                                number_detector_elements=256))
+                                                                   pitch_mm=0.2,
+                                                                   number_detector_elements=256))
         device.add_illumination_geometry(PencilBeamIlluminationGeometry(device_position_mm=device.device_position_mm))
         dist.append(self.simulate_and_evaluate_with_device(device))
 
         device = PhotoacousticDevice(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                                self.VOLUME_PLANAR_DIM_IN_MM/2,
-                                                                5]),
-                                    field_of_view_extent_mm=np.asarray([-self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+                                                                  self.VOLUME_PLANAR_DIM_IN_MM/2,
+                                                                  5]),
+                                     field_of_view_extent_mm=np.asarray([-self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
                                                                         self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
                                                                         0, 0, 0, self.VOLUME_HEIGHT_IN_MM]))
 
         device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
-                                                                pitch_mm=0.2,
-                                                                number_detector_elements=256))
+                                                                   pitch_mm=0.2,
+                                                                   number_detector_elements=256))
         device.add_illumination_geometry(PencilBeamIlluminationGeometry())
         dist.append(self.simulate_and_evaluate_with_device(device))
 
         device = PhotoacousticDevice(device_position_mm=np.array([self.VOLUME_TRANSDUCER_DIM_IN_MM/2,
-                                                                self.VOLUME_PLANAR_DIM_IN_MM/2,
-                                                                10]),
-                                    field_of_view_extent_mm=np.asarray([-self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
+                                                                  self.VOLUME_PLANAR_DIM_IN_MM/2,
+                                                                  10]),
+                                     field_of_view_extent_mm=np.asarray([-self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
                                                                         self.VOLUME_TRANSDUCER_DIM_IN_MM / 2,
                                                                         0, 0, 0, self.VOLUME_HEIGHT_IN_MM]))
         device.set_detection_geometry(LinearArrayDetectionGeometry(device_position_mm=device.device_position_mm,
-                                                                pitch_mm=0.2,
-                                                                number_detector_elements=256))
+                                                                   pitch_mm=0.2,
+                                                                   number_detector_elements=256))
         device.add_illumination_geometry(PencilBeamIlluminationGeometry())
         dist.append(self.simulate_and_evaluate_with_device(device))
         print("")
@@ -318,6 +317,7 @@ class PointSourceReconstruction(ReconstructionAlgorithmTestBaseClass):
         self.setup()
         self.perform_test()
         self.tear_down()
+
 
 if __name__ == '__main__':
     test = PointSourceReconstruction()

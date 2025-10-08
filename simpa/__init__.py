@@ -19,7 +19,7 @@ from .core.simulation_modules.volume_creation_module.segmentation_based_adapter 
 from .core.simulation_modules.optical_module.mcx_adapter import \
     MCXAdapter
 from .core.simulation_modules.optical_module.mcx_reflectance_adapter import \
-    MCXReflectanceAdapter
+    MCXReflectanceAdapter, FastMCXReflectanceAdapter
 from .core.simulation_modules.acoustic_module.k_wave_adapter import \
     KWaveAdapter
 from .core.simulation_modules.reconstruction_module.delay_and_sum_adapter import \

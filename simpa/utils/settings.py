@@ -118,6 +118,60 @@ class Settings(dict, SerializableSIMPAClass):
         """
         self[Tags.OPTICAL_MODEL_SETTINGS] = Settings(optical_settings)
 
+    def get_optical_camera_settings(self):
+        """"
+        Returns the settings for the optical forward model that are saved in this settings dictionary
+        """
+        optical_camera_settings = self[Tags.OPTICAL_CAMERA_SETTINGS]
+        if isinstance(optical_camera_settings, Settings):
+            return optical_camera_settings
+        else:
+            return Settings(optical_camera_settings)
+
+    def set_optical_camera_settings(self, optical_camera_settings: dict):
+        """
+        Replaces the currently stored optical settings with the given dictionary
+
+        :param optical_settings: a dictionary containing the optical settings
+        """
+        self[Tags.OPTICAL_CAMERA_SETTINGS] = Settings(optical_camera_settings)
+
+    def get_mcx_camera_settings(self):
+        """"
+        Returns the camera settings for MCX that are saved in this settings dictionary
+        """
+        mcx_camera_settings = self[Tags.MCX_CAMERA_SETTINGS]
+        if isinstance(mcx_camera_settings, Settings):
+            return mcx_camera_settings
+        else:
+            return Settings(mcx_camera_settings)
+
+    def set_mcx_camera_settings(self, mcx_camera_settings: dict):
+        """
+        Replaces the currently stored optical settings with the given dictionary
+
+        :param mcx_camera_settings: a dictionary containing the optical settings
+        """
+        self[Tags.MCX_CAMERA_SETTINGS] = Settings(mcx_camera_settings)
+
+    def get_mcx_backtrack_settings(self):
+        """"
+        Returns the camera settings for MCX that are saved in this settings dictionary
+        """
+        mcx_backtrack_settings = self[Tags.MCX_BACKTRACK_SETTINGS]
+        if isinstance(mcx_backtrack_settings, Settings):
+            return mcx_backtrack_settings
+        else:
+            return Settings(mcx_backtrack_settings)
+
+    def set_mcx_backtrack_settings(self, mcx_backtrack_settings: dict):
+        """
+        Replaces the currently stored optical settings with the given dictionary
+
+        :param mcx_backtrack_settings: a dictionary containing the optical settings
+        """
+        self[Tags.MCX_BACKTRACK_SETTINGS] = Settings(mcx_backtrack_settings)
+
     def get_volume_creation_settings(self):
         """"
         Returns the settings for the optical forward model that are saved in this settings dictionary
