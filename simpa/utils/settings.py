@@ -145,9 +145,27 @@ class Settings(dict, SerializableSIMPAClass):
         """
         Replaces the currently stored optical settings with the given dictionary
 
-        :param optical_settings: a dictionary containing the optical settings
+        :param mcx_camera_settings: a dictionary containing the optical settings
         """
         self[Tags.MCX_CAMERA_SETTINGS] = Settings(mcx_camera_settings)
+
+    def get_mcx_backtrack_settings(self):
+        """"
+        Returns the camera settings for MCX that are saved in this settings dictionary
+        """
+        mcx_backtrack_settings = self[Tags.MCX_BACKTRACK_SETTINGS]
+        if isinstance(mcx_backtrack_settings, Settings):
+            return mcx_backtrack_settings
+        else:
+            return Settings(mcx_backtrack_settings)
+
+    def set_mcx_backtrack_settings(self, mcx_backtrack_settings: dict):
+        """
+        Replaces the currently stored optical settings with the given dictionary
+
+        :param mcx_backtrack_settings: a dictionary containing the optical settings
+        """
+        self[Tags.MCX_BACKTRACK_SETTINGS] = Settings(mcx_backtrack_settings)
 
     def get_volume_creation_settings(self):
         """"

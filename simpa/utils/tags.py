@@ -400,6 +400,11 @@ class Tags:
     MCX camera settings
     """
 
+    MCX_BACKTRACK_SETTINGS = ("mcx_backtrack_settings", dict)
+    """
+    MCX backtrack settings
+    """
+
     MCX_OBJECT_DISTANCE = ("mcx_object_distance", float)
     """
     The distance between the object and the camera lens.
@@ -410,6 +415,11 @@ class Tags:
     The distance between the object and the camera lens.
     """
 
+    MCX_IDEAL_DISTANCE = ("mcx_ideal_distance", float)
+    """
+    The ideal distance between the object and the camera lens for perfect focus. Only required in backtrack mode.
+    """
+
     MCX_FOCAL_LENGTH = ("mcx_focal_length", float)
     """
     The distance between the object and the camera lens.
@@ -417,7 +427,12 @@ class Tags:
 
     MCX_APERTURE_RADIUS = ("mcx_aperture_radius", float)
     """
-    The distance between the object and the camera lens.
+    The aperture radius.
+    """
+
+    MCX_TRUE_APERTURE_RADIUS = ("mcx_true_aperture_radius", float)
+    """
+    The true aperture radius. Only required in backtrack mode which uses a larger aperture radius as the radius.
     """
 
     MMC_IMAGE_HEIGHT = ("mmc_image_height", int)

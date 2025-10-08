@@ -103,6 +103,8 @@ class MCXReflectanceAdapter(MCXAdapter):
         uses_photon_exit_data = Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT in self.component_settings and self.component_settings[
             Tags.COMPUTE_PHOTON_DIRECTION_AT_EXIT]
         contains_camera_settings = Tags.MCX_CAMERA_SETTINGS in self.global_settings
+        contains_backtrack_settings = Tags.MCX_BACKTRACK_SETTINGS in self.global_settings
+        assert not contains_camera_settings or not contains_backtrack_settings
 
         if uses_photon_exit_data:
             if Tags.MCX_DETECTOR in self.global_settings:
@@ -126,9 +128,16 @@ class MCXReflectanceAdapter(MCXAdapter):
                 "ObjectDistance": camera_settings[Tags.MCX_OBJECT_DISTANCE],
                 "ProjectionDistance": camera_settings[Tags.MCX_PROJECTION_DISTANCE],
                 "FocalLength": camera_settings[Tags.MCX_FOCAL_LENGTH],
-                "ApertureRadius": camera_settings[Tags.MCX_APERTURE_RADIUS],
+                "ApertureRadius": camera_settings[Tags.MCX_APERTURE_RADIUS]
             }
-
+        elif contains_backtrack_settings:
+            backtrack_settings = self.global_settings.get_mcx_backtrack_settings()
+            settings_dict["Backtrack"] = {
+                "ObjectDistance": backtrack_settings[Tags.MCX_OBJECT_DISTANCE],
+                "IdealDistance": backtrack_settings[Tags.MCX_IDEAL_DISTANCE],
+                "ApertureRadius": backtrack_settings[Tags.MCX_APERTURE_RADIUS],
+                "TrueApertureRadius": backtrack_settings[Tags.MCX_TRUE_APERTURE_RADIUS]
+            }
         return settings_dict
 
     def get_command(self) -> typing.List:
@@ -198,7 +207,8 @@ class MCXReflectanceAdapter(MCXAdapter):
                 self.component_settings[Tags.COMPUTE_DIFFUSE_REFLECTANCE]:
             results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = ref
             results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = ref_pos
-        if Tags.MCX_CAMERA_SETTINGS in self.global_settings and self.global_settings[Tags.MCX_CAMERA_SETTINGS]:
+
+        if (Tags.MCX_CAMERA_SETTINGS in self.global_settings) or (Tags.MCX_BACKTRACK_SETTINGS in self.global_settings):
             cam_intensity_file_path = pathlib.Path(self.mcx_volumetric_data_file).with_suffix(".bin")
             cam_intensity = np.fromfile(cam_intensity_file_path, dtype=np.float32)
             results[Tags.DATA_FIELD_CAMERA_INTENSITY] = cam_intensity
@@ -417,16 +427,14 @@ class FastMCXReflectanceAdapter(MCXReflectanceAdapter):
                     # remove the 1 or 2 (for mcx >= v2024.1) additional dimensions of size 1 if present to obtain a 3d array
                     fluence = fluence.reshape(fluence.shape[0], fluence.shape[1], -1)
 
-                ref, ref_pos, fluence = self.extract_reflectance_from_fluence(fluence=fluence)
-                fluence = self.post_process_volumes(**{'arrays': (fluence,)})[0]
-                fluence *= 100  # Convert from J/mm^2 to J/cm^2
+                ref, ref_pos, _ = self.extract_reflectance_from_fluence(fluence=fluence)
                 results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE] = ref
                 results[Tags.DATA_FIELD_DIFFUSE_REFLECTANCE_POS] = ref_pos
         else:
             raise FileNotFoundError(
                 f"Could not find .jnii file for {self.mcx_volumetric_data_file}, something went wrong!")
 
-        if Tags.MCX_CAMERA_SETTINGS in self.global_settings and self.global_settings[Tags.MCX_CAMERA_SETTINGS]:
+        if (Tags.MCX_CAMERA_SETTINGS in self.global_settings) or (Tags.MCX_BACKTRACK_SETTINGS in self.global_settings):
             cam_intensity_file_path = pathlib.Path(self.mcx_volumetric_data_file).with_suffix(".bin")
             cam_intensity = np.fromfile(cam_intensity_file_path, dtype=np.float32)
             results[Tags.DATA_FIELD_CAMERA_INTENSITY] = cam_intensity

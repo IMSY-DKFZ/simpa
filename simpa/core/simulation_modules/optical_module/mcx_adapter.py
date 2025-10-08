@@ -205,10 +205,11 @@ class MCXAdapter(OpticalAdapterBase):
         :param refractive_index: Refractive index
         :return: None
         """
-        absorption_mm, scattering_mm, anisotropy, refractive_index = self.pre_process_volumes(**{'absorption_cm': absorption_cm,
-                                                                                                 'scattering_cm': scattering_cm,
-                                                                                                 'anisotropy': anisotropy,
-                                                                                                 'refractive_index': refractive_index})
+        absorption_mm = self.pre_process_volume(absorption_cm, is_mua_or_mus=True)
+        scattering_mm = self.pre_process_volume(scattering_cm, is_mua_or_mus=True)
+        anisotropy = self.pre_process_volume(anisotropy, is_mua_or_mus=False)
+        refractive_index = self.pre_process_volume(refractive_index, is_mua_or_mus=False)
+
         # stack arrays to give array with shape (nx,ny,nz,4) - where the 4 floats correspond to mua/mus/g/n
         op_array = np.stack([absorption_mm, scattering_mm, anisotropy, refractive_index], axis=-1, dtype=np.float32)
         [self.nx, self.ny, self.nz, _] = np.shape(op_array)
@@ -244,6 +245,20 @@ class MCXAdapter(OpticalAdapterBase):
         for f in self.temporary_output_files:
             if os.path.isfile(f):
                 os.remove(f)
+
+    def pre_process_volume(self, volume: np.ndarray, is_mua_or_mus: bool) -> np.ndarray:
+        """
+        pre-process volumes before running simulations with MCX. The volumes are transformed to `mm` units
+
+        :param kwargs: dictionary containing at least the keys `scattering_cm, absorption_cm, anisotropy, refractive_index`
+        :return: `Tuple` of volumes after transformation
+        """
+        if is_mua_or_mus:
+            volume /= 10  # Conversion from 1/cm to 1/mm (required by MCX)
+            volume[volume == 0] = np.nan
+
+        # No preprocessing is done on anisotropy and refractive index
+        return volume
 
     def pre_process_volumes(self, **kwargs) -> Tuple:
         """
