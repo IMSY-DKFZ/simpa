@@ -84,7 +84,7 @@ estimated_cfl_number = dt / dx * mean(medium.sound_speed, 'all');
 disp(estimated_cfl_number);
 
 % smaller time steps are better for numerical stability in time progressing simulations
-% A minimum CFL of 0.3 is advised in the kwave handbook.
+% A maximum CFL of 0.3 is advised in the kwave handbook.
 % In case we specify something larger, we use a higher sampling rate than anticipated.
 % Otherwise we simulate with the target sampling rate
 if estimated_cfl_number < 0.3

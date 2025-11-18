@@ -228,16 +228,33 @@ def rotation_matrix_between_vectors(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     :param b: 3D target vector
     :return: rotation matrix
     """
-    a_norm, b_norm = (a / np.linalg.norm(a)).reshape(3), (b / np.linalg.norm(b)).reshape(3)
+    a_norm, b_norm = (a / np.linalg.norm(a)).reshape(3), (
+        b / np.linalg.norm(b)
+    ).reshape(3)
     cross_product = np.cross(a_norm, b_norm)
-    if np.abs(cross_product.all()) < 1e-10:
-        return np.zeros([3, 3])
-    dot_product = np.dot(a_norm, b_norm)
     s = np.linalg.norm(cross_product)
-    mat = np.array([[0, -cross_product[2], cross_product[1]],
-                    [cross_product[2], 0, -cross_product[0]],
-                    [-cross_product[1], cross_product[0], 0]])
-    rotation_matrix = np.eye(3) + mat + mat.dot(mat) * ((1 - dot_product) / (s ** 2))
+    dot_product = np.dot(a_norm, b_norm)
+
+    if s < 1e-10:
+        # vectors are parallel or anti-parallel
+        if dot_product > 0:
+            return np.eye(3)
+        else:
+            # 180° rotation around any orthogonal axis (not parallel to a)
+            orth = np.array([1, 0, 0]) if abs(a_norm[0]) < 0.9 else np.array([0, 1, 0])
+            v = np.cross(a_norm, orth)
+            v /= np.linalg.norm(v)
+            return -np.eye(3) + 2 * np.outer(v, v)
+
+    mat = np.array(
+        [
+            [0, -cross_product[2], cross_product[1]],
+            [cross_product[2], 0, -cross_product[0]],
+            [-cross_product[1], cross_product[0], 0],
+        ]
+    )
+
+    rotation_matrix = np.eye(3) + mat + mat.dot(mat) * ((1 - dot_product) / (s**2))
     return rotation_matrix
 
 
