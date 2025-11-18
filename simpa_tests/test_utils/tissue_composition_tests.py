@@ -6,7 +6,7 @@ from simpa.utils import Tags, Settings, SegmentationClasses, calculate_gruneisen
 from simpa.utils.libraries.molecule_library import MolecularComposition
 from simpa.utils.tissue_properties import TissueProperties
 from simpa.utils.constants import property_tags
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 import numpy as np
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -958,32 +958,32 @@ def get_lymph_node_reference_dictionary(only_use_NIR_values=False):
 
 if __name__ == "__main__":
 
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.epidermis(),
+    compare_molecular_composition_against_expected_values(molecular_composition=TissueLibrary.epidermis(),
                                                           expected_values=get_epidermis_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="Epidermis ")
 
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(1.0),
+    compare_molecular_composition_against_expected_values(molecular_composition=TissueLibrary.blood(1.0),
                                                           expected_values=get_fully_oxygenated_blood_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="100% sO2 Blood ")
 
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.blood(0.0),
+    compare_molecular_composition_against_expected_values(molecular_composition=TissueLibrary.blood(0.0),
                                                           expected_values=get_fully_deoxygenated_blood_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="0% sO2 Blood ")
 
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.dermis(),
+    compare_molecular_composition_against_expected_values(molecular_composition=TissueLibrary.dermis(),
                                                           expected_values=get_dermis_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="Dermis ")
 
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.muscle(),
+    compare_molecular_composition_against_expected_values(molecular_composition=TissueLibrary.muscle(),
                                                           expected_values=get_muscle_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="Muscle ")
 
-    compare_molecular_composition_against_expected_values(molecular_composition=TISSUE_LIBRARY.lymph_node(),
+    compare_molecular_composition_against_expected_values(molecular_composition=TissueLibrary.lymph_node(),
                                                           expected_values=get_lymph_node_reference_dictionary(),
                                                           visualise_values=True,
                                                           title="LymphNode ")

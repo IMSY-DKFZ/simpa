@@ -5,7 +5,8 @@
 import numpy as np
 import pytest
 
-from simpa import Spectrum, SegmentationClasses, TISSUE_LIBRARY, Molecule
+from simpa import Spectrum, SegmentationClasses, Molecule
+from simpa.utils.libraries.tissue_library import TissueLibrary
 
 
 def test_if_optical_parameter_spectra_are_provided_correct_tissue_definition_is_returned_from_generic_tissue():
@@ -18,7 +19,7 @@ def test_if_optical_parameter_spectra_are_provided_correct_tissue_definition_is_
     mus_spectrum = Spectrum("Mus", wavelengths_sample, mus_sample)
     g_spectrum = Spectrum("g", wavelengths_sample, g_sample)
 
-    actual_tissue = TISSUE_LIBRARY.generic_tissue(mua_spectrum, mus_spectrum, g_spectrum)
+    actual_tissue = TissueLibrary.generic_tissue(mua_spectrum, mus_spectrum, g_spectrum)
     assert actual_tissue.segmentation_type == SegmentationClasses.GENERIC
 
     assert len(actual_tissue) == 1
@@ -40,13 +41,13 @@ def test_if_generic_tissue_is_called_with_invalid_arguments_error_is_raised():
     g_spectrum = Spectrum("g", wavelengths_sample, g_sample)
 
     with pytest.raises(AssertionError):
-        TISSUE_LIBRARY.generic_tissue(None, mus_spectrum, g_spectrum)
+        TissueLibrary.generic_tissue(None, mus_spectrum, g_spectrum)
 
     with pytest.raises(AssertionError):
-        TISSUE_LIBRARY.generic_tissue(mua_spectrum, None, g_spectrum)
+        TissueLibrary.generic_tissue(mua_spectrum, None, g_spectrum)
 
     with pytest.raises(AssertionError):
-        TISSUE_LIBRARY.generic_tissue(mua_spectrum, mus_spectrum, None)
+        TissueLibrary.generic_tissue(mua_spectrum, mus_spectrum, None)
 
 
 def test_if_optical_parameter_spectra_are_provided_correct_tissue_definition_is_returned_from_constant():
@@ -54,7 +55,7 @@ def test_if_optical_parameter_spectra_are_provided_correct_tissue_definition_is_
     mus_sample = 3e-6
     g_sample = 0.85
 
-    actual_tissue = TISSUE_LIBRARY.constant(mua_sample, mus_sample, g_sample)
+    actual_tissue = TissueLibrary.constant(mua_sample, mus_sample, g_sample)
     assert actual_tissue.segmentation_type == SegmentationClasses.GENERIC
 
     assert len(actual_tissue) == 1
@@ -71,10 +72,10 @@ def test_if_constant_is_called_with_invalid_arguments_error_is_raised():
     g_sample = 0.85
 
     with pytest.raises(TypeError):
-        TISSUE_LIBRARY.constant(None, mus_sample, g_sample)
+        TissueLibrary.constant(None, mus_sample, g_sample)
 
     with pytest.raises(TypeError):
-        TISSUE_LIBRARY.constant(mua_sample, None, g_sample)
+        TissueLibrary.constant(mua_sample, None, g_sample)
 
     with pytest.raises(TypeError):
-        TISSUE_LIBRARY.constant(mua_sample, mus_sample, None)
+        TissueLibrary.constant(mua_sample, mus_sample, None)
