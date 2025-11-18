@@ -542,7 +542,7 @@ def compute_delay_and_sum_values(time_series_sensor_data: Tensor, sensor_positio
         z = zdim_start + torch.arange(zdim, device=torch_device, dtype=torch.float32)
     j = torch.arange(n_sensor_elements, device=torch_device, dtype=torch.float32)
 
-    xx, yy, zz, jj = torch.meshgrid(x, y, z, j)
+    xx, yy, zz, jj = torch.meshgrid(x, y, z, j, indexing='ij')
     jj = jj.long()
 
     delays = torch.sqrt((yy * spacing_in_mm - sensor_positions[:, 2][jj]) ** 2 +
