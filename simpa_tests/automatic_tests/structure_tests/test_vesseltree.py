@@ -157,12 +157,13 @@ class TestVesselTree(unittest.TestCase):
         # The slight difference is due to randomness in vessel generation
         volume_boundary = np.sum(vessel_boundary.geometrical_volume)
         volume_inside = np.sum(vessel_inside.geometrical_volume)
-        
+
         # Ensure both vessels have substantial volume
         self.assertGreater(volume_boundary, 100, "Vessel at boundary should have substantial volume")
         self.assertGreater(volume_inside, 100, "Vessel inside should have substantial volume")
-        
+
         # Check that they are similar in size (within 20% tolerance)
         ratio = volume_boundary / volume_inside
-        self.assertGreater(ratio, 0.8, f"Vessel at boundary should be at least 80% of inside vessel size, got {ratio:.2%}")
+        self.assertGreater(
+            ratio, 0.8, f"Vessel at boundary should be at least 80% of inside vessel size, got {ratio:.2%}")
         self.assertLess(ratio, 1.2, f"Vessel at boundary should be at most 120% of inside vessel size, got {ratio:.2%}")

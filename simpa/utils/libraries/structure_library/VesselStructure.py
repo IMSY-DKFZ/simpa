@@ -101,11 +101,11 @@ class VesselStructure(GeometricalStructure):
                 break
 
             position = torch.add(position, direction)
-            
+
             # Check if the new position is within bounds before adding it
             if not (torch.all(position < torch.tensor(volume_dimensions).to(self.torch_device)) and torch.all(0 <= position)):
                 break
-            
+
             position_array.append(position)
             radius_array.append(np.random.uniform(-1, 1) * radius_variation + radius)
 
