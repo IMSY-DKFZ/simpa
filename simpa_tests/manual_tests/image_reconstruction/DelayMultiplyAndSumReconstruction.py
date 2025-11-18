@@ -36,12 +36,12 @@ class DelayMultiplyAndSumReconstruction(ReconstructionAlgorithmTestBaseClass):
 
         simulate(SIMUATION_PIPELINE, self.settings, self.device)
 
-        self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
+        self.reconstructed_image_pipeline = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_RECONSTRUCTED_DATA,
                                                             self.settings[Tags.WAVELENGTH])
 
     def test_convenience_function(self):
         # Load simulated time series data
-        time_series_sensor_data = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH],
+        time_series_sensor_data = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                                   Tags.DATA_FIELD_TIME_SERIES_DATA, self.settings[Tags.WAVELENGTH])
 
         reconstruction_settings = self.settings.get_reconstruction_settings()

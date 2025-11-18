@@ -56,7 +56,7 @@ class GaussianNoise(ProcessingComponentBase):
         self.logger.debug(f"Noise model non-negative: {non_negative}")
 
         wavelength = self.global_settings[Tags.WAVELENGTH]
-        data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+        data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
         data_tensor = torch.as_tensor(data_array, dtype=torch.float32, device=self.torch_device)
         dist = torch.distributions.normal.Normal(torch.tensor(mean, dtype=torch.float32, device=self.torch_device),
                                                  torch.tensor(std, dtype=torch.float32, device=self.torch_device))
@@ -72,6 +72,6 @@ class GaussianNoise(ProcessingComponentBase):
         if non_negative:
             data_tensor[data_tensor < EPS] = EPS
         save_data_field(data_tensor.cpu().numpy().astype(np.float64, copy=False),
-                        self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+                        self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
 
         self.logger.info("Applying Gaussian Noise Model...[Done]")

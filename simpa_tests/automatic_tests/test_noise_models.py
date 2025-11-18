@@ -11,7 +11,7 @@ from simpa.core.processing_components.monospectral.noise import *
 from simpa.utils import Tags, Settings
 from simpa.core.device_digital_twins import RSOMExplorerP50
 from simpa.core.simulation import simulate
-from simpa.utils import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.io_handling import load_data_field
 from simpa import ModelBasedAdapter
 
@@ -22,7 +22,7 @@ class TestNoiseModels(unittest.TestCase):
     def create_background_parameters(background_value):
         background_structure_dictionary = dict()
         background_structure_dictionary[Tags.PRIORITY] = 0
-        background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(
+        background_structure_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.constant(
             mua=background_value, mus=background_value, g=0.5
         )
         background_structure_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
@@ -70,7 +70,7 @@ class TestNoiseModels(unittest.TestCase):
         try:
             simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
 
-            absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_PATH],
+            absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                          data_field=Tags.DATA_FIELD_ABSORPTION_PER_CM,
                                          wavelength=800)
             actual_mean = np.mean(absorption)
@@ -82,10 +82,10 @@ class TestNoiseModels(unittest.TestCase):
                             np.abs(actual_std - expected_std) / expected_std < error_margin,
                             f"The std was not as expected. Expected {expected_std} but was {actual_std}")
         finally:
-            if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
-                    os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
+            if (os.path.exists(settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
+                    os.path.isfile(settings[Tags.SIMPA_OUTPUT_FILE_PATH])):
                 # Delete the created file
-                os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
+                os.remove(settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def setUp(self):
 

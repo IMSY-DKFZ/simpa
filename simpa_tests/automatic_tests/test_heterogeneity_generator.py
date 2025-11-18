@@ -6,7 +6,6 @@ import unittest
 import numpy as np
 import simpa as sp
 from simpa.utils import Tags
-import torch
 
 
 class TestHeterogeneityGenerator(unittest.TestCase):

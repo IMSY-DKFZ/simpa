@@ -24,27 +24,27 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
         label_mask = np.reshape(label_mask, (400, 1, 400))
         input_spacing = 0.2
         segmentation_volume_tiled = np.tile(label_mask, (1, 128, 1))
-        segmentation_volume_mask = np.round(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
-                                                 order=0)).astype(int)
+        segmentation_volume_mask = sp.round_x5_away_from_zero(zoom(segmentation_volume_tiled, input_spacing/target_spacing,
+                                                                   order=0)).astype(int)
 
         def segmentation_class_mapping():
             ret_dict = dict()
-            ret_dict[0] = sp.TISSUE_LIBRARY.heavy_water()
-            ret_dict[1] = sp.TISSUE_LIBRARY.blood()
-            ret_dict[2] = sp.TISSUE_LIBRARY.epidermis()
-            ret_dict[3] = sp.TISSUE_LIBRARY.muscle()
-            ret_dict[4] = sp.TISSUE_LIBRARY.mediprene()
-            ret_dict[5] = sp.TISSUE_LIBRARY.ultrasound_gel()
-            ret_dict[6] = sp.TISSUE_LIBRARY.heavy_water()
+            ret_dict[0] = sp.TissueLibrary.heavy_water()
+            ret_dict[1] = sp.TissueLibrary.blood()
+            ret_dict[2] = sp.TissueLibrary.epidermis()
+            ret_dict[3] = sp.TissueLibrary.muscle()
+            ret_dict[4] = sp.TissueLibrary.mediprene()
+            ret_dict[5] = sp.TissueLibrary.ultrasound_gel()
+            ret_dict[6] = sp.TissueLibrary.heavy_water()
             ret_dict[7] = (sp.MolecularCompositionGenerator()
-                           .append(sp.MOLECULE_LIBRARY.oxyhemoglobin(0.01))
-                           .append(sp.MOLECULE_LIBRARY.deoxyhemoglobin(0.01))
-                           .append(sp.MOLECULE_LIBRARY.water(0.98))
+                           .append(sp.MoleculeLibrary.oxyhemoglobin(0.01))
+                           .append(sp.MoleculeLibrary.deoxyhemoglobin(0.01))
+                           .append(sp.MoleculeLibrary.water(0.98))
                            .get_molecular_composition(sp.SegmentationClasses.COUPLING_ARTIFACT))
-            ret_dict[8] = sp.TISSUE_LIBRARY.heavy_water()
-            ret_dict[9] = sp.TISSUE_LIBRARY.heavy_water()
-            ret_dict[10] = sp.TISSUE_LIBRARY.heavy_water()
-            ret_dict[11] = sp.TISSUE_LIBRARY.heavy_water()
+            ret_dict[8] = sp.TissueLibrary.heavy_water()
+            ret_dict[9] = sp.TissueLibrary.heavy_water()
+            ret_dict[10] = sp.TissueLibrary.heavy_water()
+            ret_dict[11] = sp.TissueLibrary.heavy_water()
             return ret_dict
 
         self.settings = sp.Settings()
@@ -83,7 +83,7 @@ class SegmentationLoaderTest(ManualIntegrationTestClass):
                                                                      device_position_mm=np.asarray([20, 10, 0])))
 
     def tear_down(self):
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def visualise_result(self, show_figure_on_screen=True, save_path=None):
 

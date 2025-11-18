@@ -5,7 +5,6 @@
 import gc
 import os
 import subprocess
-from typing import List
 
 import numpy as np
 import scipy.io as sio
@@ -84,7 +83,7 @@ class KWaveAdapter(AcousticAdapterBase):
         self.logger.debug(f"OPTICAL_PATH: {str(optical_path)}")
 
         data_dict = {}
-        file_path = self.global_settings[Tags.SIMPA_OUTPUT_PATH]
+        file_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH]
         data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE] = load_data_field(file_path, Tags.DATA_FIELD_INITIAL_PRESSURE,
                                                                       wavelength=wavelength)
         data_dict[Tags.DATA_FIELD_SPEED_OF_SOUND] = load_data_field(file_path, Tags.DATA_FIELD_SPEED_OF_SOUND)
@@ -122,8 +121,8 @@ class KWaveAdapter(AcousticAdapterBase):
             data_dict[Tags.DATA_FIELD_DENSITY],
             data_dict[Tags.DATA_FIELD_ALPHA_COEFF],
             data_dict[Tags.DATA_FIELD_INITIAL_PRESSURE],
-            optical_path=self.global_settings[Tags.SIMPA_OUTPUT_PATH])
-        save_hdf5(global_settings, global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
+            optical_path=self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH])
+        save_hdf5(global_settings, global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], "/settings/")
 
         return time_series_data
 

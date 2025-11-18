@@ -2,7 +2,6 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.log.file_logger import Logger
 from simpa.utils.tags import Tags
 from simpa.utils.settings import Settings
 from simpa.utils.processing_device import get_processing_device

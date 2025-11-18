@@ -109,7 +109,7 @@ class LinearUnmixing(MultispectralProcessingAlgorithm):
                 save_dict["sO2"] = self.calculate_sO2()
 
         # save linear unmixing result in hdf5
-        save_data_field(save_dict, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+        save_data_field(save_dict, self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                         Tags.LINEAR_UNMIXING_RESULT, wavelength=None)
 
         self.logger.info("Performing linear spectral unmixing......[Done]")

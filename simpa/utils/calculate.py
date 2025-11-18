@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 
-from typing import Union, List, Dict, Optional
+from typing import Union, List, Dict, Optional, Sized
 import numpy as np
 import torch
 from scipy.interpolate import interp1d
@@ -135,7 +135,7 @@ def spline_evaluator2d_voxel(x: int, y: int, spline: Union[list, np.ndarray], of
     :return: True if the point (x, y) lies within the range around the spline, False otherwise.
     """
     elevation = spline[x]
-    y_value = np.round(elevation + offset_voxel)
+    y_value = round_x5_away_from_zero(elevation + offset_voxel)
     if y_value <= y < thickness_voxel + y_value:
         return True
     else:
@@ -228,16 +228,33 @@ def rotation_matrix_between_vectors(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     :param b: 3D target vector
     :return: rotation matrix
     """
-    a_norm, b_norm = (a / np.linalg.norm(a)).reshape(3), (b / np.linalg.norm(b)).reshape(3)
+    a_norm, b_norm = (a / np.linalg.norm(a)).reshape(3), (
+        b / np.linalg.norm(b)
+    ).reshape(3)
     cross_product = np.cross(a_norm, b_norm)
-    if np.abs(cross_product.all()) < 1e-10:
-        return np.zeros([3, 3])
-    dot_product = np.dot(a_norm, b_norm)
     s = np.linalg.norm(cross_product)
-    mat = np.array([[0, -cross_product[2], cross_product[1]],
-                    [cross_product[2], 0, -cross_product[0]],
-                    [-cross_product[1], cross_product[0], 0]])
-    rotation_matrix = np.eye(3) + mat + mat.dot(mat) * ((1 - dot_product) / (s ** 2))
+    dot_product = np.dot(a_norm, b_norm)
+
+    if s < 1e-10:
+        # vectors are parallel or anti-parallel
+        if dot_product > 0:
+            return np.eye(3)
+        else:
+            # 180° rotation around any orthogonal axis (not parallel to a)
+            orth = np.array([1, 0, 0]) if abs(a_norm[0]) < 0.9 else np.array([0, 1, 0])
+            v = np.cross(a_norm, orth)
+            v /= np.linalg.norm(v)
+            return -np.eye(3) + 2 * np.outer(v, v)
+
+    mat = np.array(
+        [
+            [0, -cross_product[2], cross_product[1]],
+            [cross_product[2], 0, -cross_product[0]],
+            [-cross_product[1], cross_product[0], 0],
+        ]
+    )
+
+    rotation_matrix = np.eye(3) + mat + mat.dot(mat) * ((1 - dot_product) / (s**2))
     return rotation_matrix
 
 
@@ -292,3 +309,26 @@ def are_equal(obj1: Union[list, tuple, np.ndarray, object], obj2: Union[list, tu
     # For other types, use standard equality check which also works for lists
     else:
         return obj1 == obj2
+
+
+def round_x5_away_from_zero(x: Union[float, np.ndarray]) -> Union[int, np.ndarray]:
+    """
+    Round a number away from zero. The np.round function rounds x.5 to the nearest even number, which is not always the
+    desired behavior. This function always rounds x.5 away from zero. For example, x.5 will be rounded to 1, and -x.5
+    will be rounded to -1. All other numbers are rounded to the nearest integer.
+    :param x: input number or array of numbers
+    :return: rounded number or array of numbers
+    :rtype: int or np.ndarray of int
+    """
+
+    def round_single_value(value):
+        # If the value is positive, add 0.5 and use floor to round away from zero
+        # If the value is negative, subtract 0.5 and use ceil to round away from zero
+        return int(np.floor(value + 0.5)) if value > 0 else int(np.ceil(value - 0.5))
+
+    if isinstance(x, (np.ndarray, list, tuple)):
+        # Apply rounding function to each element in the array
+        return np.array([round_x5_away_from_zero(val) for val in x], dtype=int)
+    else:
+        # Apply rounding to a single value
+        return round_single_value(x)

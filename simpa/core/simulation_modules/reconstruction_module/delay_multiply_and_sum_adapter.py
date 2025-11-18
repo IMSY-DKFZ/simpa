@@ -32,7 +32,7 @@ class DelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
         ### ALGORITHM ITSELF ###
 
         xdim, zdim, ydim, xdim_start, xdim_end, ydim_start, ydim_end, zdim_start, zdim_end = compute_image_dimensions(
-            detection_geometry, spacing_in_mm, self.logger)
+            detection_geometry.field_of_view_extent_mm, spacing_in_mm, self.logger)
 
         if zdim == 1:
             sensor_positions[:, 1] = 0  # Assume imaging plane
@@ -50,7 +50,7 @@ class DelayMultiplyAndSumAdapter(ReconstructionAdapterBase):
             yy, zz, nn, mm = torch.meshgrid(torch.arange(ydim, device=torch_device),
                                             torch.arange(zdim, device=torch_device),
                                             torch.arange(n_sensor_elements, device=torch_device),
-                                            torch.arange(n_sensor_elements, device=torch_device))
+                                            torch.arange(n_sensor_elements, device=torch_device), indexing='ij')
             M = values[x, yy, zz, nn] * values[x, yy, zz, mm]
             M = torch.sign(M) * torch.sqrt(torch.abs(M))
             # only take upper triangle without diagonal and sum up along n and m axis (last two)

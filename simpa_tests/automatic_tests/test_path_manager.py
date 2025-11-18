@@ -22,7 +22,7 @@ class TestPathManager(unittest.TestCase):
         self.file_content = (f"# Example path_config file. Please define all required paths for your simulation here.\n"
                              f"# Afterwards, either copy this file to your current working directory, to your home directory,\n"
                              f"# or to the SIMPA base directry.\n"
-                             f"SIMPA_SAVE_PATH={self.save_path}\n"
+                             f"SIMPA_SAVE_DIRECTORY={self.save_path}\n"
                              f"MCX_BINARY_PATH={self.mcx_path}\n"
                              f"MATLAB_BINARY_PATH={self.matlab_path}")
         self.home_file = str(Path.home()) + self.path
@@ -34,7 +34,7 @@ class TestPathManager(unittest.TestCase):
         self.simpa_home_exists = os.path.exists(self.simpa_home)
 
     @unittest.expectedFailure
-    @patch.dict(os.environ, {Tags.SIMPA_SAVE_PATH_VARNAME: None,
+    @patch.dict(os.environ, {Tags.SIMPA_SAVE_DIRECTORY_VARNAME: None,
                              Tags.MCX_BINARY_PATH_VARNAME: None})
     def test_variables_not_set(self):
         path_manager = PathManager("/path/to/nowhere/")
@@ -42,7 +42,7 @@ class TestPathManager(unittest.TestCase):
         _ = path_manager.get_hdf5_file_save_path()
         _ = path_manager.get_matlab_binary_path()
 
-    @patch.dict(os.environ, {Tags.SIMPA_SAVE_PATH_VARNAME: "test_simpa_save_path",
+    @patch.dict(os.environ, {Tags.SIMPA_SAVE_DIRECTORY_VARNAME: "test_simpa_save_path",
                              Tags.MCX_BINARY_PATH_VARNAME: "test_mcx_path"})
     def test_instantiate_without_file(self):
         path_manager = PathManager("/path/to/nowhere/")

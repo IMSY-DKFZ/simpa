@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Division of Intelligent Medical Systems, DKFZ
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
+import os
 
 import numpy as np
 import pandas as pd
@@ -67,17 +68,21 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
                 else:
                     break
 
-            benchmarking_file = open(file_name, 'r')
-            lines_with_sp_simulate = lines_that_contain("sp.simulate", benchmarking_file)
+            with open(file_name, 'r') as benchmarking_file:
+                lines_with_sp_simulate = lines_that_contain("sp.simulate", benchmarking_file)
 
-            examples_counter = 0
-            for lwss in lines_with_sp_simulate:
+            for e_idx, example in enumerate(current_examples):
                 try:
-                    value = float(lwss[info_starts[profile]:info_ends[profile]])
+                    value = float(lines_with_sp_simulate[e_idx][info_starts[profile]:info_ends[profile]])
+                    unit = str(lines_with_sp_simulate[e_idx][info_ends[profile]])
                 except ValueError:
-                    continue
+                    with open(file_name, 'r') as benchmarking_file:
+                        lines_with_run_sim = lines_that_contain("= run_sim", benchmarking_file)
+                    value = 0
+                    for line in lines_with_run_sim:
+                        value += float(line[info_starts[profile]:info_ends[profile]])
+                    unit = str(line[info_ends[profile]])
 
-                unit = str(lwss[info_ends[profile]])
                 if profile == "TIME":
                     value_with_unit = value
                 else:
@@ -90,33 +95,26 @@ def read_out_benchmarking_data(profiles: list = None, start: float = .2, stop: f
                     else:
                         raise ImportError(f'Unit {unit} not supported')
 
-                example = current_examples[examples_counter]
                 benchmarking_lists.append([example, spacing, profile, value_with_unit])
-
-                # lets you know which example you are on
-                examples_counter += 1
-                if examples_counter == len(current_examples):
-                    examples_counter = 0
 
     # creating data frame
     new_df = pd.DataFrame(benchmarking_lists, columns=['Example', 'Spacing', 'Profile', 'Value'])
     new_df.astype(dtype={"Example": "str", "Spacing": "float64", "Profile": "str", "Value": "float64"})
 
-    # if exists: load old dataframe and append OR just save df
+    # if exists: remove old file
     df_file = savefolder / 'benchmarking_data_frame.csv'
     if df_file.is_file():
-        old_df = pd.read_csv(df_file)
-        new_df = pd.concat([old_df, new_df])
+        os.remove(df_file)
     new_df.to_csv(df_file, index=False)
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Run benchmarking tests')
-    parser.add_argument("--start", default=.2,
+    parser.add_argument("--start", default=.15,
                         help='start spacing default .2mm')
-    parser.add_argument("--stop", default=.4,
+    parser.add_argument("--stop", default=.25,
                         help='stop spacing default .4mm')
-    parser.add_argument("--step", default=.1,
+    parser.add_argument("--step", default=.05,
                         help='step size mm')
     parser.add_argument("--profiles", default=None, type=str,
                         help='the profile to run')
@@ -124,7 +122,9 @@ if __name__ == "__main__":
     config = parser.parse_args()
 
     profiles = config.profiles
-    if profiles:
+    if profiles and "%" in profiles:
         profiles = profiles.split('%')[:-1]
+    elif profiles:
+        profiles = [profiles]
     read_out_benchmarking_data(start=float(config.start), stop=float(config.stop), step=float(config.step),
                                profiles=profiles, savefolder=config.savefolder)

@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
-import numpy as np
 
 from simpa import MCXReflectanceAdapter, MCXAdapter, KWaveAdapter, TimeReversalAdapter, Tags, Settings
 from simpa.utils.matlab import generate_matlab_cmd

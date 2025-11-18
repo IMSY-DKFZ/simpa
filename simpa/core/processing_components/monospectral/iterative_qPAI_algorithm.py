@@ -15,7 +15,7 @@ from simpa.core.simulation_modules.optical_module.mcx_adapter import \
     MCXAdapter
 from simpa.utils import Settings
 from simpa.io_handling import save_data_field, load_data_field
-from simpa.utils import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.core.processing_components import ProcessingComponentBase
 import os
 
@@ -106,7 +106,7 @@ class IterativeqPAI(ProcessingComponentBase):
         else:
             wavelength = self.global_settings[Tags.WAVELENGTHS][0]
         data_field = Tags.ITERATIVE_qPAI_RESULT
-        save_data_field(reconstructed_absorption, self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+        save_data_field(reconstructed_absorption, self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                         data_field, wavelength)
 
         # save a list of all intermediate absorption (2-d only) updates in npy file if intended
@@ -224,13 +224,13 @@ class IterativeqPAI(ProcessingComponentBase):
             wavelength = self.global_settings[Tags.WAVELENGTHS][0]
         self.logger.debug(f"Wavelength: {wavelength}")
         # get initial pressure and scattering
-        initial_pressure = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH],
+        initial_pressure = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                            Tags.DATA_FIELD_INITIAL_PRESSURE,
                                            wavelength)
-        scattering = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_SCATTERING_PER_CM,
+        scattering = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_SCATTERING_PER_CM,
                                      wavelength)
 
-        anisotropy = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_ANISOTROPY,
+        anisotropy = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_ANISOTROPY,
                                      wavelength)
 
         # function returns the last iteration result as a numpy array and all iteration results in a list
@@ -368,7 +368,7 @@ class IterativeqPAI(ProcessingComponentBase):
         if Tags.DATA_FIELD_SCATTERING_PER_CM in self.global_settings:
             scattering = float(self.global_settings[Tags.DATA_FIELD_SCATTERING_PER_CM]) * np.ones(shape)
         else:
-            background_dict = TISSUE_LIBRARY.muscle()
+            background_dict = TissueLibrary.muscle()
             scattering = float(MolecularComposition.get_properties_for_wavelength(background_dict, self.global_settings,
                                                                                   wavelength=800)["mus"])
             scattering = scattering * np.ones(shape)

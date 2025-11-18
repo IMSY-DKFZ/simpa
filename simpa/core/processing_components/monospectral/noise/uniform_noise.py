@@ -52,7 +52,7 @@ class UniformNoise(ProcessingComponentBase):
         self.logger.debug(f"Noise model max: {max_noise}")
 
         wavelength = self.global_settings[Tags.WAVELENGTH]
-        data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+        data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
         data_tensor = torch.as_tensor(data_array, dtype=torch.float32, device=self.torch_device)
         dist = torch.distributions.uniform.Uniform(torch.tensor(min_noise, dtype=torch.float32, device=self.torch_device),
                                                    torch.tensor(max_noise, dtype=torch.float32, device=self.torch_device))
@@ -66,6 +66,6 @@ class UniformNoise(ProcessingComponentBase):
             assert_array_well_defined(data_tensor)
 
         save_data_field(data_tensor.cpu().numpy().astype(np.float64, copy=False),
-                        self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+                        self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
 
         self.logger.info("Applying Uniform Noise Model...[Done]")

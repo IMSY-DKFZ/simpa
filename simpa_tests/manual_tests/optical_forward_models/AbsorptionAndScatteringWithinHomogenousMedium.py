@@ -32,7 +32,7 @@ from simpa import MCXAdapter, ModelBasedAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
 from simpa.core.simulation import simulate
 from simpa.io_handling import load_data_field
-from simpa.utils import Tags, Settings, PathManager, TISSUE_LIBRARY
+from simpa.utils import Tags, Settings, PathManager, TissueLibrary
 from simpa_tests.manual_tests import ManualIntegrationTestClass
 # FIXME temporary workaround for newest Intel architectures
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -47,7 +47,7 @@ class TestAbsorptionAndScatteringWithinHomogeneousMedium(ManualIntegrationTestCl
         and two blood vessels. It is used for volume creation.
         """
         background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(absorption_value,
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.constant(absorption_value,
                                                                                    scattering_value,
                                                                                    anisotropy_value)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
@@ -94,7 +94,7 @@ class TestAbsorptionAndScatteringWithinHomogeneousMedium(ManualIntegrationTestCl
         self.device.add_illumination_geometry(PencilBeamIlluminationGeometry())
 
     def teardown(self):
-        os.remove(self.settings[Tags.SIMPA_OUTPUT_PATH])
+        os.remove(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def test_low_scattering(self):
         """
@@ -232,7 +232,7 @@ class TestAbsorptionAndScatteringWithinHomogeneousMedium(ManualIntegrationTestCl
 
         simulate(pipeline, self.settings, self.device)
 
-        fluence_1 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_FLUENCE,
+        fluence_1 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_FLUENCE,
                                     self.settings[Tags.WAVELENGTH])
 
         # RUN SIMULATION 2
@@ -253,7 +253,7 @@ class TestAbsorptionAndScatteringWithinHomogeneousMedium(ManualIntegrationTestCl
 
         simulate(pipeline, self.settings, self.device)
 
-        fluence_2 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_FLUENCE,
+        fluence_2 = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_FLUENCE,
                                     self.settings[Tags.WAVELENGTH])
 
         illuminator_point = int((self.xy_dim / 2) / self.settings[Tags.SPACING_MM]) - 1

@@ -79,7 +79,7 @@ class TestPipeline(unittest.TestCase):
 
         simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
 
-        if (os.path.exists(settings[Tags.SIMPA_OUTPUT_PATH]) and
-                os.path.isfile(settings[Tags.SIMPA_OUTPUT_PATH])):
+        if (os.path.exists(settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
+                os.path.isfile(settings[Tags.SIMPA_OUTPUT_FILE_PATH])):
             # Delete the created file
-            os.remove(settings[Tags.SIMPA_OUTPUT_PATH])
+            os.remove(settings[Tags.SIMPA_OUTPUT_FILE_PATH])

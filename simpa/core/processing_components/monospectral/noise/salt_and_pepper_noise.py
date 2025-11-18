@@ -38,7 +38,7 @@ class SaltAndPepperNoise(ProcessingComponentBase):
         data_field = self.component_settings[Tags.DATA_FIELD]
 
         wavelength = self.global_settings[Tags.WAVELENGTH]
-        data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+        data_array = load_data_field(self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
         data_tensor = torch.as_tensor(data_array, dtype=torch.float32, device=self.torch_device)
 
         min_noise = torch.min(data_tensor).item()
@@ -69,6 +69,6 @@ class SaltAndPepperNoise(ProcessingComponentBase):
             assert_array_well_defined(data_tensor)
 
         save_data_field(data_tensor.cpu().numpy().astype(np.float64, copy=False),
-                        self.global_settings[Tags.SIMPA_OUTPUT_PATH], data_field, wavelength)
+                        self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], data_field, wavelength)
 
         self.logger.info("Applying Salt And Pepper Noise Model...[Done]")

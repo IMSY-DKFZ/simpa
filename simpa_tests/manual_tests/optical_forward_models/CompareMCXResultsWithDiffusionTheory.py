@@ -2,7 +2,8 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa.utils import Tags, PathManager, Settings, TISSUE_LIBRARY
+from simpa.utils import Tags, PathManager, Settings
+from simpa.utils.libraries.tissue_library import TissueLibrary
 from simpa.core.simulation import simulate
 from simpa import ModelBasedAdapter, MCXAdapter
 from simpa.core.device_digital_twins import PhotoacousticDevice, PencilBeamIlluminationGeometry
@@ -24,7 +25,7 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
         and two blood vessels. It is used for volume creation.
         """
         background_dictionary = Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = TISSUE_LIBRARY.constant(self.mua, self.mus, self.g)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.constant(self.mua, self.mus, self.g)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
         tissue_dict = Settings()
         tissue_dict[Tags.BACKGROUND] = background_dictionary
@@ -145,7 +146,7 @@ class TestCompareMCXResultsWithDiffusionTheory(ManualIntegrationTestClass):
         self.results.append(self.test_spacing_long())
 
     def assertDiffusionTheory(self, distance, spacing):
-        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_PATH], Tags.DATA_FIELD_FLUENCE,
+        fluence = load_data_field(self.settings[Tags.SIMPA_OUTPUT_FILE_PATH], Tags.DATA_FIELD_FLUENCE,
                                   self.settings[Tags.WAVELENGTH])
         number_of_measurements = np.arange(0, int(distance/self.settings[Tags.SPACING_MM]), 1)
         measurement_distances = number_of_measurements * self.settings[Tags.SPACING_MM]

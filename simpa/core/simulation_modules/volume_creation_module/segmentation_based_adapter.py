@@ -4,8 +4,6 @@
 
 from simpa.core.simulation_modules.volume_creation_module import VolumeCreationAdapterBase
 from simpa.utils import Tags
-from simpa.utils.constants import property_tags
-from simpa.io_handling import save_hdf5
 import numpy as np
 import torch
 
@@ -44,20 +42,18 @@ class SegmentationBasedAdapter(VolumeCreationAdapterBase):
 
         for seg_class in segmentation_classes:
             class_properties = class_mapping[seg_class].get_properties_for_wavelength(self.global_settings, wavelength)
-            for prop_tag in property_tags:
-                if isinstance(class_properties[prop_tag], (int, float)) or class_properties[prop_tag] == None:  # scalar
-                    assigned_prop = class_properties[prop_tag]
+            for volume_key in volumes.keys():
+                if isinstance(class_properties[volume_key], (int, float)) or class_properties[volume_key] == None:  # scalar
+                    assigned_prop = class_properties[volume_key]
                     if assigned_prop is None:
                         assigned_prop = torch.nan
-                    volumes[prop_tag][segmentation_volume == seg_class] = assigned_prop
-                elif len(torch.Tensor.size(class_properties[prop_tag])) == 3:  # 3D map
-                    assigned_prop = class_properties[prop_tag][torch.tensor(segmentation_volume == seg_class)]
+                    volumes[volume_key][segmentation_volume == seg_class] = assigned_prop
+                elif len(torch.Tensor.size(class_properties[volume_key])) == 3:  # 3D map
+                    assigned_prop = class_properties[volume_key][torch.tensor(segmentation_volume == seg_class)]
                     assigned_prop[assigned_prop is None] = torch.nan
-                    volumes[prop_tag][torch.tensor(segmentation_volume == seg_class)] = assigned_prop
+                    volumes[volume_key][torch.tensor(segmentation_volume == seg_class)] = assigned_prop
                 else:
                     raise AssertionError("Properties need to either be a scalar or a 3D map.")
-
-        save_hdf5(self.global_settings, self.global_settings[Tags.SIMPA_OUTPUT_PATH], "/settings/")
 
         # convert volumes back to CPU
         for key in volumes.keys():

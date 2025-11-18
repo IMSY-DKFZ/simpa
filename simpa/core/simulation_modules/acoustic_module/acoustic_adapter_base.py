@@ -24,7 +24,7 @@ class AcousticAdapterBase(SimulationModuleBase):
 
     tag in the settings dictionary.
 
-    :param settings: The settings dictionary containing key-value pairs that determine the simulation.
+    :param global_settings: The settings dictionary containing key-value pairs that determine the simulation.
         Here, it must contain the Tags.ACOUSTIC_MODEL tag and any tags that might be required by the specific
         acoustic model.
     :raises AssertionError: an assertion error is raised if the Tags.ACOUSTIC_MODEL tag is not given or
@@ -79,6 +79,6 @@ class AcousticAdapterBase(SimulationModuleBase):
         acoustic_output_path = generate_dict_path(
             Tags.DATA_FIELD_TIME_SERIES_DATA, wavelength=self.global_settings[Tags.WAVELENGTH])
 
-        save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_PATH], acoustic_output_path)
+        save_hdf5(time_series_data, self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH], acoustic_output_path)
 
         self.logger.info("Simulating the acoustic forward process...[Done]")

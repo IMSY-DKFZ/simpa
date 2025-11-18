@@ -4,7 +4,6 @@
 
 from simpa.utils.constants import property_tags
 from simpa.utils import Settings
-from simpa.utils.processing_device import get_processing_device
 import torch
 
 
