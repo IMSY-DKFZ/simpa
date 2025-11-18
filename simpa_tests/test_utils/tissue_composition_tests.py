@@ -9,6 +9,8 @@ from simpa.utils.constants import property_tags
 from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
 import numpy as np
 import matplotlib.patches as patches
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 TEST_SETTINGS = Settings({
@@ -44,7 +46,7 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
 
     validate_expected_values_dictionary(expected_values)
     if visualise_values:
-        plt.figure(figsize=(12, 8))
+        plt.figure(figsize=(12, 8), layout="constrained")
         plt.suptitle(title + f" [green=expected, blue=actual, red={tolerated_margin_in_percent*100}% margin]")
         num_subplots = len(property_tags)
 
@@ -79,14 +81,13 @@ def compare_molecular_composition_against_expected_values(molecular_composition:
                                              f"expected to be {expected_properties[tag]})")
 
     if visualise_values:
-        plt.tight_layout()
-        plt.show()
+        plt.savefig(f"{title}.png", dpi=300)
         plt.close()
 
 
 def get_epidermis_reference_dictionary():
     """
-    The
+    These values come from table 1; Epidermis (medium pigmented)
         @article{bashkatov2011optical,
               title={Optical properties of skin, subcutaneous, and muscle tissues: a review},
               author={Bashkatov, Alexey N and Genina, Elina A and Tuchin, Valery V},
@@ -163,7 +164,7 @@ def get_epidermis_reference_dictionary():
 
     values700nm = TissueProperties(TEST_SETTINGS)
     values700nm[Tags.DATA_FIELD_ABSORPTION_PER_CM] = 3.07
-    values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 54.66
+    values700nm[Tags.DATA_FIELD_SCATTERING_PER_CM] = 47.4 # altered from the original table to fit exponential scattering decay.
     values700nm[Tags.DATA_FIELD_ANISOTROPY] = 0.804
     values700nm[Tags.DATA_FIELD_GRUNEISEN_PARAMETER] = calculate_gruneisen_parameter_from_temperature(37.0)
     values700nm[Tags.DATA_FIELD_SEGMENTATION] = SegmentationClasses.EPIDERMIS

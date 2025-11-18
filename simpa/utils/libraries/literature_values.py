@@ -149,6 +149,16 @@ class OpticalTissueProperties:
     #   year={2013},
     #   publisher={IOP Publishing}
     # }
+    # @article{bashkatov2011optical,
+    #   title={Optical properties of skin, subcutaneous, and muscle tissues: a review},
+    #   author={Bashkatov, Alexey N and Genina, Elina A and Tuchin, Valery V},
+    #   journal={Journal of innovative optical health sciences},
+    #   volume={4},
+    #   number={01},
+    #   pages={9--38},
+    #   year={2011},
+    #   publisher={World Scientific}
+    # }
     MUS500_BACKGROUND_TISSUE = 191.0  # Table 2: Average over all other soft tissue
     FRAY_BACKGROUND_TISSUE = 0.153  # Table 2: Average over all other soft tissue
     BMIE_BACKGROUND_TISSUE = 1.091  # Table 2: Average over all other soft tissue
@@ -159,10 +169,10 @@ class OpticalTissueProperties:
 
     MUS500_EPIDERMIS = 93.01  # Bashkatov et al. 2011 but adjusted for epidermis anisotropy
     FRAY_EPIDERMIS = 0.29  # Table 1; Salomatina et al 2006; One value for epidermis
-    BMIE_EPIDERMIS = 2.8  # Table 1; Salomatina et al 2006; One value for epidermis
+    BMIE_EPIDERMIS = 1.5  # Table 1; Salomatina et al 2006; Altered slightly for the slope to fit with BASHKATOV et al., 2011
     MUS500_DERMIS = 175.0  # Bashkatov et al. 2011 but adjusted for DERMIS_ANISOTROPY
     FRAY_DERMIS = 0.1  # Table 1; Salomatina et al 2006; One value for dermis
-    BMIE_DERMIS = 3.5  # Table 1; Salomatina et al 2006; One value for dermis
+    BMIE_DERMIS = 2.7  # Table 1; Salomatina et al 2006; Adjusted slightly to fit BASHKATOV et al., 2011
     MUS500_FAT = 193.0  # Table 2 average fatty tissue
     FRAY_FAT = 0.174  # Table 2 average fatty tissue
     BMIE_FAT = 0.447  # Table 2 average fatty tissue
