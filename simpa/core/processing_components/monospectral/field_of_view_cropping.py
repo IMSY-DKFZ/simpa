@@ -20,10 +20,7 @@ class FieldOfViewCropping(ProcessingComponentBase):
                 + [Tags.DATA_FIELD_FLUENCE, Tags.DATA_FIELD_INITIAL_PRESSURE]})
         super(FieldOfViewCropping, self).__init__(global_settings, "FieldOfViewCropping")
     """
-    Applies Gaussian noise to the defined data field.
-    The noise will be applied to all wavelengths.
-    Component Settings
-       **Tags.DATA_FIELD required
+    Crops all specified data fields to the field of view of the given device.
     """
 
     def run(self, device: DigitalDeviceTwinBase):
