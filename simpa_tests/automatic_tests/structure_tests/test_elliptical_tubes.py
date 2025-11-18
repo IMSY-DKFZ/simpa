@@ -5,7 +5,7 @@
 import unittest
 import numpy as np
 from simpa.utils.libraries.tissue_library import TissueLibrary
-from simpa.utils import Tags
+from simpa.utils import Tags, create_deformation_settings
 from simpa.utils.settings import Settings
 from simpa.utils.libraries.structure_library import EllipticalTubularStructure
 
