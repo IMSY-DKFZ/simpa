@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-from simpa import Tags, Settings, ModelBasedAdapter, PathManager
+from simpa import Tags, Settings, ModelBasedAdapter
 from simpa_tests.test_utils import create_test_structure_parameters
 from simpa.core.simulation_modules.optical_module.optical_test_adapter import \
     OpticalTestAdapter
@@ -14,6 +14,7 @@ from simpa.core.device_digital_twins import RSOMExplorerP50
 import unittest
 import numpy as np
 import logging
+import os
 
 
 class TestLaserEnergy(unittest.TestCase):
@@ -36,7 +37,7 @@ class TestLaserEnergy(unittest.TestCase):
         self.SPACING = 0.25
         self.RANDOM_SEED = 4711
 
-    def test_base(self, test_name: str, laser_energies: int | np.integer | float | list | range | tuple | np.ndarray):
+    def base_test_case(self, test_name: str, laser_energies: int | np.integer | float | list | range | tuple | np.ndarray):
         """
         Base for all the tests that follow : defines a simple simulation pipeline 
         with optical and acoustic forward simulations.
@@ -56,12 +57,11 @@ class TestLaserEnergy(unittest.TestCase):
         logger.setLevel(logging.WARNING)
 
         np.random.seed(self.RANDOM_SEED)
-        path_manager = PathManager()
 
         settings = {
             Tags.RANDOM_SEED: self.RANDOM_SEED,
             Tags.VOLUME_NAME: test_name + '_' + str(self.RANDOM_SEED),
-            Tags.SIMULATION_PATH: path_manager.get_hdf5_file_save_path(),
+            Tags.SIMULATION_PATH: ".",
             Tags.SPACING_MM: self.SPACING,
             Tags.DIM_VOLUME_Z_MM: self.VOLUME_HEIGHT_IN_MM,
             Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM,
@@ -89,7 +89,15 @@ class TestLaserEnergy(unittest.TestCase):
             AcousticTestAdapter(settings),
         ]
 
-        simulate(pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
+        try:
+            simulate(pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
+        except ValueError as e:
+            raise e
+        finally:
+            if (os.path.exists(settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
+                    os.path.isfile(settings[Tags.SIMPA_OUTPUT_FILE_PATH])):
+                # Always delete the created file
+                os.remove(settings[Tags.SIMPA_OUTPUT_FILE_PATH])
 
     def test_laser_energy_int(self):
         """
@@ -99,7 +107,7 @@ class TestLaserEnergy(unittest.TestCase):
         """
 
         print("Test that the laser energy can be set as an int.")
-        self.test_base(test_name="TestLaserEnergyInt", laser_energies=10)
+        self.base_test_case(test_name="TestLaserEnergyInt", laser_energies=10)
         print("PASSED !")
 
     def test_laser_energy_float(self):
@@ -110,7 +118,7 @@ class TestLaserEnergy(unittest.TestCase):
         """
 
         print("Test that the laser energy can be set as a float.")
-        self.test_base(test_name="TestLaserEnergyFloat", laser_energies=10.5)
+        self.base_test_case(test_name="TestLaserEnergyFloat", laser_energies=10.5)
         print("PASSED !")
 
     def test_laser_energy_list(self):
@@ -121,7 +129,7 @@ class TestLaserEnergy(unittest.TestCase):
         """
 
         print("Test that the laser energy can be set as a list.")
-        self.test_base(test_name="TestLaserEnergyList", laser_energies=[10, 11, 12])
+        self.base_test_case(test_name="TestLaserEnergyList", laser_energies=[10, 11, 12])
         print("PASSED !")
 
     def test_laser_energy_array(self):
@@ -132,7 +140,7 @@ class TestLaserEnergy(unittest.TestCase):
         """
 
         print("Test that the laser energy can be set as an array.")
-        self.test_base(test_name="TestLaserEnergyArray", laser_energies=np.array([10, 11, 12]))
+        self.base_test_case(test_name="TestLaserEnergyArray", laser_energies=np.array([10, 11, 12]))
         print("PASSED !")
 
     def test_laser_energy_range(self):
@@ -143,7 +151,7 @@ class TestLaserEnergy(unittest.TestCase):
         """
 
         print("Test that the laser energy can be set as a range.")
-        self.test_base(test_name="TestLaserEnergyRange", laser_energies=range(10, 13))
+        self.base_test_case(test_name="TestLaserEnergyRange", laser_energies=range(10, 13))
         print("PASSED !")
 
     def test_laser_energy_tuple(self):
@@ -154,7 +162,7 @@ class TestLaserEnergy(unittest.TestCase):
         """
 
         print("Test that the laser energy can be set as a range.")
-        self.test_base(test_name="TestLaserEnergyRange", laser_energies=(10, 11, 12))
+        self.base_test_case(test_name="TestLaserEnergyRange", laser_energies=(10, 11, 12))
         print("PASSED !")
 
     def test_laser_energy_wrong_size(self):
@@ -165,17 +173,6 @@ class TestLaserEnergy(unittest.TestCase):
 
         print("Test that specifying a laser energy list of wrong size will raise an error.")
         with self.assertRaises(ValueError):
-            self.test_base(test_name="TestLaserEnergyWrongSize", laser_energies=[10, 11, 12, 13])
+                self.base_test_case(test_name="TestLaserEnergyWrongSize", laser_energies=[10, 11, 12, 13])
+
         print("PASSED !")
-
-
-if __name__ == "__main__":
-    test = TestLaserEnergy()
-    settings = test.setUp()
-    test.test_laser_energy_int()
-    test.test_laser_energy_float()
-    test.test_laser_energy_list()
-    test.test_laser_energy_array()
-    test.test_laser_energy_range()
-    test.test_laser_energy_tuple()
-    test.test_laser_energy_wrong_size()
