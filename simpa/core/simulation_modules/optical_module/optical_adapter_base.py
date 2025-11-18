@@ -66,11 +66,12 @@ class OpticalAdapterBase(SimulationModuleBase):
         self.logger.info("Simulating the optical forward process...")
 
         file_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH]
-        wl = str(self.global_settings[Tags.WAVELENGTH])
+        wl = self.global_settings[Tags.WAVELENGTH]
+        wl_str = str(wl)
 
-        absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl)
-        scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, wl)
-        anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, wl)
+        absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl_str)
+        scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, wl_str)
+        anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, wl_str)
         gruneisen_parameter = load_data_field(file_path, Tags.DATA_FIELD_GRUNEISEN_PARAMETER)
 
         _device = None
@@ -94,9 +95,20 @@ class OpticalAdapterBase(SimulationModuleBase):
             units = Tags.UNITS_PRESSURE
             # Initial pressure should be given in units of Pascale
             conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
+
+            energy_setting = self.component_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
+            if np.isscalar(energy_setting):
+                energy_mJ = float(energy_setting)
+            else:
+                energies = list(energy_setting)
+                wavelengths = self.global_settings[Tags.WAVELENGTHS]
+                if len(energies) != len(wavelengths):
+                    raise ValueError("Length of LASER_PULSE_ENERGY_IN_MILLIJOULE must be equal to number of wavelengths.")
+                idx = list(wavelengths).index(wl)
+                energy_mJ = float(energies[idx])
+
             initial_pressure = (absorption * fluence * gruneisen_parameter *
-                                (self.component_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE] / 1000)
-                                * conversion_factor)
+                                (energy_mJ / 1000.0) * conversion_factor)
         else:
             units = Tags.UNITS_ARBITRARY
             initial_pressure = absorption * fluence

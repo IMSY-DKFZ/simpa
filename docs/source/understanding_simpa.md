@@ -111,3 +111,11 @@ simulation settings using: [set_reconstruction_settings](../../simpa/utils/setti
 - `Tags.RECONSTRUCTION_BMODE_AFTER_RECONSTRUCTION`: Specifies whether an envelope detection should be performed after
 reconstruction.
 - `Tags.RECONSTRUCTION_PERFORM_BANDPASS_FILTERING`: Whether bandpass filtering should be applied or not.
+
+## Coordinate System
+
+In general, the axes of simulated photoacoustic images are implemented in the following way:
+
+![Coordinates in SIMPA are defined so that the x axis is the lateral direction pointing to the right, y axis is the distal direction pointing towards the front and z is the depth axis pointing downwards.](images/coordinate_system.png)
+
+Note that z is the depth direction, while x and y form the plane parallel to the skin or PA device membrane. Further note that the y axis points towards the front.

@@ -49,7 +49,7 @@ def run_minimal_optical_simulation_uniform_cube(spacing: float | int = 0.5, path
         It contains only a generic background tissue material.
         """
         background_dictionary = sp.Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-4, 1e-4, 0.9)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.constant(1e-4, 1e-4, 0.9)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
         tissue_dict = sp.Settings()

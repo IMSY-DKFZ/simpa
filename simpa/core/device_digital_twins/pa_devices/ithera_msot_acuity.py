@@ -11,7 +11,7 @@ from simpa.core.device_digital_twins.pa_devices import PhotoacousticDevice
 from simpa.core.device_digital_twins.detection_geometries.curved_array import CurvedArrayDetectionGeometry
 from simpa.utils.settings import Settings
 from simpa.utils import Tags
-from simpa.utils.libraries.tissue_library import TISSUE_LIBRARY
+from simpa.utils.libraries.tissue_library import TissueLibrary
 import numpy as np
 
 
@@ -72,7 +72,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           detector_element_width_mm=0.24,
                                                           detector_element_length_mm=13,
                                                           center_frequency_hz=3.96e6,
-                                                          bandwidth_percent=55,
+                                                          bandwidth_percent=153,
                                                           sampling_frequency_mhz=40,
                                                           angular_origin_offset=np.pi,
                                                           device_position_mm=self.detection_geometry_position_vector,
@@ -83,8 +83,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
         # y position relative to the membrane:
         # The laser is located 43.2 mm  behind the membrane with an angle of 22.4 degrees.
-        # However, the incident of laser and image plane is located 2.8 behind the membrane (outside of the device).
-        y_pos_relative_to_membrane = np.tan(np.deg2rad(22.4)) * (43.2 + 2.8)
+        y_pos_relative_to_membrane = np.tan(np.deg2rad(22.4)) * 43.2
         self.add_illumination_geometry(illumination_geometry,
                                        illuminator_position_relative_to_pa_device=np.array([0,
                                                                                             -y_pos_relative_to_membrane,
@@ -174,7 +173,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                 Tags.STRUCTURE_END_MM: [0, 0,
                                         heavy_water_layer_height_mm + mediprene_layer_height_mm + us_gel_thickness],
                 Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
-                Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.ultrasound_gel(),
+                Tags.MOLECULE_COMPOSITION: TissueLibrary.ultrasound_gel(),
                 Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
             })
 
@@ -185,7 +184,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             Tags.STRUCTURE_START_MM: [0, 0, heavy_water_layer_height_mm],
             Tags.STRUCTURE_END_MM: [0, 0, heavy_water_layer_height_mm + mediprene_layer_height_mm],
             Tags.CONSIDER_PARTIAL_VOLUME: consider_partial_volume,
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.mediprene(),
+            Tags.MOLECULE_COMPOSITION: TissueLibrary.mediprene(),
             Tags.STRUCTURE_TYPE: Tags.HORIZONTAL_LAYER_STRUCTURE
         })
 
@@ -202,7 +201,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           detector_element_width_mm=0.24,
                                                           detector_element_length_mm=13,
                                                           center_frequency_hz=3.96e6,
-                                                          bandwidth_percent=55,
+                                                          bandwidth_percent=153,
                                                           sampling_frequency_mhz=40,
                                                           angular_origin_offset=np.pi,
                                                           device_position_mm=self.detection_geometry_position_vector,
@@ -214,7 +213,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           np.array([width_shift_for_structures_mm, 0, probe_size_mm]))
 
         background_settings = Settings({
-            Tags.MOLECULE_COMPOSITION: TISSUE_LIBRARY.heavy_water(),
+            Tags.MOLECULE_COMPOSITION: TissueLibrary.heavy_water(),
             Tags.STRUCTURE_TYPE: Tags.BACKGROUND
         })
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings

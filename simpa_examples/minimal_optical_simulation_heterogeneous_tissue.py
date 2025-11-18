@@ -40,16 +40,15 @@ def create_example_tissue(settings):
     and a blood vessel.
     """
     dim_x, dim_y, dim_z = settings.get_volume_dimensions_voxels()
-    tissue_library = sp.TISSUE_LIBRARY
     background_dictionary = sp.Settings()
-    background_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.constant(1e-4, 1e-4, 0.9)
+    background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.constant(1e-4, 1e-4, 0.9)
     background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
     muscle_dictionary = sp.Settings()
     muscle_dictionary[Tags.PRIORITY] = 1
     muscle_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 10]
     muscle_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 100]
-    muscle_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.muscle(
+    muscle_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.muscle(
         oxygenation=sp.BlobHeterogeneity(dim_x, dim_y, dim_z, SPACING,
                                          target_min=0.5, target_max=0.8).get_map(),
         blood_volume_fraction=sp.BlobHeterogeneity(dim_x, dim_y, dim_z, SPACING,
@@ -67,7 +66,7 @@ def create_example_tissue(settings):
                                                   12,
                                                   VOLUME_HEIGHT_IN_MM/2]
     vessel_1_dictionary[Tags.STRUCTURE_RADIUS_MM] = 3
-    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.blood(
+    vessel_1_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.blood(
         oxygenation=sp.RandomHeterogeneity(dim_x, dim_y, dim_z, SPACING,
                                            target_min=0.9, target_max=1.0).get_map())
     vessel_1_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True
@@ -77,7 +76,7 @@ def create_example_tissue(settings):
     epidermis_dictionary[Tags.PRIORITY] = 8
     epidermis_dictionary[Tags.STRUCTURE_START_MM] = [0, 0, 9]
     epidermis_dictionary[Tags.STRUCTURE_END_MM] = [0, 0, 10]
-    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = tissue_library.epidermis(
+    epidermis_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.epidermis(
         melanin_volume_fraction=sp.RandomHeterogeneity(dim_x, dim_y, dim_z, SPACING,
                                                        target_min=0.1, target_max=0.2).get_map())
     epidermis_dictionary[Tags.CONSIDER_PARTIAL_VOLUME] = True

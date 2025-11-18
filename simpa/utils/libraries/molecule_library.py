@@ -584,7 +584,6 @@ class MoleculeLibrary(object):
                         )
 
 
-MOLECULE_LIBRARY = MoleculeLibrary()
 
 
 class MolecularCompositionGenerator(object):

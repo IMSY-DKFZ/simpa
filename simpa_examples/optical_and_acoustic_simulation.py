@@ -43,33 +43,33 @@ def run_optical_and_acoustic_simulation(spacing: float | int = 0.2, path_manager
         and a blood vessel.
         """
         background_dictionary = sp.Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(1e-10, 1e-10, 1.0)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.constant(1e-10, 1e-10, 1.0)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
         tissue_dict = sp.Settings()
         tissue_dict[Tags.BACKGROUND] = background_dictionary
         tissue_dict["muscle"] = sp.define_horizontal_layer_structure_settings(z_start_mm=0, thickness_mm=100,
-                                                                              molecular_composition=sp.TISSUE_LIBRARY.constant(
+                                                                              molecular_composition=sp.TissueLibrary.constant(
                                                                                   0.05, 100, 0.9),
                                                                               priority=1,
                                                                               consider_partial_volume=True,
                                                                               adhere_to_deformation=True)
         tissue_dict["epidermis"] = sp.define_horizontal_layer_structure_settings(z_start_mm=1, thickness_mm=0.1,
-                                                                                 molecular_composition=sp.TISSUE_LIBRARY.epidermis(),
+                                                                                 molecular_composition=sp.TissueLibrary.epidermis(),
                                                                                  priority=8,
                                                                                  consider_partial_volume=True,
                                                                                  adhere_to_deformation=True)
         tissue_dict["vessel_1"] = sp.define_circular_tubular_structure_settings(
             tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, 0, 5],
             tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2 - 10, VOLUME_PLANAR_DIM_IN_MM, 5],
-            molecular_composition=sp.TISSUE_LIBRARY.blood(),
+            molecular_composition=sp.TissueLibrary.blood(),
             radius_mm=2, priority=3, consider_partial_volume=True,
             adhere_to_deformation=False
         )
         tissue_dict["vessel_2"] = sp.define_circular_tubular_structure_settings(
             tube_start_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, 0, 10],
             tube_end_mm=[VOLUME_TRANSDUCER_DIM_IN_MM/2, VOLUME_PLANAR_DIM_IN_MM, 10],
-            molecular_composition=sp.TISSUE_LIBRARY.blood(),
+            molecular_composition=sp.TissueLibrary.blood(),
             radius_mm=3, priority=3, consider_partial_volume=True,
             adhere_to_deformation=False
         )

@@ -221,6 +221,9 @@ each part of the simulation.
 
 Settings are defined in a hierarchical structure, where global settings are established first, followed by
 component-specific settings. This approach ensures comprehensive and precise control over the simulation process.
+
+**Coordinates** in SIMPA are defined so that the x axis is the lateral direction pointing to the right, y axis is the distal direction pointing towards the front and z is the depth axis pointing downwards.
+
 For detailed information, users can refer to the [understanding SIMPA documentation](./docs/source/understanding_simpa.md).
 
 # Troubleshooting
@@ -263,4 +266,4 @@ Gröhl, Janek, Kris K. Dreher, Melanie Schellenberg, Tom Rix, Niklas Holzwarth, 
 
 This project has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No. [101002198]).
 
-![ERC](docs/source/images/LOGO_ERC-FLAG_EU_.jpg "ERC")
+![ERC](https://github.com/IMSY-DKFZ/simpa/raw/main/docs/source/images/LOGO_ERC-FLAG_EU_.jpg "ERC")
