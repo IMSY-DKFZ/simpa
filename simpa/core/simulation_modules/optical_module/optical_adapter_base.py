@@ -68,9 +68,10 @@ class OpticalAdapterBase(SimulationModuleBase):
         file_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH]
         wl = self.global_settings[Tags.WAVELENGTH]
 
-        absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, str(wl))
-        scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, str(wl))
-        anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, str(wl))
+        wl_str = str(wl)
+        absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl_str)
+        scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, wl_str)
+        anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, wl_str)
         gruneisen_parameter = load_data_field(file_path, Tags.DATA_FIELD_GRUNEISEN_PARAMETER)
 
         _device = None

@@ -376,6 +376,7 @@ class Tags:
     """
     Laser pulse energy used in the optical simulation. If it is considered wavelength dependant, should be
     an iterable compatible with the size of the wavelength list. \n
+
     Usage: module optical_simulation_module
     """
 

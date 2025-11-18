@@ -72,7 +72,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           detector_element_width_mm=0.24,
                                                           detector_element_length_mm=13,
                                                           center_frequency_hz=3.96e6,
-                                                          bandwidth_percent=55,
+                                                          bandwidth_percent=153,
                                                           sampling_frequency_mhz=40,
                                                           angular_origin_offset=np.pi,
                                                           device_position_mm=self.detection_geometry_position_vector,
@@ -83,8 +83,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
 
         # y position relative to the membrane:
         # The laser is located 43.2 mm  behind the membrane with an angle of 22.4 degrees.
-        # However, the incident of laser and image plane is located 2.8 behind the membrane (outside of the device).
-        y_pos_relative_to_membrane = np.tan(np.deg2rad(22.4)) * (43.2 + 2.8)
+        y_pos_relative_to_membrane = np.tan(np.deg2rad(22.4)) * 43.2
         self.add_illumination_geometry(illumination_geometry,
                                        illuminator_position_relative_to_pa_device=np.array([0,
                                                                                             -y_pos_relative_to_membrane,
@@ -202,7 +201,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
                                                           detector_element_width_mm=0.24,
                                                           detector_element_length_mm=13,
                                                           center_frequency_hz=3.96e6,
-                                                          bandwidth_percent=55,
+                                                          bandwidth_percent=153,
                                                           sampling_frequency_mhz=40,
                                                           angular_origin_offset=np.pi,
                                                           device_position_mm=self.detection_geometry_position_vector,
