@@ -159,7 +159,7 @@ class MCXReflectanceAdapter(MCXAdapter):
         cmd.append("-F")
         cmd.append("jnii")
         cmd.append("-e")
-        cmd.append(str(1e-3))
+        cmd.append(str(1e-2))
         cmd.append("--bc")
         cmd.append(self.volume_boundary_condition_str)
         cmd.append("-H")

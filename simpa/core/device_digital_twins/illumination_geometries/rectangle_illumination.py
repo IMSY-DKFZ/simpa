@@ -86,8 +86,9 @@ class RectangleIlluminationGeometry(IlluminationGeometryBase):
                 self.focal_length_in_mm, str) else self.focal_length_in_mm / spacing
             source_direction.append(param4)
 
-        source_param1 = [self.width_mm / spacing + 1, 0., 0.]
-        source_param2 = [0., self.length_mm / spacing + 1, 0.]
+        source_param1 = [self.width_mm / spacing + 2, 0., 0.]
+        # Legit ka warum +2 but only then the whole area is illuminated correctly
+        source_param2 = [0., self.length_mm / spacing + 2, 0.]
 
         # If Pos=[10, 12, 0], Param1=[10, 0, 0], Param2=[0, 20, 0],
         # then illumination covers: x in [10, 20], y in [12, 32]
