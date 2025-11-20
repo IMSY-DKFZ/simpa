@@ -255,7 +255,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             us_gel_thickness_pix = int(round(us_gel_thickness_mm/spacing_mm))
             padding_dims = ((0, 0), (0, 0), (us_gel_thickness_pix, 0))
             segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=64)
-            segmentation_class_mapping[64] = TISSUE_LIBRARY.ultrasound_gel()
+            segmentation_class_mapping[64] = TissueLibrary.ultrasound_gel()
             # Whilst it may seem strange, to avoid rounding differences through the pipline it is best to let the
             # z dimension shift us the same rounding as the pixel thickness. (This is the same for all three layers)
             z_dim_position_shift_mm += us_gel_thickness_pix * spacing_mm
@@ -266,21 +266,21 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             mediprene_layer_height_pix = int(round(mediprene_layer_height_mm/spacing_mm))
             padding_dims = ((0, 0), (0, 0), (mediprene_layer_height_pix, 0))
             segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=128)
-            segmentation_class_mapping[128] = TISSUE_LIBRARY.mediprene()
+            segmentation_class_mapping[128] = TissueLibrary.mediprene()
             z_dim_position_shift_mm += mediprene_layer_height_pix * spacing_mm
             self.logger.debug("Added a mediprene layer to the segmentation map.")
 
         if Tags.ADD_HEAVY_WATER in add_layers:
             if heavy_water_tag is None:
                 heavy_water_tag = 256
-                segmentation_class_mapping[256] = TISSUE_LIBRARY.heavy_water()
+                segmentation_class_mapping[256] = TissueLibrary.heavy_water()
             probe_size_mm = self.probe_height_mm
             mediprene_layer_height_mm = self.mediprene_membrane_height_mm
             heavy_water_layer_height_mm = probe_size_mm - current_heavy_water_depth - mediprene_layer_height_mm
             heavy_water_layer_height_pix = int(round(heavy_water_layer_height_mm / spacing_mm))
             padding_dims = ((0, 0), (0, 0), (heavy_water_layer_height_pix, 0))
             segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=heavy_water_tag)
-            segmentation_class_mapping[heavy_water_tag] = TISSUE_LIBRARY.heavy_water()
+            segmentation_class_mapping[heavy_water_tag] = TissueLibrary.heavy_water()
             z_dim_position_shift_mm += heavy_water_layer_height_pix * spacing_mm
             self.logger.debug(f"Added a {heavy_water_layer_height_pix * spacing_mm}mm heavy water layer to the "
                               f"segmentation map.")
