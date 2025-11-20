@@ -282,7 +282,7 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             segmentation_map = np.pad(segmentation_map, padding_dims, mode='constant', constant_values=heavy_water_tag)
             segmentation_class_mapping[heavy_water_tag] = TISSUE_LIBRARY.heavy_water()
             z_dim_position_shift_mm += heavy_water_layer_height_pix * spacing_mm
-            self.logger.debug(f"Added a {heavy_water_layer_height_pix * spacing_mm}mm heavy water layer to the"
+            self.logger.debug(f"Added a {heavy_water_layer_height_pix * spacing_mm}mm heavy water layer to the "
                               f"segmentation map.")
 
         new_volume_height_mm = global_settings[Tags.DIM_VOLUME_Z_MM] + z_dim_position_shift_mm
