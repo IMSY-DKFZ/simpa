@@ -48,14 +48,14 @@ def run_perform_iterative_qPAI_reconstruction(spacing: float | int = 0.2, path_m
         and a blood vessel.
         """
         background_dictionary = sp.Settings()
-        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(0.05, 30, 0.9)
+        background_dictionary[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.constant(0.05, 30, 0.9)
         background_dictionary[Tags.STRUCTURE_TYPE] = Tags.BACKGROUND
 
         epidermis_structure = sp.Settings()
         epidermis_structure[Tags.PRIORITY] = 1
         epidermis_structure[Tags.STRUCTURE_START_MM] = [0, 0, 2]
         epidermis_structure[Tags.STRUCTURE_END_MM] = [0, 0, 2.5]
-        epidermis_structure[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(2.2, 100.0, 0.9)
+        epidermis_structure[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.constant(2.2, 100.0, 0.9)
         epidermis_structure[Tags.CONSIDER_PARTIAL_VOLUME] = True
         epidermis_structure[Tags.ADHERE_TO_DEFORMATION] = True
         epidermis_structure[Tags.STRUCTURE_TYPE] = Tags.HORIZONTAL_LAYER_STRUCTURE
@@ -68,7 +68,7 @@ def run_perform_iterative_qPAI_reconstruction(spacing: float | int = 0.2, path_m
                                                      VOLUME_PLANAR_DIM_IN_MM, VOLUME_HEIGHT_IN_MM / 2]
         vessel_structure_1[Tags.STRUCTURE_RADIUS_MM] = 1.75
         vessel_structure_1[Tags.STRUCTURE_ECCENTRICITY] = 0.85
-        vessel_structure_1[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(5.2, 100.0, 0.9)
+        vessel_structure_1[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.constant(5.2, 100.0, 0.9)
         vessel_structure_1[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_structure_1[Tags.ADHERE_TO_DEFORMATION] = True
         vessel_structure_1[Tags.STRUCTURE_TYPE] = Tags.ELLIPTICAL_TUBULAR_STRUCTURE
@@ -80,7 +80,7 @@ def run_perform_iterative_qPAI_reconstruction(spacing: float | int = 0.2, path_m
         vessel_structure_2[Tags.STRUCTURE_END_MM] = [VOLUME_TRANSDUCER_DIM_IN_MM / 2,
                                                      VOLUME_PLANAR_DIM_IN_MM, VOLUME_HEIGHT_IN_MM / 3]
         vessel_structure_2[Tags.STRUCTURE_RADIUS_MM] = 0.75
-        vessel_structure_2[Tags.MOLECULE_COMPOSITION] = sp.TISSUE_LIBRARY.constant(3.0, 100.0, 0.9)
+        vessel_structure_2[Tags.MOLECULE_COMPOSITION] = sp.TissueLibrary.constant(3.0, 100.0, 0.9)
         vessel_structure_2[Tags.CONSIDER_PARTIAL_VOLUME] = True
         vessel_structure_2[Tags.STRUCTURE_TYPE] = Tags.CIRCULAR_TUBULAR_STRUCTURE
 
