@@ -113,3 +113,57 @@ class TestVesselTree(unittest.TestCase):
             assert 0 <= value <= 1
 
         self.assertTrue(np.sum(ts.geometrical_volume) > 0)
+
+    def test_vessel_starting_at_boundary(self):
+        """
+        Test that vessels starting exactly at a tissue boundary are created correctly.
+        This is a regression test for the issue where vessels starting at boundaries
+        (e.g., y=16 for a 16mm volume) would not create proper tube structures.
+        """
+        # Create settings for a vessel starting at the Y boundary
+        self.global_settings[Tags.SPACING_MM] = 0.5
+        self.global_settings[Tags.DIM_VOLUME_X_MM] = 16
+        self.global_settings[Tags.DIM_VOLUME_Y_MM] = 16
+        self.global_settings[Tags.DIM_VOLUME_Z_MM] = 10
+
+        # Vessel starting exactly at boundary (y=16)
+        vessel_settings_boundary = Settings()
+        vessel_settings_boundary[Tags.STRUCTURE_START_MM] = [10, 16, 0.2]
+        vessel_settings_boundary[Tags.STRUCTURE_DIRECTION] = [-1, -1, 0.0]
+        vessel_settings_boundary[Tags.STRUCTURE_RADIUS_MM] = 2.0
+        vessel_settings_boundary[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.0
+        vessel_settings_boundary[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1.0
+        vessel_settings_boundary[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 1000.0
+        vessel_settings_boundary[Tags.MOLECULE_COMPOSITION] = TissueLibrary.muscle()
+        vessel_settings_boundary[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        vessel_settings_boundary[Tags.ADHERE_TO_DEFORMATION] = False
+
+        # Vessel starting just inside boundary (y=15.99)
+        vessel_settings_inside = Settings()
+        vessel_settings_inside[Tags.STRUCTURE_START_MM] = [10, 15.99, 0.2]
+        vessel_settings_inside[Tags.STRUCTURE_DIRECTION] = [-1, -1, 0.0]
+        vessel_settings_inside[Tags.STRUCTURE_RADIUS_MM] = 2.0
+        vessel_settings_inside[Tags.STRUCTURE_CURVATURE_FACTOR] = 0.0
+        vessel_settings_inside[Tags.STRUCTURE_RADIUS_VARIATION_FACTOR] = 1.0
+        vessel_settings_inside[Tags.STRUCTURE_BIFURCATION_LENGTH_MM] = 1000.0
+        vessel_settings_inside[Tags.MOLECULE_COMPOSITION] = TissueLibrary.muscle()
+        vessel_settings_inside[Tags.CONSIDER_PARTIAL_VOLUME] = True
+        vessel_settings_inside[Tags.ADHERE_TO_DEFORMATION] = False
+
+        vessel_boundary = VesselStructure(self.global_settings, vessel_settings_boundary)
+        vessel_inside = VesselStructure(self.global_settings, vessel_settings_inside)
+
+        # Both vessels should have similar volumes (at least 80% similarity)
+        # The slight difference is due to randomness in vessel generation
+        volume_boundary = np.sum(vessel_boundary.geometrical_volume)
+        volume_inside = np.sum(vessel_inside.geometrical_volume)
+
+        # Ensure both vessels have substantial volume
+        self.assertGreater(volume_boundary, 100, "Vessel at boundary should have substantial volume")
+        self.assertGreater(volume_inside, 100, "Vessel inside should have substantial volume")
+
+        # Check that they are similar in size (within 20% tolerance)
+        ratio = volume_boundary / volume_inside
+        self.assertGreater(
+            ratio, 0.8, f"Vessel at boundary should be at least 80% of inside vessel size, got {ratio:.2%}")
+        self.assertLess(ratio, 1.2, f"Vessel at boundary should be at most 120% of inside vessel size, got {ratio:.2%}")

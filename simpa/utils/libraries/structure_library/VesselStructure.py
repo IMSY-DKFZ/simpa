@@ -67,7 +67,7 @@ class VesselStructure(GeometricalStructure):
         radius_array = [radius]
         samples = 0
 
-        while torch.all(position < torch.tensor(volume_dimensions).to(self.torch_device)) and torch.all(0 <= position):
+        while True:
             if samples >= bifurcation_length:
                 vessel_branch_positions1 = position
                 vessel_branch_positions2 = position
@@ -101,6 +101,11 @@ class VesselStructure(GeometricalStructure):
                 break
 
             position = torch.add(position, direction)
+
+            # Check if the new position is within bounds before adding it
+            if not (torch.all(position < torch.tensor(volume_dimensions).to(self.torch_device)) and torch.all(0 <= position)):
+                break
+
             position_array.append(position)
             radius_array.append(np.random.uniform(-1, 1) * radius_variation + radius)
 
@@ -188,3 +193,4 @@ def define_vessel_structure_settings(vessel_start_mm: list,
         Tags.ADHERE_TO_DEFORMATION: adhere_to_deformation,
         Tags.STRUCTURE_TYPE: Tags.VESSEL_STRUCTURE
     }
+# temp
