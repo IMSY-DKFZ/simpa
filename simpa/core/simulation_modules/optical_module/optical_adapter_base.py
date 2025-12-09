@@ -67,8 +67,8 @@ class OpticalAdapterBase(SimulationModuleBase):
 
         file_path = self.global_settings[Tags.SIMPA_OUTPUT_FILE_PATH]
         wl = self.global_settings[Tags.WAVELENGTH]
-        wl_str = str(wl)
 
+        wl_str = str(wl)
         absorption = load_data_field(file_path, Tags.DATA_FIELD_ABSORPTION_PER_CM, wl_str)
         scattering = load_data_field(file_path, Tags.DATA_FIELD_SCATTERING_PER_CM, wl_str)
         anisotropy = load_data_field(file_path, Tags.DATA_FIELD_ANISOTROPY, wl_str)
@@ -92,23 +92,29 @@ class OpticalAdapterBase(SimulationModuleBase):
             assert_array_well_defined(fluence, assume_non_negativity=True, array_name="fluence")
 
         if Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE in self.component_settings:
+            laser_energies = self.component_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
+
+            if type(laser_energies) in (list, range, tuple, np.ndarray):
+
+                list_laser_energies = list(laser_energies)
+                wls = self.global_settings[Tags.WAVELENGTHS]
+
+                if len(list_laser_energies) != len(wls):
+                    raise ValueError(
+                        "The wavelength dependant laser energies need to have compatible dimension \
+                        with the wavelengths.")
+                else:
+                    laser_energy = laser_energies[wls.index(wl)]
+
+            elif type(laser_energies) in (float, int, np.integer):
+                laser_energy = laser_energies
+
             units = Tags.UNITS_PRESSURE
             # Initial pressure should be given in units of Pascale
             conversion_factor = 1e6  # 1 J/cm^3 = 10^6 N/m^2 = 10^6 Pa
+            initial_pressure = (absorption * fluence * gruneisen_parameter * (laser_energy / 1000)
+                                * conversion_factor)
 
-            energy_setting = self.component_settings[Tags.LASER_PULSE_ENERGY_IN_MILLIJOULE]
-            if np.isscalar(energy_setting):
-                energy_mJ = float(energy_setting)
-            else:
-                energies = list(energy_setting)
-                wavelengths = self.global_settings[Tags.WAVELENGTHS]
-                if len(energies) != len(wavelengths):
-                    raise ValueError("Length of LASER_PULSE_ENERGY_IN_MILLIJOULE must be equal to number of wavelengths.")
-                idx = list(wavelengths).index(wl)
-                energy_mJ = float(energies[idx])
-
-            initial_pressure = (absorption * fluence * gruneisen_parameter *
-                                (energy_mJ / 1000.0) * conversion_factor)
         else:
             units = Tags.UNITS_ARBITRARY
             initial_pressure = absorption * fluence
