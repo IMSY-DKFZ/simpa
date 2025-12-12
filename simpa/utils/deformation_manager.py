@@ -25,11 +25,12 @@ def create_deformation_settings(bounds_mm, maximum_z_elevation_mm=1, filter_sigm
     y_positions_vector = np.linspace(bounds_mm[1][0], bounds_mm[1][1], number_of_boundary_points[1])
 
     # Add random permutations to the y-axis of the division knots
-    all_scaling_value = np.multiply.outer(
-        np.cos(x_positions_vector / (bounds_mm[0][1] * (cosine_scaling_factor /
-               np.pi)) - np.pi / (cosine_scaling_factor * 2)) ** 2,
-        np.cos(y_positions_vector / (bounds_mm[1][1] * (cosine_scaling_factor / np.pi)) - np.pi / (cosine_scaling_factor * 2)) ** 2)
-    surface_elevations *= all_scaling_value
+    if cosine_scaling_factor != 0:
+        all_scaling_value = np.multiply.outer(
+            np.cos(x_positions_vector / (bounds_mm[0][1] * (cosine_scaling_factor /
+                   np.pi)) - np.pi / (cosine_scaling_factor * 2)) ** 2,
+            np.cos(y_positions_vector / (bounds_mm[1][1] * (cosine_scaling_factor / np.pi)) - np.pi / (cosine_scaling_factor * 2)) ** 2)
+        surface_elevations *= all_scaling_value
 
     # This rescales and sets the maximum to 0.
     surface_elevations = surface_elevations * maximum_z_elevation_mm
