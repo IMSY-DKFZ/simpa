@@ -10,9 +10,6 @@ from simpa_tests.test_utils.tissue_composition_tests import compare_molecular_co
     get_fully_deoxygenated_blood_reference_dictionary, \
     get_lymph_node_reference_dictionary
 
-# FIXME temporary workaround for newest Intel architectures
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 VISUALISE = False
 
