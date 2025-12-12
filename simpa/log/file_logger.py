@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 import sys
 from simpa.utils.serializer import SerializableSIMPAClass
+from simpa.utils import Tags
 
 
 class Logger(SerializableSIMPAClass):
@@ -28,22 +29,43 @@ class Logger(SerializableSIMPAClass):
     _simpa_default_logging_path = str(Path.home())+"/simpa.log"
     _logger = None
 
-    def __new__(cls, path=None, force_new_instance=False, startup_verbose=False):
+    def __new__(cls, path=None, force_new_instance: bool = False, startup_verbose: bool = False,
+                logging_level: str = Tags.LOGGER_DEBUG):
         # This pattern can be used to realise a singleton implementation in Python
+        """
+        Here, we create an instance of the Logger class and set the logging level.
+        :param path: Where to write the log file.
+        :param force_new_instance: Whether to create a new instance of the Logger class or not.
+        :param startup_verbose: Whether to add a verbose for starting up the logger.
+        :param logging_level: the level of the logging module to use.
+        """
         if cls._instance is None or force_new_instance:
             cls._instance = super(Logger, cls).__new__(cls)
 
             if path is None:
                 path = cls._simpa_default_logging_path
 
+            if logging_level == Tags.LOGGER_DEBUG:
+                _logging_level = logging.DEBUG
+            elif logging_level == Tags.LOGGER_INFO:
+                _logging_level = logging.INFO
+            elif logging_level == Tags.LOGGER_WARNING:
+                _logging_level = logging.WARNING
+            elif logging_level == Tags.LOGGER_ERROR:
+                _logging_level = logging.ERROR
+            elif logging_level == Tags.LOGGER_CRITICAL:
+                _logging_level = logging.CRITICAL
+            else:
+                raise ValueError('Invalid logging level')
+
             cls._logger = logging.getLogger("SIMPA Logger")
-            cls._logger.setLevel(logging.DEBUG)
+            cls._logger.setLevel(_logging_level)
 
             console_handler = logging.StreamHandler(stream=sys.stdout)
             file_handler = logging.FileHandler(path, mode="w")
 
-            console_handler.setLevel(logging.DEBUG)
-            file_handler.setLevel(logging.DEBUG)
+            console_handler.setLevel(_logging_level)
+            file_handler.setLevel(_logging_level)
 
             console_handler.setFormatter(cls._simpa_logging_formatter)
             file_handler.setFormatter(cls._simpa_logging_formatter)
