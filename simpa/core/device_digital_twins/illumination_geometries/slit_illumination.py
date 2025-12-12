@@ -14,7 +14,7 @@ class SlitIlluminationGeometry(IlluminationGeometryBase):
     The device position is defined as the middle of the slit.
     """
 
-    def __init__(self, slit_vector_mm=None, direction_vector_mm=None, device_position_mm=None,
+    def __init__(self, slit_vector_mm: list = None, direction_vector_mm: list = None, device_position_mm=None,
                  field_of_view_extent_mm=None):
         """
         :param slit_vector_mm: Defines the slit in vector form. For example a slit along the x-axis with length 5mm

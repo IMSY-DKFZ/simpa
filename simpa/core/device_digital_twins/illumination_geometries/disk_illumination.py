@@ -4,6 +4,7 @@
 
 from simpa.core.device_digital_twins import IlluminationGeometryBase
 from simpa.utils import Tags
+from typing import Union
 
 
 class DiskIlluminationGeometry(IlluminationGeometryBase):
@@ -12,7 +13,7 @@ class DiskIlluminationGeometry(IlluminationGeometryBase):
     The device position is defined as the middle of the disk.
     """
 
-    def __init__(self, beam_radius_mm=None, device_position_mm=None, field_of_view_extent_mm=None):
+    def __init__(self, beam_radius_mm: Union[int, float] = None, device_position_mm=None, field_of_view_extent_mm=None):
         """
         :param beam_radius_mm: Radius of the disk in mm.
         :type beam_radius_mm: int, float
