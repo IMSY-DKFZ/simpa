@@ -204,8 +204,8 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             - Optional: Tags.DATA_FIELD_SPEED_OF_SOUND, Tags.DATA_FIELD_DENSITY,
                 Tags.DATA_FIELD_ALPHA_COEFF (scalar)
 
-        k_wave_settings : Settings
-            k-Wave configuration and simulation parameters (spacing, sensor settings, PML, GPU flag, etc.).
+        :input k_wave_settings: k-Wave configuration and simulation parameters (spacing, sensor
+            settings, PML, GPU flag, etc.).
 
         :return: Reconstructed image
         """
@@ -260,7 +260,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         )
 
         execution_options = SimulationExecutionOptions(
-            is_gpu_simulation=k_wave_settings[Tags.GPU],
+            is_gpu_simulation=k_wave_settings[Tags.GPU]
         )
 
         kspaceFirstOrdernD = kspaceFirstOrder3D if ndim == 3 else kspaceFirstOrder2D

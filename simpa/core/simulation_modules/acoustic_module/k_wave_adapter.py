@@ -245,8 +245,8 @@ class KWaveAdapter(AcousticAdapterBase):
             - Tags.KWAVE_PROPERTY_DIRECTIVITY_ANGLE (np.ndarray)
             - 3D only: Tags.KWAVE_PROPERTY_INTRINSIC_EULER_ANGLE (np.ndarray)
 
-        :param k_wave_settings: Settings
-            k-Wave configuration and simulation parameters (spacing, sensor settings, PML, GPU flag, etc.).
+        :param k_wave_settings: k-Wave configuration and simulation parameters (spacing, sensor
+            settings, PML, GPU flag, etc.).
 
         :return: Combined time series data (one trace per physical array element).
         :return: Number of simulated time steps.
