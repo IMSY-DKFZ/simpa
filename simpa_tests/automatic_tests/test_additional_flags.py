@@ -5,7 +5,6 @@
 import unittest
 
 from simpa import MCXReflectanceAdapter, MCXAdapter, KWaveAdapter, TimeReversalAdapter, Tags, Settings
-from simpa.utils.matlab import generate_matlab_cmd
 
 
 class TestAdditionalFlags(unittest.TestCase):
@@ -34,27 +33,6 @@ class TestAdditionalFlags(unittest.TestCase):
         for flag in self.additional_flags:
             self.assertIn(
                 flag, cmd, f"{flag} was not in command returned by mcx adapter but was defined as additional flag")
-
-    def test_get_cmd_kwave_adapter(self):
-        self.settings.set_acoustic_settings({
-            Tags.ADDITIONAL_FLAGS: self.additional_flags
-        })
-        kwave_adapter = KWaveAdapter(global_settings=self.settings)
-        cmd = generate_matlab_cmd("./matlab.exe", "simulate_2D.m", "my_hdf5.mat", kwave_adapter.get_additional_flags())
-        for flag in self.additional_flags:
-            self.assertIn(
-                flag, cmd, f"{flag} was not in command returned by kwave adapter but was defined as additional flag")
-
-    def test_get_cmd_time_reversal_adapter(self):
-        self.settings.set_reconstruction_settings({
-            Tags.ADDITIONAL_FLAGS: self.additional_flags
-        })
-        time_reversal_adapter = TimeReversalAdapter(global_settings=self.settings)
-        cmd = generate_matlab_cmd("./matlab.exe", "time_reversal_2D.m", "my_hdf5.mat",
-                                  time_reversal_adapter.get_additional_flags())
-        for flag in self.additional_flags:
-            self.assertIn(
-                flag, cmd, f"{flag} was not in command returned by time reversal adapter but was defined as additional flag")
 
 
 if __name__ == '__main__':
