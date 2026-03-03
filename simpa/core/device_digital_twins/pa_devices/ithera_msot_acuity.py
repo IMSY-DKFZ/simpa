@@ -14,7 +14,6 @@ from simpa.utils import Tags
 from simpa.utils.libraries.tissue_library import TissueLibrary
 import numpy as np
 
-
 class MSOTAcuityEcho(PhotoacousticDevice):
     """
     This class represents a digital twin of the MSOT Acuity Echo, manufactured by iThera Medical, Munich, Germany
@@ -217,6 +216,167 @@ class MSOTAcuityEcho(PhotoacousticDevice):
             Tags.STRUCTURE_TYPE: Tags.BACKGROUND
         })
         volume_creator_settings[Tags.STRUCTURES][Tags.BACKGROUND] = background_settings
+
+
+    def update_settings_for_use_of_segmentation_based_volume_creator(
+        self,
+        global_settings: Settings,
+    ):
+        """
+        Updates the volume creation settings of the segmentation based volume creator according to the size of the
+        device.  Adds a heavy-water layer, a mediprene membrane layer, and optionally a US-gel layer (controlled via Tags.US_GEL in the volume creation settings).
+        Only necessary if the segmentation map does not already include these layers.
+
+        Supports both input formats accepted by ``SegmentationBasedAdapter``:
+
+        * 3D integer label map``[X, Y, Z]``: new z-voxels are filled with the new integer label.
+        * 4D float fraction map ``[C, X, Y, Z]``: existing channels are zero-padded in z and a new
+          channel (index == new label) is appended with fraction 1.0 in the new z-slice.
+          This requires labels to be dense (0...N-1) so that the channel index equals the label.
+
+        :param global_settings: Settings for the entire simulation pipeline.
+        """
+        try:
+            volume_creator_settings = Settings(
+                global_settings.get_volume_creation_settings()
+            )
+        except KeyError:
+            self.logger.warning(
+                "You called the update_settings_for_use_of_segmentation_based_volume_creator method "
+                "even though there are no volume creation settings defined in the "
+                "settings dictionary."
+            )
+            return
+
+        segmentation_map = volume_creator_settings[Tags.INPUT_SEGMENTATION_VOLUME]
+        segmentation_class_mapping = volume_creator_settings[Tags.SEGMENTATION_CLASS_MAPPING]
+        spacing_mm = global_settings[Tags.SPACING_MM]
+        z_dim_position_shift_mm = 0
+
+        def _prepend_layer(seg, n_px, label):
+            """Prepend n_px voxels along z for a given label.
+
+            3D [X,Y,Z]: fills the new voxels with the integer label.
+            4D [C,X,Y,Z]: pads existing channels with 0 in z, then appends a new channel
+            (index == label) with 1.0 in the new z-slice.  Labels must be dense so that
+            label == seg.shape[0] (i.e. the new channel index matches the label value).
+            """
+            if seg.ndim == 3:
+                return np.pad(seg, ((0, 0), (0, 0), (n_px, 0)), mode="constant", constant_values=label)
+            else:  # 4D [C, X, Y, Z]
+                # Zero-pad all existing class channels in z (new region belongs to a new class)
+                padded = np.pad(seg, ((0, 0), (0, 0), (0, 0), (n_px, 0)), mode="constant", constant_values=0)
+                # Append new channel: fraction 1.0 in the prepended slice, 0.0 everywhere else
+                new_ch = np.zeros((1, seg.shape[1], seg.shape[2], padded.shape[3]), dtype=padded.dtype)
+                new_ch[0, :, :, :n_px] = 1.0
+                return np.concatenate([padded, new_ch], axis=0)
+
+        # Allocate new integer labels for the device layers by incrementing past the highest
+        # existing label, so they never collide with user-defined segmentation classes.
+        used_labels = set(int(l) for l in segmentation_class_mapping.keys())
+
+        def _next_unused_label():
+            label = max(used_labels) + 1
+            used_labels.add(label)
+            return label
+
+        # --- US gel ---
+        # If specified, add layer of US gel
+        # Thickness is drawn from a normal distribution (like in model-based volume creation case).
+        if volume_creator_settings.get(Tags.US_GEL, False):
+            us_gel_thickness_mm = np.random.normal(0.4, 0.1)
+            us_gel_thickness_px = int(round(us_gel_thickness_mm / spacing_mm))
+            us_gel_label = _next_unused_label()
+            segmentation_map = _prepend_layer(segmentation_map, us_gel_thickness_px, us_gel_label)
+            segmentation_class_mapping[us_gel_label] = TissueLibrary.ultrasound_gel()
+            z_dim_position_shift_mm += us_gel_thickness_px * spacing_mm
+            self.logger.debug("Added an ultrasound gel layer to the segmentation map.")
+
+        # --- Mediprene membrane ---
+        # Fixed physical thickness of the membrane (self.mediprene_membrane_height_mm).
+        mediprene_thickness_px = int(round(self.mediprene_membrane_height_mm / spacing_mm))
+        mediprene_label = _next_unused_label()
+        segmentation_map = _prepend_layer(segmentation_map, mediprene_thickness_px, mediprene_label)
+        segmentation_class_mapping[mediprene_label] = TissueLibrary.mediprene()
+        z_dim_position_shift_mm += mediprene_thickness_px * spacing_mm
+        self.logger.debug("Added a mediprene layer to the segmentation map.")
+
+        # --- Heavy water ---
+        # Fills the rest of the probe with heavy water (probe height minus the membrane thickness).
+        heavy_water_label = _next_unused_label()
+        segmentation_class_mapping[heavy_water_label] = TissueLibrary.heavy_water()
+        heavy_water_layer_height_mm = self.probe_height_mm - self.mediprene_membrane_height_mm
+        heavy_water_layer_height_px = int(round(heavy_water_layer_height_mm / spacing_mm))
+        segmentation_map = _prepend_layer(segmentation_map, heavy_water_layer_height_px, heavy_water_label)
+        z_dim_position_shift_mm += heavy_water_layer_height_px * spacing_mm
+        self.logger.debug(
+            f"Added a {heavy_water_layer_height_px * spacing_mm:.2f} mm heavy water layer to the segmentation map."
+        )
+
+        # Update global z-dimension 
+        global_settings[Tags.DIM_VOLUME_Z_MM] += z_dim_position_shift_mm
+        self.logger.debug(f"Changed Tags.DIM_VOLUME_Z_MM to {global_settings[Tags.DIM_VOLUME_Z_MM]}")
+
+        # Widen the volume along x if narrower than the probe footprint
+        # One extra voxel (0.5 on each side) guards against rounding errors
+        if global_settings[Tags.DIM_VOLUME_X_MM] < round(self.detection_geometry.probe_width_mm) + spacing_mm:
+            width_shift_for_structures_mm = (
+                round(self.detection_geometry.probe_width_mm)
+                + spacing_mm
+                - global_settings[Tags.DIM_VOLUME_X_MM]
+            ) / 2
+            # Split the total pixel shift symmetrically left/right.
+            total_shift_pixels = int(round(2 * width_shift_for_structures_mm / spacing_mm))
+            left_shift_pixels = total_shift_pixels // 2
+            right_shift_pixels = total_shift_pixels - left_shift_pixels
+            # For the segmentation map itself, x is axis 0 for 3D but axis 1 for 4D [C,X,Y,Z].
+            seg_padding_width = (
+                ((0, 0), (left_shift_pixels, right_shift_pixels), (0, 0), (0, 0))
+                if np.ndim(segmentation_map) == 4
+                else ((left_shift_pixels, right_shift_pixels), (0, 0), (0, 0))
+            )
+            segmentation_map = np.pad(segmentation_map, seg_padding_width, mode="edge")
+            global_settings[Tags.DIM_VOLUME_X_MM] = int(round(self.detection_geometry.probe_width_mm)) + spacing_mm
+            self.logger.debug(
+                f"Changed Tags.DIM_VOLUME_X_MM to {global_settings[Tags.DIM_VOLUME_X_MM]}, and expanded "
+                f"the segmentation map accordingly using edge padding"
+            )
+        else:
+            width_shift_for_structures_mm = 0
+
+        # Write the modified segmentation map back into the settings.
+        global_settings[Tags.VOLUME_CREATION_MODEL_SETTINGS][Tags.INPUT_SEGMENTATION_VOLUME] = segmentation_map
+        self.logger.debug("The segmentation volume has been adjusted to fit the MSOT device")
+
+        # Shift device, detector, and illuminator positions
+        # The probe layers are prepended at z=0, pushing the tissue surface downward by probe_height_mm.
+        # The x-shift centres the device over the (potentially widened) volume.
+        self.device_position_mm = np.add(
+            self.device_position_mm,
+            np.array([width_shift_for_structures_mm, 0, self.probe_height_mm]),
+        )
+        self.detection_geometry_position_vector = np.add(
+            self.device_position_mm, np.array([0, 0, self.focus_in_field_of_view_mm])
+        )
+        detection_geometry = CurvedArrayDetectionGeometry(
+            pitch_mm=0.34,
+            radius_mm=40,
+            number_detector_elements=256,
+            detector_element_width_mm=0.24,
+            detector_element_length_mm=13,
+            center_frequency_hz=3.96e6,
+            bandwidth_percent=153,
+            sampling_frequency_mhz=40,
+            angular_origin_offset=np.pi,
+            device_position_mm=self.detection_geometry_position_vector,
+            field_of_view_extent_mm=self.field_of_view_extent_mm,
+        )
+        self.set_detection_geometry(detection_geometry)
+        for illumination_geom in self.illumination_geometries:
+            illumination_geom.device_position_mm = np.add(
+                illumination_geom.device_position_mm,
+                np.array([width_shift_for_structures_mm, 0, self.probe_height_mm]),
+            )
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
