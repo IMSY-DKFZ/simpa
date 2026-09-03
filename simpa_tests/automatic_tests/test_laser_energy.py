@@ -90,7 +90,7 @@ class TestLaserEnergy(unittest.TestCase):
         ]
 
         try:
-            simulate(pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
+            simulate(pipeline, settings, RSOMExplorerP50(0.1, 1, 1, device_position_mm=np.array([0.5, 0.5, 0.0])))
         except ValueError as e:
             raise e
         finally:

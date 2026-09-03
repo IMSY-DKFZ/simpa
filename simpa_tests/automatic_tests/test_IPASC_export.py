@@ -80,7 +80,7 @@ class TestDeviceUUID(unittest.TestCase):
             ReconstructionTestAdapter(self.settings)
         ]
 
-        self.device = RSOMExplorerP50(0.1, 12, 12)
+        self.device = RSOMExplorerP50(0.1, 12, 12, device_position_mm = np.array([ 2.0, 2.0, 0.0]))
 
         self.expected_ipasc_output_path = None
         self.expected_ipasc_output_path = None
