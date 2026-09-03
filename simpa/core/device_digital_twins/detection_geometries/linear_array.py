@@ -51,14 +51,8 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
         self.pitch_mm = pitch_mm
         self.probe_width_mm = (number_detector_elements - 1) * self.pitch_mm
 
-    def check_settings_prerequisites(self, global_settings: Settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_X_MM] < self.probe_width_mm + global_settings[Tags.SPACING_MM]:
-            self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
-                              "Must be at least {} mm but was {} mm"
-                              .format(self.probe_width_mm + global_settings[Tags.SPACING_MM],
-                                      global_settings[Tags.DIM_VOLUME_X_MM]))
-            return False
-        return True
+    def check_settings_prerequisites(self, global_settings) -> bool:
+        return self.check_detector_elements_inside_acoustic_grid(global_settings)
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
         pass
@@ -87,6 +81,11 @@ class LinearArrayDetectionGeometry(DetectionGeometryBase):
         detector_orientations = np.zeros((self.number_detector_elements, 3))
         detector_orientations[:, 2] = -1
         return detector_orientations
+
+    def get_detector_element_surface_axes(self):
+        width_axes = np.tile(np.array([1.0, 0.0, 0.0]), (self.number_detector_elements, 1))
+        length_axes = np.tile(np.array([0.0, 1.0, 0.0]), (self.number_detector_elements, 1))
+        return width_axes, length_axes
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__

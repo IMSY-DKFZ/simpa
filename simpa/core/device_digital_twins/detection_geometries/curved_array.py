@@ -68,19 +68,7 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
             self.field_of_view_extent_mm = field_of_view_extent_mm
 
     def check_settings_prerequisites(self, global_settings) -> bool:
-        if global_settings[Tags.DIM_VOLUME_Z_MM] < (self.probe_height_mm + global_settings[Tags.SPACING_MM]):
-            self.logger.error("Volume z dimension is too small to encompass the device in simulation!"
-                              "Must be at least {} mm but was {} mm"
-                              .format((self.probe_height_mm + global_settings[Tags.SPACING_MM]),
-                                      global_settings[Tags.DIM_VOLUME_Z_MM]))
-            return False
-        if global_settings[Tags.DIM_VOLUME_X_MM] < (self.probe_width_mm + global_settings[Tags.SPACING_MM]):
-            self.logger.error("Volume x dimension is too small to encompass MSOT device in simulation!"
-                              "Must be at least {} mm but was {} mm"
-                              .format(self.probe_width_mm + global_settings[Tags.SPACING_MM],
-                                      global_settings[Tags.DIM_VOLUME_X_MM]))
-            return False
-        return True
+        return self.check_detector_elements_inside_acoustic_grid(global_settings)
 
     def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
         pass
@@ -104,6 +92,13 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
         for dim in range(3):
             detector_orientations[:, dim] = detector_orientations[:, dim] / norm
         return detector_orientations
+
+    def get_detector_element_surface_axes(self):
+        normals = np.asarray(self.get_detector_element_orientations(), dtype = float)
+        length_axes = np.tile(np.array([0.0, 1.0, 0.0]), (self.number_detector_elements, 1))
+        width_axes = np.cross(length_axes, normals)
+        width_axes /= np.linalg.norm(width_axes, axis=1, keepdims=True)
+        return width_axes, length_axes
 
     def serialize(self) -> dict:
         serialized_device = self.__dict__
