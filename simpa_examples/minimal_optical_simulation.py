@@ -146,7 +146,10 @@ def run_minimal_optical_simulation(spacing: float | int = 0.5, path_manager=None
         def __init__(self):
             super().__init__(device_position_mm=np.asarray([VOLUME_TRANSDUCER_DIM_IN_MM/2,
                                                             VOLUME_PLANAR_DIM_IN_MM/2, 0]))
-            self.set_detection_geometry(sp.LinearArrayDetectionGeometry())
+            self.set_detection_geometry(
+                sp.LinearArrayDetectionGeometry(),
+                detector_position_relative_to_pa_device=np.zeros(3)
+            )
             self.add_illumination_geometry(sp.SlitIlluminationGeometry(slit_vector_mm=[20, 0, 0],
                                                                        direction_vector_mm=[0, 0, 1]))
 
