@@ -2,9 +2,11 @@
 # SPDX-FileCopyrightText: 2021 Janek Groehl
 # SPDX-License-Identifier: MIT
 
-import os
-import inspect
 import glob
+import inspect
+import os
+from typing import Union
+
 import numpy as np
 import matplotlib.pylab as plt
 import torch
@@ -18,26 +20,26 @@ class Spectrum(SerializableSIMPAClass, object):
 
     Attributes:
         spectrum_name (str): The name of the spectrum.
-        wavelengths (np.ndarray): Array of wavelengths.
+        wavelengths (torch.Tensor): Array of wavelengths.
         max_wavelength (int): Maximum wavelength in the spectrum.
         min_wavelength (int): Minimum wavelength in the spectrum.
-        values (np.ndarray): Corresponding values for each wavelength.
+        values (torch.Tensor): Corresponding values for each wavelength.
         values_interp (np.ndarray): Interpolated values across a continuous range of wavelengths.
     """
 
-    def __init__(self, spectrum_name: str, wavelengths: np.ndarray, values: np.ndarray):
+    def __init__(self, spectrum_name: str, wavelengths: Union[np.ndarray, torch.Tensor],
+                 values: Union[np.ndarray, torch.Tensor]):
         """
         Initializes a Spectrum instance.
 
         :param spectrum_name: Name of the spectrum.
-        :param wavelengths: Array of wavelengths.
-        :param values: Corresponding values of the spectrum at each wavelength.
+        :param wavelengths: NumPy array or Torch tensor of wavelengths.
+        :param values: NumPy array or Torch tensor of corresponding spectrum values.
 
         :raises ValueError: If the shape of wavelengths does not match the shape of values.
         """
-        if isinstance(values, np.ndarray):
-            values = torch.from_numpy(values)
-        wavelengths = torch.from_numpy(wavelengths)
+        wavelengths = torch.as_tensor(wavelengths)
+        values = torch.as_tensor(values)
         self.spectrum_name = spectrum_name
         self.wavelengths = wavelengths
         self.max_wavelength = int(torch.max(wavelengths))
