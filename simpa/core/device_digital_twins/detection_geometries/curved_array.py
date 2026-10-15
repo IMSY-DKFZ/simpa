@@ -4,8 +4,7 @@
 import numpy as np
 
 from simpa.core.device_digital_twins import DetectionGeometryBase
-from simpa.utils import Tags
-
+from simpa.utils import Tags, Settings
 
 class CurvedArrayDetectionGeometry(DetectionGeometryBase):
     """
@@ -82,7 +81,10 @@ class CurvedArrayDetectionGeometry(DetectionGeometryBase):
             return False
         return True
 
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings) -> Settings:
+        pass
+
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings) -> Settings:
         pass
 
     def get_detector_element_positions_base_mm(self) -> np.ndarray:

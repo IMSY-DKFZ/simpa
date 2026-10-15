@@ -208,6 +208,12 @@ class Tags:
     only occupying a partial volume of the voxel. \n
     Usage: adapter versatile_volume_creation 
     """
+    PARTIAL_VOLUME_KERNEL_SIZE = ("partial_volume_kernel_size", int)
+    """
+    Integer kernel size for the uniform_filter used to smooth partial-volume boundary fractions
+    in SegmentationBasedAdapter. Default: 3 (1-voxel-wide on each side of a boundary, must be odd number).\n
+    Usage: adapter segmentation_based_adapter
+    """
 
     STRUCTURE_START_MM = ("structure_start", (list, tuple, np.ndarray))
     """
@@ -374,7 +380,9 @@ class Tags:
     LASER_PULSE_ENERGY_IN_MILLIJOULE = ("laser_pulse_energy_in_millijoule", (int, np.integer, float, list,
                                                                              range, tuple, np.ndarray))
     """
-    Laser pulse energy used in the optical simulation. Can be an iterable if energy varies with wavelength.\n
+    Laser pulse energy used in the optical simulation. If it is considered wavelength dependant, should be
+    an iterable compatible with the size of the wavelength list. \n
+
     Usage: module optical_simulation_module
     """
 
