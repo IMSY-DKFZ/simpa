@@ -9,6 +9,7 @@ import hashlib
 import uuid
 from simpa.utils.serializer import SerializableSIMPAClass
 from simpa.utils.calculate import are_equal
+from simpa.utils import Settings
 
 
 class DigitalDeviceTwinBase(SerializableSIMPAClass):
@@ -72,11 +73,21 @@ class DigitalDeviceTwinBase(SerializableSIMPAClass):
         pass
 
     @abstractmethod
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings) -> Settings:
         """
         This method can be overwritten by a PA device if the device poses special constraints to the
         volume that should be considered by the model-based volume creator.
 
+        :param global_settings: Settings for the entire simulation pipeline.
+        :type global_settings: Settings
+        """
+        pass
+
+    @abstractmethod
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings) -> Settings:
+        """
+        This method can be overwritten by a PA device if the device poses special constraints to the
+        volume that should be considered by the segmentation-based volume creator.
         :param global_settings: Settings for the entire simulation pipeline.
         :type global_settings: Settings
         """

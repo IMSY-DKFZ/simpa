@@ -208,6 +208,12 @@ class Tags:
     only occupying a partial volume of the voxel. \n
     Usage: adapter versatile_volume_creation 
     """
+    PARTIAL_VOLUME_KERNEL_SIZE = ("partial_volume_kernel_size", int)
+    """
+    Integer kernel size for the uniform_filter used to smooth partial-volume boundary fractions
+    in SegmentationBasedAdapter. Default: 3 (1-voxel-wide on each side of a boundary, must be odd number).\n
+    Usage: adapter segmentation_based_adapter
+    """
 
     STRUCTURE_START_MM = ("structure_start", (list, tuple, np.ndarray))
     """
