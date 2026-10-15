@@ -50,6 +50,7 @@ class Logger(SerializableSIMPAClass):
 
             cls._logger.addHandler(console_handler)
             cls._logger.addHandler(file_handler)
+            cls._logger.propagate = False
 
             if startup_verbose:
                 cls._logger.debug("##############################")
