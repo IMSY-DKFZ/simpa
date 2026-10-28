@@ -33,6 +33,32 @@ class TestPathManager(unittest.TestCase):
         self.simpa_home = self.current_file_path + "/../../" + self.path
         self.simpa_home_exists = os.path.exists(self.simpa_home)
 
+        # These tests temporarily rename real user/repository configuration
+        # files. Snapshot every unique config and backup path so unittest's
+        # cleanup restores the exact pre-test state even when a test raises.
+        config_paths = {
+            os.path.normpath(self.home_file),
+            os.path.normpath(self.cwd_file),
+            os.path.normpath(self.simpa_home),
+        }
+        self.config_file_snapshots = {}
+        for config_path in config_paths:
+            for candidate in (config_path, config_path + ".backup"):
+                self.config_file_snapshots[candidate] = (
+                    Path(candidate).read_bytes() if os.path.isfile(candidate) else None
+                )
+        self.addCleanup(self.restore_config_file_snapshots)
+
+    def restore_config_file_snapshots(self):
+        """Restore path configurations even if a path-manager test fails early."""
+        for path, content in self.config_file_snapshots.items():
+            if content is None:
+                if os.path.isfile(path):
+                    os.remove(path)
+            else:
+                Path(path).parent.mkdir(parents=True, exist_ok=True)
+                Path(path).write_bytes(content)
+
     @unittest.expectedFailure
     @patch.dict(os.environ, {Tags.SIMPA_SAVE_DIRECTORY_VARNAME: None,
                              Tags.MCX_BINARY_PATH_VARNAME: None})
@@ -50,7 +76,6 @@ class TestPathManager(unittest.TestCase):
         self.assertEqual(path_manager.get_hdf5_file_save_path(), "test_simpa_save_path")
 
     def test_instantiate_when_file_is_in_home(self):
-
         if self.home_file_exists:
             self.hide_config_file(self.home_file)
         self.write_config_file(self.home_file)
@@ -58,49 +83,32 @@ class TestPathManager(unittest.TestCase):
         path_manager = PathManager()
         self.check_path_manager_correctly_loaded(path_manager)
 
-        self.delete_config_file(self.home_file)
-        if self.home_file_exists:
-            self.restore_config_file(self.home_file)
-
     def test_instantiate_when_file_is_in_cwd(self):
         if self.home_file_exists:
             self.hide_config_file(self.home_file)
-        if self.simpa_home_exists:
-            self.hide_config_file(self.simpa_home)
-        if not self.cwd_file_exists:
-            self.write_config_file(self.cwd_file)
+        if self.cwd_file_exists:
+            self.hide_config_file(self.cwd_file)
+        self.write_config_file(self.cwd_file)
 
         path_manager = PathManager()
         self.check_path_manager_correctly_loaded(path_manager)
-
-        if self.home_file_exists:
-            self.restore_config_file(self.home_file)
-        if self.simpa_home_exists:
-            self.restore_config_file(self.simpa_home)
-        if not self.cwd_file_exists:
-            self.delete_config_file(self.cwd_file)
 
     def test_instantiate_when_file_is_in_simpa_home(self):
         pathmanager_source_file = inspect.getsourcefile(PathManager)
         if "site-packages" not in pathmanager_source_file:
             if self.home_file_exists:
                 self.hide_config_file(self.home_file)
-            if self.cwd_file_exists:
-                self.hide_config_file(self.cwd_file)
             if self.simpa_home_exists:
                 self.hide_config_file(self.simpa_home)
             self.write_config_file(self.simpa_home)
 
-            path_manager = PathManager()
-            self.check_path_manager_correctly_loaded(path_manager)
-
-            if self.home_file_exists:
-                self.restore_config_file(self.home_file)
-            if self.cwd_file_exists:
-                self.restore_config_file(self.cwd_file)
-            self.delete_config_file(self.simpa_home)
-            if self.simpa_home_exists:
-                self.restore_config_file(self.simpa_home)
+            # The repository root is both the normal CWD and SIMPA home when
+            # this suite is launched from the project root. Point the CWD
+            # lookup elsewhere so this test exercises the SIMPA-home branch.
+            with patch('simpa.utils.path_manager.os.getcwd',
+                       return_value=self.current_file_path):
+                path_manager = PathManager()
+                self.check_path_manager_correctly_loaded(path_manager)
 
     def check_path_manager_correctly_loaded(self, path_manager: PathManager):
         self.assertEqual(path_manager.get_hdf5_file_save_path(), self.save_path)

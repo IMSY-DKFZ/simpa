@@ -6,7 +6,6 @@ from kwave.kgrid import kWaveGrid
 from kwave.kmedium import kWaveMedium
 from kwave.ksource import kSource
 from kwave.ksensor import kSensor
-from kwave.options.simulation_execution_options import SimulationExecutionOptions
 from kwave.options.simulation_options import SimulationOptions
 from kwave.kspaceFirstOrder2D import kspaceFirstOrder2D
 from kwave.kspaceFirstOrder3D import kspaceFirstOrder3D
@@ -18,6 +17,8 @@ from simpa.utils.settings import Settings
 from simpa.core.simulation_modules.reconstruction_module import ReconstructionAdapterBase
 from simpa.core.device_digital_twins import LinearArrayDetectionGeometry
 import numpy as np
+
+from simpa.core.simulation_modules.acoustic_module.k_wave_adapter import KWaveAdapter
 
 
 class TimeReversalAdapter(ReconstructionAdapterBase):
@@ -74,14 +75,26 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         if Tags.ACOUSTIC_SIMULATION_3D not in self.component_settings or not \
                 self.component_settings[Tags.ACOUSTIC_SIMULATION_3D]:
             sizes = (volume_z_dim, volume_x_dim)
-            sensor_map = np.zeros(sizes)
-            sensor_map[detector_positions_voxels[:, 2]+1, detector_positions_voxels[:, 0]+1] = 1
+            sensor_indices = detector_positions_voxels[:, [2, 0]]
+            # sensor_map = np.zeros(sizes)
+            # sensor_map[detector_positions_voxels[:, 2]+1, detector_positions_voxels[:, 0]+1] = 1
         else:
             sizes = (volume_z_dim, volume_y_dim, volume_x_dim)
-            sensor_map = np.zeros(sizes)
-            sensor_map[detector_positions_voxels[:, 2]+1,
-                       detector_positions_voxels[:, 1]+1,
-                       detector_positions_voxels[:, 0]+1] = 1
+            sensor_indices = detector_positions_voxels[:, [2, 1, 0]]
+
+            # sensor_map = np.zeros(sizes)
+            # sensor_map[detector_positions_voxels[:, 2]+1,
+            #            detector_positions_voxels[:, 1]+1,
+            #            detector_positions_voxels[:, 0]+1] = 1
+
+        grid_shape = np.asarray(sizes)
+        if np.any(sensor_indices < 0) or np.any(sensor_indices >= grid_shape):
+            raise ValueError(
+                "At least one detector position is outside the reconstruction grid."
+            )
+
+        sensor_map = np.zeros(sizes)
+        sensor_map[tuple(sensor_indices.T)] = 1
 
         # check that the spacing is large enough for all detector elements to be on the sensor map
         det_elements_sensor_map = np.count_nonzero(sensor_map)
@@ -102,7 +115,7 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             if acoustic_property in self.component_settings:
                 try:
                     input_data[acoustic_property] = self.component_settings[acoustic_property]
-                except ValueError or KeyError:
+                except (ValueError, KeyError):
                     self.logger.error("{} not specified.".format(acoustic_property))
 
         return input_data, spacing_in_mm
@@ -139,7 +152,8 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         possible_k_wave_parameters = [Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.KWAVE_PROPERTY_ALPHA_POWER, Tags.GPU, Tags.KWAVE_PROPERTY_PMLInside, Tags.KWAVE_PROPERTY_PMLAlpha, Tags.KWAVE_PROPERTY_PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME,
-                                      Tags.SENSOR_DIRECTIVITY_PATTERN]
+                                      Tags.SENSOR_DIRECTIVITY_PATTERN,
+                                      Tags.ACOUSTIC_MODEL_BINARY_PATH, Tags.ADDITIONAL_FLAGS]
 
         pa_device = detection_geometry
         k_wave_settings = Settings({
@@ -247,7 +261,24 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
         if ndim == 2:
             #  kwave expects the time series data to be in an order
             # "based on the angle that each sensor point makes with the centre of the grid"
-            time_series_data = reorder_sensor_data(kgrid, sensor, time_series_data)
+            # time_series_data = reorder_sensor_data(kgrid, sensor, time_series_data)
+
+            sensor_labels = np.arange(
+                time_series_data.shape[0]
+            )[:, np.newaxis]
+
+            angular_order = np.asarray(
+                reorder_sensor_data(kgrid, sensor, sensor_labels)
+            ).ravel().astype(int)
+
+            if not np.array_equal(
+                    np.sort(angular_order),
+                    np.arange(time_series_data.shape[0])):
+                raise ValueError(
+                    "The sensor mask and time-series rows do not define the same detectors."
+                )
+
+            time_series_data = time_series_data[np.argsort(angular_order)]
 
         sensor.time_reversal_boundary_data = time_series_data
 
@@ -259,8 +290,10 @@ class TimeReversalAdapter(ReconstructionAdapterBase):
             save_to_disk=True
         )
 
-        execution_options = SimulationExecutionOptions(
-            is_gpu_simulation=k_wave_settings[Tags.GPU]
+        execution_options = KWaveAdapter._create_execution_options(
+            is_gpu_simulation=k_wave_settings[Tags.GPU],
+            binary_path=k_wave_settings.get(Tags.ACOUSTIC_MODEL_BINARY_PATH, None),
+            additional_flags=k_wave_settings.get(Tags.ADDITIONAL_FLAGS, None),
         )
 
         kspaceFirstOrdernD = kspaceFirstOrder3D if ndim == 3 else kspaceFirstOrder2D

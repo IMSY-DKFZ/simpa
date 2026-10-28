@@ -8,7 +8,7 @@ from simpa.utils import Settings, Tags
 import numpy as np
 
 
-class TestCurvedArray(unittest.TestCase):
+class TestLinearArray(unittest.TestCase):
 
     def setUp(self):
 
@@ -40,15 +40,13 @@ class TestCurvedArray(unittest.TestCase):
             assert (np.abs(detector_orientations[element] - np.array([0, 0, -1])) < 1e-10).all()
 
     def test_simple_detection_geometry_prerequisite_check(self):
-        self.VOLUME_WIDTH_IN_MM = 3 + self.SPACING
-
-        settings = Settings({Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM, Tags.SPACING_MM: self.SPACING})
+        settings = Settings({Tags.DIM_VOLUME_X_MM: 5, Tags.DIM_VOLUME_Y_MM: 2, Tags.DIM_VOLUME_Z_MM: 1, Tags.SPACING_MM: self.SPACING})
 
         detection_geometry = LinearArrayDetectionGeometry(pitch_mm=1,
                                                           number_detector_elements=4,
-                                                          )
+                                                          device_position_mm=np.array([2.0, 0.25, 0.0]))
 
         self.assertTrue(detection_geometry.check_settings_prerequisites(settings))
 
-        settings[Tags.DIM_VOLUME_X_MM] = self.VOLUME_WIDTH_IN_MM - self.SPACING
+        settings[Tags.DIM_VOLUME_X_MM] = 4
         self.assertFalse(detection_geometry.check_settings_prerequisites(settings))

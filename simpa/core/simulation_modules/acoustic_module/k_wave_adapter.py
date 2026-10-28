@@ -14,6 +14,8 @@ from kwave.kspaceFirstOrder3D import kspaceFirstOrder3D
 import numpy as np
 from scipy.spatial.transform import Rotation
 
+from pathlib import Path
+
 from simpa.core.device_digital_twins import (CurvedArrayDetectionGeometry,
                                              DetectionGeometryBase)
 from simpa.core.simulation_modules.acoustic_module import \
@@ -94,7 +96,9 @@ class KWaveAdapter(AcousticAdapterBase):
         data_dict[Tags.DATA_FIELD_ALPHA_COEFF] = load_data_field(file_path, Tags.DATA_FIELD_ALPHA_COEFF)
 
         pa_device = detection_geometry
-        pa_device.check_settings_prerequisites(self.global_settings)
+        if not pa_device.check_settings_prerequisites(self.global_settings):
+            raise ValueError("Physical detector elements are not fully contained within the acoustic grid.")
+
         field_of_view_extent = pa_device.field_of_view_extent_mm
         detector_positions_mm = pa_device.get_detector_element_positions_accounting_for_device_position_mm()
         self.logger.debug(f"field_of_view_extent: {field_of_view_extent}")
@@ -203,7 +207,8 @@ class KWaveAdapter(AcousticAdapterBase):
         possible_k_wave_parameters = [Tags.SPACING_MM, Tags.MODEL_SENSOR_FREQUENCY_RESPONSE,
                                       Tags.KWAVE_PROPERTY_ALPHA_POWER, Tags.GPU, Tags.KWAVE_PROPERTY_PMLInside, Tags.KWAVE_PROPERTY_PMLAlpha, Tags.KWAVE_PROPERTY_PlotPML,
                                       Tags.RECORDMOVIE, Tags.MOVIENAME, Tags.ACOUSTIC_LOG_SCALE,
-                                      Tags.SENSOR_DIRECTIVITY_PATTERN, Tags.KWAVE_PROPERTY_INITIAL_PRESSURE_SMOOTHING]
+                                      Tags.SENSOR_DIRECTIVITY_PATTERN, Tags.KWAVE_PROPERTY_INITIAL_PRESSURE_SMOOTHING,
+                                      Tags.ADDITIONAL_FLAGS]
 
         k_wave_settings = Settings({
             Tags.SENSOR_NUM_ELEMENTS: pa_device.number_detector_elements,
@@ -226,12 +231,85 @@ class KWaveAdapter(AcousticAdapterBase):
             else:
                 self.logger.warning(f"Did not find parameter {parameter} in any settings.")
 
+        self._warn_about_internal_pml_detector_placement(pa_device, k_wave_settings)
+
         raw_time_series_data, Nt, dt = self.run_k_wave_simulation(data_dict, k_wave_settings)
 
         self.global_settings[Tags.K_WAVE_SPECIFIC_DT] = dt
         self.global_settings[Tags.K_WAVE_SPECIFIC_NT] = Nt
 
         return raw_time_series_data, self.global_settings
+
+    @staticmethod
+    def _translate_additional_flags_to_execution_kwargs(additional_flags):
+        """Translate supported command-style flags into k-wave-python options."""
+        execution_kwargs = {}
+        if additional_flags is None:
+            return execution_kwargs
+
+        flags = [str(flag) for flag in additional_flags]
+        option_types = {
+            '--verbose': ('verbose_level', int),
+            '--device-num': ('device_num', int),
+            '--num-threads': ('num_threads', int),
+            '--system-call': ('system_call', str),
+            '--binary-path': ('binary_path', str),
+            '--binary-name': ('binary_name', str),
+            '--binary-dir': ('binary_dir', str),
+        }
+        boolean_options = {
+            '--thread-binding': 'thread_binding',
+            '--show-sim-log': 'show_sim_log',
+        }
+
+        index = 0
+        while index < len(flags):
+            flag = flags[index]
+            if flag in option_types and index + 1 < len(flags):
+                option_name, option_type = option_types[flag]
+                execution_kwargs[option_name] = option_type(flags[index + 1])
+                index += 2
+            elif flag in boolean_options and index + 1 < len(flags):
+                execution_kwargs[boolean_options[flag]] = flags[index + 1].lower() in ('1', 'true', 'yes')
+                index += 2
+            else:
+                index += 1
+
+        return execution_kwargs
+
+    @classmethod
+    def _create_execution_options(cls, is_gpu_simulation, binary_path=None, additional_flags=None):
+        """Create k-wave-python execution options from SIMPA settings."""
+        execution_kwargs = cls._translate_additional_flags_to_execution_kwargs(additional_flags)
+        configured_binary_path = execution_kwargs.get('binary_path', binary_path)
+        if configured_binary_path is not None:
+            configured_binary_path = Path(configured_binary_path)
+            if configured_binary_path.stem.lower() in {
+                    'kspacefirstorder-omp', 'kspacefirstorder-cuda'}:
+                binary_stem = 'kspaceFirstOrder-CUDA' if is_gpu_simulation else 'kspaceFirstOrder-OMP'
+                configured_binary_path = configured_binary_path.with_name(
+                    binary_stem + configured_binary_path.suffix
+                )
+            execution_kwargs['binary_path'] = configured_binary_path
+
+        return SimulationExecutionOptions(
+            is_gpu_simulation=is_gpu_simulation,
+            **execution_kwargs,
+        )
+
+    def _warn_about_internal_pml_detector_placement(
+            self, detection_geometry: DetectionGeometryBase,
+            k_wave_settings: Settings) -> None:
+        if not k_wave_settings.get(Tags.KWAVE_PROPERTY_PMLInside, False):
+            return
+
+        detector_lower_mm, detector_upper_mm = detection_geometry.get_physical_detector_bounds_mm()
+        self.logger.warning(
+            "k-Wave is configured with pml_inside=True. SIMPA has confirmed that the complete physical detector "
+            "is inside the acoustic grid but cannot confirm that the detector is outside the internal PML. "
+            f"Physical detector bounds are {detector_lower_mm}-{detector_upper_mm} mm. Measurements may be "
+            "attenuated or distorted if these bounds overlap the PML."
+        )
 
     def run_k_wave_simulation(self, data: dict, k_wave_settings: Settings):
         """
@@ -253,8 +331,6 @@ class KWaveAdapter(AcousticAdapterBase):
         :return: Time step size [s].
 
         """
-        GEL_LAYER_HEIGHT = 3
-
         initial_pressure = data[Tags.DATA_FIELD_INITIAL_PRESSURE]
         ndim = initial_pressure.ndim
         assert ndim in (2, 3), "Only 2D and 3D simulations are supported."
@@ -262,11 +338,6 @@ class KWaveAdapter(AcousticAdapterBase):
         sound_speed = data.get(Tags.DATA_FIELD_SPEED_OF_SOUND, 1540.)
         alpha_coeff = data.get(Tags.DATA_FIELD_ALPHA_COEFF, 0.01)
         density = data.get(Tags.DATA_FIELD_DENSITY, 1000.)
-        if ndim == 2:
-            initial_pressure = np.pad(initial_pressure, ((GEL_LAYER_HEIGHT, 0), (0, 0)))
-            sound_speed = np.pad(sound_speed, ((GEL_LAYER_HEIGHT, 0), (0, 0)), 'edge')
-            alpha_coeff = np.pad(alpha_coeff, ((GEL_LAYER_HEIGHT, 0), (0, 0)), 'edge')
-            density = np.pad(density, ((GEL_LAYER_HEIGHT, 0), (0, 0)), 'edge')
 
         # Setup source
         source = kSource()
@@ -310,8 +381,8 @@ class KWaveAdapter(AcousticAdapterBase):
 
         karray = kWaveArray()
         if ndim == 2:
-            elem_pos = data[Tags.SENSOR_ELEMENT_POSITIONS] / 1000
-            elem_pos[0] -= 0.5 * kgrid.x_size - spacing_mm * GEL_LAYER_HEIGHT
+            elem_pos = np.array(data[Tags.SENSOR_ELEMENT_POSITIONS], dtype=float, copy=True) / 1000.0
+            elem_pos[0] -= 0.5 * kgrid.x_size
             elem_pos[1] -= 0.5 * kgrid.y_size
 
             elem_pos += 0.5 * element_width * np.vstack((np.sin(angles), np.cos(angles)))
@@ -320,14 +391,14 @@ class KWaveAdapter(AcousticAdapterBase):
                 karray.add_rect_element(
                     tuple(elem_pos[:, i]),
                     element_width, 0.00001,
-                    angles[i]
+                    float(np.rad2deg(angles[i]))
                 )
 
         else:
             euler_angles = data[Tags.KWAVE_PROPERTY_INTRINSIC_EULER_ANGLE]
 
-            elem_pos = data[Tags.SENSOR_ELEMENT_POSITIONS] / 1000
-            elem_pos[0] -= 0.5 * kgrid.x_size - spacing_mm * GEL_LAYER_HEIGHT
+            elem_pos = np.array(data[Tags.SENSOR_ELEMENT_POSITIONS], dtype=float, copy=True) / 1000.0
+            elem_pos[0] -= 0.5 * kgrid.x_size
             elem_pos[1] -= 0.5 * kgrid.y_size
             elem_pos[2] -= 0.5 * kgrid.z_size
 
@@ -361,8 +432,10 @@ class KWaveAdapter(AcousticAdapterBase):
             save_to_disk=True
         )
 
-        execution_options = SimulationExecutionOptions(
-            is_gpu_simulation=k_wave_settings[Tags.GPU]
+        execution_options = self._create_execution_options(
+            is_gpu_simulation=k_wave_settings[Tags.GPU],
+            binary_path=k_wave_settings.get(Tags.ACOUSTIC_MODEL_BINARY_PATH, None),
+            additional_flags=k_wave_settings.get(Tags.ADDITIONAL_FLAGS, None),
         )
 
         kspaceFirstOrdernD = kspaceFirstOrder3D if ndim == 3 else kspaceFirstOrder2D

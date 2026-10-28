@@ -42,28 +42,26 @@ class TestCurvedArray(unittest.TestCase):
             assert (np.abs(detector_orientations[element] - np.array(correct_orientations[element])) < 1e-10).all()
 
     def test_simple_detection_geometry_prerequisite_check(self):
-        self.VOLUME_WIDTH_IN_MM = 2 + self.SPACING
-        self.VOLUME_HEIGHT_IN_MM = 2 + self.SPACING
-
-        settings = Settings({Tags.DIM_VOLUME_X_MM: self.VOLUME_WIDTH_IN_MM,
-                             Tags.DIM_VOLUME_Z_MM: self. VOLUME_HEIGHT_IN_MM,
+        settings = Settings({Tags.DIM_VOLUME_X_MM: 5,
+                             Tags.DIM_VOLUME_Y_MM: 14,
+                             Tags.DIM_VOLUME_Z_MM: 5,
                              Tags.SPACING_MM: self.SPACING})
 
         detection_geometry = CurvedArrayDetectionGeometry(pitch_mm=np.pi/2,
                                                           radius_mm=1,
                                                           number_detector_elements=4,
-                                                          angular_origin_offset=np.pi/4
+                                                          angular_origin_offset=np.pi/4,
+                                                          device_position_mm=np.array([2.0, 6.5, 2.0]),
                                                           )
 
         self.assertTrue(detection_geometry.check_settings_prerequisites(settings))
 
-        settings[Tags.DIM_VOLUME_X_MM] = self.VOLUME_WIDTH_IN_MM - self.SPACING
+        settings[Tags.DIM_VOLUME_X_MM] = 3
         self.assertFalse(detection_geometry.check_settings_prerequisites(settings))
 
-        settings[Tags.DIM_VOLUME_X_MM] = self.VOLUME_WIDTH_IN_MM
-        settings[Tags.DIM_VOLUME_Z_MM] = self.VOLUME_HEIGHT_IN_MM - self.SPACING
+        settings[Tags.DIM_VOLUME_X_MM] = 5
+        settings[Tags.DIM_VOLUME_Z_MM] = 3
         self.assertFalse(detection_geometry.check_settings_prerequisites(settings))
 
-        settings[Tags.DIM_VOLUME_X_MM] = self.VOLUME_WIDTH_IN_MM - self.SPACING
-        settings[Tags.DIM_VOLUME_Z_MM] = self.VOLUME_HEIGHT_IN_MM - self.SPACING
+        settings[Tags.DIM_VOLUME_X_MM] = 3
         self.assertFalse(detection_geometry.check_settings_prerequisites(settings))
