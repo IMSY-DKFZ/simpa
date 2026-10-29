@@ -72,7 +72,7 @@ class TestPipeline(unittest.TestCase):
             AcousticTestAdapter(settings),
         ]
 
-        simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
+        simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1, device_position_mm=np.array([0.5, 0.5, 0.0])))
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
                 os.path.isfile(settings[Tags.SIMPA_OUTPUT_FILE_PATH])):

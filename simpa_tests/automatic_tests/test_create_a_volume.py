@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
+import numpy as np
 from simpa.utils import Tags
 from simpa.utils.settings import Settings
 from simpa.core.simulation import simulate
@@ -35,7 +36,7 @@ class TestCreateVolume(unittest.TestCase):
             ModelBasedAdapter(settings)
         ]
 
-        simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
+        simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1, device_position_mm=np.array([0.5, 0.5, 0.0])))
 
         if (os.path.exists(settings[Tags.SIMPA_OUTPUT_FILE_PATH]) and
            os.path.isfile(settings[Tags.SIMPA_OUTPUT_FILE_PATH])):

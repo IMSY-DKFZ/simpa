@@ -68,7 +68,7 @@ class TestNoiseModels(unittest.TestCase):
         ]
 
         try:
-            simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1))
+            simulate(simulation_pipeline, settings, RSOMExplorerP50(0.1, 1, 1, device_position_mm=np.array([0.5, 0.5, 0.0])))
 
             absorption = load_data_field(file_path=settings[Tags.SIMPA_OUTPUT_FILE_PATH],
                                          data_field=Tags.DATA_FIELD_ABSORPTION_PER_CM,

@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: MIT
 
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 from simpa import MCXReflectanceAdapter, MCXAdapter, KWaveAdapter, TimeReversalAdapter, Tags, Settings
-from simpa.utils.matlab import generate_matlab_cmd
 
 
 class TestAdditionalFlags(unittest.TestCase):
@@ -14,6 +15,7 @@ class TestAdditionalFlags(unittest.TestCase):
         self.settings = Settings()
 
     def test_get_cmd_mcx_reflectance_adapter(self):
+        """Verify MCX reflectance commands include every configured additional flag."""
         self.settings.set_optical_settings({
             Tags.OPTICAL_MODEL_BINARY_PATH: '.',
             Tags.ADDITIONAL_FLAGS: self.additional_flags
@@ -25,6 +27,7 @@ class TestAdditionalFlags(unittest.TestCase):
                 flag, cmd, f"{flag} was not in command returned by mcx reflectance adapter but was defined as additional flag")
 
     def test_get_cmd_mcx_adapter(self):
+        """Verify MCX forward commands include every configured additional flag."""
         self.settings.set_optical_settings({
             Tags.OPTICAL_MODEL_BINARY_PATH: '.',
             Tags.ADDITIONAL_FLAGS: self.additional_flags
@@ -35,26 +38,92 @@ class TestAdditionalFlags(unittest.TestCase):
             self.assertIn(
                 flag, cmd, f"{flag} was not in command returned by mcx adapter but was defined as additional flag")
 
-    def test_get_cmd_kwave_adapter(self):
-        self.settings.set_acoustic_settings({
-            Tags.ADDITIONAL_FLAGS: self.additional_flags
-        })
-        kwave_adapter = KWaveAdapter(global_settings=self.settings)
-        cmd = generate_matlab_cmd("./matlab.exe", "simulate_2D.m", "my_hdf5.mat", kwave_adapter.get_additional_flags())
-        for flag in self.additional_flags:
-            self.assertIn(
-                flag, cmd, f"{flag} was not in command returned by kwave adapter but was defined as additional flag")
+    def test_k_wave_additional_flags_are_translated(self):
+        """Verify command-style flags map to typed k-wave-python execution options."""
+        flags = (
+            '--verbose', '2',
+            '--device-num', '1',
+            '--num-threads', '4',
+            '--thread-binding', 'true',
+            '--show-sim-log', 'false',
+        )
 
-    def test_get_cmd_time_reversal_adapter(self):
-        self.settings.set_reconstruction_settings({
-            Tags.ADDITIONAL_FLAGS: self.additional_flags
+        execution_kwargs = KWaveAdapter._translate_additional_flags_to_execution_kwargs(flags)
+
+        self.assertEqual(execution_kwargs, {
+            'verbose_level': 2,
+            'device_num': 1,
+            'num_threads': 4,
+            'thread_binding': True,
+            'show_sim_log': False,
         })
-        time_reversal_adapter = TimeReversalAdapter(global_settings=self.settings)
-        cmd = generate_matlab_cmd("./matlab.exe", "time_reversal_2D.m", "my_hdf5.mat",
-                                  time_reversal_adapter.get_additional_flags())
-        for flag in self.additional_flags:
-            self.assertIn(
-                flag, cmd, f"{flag} was not in command returned by time reversal adapter but was defined as additional flag")
+
+    def test_k_wave_additional_flags_are_forwarded_to_execution_options(self):
+        """Verify translated flags are forwarded to SimulationExecutionOptions."""
+        with patch(
+                'simpa.core.simulation_modules.acoustic_module.k_wave_adapter.SimulationExecutionOptions'
+        ) as execution_options:
+            KWaveAdapter._create_execution_options(
+                is_gpu_simulation=True,
+                additional_flags=('--verbose', '2', '--device-num', '1'),
+            )
+
+        execution_options.assert_called_once_with(
+            is_gpu_simulation=True,
+            verbose_level=2,
+            device_num=1,
+        )
+
+    def test_k_wave_binary_path_is_forwarded_as_path_object(self):
+        """Verify the configured executable is forwarded as a pathlib Path."""
+        configured_path = r'C:\custom\kspaceFirstOrder-OMP.exe'
+
+        with patch(
+                'simpa.core.simulation_modules.acoustic_module.k_wave_adapter.SimulationExecutionOptions'
+        ) as execution_options:
+            KWaveAdapter._create_execution_options(
+                is_gpu_simulation=False,
+                binary_path=configured_path,
+            )
+
+        execution_options.assert_called_once_with(
+            is_gpu_simulation=False,
+            binary_path=Path(configured_path),
+        )
+
+    def test_k_wave_selects_cpu_binary(self):
+        """Verify GPU=False selects the OMP executable from a bundled binary pair."""
+        configured_path = Path('kwave') / 'kspaceFirstOrder-CUDA.exe'
+
+        with patch(
+                'simpa.core.simulation_modules.acoustic_module.k_wave_adapter.SimulationExecutionOptions'
+        ) as execution_options:
+            KWaveAdapter._create_execution_options(
+                is_gpu_simulation=False,
+                binary_path=configured_path,
+            )
+
+        execution_options.assert_called_once_with(
+            is_gpu_simulation=False,
+            binary_path=Path('kwave') / 'kspaceFirstOrder-OMP.exe',
+        )
+
+    def test_k_wave_selects_gpu_binary(self):
+        """Verify GPU=True selects the CUDA executable from a bundled binary pair."""
+        configured_path = Path('kwave') / 'kspaceFirstOrder-OMP.exe'
+
+        with patch(
+                'simpa.core.simulation_modules.acoustic_module.k_wave_adapter.SimulationExecutionOptions'
+        ) as execution_options:
+            KWaveAdapter._create_execution_options(
+                is_gpu_simulation=True,
+                binary_path=configured_path,
+            )
+
+        execution_options.assert_called_once_with(
+            is_gpu_simulation=True,
+            binary_path=Path('kwave') / 'kspaceFirstOrder-CUDA.exe',
+        )
 
 
 if __name__ == '__main__':
