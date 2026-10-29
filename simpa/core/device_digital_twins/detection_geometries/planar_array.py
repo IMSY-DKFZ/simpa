@@ -68,7 +68,10 @@ class PlanarArrayDetectionGeometry(DetectionGeometryBase):
     def check_settings_prerequisites(self, global_settings) -> bool:
         return self.check_detector_elements_inside_acoustic_grid(global_settings)
 
-    def update_settings_for_use_of_model_based_volume_creator(self, global_settings):
+    def update_settings_for_use_of_model_based_volume_creator(self, global_settings) -> Settings:
+        pass
+
+    def update_settings_for_use_of_segmentation_based_volume_creator(self, global_settings) -> Settings:
         pass
 
     def get_detector_element_positions_base_mm(self) -> np.ndarray:
